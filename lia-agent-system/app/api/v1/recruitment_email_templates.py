@@ -177,7 +177,7 @@ async def list_template_types():
     return types
 
 
-@router.get("/variables")
+@router.get("/variables", response_model=None)
 async def list_available_variables():
     """
     List all available template variables with sample values.
@@ -421,7 +421,7 @@ async def preview_stage_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{template_id}")
+@router.delete("/{template_id}", response_model=None)
 async def delete_template(
     template_id: str,
     db: AsyncSession = Depends(get_db)

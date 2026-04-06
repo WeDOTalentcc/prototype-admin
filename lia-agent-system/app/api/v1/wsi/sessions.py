@@ -27,7 +27,7 @@ router = APIRouter()
 # Simple session / results routes
 # ---------------------------------------------------------------------------
 
-@router.get("/session/{session_id}")
+@router.get("/session/{session_id}", response_model=None)
 async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
     """Get WSI session details with questions and responses."""
     try:
@@ -70,7 +70,7 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/results/{candidate_id}")
+@router.get("/results/{candidate_id}", response_model=None)
 async def get_candidate_results(
     candidate_id: str,
     limit: int = 10,
@@ -125,7 +125,7 @@ class InterviewGraphRespondRequest(BaseModel):
     response: str = Field(..., description="Resposta do candidato à pergunta atual")
 
 
-@router.post("/interview-graph/sessions", summary="Inicia sessão de entrevista WSI síncrona")
+@router.post("/interview-graph/sessions", summary="Inicia sessão de entrevista WSI síncrona", response_model=None)
 async def start_interview_graph_session(
     request: InterviewGraphStartRequest,
     db: AsyncSession = Depends(get_db),
@@ -188,7 +188,7 @@ async def start_interview_graph_session(
 @router.post(
     "/interview-graph/sessions/{session_id}/respond",
     summary="Envia resposta do candidato na entrevista WSI síncrona",
-)
+, response_model=None)
 async def respond_interview_graph(session_id: str, request: InterviewGraphRespondRequest):
     """Processa a resposta do candidato, pontua e avança para a próxima pergunta.
 
@@ -240,7 +240,7 @@ async def respond_interview_graph(session_id: str, request: InterviewGraphRespon
 @router.get(
     "/interview-graph/sessions/{session_id}",
     summary="Resumo auditável da sessão de entrevista WSI",
-)
+, response_model=None)
 async def get_interview_graph_session(session_id: str):
     """Retorna o resumo completo da sessão para fins de auditoria e compliance."""
     from app.domains.cv_screening.agents.wsi_interview_graph import wsi_interview_graph

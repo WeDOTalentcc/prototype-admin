@@ -556,7 +556,7 @@ async def update_opinion(
     )
 
 
-@router.delete("/{opinion_id}")
+@router.delete("/{opinion_id}", response_model=None)
 async def delete_opinion(
     opinion_id: UUID,
     db: AsyncSession = Depends(get_db),

@@ -44,7 +44,7 @@ class PipelineForecastRequest(BaseModel):
     weeks_ahead: int = 4
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", response_model=None)
 async def get_predictions_dashboard(
     user_id: str | None = Query(None, description="Filter by user/recruiter"),
     db: AsyncSession = Depends(get_db)
@@ -70,7 +70,7 @@ async def get_predictions_dashboard(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/hiring-probability")
+@router.post("/hiring-probability", response_model=None)
 async def predict_hiring_probability(
     request: HiringProbabilityRequest,
     db: AsyncSession = Depends(get_db)
@@ -103,7 +103,7 @@ async def predict_hiring_probability(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/hiring-probability/{candidate_id}/{job_id}")
+@router.get("/hiring-probability/{candidate_id}/{job_id}", response_model=None)
 async def get_hiring_probability(
     candidate_id: str,
     job_id: str,
@@ -127,7 +127,7 @@ async def get_hiring_probability(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/time-to-fill")
+@router.post("/time-to-fill", response_model=None)
 async def predict_time_to_fill(
     request: TimeToFillRequest,
     db: AsyncSession = Depends(get_db)
@@ -158,7 +158,7 @@ async def predict_time_to_fill(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/time-to-fill/{job_id}")
+@router.get("/time-to-fill/{job_id}", response_model=None)
 async def get_time_to_fill(
     job_id: str,
     db: AsyncSession = Depends(get_db)
@@ -180,7 +180,7 @@ async def get_time_to_fill(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/dropout-risk")
+@router.post("/dropout-risk", response_model=None)
 async def predict_dropout_risk(
     request: DropoutRiskRequest,
     db: AsyncSession = Depends(get_db)
@@ -211,7 +211,7 @@ async def predict_dropout_risk(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/dropout-risk/{candidate_id}/{job_id}")
+@router.get("/dropout-risk/{candidate_id}/{job_id}", response_model=None)
 async def get_dropout_risk(
     candidate_id: str,
     job_id: str,
@@ -235,7 +235,7 @@ async def get_dropout_risk(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/pipeline-forecast")
+@router.post("/pipeline-forecast", response_model=None)
 async def generate_pipeline_forecast(
     request: PipelineForecastRequest,
     db: AsyncSession = Depends(get_db)
@@ -266,7 +266,7 @@ async def generate_pipeline_forecast(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/pipeline-forecast/{job_id}")
+@router.get("/pipeline-forecast/{job_id}", response_model=None)
 async def get_pipeline_forecast(
     job_id: str,
     weeks_ahead: int = Query(4, ge=1, le=12, description="Weeks to forecast"),
@@ -290,7 +290,7 @@ async def get_pipeline_forecast(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def analytics_health():
     """Health check for predictive analytics service."""
     return {

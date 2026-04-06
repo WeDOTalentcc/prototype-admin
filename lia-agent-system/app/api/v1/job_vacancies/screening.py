@@ -218,7 +218,7 @@ async def update_screening_config(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/vagas/{job_id}/screening-status")
+@router.put("/vagas/{job_id}/screening-status", response_model=None)
 async def update_screening_status(
     job_id: UUID,
     request: ScreeningStatusUpdateRequest,

@@ -390,7 +390,7 @@ async def publish_to_indeed(
     return PublishResponse(**response)
 
 
-@router.get("/feed/indeed.xml")
+@router.get("/feed/indeed.xml", response_model=None)
 async def get_indeed_xml_feed(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db)
@@ -497,7 +497,7 @@ async def unpublish_from_platform(
     return UnpublishResponse(**response)
 
 
-@router.post("/publish-batch")
+@router.post("/publish-batch", response_model=None)
 async def publish_to_multiple_platforms(
     job_ids: list[str],
     platforms: list[str],

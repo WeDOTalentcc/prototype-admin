@@ -287,7 +287,7 @@ async def send_analysis_notification(
         logger.error(f"❌ Failed to send analysis notification: {e}")
 
 
-@router.post("/analyze/{interview_id}")
+@router.post("/analyze/{interview_id}", response_model=None)
 async def analyze_interview(
     interview_id: str,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
@@ -397,7 +397,7 @@ async def analyze_interview(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/analyze-transcript")
+@router.post("/analyze-transcript", response_model=None)
 async def analyze_raw_transcript(
     request: AnalyzeTranscriptRequest,
     company_id: str = Query(..., description="Company ID for tenant scoping"),
@@ -451,7 +451,7 @@ async def analyze_raw_transcript(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/teams-webhook")
+@router.post("/teams-webhook", response_model=None)
 async def teams_meeting_webhook(
     payload: TeamsWebhookPayload,
     background_tasks: BackgroundTasks,
@@ -534,7 +534,7 @@ async def teams_meeting_webhook(
     return {"status": "accepted", "processed": len(payload.value)}
 
 
-@router.get("/status/{interview_id}")
+@router.get("/status/{interview_id}", response_model=None)
 async def get_analysis_status(
     interview_id: str,
     db: AsyncSession = Depends(get_db)
@@ -578,7 +578,7 @@ async def get_analysis_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/results/{interview_id}")
+@router.get("/results/{interview_id}", response_model=None)
 async def get_analysis_results(
     interview_id: str,
     db: AsyncSession = Depends(get_db)

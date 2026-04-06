@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/handle-trigger/screening-completed")
+@router.post("/handle-trigger/screening-completed", response_model=None)
 async def handle_screening_completed(
     request: ScreeningCompletedRequest,
     db: AsyncSession = Depends(get_db)
@@ -524,7 +524,7 @@ Responda em JSON:
         ]
 
 
-@router.post("/handle-trigger/interview-scheduled")
+@router.post("/handle-trigger/interview-scheduled", response_model=None)
 async def handle_interview_scheduled(
     request: InterviewScheduledRequest,
     db: AsyncSession = Depends(get_db)
@@ -808,7 +808,7 @@ async def handle_interview_scheduled(
         )
 
 
-@router.post("/handle-trigger/interview-completed")
+@router.post("/handle-trigger/interview-completed", response_model=None)
 async def handle_interview_completed(
     request: InterviewCompletedRequest,
     db: AsyncSession = Depends(get_db)
@@ -1126,7 +1126,7 @@ Responda em JSON:
         )
 
 
-@router.post("/handle-trigger/candidate-inactive")
+@router.post("/handle-trigger/candidate-inactive", response_model=None)
 async def handle_candidate_inactive(
     request: CandidateInactiveRequest,
     db: AsyncSession = Depends(get_db)
@@ -1437,7 +1437,7 @@ async def handle_candidate_inactive(
         )
 
 
-@router.post("/handle-trigger/candidate-no-show")
+@router.post("/handle-trigger/candidate-no-show", response_model=None)
 async def handle_candidate_no_show(
     request: CandidateNoShowRequest,
     db: AsyncSession = Depends(get_db)
@@ -1800,7 +1800,7 @@ async def handle_candidate_no_show(
         )
 
 
-@router.post("/handle-trigger/ats-sync")
+@router.post("/handle-trigger/ats-sync", response_model=None)
 async def handle_ats_sync(
     request: ATSSyncRequest,
     db: AsyncSession = Depends(get_db)
@@ -2067,7 +2067,7 @@ async def handle_ats_sync(
 
 # ============== OFFER_SENT TRIGGER ==============
 
-@router.post("/handle-trigger/offer-sent")
+@router.post("/handle-trigger/offer-sent", response_model=None)
 async def handle_offer_sent(
     request: OfferSentPayload,
     db: AsyncSession = Depends(get_db)
@@ -2232,7 +2232,7 @@ async def handle_offer_sent(
 
 # ============== CANDIDATE_HIRED TRIGGER ==============
 
-@router.post("/handle-trigger/candidate-hired")
+@router.post("/handle-trigger/candidate-hired", response_model=None)
 async def handle_candidate_hired(
     request: CandidateHiredPayload,
     db: AsyncSession = Depends(get_db)
@@ -2431,7 +2431,7 @@ async def handle_candidate_hired(
 
 # ============== CANDIDATE_REJECTED TRIGGER ==============
 
-@router.post("/handle-trigger/candidate-rejected")
+@router.post("/handle-trigger/candidate-rejected", response_model=None)
 async def handle_candidate_rejected(
     request: CandidateRejectedPayload,
     db: AsyncSession = Depends(get_db)

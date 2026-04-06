@@ -56,7 +56,7 @@ def require_admin(current_user: dict[str, Any]) -> None:
         )
 
 
-@router.get("/variables", summary="List available template variables")
+@router.get("/variables", summary="List available template variables", response_model=None)
 async def list_template_variables() -> TemplateVariablesListResponse:
     """
     Get all available template variables that can be used in templates.
@@ -70,7 +70,7 @@ async def list_template_variables() -> TemplateVariablesListResponse:
     return TemplateVariablesListResponse(variables=variables)
 
 
-@router.get("", summary="List default templates")
+@router.get("", summary="List default templates", response_model=None)
 async def list_default_templates(
     category: str | None = Query(None, description="Filter by category: email, sms, whatsapp, push"),
     status_filter: str | None = Query(None, alias="status", description="Filter by status: active, draft, archived"),
@@ -139,7 +139,7 @@ async def list_default_templates(
         )
 
 
-@router.get("/{template_id}", summary="Get default template")
+@router.get("/{template_id}", summary="Get default template", response_model=None)
 async def get_default_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db)
@@ -182,7 +182,7 @@ async def get_default_template(
         )
 
 
-@router.post("", summary="Create default template", status_code=status.HTTP_201_CREATED)
+@router.post("", summary="Create default template", status_code=status.HTTP_201_CREATED, response_model=None)
 async def create_default_template(
     data: DefaultTemplateCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -237,7 +237,7 @@ async def create_default_template(
         )
 
 
-@router.put("/{template_id}", summary="Update default template")
+@router.put("/{template_id}", summary="Update default template", response_model=None)
 async def update_default_template(
     template_id: UUID,
     data: DefaultTemplateUpdate,
@@ -307,7 +307,7 @@ async def update_default_template(
         )
 
 
-@router.delete("/{template_id}", summary="Delete default template")
+@router.delete("/{template_id}", summary="Delete default template", response_model=None)
 async def delete_default_template(
     template_id: UUID,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -353,7 +353,7 @@ async def delete_default_template(
         )
 
 
-@router.post("/{template_id}/duplicate", summary="Duplicate default template")
+@router.post("/{template_id}/duplicate", summary="Duplicate default template", response_model=None)
 async def duplicate_default_template(
     template_id: UUID,
     data: DefaultTemplateDuplicateRequest | None = None,
@@ -421,7 +421,7 @@ async def duplicate_default_template(
         )
 
 
-@router.post("/seed", summary="Seed default templates")
+@router.post("/seed", summary="Seed default templates", response_model=None)
 async def seed_default_templates(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)

@@ -114,7 +114,7 @@ async def orchestrated_talent_chat(
             status_code=500, detail=f"Error processing talent chat: {str(e)}"
         )
 
-@router.get("/talent-chat/intents")
+@router.get("/talent-chat/intents", response_model=None)
 async def get_talent_chat_intents():
     return {
         "intents": [

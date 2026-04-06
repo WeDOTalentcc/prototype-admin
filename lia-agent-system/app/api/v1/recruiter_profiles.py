@@ -240,7 +240,7 @@ async def get_personalized_thresholds(
         raise HTTPException(status_code=500, detail="Error calculating thresholds")
 
 
-@router.post("/me/events")
+@router.post("/me/events", response_model=None)
 async def record_personalization_event(
     request: RecordEventRequest,
     db: AsyncSession = Depends(get_db),
@@ -281,7 +281,7 @@ async def record_personalization_event(
         raise HTTPException(status_code=500, detail="Error recording event")
 
 
-@router.post("/me/recalculate")
+@router.post("/me/recalculate", response_model=None)
 async def recalculate_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
@@ -309,7 +309,7 @@ async def recalculate_profile(
         raise HTTPException(status_code=500, detail="Error recalculating profile")
 
 
-@router.delete("/me/data")
+@router.delete("/me/data", response_model=None)
 async def delete_my_personalization_data(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),

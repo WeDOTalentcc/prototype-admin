@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/activities", tags=["activities"])
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def list_activities(
     activity_type: str | None = Query(None, description="Filter by activity type (voice_screening, email_sent, etc.)"),
     priority: str | None = Query(None, description="Filter by priority (urgent, normal, low)"),
@@ -59,7 +59,7 @@ async def list_activities(
         )
 
 
-@router.get("/urgent/count")
+@router.get("/urgent/count", response_model=None)
 async def get_urgent_count(
     user_id: str | None = Query(None, description="Optional user_id to filter visible activities"),
 ):
@@ -87,7 +87,7 @@ async def get_urgent_count(
         )
 
 
-@router.get("/{activity_id}")
+@router.get("/{activity_id}", response_model=None)
 async def get_activity(activity_id: str):
     """
     Get a single activity by ID.

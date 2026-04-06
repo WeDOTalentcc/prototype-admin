@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/recruiter-metrics", tags=["recruiter-metrics"])
 
 
-@router.get("/{recruiter_id}")
+@router.get("/{recruiter_id}", response_model=None)
 async def get_recruiter_summary(
     recruiter_id: str,
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
@@ -45,7 +45,7 @@ async def get_recruiter_summary(
         raise HTTPException(status_code=500, detail="Erro ao calcular métricas do recrutador")
 
 
-@router.get("/{recruiter_id}/backlog")
+@router.get("/{recruiter_id}/backlog", response_model=None)
 async def get_recruiter_backlog(
     recruiter_id: str,
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
@@ -75,7 +75,7 @@ async def get_recruiter_backlog(
         raise HTTPException(status_code=500, detail="Erro ao buscar backlog do recrutador")
 
 
-@router.get("/{recruiter_id}/benchmark")
+@router.get("/{recruiter_id}/benchmark", response_model=None)
 async def get_recruiter_benchmark(
     recruiter_id: str,
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),

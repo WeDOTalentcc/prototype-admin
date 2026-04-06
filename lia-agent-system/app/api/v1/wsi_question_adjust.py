@@ -69,7 +69,7 @@ class GetQuestionsResponse(BaseModel):
     saved_at: str | None = None
 
 
-@router.post("/questions/adjust")
+@router.post("/questions/adjust", response_model=None)
 async def adjust_questions(request: AdjustQuestionsRequest):
     """Adjust WSI questions based on recruiter's natural language prompt."""
     try:
@@ -92,7 +92,7 @@ async def adjust_questions(request: AdjustQuestionsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/jd-evaluate")
+@router.post("/jd-evaluate", response_model=None)
 async def evaluate_jd(request: EvaluateJDRequest):
     """Evaluate a Job Description for WSI question generation readiness."""
     try:

@@ -317,7 +317,7 @@ async def run_all_seeds(session: AsyncSession) -> dict:
     return results
 
 
-@router.post("/seed-data")
+@router.post("/seed-data", response_model=None)
 async def seed_database(db: AsyncSession = Depends(get_db)):
     """
     Seed the database with default Task Templates and Alert Rules.
@@ -349,7 +349,7 @@ async def seed_database(db: AsyncSession = Depends(get_db)):
         )
 
 
-@router.post("/seed-data/task-templates")
+@router.post("/seed-data/task-templates", response_model=None)
 async def seed_task_templates_only(db: AsyncSession = Depends(get_db)):
     """
     Seed only Task Templates.
@@ -374,7 +374,7 @@ async def seed_task_templates_only(db: AsyncSession = Depends(get_db)):
         )
 
 
-@router.post("/seed-data/alert-rules")
+@router.post("/seed-data/alert-rules", response_model=None)
 async def seed_alert_rules_only(db: AsyncSession = Depends(get_db)):
     """
     Seed only Alert Rules.
@@ -399,7 +399,7 @@ async def seed_alert_rules_only(db: AsyncSession = Depends(get_db)):
         )
 
 
-@router.post("/seed-data/demo")
+@router.post("/seed-data/demo", response_model=None)
 async def seed_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
     """
     Seed demo data for vagas (jobs) and candidatos (candidates).
@@ -443,7 +443,7 @@ async def seed_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
         )
 
 
-@router.delete("/seed-data/demo")
+@router.delete("/seed-data/demo", response_model=None)
 async def clear_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
     """
     Clear all demo data from the database.

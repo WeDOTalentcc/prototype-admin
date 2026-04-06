@@ -132,7 +132,7 @@ class AIOptimizeSLARequest(BaseModel):
     current_slas: list[dict[str, Any]] | None = None
 
 
-@router.get("/templates")
+@router.get("/templates", response_model=None)
 async def list_templates(
     company_id: str = Query(..., description="Company ID"),
     template_type: str | None = None,
@@ -164,7 +164,7 @@ async def list_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/templates")
+@router.post("/templates", response_model=None)
 async def create_template(
     company_id: str = Query(..., description="Company ID"),
     data: TemplateCreate = None,
@@ -216,7 +216,7 @@ async def create_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/templates/{template_id}")
+@router.put("/templates/{template_id}", response_model=None)
 async def update_template(
     template_id: str,
     data: TemplateUpdate,
@@ -250,7 +250,7 @@ async def update_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/templates/{template_id}")
+@router.delete("/templates/{template_id}", response_model=None)
 async def delete_template(
     template_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -279,7 +279,7 @@ async def delete_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/templates/defaults")
+@router.get("/templates/defaults", response_model=None)
 async def get_default_templates():
     """Get default template configurations."""
     return {
@@ -288,7 +288,7 @@ async def get_default_templates():
     }
 
 
-@router.post("/templates/initialize")
+@router.post("/templates/initialize", response_model=None)
 async def initialize_templates(
     company_id: str = Query(..., description="Company ID"),
     db: AsyncSession = Depends(get_db)
@@ -328,7 +328,7 @@ async def initialize_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/slas")
+@router.get("/slas", response_model=None)
 async def list_slas(
     company_id: str = Query(..., description="Company ID"),
     stage_name: str | None = None,
@@ -358,7 +358,7 @@ async def list_slas(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/slas")
+@router.post("/slas", response_model=None)
 async def create_sla(
     company_id: str = Query(..., description="Company ID"),
     data: SLACreate = None,
@@ -392,7 +392,7 @@ async def create_sla(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/slas/{sla_id}")
+@router.put("/slas/{sla_id}", response_model=None)
 async def update_sla(
     sla_id: str,
     data: SLAUpdate,
@@ -430,7 +430,7 @@ async def update_sla(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/slas/{sla_id}")
+@router.delete("/slas/{sla_id}", response_model=None)
 async def delete_sla(
     sla_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -459,13 +459,13 @@ async def delete_sla(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/slas/defaults")
+@router.get("/slas/defaults", response_model=None)
 async def get_default_slas():
     """Get default SLA configurations."""
     return {"slas": DEFAULT_SLAS}
 
 
-@router.post("/slas/initialize")
+@router.post("/slas/initialize", response_model=None)
 async def initialize_slas(
     company_id: str = Query(..., description="Company ID"),
     db: AsyncSession = Depends(get_db)
@@ -504,7 +504,7 @@ async def initialize_slas(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/slas/violations")
+@router.get("/slas/violations", response_model=None)
 async def get_sla_violations(
     company_id: str = Query(..., description="Company ID"),
     job_id: str | None = None,
@@ -551,7 +551,7 @@ async def get_sla_violations(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/automations")
+@router.get("/automations", response_model=None)
 async def list_automations(
     company_id: str = Query(..., description="Company ID"),
     automation_type: str | None = None,
@@ -585,7 +585,7 @@ async def list_automations(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/automations")
+@router.post("/automations", response_model=None)
 async def create_automation(
     company_id: str = Query(..., description="Company ID"),
     data: AutomationCreate = None,
@@ -615,7 +615,7 @@ async def create_automation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/automations/{automation_id}")
+@router.put("/automations/{automation_id}", response_model=None)
 async def update_automation(
     automation_id: str,
     data: AutomationUpdate,
@@ -649,7 +649,7 @@ async def update_automation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/automations/{automation_id}")
+@router.delete("/automations/{automation_id}", response_model=None)
 async def delete_automation(
     automation_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -676,7 +676,7 @@ async def delete_automation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/automations/defaults")
+@router.get("/automations/defaults", response_model=None)
 async def get_default_automations():
     """Get default automation configurations."""
     return {
@@ -697,7 +697,7 @@ async def get_default_automations():
     }
 
 
-@router.post("/automations/initialize")
+@router.post("/automations/initialize", response_model=None)
 async def initialize_automations(
     company_id: str = Query(..., description="Company ID"),
     db: AsyncSession = Depends(get_db)
@@ -736,7 +736,7 @@ async def initialize_automations(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/ai/suggest-template")
+@router.post("/ai/suggest-template", response_model=None)
 async def ai_suggest_template(
     company_id: str = Query(..., description="Company ID"),
     data: AISuggestTemplateRequest = None,
@@ -807,7 +807,7 @@ async def ai_suggest_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/ai/optimize-sla")
+@router.post("/ai/optimize-sla", response_model=None)
 async def ai_optimize_sla(
     company_id: str = Query(..., description="Company ID"),
     data: AIOptimizeSLARequest = None,

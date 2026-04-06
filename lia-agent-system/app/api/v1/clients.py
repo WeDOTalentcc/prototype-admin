@@ -115,7 +115,7 @@ class StatusUpdate(BaseModel):
     reason: str | None = Field(None, description="Reason for status change")
 
 
-@router.get("/status-options", summary="List available status options")
+@router.get("/status-options", summary="List available status options", response_model=None)
 async def list_status_options():
     """List all available client status options."""
     return {
@@ -135,7 +135,7 @@ PLAN_PRICES = {
 }
 
 
-@router.get("/dashboard-summary", summary="Dashboard summary with KPIs and client lists")
+@router.get("/dashboard-summary", summary="Dashboard summary with KPIs and client lists", response_model=None)
 async def get_dashboard_summary(
     start_date: datetime | None = Query(None, description="Start date for period filter"),
     end_date: datetime | None = Query(None, description="End date for period filter"),
@@ -321,7 +321,7 @@ async def get_dashboard_summary(
         )
 
 
-@router.get("/stats/overview", summary="Platform statistics overview")
+@router.get("/stats/overview", summary="Platform statistics overview", response_model=None)
 async def get_platform_stats(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
@@ -399,7 +399,7 @@ async def get_platform_stats(
         )
 
 
-@router.get("", summary="List clients")
+@router.get("", summary="List clients", response_model=None)
 async def list_clients(
     status: str | None = Query(None, description="Filter by status"),
     plan_id: str | None = Query(None, description="Filter by plan ID"),
@@ -478,7 +478,7 @@ async def list_clients(
         )
 
 
-@router.get("/{client_id}", summary="Get client by ID")
+@router.get("/{client_id}", summary="Get client by ID", response_model=None)
 async def get_client(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -535,7 +535,7 @@ async def get_client(
         )
 
 
-@router.get("/{client_id}/stats", summary="Get client statistics")
+@router.get("/{client_id}/stats", summary="Get client statistics", response_model=None)
 async def get_client_stats(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -617,7 +617,7 @@ async def get_client_stats(
         )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, summary="Create client")
+@router.post("", status_code=status.HTTP_201_CREATED, summary="Create client", response_model=None)
 async def create_client(
     data: ClientCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -771,7 +771,7 @@ async def create_client(
         )
 
 
-@router.put("/{client_id}", summary="Update client")
+@router.put("/{client_id}", summary="Update client", response_model=None)
 async def update_client(
     client_id: str,
     data: ClientUpdate,
@@ -846,7 +846,7 @@ async def update_client(
         )
 
 
-@router.put("/{client_id}/status", summary="Update client status")
+@router.put("/{client_id}/status", summary="Update client status", response_model=None)
 async def update_client_status(
     client_id: str,
     data: StatusUpdate,
@@ -927,7 +927,7 @@ async def update_client_status(
         )
 
 
-@router.delete("/{client_id}", summary="Delete client (soft delete)")
+@router.delete("/{client_id}", summary="Delete client (soft delete)", response_model=None)
 async def delete_client(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -1057,7 +1057,7 @@ async def get_client_for_integrations(
     return client
 
 
-@router.get("/{client_id}/integrations", summary="List client integrations")
+@router.get("/{client_id}/integrations", summary="List client integrations", response_model=None)
 async def list_client_integrations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -1094,7 +1094,7 @@ async def list_client_integrations(
         )
 
 
-@router.post("/{client_id}/integrations", status_code=status.HTTP_201_CREATED, summary="Add integration")
+@router.post("/{client_id}/integrations", status_code=status.HTTP_201_CREATED, summary="Add integration", response_model=None)
 async def add_client_integration(
     client_id: str,
     data: IntegrationCreate,
@@ -1163,7 +1163,7 @@ async def add_client_integration(
         )
 
 
-@router.put("/{client_id}/integrations/{integration_id}", summary="Update integration")
+@router.put("/{client_id}/integrations/{integration_id}", summary="Update integration", response_model=None)
 async def update_client_integration(
     client_id: str,
     integration_id: str,
@@ -1245,7 +1245,7 @@ async def update_client_integration(
         )
 
 
-@router.delete("/{client_id}/integrations/{integration_id}", summary="Remove integration")
+@router.delete("/{client_id}/integrations/{integration_id}", summary="Remove integration", response_model=None)
 async def delete_client_integration(
     client_id: str,
     integration_id: str,
@@ -1300,7 +1300,7 @@ async def delete_client_integration(
         )
 
 
-@router.post("/{client_id}/integrations/{integration_id}/sync", summary="Sync integration")
+@router.post("/{client_id}/integrations/{integration_id}/sync", summary="Sync integration", response_model=None)
 async def sync_client_integration(
     client_id: str,
     integration_id: str,
@@ -1369,7 +1369,7 @@ async def sync_client_integration(
         )
 
 
-@router.post("/{client_id}/integrations/sync-all", summary="Sync all integrations")
+@router.post("/{client_id}/integrations/sync-all", summary="Sync all integrations", response_model=None)
 async def sync_all_client_integrations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -1487,7 +1487,7 @@ async def get_client_for_automations(
     return client
 
 
-@router.get("/{client_id}/automations", summary="List client automations")
+@router.get("/{client_id}/automations", summary="List client automations", response_model=None)
 async def list_client_automations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -1524,7 +1524,7 @@ async def list_client_automations(
         )
 
 
-@router.post("/{client_id}/automations", status_code=status.HTTP_201_CREATED, summary="Create automation")
+@router.post("/{client_id}/automations", status_code=status.HTTP_201_CREATED, summary="Create automation", response_model=None)
 async def create_client_automation(
     client_id: str,
     data: AutomationCreate,
@@ -1584,7 +1584,7 @@ async def create_client_automation(
         )
 
 
-@router.put("/{client_id}/automations/{automation_id}", summary="Update automation")
+@router.put("/{client_id}/automations/{automation_id}", summary="Update automation", response_model=None)
 async def update_client_automation(
     client_id: str,
     automation_id: str,
@@ -1650,7 +1650,7 @@ async def update_client_automation(
         )
 
 
-@router.delete("/{client_id}/automations/{automation_id}", summary="Delete automation")
+@router.delete("/{client_id}/automations/{automation_id}", summary="Delete automation", response_model=None)
 async def delete_client_automation(
     client_id: str,
     automation_id: str,
@@ -1702,7 +1702,7 @@ async def delete_client_automation(
         )
 
 
-@router.patch("/{client_id}/automations/{automation_id}/toggle", summary="Toggle automation active state")
+@router.patch("/{client_id}/automations/{automation_id}/toggle", summary="Toggle automation active state", response_model=None)
 async def toggle_client_automation(
     client_id: str,
     automation_id: str,
@@ -1816,7 +1816,7 @@ class SetupSectionUpdate(BaseModel):
     progress: int | None = Field(None, ge=0, le=100, description="Progress percentage 0-100")
 
 
-@router.get("/{client_id}/setup", summary="Get client setup status")
+@router.get("/{client_id}/setup", summary="Get client setup status", response_model=None)
 async def get_client_setup(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -1883,7 +1883,7 @@ async def get_client_setup(
         )
 
 
-@router.put("/{client_id}/setup/{section_id}", summary="Update setup section progress")
+@router.put("/{client_id}/setup/{section_id}", summary="Update setup section progress", response_model=None)
 async def update_client_setup_section(
     client_id: str,
     section_id: str,
@@ -2007,7 +2007,7 @@ async def update_client_setup_section(
         )
 
 
-@router.get("/{client_id}/hubspot/status", summary="Get HubSpot sync status")
+@router.get("/{client_id}/hubspot/status", summary="Get HubSpot sync status", response_model=None)
 async def get_hubspot_sync_status(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -2050,7 +2050,7 @@ async def get_hubspot_sync_status(
         )
 
 
-@router.post("/{client_id}/hubspot/sync", summary="Sync client to HubSpot")
+@router.post("/{client_id}/hubspot/sync", summary="Sync client to HubSpot", response_model=None)
 async def sync_client_hubspot(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -2135,7 +2135,7 @@ class HubSpotOnboardingUpdate(BaseModel):
     users_count: int | None = None
 
 
-@router.put("/{client_id}/hubspot/onboarding", summary="Update HubSpot onboarding status")
+@router.put("/{client_id}/hubspot/onboarding", summary="Update HubSpot onboarding status", response_model=None)
 async def update_hubspot_onboarding(
     client_id: str,
     data: HubSpotOnboardingUpdate,

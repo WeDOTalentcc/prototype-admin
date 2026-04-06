@@ -13,7 +13,7 @@ from app.services.organization_catalog_service import organization_catalog_servi
 router = APIRouter(prefix="/catalog", tags=["organization-catalog"])
 
 
-@router.get("/areas")
+@router.get("/areas", response_model=None)
 async def get_areas() -> dict[str, Any]:
     """Get all organizational areas/departments."""
     areas = organization_catalog_service.get_all_areas()
@@ -23,7 +23,7 @@ async def get_areas() -> dict[str, Any]:
     }
 
 
-@router.get("/areas/{area_id}")
+@router.get("/areas/{area_id}", response_model=None)
 async def get_area(area_id: str) -> dict[str, Any]:
     """Get a specific area by ID."""
     area = organization_catalog_service.get_area_by_id(area_id)
@@ -32,7 +32,7 @@ async def get_area(area_id: str) -> dict[str, Any]:
     return area
 
 
-@router.get("/areas/detect")
+@router.get("/areas/detect", response_model=None)
 async def detect_area(text: str = Query(..., description="Text to analyze for area detection")) -> dict[str, Any]:
     """Detect the most likely area from a text."""
     area = organization_catalog_service.detect_area_from_text(text)
@@ -42,7 +42,7 @@ async def detect_area(text: str = Query(..., description="Text to analyze for ar
     }
 
 
-@router.get("/seniority-levels")
+@router.get("/seniority-levels", response_model=None)
 async def get_seniority_levels() -> dict[str, Any]:
     """Get all seniority levels."""
     levels = organization_catalog_service.get_all_seniority_levels()
@@ -52,7 +52,7 @@ async def get_seniority_levels() -> dict[str, Any]:
     }
 
 
-@router.get("/roles")
+@router.get("/roles", response_model=None)
 async def get_roles(area_id: str | None = Query(None, description="Filter by area ID")) -> dict[str, Any]:
     """Get all roles, optionally filtered by area."""
     if area_id:
@@ -67,7 +67,7 @@ async def get_roles(area_id: str | None = Query(None, description="Filter by are
     }
 
 
-@router.get("/roles/{area_id}")
+@router.get("/roles/{area_id}", response_model=None)
 async def get_roles_by_area(area_id: str) -> dict[str, Any]:
     """Get all roles for a specific area."""
     roles = organization_catalog_service.get_roles_by_area(area_id)
@@ -79,7 +79,7 @@ async def get_roles_by_area(area_id: str) -> dict[str, Any]:
     }
 
 
-@router.get("/roles/search/{role_name}")
+@router.get("/roles/search/{role_name}", response_model=None)
 async def search_role(role_name: str) -> dict[str, Any]:
     """Search for a role by name."""
     role = organization_catalog_service.get_role_by_name(role_name)
@@ -89,7 +89,7 @@ async def search_role(role_name: str) -> dict[str, Any]:
     }
 
 
-@router.get("/skills/technical")
+@router.get("/skills/technical", response_model=None)
 async def get_technical_skills(
     area_id: str | None = Query(None, description="Filter by area ID")
 ) -> dict[str, Any]:
@@ -106,7 +106,7 @@ async def get_technical_skills(
     }
 
 
-@router.get("/skills/technical/{area_id}")
+@router.get("/skills/technical/{area_id}", response_model=None)
 async def get_technical_skills_by_area(area_id: str) -> dict[str, Any]:
     """Get all technical skills for a specific area."""
     skills = organization_catalog_service.get_technical_skills_by_area(area_id)
@@ -118,7 +118,7 @@ async def get_technical_skills_by_area(area_id: str) -> dict[str, Any]:
     }
 
 
-@router.get("/skills/behavioral")
+@router.get("/skills/behavioral", response_model=None)
 async def get_behavioral_skills(
     category: str | None = Query(None, description="Filter by category")
 ) -> dict[str, Any]:
@@ -135,7 +135,7 @@ async def get_behavioral_skills(
     }
 
 
-@router.get("/skills/search")
+@router.get("/skills/search", response_model=None)
 async def search_skills(
     q: str = Query(..., min_length=2, description="Search query")
 ) -> dict[str, Any]:
@@ -149,7 +149,7 @@ async def search_skills(
     }
 
 
-@router.get("/suggest-skills")
+@router.get("/suggest-skills", response_model=None)
 async def suggest_skills(
     role_name: str = Query(..., description="Role name"),
     seniority: str | None = Query(None, description="Seniority level ID")
@@ -165,7 +165,7 @@ async def suggest_skills(
     }
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=None)
 async def get_catalog_summary() -> dict[str, Any]:
     """Get a complete summary of the catalog for review."""
     return organization_catalog_service.get_catalog_summary()

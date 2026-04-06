@@ -363,7 +363,7 @@ async def get_wizard_session_state(session_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to get session state: {exc}")
 
 
-@router.delete("/job-wizard/session/{session_id}")
+@router.delete("/job-wizard/session/{session_id}", response_model=None)
 async def reset_wizard_session(session_id: str):
     """Reset a wizard session, clearing all state."""
     try:
@@ -396,7 +396,7 @@ async def get_wizard_graph_info():
         raise HTTPException(status_code=500, detail=f"Failed to get graph info: {exc}")
 
 
-@router.get("/job-wizard/sessions")
+@router.get("/job-wizard/sessions", response_model=None)
 async def list_wizard_sessions():
     """List all active wizard sessions."""
     try:

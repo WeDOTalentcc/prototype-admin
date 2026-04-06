@@ -57,7 +57,7 @@ class FeedbackSignalRequest(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
-@router.post("/signal")
+@router.post("/signal", response_model=None)
 async def record_feedback_signal(
     payload: FeedbackSignalRequest,
     company_id: str = Depends(_require_company_id),
@@ -83,7 +83,7 @@ async def record_feedback_signal(
     return {"recorded": ok, "job_id": payload.job_id, "candidate_id": payload.candidate_id}
 
 
-@router.get("/weights")
+@router.get("/weights", response_model=None)
 async def get_adaptive_weights(
     job_id: str = Query(..., description="ID da vaga"),
     company_id: str = Depends(_require_company_id),

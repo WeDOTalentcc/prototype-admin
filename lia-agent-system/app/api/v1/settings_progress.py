@@ -191,7 +191,7 @@ async def calculate_global_search_progress(company_id, db: AsyncSession) -> tupl
     return 80, False
 
 
-@router.get("/progress")
+@router.get("/progress", response_model=None)
 async def get_settings_progress(
     company_id: str = Query(default=None, description="Company ID (optional, uses default if not provided)"),
     db: AsyncSession = Depends(get_db)

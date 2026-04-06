@@ -723,7 +723,7 @@ async def react_orchestrate(
         )
 
 
-@router.get("/graph-structure")
+@router.get("/graph-structure", response_model=None)
 async def get_graph_structure(
     current_user: User = Depends(get_current_user_or_demo),
 ) -> dict[str, Any]:
@@ -735,7 +735,7 @@ async def get_graph_structure(
     return job_wizard_graph.get_graph_structure()
 
 
-@router.get("/stage-mapping")
+@router.get("/stage-mapping", response_model=None)
 async def get_stage_mapping() -> dict[str, Any]:
     """
     Get the mapping between frontend and backend stage names.

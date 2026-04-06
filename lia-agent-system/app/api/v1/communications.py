@@ -600,7 +600,7 @@ class TransferCommunicationsRequest(BaseModel):
     to_recruiter_id: str
 
 
-@router.post("/transfer")
+@router.post("/transfer", response_model=None)
 async def transfer_communications(
     request: TransferCommunicationsRequest,
     company_id: str = Depends(require_company_id)

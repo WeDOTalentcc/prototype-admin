@@ -46,7 +46,7 @@ class CompareRequest(BaseModel):
     scenario: Literal["A", "B", "C"] | None = None
 
 
-@router.post("/compare")
+@router.post("/compare", response_model=None)
 async def compare_candidates(
     payload: CompareRequest,
     company_id: str = Depends(_require_company_id),

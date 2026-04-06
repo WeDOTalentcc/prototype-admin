@@ -65,7 +65,7 @@ class WebhookUpdate(BaseModel):
     timeout_seconds: int | None = None
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def list_webhooks(
     is_active: bool | None = Query(None, description="Filter by active status"),
     event: str | None = Query(None, description="Filter by subscribed event"),
@@ -96,7 +96,7 @@ async def list_webhooks(
     return result
 
 
-@router.get("/events")
+@router.get("/events", response_model=None)
 async def list_available_events():
     """
     List all available webhook events.
@@ -108,7 +108,7 @@ async def list_available_events():
     }
 
 
-@router.get("/{webhook_id}")
+@router.get("/{webhook_id}", response_model=None)
 async def get_webhook(
     webhook_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -133,7 +133,7 @@ async def get_webhook(
     return result
 
 
-@router.post("")
+@router.post("", response_model=None)
 async def create_webhook(
     webhook_data: WebhookCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -170,7 +170,7 @@ async def create_webhook(
     return result
 
 
-@router.put("/{webhook_id}")
+@router.put("/{webhook_id}", response_model=None)
 async def update_webhook(
     webhook_id: str,
     webhook_data: WebhookUpdate,
@@ -199,7 +199,7 @@ async def update_webhook(
     return result
 
 
-@router.delete("/{webhook_id}")
+@router.delete("/{webhook_id}", response_model=None)
 async def delete_webhook(
     webhook_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -224,7 +224,7 @@ async def delete_webhook(
     return result
 
 
-@router.post("/{webhook_id}/test")
+@router.post("/{webhook_id}/test", response_model=None)
 async def test_webhook(
     webhook_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -250,7 +250,7 @@ async def test_webhook(
     return result
 
 
-@router.get("/{webhook_id}/logs")
+@router.get("/{webhook_id}/logs", response_model=None)
 async def get_webhook_logs(
     webhook_id: str,
     status: str | None = Query(None, description="Filter by status (success, failed, pending)"),

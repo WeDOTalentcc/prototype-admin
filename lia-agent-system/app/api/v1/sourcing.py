@@ -497,7 +497,7 @@ async def generate_boolean_query(request: BooleanQueryRequest):
     )
 
 
-@router.post("/proactive-suggest")
+@router.post("/proactive-suggest", response_model=None)
 async def trigger_proactive_suggestions(
     request: ProactiveSuggestRequest,
     db: AsyncSession = Depends(get_db)
@@ -542,7 +542,7 @@ async def trigger_proactive_suggestions(
     }
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def sourcing_health_check():
     """Health check for sourcing endpoints."""
     return {

@@ -281,7 +281,7 @@ async def get_available_actions(request: GetActionsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/substatus-options/{stage}")
+@router.get("/substatus-options/{stage}", response_model=None)
 async def get_substatus_options(stage: str):
     """
     Get available sub-status options for a given stage.

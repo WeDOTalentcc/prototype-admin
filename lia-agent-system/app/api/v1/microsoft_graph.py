@@ -148,7 +148,7 @@ async def create_teams_meeting(request: CreateTeamsMeetingRequest):
         )
 
 
-@router.post("/meetings/standalone")
+@router.post("/meetings/standalone", response_model=None)
 async def create_standalone_teams_meeting(
     organizer_email: EmailStr,
     subject: str,
@@ -192,7 +192,7 @@ async def create_standalone_teams_meeting(
         )
 
 
-@router.get("/calendar/events/{event_id}")
+@router.get("/calendar/events/{event_id}", response_model=None)
 async def get_calendar_event(
     event_id: str,
     user_email: EmailStr = Query(..., description="Email of the calendar owner")
@@ -225,7 +225,7 @@ async def get_calendar_event(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/calendar/events/{event_id}")
+@router.delete("/calendar/events/{event_id}", response_model=None)
 async def cancel_calendar_event(
     event_id: str,
     user_email: EmailStr = Query(..., description="Email of the calendar owner"),
@@ -276,7 +276,7 @@ async def list_bookings_businesses():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/bookings/businesses/{business_id}/services")
+@router.get("/bookings/businesses/{business_id}/services", response_model=None)
 async def list_bookings_services(business_id: str):
     """
     List services for a Bookings business.
@@ -301,7 +301,7 @@ async def list_bookings_services(business_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/bookings/businesses/{business_id}/booking-page-url")
+@router.get("/bookings/businesses/{business_id}/booking-page-url", response_model=None)
 async def get_booking_page_url(business_id: str):
     """
     Get the public booking page URL for a business.
@@ -318,7 +318,7 @@ async def get_booking_page_url(business_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/bookings/appointments")
+@router.post("/bookings/appointments", response_model=None)
 async def create_bookings_appointment(request: CreateBookingsAppointmentRequest):
     """
     Create an appointment in Microsoft Bookings.

@@ -49,7 +49,7 @@ class AssignJobsRequest(BaseModel):
     candidate_ids: list[str] | None = None
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def list_candidate_lists(
     skip: int = 0,
     limit: int = 50,
@@ -111,7 +111,7 @@ async def list_candidate_lists(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("")
+@router.post("", response_model=None)
 async def create_candidate_list(
     data: CandidateListCreate,
     db: AsyncSession = Depends(get_db),
@@ -155,7 +155,7 @@ async def create_candidate_list(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{list_id}")
+@router.get("/{list_id}", response_model=None)
 async def get_candidate_list(
     list_id: str,
     skip: int = 0,
@@ -252,7 +252,7 @@ async def get_candidate_list(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/{list_id}")
+@router.patch("/{list_id}", response_model=None)
 async def update_candidate_list(
     list_id: str,
     data: CandidateListUpdate,
@@ -314,7 +314,7 @@ async def update_candidate_list(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{list_id}")
+@router.delete("/{list_id}", response_model=None)
 async def delete_candidate_list(
     list_id: str,
     db: AsyncSession = Depends(get_db),
@@ -354,7 +354,7 @@ async def delete_candidate_list(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{list_id}/candidates")
+@router.post("/{list_id}/candidates", response_model=None)
 async def add_candidates_to_list(
     list_id: str,
     data: AddCandidatesRequest,
@@ -461,7 +461,7 @@ async def add_candidates_to_list(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{list_id}/candidates")
+@router.delete("/{list_id}/candidates", response_model=None)
 async def remove_candidates_from_list(
     list_id: str,
     data: RemoveCandidatesRequest,
@@ -532,7 +532,7 @@ async def remove_candidates_from_list(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{list_id}/assign-jobs")
+@router.post("/{list_id}/assign-jobs", response_model=None)
 async def assign_list_to_jobs(
     list_id: str,
     data: AssignJobsRequest,

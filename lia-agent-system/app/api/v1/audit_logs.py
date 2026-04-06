@@ -132,7 +132,7 @@ async def get_audit_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/export", summary="Export audit logs as CSV")
+@router.get("/export", summary="Export audit logs as CSV", response_model=None)
 async def export_audit_logs(
     date_from: datetime | None = Query(None, description="Start date"),
     date_to: datetime | None = Query(None, description="End date"),

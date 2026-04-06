@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/journey", tags=["journey-intelligence"])
 
 
-@router.get("/metrics")
+@router.get("/metrics", response_model=None)
 async def get_journey_metrics(
     vacancy_id: str = Query(..., description="ID da vaga"),
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
@@ -45,7 +45,7 @@ async def get_journey_metrics(
         raise HTTPException(status_code=500, detail="Erro ao calcular métricas de jornada")
 
 
-@router.get("/company-overview")
+@router.get("/company-overview", response_model=None)
 async def get_company_overview(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),

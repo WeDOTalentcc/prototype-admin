@@ -79,7 +79,7 @@ async def get_behavior_profile(
     return BehaviorProfileResponse(**profile.to_dict())
 
 
-@router.post("/{recruiter_id}/behavior-signal", status_code=202)
+@router.post("/{recruiter_id}/behavior-signal", status_code=202, response_model=None)
 async def record_behavior_signal(
     body: BehaviorSignalRequest,
     recruiter_id: str = Path(..., description="ID do recrutador"),
@@ -104,7 +104,7 @@ async def record_behavior_signal(
     return {"accepted": True}
 
 
-@router.post("/{recruiter_id}/behavior-invalidate", status_code=200)
+@router.post("/{recruiter_id}/behavior-invalidate", status_code=200, response_model=None)
 async def invalidate_behavior_cache(
     recruiter_id: str = Path(..., description="ID do recrutador"),
     current_user: User = Depends(get_current_user_or_demo),

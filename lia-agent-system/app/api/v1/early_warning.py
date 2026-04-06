@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/early-warning", tags=["early-warning"])
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_early_warning(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     min_risk_level: str = Query(

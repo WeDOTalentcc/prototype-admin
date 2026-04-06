@@ -123,7 +123,7 @@ async def get_llm_config(
         )
 
 
-@router.put("")
+@router.put("", response_model=None)
 async def update_llm_config(
     request: LLMConfigRequest,
     current_user: User = Depends(get_current_user_or_demo),
@@ -235,7 +235,7 @@ async def test_llm_provider(
         )
 
 
-@router.get("/providers")
+@router.get("/providers", response_model=None)
 async def list_available_providers():
     """List all available LLM providers with their capabilities."""
     return {

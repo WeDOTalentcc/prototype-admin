@@ -429,7 +429,7 @@ async def update_email_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{template_id}")
+@router.delete("/{template_id}", response_model=None)
 async def delete_email_template(
     template_id: str,
     hard_delete: bool = Query(False, description="If True, permanently delete. If False, soft delete (deactivate)."),
@@ -720,7 +720,7 @@ async def seed_default_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/categories/list")
+@router.get("/categories/list", response_model=None)
 async def list_categories():
     """
     List available email template categories, channels, and situations.
@@ -769,7 +769,7 @@ async def list_categories():
     }
 
 
-@router.post("/clone-for-client/{client_id}")
+@router.post("/clone-for-client/{client_id}", response_model=None)
 async def clone_templates_for_client(
     client_id: str,
     db: AsyncSession = Depends(get_db)
@@ -797,7 +797,7 @@ async def clone_templates_for_client(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/seed-system-templates")
+@router.post("/seed-system-templates", response_model=None)
 async def seed_system_templates_endpoint(
     db: AsyncSession = Depends(get_db)
 ):

@@ -124,7 +124,7 @@ def _check_dlq() -> dict:
         return {"status": "unavailable", "error": str(exc)[:200]}
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def system_health(db: AsyncSession = Depends(get_db)):
     """
     Unified health check for deployment readiness/liveness probes.
@@ -224,7 +224,7 @@ async def system_health(db: AsyncSession = Depends(get_db)):
     )
 
 
-@router.get("/health/ready")
+@router.get("/health/ready", response_model=None)
 async def readiness_check(db: AsyncSession = Depends(get_db)):
     """
     Kubernetes readiness probe — verifica se o serviço está pronto para receber tráfego.
@@ -255,7 +255,7 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
     )
 
 
-@router.get("/health/live")
+@router.get("/health/live", response_model=None)
 async def liveness_check():
     """
     Kubernetes liveness probe — verifica se o processo está vivo.

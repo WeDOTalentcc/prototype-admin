@@ -53,7 +53,7 @@ class CompleteSessionRequest(BaseModel):
     job_id: str | None = None
 
 
-@router.post("/session/start")
+@router.post("/session/start", response_model=None)
 async def start_session(request: StartSessionRequest):
     """Start tracking a new wizard session."""
     try:
@@ -74,7 +74,7 @@ async def start_session(request: StartSessionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/session/stage")
+@router.post("/session/stage", response_model=None)
 async def track_stage_change(request: StageChangeRequest):
     """Track stage change in session."""
     try:
@@ -90,7 +90,7 @@ async def track_stage_change(request: StageChangeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/session/field")
+@router.post("/session/field", response_model=None)
 async def track_field_update(request: FieldUpdateRequest):
     """Track field update in session."""
     try:
@@ -109,7 +109,7 @@ async def track_field_update(request: FieldUpdateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/session/suggestion")
+@router.post("/session/suggestion", response_model=None)
 async def track_suggestion(request: SuggestionTrackRequest):
     """Track suggestion acceptance."""
     try:
@@ -126,7 +126,7 @@ async def track_suggestion(request: SuggestionTrackRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/session/complete")
+@router.post("/session/complete", response_model=None)
 async def complete_session(request: CompleteSessionRequest):
     """Complete session and get metrics."""
     try:
@@ -148,7 +148,7 @@ async def complete_session(request: CompleteSessionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/metrics/{company_id}")
+@router.get("/metrics/{company_id}", response_model=None)
 async def get_company_metrics(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
@@ -167,7 +167,7 @@ async def get_company_metrics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/metrics/{company_id}/recruiter/{recruiter_id}")
+@router.get("/metrics/{company_id}/recruiter/{recruiter_id}", response_model=None)
 async def get_recruiter_metrics(
     company_id: str,
     recruiter_id: str,
@@ -188,7 +188,7 @@ async def get_recruiter_metrics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stages/{company_id}")
+@router.get("/stages/{company_id}", response_model=None)
 async def get_stage_breakdown(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
@@ -207,7 +207,7 @@ async def get_stage_breakdown(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/suggestions/{company_id}")
+@router.get("/suggestions/{company_id}", response_model=None)
 async def get_suggestion_effectiveness(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
@@ -226,13 +226,13 @@ async def get_suggestion_effectiveness(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/kpis")
+@router.get("/kpis", response_model=None)
 async def get_kpi_summary():
     """Get KPI summary for dashboard."""
     return wizard_analytics_service.get_kpi_summary()
 
 
-@router.get("/dashboard/{company_id}")
+@router.get("/dashboard/{company_id}", response_model=None)
 async def get_dashboard_data(
     company_id: str,
     days: int = Query(30, ge=1, le=365),

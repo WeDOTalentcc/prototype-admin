@@ -179,7 +179,7 @@ async def regenerate_questions(
         )
 
 
-@router.get("/frameworks")
+@router.get("/frameworks", response_model=None)
 async def get_screening_frameworks(
     current_user: User = Depends(get_current_active_user)
 ):
@@ -215,7 +215,7 @@ async def get_screening_frameworks(
     }
 
 
-@router.post("/auto-trigger", status_code=202)
+@router.post("/auto-trigger", status_code=202, response_model=None)
 async def auto_trigger_screening(
     request: AutoScreeningRequest,
     db: AsyncSession = Depends(get_db),
@@ -255,7 +255,7 @@ async def auto_trigger_screening(
         raise HTTPException(status_code=500, detail="Failed to create screening task")
 
 
-@router.get("/tasks/{job_id}")
+@router.get("/tasks/{job_id}", response_model=None)
 async def list_screening_tasks(
     job_id: str,
     db: AsyncSession = Depends(get_db),
@@ -274,7 +274,7 @@ async def list_screening_tasks(
         raise HTTPException(status_code=500, detail="Failed to list screening tasks")
 
 
-@router.post("/tasks/{task_id}/execute")
+@router.post("/tasks/{task_id}/execute", response_model=None)
 async def execute_screening_task(
     task_id: str,
     db: AsyncSession = Depends(get_db),

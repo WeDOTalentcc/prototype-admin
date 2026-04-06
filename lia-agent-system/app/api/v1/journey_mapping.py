@@ -615,7 +615,7 @@ async def update_step(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/steps/{step_id}")
+@router.delete("/steps/{step_id}", response_model=None)
 async def delete_step(
     step_id: uuid.UUID,
     company_id: uuid.UUID = Query(..., description="Company ID"),

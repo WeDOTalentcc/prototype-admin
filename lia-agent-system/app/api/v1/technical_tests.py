@@ -54,7 +54,7 @@ def get_user_from_headers(
     }
 
 
-@router.get("/technical-tests/options", summary="Get test options")
+@router.get("/technical-tests/options", summary="Get test options", response_model=None)
 async def get_test_options():
     """Get available test categories, subcategories, and difficulties."""
     subcategory_options = [
@@ -72,7 +72,7 @@ async def get_test_options():
     }
 
 
-@router.get("/technical-tests", summary="List all available tests")
+@router.get("/technical-tests", summary="List all available tests", response_model=None)
 async def list_technical_tests(
     category: str | None = Query(None, description="Filter by category"),
     subcategory: str | None = Query(None, description="Filter by subcategory"),
@@ -148,7 +148,7 @@ async def list_technical_tests(
         )
 
 
-@router.get("/technical-tests/{test_id}", summary="Get test details")
+@router.get("/technical-tests/{test_id}", summary="Get test details", response_model=None)
 async def get_technical_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -189,7 +189,7 @@ async def get_technical_test(
         )
 
 
-@router.post("/technical-tests", status_code=status.HTTP_201_CREATED, summary="Create new test")
+@router.post("/technical-tests", status_code=status.HTTP_201_CREATED, summary="Create new test", response_model=None)
 async def create_technical_test(
     data: TechnicalTestCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -244,7 +244,7 @@ async def create_technical_test(
         )
 
 
-@router.put("/technical-tests/{test_id}", summary="Update test")
+@router.put("/technical-tests/{test_id}", summary="Update test", response_model=None)
 async def update_technical_test(
     test_id: str,
     data: TechnicalTestUpdate,
@@ -310,7 +310,7 @@ async def update_technical_test(
         )
 
 
-@router.delete("/technical-tests/{test_id}", summary="Delete test")
+@router.delete("/technical-tests/{test_id}", summary="Delete test", response_model=None)
 async def delete_technical_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -367,7 +367,7 @@ async def delete_technical_test(
         )
 
 
-@router.get("/clients/{client_id}/tests", summary="Get tests configured for a client")
+@router.get("/clients/{client_id}/tests", summary="Get tests configured for a client", response_model=None)
 async def get_client_tests(
     client_id: str,
     is_enabled: bool | None = Query(None, description="Filter by enabled status"),
@@ -444,7 +444,7 @@ async def get_client_tests(
         )
 
 
-@router.put("/clients/{client_id}/tests/{test_id}", summary="Configure test for client")
+@router.put("/clients/{client_id}/tests/{test_id}", summary="Configure test for client", response_model=None)
 async def configure_client_test(
     client_id: str,
     test_id: str,
@@ -541,7 +541,7 @@ async def configure_client_test(
         )
 
 
-@router.delete("/clients/{client_id}/tests/{test_id}", summary="Remove test from client")
+@router.delete("/clients/{client_id}/tests/{test_id}", summary="Remove test from client", response_model=None)
 async def remove_client_test(
     client_id: str,
     test_id: str,
@@ -604,7 +604,7 @@ async def remove_client_test(
         )
 
 
-@router.get("/clients/{client_id}/tests/stats", summary="Get test statistics for client")
+@router.get("/clients/{client_id}/tests/stats", summary="Get test statistics for client", response_model=None)
 async def get_client_test_stats(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -733,7 +733,7 @@ async def get_client_test_stats(
         )
 
 
-@router.post("/technical-tests/seed", summary="Seed default tests")
+@router.post("/technical-tests/seed", summary="Seed default tests", response_model=None)
 async def seed_default_tests(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)

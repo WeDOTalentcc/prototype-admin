@@ -69,7 +69,7 @@ class AdjustmentResponse(BaseModel):
     adjusted_value: Any | None = None
 
 
-@router.post("/record")
+@router.post("/record", response_model=None)
 async def record_suggestion_feedback(
     request: SuggestionFeedbackRequest,
     db: AsyncSession = Depends(get_db),

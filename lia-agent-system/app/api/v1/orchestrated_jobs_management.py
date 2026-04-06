@@ -532,7 +532,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
         )
 
 
-@router.get("/jobs-management/intents")
+@router.get("/jobs-management/intents", response_model=None)
 async def get_jobs_management_intents():
     return {
         "intents": [

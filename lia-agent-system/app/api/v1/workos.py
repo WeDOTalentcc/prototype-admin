@@ -816,7 +816,7 @@ async def scim_group_membership(
     )
 
 
-@router.get("/admin/status")
+@router.get("/admin/status", response_model=None)
 async def get_sso_status(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db)
@@ -912,7 +912,7 @@ async def _fetch_workos_metrics(workos_api_key: str, organization_id: str, local
         }
 
 
-@router.get("/admin/realtime-metrics")
+@router.get("/admin/realtime-metrics", response_model=None)
 async def get_realtime_metrics(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db)
@@ -985,7 +985,7 @@ async def get_realtime_metrics(
         return local_data
 
 
-@router.get("/admin/groups")
+@router.get("/admin/groups", response_model=None)
 async def get_groups(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db)
@@ -1045,7 +1045,7 @@ async def get_groups(
     return groups_response
 
 
-@router.post("/admin/groups/{group_id}/role-mapping")
+@router.post("/admin/groups/{group_id}/role-mapping", response_model=None)
 async def set_group_role_mapping(
     group_id: str,
     mapping: RoleMappingRequest,
@@ -1109,7 +1109,7 @@ async def set_group_role_mapping(
     return {"success": True, "group_id": group_id, "role": mapping.role}
 
 
-@router.get("/admin/audit-logs")
+@router.get("/admin/audit-logs", response_model=None)
 async def get_audit_logs(
     company_id: str = Query(...),
     limit: int = Query(default=50, le=200),
@@ -1150,7 +1150,7 @@ async def get_audit_logs(
     ]
 
 
-@router.get("/admin/users")
+@router.get("/admin/users", response_model=None)
 async def get_sso_users(
     company_id: str = Query(...),
     limit: int = Query(default=50, le=200),

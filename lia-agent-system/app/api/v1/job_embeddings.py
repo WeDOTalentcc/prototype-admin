@@ -66,7 +66,7 @@ class BatchProcessRequest(BaseModel):
     limit: int = 100
 
 
-@router.post("/create")
+@router.post("/create", response_model=None)
 async def create_embedding(request: CreateEmbeddingRequest):
     """
     Create or update embedding for a job vacancy.
@@ -99,7 +99,7 @@ async def create_embedding(request: CreateEmbeddingRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/similar")
+@router.post("/similar", response_model=None)
 async def find_similar_jobs(request: SimilarJobsRequest):
     """
     Find semantically similar jobs using vector search.
@@ -130,7 +130,7 @@ async def find_similar_jobs(request: SimilarJobsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/fast-track")
+@router.post("/fast-track", response_model=None)
 async def get_fast_track_suggestions(request: FastTrackRequest):
     """
     Get Fast Track suggestions for quick job creation.
@@ -168,7 +168,7 @@ class FullJobDataRequest(BaseModel):
     job_id: str
 
 
-@router.post("/full-job-data")
+@router.post("/full-job-data", response_model=None)
 async def get_full_job_data(request: FullJobDataRequest):
     """
     Get complete job data for Fast Track copy.
@@ -201,7 +201,7 @@ async def get_full_job_data(request: FullJobDataRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/batch-process")
+@router.post("/batch-process", response_model=None)
 async def batch_process_embeddings(request: BatchProcessRequest):
     """
     Process embeddings for multiple jobs in batch.
@@ -222,7 +222,7 @@ async def batch_process_embeddings(request: BatchProcessRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stats/{company_id}")
+@router.get("/stats/{company_id}", response_model=None)
 async def get_embedding_stats(company_id: str):
     """
     Get embedding statistics for a company.
@@ -257,7 +257,7 @@ class OutcomeUpdateRequest(BaseModel):
     hire_quality_score: float | None = None
 
 
-@router.post("/fast-track/record-usage")
+@router.post("/fast-track/record-usage", response_model=None)
 async def record_fast_track_usage(request: FastTrackUsageRequest):
     """
     Record when Fast Track is used to create a job.
@@ -279,7 +279,7 @@ async def record_fast_track_usage(request: FastTrackUsageRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/outcome")
+@router.post("/outcome", response_model=None)
 async def update_job_outcome(request: OutcomeUpdateRequest):
     """
     Update job embedding with outcome data.
@@ -304,7 +304,7 @@ async def update_job_outcome(request: OutcomeUpdateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/fast-track/insights/{company_id}")
+@router.get("/fast-track/insights/{company_id}", response_model=None)
 async def get_fast_track_insights(company_id: str):
     """
     Get Fast Track usage insights for a company.

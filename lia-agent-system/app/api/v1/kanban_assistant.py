@@ -112,7 +112,7 @@ async def kanban_assistant(request: KanbanAssistantRequest) -> KanbanAssistantRe
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
-@router.get("/lia/kanban-assistant/command-types")
+@router.get("/lia/kanban-assistant/command-types", response_model=None)
 async def get_command_types():
     """
     Get available command types for the Kanban assistant.

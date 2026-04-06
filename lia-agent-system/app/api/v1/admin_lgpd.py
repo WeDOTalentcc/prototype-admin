@@ -15,7 +15,7 @@ from app.core.database import get_db
 router = APIRouter(prefix="/admin/lgpd", tags=["Admin - LGPD"])
 
 
-@router.post("/run-cleanup")
+@router.post("/run-cleanup", response_model=None)
 async def trigger_lgpd_cleanup(
     dry_run: bool = Query(True, description="Simular sem deletar (default: True para segurança)"),
     _user=Depends(require_admin),
@@ -36,7 +36,7 @@ async def trigger_lgpd_cleanup(
     }
 
 
-@router.get("/cleanup-status")
+@router.get("/cleanup-status", response_model=None)
 async def get_cleanup_status(
     _user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -56,7 +56,7 @@ async def get_cleanup_status(
     }
 
 
-@router.get("/retention-policy")
+@router.get("/retention-policy", response_model=None)
 async def get_retention_policy(
     _user=Depends(require_admin),
 ):

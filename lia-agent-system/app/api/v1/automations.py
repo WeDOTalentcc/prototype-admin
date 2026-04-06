@@ -71,7 +71,7 @@ class TriggerAutomationRequest(BaseModel):
     trigger_data: dict[str, Any] = Field(..., description="Trigger event data")
 
 
-@router.get("", summary="List automations")
+@router.get("", summary="List automations", response_model=None)
 async def list_automations(
     company_id: str = Query(..., description="Company ID (required)"),
     is_active: bool | None = Query(None, description="Filter by active status"),
@@ -110,7 +110,7 @@ async def list_automations(
         )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, summary="Create automation")
+@router.post("", status_code=status.HTTP_201_CREATED, summary="Create automation", response_model=None)
 async def create_automation(
     data: CreateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
@@ -174,7 +174,7 @@ async def create_automation(
         )
 
 
-@router.get("/{automation_id}", summary="Get automation")
+@router.get("/{automation_id}", summary="Get automation", response_model=None)
 async def get_automation(
     automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
@@ -213,7 +213,7 @@ async def get_automation(
         )
 
 
-@router.put("/{automation_id}", summary="Update automation")
+@router.put("/{automation_id}", summary="Update automation", response_model=None)
 async def update_automation(
     automation_id: str,
     data: UpdateAutomationRequest,
@@ -277,7 +277,7 @@ async def update_automation(
         )
 
 
-@router.delete("/{automation_id}", summary="Delete automation")
+@router.delete("/{automation_id}", summary="Delete automation", response_model=None)
 async def delete_automation(
     automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
@@ -318,7 +318,7 @@ async def delete_automation(
         )
 
 
-@router.post("/{automation_id}/test", summary="Test automation")
+@router.post("/{automation_id}/test", summary="Test automation", response_model=None)
 async def test_automation(
     automation_id: str,
     data: TestAutomationRequest = None,
@@ -367,7 +367,7 @@ async def test_automation(
         )
 
 
-@router.post("/trigger", summary="Manually trigger automations")
+@router.post("/trigger", summary="Manually trigger automations", response_model=None)
 async def trigger_automations(
     data: TriggerAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
@@ -403,7 +403,7 @@ async def trigger_automations(
         )
 
 
-@router.get("/{automation_id}/logs", summary="Get automation execution logs")
+@router.get("/{automation_id}/logs", summary="Get automation execution logs", response_model=None)
 async def get_automation_logs(
     automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
@@ -438,7 +438,7 @@ async def get_automation_logs(
         )
 
 
-@router.get("/trigger-types/available", summary="Get available trigger types")
+@router.get("/trigger-types/available", summary="Get available trigger types", response_model=None)
 async def get_trigger_types():
     """
     Get list of available trigger types for automations.
@@ -502,7 +502,7 @@ async def get_trigger_types():
     }
 
 
-@router.get("/action-types/available", summary="Get available action types")
+@router.get("/action-types/available", summary="Get available action types", response_model=None)
 async def get_action_types():
     """
     Get list of available action types for automations.

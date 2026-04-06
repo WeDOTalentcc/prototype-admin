@@ -112,7 +112,7 @@ class WebhookVerifyParams(BaseModel):
     hub_challenge: str | None = Query(None, alias="hub.challenge")
 
 
-@router.get("/webhook")
+@router.get("/webhook", response_model=None)
 async def verify_webhook(
     request: Request
 ):
@@ -154,7 +154,7 @@ def extract_phone_number_id(payload: dict) -> str | None:
         return None
 
 
-@router.post("/webhook")
+@router.post("/webhook", response_model=None)
 async def receive_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db)
@@ -259,7 +259,7 @@ async def receive_webhook(
         return {"status": "error", "message": str(e)}
 
 
-@router.post("/twilio-webhook")
+@router.post("/twilio-webhook", response_model=None)
 async def receive_twilio_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db)
@@ -382,7 +382,7 @@ class SendFeedbackRequest(BaseModel):
     recruiter_name: str | None = None
 
 
-@router.post("/send-message")
+@router.post("/send-message", response_model=None)
 async def send_message(
     request: SendMessageRequest,
     db: AsyncSession = Depends(get_db)
@@ -414,7 +414,7 @@ async def send_message(
     }
 
 
-@router.post("/send-feedback")
+@router.post("/send-feedback", response_model=None)
 async def send_feedback(
     request: SendFeedbackRequest,
     db: AsyncSession = Depends(get_db)
@@ -434,7 +434,7 @@ async def send_feedback(
     return {"success": success}
 
 
-@router.get("/conversations")
+@router.get("/conversations", response_model=None)
 async def list_conversations(
     company_id: str | None = Query(default=None),
     status: str | None = Query(default=None),
@@ -471,7 +471,7 @@ async def list_conversations(
     }
 
 
-@router.get("/conversations/authenticated")
+@router.get("/conversations/authenticated", response_model=None)
 async def list_conversations_authenticated(
     company_id: str | None = Query(default=None),
     status: str | None = Query(default=None),
@@ -525,7 +525,7 @@ async def list_conversations_authenticated(
     }
 
 
-@router.get("/providers")
+@router.get("/providers", response_model=None)
 async def list_providers():
     """
     List available WhatsApp providers and their configuration status.

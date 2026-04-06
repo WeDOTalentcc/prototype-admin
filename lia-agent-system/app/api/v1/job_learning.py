@@ -105,7 +105,7 @@ class SimilarJobsRequest(BaseModel):
     limit: int = 5
 
 
-@router.post("/wizard-suggestions")
+@router.post("/wizard-suggestions", response_model=None)
 async def get_wizard_suggestions(request: WizardSuggestionsRequest):
     """
     Get all wizard suggestions in a single call.
@@ -131,7 +131,7 @@ async def get_wizard_suggestions(request: WizardSuggestionsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/salary-suggestion")
+@router.post("/salary-suggestion", response_model=None)
 async def get_salary_suggestion(request: SalarySuggestionRequest):
     """
     Get salary suggestion based on historical data.
@@ -154,7 +154,7 @@ async def get_salary_suggestion(request: SalarySuggestionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/skills-recommendation")
+@router.post("/skills-recommendation", response_model=None)
 async def get_skills_recommendation(request: SkillsRecommendationRequest):
     """
     Get skill recommendations based on similar jobs.
@@ -178,7 +178,7 @@ async def get_skills_recommendation(request: SkillsRecommendationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/behavioral-recommendation")
+@router.post("/behavioral-recommendation", response_model=None)
 async def get_behavioral_recommendation(request: BehavioralRecommendationRequest):
     """
     Get behavioral competency recommendations.
@@ -200,7 +200,7 @@ async def get_behavioral_recommendation(request: BehavioralRecommendationRequest
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/time-to-fill")
+@router.post("/time-to-fill", response_model=None)
 async def predict_time_to_fill(request: TimeFillPredictionRequest):
     """
     Predict time-to-fill based on similar jobs.
@@ -224,7 +224,7 @@ async def predict_time_to_fill(request: TimeFillPredictionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/success-profile")
+@router.post("/success-profile", response_model=None)
 async def get_success_profile(request: SimilarJobsRequest):
     """
     Get success profile based on successful hires.
@@ -245,7 +245,7 @@ async def get_success_profile(request: SimilarJobsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/similar-jobs")
+@router.post("/similar-jobs", response_model=None)
 async def find_similar_jobs(request: SimilarJobsRequest):
     """
     Find similar job patterns for reference.
@@ -271,7 +271,7 @@ async def find_similar_jobs(request: SimilarJobsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/record-outcome")
+@router.post("/record-outcome", response_model=None)
 async def record_job_outcome(request: JobOutcomeRequest):
     """
     Record a job outcome for learning.
@@ -297,7 +297,7 @@ async def record_job_outcome(request: JobOutcomeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/patterns/{company_id}")
+@router.get("/patterns/{company_id}", response_model=None)
 async def list_patterns(
     company_id: str,
     pattern_type: str | None = Query(None),

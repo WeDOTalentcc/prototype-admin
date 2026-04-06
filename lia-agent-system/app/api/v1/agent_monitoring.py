@@ -205,7 +205,7 @@ async def log_activity(request: LogActivityRequest, db: AsyncSession = Depends(g
     return ActivityResponse(**activity.to_dict())
 
 
-@router.get("/domains/health")
+@router.get("/domains/health", response_model=None)
 async def get_domains_health(
     company_id: str = Query(..., description="ID da empresa"),
     days: int = Query(30, ge=1, le=90, description="Janela de análise em dias"),
@@ -228,7 +228,7 @@ async def get_domains_health(
     }
 
 
-@router.get("/domains/{domain}/metrics")
+@router.get("/domains/{domain}/metrics", response_model=None)
 async def get_domain_metrics(
     domain: str,
     company_id: str = Query(..., description="ID da empresa"),
@@ -249,7 +249,7 @@ async def get_domain_metrics(
     return {"company_id": company_id, "window_days": days, **domain_data}
 
 
-@router.post("/seed-demo")
+@router.post("/seed-demo", response_model=None)
 async def seed_demo_data(db: AsyncSession = Depends(get_db)):
     """Seed demo data for testing. Only use in development."""
     service = AgentMonitoringService(db)

@@ -5,7 +5,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.affirmative_service import AffirmativeService
@@ -31,14 +30,14 @@ class DocumentVerificationRequest(BaseModel):
     notes: str | None = None
 
 
-@router.get("/criteria")
+@router.get("/criteria", response_model=None)
 async def get_affirmative_criteria():
     """Get all available affirmative action criteria."""
     from app.services.affirmative_service import AFFIRMATIVE_CRITERIA
     return {"criteria": AFFIRMATIVE_CRITERIA}
 
 
-@router.post("/check-eligibility")
+@router.post("/check-eligibility", response_model=None)
 async def check_eligibility(
     request: EligibilityCheckRequest,
     db: Session = Depends(get_db)
@@ -48,7 +47,7 @@ async def check_eligibility(
     return {"status": "pending", "message": "Eligibility check requires candidate and vacancy data"}
 
 
-@router.get("/pending-documents/{company_id}")
+@router.get("/pending-documents/{company_id}", response_model=None)
 async def get_pending_documents(
     company_id: str,
     vacancy_id: str | None = None,
@@ -61,7 +60,7 @@ async def get_pending_documents(
     return {"documents": documents, "count": len(documents)}
 
 
-@router.post("/documents/request")
+@router.post("/documents/request", response_model=None)
 async def request_document(
     candidate_id: str,
     vacancy_id: str,
@@ -80,7 +79,7 @@ async def request_document(
     return {"document_id": str(document.id), "deadline": document.upload_deadline.isoformat()}
 
 
-@router.post("/documents/verify-lia")
+@router.post("/documents/verify-lia", response_model=None)
 async def verify_document_lia(
     document_id: str,
     verification_result: dict,
@@ -92,7 +91,7 @@ async def verify_document_lia(
     return {"status": document.status, "verified": document.verified_by_lia}
 
 
-@router.post("/documents/verify-recruiter")
+@router.post("/documents/verify-recruiter", response_model=None)
 async def verify_document_recruiter(
     request: DocumentVerificationRequest,
     recruiter_email: str,
@@ -109,7 +108,7 @@ async def verify_document_recruiter(
     return {"status": document.status, "approved": request.approved}
 
 
-@router.post("/check-expired/{company_id}")
+@router.post("/check-expired/{company_id}", response_model=None)
 async def check_expired_documents(
     company_id: str,
     db: Session = Depends(get_db)

@@ -60,7 +60,7 @@ class AutomationRuleResponse(BaseModel):
     updated_at: str | None
 
 
-@router.get("/company/{company_id}")
+@router.get("/company/{company_id}", response_model=None)
 async def get_company_rules(
     company_id: str,
     is_active: bool | None = None,
@@ -84,7 +84,7 @@ async def get_company_rules(
     return {"rules": [rule.to_dict() for rule in rules], "total": len(rules)}
 
 
-@router.get("/company/{company_id}/{rule_id}")
+@router.get("/company/{company_id}/{rule_id}", response_model=None)
 async def get_rule(
     company_id: str,
     rule_id: str,
@@ -103,7 +103,7 @@ async def get_rule(
     return {"rule": rule.to_dict()}
 
 
-@router.post("/company/{company_id}")
+@router.post("/company/{company_id}", response_model=None)
 async def create_rule(
     company_id: str, 
     rule: AutomationRuleCreate,
@@ -130,7 +130,7 @@ async def create_rule(
     return {"success": True, "rule_id": str(new_rule.id), "rule": new_rule.to_dict()}
 
 
-@router.put("/company/{company_id}/{rule_id}")
+@router.put("/company/{company_id}/{rule_id}", response_model=None)
 async def update_rule(
     company_id: str,
     rule_id: str,
@@ -160,7 +160,7 @@ async def update_rule(
     return {"success": True, "rule": rule.to_dict()}
 
 
-@router.delete("/company/{company_id}/{rule_id}")
+@router.delete("/company/{company_id}/{rule_id}", response_model=None)
 async def delete_rule(
     company_id: str,
     rule_id: str,
@@ -182,7 +182,7 @@ async def delete_rule(
     return {"success": True, "deleted_id": rule_id}
 
 
-@router.post("/company/{company_id}/toggle/{rule_id}")
+@router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
 async def toggle_rule(
     company_id: str,
     rule_id: str,
@@ -205,7 +205,7 @@ async def toggle_rule(
     return {"success": True, "is_active": rule.is_active, "rule": rule.to_dict()}
 
 
-@router.post("/company/{company_id}/seed-defaults")
+@router.post("/company/{company_id}/seed-defaults", response_model=None)
 async def seed_default_rules(
     company_id: str,
     force: bool = False,
@@ -250,7 +250,7 @@ async def seed_default_rules(
     }
 
 
-@router.get("/trigger-types")
+@router.get("/trigger-types", response_model=None)
 async def get_available_trigger_types():
     """Get list of available trigger types."""
     return {
@@ -273,7 +273,7 @@ async def get_available_trigger_types():
     }
 
 
-@router.get("/action-types")
+@router.get("/action-types", response_model=None)
 async def get_available_action_types():
     """Get list of available action types."""
     return {

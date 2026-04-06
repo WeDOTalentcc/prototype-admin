@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/triggers")
+@router.get("/triggers", response_model=None)
 async def get_automation_triggers():
     """
     Get all automation trigger configurations.
@@ -58,7 +58,7 @@ async def get_automation_triggers():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/triggers/{trigger_id}")
+@router.post("/triggers/{trigger_id}", response_model=None)
 async def update_trigger(
     trigger_id: str,
     request: UpdateTriggerRequest
@@ -82,7 +82,7 @@ async def update_trigger(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/check")
+@router.post("/check", response_model=None)
 async def check_and_execute_triggers(
     db: AsyncSession = Depends(get_db)
 ):
@@ -101,7 +101,7 @@ async def check_and_execute_triggers(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/status")
+@router.get("/status", response_model=None)
 async def get_automation_status():
     """
     Get automation engine status.
@@ -124,7 +124,7 @@ async def get_automation_status():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stage-suggestions")
+@router.get("/stage-suggestions", response_model=None)
 async def get_stage_suggestions(
     from_stage: str | None = Query(None, description="Previous stage name"),
     to_stage: str = Query(..., description="Target stage name"),
@@ -189,7 +189,7 @@ async def get_stage_suggestions(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/execute-action")
+@router.post("/execute-action", response_model=None)
 async def execute_action(
     request: ExecuteActionRequest,
     db: AsyncSession = Depends(get_db)
@@ -411,7 +411,7 @@ async def execute_action(
         )
 
 
-@router.post("/screen-candidate")
+@router.post("/screen-candidate", response_model=None)
 async def screen_candidate(
     request: ScreenCandidateRequest,
     db: AsyncSession = Depends(get_db)
@@ -485,7 +485,7 @@ async def screen_candidate(
         )
 
 
-@router.post("/trigger-event")
+@router.post("/trigger-event", response_model=None)
 async def trigger_automation_event(
     request: TriggerEventRequest,
     db: AsyncSession = Depends(get_db)

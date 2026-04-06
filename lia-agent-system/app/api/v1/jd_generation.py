@@ -87,7 +87,7 @@ def _fg_check_output(full_description: str, company_id: str):
     return fg_output
 
 
-@router.post("/generate")
+@router.post("/generate", response_model=None)
 async def generate_jd(
     request: GenerateJDRequest,
     current_user: User = Depends(get_current_user_or_demo),

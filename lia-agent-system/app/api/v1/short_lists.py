@@ -210,7 +210,7 @@ async def add_candidate(
     )
 
 
-@router.delete("/{list_id}/candidates/{candidate_id}", status_code=204)
+@router.delete("/{list_id}/candidates/{candidate_id}", status_code=204, response_model=None)
 async def remove_candidate(
     list_id: UUID,
     candidate_id: str,

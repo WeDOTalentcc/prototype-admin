@@ -89,7 +89,7 @@ async def approve_hitl_action(
     )
 
 
-@router.get("/{thread_id}/pending")
+@router.get("/{thread_id}/pending", response_model=None)
 async def get_pending_approval(
     thread_id: str,
     current_user: User = Depends(get_current_user),

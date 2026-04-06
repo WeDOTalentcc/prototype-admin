@@ -288,7 +288,7 @@ async def get_hiring_insights(
         raise HTTPException(status_code=500, detail=f"Insights failed: {str(e)}")
 
 
-@router.get("/models")
+@router.get("/models", response_model=None)
 async def list_models(
     model_name: str | None = None,
     active_only: bool = True
@@ -308,7 +308,7 @@ async def list_models(
     }
 
 
-@router.get("/models/{model_id}/performance")
+@router.get("/models/{model_id}/performance", response_model=None)
 async def get_model_performance(model_id: str):
     """
     Get performance metrics for a specific model.
@@ -328,7 +328,7 @@ async def get_model_performance(model_id: str):
     }
 
 
-@router.post("/models/compare")
+@router.post("/models/compare", response_model=None)
 async def compare_models(model_ids: list[str]):
     """
     Compare performance of multiple models.

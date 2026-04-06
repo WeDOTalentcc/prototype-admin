@@ -21,7 +21,7 @@ def _require_company_id(
     return x_company_id
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_salary_benchmark(
     job_title: str = Query(..., description="Título do cargo"),
     seniority: str = Query("pleno", description="Nível: junior, pleno, senior, especialista, gerente"),

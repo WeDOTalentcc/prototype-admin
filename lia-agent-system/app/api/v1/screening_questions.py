@@ -270,7 +270,7 @@ async def update_screening_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/company/screening-questions/{question_id}")
+@router.delete("/company/screening-questions/{question_id}", response_model=None)
 async def delete_screening_question(
     question_id: str,
     db: AsyncSession = Depends(get_db),
@@ -307,7 +307,7 @@ async def delete_screening_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/company/screening-questions/reorder")
+@router.post("/company/screening-questions/reorder", response_model=None)
 async def reorder_screening_questions(
     request: ReorderRequest,
     db: AsyncSession = Depends(get_db),
@@ -338,7 +338,7 @@ async def reorder_screening_questions(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/company/screening-questions/seed")
+@router.post("/company/screening-questions/seed", response_model=None)
 async def seed_default_questions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)

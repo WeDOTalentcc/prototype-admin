@@ -359,7 +359,7 @@ Retorne JSON:
 # Routes
 # ---------------------------------------------------------------------------
 
-@router.get("/f11-report/{session_id}", summary="F11 — Relatório completo do consultor WSI")
+@router.get("/f11-report/{session_id}", summary="F11 — Relatório completo do consultor WSI", response_model=None)
 async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
     """Gera o relatório completo F11 para uma sessão WSI concluída.
 
@@ -705,7 +705,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório F11: {str(e)}")
 
 
-@router.get("/ranking/{job_vacancy_id}", summary="F11-6 — Ranking de candidatos por vaga")
+@router.get("/ranking/{job_vacancy_id}", summary="F11-6 — Ranking de candidatos por vaga", response_model=None)
 async def get_vacancy_ranking(
     job_vacancy_id: str,
     db: AsyncSession = Depends(get_db),
@@ -788,7 +788,7 @@ async def get_vacancy_ranking(
 @router.get(
     "/candidate/{candidate_id}/ranking/{job_vacancy_id}",
     summary="F11-6 — Posição do candidato no ranking da vaga",
-)
+, response_model=None)
 async def get_candidate_ranking(
     candidate_id: str,
     job_vacancy_id: str,

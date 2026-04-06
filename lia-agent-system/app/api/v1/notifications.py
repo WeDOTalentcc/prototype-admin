@@ -134,7 +134,7 @@ class JobCreatedNotificationRequest(BaseModel):
     channels: list[str] = ["email", "teams"]
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_notifications(
     user_id: str = "default_user",
     unread_only: bool = False,
@@ -166,7 +166,7 @@ async def get_notifications(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=None)
 async def get_notification_summary(
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db)
@@ -185,7 +185,7 @@ async def get_notification_summary(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("")
+@router.post("", response_model=None)
 async def create_notification(
     request: CreateNotificationRequest,
     db: AsyncSession = Depends(get_db)
@@ -218,7 +218,7 @@ async def create_notification(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{notification_id}/read")
+@router.post("/{notification_id}/read", response_model=None)
 async def mark_notification_as_read(
     notification_id: str,
     user_id: str = "default_user",
@@ -240,7 +240,7 @@ async def mark_notification_as_read(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/read-all")
+@router.post("/read-all", response_model=None)
 async def mark_all_as_read(
     user_id: str = "default_user",
     category: str | None = None,
@@ -260,7 +260,7 @@ async def mark_all_as_read(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{notification_id}/dismiss")
+@router.post("/{notification_id}/dismiss", response_model=None)
 async def dismiss_notification(
     notification_id: str,
     user_id: str = "default_user",
@@ -282,7 +282,7 @@ async def dismiss_notification(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/recruiter-action")
+@router.post("/recruiter-action", response_model=None)
 async def send_recruiter_action_notification(
     request: RecruiterActionNotificationRequest,
     db: AsyncSession = Depends(get_db)
@@ -387,7 +387,7 @@ async def send_recruiter_action_notification(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/unread-count")
+@router.get("/unread-count", response_model=None)
 async def get_unread_count(
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db)
@@ -409,7 +409,7 @@ async def get_unread_count(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/chat")
+@router.get("/chat", response_model=None)
 async def get_chat_notifications(
     user_id: str = "default_user",
     thread_id: str | None = None,
@@ -437,7 +437,7 @@ async def get_chat_notifications(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/chat/{notification_id}/delivered")
+@router.post("/chat/{notification_id}/delivered", response_model=None)
 async def mark_chat_notification_delivered(
     notification_id: str,
     user_id: str = "default_user",
@@ -461,7 +461,7 @@ async def mark_chat_notification_delivered(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/chat/delivered")
+@router.post("/chat/delivered", response_model=None)
 async def mark_chat_notifications_delivered(
     request: MarkDeliveredRequest,
     user_id: str = "default_user",
@@ -483,7 +483,7 @@ async def mark_chat_notifications_delivered(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/send")
+@router.post("/send", response_model=None)
 async def send_multi_channel_notification(
     request: MultiChannelNotificationRequest,
     db: AsyncSession = Depends(get_db)
@@ -541,7 +541,7 @@ async def send_multi_channel_notification(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/proactive")
+@router.post("/proactive", response_model=None)
 async def send_proactive_notification(
     user_id: str,
     proactive_type: str,
@@ -604,7 +604,7 @@ class UpdateThresholdRequest(BaseModel):
     threshold_config: dict
 
 
-@router.post("/proactive/check")
+@router.post("/proactive/check", response_model=None)
 async def trigger_proactive_check(
     request: ProactiveAlertCheckRequest,
     db: AsyncSession = Depends(get_db)
@@ -644,7 +644,7 @@ async def trigger_proactive_check(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/proactive/history")
+@router.get("/proactive/history", response_model=None)
 async def get_proactive_alert_history(
     user_id: str = "default_user"
 ):
@@ -668,7 +668,7 @@ async def get_proactive_alert_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/proactive/thresholds")
+@router.put("/proactive/thresholds", response_model=None)
 async def update_alert_threshold(
     request: UpdateThresholdRequest
 ):
@@ -702,7 +702,7 @@ async def update_alert_threshold(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/proactive/thresholds")
+@router.get("/proactive/thresholds", response_model=None)
 async def get_alert_thresholds():
     """
     Get all alert threshold configurations.
@@ -727,7 +727,7 @@ async def get_alert_thresholds():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/job-created")
+@router.post("/job-created", response_model=None)
 async def send_job_created_notification(
     request: JobCreatedNotificationRequest,
     db: AsyncSession = Depends(get_db)

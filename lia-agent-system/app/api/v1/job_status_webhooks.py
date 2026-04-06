@@ -374,7 +374,7 @@ async def update_webhook(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{webhook_id}")
+@router.delete("/{webhook_id}", response_model=None)
 async def delete_webhook(
     webhook_id: UUID,
     db: AsyncSession = Depends(get_db),

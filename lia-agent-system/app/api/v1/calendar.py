@@ -43,7 +43,7 @@ def check_graph_configured():
         )
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def calendar_health():
     """Health check for calendar integration."""
     is_configured = (
@@ -138,7 +138,7 @@ async def schedule_interview(request: ScheduleInterviewRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/cancel-interview", dependencies=[Depends(check_graph_configured)])
+@router.post("/cancel-interview", dependencies=[Depends(check_graph_configured)], response_model=None)
 async def cancel_interview(request: CancelInterviewRequest):
     """
     Cancel a scheduled interview.
@@ -226,7 +226,7 @@ class GoogleAvailabilityRequest(BaseModel):
     end: datetime
 
 
-@router.get("/google/health")
+@router.get("/google/health", response_model=None)
 async def google_calendar_health():
     """Health check for Google Calendar integration."""
     return {
@@ -241,7 +241,7 @@ async def google_calendar_health():
     }
 
 
-@router.post("/google/availability", dependencies=[Depends(check_google_calendar_configured)])
+@router.post("/google/availability", dependencies=[Depends(check_google_calendar_configured)], response_model=None)
 async def google_check_availability(request: GoogleAvailabilityRequest):
     """
     Check attendee availability using Google Calendar freebusy API.
@@ -263,7 +263,7 @@ async def google_check_availability(request: GoogleAvailabilityRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/google/schedule-interview", dependencies=[Depends(check_google_calendar_configured)])
+@router.post("/google/schedule-interview", dependencies=[Depends(check_google_calendar_configured)], response_model=None)
 async def google_schedule_interview(request: GoogleScheduleInterviewRequest):
     """
     Create a Google Calendar event for an interview with optional Google Meet link.
@@ -286,7 +286,7 @@ async def google_schedule_interview(request: GoogleScheduleInterviewRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/google/cancel-interview", dependencies=[Depends(check_google_calendar_configured)])
+@router.post("/google/cancel-interview", dependencies=[Depends(check_google_calendar_configured)], response_model=None)
 async def google_cancel_interview(request: GoogleCancelInterviewRequest):
     """
     Cancel a Google Calendar event and notify attendees.
@@ -312,7 +312,7 @@ async def google_cancel_interview(request: GoogleCancelInterviewRequest):
 # OAuth 2.0 flow for Google Calendar (company-level)
 # ---------------------------------------------------------------------------
 
-@router.get("/google/auth-url", dependencies=[Depends(check_google_calendar_configured)])
+@router.get("/google/auth-url", dependencies=[Depends(check_google_calendar_configured)], response_model=None)
 async def google_oauth_auth_url(company_id: str = Query(..., description="Company ID")):
     """
     Generate Google OAuth authorization URL.
@@ -357,7 +357,7 @@ async def google_oauth_auth_url(company_id: str = Query(..., description="Compan
         )
 
 
-@router.get("/google/callback", dependencies=[Depends(check_google_calendar_configured)])
+@router.get("/google/callback", dependencies=[Depends(check_google_calendar_configured)], response_model=None)
 async def google_oauth_callback(
     code: str = Query(...),
     state: str = Query(..., description="company_id passed as OAuth state"),

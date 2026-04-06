@@ -11,7 +11,7 @@ logger = logging.getLogger("lia.sourcing_orchestrator")
 router = APIRouter(prefix="/sourcing", tags=["Sourcing Agent"])
 
 
-@router.post("/react-orchestrate")
+@router.post("/react-orchestrate", response_model=None)
 async def sourcing_react_orchestrate(request: Request):
     """Sourcing agent endpoint - ReAct based autonomous talent sourcing."""
     if not os.getenv("USE_REACT_AGENTS", "false").lower() == "true":

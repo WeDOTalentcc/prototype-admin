@@ -235,7 +235,7 @@ def parse_pg_array_string(array_str: str) -> list:
 
 # ==================== CRUD ENDPOINTS ====================
 
-@router.get("")
+@router.get("", response_model=None)
 async def list_candidates(
     search: str | None = None,
     status: str | None = None,
@@ -394,7 +394,7 @@ async def list_candidates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{candidate_id}")
+@router.get("/{candidate_id}", response_model=None)
 async def get_candidate(
     candidate_id: str,
     db: AsyncSession = Depends(get_db)
@@ -555,7 +555,7 @@ async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: st
         logger.error(f"Background enrichment error for candidate {candidate_id}: {e}")
 
 
-@router.post("")
+@router.post("", response_model=None)
 async def create_candidate(
     candidate_data: CandidateCreate,
     background_tasks: BackgroundTasks,
@@ -640,7 +640,7 @@ async def create_candidate(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{candidate_id}")
+@router.put("/{candidate_id}", response_model=None)
 async def update_candidate(
     candidate_id: str,
     candidate_data: CandidateUpdate,
@@ -687,7 +687,7 @@ async def update_candidate(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/{candidate_id}/stage")
+@router.patch("/{candidate_id}/stage", response_model=None)
 async def update_candidate_stage(
     candidate_id: str,
     stage_data: CandidateStageUpdate,
@@ -932,7 +932,7 @@ async def update_candidate_stage(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{candidate_id}")
+@router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
     candidate_id: str,
     db: AsyncSession = Depends(get_db)
@@ -975,7 +975,7 @@ class EnrichmentRequest(BaseModel):
     include_email_discovery: bool = True
 
 
-@router.post("/{candidate_id}/enrich")
+@router.post("/{candidate_id}/enrich", response_model=None)
 async def enrich_candidate(
     candidate_id: str,
     request: EnrichmentRequest = EnrichmentRequest(),
@@ -1324,7 +1324,7 @@ async def search_by_job_description(
         raise HTTPException(status_code=500, detail="Job description search failed")
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def health_check():
     """
     Check if Pearch AI integration is properly configured.
@@ -1354,7 +1354,7 @@ class ViewedCandidateResponse(BaseModel):
     source: str | None = None
 
 
-@router.post("/{candidate_id}/viewed")
+@router.post("/{candidate_id}/viewed", response_model=None)
 async def mark_candidate_viewed(
     candidate_id: str,
     body: ViewedCandidateCreate = None,
@@ -1417,7 +1417,7 @@ async def mark_candidate_viewed(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/viewed/list")
+@router.get("/viewed/list", response_model=None)
 async def list_viewed_candidates(
     skip: int = 0,
     limit: int = 100,
@@ -1465,7 +1465,7 @@ async def list_viewed_candidates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{candidate_id}/viewed")
+@router.delete("/{candidate_id}/viewed", response_model=None)
 async def unmark_candidate_viewed(
     candidate_id: str,
     db: AsyncSession = Depends(get_db)
@@ -1513,7 +1513,7 @@ class FavoriteUpdate(BaseModel):
     is_pinned: bool | None = None
 
 
-@router.post("/{candidate_id}/favorite")
+@router.post("/{candidate_id}/favorite", response_model=None)
 async def toggle_favorite(
     candidate_id: str,
     body: FavoriteCreate = None,
@@ -1580,7 +1580,7 @@ async def toggle_favorite(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{candidate_id}/favorite")
+@router.put("/{candidate_id}/favorite", response_model=None)
 async def update_favorite(
     candidate_id: str,
     body: FavoriteUpdate,
@@ -1628,7 +1628,7 @@ async def update_favorite(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/favorites/list")
+@router.get("/favorites/list", response_model=None)
 async def list_favorites(
     skip: int = 0,
     limit: int = 100,
@@ -1682,7 +1682,7 @@ async def list_favorites(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{candidate_id}/favorite")
+@router.delete("/{candidate_id}/favorite", response_model=None)
 async def remove_favorite(
     candidate_id: str,
     db: AsyncSession = Depends(get_db)
@@ -1724,7 +1724,7 @@ class HiddenCreate(BaseModel):
     source: str | None = None
 
 
-@router.post("/{candidate_id}/hide")
+@router.post("/{candidate_id}/hide", response_model=None)
 async def toggle_hidden(
     candidate_id: str,
     body: HiddenCreate = None,
@@ -1789,7 +1789,7 @@ async def toggle_hidden(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/hidden/list")
+@router.get("/hidden/list", response_model=None)
 async def list_hidden(
     skip: int = 0,
     limit: int = 100,
@@ -1837,7 +1837,7 @@ async def list_hidden(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{candidate_id}/hide")
+@router.delete("/{candidate_id}/hide", response_model=None)
 async def remove_hidden(
     candidate_id: str,
     db: AsyncSession = Depends(get_db)
@@ -1872,7 +1872,7 @@ async def remove_hidden(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{candidate_id}/screening-decision")
+@router.post("/{candidate_id}/screening-decision", response_model=None)
 async def screening_decision(
     candidate_id: str,
     request: ScreeningDecisionRequest,
@@ -2149,7 +2149,7 @@ class ConsentCreateRequest(BaseModel):
     ip_address: str | None = None
 
 
-@router.get("/{candidate_id}/consents")
+@router.get("/{candidate_id}/consents", response_model=None)
 async def get_candidate_consents(
     candidate_id: uuid.UUID,
     x_company_id: str | None = Header(None),
@@ -2162,7 +2162,7 @@ async def get_candidate_consents(
     return {"candidate_id": str(candidate_id), "consents": consents}
 
 
-@router.post("/{candidate_id}/consents")
+@router.post("/{candidate_id}/consents", response_model=None)
 async def create_or_update_candidate_consent(
     candidate_id: uuid.UUID,
     request: ConsentCreateRequest,
@@ -2185,7 +2185,7 @@ async def create_or_update_candidate_consent(
     return consent.to_dict()
 
 
-@router.delete("/{candidate_id}/consents/{consent_type}", status_code=200)
+@router.delete("/{candidate_id}/consents/{consent_type}", status_code=200, response_model=None)
 async def revoke_candidate_consent(
     candidate_id: uuid.UUID,
     consent_type: str,
@@ -2213,7 +2213,7 @@ class CommunicationPreferencesUpdate(BaseModel):
     channel_opt_out: list[str] | None = None      # ["marketing_email", "whatsapp"]
 
 
-@router.get("/{candidate_id}/communication-preferences")
+@router.get("/{candidate_id}/communication-preferences", response_model=None)
 async def get_communication_preferences(
     candidate_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
@@ -2233,7 +2233,7 @@ async def get_communication_preferences(
     }
 
 
-@router.put("/{candidate_id}/communication-preferences")
+@router.put("/{candidate_id}/communication-preferences", response_model=None)
 async def update_communication_preferences(
     candidate_id: uuid.UUID,
     request: CommunicationPreferencesUpdate,

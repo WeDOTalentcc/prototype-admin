@@ -1188,7 +1188,7 @@ async def _sse_event_generator(
         yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 
 
-@router.post("/stream")
+@router.post("/stream", response_model=None)
 async def stream_message(
     request: Request,
     current_user: User = Depends(get_current_user_or_demo),
@@ -1256,7 +1256,7 @@ async def stream_message(
     )
 
 
-@router.post("/actions/candidate-field-update")
+@router.post("/actions/candidate-field-update", response_model=None)
 async def direct_candidate_field_update(
     request: Request,
     current_user: User = Depends(get_current_user_or_demo),

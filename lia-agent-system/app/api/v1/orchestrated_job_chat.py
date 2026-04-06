@@ -159,7 +159,7 @@ async def orchestrated_job_chat(
             detail=f"Error processing job chat: {str(e)}"
         )
 
-@router.get("/orchestrator/job-chat/intents")
+@router.get("/orchestrator/job-chat/intents", response_model=None)
 async def get_job_chat_intents():
     """Get available intents and agent mappings for job chat."""
     return {

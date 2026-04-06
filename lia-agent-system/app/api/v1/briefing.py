@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/briefing", tags=["briefing"])
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_daily_briefing(
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db)
@@ -44,7 +44,7 @@ async def get_daily_briefing(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/refresh")
+@router.post("/refresh", response_model=None)
 async def refresh_briefing(
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db)

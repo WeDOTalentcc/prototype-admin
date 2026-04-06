@@ -194,7 +194,7 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
     return ". ".join(parts) + "."
 
 
-@router.get("/{candidate_id}")
+@router.get("/{candidate_id}", response_model=None)
 async def get_experience_highlight(
     candidate_id: str,
     db: AsyncSession = Depends(get_db),
@@ -233,7 +233,7 @@ async def get_experience_highlight(
     )
 
 
-@router.post("/generate")
+@router.post("/generate", response_model=None)
 async def generate_experience_highlight(
     request: GenerateHighlightRequest,
     db: AsyncSession = Depends(get_db),
@@ -312,7 +312,7 @@ async def generate_experience_highlight(
     )
 
 
-@router.delete("/{candidate_id}")
+@router.delete("/{candidate_id}", response_model=None)
 async def delete_experience_highlight(
     candidate_id: str,
     db: AsyncSession = Depends(get_db),
@@ -331,7 +331,7 @@ async def delete_experience_highlight(
     return {"deleted": result.rowcount > 0, "candidate_id": candidate_id}
 
 
-@router.post("/batch-generate")
+@router.post("/batch-generate", response_model=None)
 async def batch_generate_highlights(
     candidates: list[GenerateHighlightRequest],
     db: AsyncSession = Depends(get_db),

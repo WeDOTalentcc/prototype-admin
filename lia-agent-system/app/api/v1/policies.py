@@ -64,7 +64,7 @@ class PolicyUpdate(BaseModel):
     is_active: bool | None = None
 
 
-@router.get("/types", summary="List policy types")
+@router.get("/types", summary="List policy types", response_model=None)
 async def list_policy_types():
     """
     List all available policy types with their schemas.
@@ -81,7 +81,7 @@ async def list_policy_types():
     }
 
 
-@router.get("", summary="List policies")
+@router.get("", summary="List policies", response_model=None)
 async def list_policies(
     policy_type: str | None = Query(None, description="Filter by policy type"),
     scope: str | None = Query(None, description="Filter by scope (platform, company)"),
@@ -157,7 +157,7 @@ async def list_policies(
         )
 
 
-@router.get("/{policy_id}", summary="Get policy by ID")
+@router.get("/{policy_id}", summary="Get policy by ID", response_model=None)
 async def get_policy(
     policy_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -209,7 +209,7 @@ async def get_policy(
         )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, summary="Create policy")
+@router.post("", status_code=status.HTTP_201_CREATED, summary="Create policy", response_model=None)
 async def create_policy(
     data: PolicyCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -284,7 +284,7 @@ async def create_policy(
         )
 
 
-@router.put("/{policy_id}", summary="Update policy")
+@router.put("/{policy_id}", summary="Update policy", response_model=None)
 async def update_policy(
     policy_id: str,
     data: PolicyUpdate,
@@ -379,7 +379,7 @@ async def update_policy(
         )
 
 
-@router.delete("/{policy_id}", summary="Delete policy")
+@router.delete("/{policy_id}", summary="Delete policy", response_model=None)
 async def delete_policy(
     policy_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),

@@ -577,7 +577,7 @@ async def get_feedback_analytics(
         raise HTTPException(status_code=500, detail=f"Erro ao obter analytics: {str(e)}")
 
 
-@router.post("/feedback/{feedback_id}/track-click")
+@router.post("/feedback/{feedback_id}/track-click", response_model=None)
 async def track_resubmit_click(
     feedback_id: str,
     db: AsyncSession = Depends(get_db)

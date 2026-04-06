@@ -41,7 +41,7 @@ def detect_mime_type(filename: str, content_type: str | None) -> str:
     return "audio/mpeg"
 
 
-@router.get("/voice/health")
+@router.get("/voice/health", response_model=None)
 async def voice_health_check():
     """Check if Gemini Voice service is configured."""
     try:
@@ -64,7 +64,7 @@ async def voice_health_check():
         )
 
 
-@router.post("/voice/transcribe")
+@router.post("/voice/transcribe", response_model=None)
 async def transcribe_audio(
     audio: UploadFile = File(..., description="Audio file to transcribe"),
     language: str = Form("pt-BR", description="Target language (default: pt-BR)"),
@@ -118,7 +118,7 @@ async def transcribe_audio(
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
 
 
-@router.post("/voice/analyze")
+@router.post("/voice/analyze", response_model=None)
 async def analyze_audio(
     audio: UploadFile = File(..., description="Audio file to analyze"),
     analysis_type: str = Form("full", description="Analysis type: full, sentiment, topics, summary")
@@ -172,7 +172,7 @@ async def analyze_audio(
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
-@router.post("/voice/interview")
+@router.post("/voice/interview", response_model=None)
 async def analyze_interview(
     audio: UploadFile = File(..., description="Interview audio file"),
     job_title: str | None = Form(None, description="Job title for context"),

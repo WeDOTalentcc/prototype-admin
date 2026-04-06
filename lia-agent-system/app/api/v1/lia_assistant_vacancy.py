@@ -100,7 +100,7 @@ async def search_previous_vacancies(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/vacancy-full/{vacancy_id}")
+@router.get("/vacancy-full/{vacancy_id}", response_model=None)
 async def get_vacancy_full_details(
     vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),

@@ -29,7 +29,7 @@ class AnswerRequest(BaseModel):
     answer: str
 
 
-@router.post("/invite")
+@router.post("/invite", response_model=None)
 async def create_async_invite(
     payload: InviteRequest,
     db: AsyncSession = Depends(get_db),
@@ -57,7 +57,7 @@ async def create_async_invite(
         raise HTTPException(status_code=500, detail="Erro ao criar convite WSI assíncrono")
 
 
-@router.get("/{token}")
+@router.get("/{token}", response_model=None)
 async def get_session_state(
     token: str,
     db: AsyncSession = Depends(get_db),
@@ -85,7 +85,7 @@ async def get_session_state(
         raise HTTPException(status_code=500, detail="Erro ao buscar sessão")
 
 
-@router.post("/{token}/answer")
+@router.post("/{token}/answer", response_model=None)
 async def submit_answer(
     token: str,
     payload: AnswerRequest,
@@ -128,7 +128,7 @@ async def submit_answer(
         raise HTTPException(status_code=500, detail="Erro ao registrar resposta")
 
 
-@router.get("/{token}/complete")
+@router.get("/{token}/complete", response_model=None)
 async def complete_session(
     token: str,
     db: AsyncSession = Depends(get_db),

@@ -662,7 +662,7 @@ async def update_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/templates/{template_id}", status_code=204)
+@router.delete("/templates/{template_id}", status_code=204, response_model=None)
 async def delete_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -766,7 +766,7 @@ async def create_field(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stage-field-mappings")
+@router.get("/stage-field-mappings", response_model=None)
 async def get_stage_field_mappings():
     """
     Get default field mappings for each recruitment stage.
@@ -899,7 +899,7 @@ async def update_vacancy_triggers(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/triggers/{vacancy_id}/stage/{stage_name}")
+@router.get("/triggers/{vacancy_id}/stage/{stage_name}", response_model=None)
 async def get_stage_trigger(
     vacancy_id: UUID,
     stage_name: str,
@@ -969,7 +969,7 @@ async def get_data_request(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{data_request_id}", status_code=204)
+@router.delete("/{data_request_id}", status_code=204, response_model=None)
 async def cancel_data_request(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -1014,7 +1014,7 @@ async def resend_notification(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{data_request_id}/status")
+@router.get("/{data_request_id}/status", response_model=None)
 async def check_status(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -1065,7 +1065,7 @@ class WhatsAppStatusResponse(BaseModel):
     completed_at: str | None = None
 
 
-@router.post("/{data_request_id}/whatsapp/start")
+@router.post("/{data_request_id}/whatsapp/start", response_model=None)
 async def start_whatsapp_collection(
     data_request_id: UUID,
     request: WhatsAppStartRequest,
@@ -1116,7 +1116,7 @@ async def start_whatsapp_collection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{data_request_id}/whatsapp/process-message")
+@router.post("/{data_request_id}/whatsapp/process-message", response_model=None)
 async def process_whatsapp_message(
     data_request_id: UUID,
     request: WhatsAppProcessMessageRequest,

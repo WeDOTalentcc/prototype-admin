@@ -194,7 +194,7 @@ def build_candidate_snapshots(snapshot_data: list[dict], limit: int | None = Non
     return result
 
 
-@router.get("/{token}")
+@router.get("/{token}", response_model=None)
 async def get_public_shared_search(
     token: str,
     db: AsyncSession = Depends(get_db),
@@ -257,7 +257,7 @@ async def get_public_shared_search(
     )
 
 
-@router.post("/{token}/request-otp")
+@router.post("/{token}/request-otp", response_model=None)
 async def request_otp(
     token: str,
     request_data: RequestOTPRequest,
@@ -323,7 +323,7 @@ async def request_otp(
     )
 
 
-@router.post("/{token}/verify-otp")
+@router.post("/{token}/verify-otp", response_model=None)
 async def verify_otp(
     token: str,
     request_data: VerifyOTPRequest,
@@ -417,7 +417,7 @@ async def verify_otp(
     )
 
 
-@router.post("/{token}/feedback")
+@router.post("/{token}/feedback", response_model=None)
 async def submit_feedback(
     token: str,
     request_data: SubmitFeedbackRequest,
@@ -528,7 +528,7 @@ async def submit_feedback(
     )
 
 
-@router.get("/{token}/my-feedbacks")
+@router.get("/{token}/my-feedbacks", response_model=None)
 async def get_my_feedbacks(
     token: str,
     db: AsyncSession = Depends(get_db),

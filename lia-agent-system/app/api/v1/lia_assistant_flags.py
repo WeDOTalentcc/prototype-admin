@@ -90,7 +90,7 @@ async def set_feature_flag(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/feature-flags")
+@router.get("/feature-flags", response_model=None)
 async def get_feature_flags(
     company_id: str | None = Query(None),
     category: str | None = Query(None),
@@ -116,7 +116,7 @@ async def get_feature_flags(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/feature-flags/check/{flag_key}")
+@router.get("/feature-flags/check/{flag_key}", response_model=None)
 async def check_feature_flag(
     flag_key: str,
     company_id: str | None = Query(None),

@@ -41,7 +41,7 @@ class ScheduleCreateRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-@router.post("/submit")
+@router.post("/submit", response_model=None)
 async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(get_current_user_or_demo)):
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -65,7 +65,7 @@ async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(g
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stats")
+@router.get("/stats", response_model=None)
 async def get_stats(current_user: User = Depends(get_current_user_or_demo)):
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -75,7 +75,7 @@ async def get_stats(current_user: User = Depends(get_current_user_or_demo)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/history")
+@router.get("/history", response_model=None)
 async def get_task_history(
     domain_id: str | None = Query(None),
     state: str | None = Query(None),
@@ -101,7 +101,7 @@ async def get_task_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/schedules")
+@router.get("/schedules", response_model=None)
 async def list_schedules(
     active_only: bool = Query(False),
     limit: int = Query(50, ge=1, le=200),
@@ -117,7 +117,7 @@ async def list_schedules(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/schedules")
+@router.post("/schedules", response_model=None)
 async def create_schedule(request: ScheduleCreateRequest, current_user: User = Depends(get_current_user_or_demo)):
     try:
         scheduler = TaskScheduler.get_instance()
@@ -141,7 +141,7 @@ async def create_schedule(request: ScheduleCreateRequest, current_user: User = D
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/schedules/{schedule_id}")
+@router.delete("/schedules/{schedule_id}", response_model=None)
 async def remove_schedule(schedule_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         scheduler = TaskScheduler.get_instance()
@@ -156,7 +156,7 @@ async def remove_schedule(schedule_id: str, current_user: User = Depends(get_cur
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/dlq")
+@router.get("/dlq", response_model=None)
 async def list_dlq(
     resolved: bool | None = Query(None),
     domain_id: str | None = Query(None),
@@ -175,7 +175,7 @@ async def list_dlq(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/dlq/{dlq_id}/retry")
+@router.post("/dlq/{dlq_id}/retry", response_model=None)
 async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         persistence = TaskPersistenceService.get_instance()
@@ -202,7 +202,7 @@ async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{task_id}")
+@router.get("/{task_id}", response_model=None)
 async def get_task_status(task_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -217,7 +217,7 @@ async def get_task_status(task_id: str, current_user: User = Depends(get_current
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/")
+@router.get("/", response_model=None)
 async def list_tasks(
     domain_id: str | None = Query(None),
     state: str | None = Query(None),
@@ -244,7 +244,7 @@ async def list_tasks(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{task_id}")
+@router.delete("/{task_id}", response_model=None)
 async def cancel_task(task_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         manager = EnhancedTaskManager.get_instance()

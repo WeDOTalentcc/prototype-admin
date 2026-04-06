@@ -248,7 +248,7 @@ async def get_fairness_audit_logs(
     )
 
 
-@router.get("/reports/export")
+@router.get("/reports/export", response_model=None)
 async def export_fairness_report(
     company_id: str | None = Query(None),
     days: int = Query(30, ge=1, le=365),

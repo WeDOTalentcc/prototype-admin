@@ -54,7 +54,7 @@ async def analyze_candidates(request: AnalysisRequest) -> AnalysisResponse:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
-@router.get("/analysis/archetypes")
+@router.get("/analysis/archetypes", response_model=None)
 async def get_archetypes():
     """
     Get available Big Five archetypes.
@@ -113,7 +113,7 @@ async def get_archetypes():
     }
 
 
-@router.get("/analysis/scoring-methodology")
+@router.get("/analysis/scoring-methodology", response_model=None)
 async def get_scoring_methodology():
     """
     Get the LIA scoring methodology.

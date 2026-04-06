@@ -320,7 +320,7 @@ async def update_system_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{template_id}")
+@router.delete("/{template_id}", response_model=None)
 async def delete_system_template(
     template_id: str,
     hard_delete: bool = Query(False, description="If True, permanently delete. If False, soft delete (deactivate)."),

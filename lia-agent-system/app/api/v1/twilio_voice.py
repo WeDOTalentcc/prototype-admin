@@ -151,7 +151,7 @@ async def initiate_voice_screening(
 
 # ── TwiML webhooks (called by Twilio) ─────────────────────────────────────────
 
-@router.post("/twilio-voice/greeting")
+@router.post("/twilio-voice/greeting", response_model=None)
 async def twiml_greeting(
     request: Request,
     session_id: str = Query(...),
@@ -230,7 +230,7 @@ def _parse_consent_speech(speech: str) -> bool:
     return bool(tokens & affirmative_tokens)
 
 
-@router.post("/twilio-voice/consent-response")
+@router.post("/twilio-voice/consent-response", response_model=None)
 async def twiml_consent_response(
     request: Request,
     session_id: str = Query(...),
@@ -284,7 +284,7 @@ async def twiml_consent_response(
     return _twiml_response(twiml)
 
 
-@router.post("/twilio-voice/status")
+@router.post("/twilio-voice/status", response_model=None)
 async def twiml_call_status(
     request: Request,
     CallSid: str = Form(...),
@@ -552,7 +552,7 @@ async def audio_stream_websocket(
 
 # ── Management endpoints ───────────────────────────────────────────────────────
 
-@router.post("/twilio-voice/end-call/{session_id}")
+@router.post("/twilio-voice/end-call/{session_id}", response_model=None)
 async def end_call(session_id: str):
     """Programmatically end an active screening call."""
     from app.core.database import AsyncSessionLocal
@@ -576,7 +576,7 @@ async def end_call(session_id: str):
         return {"success": True, "session_id": session_id, "message": "No active call to end"}
 
 
-@router.get("/twilio-voice/sessions/{session_id}")
+@router.get("/twilio-voice/sessions/{session_id}", response_model=None)
 async def get_session_status(session_id: str):
     """Get status and results of a voice screening session."""
     from app.core.database import AsyncSessionLocal
@@ -703,7 +703,7 @@ async def generate_voip_token(request_body: VoIPTokenRequest) -> VoIPTokenRespon
         raise HTTPException(status_code=500, detail=f"Failed to generate VoIP token: {e}")
 
 
-@router.post("/twilio-voice/voip-connect")
+@router.post("/twilio-voice/voip-connect", response_model=None)
 async def twiml_voip_connect(
     request: Request,
     session_id: str | None = Query(None),
@@ -754,7 +754,7 @@ async def twiml_voip_connect(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/twilio-voice/health")
+@router.get("/twilio-voice/health", response_model=None)
 async def voice_health():
     """Health check for Twilio Voice service."""
     return {

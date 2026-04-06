@@ -499,7 +499,7 @@ async def record_skill_usage(
         )
 
 
-@router.get("/static/suggest")
+@router.get("/static/suggest", response_model=None)
 async def get_static_skill_suggestions(
     job_title: str = Query(..., description="Job title for suggestions"),
     seniority: str | None = Query(None, description="Seniority level"),
@@ -537,7 +537,7 @@ async def get_static_skill_suggestions(
         )
 
 
-@router.get("/search")
+@router.get("/search", response_model=None)
 async def search_skills(
     q: str = Query(..., min_length=2, description="Search query"),
     area: str | None = Query(None, description="Filter by area"),

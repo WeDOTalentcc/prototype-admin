@@ -167,7 +167,7 @@ async def update_hiring_plan(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/plans/{plan_id}")
+@router.delete("/plans/{plan_id}", response_model=None)
 async def delete_hiring_plan(
     plan_id: uuid.UUID,
     db: AsyncSession = Depends(get_db)
@@ -364,7 +364,7 @@ async def update_headcount(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/headcounts/{headcount_id}")
+@router.delete("/headcounts/{headcount_id}", response_model=None)
 async def delete_headcount(
     headcount_id: uuid.UUID,
     db: AsyncSession = Depends(get_db)
@@ -607,7 +607,7 @@ async def confirm_import(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/import/template")
+@router.get("/import/template", response_model=None)
 async def download_import_template():
     """Download Excel template for headcount import."""
     try:
@@ -777,7 +777,7 @@ async def get_workforce_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/timeline")
+@router.get("/timeline", response_model=None)
 async def get_hiring_timeline(
     company_id: uuid.UUID | None = Query(None),
     months_ahead: int = Query(6, ge=1, le=24),
@@ -839,7 +839,7 @@ async def get_hiring_timeline(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/alerts")
+@router.get("/alerts", response_model=None)
 async def get_workforce_alerts(
     company_id: uuid.UUID | None = Query(None),
     db: AsyncSession = Depends(get_db)
@@ -954,7 +954,7 @@ DEFAULT_WORKFORCE = [
 ]
 
 
-@router.get("/entries")
+@router.get("/entries", response_model=None)
 async def get_workforce_entries(
     year: int | None = Query(None),
     db: AsyncSession = Depends(get_db)
@@ -980,7 +980,7 @@ async def get_workforce_entries(
         return DEFAULT_WORKFORCE
 
 
-@router.put("/entries")
+@router.put("/entries", response_model=None)
 async def save_workforce_entries(
     data: WorkforceEntriesRequest,
     db: AsyncSession = Depends(get_db)
@@ -1101,7 +1101,7 @@ async def parse_workforce_import_file(file: UploadFile) -> list[dict[str, str]]:
         )
 
 
-@router.get("/entries/import/template")
+@router.get("/entries/import/template", response_model=None)
 async def download_workforce_entries_import_template():
     """Download CSV template for workforce entries import."""
     try:

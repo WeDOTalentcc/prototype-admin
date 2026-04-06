@@ -7,7 +7,7 @@ from app.core.database import get_db
 
 router = APIRouter(tags=["audit"])
 
-@router.get("/candidates/{candidate_id}/event-history")
+@router.get("/candidates/{candidate_id}/event-history", response_model=None)
 async def get_candidate_event_history(
     candidate_id: str,
     from_sequence: int = 0,

@@ -123,7 +123,7 @@ async def get_bias_audit(
         raise HTTPException(status_code=500, detail="Erro ao calcular auditoria de viés")
 
 
-@router.get("/job/{job_id}/history")
+@router.get("/job/{job_id}/history", response_model=None)
 async def get_bias_audit_history(
     job_id: str,
     company_id: str = Depends(_require_company_id),

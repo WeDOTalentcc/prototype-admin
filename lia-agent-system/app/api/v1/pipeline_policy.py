@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/pipeline-policy", tags=["pipeline-policy"])
 
 
-@router.get("/{company_id}/validate-transition")
+@router.get("/{company_id}/validate-transition", response_model=None)
 async def validate_transition(
     company_id: str,
     candidate_id: str = Query(...),
@@ -100,7 +100,7 @@ async def validate_transition(
     }
 
 
-@router.get("/{company_id}/templates")
+@router.get("/{company_id}/templates", response_model=None)
 async def get_pipeline_templates(
     company_id: str,
     db: AsyncSession = Depends(get_db),

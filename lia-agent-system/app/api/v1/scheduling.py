@@ -350,7 +350,7 @@ async def update_interview(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/interviews/{interview_id}")
+@router.delete("/interviews/{interview_id}", response_model=None)
 async def cancel_interview(
     interview_id: str,
     reason: str | None = Query(None, description="Cancellation reason"),
@@ -383,7 +383,7 @@ async def cancel_interview(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/interviews/{interview_id}/ics")
+@router.get("/interviews/{interview_id}/ics", response_model=None)
 async def download_interview_ics(
     interview_id: str,
     db: AsyncSession = Depends(get_db)
@@ -418,7 +418,7 @@ async def download_interview_ics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/status")
+@router.get("/status", response_model=None)
 async def get_scheduling_status():
     """
     Get the current status of the scheduling system.

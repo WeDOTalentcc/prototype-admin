@@ -37,7 +37,7 @@ class InviteRequest(BaseModel):
     voice_mode: bool = False
 
 
-@router.get("/{token}")
+@router.get("/{token}", response_model=None)
 async def get_triagem_session(
     token: str,
     db: AsyncSession = Depends(get_db),
@@ -60,7 +60,7 @@ async def get_triagem_session(
     return JSONResponse(content=config)
 
 
-@router.post("/{token}/message")
+@router.post("/{token}/message", response_model=None)
 async def send_message(
     token: str,
     request: SendMessageRequest,
@@ -91,7 +91,7 @@ async def send_message(
     return JSONResponse(content=result)
 
 
-@router.get("/{token}/history")
+@router.get("/{token}/history", response_model=None)
 async def get_history(
     token: str,
     db: AsyncSession = Depends(get_db),
@@ -104,7 +104,7 @@ async def get_history(
     return JSONResponse(content=result)
 
 
-@router.post("/{token}/complete")
+@router.post("/{token}/complete", response_model=None)
 async def complete_triagem(
     token: str,
     db: AsyncSession = Depends(get_db),
@@ -134,7 +134,7 @@ async def complete_triagem(
     return JSONResponse(content=result)
 
 
-@router.post("/invite", status_code=201)
+@router.post("/invite", status_code=201, response_model=None)
 async def create_invite(
     request: InviteRequest,
     db: AsyncSession = Depends(get_db),
@@ -197,7 +197,7 @@ class RequestCallRequest(BaseModel):
         object.__setattr__(self, "candidate_phone", phone)
 
 
-@router.post("/{token}/request-call")
+@router.post("/{token}/request-call", response_model=None)
 async def request_phone_call(
     token: str,
     request: RequestCallRequest,
@@ -240,7 +240,7 @@ class StartSessionRequest(BaseModel):
     voice_mode: bool | None = None
 
 
-@router.post("/{token}/start")
+@router.post("/{token}/start", response_model=None)
 async def start_triagem(
     token: str,
     request: StartSessionRequest | None = None,
@@ -267,7 +267,7 @@ async def start_triagem(
     return JSONResponse(content=result)
 
 
-@router.post("/{token}/audio")
+@router.post("/{token}/audio", response_model=None)
 async def transcribe_audio(
     token: str,
     audio: UploadFile = File(...),
@@ -320,7 +320,7 @@ class TTSRequest(BaseModel):
     question_index: int | None = None
 
 
-@router.post("/{token}/tts")
+@router.post("/{token}/tts", response_model=None)
 async def synthesize_speech(
     token: str,
     request: TTSRequest,
@@ -351,7 +351,7 @@ async def synthesize_speech(
     return JSONResponse(content=result)
 
 
-@router.post("/{token}/tts/{message_id}")
+@router.post("/{token}/tts/{message_id}", response_model=None)
 async def synthesize_message_speech(
     token: str,
     message_id: str,
@@ -378,7 +378,7 @@ async def synthesize_message_speech(
     return JSONResponse(content=result)
 
 
-@router.get("/{token}/voice-status")
+@router.get("/{token}/voice-status", response_model=None)
 async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
     """Check availability of voice services (STT/TTS) for the session."""
     validation = await triagem_service.validate_token(db, token)
@@ -395,7 +395,7 @@ async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
     })
 
 
-@router.post("/{token}/voip-start")
+@router.post("/{token}/voip-start", response_model=None)
 async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
     """
     Initiate a VoIP (browser call) screening session.

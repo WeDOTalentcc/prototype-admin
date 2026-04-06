@@ -32,7 +32,7 @@ class MetricRecord(BaseModel):
     context: dict[str, Any] | None = None
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def list_active_tests(
     db: AsyncSession = Depends(get_db),
 ):
@@ -40,7 +40,7 @@ async def list_active_tests(
     return {"tests": tests}
 
 
-@router.post("")
+@router.post("", response_model=None)
 async def create_test(
     body: TestCreate,
     db: AsyncSession = Depends(get_db),
@@ -50,7 +50,7 @@ async def create_test(
     return result
 
 
-@router.get("/{test_name}/results")
+@router.get("/{test_name}/results", response_model=None)
 async def get_test_results(
     test_name: str,
     db: AsyncSession = Depends(get_db),
@@ -59,7 +59,7 @@ async def get_test_results(
     return results
 
 
-@router.post("/{test_name}/record")
+@router.post("/{test_name}/record", response_model=None)
 async def record_metric(
     test_name: str,
     body: MetricRecord,
@@ -80,7 +80,7 @@ async def record_metric(
     return {"status": "error", "message": "Failed to record metric"}
 
 
-@router.get("/{test_name}/variant")
+@router.get("/{test_name}/variant", response_model=None)
 async def get_variant(
     test_name: str,
     session_id: str = Query(...),

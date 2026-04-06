@@ -654,7 +654,7 @@ async def bulk_start_screening(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/candidates/bulk/export")
+@router.post("/candidates/bulk/export", response_model=None)
 async def bulk_export_candidates(
     request: BulkExportRequest,
     current_user: User = Depends(require_admin_or_recruiter),

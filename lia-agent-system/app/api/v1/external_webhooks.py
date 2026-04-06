@@ -73,7 +73,7 @@ def verify_webhook_signature(payload: bytes, signature: str, secret: str, platfo
         return False
 
 
-@router.post("/ats/{platform}")
+@router.post("/ats/{platform}", response_model=None)
 async def handle_ats_webhook(
     platform: str,
     request: Request,
@@ -291,7 +291,7 @@ async def process_ats_candidate_rejected(platform: str, payload: dict[str, Any])
         logger.error(f"❌ Error processing ATS candidate rejected: {e}", exc_info=True)
 
 
-@router.post("/interview/{provider}")
+@router.post("/interview/{provider}", response_model=None)
 async def handle_interview_webhook(
     provider: str,
     request: Request,
@@ -316,7 +316,7 @@ async def handle_interview_webhook(
     return result
 
 
-@router.post("/test/{provider}")
+@router.post("/test/{provider}", response_model=None)
 async def handle_test_webhook(
     provider: str,
     request: Request,
@@ -341,7 +341,7 @@ async def handle_test_webhook(
     return result
 
 
-@router.post("/document/{provider}")
+@router.post("/document/{provider}", response_model=None)
 async def handle_document_webhook(
     provider: str,
     request: Request,
@@ -365,7 +365,7 @@ async def handle_document_webhook(
     return result
 
 
-@router.get("/event-log")
+@router.get("/event-log", response_model=None)
 async def get_webhook_event_log(limit: int = 50):
     """Get recent webhook event processing log."""
     return {
@@ -374,7 +374,7 @@ async def get_webhook_event_log(limit: int = 50):
     }
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def external_webhooks_health():
     """Check external webhook endpoints health and configuration."""
     return {

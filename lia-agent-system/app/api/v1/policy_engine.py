@@ -215,7 +215,7 @@ async def update_business_rule(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/business-rules/{rule_id}", summary="Delete business rule")
+@router.delete("/business-rules/{rule_id}", summary="Delete business rule", response_model=None)
 async def delete_business_rule(
     rule_id: str,
     db: AsyncSession = Depends(get_db)
@@ -462,7 +462,7 @@ async def trigger_escalation(
 @router.post(
     "/apply-sector/{company_id}",
     summary="Aplica defaults setoriais Alpha 1 para uma empresa",
-)
+, response_model=None)
 async def apply_sector_defaults(
     company_id: str,
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
@@ -602,7 +602,7 @@ async def get_escalation_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/escalation-logs/{log_id}/resolve", summary="Resolve an escalation")
+@router.post("/escalation-logs/{log_id}/resolve", summary="Resolve an escalation", response_model=None)
 async def resolve_escalation(
     log_id: str,
     resolution_notes: str | None = Query(None, description="Resolution notes"),

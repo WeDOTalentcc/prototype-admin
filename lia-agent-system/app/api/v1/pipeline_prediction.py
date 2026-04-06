@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/pipeline-prediction", tags=["pipeline-prediction"])
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_vacancy_prediction(
     vacancy_id: str = Query(..., description="UUID da vaga"),
     company_id: str = Query(..., description="UUID da empresa"),
@@ -49,7 +49,7 @@ async def get_vacancy_prediction(
         raise HTTPException(status_code=500, detail="Erro ao calcular previsão de fechamento")
 
 
-@router.get("/company-overview")
+@router.get("/company-overview", response_model=None)
 async def get_company_overview(
     company_id: str = Query(..., description="UUID da empresa"),
 ):

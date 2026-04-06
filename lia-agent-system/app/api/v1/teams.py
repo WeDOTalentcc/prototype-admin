@@ -533,7 +533,7 @@ async def teams_adaptive_card_webhook(
         )
 
 
-@router.get("/webhook/audit-logs")
+@router.get("/webhook/audit-logs", response_model=None)
 async def get_teams_audit_logs(
     limit: int = 50,
     action: str | None = None,
@@ -597,7 +597,7 @@ async def get_teams_audit_logs(
         raise HTTPException(status_code=500, detail=f"Error retrieving audit logs: {str(e)}")
 
 
-@router.post("/messages")
+@router.post("/messages", response_model=None)
 async def receive_teams_message(
     request: Request,
     authorization: str = Header(None),
@@ -725,7 +725,7 @@ async def receive_teams_message(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def teams_health():
     """Health check for Teams integration."""
     return {
@@ -807,7 +807,7 @@ async def _log_teams_message(activity: dict[str, Any], db: AsyncSession):
         logger.error(f"Error logging Teams message: {e}", exc_info=True)
 
 
-@router.post("/send-notification")
+@router.post("/send-notification", response_model=None)
 async def send_proactive_notification(
     notification_data: dict[str, Any],
     db: AsyncSession = Depends(get_db)
@@ -917,7 +917,7 @@ def _create_notification_card(notification_type: str, data: dict[str, Any]) -> d
     }
 
 
-@router.post("/proactive/check")
+@router.post("/proactive/check", response_model=None)
 async def run_proactivity_checks(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -937,7 +937,7 @@ async def run_proactivity_checks(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/proactive/new-candidate")
+@router.post("/proactive/new-candidate", response_model=None)
 async def notify_new_candidate(
     candidate_id: str,
     candidate_name: str,
@@ -963,7 +963,7 @@ async def notify_new_candidate(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/proactive/screening-complete")
+@router.post("/proactive/screening-complete", response_model=None)
 async def notify_screening_complete(
     candidate_id: str,
     candidate_name: str,
@@ -992,7 +992,7 @@ async def notify_screening_complete(
         logger.error(f"[Teams] notify_screening_complete error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/proactive/daily-digest")
+@router.post("/proactive/daily-digest", response_model=None)
 async def send_daily_digest(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -1006,7 +1006,7 @@ async def send_daily_digest(
     return {"sent": sent, "status": "ok"}
 
 
-@router.post("/feedback")
+@router.post("/feedback", response_model=None)
 async def receive_card_feedback(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
@@ -1027,7 +1027,7 @@ async def receive_card_feedback(
 # SSO — Azure AD Identity (Sprint Azure)
 # ============================================================================
 
-@router.get("/auth/sso-page")
+@router.get("/auth/sso-page", response_model=None)
 async def teams_sso_page(
     conversation_id: str,
     client_id: str = "",
@@ -1065,7 +1065,7 @@ async def teams_sso_page(
     return RedirectResponse(url=auth_url)
 
 
-@router.get("/auth/callback")
+@router.get("/auth/callback", response_model=None)
 async def teams_sso_callback(
     code: str = "",
     state: str = "",  # conversation_id
@@ -1163,7 +1163,7 @@ class ScheduleInterviewRequest(BaseModel):
     notes: str | None = None
 
 
-@router.post("/calendar/schedule")
+@router.post("/calendar/schedule", response_model=None)
 async def schedule_interview_via_teams(
     request: ScheduleInterviewRequest,
     db: AsyncSession = Depends(get_db),
@@ -1207,7 +1207,7 @@ async def schedule_interview_via_teams(
     return result
 
 
-@router.post("/calendar/cancel")
+@router.post("/calendar/cancel", response_model=None)
 async def cancel_interview_via_teams(
     event_id: str,
     organizer_email: str,
@@ -1227,7 +1227,7 @@ async def cancel_interview_via_teams(
 # Teams App Manifest — generate manifest.json for Teams App Studio
 # ============================================================================
 
-@router.get("/manifest")
+@router.get("/manifest", response_model=None)
 async def get_teams_manifest():
     """
     Generate and return the Teams app manifest.json.
@@ -1463,7 +1463,7 @@ async def teams_tab_auth(
         raise HTTPException(status_code=500, detail="SSO authentication failed")
 
 
-@router.post("/tab/events")
+@router.post("/tab/events", response_model=None)
 async def teams_tab_events(
     payload: TabEventRequest,
     db: AsyncSession = Depends(get_db),

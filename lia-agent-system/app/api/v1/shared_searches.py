@@ -280,7 +280,7 @@ def build_feedback_summary(feedbacks: list[SharedSearchFeedback], total_candidat
     )
 
 
-@router.post("")
+@router.post("", response_model=None)
 async def create_shared_search(
     data: CreateSharedSearchRequest,
     db: AsyncSession = Depends(get_db),
@@ -500,7 +500,7 @@ async def create_shared_search(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def list_shared_searches(
     status: str | None = Query(None, description="Filter by status: active, expired, revoked"),
     share_type: str | None = Query(None, description="Filter by type: search, list"),
@@ -610,7 +610,7 @@ async def list_shared_searches(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{search_id}")
+@router.get("/{search_id}", response_model=None)
 async def get_shared_search(
     search_id: str,
     db: AsyncSession = Depends(get_db),
@@ -731,7 +731,7 @@ async def get_shared_search(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{search_id}/resend")
+@router.post("/{search_id}/resend", response_model=None)
 async def resend_invite(
     search_id: str,
     data: ResendInviteRequest,
@@ -798,7 +798,7 @@ async def resend_invite(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/{search_id}")
+@router.patch("/{search_id}", response_model=None)
 async def update_shared_search(
     search_id: str,
     data: UpdateSharedSearchRequest,
@@ -870,7 +870,7 @@ async def update_shared_search(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{search_id}")
+@router.delete("/{search_id}", response_model=None)
 async def delete_shared_search(
     search_id: str,
     db: AsyncSession = Depends(get_db),
@@ -914,7 +914,7 @@ async def delete_shared_search(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{search_id}/add-to-job")
+@router.post("/{search_id}/add-to-job", response_model=None)
 async def add_approved_to_job(
     search_id: str,
     data: AddToJobRequest,

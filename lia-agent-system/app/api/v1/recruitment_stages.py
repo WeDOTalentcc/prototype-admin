@@ -201,7 +201,7 @@ class InterpretContextResponse(BaseModel):
     conversation_id: str | None = None
 
 
-@router.get("/stages")
+@router.get("/stages", response_model=None)
 async def list_stages(
     include_inactive: bool = Query(default=False),
     current_user: User = Depends(get_current_active_user),
@@ -249,7 +249,7 @@ async def list_stages(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/stages")
+@router.post("/stages", response_model=None)
 async def create_stage(
     stage: StageCreate,
     current_user: User = Depends(require_admin_or_recruiter),
@@ -292,7 +292,7 @@ async def create_stage(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/stages/{stage_id}")
+@router.put("/stages/{stage_id}", response_model=None)
 async def update_stage(
     stage_id: str,
     stage: StageUpdate,
@@ -330,7 +330,7 @@ async def update_stage(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/stages/{stage_id}")
+@router.delete("/stages/{stage_id}", response_model=None)
 async def delete_stage(
     stage_id: str,
     hard_delete: bool = Query(default=False),
@@ -367,7 +367,7 @@ async def delete_stage(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/stages/{stage_id}/config")
+@router.put("/stages/{stage_id}/config", response_model=None)
 async def update_stage_config(
     stage_id: str,
     config: StageConfigUpdate,
@@ -412,13 +412,13 @@ async def update_stage_config(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/catalog")
+@router.get("/catalog", response_model=None)
 async def get_stage_catalog():
     """Get the standard stage catalog for adding new columns."""
     return {"catalog": STANDARD_STAGE_CATALOG, "total": len(STANDARD_STAGE_CATALOG)}
 
 
-@router.patch("/stages/{stage_id}/inline-edit")
+@router.patch("/stages/{stage_id}/inline-edit", response_model=None)
 async def inline_edit_stage(
     stage_id: str,
     payload: InlineStageEdit,
@@ -478,7 +478,7 @@ async def inline_edit_stage(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/stages/{stage_id}/remove")
+@router.delete("/stages/{stage_id}/remove", response_model=None)
 async def remove_custom_stage(
     stage_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -514,7 +514,7 @@ async def remove_custom_stage(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/stages/reorder")
+@router.post("/stages/reorder", response_model=None)
 async def reorder_stages(
     payload: StageReorderRequest,
     current_user: User = Depends(get_current_active_user),
@@ -537,7 +537,7 @@ async def reorder_stages(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stages/{stage_id}/sub-statuses")
+@router.get("/stages/{stage_id}/sub-statuses", response_model=None)
 async def list_stage_sub_statuses(
     stage_id: str,
     include_inactive: bool = Query(default=False, description="Include inactive sub-statuses (for settings view)"),
@@ -574,7 +574,7 @@ async def list_stage_sub_statuses(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/stages/{stage_id}/sub-statuses")
+@router.post("/stages/{stage_id}/sub-statuses", response_model=None)
 async def create_sub_status(
     stage_id: str,
     sub_status: SubStatusCreate,
@@ -609,7 +609,7 @@ async def create_sub_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/sub-statuses/{sub_status_id}")
+@router.put("/sub-statuses/{sub_status_id}", response_model=None)
 async def update_sub_status(
     sub_status_id: str,
     sub_status: SubStatusCreate,
@@ -641,7 +641,7 @@ async def update_sub_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/sub-statuses/{sub_status_id}")
+@router.patch("/sub-statuses/{sub_status_id}", response_model=None)
 async def patch_sub_status(
     sub_status_id: str,
     payload: dict = Body(...),
@@ -674,7 +674,7 @@ async def patch_sub_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/sub-statuses/{sub_status_id}")
+@router.delete("/sub-statuses/{sub_status_id}", response_model=None)
 async def delete_sub_status(
     sub_status_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
@@ -699,7 +699,7 @@ async def delete_sub_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ats-mappings")
+@router.get("/ats-mappings", response_model=None)
 async def list_ats_mappings(
     ats_type: str | None = Query(default=None, description="Filter by ATS type"),
     current_user: User = Depends(get_current_active_user),
@@ -731,7 +731,7 @@ async def list_ats_mappings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/ats-mappings")
+@router.post("/ats-mappings", response_model=None)
 async def create_ats_mapping(
     mapping: ATSMappingCreate,
     current_user: User = Depends(require_admin_or_recruiter),
@@ -765,7 +765,7 @@ async def create_ats_mapping(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/ats-mappings/{mapping_id}")
+@router.delete("/ats-mappings/{mapping_id}", response_model=None)
 async def delete_ats_mapping(
     mapping_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
@@ -790,7 +790,7 @@ async def delete_ats_mapping(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/initialize")
+@router.post("/initialize", response_model=None)
 async def initialize_company_stages(
     ats_type: str | None = Query(default=None, description="Also initialize ATS mappings"),
     current_user: User = Depends(require_admin_or_recruiter),
@@ -851,7 +851,7 @@ async def initialize_company_stages(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/sync-canonical-sub-statuses")
+@router.post("/sync-canonical-sub-statuses", response_model=None)
 async def sync_canonical_sub_statuses(
     current_user: User = Depends(require_admin_or_recruiter),
     db: AsyncSession = Depends(get_db)
@@ -922,7 +922,7 @@ async def sync_canonical_sub_statuses(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/transition")
+@router.post("/transition", response_model=None)
 async def transition_candidate(
     request: TransitionRequest,
     current_user: User = Depends(get_current_active_user),
@@ -963,7 +963,7 @@ async def transition_candidate(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/candidate/{vacancy_candidate_id}/info")
+@router.get("/candidate/{vacancy_candidate_id}/info", response_model=None)
 async def get_candidate_stage_info(
     vacancy_candidate_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -991,7 +991,7 @@ async def get_candidate_stage_info(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/candidate/{vacancy_candidate_id}/history")
+@router.get("/candidate/{vacancy_candidate_id}/history", response_model=None)
 async def get_candidate_history(
     vacancy_candidate_id: str,
     limit: int = Query(default=50, ge=1, le=200),
@@ -1020,7 +1020,7 @@ async def get_candidate_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/defaults")
+@router.get("/defaults", response_model=None)
 async def get_defaults():
     """
     Get default stage configurations.
@@ -1036,7 +1036,7 @@ async def get_defaults():
     }
 
 
-@router.get("/stage-catalog", summary="Get standard stage catalog")
+@router.get("/stage-catalog", summary="Get standard stage catalog", response_model=None)
 async def get_standard_stage_catalog():
     """
     Returns the standard stage catalog with all available pipeline columns.
@@ -1123,7 +1123,7 @@ async def _get_company_pipeline(company_id: str, db: AsyncSession):
     return pipeline
 
 
-@router.get("/company-pipeline")
+@router.get("/company-pipeline", response_model=None)
 async def get_company_pipeline(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -1137,7 +1137,7 @@ async def get_company_pipeline(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/company-pipeline")
+@router.put("/company-pipeline", response_model=None)
 async def update_company_pipeline(
     payload: CompanyPipelineUpdate,
     current_user: User = Depends(get_current_user_or_demo),
@@ -1242,7 +1242,7 @@ class JobPipelineUpdate(BaseModel):
     stages: list[JobPipelineStageItem]
 
 
-@router.get("/jobs/{job_id}/pipeline")
+@router.get("/jobs/{job_id}/pipeline", response_model=None)
 async def get_job_pipeline(
     job_id: str,
     current_user: User = Depends(get_current_user_or_demo),
@@ -1303,7 +1303,7 @@ async def get_job_pipeline(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/jobs/{job_id}/pipeline")
+@router.put("/jobs/{job_id}/pipeline", response_model=None)
 async def update_job_pipeline(
     job_id: str,
     payload: JobPipelineUpdate,
@@ -2173,7 +2173,7 @@ class BulkReturnEventRequest(BaseModel):
     events: list[ReturnEventRequest] = Field(..., description="Lista de eventos de retorno para processar em lote")
 
 
-@router.get("/transition/return-event/stream")
+@router.get("/transition/return-event/stream", response_model=None)
 async def stream_return_events(
     job_id: str | None = None,
     company_id: str | None = None,
@@ -2311,7 +2311,7 @@ async def process_return_event(
         )
 
 
-@router.post("/transition/return-event/bulk")
+@router.post("/transition/return-event/bulk", response_model=None)
 async def process_bulk_return_events(
     request: BulkReturnEventRequest,
     db: AsyncSession = Depends(get_db),
@@ -2355,7 +2355,7 @@ async def process_bulk_return_events(
     }
 
 
-@router.get("/transition/return-event/recent")
+@router.get("/transition/return-event/recent", response_model=None)
 async def get_recent_return_events(
     since: str | None = Query(None, description="ISO timestamp to fetch events since"),
     job_id: str | None = Query(None),
@@ -2419,7 +2419,7 @@ async def get_recent_return_events(
         return {"events": [], "total": 0, "since": since, "error": str(e)}
 
 
-@router.get("/transition/return-event/types")
+@router.get("/transition/return-event/types", response_model=None)
 async def list_return_event_types():
     """
     List all supported return event types with their configurations.
@@ -2442,7 +2442,7 @@ async def list_return_event_types():
     }
 
 
-@router.get("/pipeline/job/{job_id}/inheritance-status")
+@router.get("/pipeline/job/{job_id}/inheritance-status", response_model=None)
 async def get_pipeline_inheritance_status(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -2470,7 +2470,7 @@ async def get_pipeline_inheritance_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/pipeline/job/{job_id}/copy-from-company")
+@router.post("/pipeline/job/{job_id}/copy-from-company", response_model=None)
 async def copy_company_pipeline_to_job(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -2546,7 +2546,7 @@ async def copy_company_pipeline_to_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/pipeline/job/{job_id}/mark-customized")
+@router.post("/pipeline/job/{job_id}/mark-customized", response_model=None)
 async def mark_pipeline_customized(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -2590,7 +2590,7 @@ class InferBehaviorResponse(BaseModel):
     alternatives: list[dict] = []
     method: str = "keyword"
 
-@router.post("/stages/infer-behavior")
+@router.post("/stages/infer-behavior", response_model=None)
 async def infer_stage_behavior(
     request: InferBehaviorRequest,
     method: str = Query(default="auto", regex="^(keyword|llm|auto)$"),

@@ -156,7 +156,7 @@ async def generate_questions(
     )
 
 
-@router.post("/suggest-question")
+@router.post("/suggest-question", response_model=None)
 async def suggest_question(request: SuggestQuestionRequest):
     """Generate a single screening question from a recruiter prompt using LLM."""
     client = await get_anthropic_client()
@@ -229,7 +229,7 @@ Retorne APENAS JSON válido:
     }
 
 
-@router.post("/questions/save")
+@router.post("/questions/save", response_model=None)
 async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depends(get_db)):
     """Save screening questions for a job vacancy."""
     try:
@@ -331,7 +331,7 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
             return {"success": False, "error": str(e2)}
 
 
-@router.get("/question-sets/{job_id}/active")
+@router.get("/question-sets/{job_id}/active", response_model=None)
 async def get_active_question_set(job_id: str, db: AsyncSession = Depends(get_db)):
     try:
         qs = await screening_question_set_service.get_active_version(db, job_id)
@@ -352,7 +352,7 @@ async def get_active_question_set(job_id: str, db: AsyncSession = Depends(get_db
         return {"success": False, "error": str(e)}
 
 
-@router.get("/question-sets/{job_id}/versions")
+@router.get("/question-sets/{job_id}/versions", response_model=None)
 async def list_question_set_versions(job_id: str, db: AsyncSession = Depends(get_db)):
     try:
         versions = await screening_question_set_service.list_versions(db, job_id)
@@ -362,7 +362,7 @@ async def list_question_set_versions(job_id: str, db: AsyncSession = Depends(get
         return {"success": False, "error": str(e)}
 
 
-@router.get("/question-sets/{job_id}/version/{version}")
+@router.get("/question-sets/{job_id}/version/{version}", response_model=None)
 async def get_question_set_by_version(job_id: str, version: int, db: AsyncSession = Depends(get_db)):
     try:
         qs = await screening_question_set_service.get_by_version(db, job_id, version)
@@ -384,7 +384,7 @@ async def get_question_set_by_version(job_id: str, version: int, db: AsyncSessio
         return {"success": False, "error": str(e)}
 
 
-@router.get("/question-sets/{job_id}/consistency")
+@router.get("/question-sets/{job_id}/consistency", response_model=None)
 async def check_question_set_consistency(job_id: str, db: AsyncSession = Depends(get_db)):
     try:
         result = await screening_question_set_service.check_version_consistency(db, job_id)

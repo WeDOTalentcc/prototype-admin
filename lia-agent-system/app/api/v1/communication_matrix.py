@@ -48,7 +48,7 @@ class ResetMatrixRequest(BaseModel):
     confirm: bool = Field(..., description="Must be true to confirm reset")
 
 
-@router.get("", summary="List communication matrix entries")
+@router.get("", summary="List communication matrix entries", response_model=None)
 async def list_matrix_entries(
     module: str | None = Query(None, description="Filter by module type"),
     is_active: bool | None = Query(None, description="Filter by active status"),
@@ -123,7 +123,7 @@ async def list_matrix_entries(
         )
 
 
-@router.get("/modules", summary="List available modules")
+@router.get("/modules", summary="List available modules", response_model=None)
 async def list_modules():
     """
     List all available modules with their labels and descriptions.
@@ -156,7 +156,7 @@ async def list_modules():
         )
 
 
-@router.get("/{entry_id}", summary="Get specific matrix entry")
+@router.get("/{entry_id}", summary="Get specific matrix entry", response_model=None)
 async def get_matrix_entry(
     entry_id: str,
     db: AsyncSession = Depends(get_db),
@@ -201,7 +201,7 @@ async def get_matrix_entry(
         )
 
 
-@router.put("/{entry_id}", summary="Update matrix entry")
+@router.put("/{entry_id}", summary="Update matrix entry", response_model=None)
 async def update_matrix_entry(
     entry_id: str,
     data: UpdateMatrixEntryRequest,
@@ -283,7 +283,7 @@ async def update_matrix_entry(
         )
 
 
-@router.post("/reset", summary="Reset matrix to platform defaults")
+@router.post("/reset", summary="Reset matrix to platform defaults", response_model=None)
 async def reset_matrix_to_defaults(
     data: ResetMatrixRequest,
     db: AsyncSession = Depends(get_db),
@@ -359,7 +359,7 @@ async def reset_matrix_to_defaults(
         )
 
 
-@router.post("/seed", summary="Seed default matrix entries (if empty)")
+@router.post("/seed", summary="Seed default matrix entries (if empty)", response_model=None)
 async def seed_matrix_entries(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
@@ -433,7 +433,7 @@ async def seed_matrix_entries(
         )
 
 
-@router.post("/copy-to-company", summary="Copy platform defaults to a company")
+@router.post("/copy-to-company", summary="Copy platform defaults to a company", response_model=None)
 async def copy_defaults_to_company(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)

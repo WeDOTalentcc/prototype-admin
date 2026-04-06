@@ -693,7 +693,7 @@ async def gemini_live_stream_websocket(
             _ws_ip_connections[client_ip] = ip_count - 1
 
 
-@router.get("/gemini-voice/session/{session_id}")
+@router.get("/gemini-voice/session/{session_id}", response_model=None)
 async def get_gemini_session_status(session_id: str):
     from app.services.gemini_live_audio_service import get_gemini_live_service
 
@@ -725,7 +725,7 @@ async def get_gemini_session_status(session_id: str):
     return live_service.get_session_metrics(session)
 
 
-@router.get("/gemini-voice/health")
+@router.get("/gemini-voice/health", response_model=None)
 async def gemini_voice_health():
     from app.services.gemini_live_audio_service import get_gemini_live_service
 

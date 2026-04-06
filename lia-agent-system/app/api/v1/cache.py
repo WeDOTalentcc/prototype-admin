@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/cache", tags=["cache"])
 
 
-@router.delete("/jd/{company_id}")
+@router.delete("/jd/{company_id}", response_model=None)
 async def invalidate_jd_cache(company_id: str):
     """
     Manually invalidate JD template cache for a company.
@@ -59,7 +59,7 @@ async def invalidate_jd_cache(company_id: str):
         )
 
 
-@router.get("/jd/metrics")
+@router.get("/jd/metrics", response_model=None)
 async def get_jd_cache_metrics():
     """
     Get JD template cache performance metrics.
@@ -90,7 +90,7 @@ async def get_jd_cache_metrics():
         )
 
 
-@router.post("/jd/reset-metrics")
+@router.post("/jd/reset-metrics", response_model=None)
 async def reset_jd_cache_metrics():
     """
     Reset JD template cache performance metrics.
@@ -118,7 +118,7 @@ async def reset_jd_cache_metrics():
         )
 
 
-@router.get("/embeddings/stats")
+@router.get("/embeddings/stats", response_model=None)
 async def get_embedding_cache_stats():
     """
     Get embedding cache statistics.
@@ -147,7 +147,7 @@ async def get_embedding_cache_stats():
         )
 
 
-@router.post("/embeddings/clear")
+@router.post("/embeddings/clear", response_model=None)
 async def clear_embedding_cache():
     """
     Clear embedding cache.

@@ -11,7 +11,7 @@ logger = logging.getLogger("lia.pipeline_orchestrator")
 router = APIRouter(prefix="/pipeline", tags=["Pipeline Agent"])
 
 
-@router.post("/react-orchestrate")
+@router.post("/react-orchestrate", response_model=None)
 async def pipeline_react_orchestrate(request: Request):
     """Pipeline agent endpoint - ReAct based autonomous candidate management."""
     if not os.getenv("USE_REACT_AGENTS", "false").lower() == "true":

@@ -35,7 +35,7 @@ _TRANSPARENT_GIF = bytes([
 ])
 
 
-@router.get("/pixel/{token}.gif", include_in_schema=False)
+@router.get("/pixel/{token}.gif", include_in_schema=False, response_model=None)
 async def tracking_pixel(
     request: Request,
     token: str = Path(...),
@@ -73,7 +73,7 @@ async def tracking_pixel(
     )
 
 
-@router.get("/click/{token}")
+@router.get("/click/{token}", response_model=None)
 async def tracking_click(
     request: Request,
     token: str = Path(...),
@@ -167,7 +167,7 @@ def _verify_mailgun_signature(request: Request, body: bytes) -> bool:
         return False
 
 
-@router.post("/webhook")
+@router.post("/webhook", response_model=None)
 async def tracking_webhook(
     request: Request,
     db: AsyncSession = Depends(get_async_db),
@@ -313,7 +313,7 @@ async def tracking_webhook(
     return {"accepted": accepted, "errors": errors}
 
 
-@router.get("/stats/{notification_id}")
+@router.get("/stats/{notification_id}", response_model=None)
 async def get_tracking_stats(
     notification_id: str = Path(...),
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),

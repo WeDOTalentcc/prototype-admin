@@ -140,7 +140,7 @@ async def send_background_task_update(
         logger.debug("[AgentChatWS] background_task_update send failed: %s", exc)
 
 
-@router.get("/sessions/active")
+@router.get("/sessions/active", response_model=None)
 async def list_active_sessions(
     request: Request,
     authorization: str = Header(default=""),

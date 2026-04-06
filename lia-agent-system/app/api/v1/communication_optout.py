@@ -174,7 +174,7 @@ ERROR_HTML = """<!DOCTYPE html>
 </html>"""
 
 
-@router.get("/unsubscribe/{token}", response_class=HTMLResponse)
+@router.get("/unsubscribe/{token}", response_class=HTMLResponse, response_model=None)
 async def unsubscribe_page(token: str, request: Request, db: AsyncSession = Depends(get_db)):
     ConsentEvent = _get_consent_event_model()
     email, company_id = verify_signed_token(token)
@@ -207,7 +207,7 @@ async def unsubscribe_page(token: str, request: Request, db: AsyncSession = Depe
     return HTMLResponse(content=UNSUBSCRIBE_PAGE_HTML.format(email=safe_email))
 
 
-@router.post("/unsubscribe/{token}", response_class=HTMLResponse)
+@router.post("/unsubscribe/{token}", response_class=HTMLResponse, response_model=None)
 async def process_unsubscribe(token: str, request: Request, db: AsyncSession = Depends(get_db)):
     ConsentEvent = _get_consent_event_model()
     email, company_id = verify_signed_token(token)

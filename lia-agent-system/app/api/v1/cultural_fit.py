@@ -23,7 +23,7 @@ def _require_company_id(
     return x_company_id
 
 
-@router.get("/{candidate_id}/cultural-fit")
+@router.get("/{candidate_id}/cultural-fit", response_model=None)
 async def get_cultural_fit(
     candidate_id: str,
     job_id: str = Query(..., description="ID da vaga"),

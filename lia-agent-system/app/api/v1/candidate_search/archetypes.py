@@ -750,7 +750,7 @@ async def get_archetype(
         raise HTTPException(status_code=500, detail=f"Failed to get archetype: {str(e)}")
 
 
-@router.delete("/archetypes/{archetype_id}")
+@router.delete("/archetypes/{archetype_id}", response_model=None)
 async def delete_archetype(
     archetype_id: str,
     db: AsyncSession = Depends(get_db)

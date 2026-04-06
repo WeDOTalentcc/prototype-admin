@@ -9,7 +9,7 @@ router = APIRouter(prefix="/finetuning", tags=["finetuning-export"])
 _service = FineTuningExportService()
 
 
-@router.get("/stats/{company_id}")
+@router.get("/stats/{company_id}", response_model=None)
 async def get_export_stats(
     company_id: str,
     db: AsyncSession = Depends(get_db),
@@ -18,7 +18,7 @@ async def get_export_stats(
     return stats
 
 
-@router.post("/export/{company_id}")
+@router.post("/export/{company_id}", response_model=None)
 async def trigger_export(
     company_id: str,
     format: str = Query(default="claude", regex="^(claude|gpt)$"),

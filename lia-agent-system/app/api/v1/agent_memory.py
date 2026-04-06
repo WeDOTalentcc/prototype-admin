@@ -4,7 +4,6 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from lia_agents_core.working_memory import AgentWorkingMemory
-from sqlalchemy import desc, select
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
@@ -86,7 +85,7 @@ def _default_summary(session_id: str, domain: str) -> dict[str, Any]:
     }
 
 
-@router.get("/active-sessions")
+@router.get("/active-sessions", response_model=None)
 async def get_active_sessions(
     domain: str | None = Query(None),
     limit: int = Query(10, ge=1, le=100),
@@ -112,7 +111,7 @@ async def get_active_sessions(
         return []
 
 
-@router.get("/{session_id}/summary")
+@router.get("/{session_id}/summary", response_model=None)
 async def get_memory_summary(
     session_id: str,
     domain: str = Query("wizard"),
@@ -137,7 +136,7 @@ async def get_memory_summary(
         return _default_summary(session_id, domain)
 
 
-@router.get("/{session_id}")
+@router.get("/{session_id}", response_model=None)
 async def get_memory(
     session_id: str,
     domain: str = Query("wizard"),
@@ -162,7 +161,7 @@ async def get_memory(
         return _default_memory(session_id, domain)
 
 
-@router.delete("/{session_id}")
+@router.delete("/{session_id}", response_model=None)
 async def reset_memory(
     session_id: str,
     domain: str = Query("wizard"),

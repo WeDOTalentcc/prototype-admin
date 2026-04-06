@@ -78,7 +78,7 @@ def save_workforce_plans(client: ClientAccount, plans: list[dict[str, Any]]):
     flag_modified(client, "settings")
 
 
-@router.get("", summary="List all workforce plans")
+@router.get("", summary="List all workforce plans", response_model=None)
 async def list_workforce_plans(
     year: int | None = Query(None, description="Filter by year"),
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
@@ -118,7 +118,7 @@ async def list_workforce_plans(
         )
 
 
-@router.get("/{plan_id}", summary="Get workforce plan by ID")
+@router.get("/{plan_id}", summary="Get workforce plan by ID", response_model=None)
 async def get_workforce_plan(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
@@ -152,7 +152,7 @@ async def get_workforce_plan(
         )
 
 
-@router.post("", summary="Create workforce plan", status_code=status.HTTP_201_CREATED)
+@router.post("", summary="Create workforce plan", status_code=status.HTTP_201_CREATED, response_model=None)
 async def create_workforce_plan(
     data: WorkforcePlanCreate,
     company_id: str = Depends(get_verified_company_id),
@@ -200,7 +200,7 @@ async def create_workforce_plan(
         )
 
 
-@router.put("/{plan_id}", summary="Update workforce plan")
+@router.put("/{plan_id}", summary="Update workforce plan", response_model=None)
 async def update_workforce_plan(
     plan_id: str,
     data: WorkforcePlanUpdate,
@@ -258,7 +258,7 @@ async def update_workforce_plan(
         )
 
 
-@router.delete("/{plan_id}", summary="Delete workforce plan")
+@router.delete("/{plan_id}", summary="Delete workforce plan", response_model=None)
 async def delete_workforce_plan(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
@@ -300,7 +300,7 @@ async def delete_workforce_plan(
         )
 
 
-@router.get("/{plan_id}/departments", summary="List departments of a plan")
+@router.get("/{plan_id}/departments", summary="List departments of a plan", response_model=None)
 async def list_plan_departments(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
@@ -341,7 +341,7 @@ async def list_plan_departments(
         )
 
 
-@router.post("/{plan_id}/calculate", summary="Recalculate plan metrics")
+@router.post("/{plan_id}/calculate", summary="Recalculate plan metrics", response_model=None)
 async def calculate_plan_metrics(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),

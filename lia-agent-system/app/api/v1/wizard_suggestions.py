@@ -82,7 +82,7 @@ class SimilarJobResponse(BaseModel):
     can_use_as_template: bool = True
 
 
-@router.get("/suggestion/{field}")
+@router.get("/suggestion/{field}", response_model=None)
 async def get_field_suggestion(
     field: str,
     job_title: str | None = Query(None, description="Job title for context"),
@@ -156,7 +156,7 @@ async def get_field_suggestion(
         raise HTTPException(status_code=500, detail=f"Error getting suggestion: {str(e)}")
 
 
-@router.post("/suggestions/all")
+@router.post("/suggestions/all", response_model=None)
 async def get_all_field_suggestions(
     request: WizardContextRequest,
     fields: list[str] | None = Query(
@@ -230,7 +230,7 @@ async def get_all_field_suggestions(
         raise HTTPException(status_code=500, detail=f"Error getting suggestions: {str(e)}")
 
 
-@router.get("/similar-jobs")
+@router.get("/similar-jobs", response_model=None)
 async def get_similar_jobs(
     job_title: str | None = Query(None, description="Job title to match"),
     department: str | None = Query(None, description="Department filter"),
@@ -267,7 +267,7 @@ async def get_similar_jobs(
         raise HTTPException(status_code=500, detail=f"Error finding similar jobs: {str(e)}")
 
 
-@router.get("/data-coverage")
+@router.get("/data-coverage", response_model=None)
 async def get_data_coverage(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -321,7 +321,7 @@ async def get_data_coverage(
         raise HTTPException(status_code=500, detail=f"Error getting coverage: {str(e)}")
 
 
-@router.get("/sources-priority")
+@router.get("/sources-priority", response_model=None)
 async def get_sources_priority() -> dict[str, Any]:
     """
     Get information about the data sources priority system.

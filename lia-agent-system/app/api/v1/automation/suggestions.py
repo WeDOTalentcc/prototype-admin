@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/pending-suggestions")
+@router.get("/pending-suggestions", response_model=None)
 async def get_pending_suggestions(
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
     candidate_id: str | None = Query(None, description="Filter by candidate ID"),
@@ -79,7 +79,7 @@ async def get_pending_suggestions(
         )
 
 
-@router.post("/approve-suggestion/{suggestion_id}")
+@router.post("/approve-suggestion/{suggestion_id}", response_model=None)
 async def approve_suggestion(
     suggestion_id: str,
     company_id: str = Query(..., description="Company ID for validation"),
@@ -140,7 +140,7 @@ async def approve_suggestion(
         )
 
 
-@router.post("/reject-suggestion/{suggestion_id}")
+@router.post("/reject-suggestion/{suggestion_id}", response_model=None)
 async def reject_suggestion(
     suggestion_id: str,
     company_id: str = Query(..., description="Company ID for validation"),
@@ -204,7 +204,7 @@ async def reject_suggestion(
         )
 
 
-@router.post("/bulk-approve-suggestions")
+@router.post("/bulk-approve-suggestions", response_model=None)
 async def bulk_approve_suggestions(
     request: BulkSuggestionRequest,
     db: AsyncSession = Depends(get_db)
@@ -263,7 +263,7 @@ async def bulk_approve_suggestions(
         )
 
 
-@router.post("/bulk-reject-suggestions")
+@router.post("/bulk-reject-suggestions", response_model=None)
 async def bulk_reject_suggestions(
     request: BulkSuggestionRequest,
     db: AsyncSession = Depends(get_db)
@@ -324,7 +324,7 @@ async def bulk_reject_suggestions(
         )
 
 
-@router.get("/ai-suggestions/vacancy/{vacancy_id}")
+@router.get("/ai-suggestions/vacancy/{vacancy_id}", response_model=None)
 async def get_ai_suggestions_by_vacancy(
     vacancy_id: str,
     status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
@@ -357,7 +357,7 @@ async def get_ai_suggestions_by_vacancy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ai-suggestions/candidate/{candidate_id}")
+@router.get("/ai-suggestions/candidate/{candidate_id}", response_model=None)
 async def get_ai_suggestions_by_candidate(
     candidate_id: str,
     status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
@@ -390,7 +390,7 @@ async def get_ai_suggestions_by_candidate(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/ai-suggestions/{suggestion_id}/approve")
+@router.post("/ai-suggestions/{suggestion_id}/approve", response_model=None)
 async def approve_ai_suggestion(
     suggestion_id: str,
     db: AsyncSession = Depends(get_db)
@@ -435,7 +435,7 @@ async def approve_ai_suggestion(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/ai-suggestions/{suggestion_id}/reject")
+@router.post("/ai-suggestions/{suggestion_id}/reject", response_model=None)
 async def reject_ai_suggestion(
     suggestion_id: str,
     request: RejectSuggestionRequest,

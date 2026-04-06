@@ -38,8 +38,8 @@ def verify_merge_signature(payload: bytes, signature: str) -> bool:
     return hmac.compare_digest(expected, signature)
 
 
-@router.post("/", include_in_schema=True)
-@router.post("", include_in_schema=False)
+@router.post("/", include_in_schema=True, response_model=None)
+@router.post("", include_in_schema=False, response_model=None)
 async def handle_merge_webhook(
     request: Request,
     background_tasks: BackgroundTasks,

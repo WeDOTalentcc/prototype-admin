@@ -113,7 +113,7 @@ async def get_granular_consents(
         raise HTTPException(status_code=500, detail="Erro ao buscar consentimentos")
 
 
-@router.post("/{candidate_id}/update")
+@router.post("/{candidate_id}/update", response_model=None)
 async def update_granular_consents(
     candidate_id: str,
     payload: BulkConsentUpdateRequest,

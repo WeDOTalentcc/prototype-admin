@@ -21,7 +21,7 @@ class PipelineActionRequest(BaseModel):
     action_id: str
 
 
-@router.get("/stale-candidates")
+@router.get("/stale-candidates", response_model=None)
 async def get_stale_candidates(
     stale_days: int = Query(default=3, ge=1, le=30, description="Days of inactivity to consider stale"),
     limit: int = Query(default=50, ge=1, le=100, description="Maximum candidates to return"),
@@ -44,7 +44,7 @@ async def get_stale_candidates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/action")
+@router.post("/action", response_model=None)
 async def execute_pipeline_action(
     request: PipelineActionRequest,
     db: AsyncSession = Depends(get_db)

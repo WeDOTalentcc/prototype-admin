@@ -135,7 +135,7 @@ Solicitação: {request.message}"""
         )
 
 
-@router.get("/job-draft/{conversation_id}")
+@router.get("/job-draft/{conversation_id}", response_model=None)
 async def get_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo)
@@ -153,7 +153,7 @@ async def get_job_draft(
     }
 
 
-@router.delete("/job-draft/{conversation_id}")
+@router.delete("/job-draft/{conversation_id}", response_model=None)
 async def clear_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo)

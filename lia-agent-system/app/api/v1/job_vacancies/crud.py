@@ -280,7 +280,7 @@ async def find_job_by_identifier(
 
 # ─── GET one ──────────────────────────────────────────────────────────────────
 
-@router.get("/job-vacancies/{job_vacancy_id}")
+@router.get("/job-vacancies/{job_vacancy_id}", response_model=None)
 async def get_job_vacancy(
     job_vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -358,7 +358,7 @@ async def get_job_vacancy(
 
 # ─── GET list ────────────────────────────────────────────────────────────────
 
-@router.get("/job-vacancies")
+@router.get("/job-vacancies", response_model=None)
 async def list_job_vacancies(
     status: Optional[str] = None,
     visibility: Optional[str] = None,
@@ -672,7 +672,7 @@ async def update_job_vacancy(
 
 # ─── DELETE (soft) ───────────────────────────────────────────────────────────
 
-@router.delete("/job-vacancies/{job_vacancy_id}")
+@router.delete("/job-vacancies/{job_vacancy_id}", response_model=None)
 async def delete_job_vacancy(
     job_vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -726,7 +726,7 @@ async def delete_job_vacancy(
 
 # ─── PATCH status ─────────────────────────────────────────────────────────────
 
-@router.patch("/job-vacancies/{job_vacancy_id}/status")
+@router.patch("/job-vacancies/{job_vacancy_id}/status", response_model=None)
 async def update_job_vacancy_status(
     job_vacancy_id: UUID,
     status: str,
@@ -816,7 +816,7 @@ class CloneFromTemplateRequest(BaseModel):
     overrides: Optional[Dict[str, Any]] = Field(default=None)
 
 
-@router.post("/job-vacancies/{job_id}/duplicate")
+@router.post("/job-vacancies/{job_id}/duplicate", response_model=None)
 async def duplicate_job(
     job_id: UUID,
     request: DuplicateJobRequest,
@@ -856,7 +856,7 @@ async def duplicate_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/job-vacancies/{job_id}/clone-from-template")
+@router.post("/job-vacancies/{job_id}/clone-from-template", response_model=None)
 async def clone_from_template(
     job_id: UUID,
     request: CloneFromTemplateRequest,
@@ -893,7 +893,7 @@ async def clone_from_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/job-vacancies/{job_id}/clone-summary")
+@router.get("/job-vacancies/{job_id}/clone-summary", response_model=None)
 async def get_clone_summary(
     job_id: UUID,
     db: AsyncSession = Depends(get_db)

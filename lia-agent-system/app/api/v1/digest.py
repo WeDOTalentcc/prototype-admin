@@ -27,7 +27,7 @@ class WeeklyDigestPreferenceRequest(BaseModel):
     enabled: bool
 
 
-@router.get("/weekly/preview")
+@router.get("/weekly/preview", response_model=None)
 async def preview_weekly_digest(
     recruiter_id: str | None = None,
     current_user: User = Depends(get_current_user_or_demo),
@@ -72,7 +72,7 @@ async def preview_weekly_digest(
     }
 
 
-@router.post("/weekly/send")
+@router.post("/weekly/send", response_model=None)
 async def send_weekly_digest(
     recruiter_id: str,
     current_user: User = Depends(get_current_user_or_demo),
@@ -99,7 +99,7 @@ async def send_weekly_digest(
     return result
 
 
-@router.post("/weekly/send-all")
+@router.post("/weekly/send-all", response_model=None)
 async def send_weekly_digest_to_all(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -114,7 +114,7 @@ async def send_weekly_digest_to_all(
     return result
 
 
-@router.get("/weekly/preferences")
+@router.get("/weekly/preferences", response_model=None)
 async def get_weekly_digest_preference(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -126,7 +126,7 @@ async def get_weekly_digest_preference(
     return {"user_id": user_id, "weekly_report_enabled": enabled}
 
 
-@router.put("/weekly/preferences")
+@router.put("/weekly/preferences", response_model=None)
 async def update_weekly_digest_preference(
     body: WeeklyDigestPreferenceRequest,
     current_user: User = Depends(get_current_user_or_demo),
@@ -165,7 +165,7 @@ async def update_weekly_digest_preference(
 # Daily digest endpoints (platform-native, runs at 08:00 BRT)
 # ─────────────────────────────────────────────────────────────
 
-@router.post("/daily/send-all")
+@router.post("/daily/send-all", response_model=None)
 async def send_daily_digest_to_all(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -186,7 +186,7 @@ async def send_daily_digest_to_all(
     return result
 
 
-@router.post("/daily/send")
+@router.post("/daily/send", response_model=None)
 async def send_daily_digest_to_user(
     recruiter_id: str,
     current_user: User = Depends(get_current_user_or_demo),

@@ -11,7 +11,6 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.calibration_service import CalibrationService
@@ -157,7 +156,7 @@ async def start_calibration_session(
         )
 
 
-@router.post("/feedback/explicit")
+@router.post("/feedback/explicit", response_model=None)
 async def record_explicit_feedback(
     request: ExplicitFeedbackRequest,
     user_id: str = "system",
@@ -184,7 +183,7 @@ async def record_explicit_feedback(
     }
 
 
-@router.post("/feedback/implicit")
+@router.post("/feedback/implicit", response_model=None)
 async def record_implicit_feedback(
     request: ImplicitFeedbackRequest,
     user_id: str = "system",
@@ -212,7 +211,7 @@ async def record_implicit_feedback(
     }
 
 
-@router.post("/feedback/post-hire")
+@router.post("/feedback/post-hire", response_model=None)
 async def record_post_hire_feedback(
     request: PostHireFeedbackRequest,
     user_id: str = "system",
@@ -238,7 +237,7 @@ async def record_post_hire_feedback(
     }
 
 
-@router.get("/divergences")
+@router.get("/divergences", response_model=None)
 async def get_divergences(
     days: int = 30,
     min_delta: float = 5.0,
@@ -261,7 +260,7 @@ async def get_divergences(
     }
 
 
-@router.get("/stats")
+@router.get("/stats", response_model=None)
 async def get_calibration_stats(
     days: int = 30,
     db: Session = Depends(get_db)
@@ -277,7 +276,7 @@ async def get_calibration_stats(
     }
 
 
-@router.get("/suggestions")
+@router.get("/suggestions", response_model=None)
 async def get_pending_suggestions(
     db: Session = Depends(get_db)
 ):
@@ -293,7 +292,7 @@ async def get_pending_suggestions(
     }
 
 
-@router.post("/suggestions/generate")
+@router.post("/suggestions/generate", response_model=None)
 async def generate_suggestions(
     db: Session = Depends(get_db)
 ):
@@ -309,7 +308,7 @@ async def generate_suggestions(
     }
 
 
-@router.post("/suggestions/{suggestion_id}/approve")
+@router.post("/suggestions/{suggestion_id}/approve", response_model=None)
 async def approve_suggestion(
     suggestion_id: str,
     user_id: str = "system",
@@ -330,7 +329,7 @@ async def approve_suggestion(
     }
 
 
-@router.post("/suggestions/{suggestion_id}/reject")
+@router.post("/suggestions/{suggestion_id}/reject", response_model=None)
 async def reject_suggestion(
     suggestion_id: str,
     request: SuggestionActionRequest,
@@ -356,7 +355,7 @@ async def reject_suggestion(
     }
 
 
-@router.get("/events")
+@router.get("/events", response_model=None)
 async def get_recent_events(
     limit: int = 50,
     feedback_types: str | None = None,
@@ -379,7 +378,7 @@ async def get_recent_events(
     }
 
 
-@router.get("/weights")
+@router.get("/weights", response_model=None)
 async def get_weights(
     job_id: str | None = None,
     db: Session = Depends(get_db)
@@ -396,7 +395,7 @@ async def get_weights(
     }
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", response_model=None)
 async def get_calibration_dashboard(
     days: int = 30,
     db: Session = Depends(get_db)

@@ -305,7 +305,7 @@ async def update_pipeline_template(
     )
 
 
-@router.delete("/{template_id}")
+@router.delete("/{template_id}", response_model=None)
 async def delete_pipeline_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),
@@ -405,7 +405,7 @@ async def clone_pipeline_template(
     )
 
 
-@router.post("/seed-defaults")
+@router.post("/seed-defaults", response_model=None)
 async def seed_default_templates(
     force: bool = Query(False, description="Force re-seeding even if templates exist"),
     db: AsyncSession = Depends(get_db),
@@ -472,7 +472,7 @@ async def seed_default_templates(
     }
 
 
-@router.post("/{template_id}/increment-usage")
+@router.post("/{template_id}/increment-usage", response_model=None)
 async def increment_template_usage(
     template_id: str,
     db: AsyncSession = Depends(get_db),

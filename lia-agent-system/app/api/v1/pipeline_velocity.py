@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/pipeline/velocity", tags=["pipeline-velocity"])
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_pipeline_velocity(
     vacancy_id: str | None = Query(None, description="ID da vaga (omitir para visão empresa)"),
     company_id: str | None = Query(None, description="ID da empresa (opcional)"),
@@ -57,7 +57,7 @@ async def get_pipeline_velocity(
         raise HTTPException(status_code=500, detail="Erro ao calcular métricas de velocidade")
 
 
-@router.get("/bottlenecks")
+@router.get("/bottlenecks", response_model=None)
 async def get_velocity_bottlenecks(
     company_id: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),

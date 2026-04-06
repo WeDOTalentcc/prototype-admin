@@ -70,7 +70,7 @@ class OutcomePatternResponse(BaseModel):
     fill_rate: float = 0.0
 
 
-@router.post("/outcomes/record")
+@router.post("/outcomes/record", response_model=None)
 async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depends(get_db)):
     try:
         result = await outcome_tracker.record_job_close(

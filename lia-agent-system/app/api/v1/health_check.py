@@ -141,7 +141,7 @@ async def get_health_check_summary(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/export", summary="Export health check items")
+@router.get("/export", summary="Export health check items", response_model=None)
 async def export_health_check(
     framework: str | None = Query(None, description="Filter by framework"),
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),

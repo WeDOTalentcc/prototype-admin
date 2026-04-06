@@ -247,7 +247,7 @@ async def get_all_email_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/status")
+@router.get("/status", response_model=None)
 async def get_email_system_status():
     """
     Get the current status of the email system.

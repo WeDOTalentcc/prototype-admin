@@ -528,7 +528,7 @@ async def update_culture_profile(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{company_id}")
+@router.delete("/{company_id}", response_model=None)
 async def delete_culture_profile(
     company_id: uuid.UUID,
     db: AsyncSession = Depends(get_db)
@@ -585,7 +585,7 @@ async def list_culture_profiles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{company_id}/match")
+@router.post("/{company_id}/match", response_model=None)
 async def calculate_culture_match(
     company_id: uuid.UUID,
     candidate_profile: dict,

@@ -59,7 +59,7 @@ class TeamsTestRequest(BaseModel):
     webhook_url: str | None = None
 
 
-@router.post("/teams/send")
+@router.post("/teams/send", response_model=None)
 async def send_teams_message(
     request: TeamsSendMessageRequest,
     current_user: dict[str, Any] = Depends(get_current_user)
@@ -85,7 +85,7 @@ async def send_teams_message(
     return result
 
 
-@router.post("/teams/send-alert")
+@router.post("/teams/send-alert", response_model=None)
 async def send_teams_alert(
     request: TeamsSendAlertRequest,
     current_user: dict[str, Any] = Depends(get_current_user)
@@ -126,7 +126,7 @@ async def send_teams_alert(
     return result
 
 
-@router.post("/teams/send-card")
+@router.post("/teams/send-card", response_model=None)
 async def send_teams_card(
     request: TeamsSendCardRequest,
     current_user: dict[str, Any] = Depends(get_current_user)
@@ -148,7 +148,7 @@ async def send_teams_card(
     return result
 
 
-@router.post("/teams/send-candidate-notification")
+@router.post("/teams/send-candidate-notification", response_model=None)
 async def send_teams_candidate_notification(
     request: TeamsCandidateNotificationRequest,
     current_user: dict[str, Any] = Depends(get_current_user)
@@ -173,7 +173,7 @@ async def send_teams_candidate_notification(
     return result
 
 
-@router.post("/teams/test")
+@router.post("/teams/test", response_model=None)
 async def test_teams_connection(
     request: TeamsTestRequest,
     current_user: dict[str, Any] = Depends(get_current_user)
@@ -191,7 +191,7 @@ async def test_teams_connection(
     return result
 
 
-@router.get("/teams/status")
+@router.get("/teams/status", response_model=None)
 async def get_teams_status(
     current_user: dict[str, Any] = Depends(get_current_user)
 ):
@@ -208,7 +208,7 @@ async def get_teams_status(
     }
 
 
-@router.get("/status")
+@router.get("/status", response_model=None)
 async def get_integrations_status(
     current_user: dict[str, Any] = Depends(get_current_user)
 ):

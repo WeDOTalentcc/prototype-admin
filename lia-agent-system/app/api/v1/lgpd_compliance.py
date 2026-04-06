@@ -874,7 +874,7 @@ async def schedule_candidate_deletion(
     )
 
 
-@router.post("/run-cleanup")
+@router.post("/run-cleanup", response_model=None)
 async def trigger_cleanup(
     dry_run: bool = Query(True, description="dry_run=true logs deletions without executing"),
     company_id: str = Depends(get_verified_company_id),
@@ -896,7 +896,7 @@ async def trigger_cleanup(
     return summary
 
 
-@router.get("/pending-deletions")
+@router.get("/pending-deletions", response_model=None)
 async def pending_deletions(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),

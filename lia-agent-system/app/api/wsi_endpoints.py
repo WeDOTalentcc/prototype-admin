@@ -493,7 +493,7 @@ async def calculate_wsi(
         raise HTTPException(status_code=500, detail=f"Failed to calculate WSI: {str(e)}")
 
 
-@router.get("/sessions/{session_id}")
+@router.get("/sessions/{session_id}", response_model=None)
 async def get_session(
     session_id: str,
     db: AsyncSession = Depends(get_db)
@@ -567,7 +567,7 @@ async def get_session(
         raise HTTPException(status_code=500, detail=f"Failed to get session: {str(e)}")
 
 
-@router.get("/results/candidate/{candidate_id}")
+@router.get("/results/candidate/{candidate_id}", response_model=None)
 async def get_candidate_results(
     candidate_id: str,
     limit: int = 10,
@@ -610,7 +610,7 @@ async def get_candidate_results(
         raise HTTPException(status_code=500, detail=f"Failed to get candidate results: {str(e)}")
 
 
-@router.get("/results/{result_id}/details")
+@router.get("/results/{result_id}/details", response_model=None)
 async def get_result_details(
     result_id: str,
     db: AsyncSession = Depends(get_db)
@@ -738,7 +738,7 @@ async def get_result_details(
         raise HTTPException(status_code=500, detail=f"Failed to get result details: {str(e)}")
 
 
-@router.get("/ranking/{job_vacancy_id}")
+@router.get("/ranking/{job_vacancy_id}", response_model=None)
 async def get_vacancy_ranking(
     job_vacancy_id: str,
     db: AsyncSession = Depends(get_db)
@@ -806,7 +806,7 @@ async def get_vacancy_ranking(
         raise HTTPException(status_code=500, detail=f"Failed to get vacancy ranking: {str(e)}")
 
 
-@router.get("/candidate/{candidate_id}/ranking/{job_vacancy_id}")
+@router.get("/candidate/{candidate_id}/ranking/{job_vacancy_id}", response_model=None)
 async def get_candidate_ranking_in_vacancy(
     candidate_id: str,
     job_vacancy_id: str,
@@ -936,7 +936,7 @@ async def get_voice_screening_status(
         raise HTTPException(status_code=500, detail=f"Failed to get voice screening status: {str(e)}")
 
 
-@router.get("/voice-screening/by-call/{call_id}")
+@router.get("/voice-screening/by-call/{call_id}", response_model=None)
 async def get_voice_screening_by_call(
     call_id: str,
     db: AsyncSession = Depends(get_db)
@@ -1315,7 +1315,7 @@ Responda APENAS com JSON válido:
         raise HTTPException(status_code=500, detail=f"Failed to generate screening questions: {str(e)}")
 
 
-@router.post("/results/{result_id}/trigger-feedback")
+@router.post("/results/{result_id}/trigger-feedback", response_model=None)
 async def trigger_post_screening_feedback(
     result_id: str,
     db: AsyncSession = Depends(get_db)
@@ -1420,7 +1420,7 @@ async def trigger_post_screening_feedback(
         raise HTTPException(status_code=500, detail=f"Failed to trigger feedback: {str(e)}")
 
 
-@router.get("/results/{result_id}/feedback-status")
+@router.get("/results/{result_id}/feedback-status", response_model=None)
 async def get_feedback_status(
     result_id: str,
     db: AsyncSession = Depends(get_db)
@@ -1494,7 +1494,7 @@ async def get_feedback_status(
         raise HTTPException(status_code=500, detail=f"Failed to get feedback status: {str(e)}")
 
 
-@router.get("/candidates/{job_vacancy_id}/scores")
+@router.get("/candidates/{job_vacancy_id}/scores", response_model=None)
 async def get_candidates_wsi_scores(
     job_vacancy_id: str,
     db: AsyncSession = Depends(get_db)

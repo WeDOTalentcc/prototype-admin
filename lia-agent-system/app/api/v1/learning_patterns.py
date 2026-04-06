@@ -18,7 +18,7 @@ router = APIRouter(prefix="/patterns", tags=["learning-patterns"])
 SKILL_PROMOTION_THRESHOLD = 5
 
 
-@router.get("/{company_id}/detected")
+@router.get("/{company_id}/detected", response_model=None)
 async def get_detected_patterns(
     company_id: str,
     field: str | None = None,
@@ -71,7 +71,7 @@ async def get_detected_patterns(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{company_id}/skills")
+@router.get("/{company_id}/skills", response_model=None)
 async def get_promoted_skills(
     company_id: str,
     job_title: str | None = None,
@@ -125,7 +125,7 @@ async def get_promoted_skills(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{company_id}/success-profiles")
+@router.get("/{company_id}/success-profiles", response_model=None)
 async def get_success_profiles(
     company_id: str,
     role: str | None = None,
@@ -177,7 +177,7 @@ async def get_success_profiles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{company_id}/trigger-detection")
+@router.post("/{company_id}/trigger-detection", response_model=None)
 async def trigger_pattern_detection(company_id: str):
     """Manually trigger pattern detection for a company."""
     try:

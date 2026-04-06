@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/agents", tags=["Admin - Agents"])
 
 
-@router.post("/reload")
+@router.post("/reload", response_model=None)
 async def reload_agent_registry(
     x_company_id: str = Header(..., alias="X-Company-ID"),
     _user: Any = Depends(require_admin),

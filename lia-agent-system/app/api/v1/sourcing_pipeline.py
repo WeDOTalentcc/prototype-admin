@@ -225,7 +225,7 @@ async def run_pipeline_for_all_jobs(
     return result
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=None)
 async def get_pipeline_summary(db: AsyncSession = Depends(get_db)):
     """
     Get a summary of the sourcing pipeline status.

@@ -664,7 +664,7 @@ async def add_candidates_to_vacancy(
         raise HTTPException(status_code=500, detail=f"Add candidates to vacancy failed: {str(e)}")
 
 
-@router.get("/vacancy/{vacancy_id}/candidates/count")
+@router.get("/vacancy/{vacancy_id}/candidates/count", response_model=None)
 async def get_vacancy_candidates_count(
     vacancy_id: str,
     db: AsyncSession = Depends(get_db)

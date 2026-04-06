@@ -86,7 +86,7 @@ async def get_alert_summary(
     return summary
 
 
-@router.post("/check")
+@router.post("/check", response_model=None)
 async def run_alert_checks(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
@@ -296,7 +296,7 @@ DEFAULT_ALERT_PREFERENCES = [
 ]
 
 
-@router.get("/preferences")
+@router.get("/preferences", response_model=None)
 async def get_alert_preferences(
     user_id: str = Query(..., description="User ID (required)"),
     company_id: str = Depends(require_company_id),
@@ -338,7 +338,7 @@ async def get_alert_preferences(
         raise HTTPException(status_code=500, detail=f"Failed to fetch alert preferences: {str(e)}")
 
 
-@router.post("/preferences")
+@router.post("/preferences", response_model=None)
 async def create_alert_preferences(
     data: AlertPreferenceRequest,
     company_id: str = Depends(require_company_id),
@@ -412,7 +412,7 @@ async def create_alert_preferences(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/preferences")
+@router.put("/preferences", response_model=None)
 async def update_alert_preferences(
     data: AlertPreferenceRequest,
     company_id: str = Depends(require_company_id),

@@ -96,7 +96,7 @@ class SecuritySettingUpdate(BaseModel):
     data_retention_days: int | None = None
 
 
-@router.get("/roles")
+@router.get("/roles", response_model=None)
 async def list_roles(
     company_id: str = Query(..., description="Company ID"),
     include_inactive: bool = Query(False, description="Include inactive roles"),
@@ -121,7 +121,7 @@ async def list_roles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/roles")
+@router.post("/roles", response_model=None)
 async def create_role(
     data: RoleCreate,
     company_id: str = Query(..., description="Company ID"),
@@ -149,7 +149,7 @@ async def create_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/roles/{role_id}")
+@router.put("/roles/{role_id}", response_model=None)
 async def update_role(
     role_id: str,
     data: RoleUpdate,
@@ -190,7 +190,7 @@ async def update_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/roles/{role_id}")
+@router.delete("/roles/{role_id}", response_model=None)
 async def delete_role(
     role_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -222,7 +222,7 @@ async def delete_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/roles/initialize")
+@router.post("/roles/initialize", response_model=None)
 async def initialize_default_roles(
     company_id: str = Query(..., description="Company ID"),
     db: AsyncSession = Depends(get_db)
@@ -266,7 +266,7 @@ async def initialize_default_roles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/user-roles")
+@router.get("/user-roles", response_model=None)
 async def list_user_roles(
     company_id: str = Query(..., description="Company ID"),
     user_id: str | None = Query(None, description="Filter by user ID"),
@@ -293,7 +293,7 @@ async def list_user_roles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/user-roles")
+@router.post("/user-roles", response_model=None)
 async def assign_role_to_user(
     data: UserRoleAssign,
     company_id: str = Query(..., description="Company ID"),
@@ -344,7 +344,7 @@ async def assign_role_to_user(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/user-roles/{assignment_id}")
+@router.delete("/user-roles/{assignment_id}", response_model=None)
 async def remove_role_assignment(
     assignment_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -372,7 +372,7 @@ async def remove_role_assignment(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/notification-policies")
+@router.get("/notification-policies", response_model=None)
 async def list_notification_policies(
     company_id: str = Query(..., description="Company ID"),
     event_type: str | None = Query(None, description="Filter by event type"),
@@ -402,7 +402,7 @@ async def list_notification_policies(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/notification-policies")
+@router.post("/notification-policies", response_model=None)
 async def create_notification_policy(
     data: NotificationPolicyCreate,
     company_id: str = Query(..., description="Company ID"),
@@ -433,7 +433,7 @@ async def create_notification_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/notification-policies/{policy_id}")
+@router.put("/notification-policies/{policy_id}", response_model=None)
 async def update_notification_policy(
     policy_id: str,
     data: NotificationPolicyUpdate,
@@ -479,7 +479,7 @@ async def update_notification_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/notification-policies/{policy_id}")
+@router.delete("/notification-policies/{policy_id}", response_model=None)
 async def delete_notification_policy(
     policy_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -507,7 +507,7 @@ async def delete_notification_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/security")
+@router.get("/security", response_model=None)
 async def get_security_settings(
     company_id: str = Query(..., description="Company ID"),
     db: AsyncSession = Depends(get_db)
@@ -535,7 +535,7 @@ async def get_security_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/security")
+@router.put("/security", response_model=None)
 async def update_security_settings(
     data: SecuritySettingUpdate,
     company_id: str = Query(..., description="Company ID"),
@@ -595,7 +595,7 @@ async def update_security_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/audit-logs")
+@router.get("/audit-logs", response_model=None)
 async def get_audit_logs(
     company_id: str = Query(..., description="Company ID"),
     action: str | None = Query(None, description="Filter by action"),
@@ -649,7 +649,7 @@ async def get_audit_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/permissions-matrix")
+@router.get("/permissions-matrix", response_model=None)
 async def get_permissions_matrix():
     """Get the available permissions matrix."""
     return {
@@ -661,7 +661,7 @@ async def get_permissions_matrix():
     }
 
 
-@router.get("/notification-event-types")
+@router.get("/notification-event-types", response_model=None)
 async def get_notification_event_types():
     """Get available notification event types."""
     return {

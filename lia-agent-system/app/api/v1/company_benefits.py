@@ -272,7 +272,7 @@ async def update_company_benefit(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{benefit_id}")
+@router.delete("/{benefit_id}", response_model=None)
 async def delete_company_benefit(
     benefit_id: UUID,
     hard_delete: bool = Query(False, description="Permanently delete instead of soft delete"),
@@ -313,7 +313,7 @@ async def delete_company_benefit(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/seed-defaults")
+@router.post("/seed-defaults", response_model=None)
 async def seed_default_benefits(
     company_id: str | None = Query(None, description="Company ID to seed benefits for"),
     db: AsyncSession = Depends(get_db),
@@ -374,7 +374,7 @@ async def seed_default_benefits(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/categories/list")
+@router.get("/categories/list", response_model=None)
 async def list_benefit_categories():
     """
     List available benefit categories.

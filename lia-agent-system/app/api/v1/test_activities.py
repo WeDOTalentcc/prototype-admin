@@ -15,7 +15,7 @@ from app.services.activity_service import activity_service
 router = APIRouter(prefix="/test", tags=["Testing"])
 
 
-@router.post("/populate-activities")
+@router.post("/populate-activities", response_model=None)
 async def populate_activities(db: AsyncSession = Depends(get_db)):
     """
     Create sample activities for all types to test the Activity Feed UI.
@@ -113,7 +113,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.delete("/clear-test-activities")
+@router.delete("/clear-test-activities", response_model=None)
 async def clear_test_activities(db: AsyncSession = Depends(get_db)):
     """
     Delete all test activities (those with test- prefixed IDs).

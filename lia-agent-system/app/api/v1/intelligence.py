@@ -57,7 +57,7 @@ class WizardSuggestionResponse(BaseModel):
     source: str
 
 
-@router.get("/data-quality")
+@router.get("/data-quality", response_model=None)
 async def get_data_quality(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -86,7 +86,7 @@ async def get_data_quality(
         raise HTTPException(status_code=500, detail="Error assessing data quality")
 
 
-@router.post("/context")
+@router.post("/context", response_model=None)
 async def get_intelligence_context(
     request: IntelligenceContextRequest,
     current_user: User = Depends(get_current_user_or_demo),
@@ -130,7 +130,7 @@ async def get_intelligence_context(
         raise HTTPException(status_code=500, detail="Error building intelligence context")
 
 
-@router.post("/adjust-field")
+@router.post("/adjust-field", response_model=None)
 async def adjust_field_value(
     request: PatternAdjustmentRequest,
     current_user: User = Depends(get_current_user_or_demo),
@@ -169,7 +169,7 @@ async def adjust_field_value(
         raise HTTPException(status_code=500, detail="Error applying pattern adjustment")
 
 
-@router.get("/wizard-enhancements")
+@router.get("/wizard-enhancements", response_model=None)
 async def get_wizard_enhancements(
     seniority: str | None = None,
     department: str | None = None,
@@ -213,7 +213,7 @@ async def get_wizard_enhancements(
         raise HTTPException(status_code=500, detail="Error generating wizard enhancements")
 
 
-@router.get("/success-profile")
+@router.get("/success-profile", response_model=None)
 async def get_success_profile(
     seniority: str | None = None,
     department: str | None = None,
@@ -263,7 +263,7 @@ async def get_success_profile(
         raise HTTPException(status_code=500, detail="Error retrieving success profile")
 
 
-@router.get("/correlations")
+@router.get("/correlations", response_model=None)
 async def get_correlations(
     factor_field: str | None = None,
     outcome_type: str | None = None,

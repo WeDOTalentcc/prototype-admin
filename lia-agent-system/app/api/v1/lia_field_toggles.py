@@ -321,7 +321,7 @@ async def check_job_completeness(
     )
 
 
-@router.post("/{company_id}/field-toggles/seed")
+@router.post("/{company_id}/field-toggles/seed", response_model=None)
 async def seed_default_toggles(
     company_id: str,
     db: AsyncSession = Depends(get_db),

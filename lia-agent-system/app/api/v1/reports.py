@@ -64,7 +64,7 @@ class ComparisonReportRequest(BaseModel):
     job_id: str
 
 
-@router.post("/candidate")
+@router.post("/candidate", response_model=None)
 async def generate_candidate_report(
     request: CandidateReportRequest,
     db: AsyncSession = Depends(get_db)
@@ -86,7 +86,7 @@ async def generate_candidate_report(
         raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
 
 
-@router.post("/comparison")
+@router.post("/comparison", response_model=None)
 async def generate_comparison_report(
     request: ComparisonReportRequest,
     db: AsyncSession = Depends(get_db)
@@ -105,7 +105,7 @@ async def generate_comparison_report(
         raise HTTPException(status_code=500, detail=f"Error generating comparison: {str(e)}")
 
 
-@router.get("/candidate/{candidate_id}")
+@router.get("/candidate/{candidate_id}", response_model=None)
 async def get_candidate_report(
     candidate_id: str,
     job_id: str | None = None,
@@ -125,7 +125,7 @@ async def get_candidate_report(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/daily-briefing/send")
+@router.post("/daily-briefing/send", response_model=None)
 async def send_daily_briefing(
     request: DailyBriefingSendRequest,
     db: AsyncSession = Depends(get_db)
@@ -160,7 +160,7 @@ async def send_daily_briefing(
         raise HTTPException(status_code=500, detail=f"Error sending daily briefing: {str(e)}")
 
 
-@router.post("/weekly/send")
+@router.post("/weekly/send", response_model=None)
 async def send_weekly_report(request: WeeklyReportSendRequest):
     """
     Send a weekly performance report.
@@ -190,7 +190,7 @@ async def send_weekly_report(request: WeeklyReportSendRequest):
         raise HTTPException(status_code=500, detail=f"Error sending weekly report: {str(e)}")
 
 
-@router.post("/monthly/send")
+@router.post("/monthly/send", response_model=None)
 async def send_monthly_report(request: MonthlyReportSendRequest):
     """
     Send a monthly manager/executive report.
@@ -220,7 +220,7 @@ async def send_monthly_report(request: MonthlyReportSendRequest):
         raise HTTPException(status_code=500, detail=f"Error sending monthly report: {str(e)}")
 
 
-@router.get("/preview/{report_type}", response_class=HTMLResponse)
+@router.get("/preview/{report_type}", response_class=HTMLResponse, response_model=None)
 async def preview_report(
     report_type: ReportType,
     user_name: str = Query(default="Recrutador", description="Name for personalization"),
@@ -249,7 +249,7 @@ async def preview_report(
         raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
 
 
-@router.get("/preview/{report_type}/json")
+@router.get("/preview/{report_type}/json", response_model=None)
 async def preview_report_json(
     report_type: ReportType,
     user_name: str = Query(default="Recrutador", description="Name for personalization"),

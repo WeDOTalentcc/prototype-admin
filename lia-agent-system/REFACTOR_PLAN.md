@@ -1157,11 +1157,11 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 | 2 — Extract DB to repos | ⬜ TODO | | | | |
 | 3 — Model consolidation | ⬜ TODO | | | | |
 | 4 — DDD migration | ⬜ TODO | | | | |
-| 5 — Response models | ⬜ TODO | | | | |
+| 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
 | 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
 | 7 — Fix tests | ✅ DONE | — | — | rename only | 2026-04-06 |
 | 8 — Guardrails & CI | ✅ DONE | — | — | +scripts | 2026-04-06 |
-| 9 — Circular imports | ⬜ TODO | | | | |
+| 9 — Circular imports & quality | ✅ DONE | — | — | ruff + shims | 2026-04-06 |
 | 10 — Error handling | ✅ DONE | — | — | +4 handlers | 2026-04-06 |
 
 ### Key Metrics Dashboard

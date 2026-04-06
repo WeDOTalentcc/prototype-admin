@@ -412,7 +412,7 @@ async def add_job_requirement(
     return db_requirement
 
 
-@router.delete("/{job_id}/requirements/{requirement_id}")
+@router.delete("/{job_id}/requirements/{requirement_id}", response_model=None)
 async def delete_job_requirement(
     job_id: UUID,
     requirement_id: UUID,
@@ -480,7 +480,7 @@ async def get_job_evaluations(
     return responses
 
 
-@router.get("/{job_id}/candidates/{candidate_id}/breakdown")
+@router.get("/{job_id}/candidates/{candidate_id}/breakdown", response_model=None)
 async def get_score_breakdown(
     job_id: UUID,
     candidate_id: UUID,
@@ -523,7 +523,7 @@ async def get_score_breakdown(
     }
 
 
-@router.post("/evaluate/legacy")
+@router.post("/evaluate/legacy", response_model=None)
 async def evaluate_candidate_legacy(
     request: EvaluateCandidateRequest,
     db: AsyncSession = Depends(get_db),

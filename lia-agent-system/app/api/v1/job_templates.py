@@ -171,7 +171,7 @@ async def list_templates(
     return [TemplateResponse(**t.to_dict()) for t in templates]
 
 
-@router.get("/search")
+@router.get("/search", response_model=None)
 async def search_templates(
     q: str = Query(..., min_length=2),
     company_id: str | None = None,
@@ -209,7 +209,7 @@ async def get_popular_templates(
     return [TemplateResponse(**t.to_dict()) for t in templates]
 
 
-@router.get("/quality-gates")
+@router.get("/quality-gates", response_model=None)
 async def get_quality_gates():
     """Get WSI quality gate requirements."""
     return {
@@ -218,7 +218,7 @@ async def get_quality_gates():
     }
 
 
-@router.post("/validate")
+@router.post("/validate", response_model=None)
 async def validate_template_data(
     request: CreateTemplateRequest,
 ):
@@ -301,7 +301,7 @@ async def clone_template(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/{template_id}/feedback")
+@router.post("/{template_id}/feedback", response_model=None)
 async def submit_feedback(
     template_id: str,
     request: TemplateFeedbackRequest,
@@ -344,7 +344,7 @@ async def create_template(
     return TemplateResponse(**template.to_dict())
 
 
-@router.post("/seed")
+@router.post("/seed", response_model=None)
 async def seed_templates(
     db: AsyncSession = Depends(get_db),
 ):
@@ -359,7 +359,7 @@ async def seed_templates(
     }
 
 
-@router.post("/seed/brazilian-market")
+@router.post("/seed/brazilian-market", response_model=None)
 async def seed_brazilian_market_templates(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
@@ -416,7 +416,7 @@ async def seed_brazilian_market_templates(
     }
 
 
-@router.get("/brazilian-market")
+@router.get("/brazilian-market", response_model=None)
 async def get_brazilian_market_templates():
     """
     Get all curated Brazilian market templates.
@@ -446,7 +446,7 @@ async def get_brazilian_market_templates():
     }
 
 
-@router.post("/import/esco")
+@router.post("/import/esco", response_model=None)
 async def import_from_esco(
     category: str = Query(...),
     subcategory: str = Query("geral"),
@@ -478,7 +478,7 @@ async def import_from_esco(
         await importer.close()
 
 
-@router.get("/import/status")
+@router.get("/import/status", response_model=None)
 async def get_import_status(
     db: AsyncSession = Depends(get_db),
 ):
@@ -492,7 +492,7 @@ async def get_import_status(
         await importer.close()
 
 
-@router.get("/learning/stats")
+@router.get("/learning/stats", response_model=None)
 async def get_learning_stats(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
@@ -504,7 +504,7 @@ async def get_learning_stats(
     return await learning.get_learning_stats(UUID(company_id))
 
 
-@router.get("/learning/suggestions")
+@router.get("/learning/suggestions", response_model=None)
 async def get_learning_suggestions(
     company_id: str = Query(...),
     limit: int = Query(5, le=10),
@@ -534,7 +534,7 @@ class LearnFromJobRequest(BaseModel):
     template_used: str | None = None
 
 
-@router.post("/learning/learn-from-job")
+@router.post("/learning/learn-from-job", response_model=None)
 async def learn_from_job_creation(
     request: LearnFromJobRequest,
     db: AsyncSession = Depends(get_db),

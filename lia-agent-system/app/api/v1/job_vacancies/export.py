@@ -10,7 +10,7 @@ from ._shared import *
 router = APIRouter()
 
 
-@router.get("/job-vacancies/{job_id}/export/pdf")
+@router.get("/job-vacancies/{job_id}/export/pdf", response_model=None)
 async def export_job_vacancy_pdf(
     job_id: UUID,
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
@@ -61,7 +61,7 @@ async def export_job_vacancy_pdf(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/job-vacancies/{job_id}/export/excel")
+@router.get("/job-vacancies/{job_id}/export/excel", response_model=None)
 async def export_job_vacancy_excel(
     job_id: UUID,
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),

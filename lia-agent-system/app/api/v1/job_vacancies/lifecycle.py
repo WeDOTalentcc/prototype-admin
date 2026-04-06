@@ -512,7 +512,7 @@ async def get_sourcing_status_v2(
 
 # ─── Close vacancy ────────────────────────────────────────────────────────────
 
-@router.post("/{vacancy_id}/close")
+@router.post("/{vacancy_id}/close", response_model=None)
 async def close_vacancy(
     vacancy_id: str,
     request: Request,

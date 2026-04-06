@@ -412,7 +412,7 @@ async def update_job_draft(
     return _draft_to_response(draft)
 
 
-@router.delete("/job-drafts/{draft_id}", status_code=204)
+@router.delete("/job-drafts/{draft_id}", status_code=204, response_model=None)
 async def delete_job_draft(
     draft_id: UUID,
     current_user: User = Depends(get_current_user_or_demo),

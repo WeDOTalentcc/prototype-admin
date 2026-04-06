@@ -56,7 +56,7 @@ class RevealCostEstimate(BaseModel):
     description: str
 
 
-@router.get("/reveal/cost")
+@router.get("/reveal/cost", response_model=None)
 async def get_reveal_cost(
     reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'")
 ) -> RevealCostEstimate:

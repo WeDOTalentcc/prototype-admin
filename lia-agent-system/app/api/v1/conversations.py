@@ -331,7 +331,7 @@ async def update_summary(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{conversation_id}")
+@router.delete("/{conversation_id}", response_model=None)
 async def delete_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
@@ -359,7 +359,7 @@ async def delete_conversation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{conversation_id}/archive")
+@router.post("/{conversation_id}/archive", response_model=None)
 async def archive_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
@@ -387,7 +387,7 @@ async def archive_conversation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{conversation_id}/clear")
+@router.post("/{conversation_id}/clear", response_model=None)
 async def clear_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
@@ -415,7 +415,7 @@ async def clear_conversation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{conversation_id}/context")
+@router.get("/{conversation_id}/context", response_model=None)
 async def get_conversation_context(
     conversation_id: str,
     max_messages: int = Query(20, ge=1, le=50),

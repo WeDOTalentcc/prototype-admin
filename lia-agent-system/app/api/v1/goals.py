@@ -148,7 +148,7 @@ async def list_goals(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/by-user/{user_id}")
+@router.get("/by-user/{user_id}", response_model=None)
 async def get_goals_by_user(
     user_id: str,
     include_inactive: bool = Query(False),
@@ -290,7 +290,7 @@ async def update_goal(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{goal_id}")
+@router.delete("/{goal_id}", response_model=None)
 async def delete_goal(
     goal_id: uuid.UUID,
     db: AsyncSession = Depends(get_db)
@@ -319,7 +319,7 @@ async def delete_goal(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/bulk")
+@router.post("/bulk", response_model=None)
 async def create_goals_bulk(
     goals: list[GoalCreate],
     db: AsyncSession = Depends(get_db)
@@ -412,7 +412,7 @@ async def create_goal_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/seed-templates")
+@router.post("/seed-templates", response_model=None)
 async def seed_default_templates(
     db: AsyncSession = Depends(get_db)
 ):
@@ -591,7 +591,7 @@ async def parse_goal_import_file(file: UploadFile) -> list[dict[str, str]]:
         )
 
 
-@router.get("/import/template")
+@router.get("/import/template", response_model=None)
 async def download_goals_import_template():
     """Download CSV template for goals import."""
     try:

@@ -250,7 +250,7 @@ async def publish_template(
     return template
 
 
-@router.delete("/agent-templates/{template_id}", status_code=204)
+@router.delete("/agent-templates/{template_id}", status_code=204, response_model=None)
 async def archive_template(
     template_id: str,
     current_user=Depends(get_current_user),

@@ -324,7 +324,7 @@ async def public_register(
     )
 
 
-@router.post("/forgot-password")
+@router.post("/forgot-password", response_model=None)
 async def forgot_password(
     request_data: PasswordResetRequest,
     db: AsyncSession = Depends(get_db)
@@ -364,7 +364,7 @@ async def forgot_password(
     return {"message": "Se o email existir em nosso sistema, você receberá um link para redefinir sua senha."}
 
 
-@router.post("/reset-password")
+@router.post("/reset-password", response_model=None)
 async def reset_password(
     request_data: PasswordResetConfirm,
     db: AsyncSession = Depends(get_db)
@@ -401,7 +401,7 @@ async def reset_password(
     return {"message": "Senha redefinida com sucesso. Você já pode fazer login."}
 
 
-@router.post("/verify-email")
+@router.post("/verify-email", response_model=None)
 async def verify_email(
     request_data: EmailVerificationRequest,
     db: AsyncSession = Depends(get_db)
@@ -439,7 +439,7 @@ async def verify_email(
     return {"message": "Email verificado com sucesso!"}
 
 
-@router.post("/resend-verification")
+@router.post("/resend-verification", response_model=None)
 async def resend_verification(
     request_data: PasswordResetRequest,
     db: AsyncSession = Depends(get_db)
@@ -517,7 +517,7 @@ async def get_invitation_info(
     )
 
 
-@router.post("/accept-invitation")
+@router.post("/accept-invitation", response_model=None)
 async def accept_invitation(
     request_data: InvitationAccept,
     db: AsyncSession = Depends(get_db)

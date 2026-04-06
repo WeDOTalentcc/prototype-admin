@@ -305,7 +305,7 @@ async def get_candidate_analyses(
         raise HTTPException(status_code=500, detail=f"Failed to fetch analyses: {str(e)}")
 
 
-@router.delete("/candidate/{candidate_id}/{analysis_type}")
+@router.delete("/candidate/{candidate_id}/{analysis_type}", response_model=None)
 async def delete_candidate_analysis(
     candidate_id: str,
     analysis_type: str,

@@ -23,7 +23,7 @@ class SubmitFeedbackRequest(BaseModel):
     reason: str | None = None
 
 
-@router.post("/")
+@router.post("/", response_model=None)
 async def submit_feedback(request: Request, body: SubmitFeedbackRequest, db: AsyncSession = Depends(get_db)):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
@@ -70,7 +70,7 @@ async def submit_feedback(request: Request, body: SubmitFeedbackRequest, db: Asy
     return {"action": "created", "feedback": feedback.to_dict()}
 
 
-@router.get("/user/all")
+@router.get("/user/all", response_model=None)
 async def get_user_feedbacks(request: Request, job_id: str | None = None, db: AsyncSession = Depends(get_db)):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
@@ -88,7 +88,7 @@ async def get_user_feedbacks(request: Request, job_id: str | None = None, db: As
     }
 
 
-@router.get("/{job_id}")
+@router.get("/{job_id}", response_model=None)
 async def get_job_feedbacks(job_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(SearchFeedback).where(SearchFeedback.job_id == job_id).order_by(SearchFeedback.created_at.desc())
@@ -106,7 +106,7 @@ async def get_job_feedbacks(job_id: str, db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.delete("/{feedback_id}")
+@router.delete("/{feedback_id}", response_model=None)
 async def delete_feedback(request: Request, feedback_id: str, db: AsyncSession = Depends(get_db)):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:

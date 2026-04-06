@@ -368,7 +368,7 @@ async def regenerate_wsi_questions(request: RegenerateQuestionsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/question-templates")
+@router.get("/question-templates", response_model=None)
 async def get_question_templates():
     """
     Get available question templates for reference.

@@ -75,7 +75,7 @@ class UpdateTaskStatusRequest(BaseModel):
     error_message: str | None = None
 
 
-@router.post("/decompose")
+@router.post("/decompose", response_model=None)
 async def decompose_task(
     request: DecomposeTaskRequest,
     db: AsyncSession = Depends(get_db)
@@ -110,7 +110,7 @@ async def decompose_task(
     }
 
 
-@router.post("/tasks")
+@router.post("/tasks", response_model=None)
 async def create_planned_task(
     request: CreatePlannedTaskRequest,
     db: AsyncSession = Depends(get_db)
@@ -143,7 +143,7 @@ async def create_planned_task(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/tasks/{task_id}")
+@router.get("/tasks/{task_id}", response_model=None)
 async def get_planned_task(
     task_id: str,
     db: AsyncSession = Depends(get_db)
@@ -157,7 +157,7 @@ async def get_planned_task(
     return task.to_dict()
 
 
-@router.patch("/tasks/{task_id}/status")
+@router.patch("/tasks/{task_id}/status", response_model=None)
 async def update_task_status(
     task_id: str,
     request: UpdateTaskStatusRequest,
@@ -186,7 +186,7 @@ async def update_task_status(
     return task.to_dict()
 
 
-@router.get("/tasks/{task_id}/subtasks")
+@router.get("/tasks/{task_id}/subtasks", response_model=None)
 async def get_subtasks(
     task_id: str,
     db: AsyncSession = Depends(get_db)
@@ -201,7 +201,7 @@ async def get_subtasks(
     }
 
 
-@router.get("/tasks/{task_id}/dependencies")
+@router.get("/tasks/{task_id}/dependencies", response_model=None)
 async def check_task_dependencies(
     task_id: str,
     db: AsyncSession = Depends(get_db)
@@ -215,7 +215,7 @@ async def check_task_dependencies(
     return result
 
 
-@router.get("/goal/{goal_id}/tasks")
+@router.get("/goal/{goal_id}/tasks", response_model=None)
 async def get_tasks_by_goal(
     goal_id: str,
     include_completed: bool = Query(False),
@@ -233,7 +233,7 @@ async def get_tasks_by_goal(
     }
 
 
-@router.post("/prioritize")
+@router.post("/prioritize", response_model=None)
 async def prioritize_tasks(
     request: PrioritizeTasksRequest,
     db: AsyncSession = Depends(get_db)
@@ -255,7 +255,7 @@ async def prioritize_tasks(
     }
 
 
-@router.post("/dag/build")
+@router.post("/dag/build", response_model=None)
 async def build_task_dag(
     task_ids: list[str] = Body(..., embed=True),
     db: AsyncSession = Depends(get_db)
@@ -287,7 +287,7 @@ async def build_task_dag(
     }
 
 
-@router.post("/execution-plans")
+@router.post("/execution-plans", response_model=None)
 async def create_execution_plan(
     request: CreateExecutionPlanRequest,
     db: AsyncSession = Depends(get_db)
@@ -320,7 +320,7 @@ async def create_execution_plan(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/execution-plans/{plan_id}")
+@router.get("/execution-plans/{plan_id}", response_model=None)
 async def get_execution_plan(
     plan_id: str,
     db: AsyncSession = Depends(get_db)
@@ -334,7 +334,7 @@ async def get_execution_plan(
     return plan.to_dict()
 
 
-@router.get("/next-tasks")
+@router.get("/next-tasks", response_model=None)
 async def get_next_tasks(
     goal_id: str | None = Query(None),
     parent_task_id: str | None = Query(None),
@@ -372,7 +372,7 @@ async def get_next_tasks(
     }
 
 
-@router.post("/tasks/{task_id}/chain-of-thought")
+@router.post("/tasks/{task_id}/chain-of-thought", response_model=None)
 async def add_chain_of_thought(
     task_id: str,
     thought: str = Body(..., embed=True),

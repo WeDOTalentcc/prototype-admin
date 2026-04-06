@@ -491,7 +491,7 @@ async def get_supported_formats():
     return SupportedFormatsResponse(**formats_info)
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def health_check():
     """
     Check if CV Parser service is properly configured.
@@ -505,7 +505,7 @@ async def health_check():
     }
 
 
-@router.post("/upload-and-screen")
+@router.post("/upload-and-screen", response_model=None)
 async def upload_and_screen_cv(
     file: UploadFile | None = File(None),
     cv_text: str | None = Form(None),

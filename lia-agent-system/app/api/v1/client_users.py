@@ -292,7 +292,7 @@ async def verify_client_exists(client_id: str, db: AsyncSession) -> ClientAccoun
     return client
 
 
-@router.get("/options", summary="List available role and status options")
+@router.get("/options", summary="List available role and status options", response_model=None)
 async def list_options():
     """List all available role and status options for client users."""
     return {
@@ -304,7 +304,7 @@ async def list_options():
     }
 
 
-@router.get("", summary="List users for a client")
+@router.get("", summary="List users for a client", response_model=None)
 async def list_client_users(
     client_id: str,
     status: str | None = Query(None, description="Filter by status"),
@@ -377,7 +377,7 @@ async def list_client_users(
         )
 
 
-@router.get("/{user_id}", summary="Get user by ID")
+@router.get("/{user_id}", summary="Get user by ID", response_model=None)
 async def get_client_user(
     client_id: str,
     user_id: str,
@@ -431,7 +431,7 @@ async def get_client_user(
         )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, summary="Create/invite user")
+@router.post("", status_code=status.HTTP_201_CREATED, summary="Create/invite user", response_model=None)
 async def create_client_user(
     client_id: str,
     data: ClientUserCreate,
@@ -551,7 +551,7 @@ async def create_client_user(
         )
 
 
-@router.put("/{user_id}", summary="Update user")
+@router.put("/{user_id}", summary="Update user", response_model=None)
 async def update_client_user(
     client_id: str,
     user_id: str,
@@ -637,7 +637,7 @@ async def update_client_user(
         )
 
 
-@router.delete("/{user_id}", summary="Delete user (soft delete)")
+@router.delete("/{user_id}", summary="Delete user (soft delete)", response_model=None)
 async def delete_client_user(
     client_id: str,
     user_id: str,
@@ -710,7 +710,7 @@ async def delete_client_user(
         )
 
 
-@router.post("/{user_id}/resend-invite", summary="Resend invitation")
+@router.post("/{user_id}/resend-invite", summary="Resend invitation", response_model=None)
 async def resend_invite(
     client_id: str,
     user_id: str,
@@ -809,7 +809,7 @@ async def resend_invite(
         )
 
 
-@router.put("/{user_id}/role", summary="Update user role")
+@router.put("/{user_id}/role", summary="Update user role", response_model=None)
 async def update_user_role(
     client_id: str,
     user_id: str,

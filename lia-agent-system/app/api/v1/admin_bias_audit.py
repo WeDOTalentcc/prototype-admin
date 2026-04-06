@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Path
 router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 
 
-@router.post("/job/{job_id}/run-baseline")
+@router.post("/job/{job_id}/run-baseline", response_model=None)
 async def run_bias_audit_baseline(
     job_id: str = Path(..., description="ID da vaga"),
     save_snapshot: bool = True,

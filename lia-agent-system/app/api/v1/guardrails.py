@@ -176,7 +176,7 @@ async def toggle_guardrail(
     return GuardrailResponse.from_orm(guardrail)
 
 
-@router.delete("/{guardrail_id}", status_code=204)
+@router.delete("/{guardrail_id}", status_code=204, response_model=None)
 async def delete_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),

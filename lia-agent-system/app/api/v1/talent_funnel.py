@@ -49,7 +49,7 @@ class PreWRFRequest(BaseModel):
     qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
-@router.post("/analyze-score-drop")
+@router.post("/analyze-score-drop", response_model=None)
 async def analyze_score_drop(body: ScoreDropRequest):
     candidates = [c.model_dump() for c in body.candidates]
     result = es_score_drop_analyzer.analyze(candidates, body.qualification_level)
@@ -65,7 +65,7 @@ async def analyze_score_drop(body: ScoreDropRequest):
     }
 
 
-@router.post("/analyze-semantic-gap")
+@router.post("/analyze-semantic-gap", response_model=None)
 async def analyze_semantic_gap(body: GapAnalysisRequest):
     candidates = [c.model_dump() for c in body.candidates]
     result = pgv_gap_analyzer.analyze(candidates, body.qualification_level)
@@ -80,7 +80,7 @@ async def analyze_semantic_gap(body: GapAnalysisRequest):
     }
 
 
-@router.post("/wrf-rank")
+@router.post("/wrf-rank", response_model=None)
 async def wrf_rank(body: WRFRankRequest):
     candidates = [c.model_dump() for c in body.candidates]
     ranked = wrf_dynamic_k_service.rank_candidates(candidates, body.qualification_level)
@@ -94,12 +94,12 @@ async def wrf_rank(body: WRFRankRequest):
     }
 
 
-@router.get("/wrf-config")
+@router.get("/wrf-config", response_model=None)
 async def get_wrf_config():
     return wrf_dynamic_k_service.get_config()
 
 
-@router.post("/pre-wrf-filter")
+@router.post("/pre-wrf-filter", response_model=None)
 async def pre_wrf_filter(body: PreWRFRequest):
     es_candidates = [c.model_dump() for c in body.es_candidates]
     pgv_candidates = [c.model_dump() for c in body.pgv_candidates]

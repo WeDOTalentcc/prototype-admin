@@ -173,7 +173,7 @@ async def get_benefit_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/seed-templates")
+@router.post("/seed-templates", response_model=None)
 async def seed_benefit_templates(
     db: AsyncSession = Depends(get_db)
 ):
@@ -328,7 +328,7 @@ class BenefitImportResponse(BaseModel):
     errors: list[str]
 
 
-@router.get("/import/template")
+@router.get("/import/template", response_model=None)
 async def download_benefits_import_template():
     """
     Download CSV template for benefits import.

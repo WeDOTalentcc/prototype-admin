@@ -370,7 +370,7 @@ async def analyze_search(
     )
 
 
-@router.get("/synonyms")
+@router.get("/synonyms", response_model=None)
 async def get_term_synonyms(
     term: str = Query(..., description="Termo para buscar sinônimos"),
 ):
@@ -589,7 +589,7 @@ async def get_autocomplete(
     )
 
 
-@router.get("/taxonomy/{category}")
+@router.get("/taxonomy/{category}", response_model=None)
 async def get_taxonomy(
     category: str,
     search: str = Query("", description="Filtrar por texto"),

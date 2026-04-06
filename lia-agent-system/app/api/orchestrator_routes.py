@@ -152,7 +152,7 @@ async def process_request(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/conversation/{conversation_id}")
+@router.get("/conversation/{conversation_id}", response_model=None)
 async def get_conversation(
     conversation_id: str,
     orch: Orchestrator = Depends(get_orchestrator)
@@ -166,13 +166,13 @@ async def get_conversation(
     return state
 
 
-@router.get("/metrics")
+@router.get("/metrics", response_model=None)
 async def get_metrics(orch: Orchestrator = Depends(get_orchestrator)):
     """Get orchestrator metrics for observability."""
     return orch.get_metrics()
 
 
-@router.get("/health")
+@router.get("/health", response_model=None)
 async def health_check():
     """Health check endpoint with LLM validation."""
     import os
@@ -305,7 +305,7 @@ async def detect_wizard_intent(request: WizardIntentRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/wizard/intents")
+@router.get("/wizard/intents", response_model=None)
 async def get_available_intents():
     """Get list of available wizard intents and their tool mappings."""
     return {
@@ -313,7 +313,7 @@ async def get_available_intents():
     }
 
 
-@router.get("/tools")
+@router.get("/tools", response_model=None)
 async def get_available_tools(
     agent_type: str | None = None
 ):

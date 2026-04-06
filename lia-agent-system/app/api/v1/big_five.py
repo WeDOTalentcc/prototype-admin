@@ -185,7 +185,7 @@ def validate_traits(traits: dict[str, int]) -> bool:
     return True
 
 
-@router.get("/profiles", summary="List Big Five profiles")
+@router.get("/profiles", summary="List Big Five profiles", response_model=None)
 async def list_profiles(
     job_id: str | None = Query(None, description="Filter by job ID"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -221,7 +221,7 @@ async def list_profiles(
         )
 
 
-@router.post("/profiles", summary="Create Big Five profile")
+@router.post("/profiles", summary="Create Big Five profile", response_model=None)
 async def create_profile(
     data: BigFiveProfileCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -274,7 +274,7 @@ async def create_profile(
         )
 
 
-@router.get("/profiles/{profile_id}", summary="Get Big Five profile")
+@router.get("/profiles/{profile_id}", summary="Get Big Five profile", response_model=None)
 async def get_profile(
     profile_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -308,7 +308,7 @@ async def get_profile(
         )
 
 
-@router.put("/profiles/{profile_id}", summary="Update Big Five profile")
+@router.put("/profiles/{profile_id}", summary="Update Big Five profile", response_model=None)
 async def update_profile(
     profile_id: str,
     data: BigFiveProfileUpdate,
@@ -368,7 +368,7 @@ async def update_profile(
         )
 
 
-@router.delete("/profiles/{profile_id}", summary="Delete Big Five profile")
+@router.delete("/profiles/{profile_id}", summary="Delete Big Five profile", response_model=None)
 async def delete_profile(
     profile_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -409,7 +409,7 @@ async def delete_profile(
         )
 
 
-@router.post("/analyze", summary="Analyze candidate against Big Five profile")
+@router.post("/analyze", summary="Analyze candidate against Big Five profile", response_model=None)
 async def analyze_candidate(
     data: AnalyzeRequest,
     current_user: dict[str, Any] = Depends(get_user_from_headers),

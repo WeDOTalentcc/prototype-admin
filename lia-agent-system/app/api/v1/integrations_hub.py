@@ -370,7 +370,7 @@ async def update_connection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/connections/{connection_id}")
+@router.delete("/connections/{connection_id}", response_model=None)
 async def delete_connection(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -400,7 +400,7 @@ async def delete_connection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/connections/{connection_id}/test")
+@router.post("/connections/{connection_id}/test", response_model=None)
 async def test_connection(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -444,7 +444,7 @@ async def test_connection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/connections/{connection_id}/sync")
+@router.post("/connections/{connection_id}/sync", response_model=None)
 async def trigger_sync(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -669,7 +669,7 @@ async def get_ai_recommendations(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/seed-providers")
+@router.post("/seed-providers", response_model=None)
 async def seed_providers(db: AsyncSession = Depends(get_db)):
     """Seed default integration providers."""
     try:

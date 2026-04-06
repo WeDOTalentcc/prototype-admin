@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{company_id}/correlation")
+@router.get("/{company_id}/correlation", response_model=None)
 async def get_score_outcome_correlation(
     company_id: str,
     db: AsyncSession = Depends(get_db),
@@ -27,7 +27,7 @@ async def get_score_outcome_correlation(
     return await wsi_observability_service.get_score_vs_outcome_correlation(company_id, db)
 
 
-@router.get("/{company_id}/block-accuracy")
+@router.get("/{company_id}/block-accuracy", response_model=None)
 async def get_block_accuracy(
     company_id: str,
     db: AsyncSession = Depends(get_db),
@@ -35,7 +35,7 @@ async def get_block_accuracy(
     return await wsi_observability_service.get_block_accuracy(company_id, db)
 
 
-@router.get("/{company_id}/distribution")
+@router.get("/{company_id}/distribution", response_model=None)
 async def get_score_distribution(
     company_id: str,
     db: AsyncSession = Depends(get_db),
@@ -43,7 +43,7 @@ async def get_score_distribution(
     return await wsi_observability_service.get_score_distribution(company_id, db)
 
 
-@router.get("/{company_id}/threshold-analysis")
+@router.get("/{company_id}/threshold-analysis", response_model=None)
 async def get_threshold_analysis(
     company_id: str,
     db: AsyncSession = Depends(get_db),
@@ -51,7 +51,7 @@ async def get_threshold_analysis(
     return await wsi_observability_service.get_threshold_analysis(company_id, db)
 
 
-@router.get("/{company_id}/summary")
+@router.get("/{company_id}/summary", response_model=None)
 async def get_observability_summary(
     company_id: str,
     db: AsyncSession = Depends(get_db),
