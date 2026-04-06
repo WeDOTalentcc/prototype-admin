@@ -148,7 +148,6 @@ PENDING_MIGRATION = {
     "app/api/v1/system_health.py",
     "app/api/v1/task_lifecycle.py",
     "app/api/v1/task_planner.py",
-    "app/api/v1/tasks.py",
     "app/api/v1/teams.py",
     "app/api/v1/test_activities.py",
     "app/api/v1/toon.py",
