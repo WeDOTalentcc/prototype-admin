@@ -7,6 +7,11 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
   import { MultimodalUpload } from "@/components/chat/multimodal-upload"
   import { cn } from "@/lib/utils"
   import { inferSkillWeight } from './expanded-chat/utils/skill-weight-utils'
+  import { ContextBadge } from "@/components/lia-float/ContextBadge"
+  import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
+  import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
+  import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
+  import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
   import {
     AlertDialog,
     AlertDialogContent,
@@ -35,6 +40,9 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
       onFullscreenChange,
       hideModeButtons = false,
     } = props
+
+    const { contextPage } = useLiaFloat()
+    const { chatHitlPending, sendApproval } = useLiaChatContext()
 
     const {
       activeInputTab, addCalibrationCriterion, addCustomQuestion, addNewBenefit, addNewCompetency, addNewSkill, analytics, approvedCandidates,
@@ -94,8 +102,11 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
         {/* Header - Apenas botões de controle à direita */}
         {/* Header com botões de busca e fullscreen - sempre visível */}
         <div className="px-4 py-2 flex-shrink-0 bg-lia-bg-primary">
-            <div className="flex items-center justify-end">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between">
+              {contextPage && contextPage !== "Chat LIA" && (
+                <ContextBadge contextPage={contextPage} />
+              )}
+              <div className="flex items-center gap-1 ml-auto">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -203,6 +214,15 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
               aria-label="Conversa com a LIA"
               aria-live="polite"
             >
+              {messages.length === 0 && !isInJobCreationMode && (
+                <div className="mb-4">
+                  <PromptSuggestionsDock
+                    onSelect={(command) => setInputValue(command)}
+                    isEmpty={true}
+                  />
+                </div>
+              )}
+
               <ChatMessageList
                 messages={messages}
                 isTypingEffect={isTypingEffect}
@@ -221,6 +241,18 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                 onProactiveReject={handleProactiveReject}
                 toolCalling={toolCalling}
               />
+
+              {/* HITL Confirmation Card */}
+              {chatHitlPending && (
+                <div className="mt-3">
+                  <HITLConfirmCard
+                    action={chatHitlPending.action}
+                    description={chatHitlPending.description}
+                    onConfirm={(_autoConfirm: boolean) => sendApproval(true)}
+                    onCancel={() => sendApproval(false)}
+                  />
+                </div>
+              )}
 
               {/* Typing Indicator */}
               {(isLoading || isTypingEffect) && (

@@ -15,6 +15,7 @@ import { useAuthStore } from "@/stores/auth-store"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { ParecerLIACard } from "@/components/chat/parecer-lia-card"
 import { ActionResultCard } from "@/components/chat/action-result-card"
+import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { DetectedFieldsCard } from "@/components/chat/detected-fields-card"
 import { CompetenciesChatMessage } from "@/components/job-creation/competencies-chat-message"
 import { VacancySearchResults } from "@/components/job-creation/vacancy-search-results"
@@ -412,6 +413,12 @@ export function ChatMessageList({
                   <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
                 )}
               </div>
+              {(message as any).executionPlan && (
+                <PlanProgressCard plan={(message as any).executionPlan as ExecutionPlanData} />
+              )}
+              {(message as any).execution_plan && (
+                <PlanProgressCard plan={(message as any).execution_plan as ExecutionPlanData} />
+              )}
               {message.detectedFieldsData && message.detectedFieldsData.length > 0 && (
                 <DetectedFieldsCard
                   fields={message.detectedFieldsData}

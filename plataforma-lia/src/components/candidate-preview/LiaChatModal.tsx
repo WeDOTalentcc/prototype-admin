@@ -10,6 +10,8 @@ import { textStyles, formatScorePercent } from "@/lib/design-tokens"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { useModalA11y } from "@/hooks/use-modal-a11y"
 import { useLiaFloat } from "@/contexts/lia-float-context"
+import { cleanAgentResponse } from "@/lib/chat-format"
+import { ContextBadge } from "@/components/lia-float/ContextBadge"
 
 interface LiaAction {
   id: string
@@ -72,7 +74,7 @@ export function LiaChatModal({
   onAddToVacancy,
 }: LiaChatModalProps) {
   const dialogRef = useModalA11y(isOpen, onClose)
-  const { openWithEntity } = useLiaFloat()
+  const { openWithEntity, contextPage } = useLiaFloat()
 
   React.useEffect(() => {
     if (isOpen && candidate) {
@@ -146,6 +148,12 @@ export function LiaChatModal({
               </Button>
             </div>
 
+            {/* Context Badge */}
+            {contextPage && contextPage !== "Chat LIA" && (
+              <div className="px-1 mb-2">
+                <ContextBadge contextPage={contextPage} />
+              </div>
+            )}
             {/* Candidate info */}
             <div className="flex items-center gap-2 bg-lia-bg-primary rounded-md px-3 py-2">
               <Avatar className="w-6 h-6">
@@ -240,7 +248,7 @@ export function LiaChatModal({
                         ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                         : 'bg-lia-bg-tertiary text-lia-text-primary'
                     }`}>
-                      <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
+                      <p className="text-xs whitespace-pre-wrap">{msg.role === 'lia' ? cleanAgentResponse(msg.content) : msg.content}</p>
                     </div>
                   </div>
                 ))}

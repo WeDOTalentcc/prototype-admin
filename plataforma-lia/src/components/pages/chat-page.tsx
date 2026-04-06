@@ -24,8 +24,11 @@ import { CreditConfirmationDialog } from "@/components/search/credit-confirmatio
 import { SmartSearchInput } from "@/components/search/smart-search-input"
 import { AdvancedFiltersModal } from "@/components/search/advanced-filters-modal"
 import { SidePanelContainer } from "@/components/ui-actions"
-import { useLiaFloat } from "@/contexts/lia-float-context"
+import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { DynamicContextPanel } from "@/components/lia-float/panels"
+import { ContextBadge } from "@/components/lia-float/ContextBadge"
+import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
+import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { EmptyFieldNotificationMessage } from "@/components/chat/empty-field-notification-message"
 import { AgentMemoryIndicator } from "@/components/chat/agent-memory-indicator"
 import { ChatContextPanel } from "@/components/chat/ChatContextPanel"
@@ -39,7 +42,8 @@ export function ChatPage() {
 }
 
 export function LegacyChatPage() {
-  const { dynamicPanel, closeDynamicPanel, setHasInlineChat } = useLiaFloat()
+  const { dynamicPanel, closeDynamicPanel, setHasInlineChat, contextPage } = useLiaFloat()
+  const { chatHitlPending, sendApproval } = useLiaChatContext()
 
   React.useEffect(() => {
     setHasInlineChat(true)
@@ -158,6 +162,9 @@ export function LegacyChatPage() {
               >
                 <Search className="w-4 h-4" />
               </button>
+              {contextPage && contextPage !== "Chat LIA" && (
+                <ContextBadge contextPage={contextPage} />
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
@@ -295,6 +302,17 @@ export function LegacyChatPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {chatHitlPending && (
+            <div className="mt-3 px-4">
+              <HITLConfirmCard
+                action={chatHitlPending.action}
+                description={chatHitlPending.description}
+                onConfirm={(_autoConfirm: boolean) => sendApproval(true)}
+                onCancel={() => sendApproval(false)}
+              />
             </div>
           )}
 

@@ -28,6 +28,11 @@ import { MessageFeedback } from '@/components/chat/message-feedback'
 import type { ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/use-interpret-context'
 import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { ContextBadge } from "@/components/lia-float/ContextBadge"
+import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
+import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
+import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
+import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 
 interface TransitionChatPanelProps {
   messages: ChatMessage[]
@@ -187,6 +192,8 @@ export function TransitionChatPanel({
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { contextPage } = useLiaFloat()
+  const { chatHitlPending, sendApproval } = useLiaChatContext()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -230,6 +237,9 @@ export function TransitionChatPanel({
               <span className="text-base-ui font-bold text-lia-text-primary" >
                 LIA
               </span>
+              {contextPage && contextPage !== "Chat LIA" && (
+                <ContextBadge contextPage={contextPage} />
+              )}
             </div>
             <div className="flex items-center gap-1">
               {onNewChat && (
@@ -366,6 +376,12 @@ export function TransitionChatPanel({
                         </div>
                       )}
 
+                      {(meta as any)?.executionPlan && (
+                        <PlanProgressCard plan={(meta as any).executionPlan as ExecutionPlanData} />
+                      )}
+                      {(meta as any)?.execution_plan && (
+                        <PlanProgressCard plan={(meta as any).execution_plan as ExecutionPlanData} />
+                      )}
                       {hasTasks && <TasksChecklist tasks={meta!.tasks!} />}
                       {isOutOfScope && <OutOfScopeIndicator />}
                       {hasFairnessIssue && <FairnessWarning fairnessResult={meta!.fairness_result!} />}
@@ -389,6 +405,16 @@ export function TransitionChatPanel({
                 </div>
               )
             })
+          )}
+          {chatHitlPending && (
+            <div className="mt-3 px-1">
+              <HITLConfirmCard
+                action={chatHitlPending.action}
+                description={chatHitlPending.description}
+                onConfirm={(_autoConfirm: boolean) => sendApproval(true)}
+                onCancel={() => sendApproval(false)}
+              />
+            </div>
           )}
           {isLoading && (
             <div className="flex items-start gap-2.5">

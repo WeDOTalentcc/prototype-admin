@@ -10,6 +10,7 @@ import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { toast } from "sonner"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
+import { cleanAgentResponse } from "@/lib/chat-format"
 
 interface UseChatMessagesOptions {
   initialMessages: Message[]
@@ -265,7 +266,8 @@ export function useChatMessages({
   }, [])
 
   const formatMessageContent = useCallback((text: string) => {
-    let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    let formatted = cleanAgentResponse(text)
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     formatted = formatted.replace(/\n\n/g, '<br/><br/>')
     formatted = formatted.replace(/\n/g, '<br/>')
     formatted = formatted.replace(/•\s/g, '• ')
