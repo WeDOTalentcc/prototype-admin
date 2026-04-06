@@ -2,15 +2,14 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 """
 Screening configuration routes.
 """
 from fastapi import APIRouter, Depends, HTTPException
 
 from ._shared import *
+from app.domains.job_management.repositories.job_vacancy_screening_repository import JobVacancyScreeningRepository
+from app.domains.job_management.dependencies import get_job_vacancy_screening_repo
 
 router = APIRouter()
 
@@ -98,14 +97,11 @@ class ScreeningStatusUpdateRequest(BaseModel):
 @router.get("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
 async def get_screening_config(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo)
 ):
     """Get screening configuration for a job vacancy."""
     try:
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_id(job_id)
 
         if not job:
             raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
@@ -151,15 +147,12 @@ async def get_screening_config(
 async def update_screening_config(
     job_id: UUID,
     config_data: ScreeningConfigRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Update screening configuration for a job vacancy."""
     try:
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_id(job_id)
 
         if not job:
             raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
@@ -191,11 +184,7 @@ async def update_screening_config(
         existing_config = job.screening_config or {}
         merged_config = {**existing_config, **new_config}
 
-        job.screening_config = merged_config
-        job.updated_at = datetime.utcnow()
-
-        await db.flush()
-        await db.refresh(job)
+        job = await repo.update_screening_config(job, merged_config)
 
         logger.info(f"Screening config updated for job {job_id}")
 
@@ -216,7 +205,7 @@ async def update_screening_config(
         raise
     except Exception as e:
         logger.error(f"Error updating screening config: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -224,7 +213,7 @@ async def update_screening_config(
 async def update_screening_status(
     job_id: UUID,
     request: ScreeningStatusUpdateRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Update the screening status for a job vacancy."""
@@ -235,8 +224,7 @@ async def update_screening_status(
         )
 
     try:
-        result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_id(job_id)
         if not job:
             raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
 
@@ -258,7 +246,7 @@ async def update_screening_status(
         elif request.screening_status == "paused":
             existing_status["enabled"] = False
             existing_status["paused_at"] = now
-            existing_status["paused_by"] = current_user.email if hasattr(current_user, 'email') else "system"
+            existing_status["paused_by"] = current_user.email if hasattr(current_user, "email") else "system"
             existing_status["pause_reason"] = request.pause_reason or "Pausado manualmente"
         elif request.screening_status == "completed":
             existing_status["enabled"] = False
@@ -271,14 +259,8 @@ async def update_screening_status(
             existing_status["scheduled_end_date"] = request.scheduled_end_date
 
         existing_config["status"] = existing_status
-        job.screening_config = existing_config
-        job.updated_at = datetime.utcnow()
 
-        from sqlalchemy.orm.attributes import flag_modified
-        flag_modified(job, "screening_config")
-
-        await db.flush()
-        await db.refresh(job)
+        job = await repo.update_screening_status(job, existing_config)
 
         logger.info(f"Screening status updated to '{request.screening_status}' for job {job_id}")
 

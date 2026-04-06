@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import Field
 from sqlalchemy import and_, or_
 
+from app.auth.models import UserRole
 from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
 from app.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
 

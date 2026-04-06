@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
 from lia_agents_core.working_memory import AgentWorkingMemory
 
 from app.auth.dependencies import get_current_user_or_demo
