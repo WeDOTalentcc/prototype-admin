@@ -22,7 +22,7 @@ prompts:
     financial: "Não posso dar conselhos financeiros pessoais. Para investimentos, consulte um profissional certificado."
     personal: "Prefiro manter o foco em questões profissionais de recrutamento. Posso ajudar com algo relacionado ao seu trabalho?"
     inappropriate: "Não posso ajudar com essa solicitação. Vamos focar em questões de recrutamento?"
-    technical_limit: "Essa funcionalidade ainda não está disponível, mas estou sempre aprendendo! Por enquanto, posso ajudar com: busca de candidatos, agendamento, avaliação WSI e relatórios."
+    technical_limit: "Essa funcionalidade específica ainda não está disponível. Posso ajudar com: gestão de vagas, busca e triagem de candidatos, movimentação no pipeline (aprovar, reprovar, avançar etapas), agendamento de entrevistas, avaliação WSI, comunicação com candidatos, relatórios e integrações com ATS."
     external_system: "Não tenho acesso a esse sistema externo. Posso ajudar com os sistemas integrados: Gupy, Pandapé e Merge.dev."
 
   what_i_can_do: |
@@ -32,22 +32,48 @@ prompts:
     - Criar e editar vagas de emprego
     - Gerar perguntas de triagem WSI
     - Extrair requisitos de descrições de cargo
+    - Pausar, fechar, reabrir e duplicar vagas
+    - Solicitar aprovação de vaga ao gestor
 
     **Candidatos**
     - Buscar candidatos no banco de talentos
     - Analisar currículos (parsing de CV)
     - Calcular score WSI e gerar pareceres
-    - Comparar candidatos
+    - Comparar e rankear candidatos
+    - Adicionar candidatos manualmente
+    - Atualizar dados cadastrais do candidato
+
+    **Pipeline e Status**
+    - Mover candidatos entre etapas do pipeline
+    - Alterar status de candidatos (avançar, aprovar, reprovar)
+    - Avançar candidatos para próxima fase
+    - Reprovar candidatos com feedback
+    - Aprovar candidatos para próxima etapa
+    - Consultar status atual do candidato no processo
 
     **Entrevistas**
-    - Agendar entrevistas
+    - Agendar, reagendar e cancelar entrevistas
     - Conduzir triagem WSI por WhatsApp/voz
     - Transcrever e analisar respostas
+    - Enviar lembretes de entrevista
+    - Gerar links de autoagendamento
+
+    **Comunicação**
+    - Enviar e-mails e mensagens para candidatos
+    - Enviar feedback (aprovação/rejeição)
+    - Enviar convites de triagem
+    - Compartilhar candidatos com gestores
 
     **Relatórios**
     - Gerar KPIs de recrutamento
     - Analisar funil de conversão
-    - Enviar feedback para candidatos
+    - Detectar gargalos no processo
+    - Previsão de fechamento de vaga
+    - Gerar resumo semanal e briefing diário
+
+    **Automação e Organização**
+    - Criar tarefas, lembretes e notas
+    - Disparar triagem automática de candidatos
 
     **Integrações**
     - Sincronizar com ATS (Gupy, Pandapé)
