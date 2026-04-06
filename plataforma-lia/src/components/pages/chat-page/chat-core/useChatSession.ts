@@ -20,6 +20,7 @@ interface UseChatSessionOptions {
   setIsLoading: (v: boolean) => void
   setContextData: (data: ContextPanelData | null) => void
   setIsPanelOpen: (open: boolean) => void
+  initialConversationId?: string | null
 }
 
 export function useChatSession({
@@ -30,6 +31,7 @@ export function useChatSession({
   setIsLoading,
   setContextData,
   setIsPanelOpen,
+  initialConversationId,
 }: UseChatSessionOptions) {
   const {
     chatConversationId,
@@ -110,9 +112,37 @@ export function useChatSession({
   }, [])
 
   // ── Mark context type as "general" for Chat Page ──────────
+  // On initial mount: handle URL param redirection and set up general context
   useEffect(() => {
-    switchChatContext("general")
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    const urlConvId = params.get("conversation_id")
+
+    if (urlConvId) {
+      switchChatContext("general", { conversationId: urlConvId, continuePrevious: true })
+      loadChatHistory(urlConvId).then(history => {
+        if (history.length > 0) {
+          setMessages(() => history as unknown as import("./chat-core.types").Message[])
+        }
+      }).catch(() => {})
+      params.delete("conversation_id")
+      const qs = params.toString()
+      window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""))
+    } else if (!initialConversationId) {
+      switchChatContext("general", { conversationId: null })
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── React to intentional redirect via initialConversationId prop ───────────
+  // Handles in-app navigation (e.g., from float to chat page with an existing conversation)
+  useEffect(() => {
+    if (!initialConversationId) return
+    switchChatContext("general", { conversationId: initialConversationId, continuePrevious: true })
+    loadChatHistory(initialConversationId).then(history => {
+      if (history.length > 0) {
+        setMessages(() => history as unknown as import("./chat-core.types").Message[])
+      }
+    }).catch(() => {})
+  }, [initialConversationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Chat ID & Title ────────────────────────────────────────
   const [chatId, setChatId] = useState("#0000")
@@ -204,10 +234,11 @@ export function useChatSession({
       setIsPanelOpen(false)
       setChatTitle('Nova Conversa')
       closeDynamicPanel()
+      switchChatContext("general", { conversationId: null })
     }
     window.addEventListener('lia:new-chat', handleNewChat)
     return () => window.removeEventListener('lia:new-chat', handleNewChat)
-  }, [setMessages, setContextData, setIsPanelOpen, closeDynamicPanel])
+  }, [setMessages, setContextData, setIsPanelOpen, closeDynamicPanel, switchChatContext])
 
   // "Open Pipeline"
   useEffect(() => {

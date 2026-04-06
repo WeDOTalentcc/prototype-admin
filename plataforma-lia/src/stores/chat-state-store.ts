@@ -122,7 +122,13 @@ export const useChatStateStore = create<ChatStateStore>()(
 
         resetStore: () => set(initialState, false, 'chatState/reset'),
       }),
-      { name: 'lia-chat-state-store' }
+      {
+        name: 'lia-chat-state-store',
+        partialize: (state) => {
+          const { conversationIds: _conversationIds, ...rest } = state as ChatStateStore
+          return rest
+        },
+      }
     ),
     { name: 'ChatStateStore' }
   )

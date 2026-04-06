@@ -37,11 +37,11 @@ import type { Message } from "./chat-page/types"
 import { useChatPageCore } from "./chat-page/useChatPageCore"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
-export function ChatPage() {
-  return <LegacyChatPage />
+export function ChatPage({ initialConversationId }: { initialConversationId?: string | null }) {
+  return <LegacyChatPage initialConversationId={initialConversationId} />
 }
 
-export function LegacyChatPage() {
+export function LegacyChatPage({ initialConversationId }: { initialConversationId?: string | null }) {
   const { dynamicPanel, closeDynamicPanel, setHasInlineChat, contextPage } = useLiaFloat()
   const { chatHitlPending, sendApproval } = useLiaChatContext()
 
@@ -126,7 +126,7 @@ export function LegacyChatPage() {
     getPlaceholderText,
     handleLoadMoreCandidates,
     uiActions,
-  } = useChatPageCore()
+  } = useChatPageCore({ initialConversationId })
 
   return (
     <ErrorBoundarySection>

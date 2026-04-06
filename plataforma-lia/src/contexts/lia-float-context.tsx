@@ -71,7 +71,7 @@ interface LiaFloatContextType extends LiaFloatState {
   expand: () => void
   collapse: () => void
   closeAll: () => void
-  navigateToChat: () => void
+  navigateToChat: (conversationId?: string) => void
   setContextPage: (page: string | null) => void
   setEntityContext: (ctx: EntityContext | null) => void
   openWithEntity: (entity: EntityContext) => void
@@ -95,7 +95,7 @@ interface LiaFloatContextType extends LiaFloatState {
   setChatConversationId: (id: string | null) => void
   chatContextType: ChatContextType
   setChatContextType: (type: ChatContextType) => void
-  switchChatContext: (newType: ChatContextType) => string | null
+  switchChatContext: (newType: ChatContextType, options?: { conversationId?: string | null; continuePrevious?: boolean }) => string | null
   previousConversationId: string | null
 
   sendChatMessage: (content: string, domain?: string, scope?: string) => Promise<void>
@@ -159,6 +159,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const [chatContextType, setChatContextType] = useState<ChatContextType>("general")
+  const chatContextTypeRef = useRef<ChatContextType>("general")
   const [previousConversationId, setPreviousConversationId] = useState<string | null>(null)
   const contextConversationMapRef = useRef<Map<ChatContextType, string>>(new Map())
 
@@ -200,6 +201,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
 
   const chatConversationId = connection.conversationId
   const chatConversationIdRef = useRef(chatConversationId)
+  chatContextTypeRef.current = chatContextType
   chatConversationIdRef.current = chatConversationId
   const setChatConversationId = useCallback((id: string | null) => {
     chatConversationIdRef.current = id
@@ -210,25 +212,38 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setChatMessages(prev => [...prev, msg])
   }, [])
 
-  const switchChatContext = useCallback((newType: ChatContextType): string | null => {
-    let resolvedId: string | null = null
-    setChatContextType(prev => {
-      if (prev === newType) {
-        resolvedId = chatConversationIdRef.current
-        return prev
-      }
-      const currentConvId = chatConversationIdRef.current
-      if (currentConvId) {
-        contextConversationMapRef.current.set(prev, currentConvId)
-      }
-      setPreviousConversationId(currentConvId)
-      const restoredId = contextConversationMapRef.current.get(newType) ?? null
-      connection.setConversationId(restoredId)
-      chatConversationIdRef.current = restoredId
-      resolvedId = restoredId
-      return newType
-    })
-    return resolvedId
+  const switchChatContext = useCallback((newType: ChatContextType, options?: { conversationId?: string | null; continuePrevious?: boolean }): string | null => {
+    const prevType = chatContextTypeRef.current
+    const isActualSwitch = prevType !== newType || options?.conversationId !== undefined
+
+    if (!isActualSwitch) {
+      return chatConversationIdRef.current
+    }
+
+    const currentConvId = chatConversationIdRef.current
+    if (currentConvId) {
+      contextConversationMapRef.current.set(prevType, currentConvId)
+    }
+    setPreviousConversationId(currentConvId)
+
+    let nextId: string | null = null
+    if (options?.conversationId !== undefined) {
+      nextId = options.conversationId
+    } else if (options?.continuePrevious) {
+      nextId = contextConversationMapRef.current.get(newType) ?? null
+    }
+
+    connection.setConversationId(nextId)
+    chatConversationIdRef.current = nextId
+    chatContextTypeRef.current = newType
+    setChatContextType(newType)
+
+    const isLoadingExistingConversation = options?.conversationId != null
+    if (!options?.continuePrevious && !isLoadingExistingConversation) {
+      setChatMessages([])
+    }
+
+    return nextId
   }, [connection])
 
   const sendChatMessage = useCallback(async (content: string, domain?: string, scope?: string) => {
@@ -364,17 +379,18 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const navigateToChat = useCallback(() => {
+  const navigateToChat = useCallback((conversationId?: string) => {
     setState(prev => ({
       ...prev,
       isOpen: false,
       isExpanded: false,
       splitView: INITIAL_SPLIT_VIEW,
     }))
+    const convParam = conversationId ? `&conversation_id=${encodeURIComponent(conversationId)}` : ""
     if (document.querySelector("[data-dashboard-shell]")) {
-      window.dispatchEvent(new CustomEvent("lia:navigate-chat-page"))
+      window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: { conversationId } }))
     } else {
-      window.location.href = "/?page=chat-lia"
+      window.location.href = `/?page=chat-lia${convParam}`
     }
   }, [])
 

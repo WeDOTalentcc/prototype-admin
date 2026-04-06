@@ -55,6 +55,7 @@ export interface UseConversationMemoryReturn {
   error: Error | null
   conversation: Conversation | null
   initConversation: (userId: string, contextType: string, contextId?: string) => Promise<void>
+  loadConversation: (conversationId: string) => Promise<void>
   addMessage: (role: string, content: string, intent?: string) => Promise<Message | null>
   getContext: () => Promise<ConversationContext | null>
   clearConversation: () => void
@@ -192,24 +193,6 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
     try {
       currentContextRef.current = { contextType, contextId }
 
-      const storedId = loadConversationId(contextType, contextId)
-
-      if (storedId) {
-        const existing = await fetchConversation(storedId)
-        
-        if (existing && existing.conversation.is_active) {
-          setConversationId(storedId)
-          setConversation(existing.conversation)
-          setMessages(existing.messages)
-          setSummary(existing.summary)
-          messageCountRef.current = existing.conversation.message_count
-          onConversationLoaded?.(existing.conversation)
-          return
-        }
-        
-        clearStoredConversationId(contextType, contextId)
-      }
-
       const newConversation = await createConversation(userId, contextType, contextId)
       
       if (newConversation) {
@@ -224,7 +207,29 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
     } finally {
       setIsLoading(false)
     }
-  }, [fetchConversation, createConversation, onConversationLoaded])
+  }, [createConversation, onConversationLoaded])
+
+  const loadConversation = useCallback(async (
+    conversationId: string
+  ): Promise<void> => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const existing = await fetchConversation(conversationId)
+
+      if (existing && existing.conversation.is_active) {
+        setConversationId(conversationId)
+        setConversation(existing.conversation)
+        setMessages(existing.messages)
+        setSummary(existing.summary)
+        messageCountRef.current = existing.conversation.message_count
+        onConversationLoaded?.(existing.conversation)
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [fetchConversation, onConversationLoaded])
 
   const addMessage = useCallback(async (
     role: string,
@@ -401,6 +406,7 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
     error,
     conversation,
     initConversation,
+    loadConversation,
     addMessage,
     getContext,
     clearConversation,

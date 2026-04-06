@@ -32,6 +32,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   const [currentPage, setCurrentPage] = useState(initialPage === "Painel de Controle" ? "Tarefas" : initialPage)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
+  const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
   const [pendingCandidateOpen, setPendingCandidateOpen] = useState<{ candidateId: string; candidateName: string } | null>(null)
   const { isAuthenticated, user, logout } = useAuth()
@@ -41,6 +42,9 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
 
   useEffect(() => {
     setContextPage(currentPage)
+    if (currentPage !== "Chat LIA") {
+      setPendingChatConversationId(null)
+    }
   }, [currentPage, setContextPage])
 
   useEffect(() => {
@@ -51,7 +55,11 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   }, [splitView.active, splitView.page])
 
   useEffect(() => {
-    const handler = () => setCurrentPage("Chat LIA")
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ conversationId?: string }>).detail
+      setPendingChatConversationId(detail?.conversationId ?? null)
+      setCurrentPage("Chat LIA")
+    }
     window.addEventListener("lia:navigate-chat-page", handler)
     return () => window.removeEventListener("lia:navigate-chat-page", handler)
   }, [])
@@ -130,7 +138,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
 
     switch (currentPage) {
       case "Chat LIA":
-        return <ChatPage />
+        return <ChatPage initialConversationId={pendingChatConversationId} />
       case "Funil de Talentos":
         return <CandidatesPage onAddRecentItem={addRecentItem} pendingCandidateOpen={pendingCandidateOpen} onCandidateOpened={() => setPendingCandidateOpen(null)} />
       case "Vagas":

@@ -28,7 +28,7 @@ import { useChatSession } from "./chat-core/useChatSession"
 import { MAX_FILE_SIZE_MB } from "./chat-core/chat-core.constants"
 import { toast } from "sonner"
 
-export function useChatPageCore() {
+export function useChatPageCore({ initialConversationId }: { initialConversationId?: string | null } = {}) {
   const searchParams = useSearchParams()
   const conversationType = searchParams?.get('conversation') || 'empty'
   const initialConversation = conversationType === 'empty' ? emptyConversation : modernConversation
@@ -56,6 +56,7 @@ export function useChatPageCore() {
     setIsLoading: msg.setIsLoading,
     setContextData,
     setIsPanelOpen,
+    initialConversationId,
   })
 
   // ── UI Actions System ─────────────────────────────────────────────────────
