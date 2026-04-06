@@ -184,7 +184,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
 
   if (isEmpty) {
     return (
-      <div className="w-full">
+      <div className="w-full max-w-2xl mx-auto">
         <div className="grid grid-cols-2 gap-1.5">
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon
@@ -194,7 +194,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
                 className="px-2.5 py-2 rounded-md transition-colors motion-reduce:transition-none text-left group"
-                style={{border: `1px solid ${colors.bg}`,
+                style={{border: `1px solid var(--lia-border-subtle)`,
                   backgroundColor: 'var(--white)'}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.hoverBg
@@ -203,7 +203,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--white)'
-                  e.currentTarget.style.borderColor = colors.bg
+                  e.currentTarget.style.borderColor = 'var(--lia-border-subtle)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
