@@ -2,12 +2,14 @@
 
 import { useCallback } from "react"
 import type React from "react"
-import { callKanbanAssistant, callOrchestratedJobChat, type KanbanAssistantRequest, type OrchestratedJobChatRequest } from "@/lib/api/kanban-assistant"
+import { callKanbanAssistant, callOrchestratedJobChat, type KanbanAssistantRequest, type OrchestratedJobChatRequest, type OrchestratedJobChatResponse } from "@/lib/api/kanban-assistant"
 import { isClearChatCommand } from "@/lib/chat-commands"
 import { type KanbanCandidate } from "@/components/kanban"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { toast } from "sonner"
 import { useCompanyId } from "@/hooks/useCompanyId"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { formatMessageTime } from "@/hooks/use-lia-chat-connection"
 
 interface KanbanJob {
   id?: string | number
@@ -91,6 +93,14 @@ export interface KanbanLIAHandlersContext {
 
 export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
   const { companyId: resolvedCompanyId } = useCompanyId()
+
+  // Acesso ao store unificado — sincroniza conversation_id e mensagens entre todos os contextos
+  const {
+    switchChatContext,
+    sendOrchestratedMessage,
+    addChatMessage,
+  } = useLiaChatContext()
+
   const {
     liaMessages,
     setLiaMessages,
@@ -99,7 +109,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     setShowExpandedLIA,
     setShowSuperChat,
     setUserCollapsedLIA,
-    liaConversationId,
+    liaConversationId: localLiaConversationId,
     setLiaConversationId,
     currentJob,
     allTableCandidates,
@@ -118,6 +128,8 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     setRubricCandidate,
     setShowRubricModal,
   } = ctx
+
+  const liaConversationId = localLiaConversationId
 
   const getFallbackResponse = (command: string): string => {
     const cmd = command.toLowerCase().trim()
@@ -299,6 +311,9 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
   ])
 
   const handleAICommand = async (command: string) => {
+    // Ensure unified context is set to kanban before any send
+    switchChatContext("kanban_chat")
+
     if (isClearChatCommand(command)) {
       setLiaMessages([])
       setLiaPromptValue('')
@@ -306,9 +321,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     }
 
     const timestamp = Date.now()
-    const userMessage = { id: `user-${timestamp}`, type: 'user' as const, content: command, timestamp }
 
-    setLiaMessages(prev => [...prev, userMessage])
     setLiaPromptValue('')
     setShowExpandedLIA(true)
     setIsLiaLoading(true)
@@ -354,65 +367,58 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         ? Array.from(selectedCandidates)
         : undefined
 
-      const response = await callOrchestratedJobChat({
-        message: command,
-        job_context: jobContext as OrchestratedJobChatRequest['job_context'],
-        candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
-        selected_candidate_ids: selectedIds,
-        conversation_id: liaConversationId,
-        company_id: resolvedCompanyId || '',
-      })
+      const extractMetadata = (raw: Record<string, unknown>): Record<string, unknown> => {
+        const r = raw as unknown as OrchestratedJobChatResponse
+        return {
+          intent: r.intent_detected,
+          confidence: r.confidence,
+          agent: r.agent_used,
+          suggested_prompts: r.suggested_prompts,
+          actions: r.actions,
+          action_executed: r.action_executed,
+          action_result: r.action_result,
+          action_type: r.action_type,
+          needs_confirmation: r.needs_confirmation,
+          needs_params: r.needs_params,
+          pending_action_id: r.pending_action_id,
+        }
+      }
+
+      const rawResponse = await sendOrchestratedMessage(
+        command,
+        async (convId) => {
+          const result = await callOrchestratedJobChat({
+            message: command,
+            job_context: jobContext as OrchestratedJobChatRequest['job_context'],
+            candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
+            selected_candidate_ids: selectedIds,
+            conversation_id: convId ?? undefined,
+            company_id: resolvedCompanyId || '',
+          })
+          return result as unknown as { content: string; conversation_id?: string | null; [key: string]: unknown }
+        },
+        { extractResponseMetadata: extractMetadata },
+      )
+      const response = rawResponse as unknown as OrchestratedJobChatResponse
 
       if (response.success) {
         if (response.conversation_id) {
           setLiaConversationId(response.conversation_id)
         }
 
-        const agentInfo = response.agents_consulted?.length > 1
-          ? `_Agentes: ${response.agents_consulted.join(', ')}_\n\n`
-          : ''
-
-        const responseMessage = {
-          id: `response-${timestamp}`,
-          type: 'response' as const,
-          content: agentInfo + response.content,
-          timestamp: timestamp + 1,
-          metadata: {
-            intent: response.intent_detected,
-            confidence: response.confidence,
-            agent: response.agent_used,
-            suggested_prompts: response.suggested_prompts,
-            actions: response.actions,
-            action_executed: response.action_executed,
-            action_result: response.action_result,
-            action_type: response.action_type,
-            needs_confirmation: response.needs_confirmation,
-            needs_params: response.needs_params,
-            pending_action_id: response.pending_action_id,
-          }
-        }
-        setLiaMessages(prev => [...prev, responseMessage])
-
-        if (response.action_executed && response.action_result) {
-          setTimeout(() => {
-            // fetchCandidates is intentionally a no-op here — caller may pass it via context if needed
-          }, 500)
-        }
-
         if (!response.action_executed && response.action_type && response.ui_action) {
-          const fallbackMsg = {
+          addChatMessage({
             id: `fallback-${timestamp}`,
-            type: 'response' as const,
+            sender: 'lia',
             content: '⚠️ Não consegui executar automaticamente. Deseja tentar manualmente?',
-            timestamp: timestamp + 2,
+            timestamp: formatMessageTime(),
             metadata: {
               is_fallback: true,
               action_type: response.action_type,
               ui_action: response.ui_action,
               ui_action_params: response.ui_action_params,
             }
-          }
-          setLiaMessages(prev => [...prev, fallbackMsg])
+          })
         }
 
         if (response.ui_action === 'start_job_wizard') {
@@ -432,20 +438,17 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           }
           handleLiaUiAction(response.ui_action, enrichedParams)
         }
-      } else if ((response as Record<string, unknown>).error === 'auth_error') {
-        const authMsg = {
+      } else if ((response as unknown as Record<string, unknown>).error === 'auth_error') {
+        addChatMessage({
           id: `auth-error-${timestamp}`,
-          type: 'response' as const,
-          content: response.content || 'Sessao expirada. Recarregue a pagina para continuar.',
-          timestamp: timestamp + 1,
-        }
-        setLiaMessages(prev => [...prev, authMsg])
+          sender: 'lia',
+          content: (response as unknown as Record<string, unknown>).content as string || 'Sessao expirada. Recarregue a pagina para continuar.',
+          timestamp: formatMessageTime(),
+        })
       } else {
         throw new Error('API returned unsuccessful response')
       }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-      }
+    } catch (_error) {
       try {
         const jobContext = {
           title: currentJob.title,
@@ -482,13 +485,12 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           selected_candidate_ids: selectedIds
         })
         if (fallbackResponse.success) {
-          const responseMessage = {
+          addChatMessage({
             id: `response-${timestamp}`,
-            type: 'response' as const,
+            sender: 'lia',
             content: fallbackResponse.content,
-            timestamp: timestamp + 1
-          }
-          setLiaMessages(prev => [...prev, responseMessage])
+            timestamp: formatMessageTime(),
+          })
 
           if (fallbackResponse.ui_action) {
             handleLiaUiAction(fallbackResponse.ui_action, fallbackResponse.ui_action_params || {})
@@ -496,15 +498,14 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         } else {
           throw new Error('Fallback also failed')
         }
-      } catch (fallbackError) {
+      } catch (_fallbackError) {
         const fallbackContent = getFallbackResponse(command)
-        const responseMessage = {
+        addChatMessage({
           id: `response-${timestamp}`,
-          type: 'response' as const,
+          sender: 'lia',
           content: fallbackContent,
-          timestamp: timestamp + 1
-        }
-        setLiaMessages(prev => [...prev, responseMessage])
+          timestamp: formatMessageTime(),
+        })
       }
     } finally {
       setIsLiaLoading(false)
@@ -516,6 +517,9 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     ui_action?: string | null
     ui_action_params?: Record<string, unknown>
   }> => {
+    // Ensure unified context is set to kanban before orchestrated send
+    switchChatContext("kanban_chat")
+
     const jobContext = {
       id: currentJob.id,
       title: currentJob.title,
@@ -557,16 +561,23 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       : undefined
 
     try {
-      const response = await callOrchestratedJobChat({
+      const rawResponse = await sendOrchestratedMessage(
         message,
-        job_context: jobContext as OrchestratedJobChatRequest['job_context'],
-        candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
-        selected_candidate_ids: selectedIds,
-        conversation_id: liaConversationId,
-        company_id: resolvedCompanyId || '',
-      })
+        async (convId) => {
+          const result = await callOrchestratedJobChat({
+            message,
+            job_context: jobContext as OrchestratedJobChatRequest['job_context'],
+            candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
+            selected_candidate_ids: selectedIds,
+            conversation_id: convId ?? undefined,
+            company_id: resolvedCompanyId || '',
+          })
+          return result as unknown as { content: string; conversation_id?: string | null; [key: string]: unknown }
+        },
+      )
+      const response = rawResponse as unknown as OrchestratedJobChatResponse
 
-      if ((response as Record<string, unknown>).error === 'auth_error') {
+      if ((rawResponse as Record<string, unknown>).error === 'auth_error') {
         return {
           content: response.content || 'Sessao expirada. Recarregue a pagina para continuar.',
           ui_action: null

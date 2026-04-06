@@ -7,6 +7,8 @@ import type { Candidate } from "../types"
 import type { LIAChatMessage, CandidatesLIAHandlersContext } from "./useCandidatesLIAHandlers"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import { useCompanyId } from "@/hooks/useCompanyId"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { formatMessageTime } from "@/hooks/use-lia-chat-connection"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
@@ -16,13 +18,20 @@ export function useLIAChatMessage(
   handleTalentUIAction: (action: string, params?: Record<string, unknown>) => void,
 ) {
   const { companyId: resolvedCompanyId } = useCompanyId()
+
+  const {
+    switchChatContext,
+    sendOrchestratedMessage,
+    addChatMessage,
+  } = useLiaChatContext()
+
   const {
     candidates,
     setChatMessages,
     setLiaPromptValue,
     activeSearchTab,
     setActiveSearchTab,
-    talentConversationId,
+    talentConversationId: localTalentConversationId,
     setTalentConversationId,
     selectedCandidatesForBatch,
     searchResults,
@@ -31,6 +40,8 @@ export function useLIAChatMessage(
     executeSearch,
     user,
   } = ctx
+
+  const talentConversationId = localTalentConversationId
 
   const handleOrchestratedTalentMessage = async (message: string): Promise<OrchestratedTalentChatResponse> => {
     const selectedIds = Array.from(selectedCandidatesForBatch)
@@ -70,15 +81,43 @@ export function useLIAChatMessage(
     }
 
     try {
-      const response = await callOrchestratedTalentChat({
+      const rawResponse = await sendOrchestratedMessage(
         message,
-        candidates: candidatesForContext,
-        selected_candidate_ids: selectedIds.length > 0 ? selectedIds : undefined,
-        search_context: searchContextData,
-        target_job: undefined,
-        conversation_id: talentConversationId,
-        company_id: resolvedCompanyId || '',
-      })
+        async (convId) => {
+          const result = await callOrchestratedTalentChat({
+            message,
+            candidates: candidatesForContext,
+            selected_candidate_ids: selectedIds.length > 0 ? selectedIds : undefined,
+            search_context: searchContextData,
+            target_job: undefined,
+            conversation_id: convId ?? undefined,
+            company_id: resolvedCompanyId || '',
+          })
+          return result as unknown as { content: string; conversation_id?: string | null; [key: string]: unknown }
+        },
+        {
+          extractResponseMetadata: (raw) => {
+            const r = raw as unknown as OrchestratedTalentChatResponse
+            return {
+              intent: r.intent_detected,
+              confidence: r.confidence,
+              agent: r.agent_used,
+              suggested_prompts: r.suggested_prompts,
+              actions: r.actions,
+              action_executed: r.action_executed,
+              action_result: r.action_result,
+              action_type: r.action_type,
+              ui_action: r.ui_action,
+              needs_confirmation: r.needs_confirmation,
+              needs_params: r.needs_params,
+              pending_action_id: r.pending_action_id,
+              conversation_id: r.conversation_id,
+            }
+          },
+        },
+      )
+      const response = rawResponse as unknown as OrchestratedTalentChatResponse
+
       if (response.conversation_id) {
         setTalentConversationId(response.conversation_id)
       }
@@ -109,6 +148,9 @@ export function useLIAChatMessage(
   }
 
   const handleLIAChatMessage = async (message: string) => {
+    // Ensure unified context is set to candidates before any send
+    switchChatContext("talent_chat")
+
     const trimmedMessage = message.trim()
     const normalizedMessage = trimmedMessage.toLowerCase()
 
@@ -130,13 +172,6 @@ export function useLIAChatMessage(
       return
     }
 
-    const userMessage: LIAChatMessage = {
-      id: `user-${Date.now()}`,
-      type: 'user',
-      content: trimmedMessage,
-      timestamp: new Date()
-    }
-    setChatMessages(prev => [...prev, userMessage])
     setLiaPromptValue('')
 
     if (isConversationalMessage(trimmedMessage) || isGenericQuestion(trimmedMessage)) {
@@ -146,36 +181,14 @@ export function useLIAChatMessage(
         const response = await handleOrchestratedTalentMessage(trimmedMessage)
 
         if (response.success) {
-          const agentInfo = response.agents_consulted?.length > 1
-            ? `_Agentes: ${response.agents_consulted.join(', ')}_\n\n`
-            : ''
-
-          const liaResponse: LIAChatMessage = {
-            id: `lia-response-${Date.now()}`,
-            type: 'lia',
-            content: agentInfo + response.content,
-            timestamp: new Date(),
-            metadata: {
-              action_executed: response.action_executed,
-              action_result: response.action_result as Record<string, unknown> | undefined,
-              action_type: response.action_type,
-              needs_confirmation: response.needs_confirmation,
-              needs_params: response.needs_params,
-              pending_action_id: response.pending_action_id,
-              conversation_id: response.conversation_id
-            }
-          }
-          setChatMessages(prev => [...prev, liaResponse])
-
           if (response.suggested_prompts && response.suggested_prompts.length > 0) {
-            const suggestionsMessage: LIAChatMessage = {
-              id: `lia-suggestions-${Date.now()}`,
-              type: 'lia',
-              content: `💡 **Sugestões:**\n${response.suggested_prompts.slice(0, 3).map(p => `• ${p}`).join('\n')}`,
-              timestamp: new Date()
-            }
             setTimeout(() => {
-              setChatMessages(prev => [...prev, suggestionsMessage])
+              addChatMessage({
+                id: `lia-suggestions-${Date.now()}`,
+                sender: 'lia',
+                content: `💡 **Sugestões:**\n${response.suggested_prompts.slice(0, 3).map(p => `• ${p}`).join('\n')}`,
+                timestamp: formatMessageTime(),
+              })
             }, 500)
           }
         } else {
@@ -187,19 +200,24 @@ export function useLIAChatMessage(
           ? `Olá! Sou a LIA, sua assistente de recrutamento. Aqui no Funil de Talentos posso ajudá-lo a:\n\n🔍 **Buscar candidatos** — descreva o perfil desejado\n📊 **Analisar candidatos** — selecione e peça análise\n⚖️ **Comparar perfis** — selecione candidatos e peça comparação\n\nComo posso ajudar?`
           : `Entendi sua pergunta! Posso ajudá-lo a:\n\n🔍 **Buscar candidatos** - descreva o perfil desejado\n📊 **Analisar candidatos** - selecione e peça análise\n📋 **Criar vagas** - diga "criar nova vaga"\n⚖️ **Comparar perfis** - selecione candidatos e peça comparação\n\nComo posso ajudar?`
 
-        const fallbackResponse: LIAChatMessage = {
+        addChatMessage({
           id: `lia-response-${Date.now()}`,
-          type: 'lia',
+          sender: 'lia',
           content: fallbackContent,
-          timestamp: new Date()
-        }
-        setChatMessages(prev => [...prev, fallbackResponse])
+          timestamp: formatMessageTime(),
+        })
       } finally {
         setIsLIAThinking(false)
       }
       return
     }
 
+    addChatMessage({
+      id: `user-search-${Date.now()}`,
+      sender: 'user',
+      content: trimmedMessage,
+      timestamp: formatMessageTime(),
+    })
     executeSearch(trimmedMessage)
   }
 

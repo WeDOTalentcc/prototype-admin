@@ -7,12 +7,11 @@ import {
   Plus, Eraser, History, Clock, User
 } from "lucide-react"
 import { AgentControlCenter } from "@/components/agent-control-center"
-import { useLiaFloat } from "@/contexts/lia-float-context"
+import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { Button } from "@/components/ui/button"
 import { useDynamicSuggestions, type DynamicSuggestion } from "@/hooks/useDynamicSuggestions"
-import { useFloatConversation, formatMessageTime } from "@/hooks/use-float-conversation"
-import { useFloatStreaming } from "@/hooks/use-float-streaming"
+import { formatMessageTime } from "@/hooks/use-lia-chat-connection"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain } from "@/hooks/use-action-intent"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
@@ -39,6 +38,18 @@ export function LiaSuperPrompt() {
     sharedConversationId, setSharedConversationId,
     openSplitView,
   } = useLiaFloat()
+  const {
+    chatConversationId,
+    setChatConversationId,
+    chatIsStreaming,
+    chatStreamingContent,
+    chatIsCreating,
+    sendChatMessage,
+    connectChat,
+    disconnectChat,
+    initChatConversation,
+    loadChatHistory,
+  } = useLiaChatContext()
   const router = useRouter()
   const { suggestions, hasContextualData } = useDynamicSuggestions(isExpanded)
   const { detect: detectAction } = useActionIntent()
@@ -53,44 +64,26 @@ export function LiaSuperPrompt() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const {
-    conversationId: localConvId,
-    isCreating,
-    initConversation,
-    loadHistory,
-  } = useFloatConversation(ctxConvId, setSharedMessages)
-
-  const conversationId = sharedConversationId ?? localConvId
+  const conversationId = chatConversationId ?? sharedConversationId
   const messages = sharedMessages
-
-  const wsSessionId = conversationId ?? "float-pending"
-
-  const handleStreamComplete = useCallback((content: string) => {
-    addSharedMessage({
-      id: `lia-${Date.now()}`,
-      sender: "lia",
-      content,
-      timestamp: formatMessageTime(),
-    })
-  }, [addSharedMessage])
-
-  const {
-    isStreaming,
-    streamingContent,
-    sendMessage: wsSend,
-    connect: wsConnect,
-    disconnect: wsDisconnect,
-  } = useFloatStreaming(wsSessionId, handleStreamComplete)
+  const isCreating = chatIsCreating
+  const isStreaming = chatIsStreaming
+  const streamingContent = chatStreamingContent
+  const initConversation = initChatConversation
+  const loadHistory = useCallback(async (id: string) => {
+    const history = await loadChatHistory(id)
+    setSharedMessages(history)
+  }, [loadChatHistory, setSharedMessages])
 
   useEffect(() => {
     if (isExpanded && conversationId) {
-      wsConnect()
+      connectChat()
       if (sharedMessages.length === 0) {
         loadHistory(conversationId)
       }
     }
     if (!isExpanded) {
-      wsDisconnect()
+      disconnectChat()
     }
   }, [isExpanded, conversationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -111,13 +104,6 @@ export function LiaSuperPrompt() {
     if (!messageText || isCreating || isStreaming) return
 
     setInput("")
-
-    addSharedMessage({
-      id: `user-${Date.now()}`,
-      sender: "user",
-      content: messageText,
-      timestamp: formatMessageTime(),
-    })
 
     const actionResult = detectAction(messageText)
 
@@ -142,15 +128,16 @@ export function LiaSuperPrompt() {
         return
       }
       setSharedConversationId(convId)
-      wsConnect()
+      setChatConversationId(convId)
+      connectChat()
     }
 
     const domain = actionResult.actionType ? actionTypeToDomain(actionResult.actionType) : ""
-    wsSend(messageText, domain, currentScope)
+    sendChatMessage(messageText, domain, currentScope)
   }, [
     input, conversationId, isCreating, isStreaming,
     addSharedMessage, initConversation, detectAction, detectIntent,
-    collapse, openSplitView, wsSend, wsConnect, setSharedConversationId, currentScope,
+    collapse, openSplitView, sendChatMessage, connectChat, setSharedConversationId, setChatConversationId, currentScope,
   ])
 
   const handleSuggestionClick = useCallback((suggestion: DynamicSuggestion) => {
@@ -170,11 +157,12 @@ export function LiaSuperPrompt() {
   }, [handleSendMessage])
 
   const handleNewChat = useCallback(() => {
-    wsDisconnect()
+    disconnectChat()
     setSharedMessages([])
     setSharedConversationId(null)
+    setChatConversationId(null)
     setShowHistory(false)
-  }, [wsDisconnect, setSharedMessages, setSharedConversationId])
+  }, [disconnectChat, setSharedMessages, setSharedConversationId, setChatConversationId])
 
   const handleClear = useCallback(() => {
     setSharedMessages([])

@@ -3,6 +3,7 @@
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { Candidate } from "../types"
 import type { LIAChatMessage, CandidatesLIAHandlersContext } from "./useCandidatesLIAHandlers"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
 
 export function useLIAAICommands(ctx: CandidatesLIAHandlersContext) {
   const {
@@ -13,7 +14,11 @@ export function useLIAAICommands(ctx: CandidatesLIAHandlersContext) {
     setIsLIAThinking,
   } = ctx
 
+  const { switchChatContext } = useLiaChatContext()
+
   const handleAICommand = async (command: string) => {
+    // Ensure unified context is set to candidates before any send
+    switchChatContext("talent_chat")
     const trimmedCommand = command.trim().toLowerCase()
 
     const userMessage: LIAChatMessage = {

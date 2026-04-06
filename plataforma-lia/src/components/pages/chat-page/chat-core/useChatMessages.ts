@@ -8,6 +8,7 @@ import type { Message, ContextPanelData } from "./chat-core.types"
 import { MAX_FILE_SIZE_MB, MAX_FILE_SIZE_BYTES, ALLOWED_FILE_TYPES } from "./chat-core.constants"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { toast } from "sonner"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
 
 interface UseChatMessagesOptions {
   initialMessages: Message[]
@@ -20,7 +21,19 @@ export function useChatMessages({
   setContextData,
   setIsPanelOpen,
 }: UseChatMessagesOptions) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
+  const { chatMessages: unifiedMessages, addChatMessage } = useLiaChatContext()
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (unifiedMessages.length > 0) {
+      return unifiedMessages.map((m, idx) => ({
+        id: idx + 1,
+        sender: m.sender,
+        content: m.content,
+        timestamp: m.timestamp,
+      }))
+    }
+    return initialMessages
+  })
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -64,6 +77,18 @@ export function useChatMessages({
     scrollToBottom()
     checkNewMessageIndicator()
   }, [messages, checkNewMessageIndicator])
+
+  useEffect(() => {
+    setMessages(
+      unifiedMessages.map((m, idx) => ({
+        id: idx + 1,
+        sender: m.sender,
+        content: m.content,
+        timestamp: m.timestamp,
+        metadata: m.metadata,
+      }))
+    )
+  }, [unifiedMessages])
 
   // ── File attachment handlers ────────────────────────────────
   const handleFileButtonClick = useCallback(() => {

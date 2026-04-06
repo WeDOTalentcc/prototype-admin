@@ -13,14 +13,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Brain, X, ExternalLink, Loader2, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useLiaFloat } from "@/contexts/lia-float-context"
-import { useAgentStreaming } from "@/hooks/use-agent-streaming"
+import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
-import {
-  useFloatConversation,
-  formatMessageTime,
-  type FloatMessage,
-} from "@/hooks/use-float-conversation"
+import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
+
 
 const MAX_INPUT_CHARS = 2000
 
@@ -31,70 +27,49 @@ interface LiaSplitPanelProps {
 
 export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
   const { splitView, closeSplitView, open: openFloat } = useLiaFloat()
-
   const {
-    conversationId,
-    messages,
-    isCreating,
-    isFetchingHistory,
-    initConversation,
-    loadHistory,
-    addMessage,
-  } = useFloatConversation(splitView.conversationId)
+    chatIsConnected: isConnected,
+    chatIsStreaming: isStreaming,
+    chatStreamingContent: ctxStreamingContent,
+    chatIsCreating: ctxIsCreating,
+    chatIsFetchingHistory: ctxIsFetchingHistory,
+    sendChatMessage,
+    connectChat,
+    disconnectChat,
+    initChatConversation,
+    loadChatHistory,
+    addChatMessage,
+    chatConversationId,
+    setChatConversationId,
+  } = useLiaChatContext()
+
+  const conversationId = chatConversationId ?? splitView.conversationId ?? null
+  const isCreating = ctxIsCreating
+  const isFetchingHistory = ctxIsFetchingHistory
+  const streamingContent = ctxStreamingContent
+
+  const { chatMessages: messages, setChatMessages } = useLiaChatContext()
+
+  const initConversation = initChatConversation
+  const loadHistory = useCallback(async (id: string) => {
+    const history = await loadChatHistory(id)
+    setChatMessages(history)
+  }, [loadChatHistory, setChatMessages])
 
   const [inputText, setInputText] = useState("")
-  const [streamingContent, setStreamingContent] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Carregar histórico ao ativar split-view com conversa existente
   useEffect(() => {
     if (splitView.active && conversationId) {
       loadHistory(conversationId)
     }
   }, [splitView.active, conversationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── WebSocket streaming ──────────────────────────────────────────────────
-
-  const sessionId = conversationId ?? "split-pending"
-
-  const onStreamEvent = useCallback(
-    (event: { type: string; content?: string }) => {
-      if (event.type === "thinking") {
-        setStreamingContent("...")
-      } else if (event.type === "token" && event.content) {
-        setStreamingContent(prev =>
-          prev === "..." ? event.content! : prev + event.content!
-        )
-      } else if (event.type === "message" && event.content) {
-        setStreamingContent("")
-        addMessage({
-          id: `lia-${Date.now()}`,
-          sender: "lia",
-          content: event.content,
-          timestamp: formatMessageTime(),
-        })
-      } else if (event.type === "error") {
-        setStreamingContent("")
-        addMessage({
-          id: `err-${Date.now()}`,
-          sender: "lia",
-          content:
-            "Desculpe, tive um problema ao processar sua mensagem. Tente novamente.",
-          timestamp: formatMessageTime(),
-        })
-      }
-    },
-    [addMessage]
-  )
-
-  const { isConnected, isStreaming, connect, disconnect, sendMessage: wsSend } =
-    useAgentStreaming(sessionId, { autoReconnect: true }, onStreamEvent)
-
   useEffect(() => {
-    if (splitView.active && conversationId) connect()
-    if (!splitView.active) disconnect()
-    return () => { disconnect() }
+    if (splitView.active && conversationId) connectChat()
+    if (!splitView.active) disconnectChat()
+    return () => { disconnectChat() }
   }, [splitView.active, conversationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -109,18 +84,11 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
     setInputText("")
     if (textareaRef.current) textareaRef.current.style.height = "auto"
 
-    addMessage({
-      id: `user-${Date.now()}`,
-      sender: "user",
-      content: text,
-      timestamp: formatMessageTime(),
-    })
-
     let convId = conversationId
     if (!convId) {
       convId = await initConversation(text)
       if (!convId) {
-        addMessage({
+        addChatMessage({
           id: `err-${Date.now()}`,
           sender: "lia",
           content: "Não consegui iniciar a conversa. Tente novamente.",
@@ -128,11 +96,13 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
         })
         return
       }
+      setChatConversationId(convId)
+      connectChat()
       await new Promise(r => setTimeout(r, 200))
     }
 
-    wsSend(text, { context_type: "general" }, "general")
-  }, [inputText, conversationId, isCreating, isStreaming, addMessage, initConversation, wsSend])
+    sendChatMessage(text, "general")
+  }, [inputText, conversationId, isCreating, isStreaming, addChatMessage, initConversation, sendChatMessage, setChatConversationId, connectChat])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -159,11 +129,10 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
   )
 
   const handleClose = useCallback(() => {
-    disconnect()
+    disconnectChat()
     closeSplitView()
-    // Reabre como float para não perder contexto
     if (conversationId) openFloat(conversationId)
-  }, [closeSplitView, openFloat, conversationId, disconnect])
+  }, [closeSplitView, openFloat, conversationId, disconnectChat])
 
   const handleNavigatePage = useCallback(() => {
     if (splitView.page && onNavigate) {
@@ -333,7 +302,7 @@ function SplitEmptyState({ page }: { page: string | null }) {
   )
 }
 
-function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
+function SplitMessageBubble({ msg }: { msg: LiaChatMessage }) {
   const isUser = msg.sender === "user"
   return (
     <div className={cn("flex gap-2", isUser ? "flex-row-reverse" : "flex-row")}>

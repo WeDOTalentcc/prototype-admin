@@ -2,9 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { liaApi } from "@/services/lia-api"
-import { useAgentStreaming, type StreamingEvent } from "@/hooks/use-agent-streaming"
-import { useLiaFloat } from "@/contexts/lia-float-context"
-import type { DynamicPanelType } from "@/contexts/lia-float-context"
+import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import type { Message, ContextPanelData, SelectedCandidateForScheduling, PendingPearchSearch } from "./chat-core.types"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchPreviewData } from "@/components/search/search-preview-card"
@@ -33,6 +31,20 @@ export function useChatSession({
   setContextData,
   setIsPanelOpen,
 }: UseChatSessionOptions) {
+  const {
+    chatConversationId,
+    setChatConversationId,
+    switchChatContext,
+    sendChatMessage,
+    initChatConversation,
+    loadChatHistory,
+    chatIsConnected,
+    chatIsStreaming,
+    chatStreamingContent,
+    connectChat,
+    disconnectChat,
+  } = useLiaChatContext()
+
   // ── Scheduling / Command Palette ───────────────────────────
   const [isSchedulingModalOpen, setIsSchedulingModalOpen] = useState(false)
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
@@ -97,6 +109,11 @@ export function useChatSession({
     fetchCredits()
   }, [])
 
+  // ── Mark context type as "general" for Chat Page ──────────
+  useEffect(() => {
+    switchChatContext("general")
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Chat ID & Title ────────────────────────────────────────
   const [chatId, setChatId] = useState("#0000")
 
@@ -126,95 +143,44 @@ export function useChatSession({
   const [activeTab, setActiveTab] = useState<"conversa" | "controle">("conversa")
 
   // ── Dynamic panel (split-screen) ──────────────────────────
-  const VALID_PANEL_TYPES: DynamicPanelType[] = ["calibration", "candidate_review", "profile", "job_creation", "scheduling"]
-  const { openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel } = useLiaFloat()
+  const { closeDynamicPanel } = useLiaFloat()
 
-  const panelHandlerRef = useRef<{
-    openDynamicPanel: typeof openDynamicPanel
-    closeDynamicPanel: typeof closeDynamicPanel
-    updateDynamicPanelData: typeof updateDynamicPanelData
-    dynamicPanel: typeof dynamicPanel
-  }>({ openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel })
-
-  useEffect(() => {
-    panelHandlerRef.current = { openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel }
-  }, [openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel])
-
-  const handleWsEvent = useCallback((event: StreamingEvent) => {
-    if (event.type !== 'panel_update') return
-    const raw = event as unknown as Record<string, unknown>
-    const panelType = raw.panel_type as string | undefined
-    const panelData = (raw.panel_data as Record<string, unknown>) || {}
-    const panelTitle = raw.panel_title as string | undefined
-    const action = (raw.action as string) || "open"
-    const { openDynamicPanel: open, closeDynamicPanel: close, updateDynamicPanelData: update, dynamicPanel: current } = panelHandlerRef.current
-
-    if (action === "close") {
-      close()
-      return
-    }
-
-    if (!panelType || !VALID_PANEL_TYPES.includes(panelType as DynamicPanelType)) return
-
-    if (action === "update" && current?.panelType === panelType) {
-      update(panelData)
-    } else {
-      open({
-        panelType: panelType as DynamicPanelType,
-        data: panelData,
-        title: panelTitle,
-      })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Agent Streaming (WebSocket) ────────────────────────────
-  const wsSessionId = chatId.replace('#', '')
-  const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/auth/ws-token')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!cancelled && data?.token) setWsAuthToken(data.token)
-      })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [])
-
-  const {
-    tokens: wsTokens,
-    isStreaming: wsIsStreaming,
-    isConnected: wsIsConnected,
-    connect: wsConnect,
-    disconnect: wsDisconnect,
-    clearTokens: wsClearTokens,
-    sendMessage: wsSendMessage,
-  } = useAgentStreaming(wsSessionId, { authToken: wsAuthToken }, handleWsEvent)
-
+  // ── Unified Streaming (via LiaChatContext) ──────────────────
   const wsStreamingModeRef = useRef(false)
 
   useEffect(() => {
-    if (wsSessionId && wsSessionId !== '0000' && wsAuthToken) wsConnect()
-    return () => { wsDisconnect() }
-  }, [wsSessionId, wsAuthToken, wsConnect, wsDisconnect])
+    connectChat()
+    return () => { disconnectChat() }
+  }, [connectChat, disconnectChat])
+
+  const wsIsConnected = chatIsConnected
+  const wsIsStreaming = chatIsStreaming
+
+  const wsSendMessage = useCallback((content: string) => {
+    sendChatMessage(content)
+  }, [sendChatMessage])
+
+  const wsClearTokens = useCallback(() => {
+    // Tokens are managed by the unified connection; no-op for compatibility
+  }, [])
 
   useEffect(() => {
-    if (!wsStreamingModeRef.current || !wsTokens) return
+    if (!wsStreamingModeRef.current || !chatStreamingContent) return
+    const snapshot = chatStreamingContent
     setMessages(prev => {
       const updated = [...prev]
       const last = updated[updated.length - 1]
-      if (last?.sender === 'lia') updated[updated.length - 1] = { ...last, content: wsTokens }
+      if (last?.sender === 'lia') updated[updated.length - 1] = { ...last, content: snapshot }
       return updated
     })
-  }, [wsTokens, setMessages])
+  }, [chatStreamingContent, setMessages])
 
   useEffect(() => {
-    if (wsStreamingModeRef.current && !wsIsStreaming && wsTokens) {
+    if (wsStreamingModeRef.current && !chatIsStreaming && chatStreamingContent) {
       wsStreamingModeRef.current = false
       setIsLoading(false)
     }
-  }, [wsIsStreaming, wsTokens, setIsLoading])
+  }, [chatIsStreaming, chatStreamingContent, setIsLoading])
 
   // ── Derived ────────────────────────────────────────────────
   const activePendingAction = useMemo(() => {
@@ -444,49 +410,43 @@ export function useChatSession({
   }, [activeSearchFilters])
 
   return {
-    // Scheduling
     isSchedulingModalOpen, setIsSchedulingModalOpen,
     isCommandPaletteOpen, setIsCommandPaletteOpen,
     selectedCandidateForScheduling, setSelectedCandidateForScheduling,
-    // Candidate search
     isCandidateDetailOpen, setIsCandidateDetailOpen,
     selectedCandidateForDetail, setSelectedCandidateForDetail,
     isCreditDialogOpen, setIsCreditDialogOpen,
     pendingPearchSearch, setPendingPearchSearch,
-    // Smart search
     isSmartSearchMode, setIsSmartSearchMode,
     smartSearchQuery, setSmartSearchQuery,
     searchFlow,
     searchPreviewData, setSearchPreviewData,
     hasSearchResults, setHasSearchResults,
-    // Filters
     isFiltersModalOpen, setIsFiltersModalOpen,
     activeSearchFilters,
-    // Global settings
     globalSearchSettings, globalSettingsLoading,
-    // Empty field notifications
     emptyFieldNotifications,
     currentSuggestion,
     isLoadingSuggestion,
-    // Credits
     availableCredits,
-    // Chat metadata
     chatId,
     chatTitle, setChatTitle,
     activeTab, setActiveTab,
     updateChatTitle,
-    // WS streaming (needed by handlers)
     wsIsConnected,
     wsSendMessage,
     wsClearTokens,
     wsStreamingModeRef,
-    // Derived
     activePendingAction,
-    // Handlers
     handleEmptyFieldAction,
     handleSuggestionAccepted,
     handleSuggestionRejected,
     handleApplyFilters,
     getActiveFiltersCount,
+    chatConversationId,
+    setChatConversationId,
+    sendChatMessage,
+    initChatConversation,
+    loadChatHistory,
   }
 }

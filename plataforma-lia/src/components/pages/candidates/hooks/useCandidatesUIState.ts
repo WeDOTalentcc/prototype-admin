@@ -4,7 +4,7 @@
 // Owns all local modal-open flags and UI-only state that does not belong to
 // a specific domain hook (search state, view state, etc.).
 
-import { useState } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { type ParsedCVResponse } from "@/components/cv"
 import { type CreditEstimate } from "@/lib/api/candidate-search"
@@ -19,6 +19,7 @@ import {
   type PearchSearchOptions,
   type ChatMessage,
 } from "./candidates-core"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
 
 export type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
@@ -39,7 +40,39 @@ export function useCandidatesUIState() {
   const [isResizingLIA, setIsResizingLIA] = useState(false)
   const [isLiaSuperChat, setIsLiaSuperChat] = useState(false)
   const [isLIAThinking, setIsLIAThinking] = useState(false)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const { chatMessages: unifiedMessages, setChatMessages: setUnifiedMessages, addChatMessage: addUnifiedMessage } = useLiaChatContext()
+  const chatMessages = useMemo<ChatMessage[]>(() => unifiedMessages.map(m => ({
+    id: m.id,
+    type: (m.sender === 'user' ? 'user' : 'lia') as ChatMessage['type'],
+    content: m.content,
+    timestamp: new Date(),
+    metadata: m.metadata as ChatMessage['metadata'],
+  })), [unifiedMessages])
+  const setChatMessages = useCallback((val: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
+    const toUnified = (arr: ChatMessage[]) => arr.map(m => ({
+      id: m.id,
+      sender: (m.type === 'user' ? 'user' : 'lia') as 'user' | 'lia',
+      content: m.content,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      metadata: m.metadata as Record<string, unknown> | undefined,
+    }))
+    if (typeof val === 'function') {
+      setUnifiedMessages(prevUnified => {
+        const prevChat: ChatMessage[] = prevUnified.map(m => ({
+          id: m.id,
+          type: (m.sender === 'user' ? 'user' : 'lia') as ChatMessage['type'],
+          content: m.content,
+          timestamp: new Date(),
+          metadata: m.metadata as ChatMessage['metadata'],
+        }))
+        return toUnified(val(prevChat))
+      })
+    } else if (val.length === 0) {
+      setUnifiedMessages([])
+    } else {
+      setUnifiedMessages(toUnified(val))
+    }
+  }, [setUnifiedMessages])
 
   // ── Search / pearch options ──────────────────────────────────────────────
   const [pearchSearchOptions, setPearchSearchOptions] = useState<PearchSearchOptions>(DEFAULT_PEARCH_OPTIONS)

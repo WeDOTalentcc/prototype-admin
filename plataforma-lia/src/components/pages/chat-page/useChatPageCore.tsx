@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { useChatLayout } from "@/hooks/useChatLayout"
 import { useUIActions } from "@/hooks/useUIActions"
 import { promoteCandidateToBase } from "@/lib/api/candidate-search"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useChatPageHandlers } from "./useChatPageHandlers"
 import {
   FileText, Users, Plus, MessageSquare, Search, Calendar,
@@ -31,6 +32,9 @@ export function useChatPageCore() {
   const searchParams = useSearchParams()
   const conversationType = searchParams?.get('conversation') || 'empty'
   const initialConversation = conversationType === 'empty' ? emptyConversation : modernConversation
+
+  // ── Unified LIA Chat Context ────────────────────────────────────────────────
+  const { chatConversationId, setChatConversationId, addChatMessage } = useLiaChatContext()
 
   // ── Lifted state (shared between sub-hooks) ───────────────────────────────
   const [contextData, setContextData] = useState<ContextPanelData | null>(null)
@@ -181,6 +185,9 @@ export function useChatPageCore() {
       selectedCandidateForScheduling: session.selectedCandidateForScheduling as unknown as Record<string, unknown> | null,
       setSelectedCandidateForScheduling: session.setSelectedCandidateForScheduling as unknown as (v: Record<string, unknown> | null) => void,
       setIsSchedulingModalOpen: session.setIsSchedulingModalOpen,
+      chatConversationId,
+      setChatConversationId,
+      addChatMessage,
     })
 
   // ── AI-First Action Handlers ──────────────────────────────────────────────

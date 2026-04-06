@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { toast } from "sonner"
 import { useJobUIStore } from "@/stores/job-ui-store"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
 
 export function useKanbanUIModals({ job }: {
   job?: Record<string, unknown>
@@ -86,9 +87,40 @@ export function useKanbanUIModals({ job }: {
   const [transitionInterviewAlert, setTransitionInterviewAlert] = useState<{ name: string; date: string } | null>(null)
   const [showSuperChat, setShowSuperChat] = useState(false)
   const [liaPromptValue, setLiaPromptValue] = useState("")
-  const [liaMessages, setLiaMessages] = useState<{
-    id: string; type: 'user' | 'response'; content: string; timestamp: number; metadata?: Record<string, unknown>
-  }[]>([])
+  const { chatMessages: unifiedMessages, setChatMessages: setUnifiedMessages } = useLiaChatContext()
+  const liaMessages = useMemo(() => unifiedMessages.map(m => ({
+    id: m.id,
+    type: (m.sender === 'user' ? 'user' : 'response') as 'user' | 'response',
+    content: m.content,
+    timestamp: Date.now(),
+    metadata: m.metadata,
+  })), [unifiedMessages])
+  type KanbanMsg = { id: string; type: 'user' | 'response'; content: string; timestamp: number; metadata?: Record<string, unknown> }
+  const setLiaMessages = useCallback((val: KanbanMsg[] | ((prev: KanbanMsg[]) => KanbanMsg[])) => {
+    const toUnified = (arr: KanbanMsg[]) => arr.map(m => ({
+      id: m.id,
+      sender: (m.type === 'user' ? 'user' : 'lia') as 'user' | 'lia',
+      content: m.content,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      metadata: m.metadata,
+    }))
+    if (typeof val === 'function') {
+      setUnifiedMessages(prevUnified => {
+        const prevKanban: KanbanMsg[] = prevUnified.map(m => ({
+          id: m.id,
+          type: (m.sender === 'user' ? 'user' : 'response') as 'user' | 'response',
+          content: m.content,
+          timestamp: Date.now(),
+          metadata: m.metadata,
+        }))
+        return toUnified(val(prevKanban))
+      })
+    } else if (val.length === 0) {
+      setUnifiedMessages([])
+    } else {
+      setUnifiedMessages(toUnified(val))
+    }
+  }, [setUnifiedMessages])
   const [isLiaLoading, setIsLiaLoading] = useState(false)
   const [liaConversationId, setLiaConversationId] = useState<string | undefined>(undefined)
   const chatScrollRef = useRef<HTMLDivElement>(null)

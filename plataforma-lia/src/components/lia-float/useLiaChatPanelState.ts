@@ -1,24 +1,19 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { useLiaFloat } from "@/contexts/lia-float-context"
+import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain, type ActionType } from "@/hooks/use-action-intent"
-import { useFloatStreaming, type PanelUpdateEvent } from "@/hooks/use-float-streaming"
-import type { DynamicPanelType } from "@/contexts/lia-float-context"
-import {
-  useFloatConversation,
-  formatMessageTime,
-  type FloatMessage,
-} from "@/hooks/use-float-conversation"
+import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { useCvScreening } from "@/hooks/use-cv-screening"
 import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store"
 
+export type FloatMessage = LiaChatMessage
+
 const MAX_INPUT_CHARS = 2000
 
 export { MAX_INPUT_CHARS }
-export type { FloatMessage }
 
 export function useLiaChatPanelState() {
   const {
@@ -28,6 +23,31 @@ export function useLiaChatPanelState() {
     sharedMessages, addSharedMessage, setSharedMessages,
     sharedConversationId, setSharedConversationId,
   } = useLiaFloat()
+
+  const {
+    chatConversationId,
+    setChatConversationId,
+    chatIsConnected,
+    chatIsStreaming,
+    chatStreamingContent,
+    chatHitlPending,
+    chatBackgroundTasks,
+    chatFairnessWarnings,
+    dismissFairnessWarnings: ctxDismissFairnessWarnings,
+    clearBackgroundTask: ctxClearBackgroundTask,
+    resetBackgroundTasks: ctxResetBackgroundTasks,
+    chatIsCreating,
+    chatIsFetchingHistory,
+    sendChatMessage,
+    sendApproval: ctxSendApproval,
+    connectChat,
+    disconnectChat,
+    initChatConversation,
+    loadChatHistory,
+    addChatMessage,
+    chatMessages,
+  } = useLiaChatContext()
+
   const { result: navIntent, detect: detectIntent, clear: clearIntent } = useNavigationIntent()
   const { detect: detectAction } = useActionIntent()
   const currentScope = resolveScopeFromPathname(typeof window !== 'undefined' ? window.location.pathname : '')
@@ -37,21 +57,24 @@ export function useLiaChatPanelState() {
   const { screenCv, isScreening } = useCvScreening()
   const [actionLabel, setActionLabel] = useState<string | null>(null)
 
-  const {
-    conversationId: localConvId,
-    isCreating,
-    isFetchingHistory,
-    initConversation,
-    loadHistory,
-  } = useFloatConversation(ctxConvId, setSharedMessages)
-
-  const conversationId = sharedConversationId ?? localConvId
+  const conversationId = chatConversationId ?? sharedConversationId
   const messages = sharedMessages
-  const addMessage = addSharedMessage
+  const addMessage = useCallback((msg: FloatMessage) => {
+    addSharedMessage(msg)
+  }, [addSharedMessage])
   const setMessages = setSharedMessages
   const setConversationId = useCallback((id: string | null) => {
     setSharedConversationId(id)
-  }, [setSharedConversationId])
+    setChatConversationId(id)
+  }, [setSharedConversationId, setChatConversationId])
+
+  const isCreating = chatIsCreating
+  const isFetchingHistory = chatIsFetchingHistory
+  const initConversation = initChatConversation
+  const loadHistory = useCallback(async (id: string) => {
+    const history = await loadChatHistory(id)
+    setMessages(history)
+  }, [loadChatHistory, setMessages])
 
   const [inputText, setInputText] = useState("")
   const [showHistory, setShowHistory] = useState(false)
@@ -64,64 +87,24 @@ export function useLiaChatPanelState() {
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const wsSessionId = conversationId ?? "float-pending"
-
-  const VALID_PANEL_TYPES: DynamicPanelType[] = ["calibration", "candidate_review", "profile", "job_creation", "scheduling"]
-
-  const handlePanelUpdate = useCallback((event: PanelUpdateEvent) => {
-    if (event.action === "close") {
-      closeDynamicPanel()
-      return
-    }
-    if (event.action === "update") {
-      if (dynamicPanel && event.panel_type && event.panel_type !== dynamicPanel.panelType) {
-        return
-      }
-      updateDynamicPanelData(event.panel_data)
-      return
-    }
-    if (VALID_PANEL_TYPES.includes(event.panel_type as DynamicPanelType)) {
-      openDynamicPanel({
-        panelType: event.panel_type as DynamicPanelType,
-        data: event.panel_data,
-        title: event.panel_title,
-      })
-    }
-  }, [openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel])
-
-  const handleStreamComplete = useCallback((content: string, executionPlan?: Record<string, unknown>) => {
-    const msg: FloatMessage = {
-      id: `lia-${Date.now()}`,
-      sender: "lia",
-      content,
-      timestamp: formatMessageTime(),
-    }
-    if (executionPlan) {
-      msg.executionPlan = executionPlan
-    }
-    addMessage(msg)
-  }, [addMessage])
-
   const [showSwitchTask, setShowSwitchTask] = useState(false)
 
-  const {
-    isConnected,
-    isStreaming,
-    isReconnecting,
-    reconnectAttempt,
-    streamingContent,
-    error: wsError,
-    hitlPending,
-    fairnessWarnings,
-    backgroundTasks,
-    dismissFairnessWarnings,
-    clearBackgroundTask,
-    resetBackgroundTasks,
-    sendMessage: wsSend,
-    sendApproval,
-    connect: wsConnect,
-    disconnect: wsDisconnect,
-  } = useFloatStreaming(wsSessionId, handleStreamComplete, handlePanelUpdate)
+  const isConnected = chatIsConnected
+  const isStreaming = chatIsStreaming
+  const isReconnecting = false
+  const reconnectAttempt = 0
+  const streamingContent = chatStreamingContent
+  const wsError: string | null = null
+  const hitlPending = chatHitlPending
+  const fairnessWarnings = chatFairnessWarnings
+  const backgroundTasks = chatBackgroundTasks
+  const dismissFairnessWarnings = ctxDismissFairnessWarnings
+  const clearBackgroundTask = ctxClearBackgroundTask
+  const resetBackgroundTasks = ctxResetBackgroundTasks
+  const wsSend = useCallback(async (content: string, domain?: string, scope?: string) => {
+    await sendChatMessage(content, domain, scope)
+  }, [sendChatMessage])
+  const sendApproval = ctxSendApproval
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -136,10 +119,10 @@ export function useLiaChatPanelState() {
 
   useEffect(() => {
     if (isOpen && conversationId) {
-      wsConnect()
+      connectChat()
     }
     if (!isOpen) {
-      wsDisconnect()
+      disconnectChat()
     }
   }, [isOpen, conversationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -188,7 +171,7 @@ export function useLiaChatPanelState() {
   }, [navigateToChat])
 
   const handleNewChat = useCallback(() => {
-    wsDisconnect()
+    disconnectChat()
     setMessages([])
     setConversationId(null)
     setActiveActionType(null)
@@ -197,7 +180,7 @@ export function useLiaChatPanelState() {
     setShowHistory(false)
     closeDynamicPanel()
     resetBackgroundTasks()
-  }, [wsDisconnect, setMessages, setConversationId, clearIntent, closeDynamicPanel, resetBackgroundTasks])
+  }, [disconnectChat, setMessages, setConversationId, clearIntent, closeDynamicPanel, resetBackgroundTasks])
 
   const handleClear = useCallback(() => {
     setMessages([])
@@ -353,21 +336,16 @@ export function useLiaChatPanelState() {
   }, [addMessage])
 
   const handleChipSend = React.useCallback(async (text: string) => {
-    addMessage({
-      id: `user-${Date.now()}`,
-      sender: "user",
-      content: text,
-      timestamp: formatMessageTime(),
-    })
     let convId = conversationId
     if (!convId) {
       convId = await initConversation(text)
       if (!convId) return
       setSharedConversationId(convId)
-      wsConnect()
+      setChatConversationId(convId)
+      connectChat()
     }
     wsSend(text, "", currentScope)
-  }, [conversationId, addMessage, initConversation, setSharedConversationId, wsConnect, wsSend, currentScope])
+  }, [conversationId, initConversation, setSharedConversationId, setChatConversationId, connectChat, wsSend, currentScope])
 
   const updateRecentItem = useCallback((text: string, overrideConvId?: string) => {
     const cid = overrideConvId ?? conversationId
@@ -551,7 +529,8 @@ export function useLiaChatPanelState() {
         return
       }
       setSharedConversationId(convId)
-      wsConnect()
+      setChatConversationId(convId)
+      connectChat()
     }
 
     updateRecentItem(text, convId ?? undefined)
@@ -588,7 +567,7 @@ export function useLiaChatPanelState() {
   }, [
     inputText, conversationId, isCreating, isStreaming,
     addMessage, initConversation, detectAction, detectIntent,
-    openSplitView, wsSend, wsConnect, setSharedConversationId, currentScope,
+    openSplitView, wsSend, connectChat, setSharedConversationId, currentScope,
     pendingCvFields, uploadedFileInfo, setPendingCvFields, setUploadedFileInfo,
     updateRecentItem,
   ])
@@ -623,7 +602,7 @@ export function useLiaChatPanelState() {
     streamingContent, wsError, hitlPending, fairnessWarnings,
     backgroundTasks, showSwitchTask, setShowSwitchTask,
     dismissFairnessWarnings, clearBackgroundTask, resetBackgroundTasks,
-    wsSend, sendApproval, wsConnect, wsDisconnect,
+    wsSend, sendApproval, wsConnect: connectChat, wsDisconnect: disconnectChat,
     handleCvFileAttach, handleCvFileButtonClick, handleExpand,
     handleNewChat, handleClear, handleToggleHistory, handleLoadConversation,
     handleFileUpload, handleChipSend, handleSend, handleKeyDown,

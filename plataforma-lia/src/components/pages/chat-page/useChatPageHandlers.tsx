@@ -6,6 +6,7 @@ import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/se
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchPreviewData } from "@/components/search/search-preview-card"
 import type { Message } from "./types"
+import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
 
 interface ChatPageHandlersContext {
   input: string
@@ -45,6 +46,9 @@ interface ChatPageHandlersContext {
   selectedCandidateForScheduling: Record<string, unknown> | null
   setSelectedCandidateForScheduling: (v: Record<string, unknown> | null) => void
   setIsSchedulingModalOpen: (v: boolean) => void
+  chatConversationId: string | null
+  setChatConversationId: (id: string | null) => void
+  addChatMessage: (msg: LiaChatMessage) => void
 }
 
 export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
@@ -56,6 +60,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     setChatTitle, setFileAnalysisContext, fileAnalysisContext,
     wsIsConnected, wsSendMessage, wsClearTokens, wsStreamingModeRef,
     selectedCandidateForScheduling, setSelectedCandidateForScheduling, setIsSchedulingModalOpen,
+    chatConversationId, setChatConversationId, addChatMessage,
   } = ctx
 
   const handleSmartSearchSubmit = useCallback(async (query: string, entities: ParsedEntities, mode?: SearchMode, metadata?: SearchMetadata) => {
@@ -87,7 +92,8 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       type: "text"
     }
     setMessages(prev => [...prev, userMessage])
-    
+    addChatMessage({ id: `user-search-${timestamp}`, sender: "user", content: query, timestamp: formatMessageTime() })
+
     // Set preview data with loading state
     setSearchPreviewData({
       query,
@@ -116,9 +122,14 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       // Execute real search via backend
       const response = await liaApi.sendMessage({
         content: enrichedQuery,
-        user_id: "demo-user"
+        user_id: "demo-user",
+        conversation_id: chatConversationId ?? undefined,
       })
       
+      if (response.conversation?.id) {
+        setChatConversationId(response.conversation.id)
+      }
+
       const workflowData = response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
       const searchResults = (workflowData as Record<string, unknown> | undefined)?.search_results as Record<string, unknown> | undefined
       
@@ -153,7 +164,8 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       }
       
       setMessages(prev => [...prev.filter(m => m.type !== "thinking"), liaResponse])
-      
+      addChatMessage({ id: `lia-search-${Date.now()}`, sender: "lia", content: liaResponse.content, timestamp: formatMessageTime() })
+
       if (searchResults) {
         setHasSearchResults(true)
         searchFlow.showResults()
@@ -192,7 +204,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     } finally {
       setIsLoading(false)
     }
-  }, [searchFlow, activeSearchFilters, setContextData, setHasSearchResults, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSearchPreviewData, setSmartSearchQuery])
+  }, [searchFlow, activeSearchFilters, setContextData, setHasSearchResults, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSearchPreviewData, setSmartSearchQuery, chatConversationId, setChatConversationId, addChatMessage])
 
   const handleSendMessage = useCallback(async (customContent?: string) => {
     const userMessageContent = customContent || input
@@ -321,6 +333,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
 
       } else if (useStreaming) {
         // SSE path — fallback when WS is not connected (proxied to backend /api/v1/chat/stream)
+        addChatMessage({ id: `user-${newMessage.id}`, sender: "user", content: userMessageContent, timestamp: formatMessageTime() })
         let sseSucceeded = false
         try {
           const streamingMessage: Message = {
@@ -339,7 +352,10 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           const streamResp = await fetch('/api/lia/chat/stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: messageContent }),
+            body: JSON.stringify({
+              content: messageContent,
+              conversation_id: chatConversationId ?? undefined,
+            }),
           })
 
           if (!streamResp.ok || !streamResp.body) {
@@ -363,6 +379,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
               let parsed: Record<string, unknown> | null = null
               try { parsed = JSON.parse(payload) } catch (_) { /* partial JSON chunk */ }
               if (parsed) {
+                if (parsed.conversation_id && typeof parsed.conversation_id === 'string') {
+                  setChatConversationId(parsed.conversation_id)
+                }
                 if (parsed.token) {
                   accumulated += parsed.token as string
                   const snapshot = accumulated
@@ -381,6 +400,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
             }
           }
           sseSucceeded = true
+          if (accumulated) {
+            addChatMessage({ id: `lia-sse-${Date.now()}`, sender: "lia", content: accumulated, timestamp: formatMessageTime() })
+          }
         } catch (_sseError) {
           // SSE failed — fall through to REST API below
         }
@@ -389,7 +411,12 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           const response = await liaApi.sendMessage({
             content: messageContent,
             user_id: "demo-user",
+            conversation_id: chatConversationId ?? undefined,
           })
+
+          if (response.conversation?.id) {
+            setChatConversationId(response.conversation.id)
+          }
 
           const liaResponse: Message = {
             id: messages.length + 3,
@@ -408,16 +435,22 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
             newMessages[newMessages.length - 1] = liaResponse
             return newMessages
           })
+          addChatMessage({ id: `lia-rest-${Date.now()}`, sender: "lia", content: response.message.content, timestamp: formatMessageTime() })
         }
 
       } else {
-        // Fallback: regular (blocking) request for attachments / audio
+        addChatMessage({ id: `user-${newMessage.id}`, sender: "user", content: userMessageContent, timestamp: formatMessageTime() })
         const response = await liaApi.sendMessage({
           content: messageContent,
           user_id: "demo-user",
+          conversation_id: chatConversationId ?? undefined,
           attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
           audio: currentAudio || undefined
         })
+
+        if (response.conversation?.id) {
+          setChatConversationId(response.conversation.id)
+        }
 
         const liaResponse: Message = {
           id: messages.length + 3,
@@ -491,6 +524,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           newMessages[newMessages.length - 1] = liaResponse
           return newMessages
         })
+        addChatMessage({ id: `lia-rest-${Date.now()}`, sender: "lia", content: response.message.content, timestamp: formatMessageTime() })
 
         const actionResult = response.message.message_metadata?.action_result as Record<string, unknown> | undefined
         if (actionResult?.success) {
@@ -527,7 +561,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         setIsLoading(false)
       }
     }
-  }, [input, isLoading, messages.length, wsIsConnected, wsSendMessage, wsClearTokens, attachedFiles, audioBlob, fileAnalysisContext, searchFlow, setAttachedFiles, setAudioBlob, setChatTitle, setContextData, setFileAnalysisContext, setInput, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSmartSearchQuery, wsStreamingModeRef])
+  }, [input, isLoading, messages.length, wsIsConnected, wsSendMessage, wsClearTokens, attachedFiles, audioBlob, fileAnalysisContext, searchFlow, setAttachedFiles, setAudioBlob, setChatTitle, setContextData, setFileAnalysisContext, setInput, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSmartSearchQuery, wsStreamingModeRef, chatConversationId, setChatConversationId])
 
   const handlePipelineAction = useCallback(async (candidateId: string, actionId: string, candidateName: string) => {
     try {
