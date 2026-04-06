@@ -46,14 +46,14 @@ export interface UseCandidatesViewCompositionParams {
   searchTerm: string
   hasSearchResults: boolean
   quickFilters: Set<string>
-  columnFilters: Record<string, unknown>
+  columnFilters: { position: string[]; company: string[]; location: string[]; scoreRange: string[]; bigFive?: Record<string, string> }
   advancedFilters: AdvancedFilters
   tableFilters: TableFilters
   setTableFilters: Dispatch<SetStateAction<TableFilters>>
   sortBy: string
   setSortBy: (v: string) => void
-  sortOrder: string
-  setSortOrder: (v: string) => void
+  sortOrder: 'asc' | 'desc'
+  setSortOrder: (v: 'asc' | 'desc') => void
   searchSortBy: string
   searchFeedbacks: Record<string, 'like' | 'dislike'>
   displayedResultsCount: number
@@ -63,10 +63,10 @@ export interface UseCandidatesViewCompositionParams {
   itemsPerPage: number
   showOnlyNew: boolean
   viewedCandidateIds: Set<string>
-  activeTab: string
-  setActiveTab: (v: string) => void
-  viewingList: string | null
-  setViewingList: (v: string | null) => void
+  activeTab: 'search' | 'history' | 'favorites' | 'lists' | 'saved-searches' | 'agents'
+  setActiveTab: (v: 'search' | 'history' | 'favorites' | 'lists' | 'saved-searches' | 'agents') => void
+  viewingList: { id: string; name: string; color?: string } | null
+  setViewingList: (v: { id: string; name: string; color?: string } | null) => void
   candidateListsForModal: Array<{ id: string; name: string }>
   selectedCandidatesForBatch: Set<string>
   setSelectedCandidatesForBatch: Dispatch<SetStateAction<Set<string>>>
@@ -104,7 +104,7 @@ export interface UseCandidatesViewCompositionParams {
   setSelectedCandidateForLIA: (v: Candidate | null) => void
   setShowLIAPromptForCandidate: (v: boolean) => void
   setUnifiedModalCandidate: (v: Candidate | null) => void
-  setUnifiedModalType: (v: CommunicationType | null) => void
+  setUnifiedModalType: (v: CommunicationType) => void
   setUnifiedModalOpen: (v: boolean) => void
   setShowScheduleModal: (v: boolean) => void
   setShowContactModal: (v: boolean) => void
@@ -115,7 +115,7 @@ export interface UseCandidatesViewCompositionParams {
   setParsedCVData: (v: ParsedCVResponse | null) => void
   setShowCVPreviewModal: (v: boolean) => void
   setShowAddCandidateModal: (v: boolean) => void
-  onAddRecentItem?: (item: Record<string, unknown>) => void
+  onAddRecentItem?: (item: { id: string; type: 'chat' | 'vaga' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void
   markCandidateAsViewed: (id: string) => void
   handleBulkActionComplete: () => void
   chatMessages: ChatMessage[]
@@ -126,8 +126,8 @@ export interface UseCandidatesViewCompositionParams {
   setLiaWidth: (v: number) => void
   activeSearchTab: SearchTab
   setActiveSearchTab: (v: SearchTab) => void
-  talentConversationId: string | null
-  setTalentConversationId: (v: string | null) => void
+  talentConversationId: string | undefined
+  setTalentConversationId: (v: string | undefined) => void
   liaIsParsingEntities: boolean
   setLiaIsParsingEntities: (v: boolean) => void
   liaSuggestions: string[]
@@ -137,8 +137,8 @@ export interface UseCandidatesViewCompositionParams {
   showLiaAssistant: boolean
   setShowLiaAssistant: (v: boolean) => void
   activeSearchFilters: SearchFilters
-  liaPromptEntities: Record<string, unknown>
-  setLiaPromptEntities: (v: Record<string, unknown>) => void
+  liaPromptEntities: import('@/components/search/smart-search-input').ParsedEntities
+  setLiaPromptEntities: (v: import('@/components/search/smart-search-input').ParsedEntities) => void
   setShowExpandedLIA: (v: boolean) => void
   userCollapsedLIA: boolean
   setUserCollapsedLIA: (v: boolean) => void
@@ -159,7 +159,7 @@ export interface UseCandidatesViewCompositionParams {
   talentFunnel: ReturnType<typeof useTalentFunnel>
   user: Record<string, unknown> | null
   router: AppRouterInstance
-  openRevealModal: (candidate: Candidate, type: string) => void
+  openRevealModal: (candidate: Candidate, type: 'email' | 'phone') => void
   handleSearchFeedbackChange: (candidateId: string, candidateName: string, feedback: 'like' | 'dislike' | null) => void
   pearchSearchOptions: PearchSearchOptions
   setSearchTerm: (v: string) => void
@@ -194,7 +194,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     hasSearchResults: params.hasSearchResults,
     quickFilters: params.quickFilters,
     columnFilters: params.columnFilters,
-    advancedFilters: params.advancedFilters,
+    advancedFilters: params.advancedFilters as Record<string, string[]>,
     tableFilters: params.tableFilters,
     sortBy: params.sortBy,
     sortOrder: params.sortOrder,

@@ -79,6 +79,20 @@ class ResendProvider(EmailProvider):
         """Send a single email via Resend."""
         
         if not self._configured:
+            import os
+            env = os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development"))
+            if env in ("production", "staging"):
+                logger.critical(
+                    "[Resend] NOT CONFIGURED in %s — refusing to simulate. "
+                    "Set RESEND_API_KEY.",
+                    env,
+                )
+                return EmailResult(
+                    success=False,
+                    provider=self.provider_name,
+                    status="not_configured",
+                    error="Resend not configured in production",
+                )
             logger.info(f"[SIMULATED] Resend email to: {to}, subject: {subject}")
             return EmailResult(
                 success=True,
