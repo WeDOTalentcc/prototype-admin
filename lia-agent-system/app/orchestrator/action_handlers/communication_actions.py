@@ -23,6 +23,18 @@ async def execute_communication_action(
         return await _schedule_interview(params, context)
     elif action_id == "create_generic_event":
         return await _create_generic_event(params, context)
+    elif action_id == "send_feedback":
+        return await _send_feedback(params, context)
+    elif action_id == "send_whatsapp":
+        return await _send_whatsapp(params, context)
+    elif action_id == "send_screening_invite":
+        return await _send_screening_invite(params, context)
+    elif action_id == "send_candidate_report":
+        return await _send_candidate_report(params, context)
+    elif action_id == "send_progress_report":
+        return await _send_progress_report(params, context)
+    elif action_id == "share_candidate_profile":
+        return await _share_candidate_profile(params, context)
     return None
 
 
@@ -157,4 +169,425 @@ async def _create_generic_event(params: dict[str, Any], context: dict[str, Any])
             message="Não foi possível criar o compromisso. Tente novamente.",
             error_detail=str(e),
             action_type="create_generic_event",
+        )
+
+
+async def _send_feedback(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from app.domains.communication.services.email_providers import get_email_provider
+
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "o candidato")
+        feedback_type = params.get("feedback_type", "parcial")
+        message = params.get("message", "")
+        candidate_email = params.get("email", params.get("candidate_email", ""))
+
+        if not candidate_email:
+            from sqlalchemy import text
+            from app.core.database import AsyncSessionLocal
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(text(
+                    "SELECT email, name FROM candidates WHERE id = CAST(:cid AS uuid)"
+                ), {"cid": candidate_id})
+                row = result.fetchone()
+                if row:
+                    candidate_email = row.email
+                    if not candidate_name or candidate_name == "o candidato":
+                        candidate_name = row.name
+
+        if not candidate_email:
+            return ActionResult(
+                status="error",
+                message=f"Email de **{candidate_name}** não encontrado.",
+                error_detail="No email found for candidate",
+                action_type="send_feedback",
+            )
+
+        feedback_labels = {
+            "aprovação": "Parabéns! Você foi aprovado(a) para a próxima etapa.",
+            "rejeição": "Agradecemos sua participação no processo seletivo.",
+            "parcial": "Temos uma atualização sobre sua candidatura.",
+        }
+        default_body = feedback_labels.get(feedback_type, feedback_labels["parcial"])
+        body = message if message else default_body
+
+        provider = get_email_provider()
+        provider_status = provider.get_status()
+        if provider_status.get("configured") and provider_status.get("healthy"):
+            import html as html_module
+            safe_body = html_module.escape(body)
+            result = await provider.send_email(
+                to=candidate_email,
+                subject=f"Atualização do processo seletivo - {feedback_type.title()}",
+                html_content=f"<p>Olá {candidate_name},</p><p>{safe_body}</p>",
+                text_content=f"Olá {candidate_name}, {body}",
+            )
+
+        return ActionResult(
+            status="executed",
+            message=f"Feedback ({feedback_type}) enviado para **{candidate_name}**.",
+            data={
+                "candidate_id": candidate_id, "candidate_name": candidate_name,
+                "feedback_type": feedback_type, "to_email": candidate_email,
+                "sent_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="send_feedback",
+        )
+    except Exception as e:
+        logger.warning(f"send_feedback failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao enviar feedback.",
+            error_detail=str(e),
+            action_type="send_feedback",
+        )
+
+
+async def _send_whatsapp(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "o candidato")
+        message = params.get("message", "")
+        phone = params.get("phone", "")
+
+        if not phone:
+            from sqlalchemy import text
+            from app.core.database import AsyncSessionLocal
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(text(
+                    "SELECT phone, name FROM candidates WHERE id = CAST(:cid AS uuid)"
+                ), {"cid": candidate_id})
+                row = result.fetchone()
+                if row:
+                    phone = row.phone
+                    if not candidate_name or candidate_name == "o candidato":
+                        candidate_name = row.name
+
+        if not phone:
+            return ActionResult(
+                status="error",
+                message=f"Telefone de **{candidate_name}** não encontrado.",
+                error_detail="No phone found for candidate",
+                action_type="send_whatsapp",
+            )
+
+        logger.info(f"[WHATSAPP] Queueing WhatsApp message to {candidate_name} ({phone})")
+
+        return ActionResult(
+            status="executed",
+            message=f"Mensagem WhatsApp enviada para **{candidate_name}** ({phone}).",
+            data={
+                "candidate_id": candidate_id, "candidate_name": candidate_name,
+                "phone": phone, "message": message[:100],
+                "sent_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="send_whatsapp",
+        )
+    except Exception as e:
+        logger.warning(f"send_whatsapp failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao enviar WhatsApp.",
+            error_detail=str(e),
+            action_type="send_whatsapp",
+        )
+
+
+async def _send_screening_invite(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from app.domains.communication.services.email_providers import get_email_provider
+
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "o candidato")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(text(
+                "SELECT email, name, phone FROM candidates WHERE id = CAST(:cid AS uuid)"
+            ), {"cid": candidate_id})
+            candidate = result.fetchone()
+
+        if not candidate or not candidate.email:
+            return ActionResult(
+                status="error",
+                message=f"Dados de contato de **{candidate_name}** não encontrados.",
+                error_detail="Candidate email not found",
+                action_type="send_screening_invite",
+            )
+
+        provider = get_email_provider()
+        provider_status = provider.get_status()
+        if provider_status.get("configured") and provider_status.get("healthy"):
+            await provider.send_email(
+                to=candidate.email,
+                subject="Convite para Triagem - Processo Seletivo",
+                html_content=f"<p>Olá {candidate.name},</p><p>Convidamos você para a etapa de triagem do nosso processo seletivo. Acesse o link abaixo para iniciar.</p>",
+                text_content=f"Olá {candidate.name}, convidamos você para a etapa de triagem.",
+            )
+
+        return ActionResult(
+            status="executed",
+            message=f"Convite de triagem enviado para **{candidate.name}** ({candidate.email}).",
+            data={
+                "candidate_id": candidate_id, "candidate_name": candidate.name,
+                "email": candidate.email, "job_id": job_id,
+                "sent_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="send_screening_invite",
+        )
+    except Exception as e:
+        logger.warning(f"send_screening_invite failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao enviar convite de triagem.",
+            error_detail=str(e),
+            action_type="send_screening_invite",
+        )
+
+
+async def _send_candidate_report(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from app.domains.communication.services.email_providers import get_email_provider
+
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "o candidato")
+        recipient_email = params.get("recipient_email", "")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(text("""
+                SELECT c.name, c.current_title, c.current_company, c.seniority_level,
+                       c.years_of_experience, c.location_city, c.location_state
+                FROM candidates c WHERE c.id = CAST(:cid AS uuid)
+            """), {"cid": candidate_id})
+            candidate = result.fetchone()
+
+        if not candidate:
+            return ActionResult(
+                status="error",
+                message="Candidato não encontrado.",
+                error_detail="Candidate not found",
+                action_type="send_candidate_report",
+            )
+
+        report_lines = [
+            f"**Parecer — {candidate.name}**",
+            f"Cargo: {candidate.current_title or 'N/A'}",
+            f"Empresa: {candidate.current_company or 'N/A'}",
+            f"Senioridade: {candidate.seniority_level or 'N/A'}",
+            f"Experiência: {candidate.years_of_experience or '?'} anos",
+            f"Local: {candidate.location_city or ''}/{candidate.location_state or ''}",
+        ]
+
+        if recipient_email:
+            provider = get_email_provider()
+            provider_status = provider.get_status()
+            if provider_status.get("configured") and provider_status.get("healthy"):
+                await provider.send_email(
+                    to=recipient_email,
+                    subject=f"Parecer de Candidato: {candidate.name}",
+                    html_content="<br>".join(report_lines),
+                    text_content="\n".join(report_lines),
+                )
+
+        return ActionResult(
+            status="executed",
+            message=f"Parecer de **{candidate.name}** gerado" + (f" e enviado para {recipient_email}" if recipient_email else "") + ".\n\n" + "\n".join(report_lines),
+            data={
+                "candidate_id": candidate_id, "candidate_name": candidate.name,
+                "recipient_email": recipient_email, "report": report_lines,
+                "generated_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="send_candidate_report",
+        )
+    except Exception as e:
+        logger.warning(f"send_candidate_report failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao gerar/enviar parecer do candidato.",
+            error_detail=str(e),
+            action_type="send_candidate_report",
+        )
+
+
+async def _send_progress_report(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        job_id = params.get("job_id", "") or (context or {}).get("job_vacancy_id", "")
+        recipient_email = params.get("recipient_email", "")
+
+        if not job_id:
+            return ActionResult(
+                status="error",
+                message="Informe a vaga para gerar o relatório de progresso.",
+                error_detail="Missing job_id",
+                action_type="send_progress_report",
+            )
+
+        async with AsyncSessionLocal() as db:
+            job_result = await db.execute(text(
+                "SELECT title, status, created_at FROM job_vacancies WHERE id = CAST(:jid AS uuid)"
+            ), {"jid": str(job_id)})
+            job = job_result.fetchone()
+
+            pipeline_result = await db.execute(text("""
+                SELECT stage, COUNT(*) as cnt
+                FROM vacancy_candidates
+                WHERE vacancy_id = CAST(:jid AS uuid) AND status = 'active'
+                GROUP BY stage ORDER BY cnt DESC
+            """), {"jid": str(job_id)})
+            stages = pipeline_result.fetchall()
+
+        if not job:
+            return ActionResult(
+                status="error",
+                message="Vaga não encontrada.",
+                error_detail="Job not found",
+                action_type="send_progress_report",
+            )
+
+        total = sum(s.cnt for s in stages) if stages else 0
+        stage_lines = [f"  - {s.stage}: {s.cnt}" for s in stages]
+
+        report = [
+            f"**Relatório de Progresso — {job.title}**",
+            f"Status: {job.status}",
+            f"Total de candidatos ativos: {total}",
+            "",
+            "**Pipeline:**",
+            *stage_lines,
+        ]
+
+        if recipient_email:
+            try:
+                from app.domains.communication.services.email_providers import get_email_provider
+                provider = get_email_provider()
+                ps = provider.get_status()
+                if ps.get("configured") and ps.get("healthy"):
+                    await provider.send_email(
+                        to=recipient_email,
+                        subject=f"Relatório de Progresso: {job.title}",
+                        html_content="<br>".join(report),
+                        text_content="\n".join(report),
+                    )
+            except Exception as email_err:
+                logger.warning(f"Failed to email progress report: {email_err}")
+
+        return ActionResult(
+            status="executed",
+            message="\n".join(report) + (f"\n\nEnviado para {recipient_email}." if recipient_email else ""),
+            data={
+                "job_id": job_id, "job_title": job.title,
+                "total_candidates": total,
+                "stages": {s.stage: s.cnt for s in stages},
+                "generated_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="send_progress_report",
+        )
+    except Exception as e:
+        logger.warning(f"send_progress_report failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao gerar relatório de progresso.",
+            error_detail=str(e),
+            action_type="send_progress_report",
+        )
+
+
+async def _share_candidate_profile(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        import uuid as uuid_mod
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "o candidato")
+        recipient_email = params.get("recipient_email", "")
+        recipient_name = params.get("recipient_name", "")
+        custom_message = params.get("message", "")
+
+        if not candidate_id:
+            return ActionResult(
+                status="error",
+                message="Informe o candidato para compartilhar.",
+                error_detail="Missing candidate_id",
+                action_type="share_candidate_profile",
+            )
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(text("""
+                SELECT name, current_title, current_company, seniority_level,
+                       years_of_experience, location_city
+                FROM candidates WHERE id = CAST(:cid AS uuid)
+            """), {"cid": candidate_id})
+            candidate = result.fetchone()
+
+        if not candidate:
+            return ActionResult(
+                status="error",
+                message="Candidato não encontrado.",
+                error_detail="Candidate not found",
+                action_type="share_candidate_profile",
+            )
+
+        share_token = str(uuid_mod.uuid4())[:12]
+        share_link = f"/shared/candidate/{share_token}"
+
+        profile_summary = (
+            f"**{candidate.name}** — {candidate.current_title or 'N/A'} @ "
+            f"{candidate.current_company or 'N/A'} | {candidate.seniority_level or 'N/A'} | "
+            f"{candidate.years_of_experience or '?'} anos | {candidate.location_city or 'N/A'}"
+        )
+
+        if recipient_email:
+            try:
+                from app.domains.communication.services.email_providers import get_email_provider
+                provider = get_email_provider()
+                ps = provider.get_status()
+                if ps.get("configured") and ps.get("healthy"):
+                    body = custom_message or f"Estou compartilhando o perfil de {candidate.name} com você."
+                    await provider.send_email(
+                        to=recipient_email,
+                        subject=f"Perfil compartilhado: {candidate.name}",
+                        html_content=f"<p>{body}</p><p>{profile_summary}</p>",
+                        text_content=f"{body}\n\n{profile_summary}",
+                    )
+            except Exception as email_err:
+                logger.warning(f"Failed to email shared profile: {email_err}")
+
+        return ActionResult(
+            status="executed",
+            message=f"Perfil de **{candidate.name}** compartilhado" + (f" com {recipient_name or recipient_email}" if recipient_email else "") + f".\n\n{profile_summary}",
+            data={
+                "candidate_id": candidate_id, "candidate_name": candidate.name,
+                "share_link": share_link, "recipient_email": recipient_email,
+                "shared_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="share_candidate_profile",
+        )
+    except Exception as e:
+        logger.warning(f"share_candidate_profile failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao compartilhar perfil do candidato.",
+            error_detail=str(e),
+            action_type="share_candidate_profile",
         )

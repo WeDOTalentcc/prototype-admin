@@ -10,7 +10,8 @@ from pydantic import BaseModel, Field
 class MessageCreate(BaseModel):
     """Request to create a new message."""
     content: str = Field(..., min_length=1, max_length=10000)
-    conversation_id: str | None = None  # If None, creates new conversation
+    conversation_id: str | None = None
+    context: dict[str, Any] | None = None
 
 
 class MessageResponse(BaseModel):

@@ -38,15 +38,29 @@ from app.schemas.chat import (
 logger = logging.getLogger(__name__)
 
 INTENT_TO_ACTIONABLE: dict[str, str] = {
-    # English → PT (fallback for EN intents from orchestrator)
     "move_candidate": "mover_candidato",
+    "batch_move_candidates": "mover_candidatos_lote",
     "update_candidate_status": "atualizar_status_candidato",
     "update_status": "atualizar_status_candidato",
+    "update_candidate_field": "atualizar_campo_candidato",
     "reject_candidate": "reprovar_candidato",
     "approve_candidate": "aprovar_candidato",
+    "favorite_candidate": "favoritar_candidato",
     "send_email": "enviar_email",
     "send_message": "enviar_mensagem",
+    "send_feedback": "enviar_feedback",
+    "send_whatsapp": "enviar_whatsapp",
+    "send_screening_invite": "enviar_convite_triagem",
+    "share_candidate_profile": "compartilhar_candidato",
+    "send_candidate_report": "enviar_relatorio_candidato",
+    "send_progress_report": "enviar_relatorio_progresso",
     "schedule_interview": "agendar_entrevista",
+    "reschedule_interview": "reagendar_entrevista",
+    "cancel_interview": "cancelar_entrevista",
+    "send_interview_reminder": "enviar_lembrete_entrevista",
+    "list_today_interviews": "listar_entrevistas_hoje",
+    "generate_self_scheduling_link": "gerar_link_agendamento",
+    "create_generic_event": "criar_compromisso",
     "trigger_screening": "disparar_triagem",
     "dispatch_screening": "disparar_triagem",
     "start_screening": "iniciar_triagem",
@@ -56,6 +70,22 @@ INTENT_TO_ACTIONABLE: dict[str, str] = {
     "close_job": "fechar_vaga",
     "duplicate_job": "duplicar_vaga",
     "reopen_job": "reabrir_vaga",
+    "set_job_urgent": "vaga_urgente",
+    "search_candidates": "buscar_candidatos",
+    "suggest_candidates": "sugerir_candidatos",
+    "rank_candidates": "rankear_candidatos",
+    "compare_candidates": "comparar_candidatos",
+    "tag_candidates": "taguear_candidatos",
+    "add_candidate": "adicionar_candidato",
+    "export_candidates": "exportar_candidatos",
+    "generate_kpi_report": "gerar_relatorio_kpi",
+    "job_health_check": "health_check_vaga",
+    "analyze_funnel": "analisar_funil",
+    "generate_daily_briefing": "resumo_agenda",
+    "create_task": "criar_tarefa",
+    "create_note": "criar_nota",
+    "check_proactive_alerts": "alertas_proativos",
+    "create_automation": "criar_automacao",
 }
 
 JOB_ACTION_MAP: dict[str, str] = {
@@ -68,9 +98,12 @@ JOB_ACTION_MAP: dict[str, str] = {
     "reopen": "reabrir_vaga",
     "duplicar": "duplicar_vaga",
     "duplicate": "duplicar_vaga",
+    "urgente": "vaga_urgente",
+    "urgent": "vaga_urgente",
+    "marcar urgente": "vaga_urgente",
 }
 
-SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "search_candidates", "unknown"}
+SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown"}
 
 
 def _flatten_entities(entities: dict[str, Any]) -> dict[str, Any]:
@@ -179,21 +212,39 @@ async def resolve_job_id_by_title(db: AsyncSession, job_title: str, company_id: 
     return None
 
 
-async def resolve_candidate_by_name(db: AsyncSession, candidate_name: str) -> dict[str, Any] | None:
+async def resolve_candidate_by_name(
+    db: AsyncSession,
+    candidate_name: str,
+    company_id: str | None = None,
+    job_id: str | None = None,
+) -> dict[str, Any] | None:
     try:
-        query = text("""
-            SELECT vc.id, vc.candidate_id, vc.stage, vc.status
+        conditions = ["LOWER(c.name) LIKE :pattern"]
+        bind: dict[str, Any] = {"pattern": f"%{candidate_name.lower()}%"}
+
+        if company_id:
+            conditions.append("vc.company_id = CAST(:company_id AS uuid)")
+            bind["company_id"] = str(company_id)
+
+        if job_id:
+            conditions.append("vc.vacancy_id = CAST(:job_id AS uuid)")
+            bind["job_id"] = str(job_id)
+
+        where_clause = " AND ".join(conditions)
+        query = text(f"""
+            SELECT vc.id, vc.candidate_id, c.name, vc.stage, vc.status
             FROM vacancy_candidates vc
             JOIN candidates c ON c.id = vc.candidate_id
-            WHERE LOWER(c.name) LIKE :pattern
+            WHERE {where_clause}
             ORDER BY vc.updated_at DESC LIMIT 1
         """)
-        result = await db.execute(query, {"pattern": f"%{candidate_name.lower()}%"})
+        result = await db.execute(query, bind)
         row = result.fetchone()
         if row:
             return {
                 "id": str(row.id),
                 "candidate_id": str(row.candidate_id),
+                "name": row.name,
                 "stage": row.stage,
                 "status": row.status,
             }
@@ -218,7 +269,11 @@ async def handle_action_flow(
         next_param = pending.next_missing_param()
         answer = user_message_text.strip()
         if next_param == "candidate_id":
-            cand_info = await resolve_candidate_by_name(db, answer)
+            cand_info = await resolve_candidate_by_name(
+                db, answer,
+                company_id=str(current_user.company_id) if current_user.company_id else None,
+                job_id=pending.collected_params.get("job_id"),
+            )
             if cand_info:
                 pending.add_param("candidate_id", cand_info["id"])
                 pending.add_param("candidate_name", answer)
@@ -285,7 +340,10 @@ async def handle_action_flow(
             config = action_executor.get_action_config(pending.intent)
             if config:
                 # Security check: verify user access for destructive actions
-                destructive_actions = {"pause_job", "close_job", "reopen_job", "move_candidate"}
+                destructive_actions = {
+            "pause_job", "close_job", "reopen_job", "move_candidate",
+            "batch_move_candidates", "set_job_urgent", "cancel_interview",
+        }
                 if pending.intent in destructive_actions:
                     is_demo_user = current_user.email == "demo@wedotalent.com"
                     if is_demo_user:
@@ -344,7 +402,11 @@ async def handle_action_flow(
 
     candidato = flat.get("candidato") or flat.get("candidate_name") or flat.get("nome_candidato")
     if candidato:
-        cand_info = await resolve_candidate_by_name(db, candidato)
+        cand_info = await resolve_candidate_by_name(
+            db, candidato,
+            company_id=str(current_user.company_id) if current_user.company_id else None,
+            job_id=collected_params.get("job_id"),
+        )
         if cand_info:
             collected_params["candidate_id"] = cand_info["id"]
             collected_params["candidate_name"] = candidato
@@ -414,7 +476,10 @@ async def handle_action_flow(
 
     if not missing and not requires_confirmation:
         # Security check: verify user access for destructive actions
-        destructive_actions = {"pause_job", "close_job", "reopen_job", "move_candidate"}
+        destructive_actions = {
+            "pause_job", "close_job", "reopen_job", "move_candidate",
+            "batch_move_candidates", "set_job_urgent", "cancel_interview",
+        }
         if actionable_intent in destructive_actions:
             is_demo_user = current_user.email == "demo@wedotalent.com"
             if is_demo_user:
@@ -465,22 +530,45 @@ async def handle_action_flow(
 # Verbos por action_id para mensagens de confirmação
 _ACTION_VERBS: dict[str, str] = {
     "move_candidate": "mover",
+    "batch_move_candidates": "mover em lote",
     "pause_job": "pausar",
     "close_job": "fechar",
     "reopen_job": "reabrir",
     "duplicate_job": "duplicar",
+    "set_job_urgent": "classificar como urgente",
     "start_screening": "iniciar triagem para",
     "send_email": "enviar email para",
+    "send_feedback": "enviar feedback para",
+    "send_whatsapp": "enviar WhatsApp para",
+    "send_screening_invite": "enviar convite de triagem para",
+    "schedule_interview": "agendar entrevista com",
+    "reschedule_interview": "reagendar entrevista de",
+    "cancel_interview": "cancelar entrevista de",
+    "share_candidate_profile": "compartilhar perfil de",
+    "send_candidate_report": "enviar parecer de",
+    "send_progress_report": "enviar relatório de progresso da",
+    "add_candidate": "cadastrar",
+    "create_automation": "criar automação",
 }
 
-# Perguntas de clarificação genéricas por parâmetro
 _PARAM_QUESTIONS: dict[str, str] = {
     "candidate_id": "Qual candidato?",
+    "candidate_ids": "Quais candidatos?",
     "to_stage": "Para qual etapa do pipeline?",
     "job_id": "Qual vaga?",
     "subject": "Qual o assunto do email?",
     "body": "Qual a mensagem?",
+    "message": "Qual a mensagem?",
     "reason": "Qual o motivo?",
+    "name": "Qual o nome?",
+    "email": "Qual o email?",
+    "new_datetime": "Para qual nova data e horário?",
+    "trigger": "Qual o gatilho da automação?",
+    "action": "Qual ação automática deve ser executada?",
+    "tag": "Qual tag/etiqueta deseja aplicar?",
+    "query": "Quais critérios de busca?",
+    "feedback_type": "Qual o tipo de feedback? (aprovação/rejeição/parcial)",
+    "recipient_email": "Qual o email do destinatário?",
 }
 
 
@@ -543,6 +631,7 @@ async def _invoke_orchestrator(
     user_id: str,
     conversation_id: str,
     company_id: str,
+    page_context: dict[str, Any] | None = None,
 ) -> dict:
     """Executa a mensagem do usuário via Orchestrator + ReAct agents.
 
@@ -563,11 +652,24 @@ async def _invoke_orchestrator(
             "workflow_data": {},
         }
 
+    orch_context: dict[str, Any] = {"company_id": company_id}
+    if page_context:
+        if page_context.get("job_vacancy_id"):
+            orch_context["job_vacancy_id"] = page_context["job_vacancy_id"]
+        if page_context.get("job_id"):
+            orch_context["job_vacancy_id"] = page_context["job_id"]
+        if page_context.get("candidate_ids"):
+            orch_context["candidate_ids"] = page_context["candidate_ids"]
+        if page_context.get("page_type"):
+            orch_context["page_type"] = page_context["page_type"]
+        if page_context.get("job_context"):
+            orch_context["job_context"] = page_context["job_context"]
+
     result = await _orch.process_request(
         user_id=user_id,
         message=user_message,
         conversation_id=conversation_id,
-        context={"company_id": company_id},
+        context=orch_context,
     )
 
     response_text = result.get("message") or ""
@@ -638,16 +740,21 @@ async def send_message(
     db.add(user_message)
     await db.flush()
     
-    # Run LIA via Orchestrator + ReAct agents
+    page_context = message_data.context or {}
+
     orch_result = await _invoke_orchestrator(
         user_message=message_data.content,
         user_id=user_id,
         conversation_id=conversation_id,
         company_id=current_user.company_id,
+        page_context=page_context,
     )
     lia_response = orch_result["response"]
     detected_intent = orch_result["intent"]
     detected_entities = orch_result["entities"]
+
+    if page_context.get("job_vacancy_id") and "job_id" not in detected_entities:
+        detected_entities["job_id"] = page_context["job_vacancy_id"]
 
     if lia_response:
         action_metadata = None

@@ -235,10 +235,28 @@ class ActionExecutorService:
             from app.orchestrator.action_handlers.job_actions import execute_job_action
             from app.orchestrator.action_handlers.pipeline_actions import execute_pipeline_action
 
-            _COMMUNICATION_ACTIONS = {"send_email", "schedule_interview", "create_generic_event"}
-            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile"}
-            _JOB_ACTIONS = {"pause_job", "close_job", "duplicate_job", "reopen_job"}
-            _PIPELINE_ACTIONS = {"create_task", "create_note", "generate_daily_briefing"}
+            from app.orchestrator.action_handlers.sourcing_actions import execute_sourcing_action
+            from app.orchestrator.action_handlers.analytics_actions import execute_analytics_action
+            from app.orchestrator.action_handlers.interview_actions import execute_interview_action
+
+            _COMMUNICATION_ACTIONS = {
+                "send_email", "schedule_interview", "create_generic_event",
+                "send_feedback", "send_whatsapp", "send_screening_invite",
+                "send_candidate_report", "send_progress_report", "share_candidate_profile",
+            }
+            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile", "batch_move_candidates"}
+            _JOB_ACTIONS = {"pause_job", "close_job", "duplicate_job", "reopen_job", "set_job_urgent"}
+            _PIPELINE_ACTIONS = {"create_task", "create_note", "generate_daily_briefing", "create_automation", "check_proactive_alerts"}
+            _SOURCING_ACTIONS = {
+                "tag_candidates", "rank_candidates", "compare_candidates",
+                "search_candidates", "suggest_candidates", "add_candidate",
+                "export_candidates", "favorite_candidate",
+            }
+            _ANALYTICS_ACTIONS = {"generate_kpi_report", "job_health_check", "analyze_funnel"}
+            _INTERVIEW_ACTIONS = {
+                "reschedule_interview", "cancel_interview", "send_interview_reminder",
+                "list_today_interviews", "generate_self_scheduling_link",
+            }
 
             handler_result = None
             if action_id in _COMMUNICATION_ACTIONS:
@@ -249,6 +267,12 @@ class ActionExecutorService:
                 handler_result = await execute_job_action(action_id, params, context)
             elif action_id in _PIPELINE_ACTIONS:
                 handler_result = await execute_pipeline_action(action_id, params, context)
+            elif action_id in _SOURCING_ACTIONS:
+                handler_result = await execute_sourcing_action(action_id, params, context)
+            elif action_id in _ANALYTICS_ACTIONS:
+                handler_result = await execute_analytics_action(action_id, params, context)
+            elif action_id in _INTERVIEW_ACTIONS:
+                handler_result = await execute_interview_action(action_id, params, context)
 
             if handler_result is not None:
                 if handler_result.status not in ("error",):

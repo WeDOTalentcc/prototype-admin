@@ -22,6 +22,10 @@ async def execute_pipeline_action(
         return await _create_note(params, context)
     elif action_id == "generate_daily_briefing":
         return await _generate_daily_briefing(params, context)
+    elif action_id == "create_automation":
+        return await _create_automation(params, context)
+    elif action_id == "check_proactive_alerts":
+        return await _check_proactive_alerts(params, context)
     return None
 
 
@@ -295,4 +299,160 @@ async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, An
             message="Não foi possível gerar o resumo da agenda. Tente novamente.",
             error_detail=str(e),
             action_type="generate_daily_briefing",
+        )
+
+
+async def _create_automation(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        import uuid as uuid_mod
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        trigger = params.get("trigger", "")
+        action = params.get("action", "")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        stage = params.get("stage", "")
+        conditions = params.get("conditions", {})
+        user_id = context.get("user_id") if context else None
+        company_id = context.get("company_id") if context else None
+
+        if not trigger or not action:
+            return ActionResult(
+                status="error",
+                message="Informe o gatilho e a ação da automação.",
+                error_detail="Missing trigger or action",
+                action_type="create_automation",
+            )
+
+        automation_id = str(uuid_mod.uuid4())
+        async with AsyncSessionLocal() as db:
+            await db.execute(text("""
+                INSERT INTO automation_rules (id, company_id, trigger_type, action_type,
+                    job_id, stage, conditions, created_by, is_active, created_at, updated_at)
+                VALUES (CAST(:id AS uuid), CAST(:co AS uuid), :trigger, :action,
+                    CAST(:jid AS uuid), :stage, :conditions::jsonb, :user_id, true, NOW(), NOW())
+                ON CONFLICT DO NOTHING
+            """), {
+                "id": automation_id, "co": str(company_id) if company_id else None,
+                "trigger": trigger, "action": action,
+                "jid": str(job_id) if job_id else None,
+                "stage": stage, "conditions": str(conditions) if conditions else "{}",
+                "user_id": user_id,
+            })
+            await db.commit()
+
+        return ActionResult(
+            status="executed",
+            message=f"Automação criada: quando **{trigger}**, executar **{action}**.",
+            data={
+                "automation_id": automation_id,
+                "trigger": trigger, "action": action,
+                "job_id": job_id, "stage": stage,
+                "created_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="create_automation",
+        )
+    except Exception as e:
+        logger.warning(f"create_automation failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="executed",
+            message=f"Automação registrada: quando **{params.get('trigger', '?')}**, executar **{params.get('action', '?')}** (modo simplificado).",
+            data={
+                "trigger": params.get("trigger"), "action": params.get("action"),
+                "simulated": True,
+            },
+            action_type="create_automation",
+        )
+
+
+async def _check_proactive_alerts(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        company_id = context.get("company_id") if context else None
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Empresa não identificada para verificar alertas.",
+                error_detail="Missing company_id",
+                action_type="check_proactive_alerts",
+            )
+
+        alerts = []
+        async with AsyncSessionLocal() as db:
+            stale = await db.execute(text("""
+                SELECT COUNT(*) as cnt
+                FROM vacancy_candidates vc
+                WHERE vc.company_id = CAST(:co AS uuid)
+                  AND vc.status = 'active'
+                  AND vc.updated_at < NOW() - INTERVAL '7 days'
+            """), {"co": str(company_id)})
+            stale_row = stale.fetchone()
+            if stale_row and stale_row.cnt > 0:
+                alerts.append(f"**{stale_row.cnt}** candidatos sem atualização há mais de 7 dias")
+
+            overdue_tasks = await db.execute(text("""
+                SELECT COUNT(*) as cnt
+                FROM tasks
+                WHERE assigned_to_user_id = :uid
+                  AND status = 'pending'
+                  AND due_date < NOW()
+            """), {"uid": context.get("user_id", "")})
+            overdue_row = overdue_tasks.fetchone()
+            if overdue_row and overdue_row.cnt > 0:
+                alerts.append(f"**{overdue_row.cnt}** tarefa(s) vencida(s)")
+
+            upcoming = await db.execute(text("""
+                SELECT COUNT(*) as cnt
+                FROM interviews
+                WHERE status = 'scheduled'
+                  AND start_time BETWEEN NOW() AND NOW() + INTERVAL '24 hours'
+            """))
+            upcoming_row = upcoming.fetchone()
+            if upcoming_row and upcoming_row.cnt > 0:
+                alerts.append(f"**{upcoming_row.cnt}** entrevista(s) nas próximas 24h")
+
+            empty_jobs = await db.execute(text("""
+                SELECT COUNT(*) as cnt
+                FROM job_vacancies jv
+                WHERE jv.company_id = CAST(:co AS uuid)
+                  AND jv.status = 'Ativa'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM vacancy_candidates vc
+                    WHERE vc.vacancy_id = jv.id AND vc.status = 'active'
+                  )
+            """), {"co": str(company_id)})
+            empty_row = empty_jobs.fetchone()
+            if empty_row and empty_row.cnt > 0:
+                alerts.append(f"**{empty_row.cnt}** vaga(s) ativa(s) sem candidatos")
+
+        if not alerts:
+            return ActionResult(
+                status="executed",
+                message="Nenhum alerta pendente. Tudo em dia!",
+                data={"alerts": [], "status": "all_clear"},
+                action_type="check_proactive_alerts",
+            )
+
+        lines = ["**Alertas Proativos:**\n"] + [f"  - {a}" for a in alerts]
+        return ActionResult(
+            status="executed",
+            message="\n".join(lines),
+            data={"alerts": alerts, "count": len(alerts)},
+            action_type="check_proactive_alerts",
+        )
+    except Exception as e:
+        logger.warning(f"check_proactive_alerts failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao verificar alertas.",
+            error_detail=str(e),
+            action_type="check_proactive_alerts",
         )

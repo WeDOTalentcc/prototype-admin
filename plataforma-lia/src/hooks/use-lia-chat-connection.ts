@@ -289,6 +289,55 @@ export function useLiaChatConnection({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsAuthToken])
 
+  const getPageContext = useCallback((): Record<string, unknown> => {
+    const ctx: Record<string, unknown> = {}
+    try {
+      const path = window.location.pathname
+
+      const jobMatch = path.match(/\/jobs?\/([a-f0-9-]{36})/)
+      if (jobMatch) {
+        ctx.job_vacancy_id = jobMatch[1]
+      }
+
+      const candidateMatch = path.match(/\/candidat[eo]s?\/([a-f0-9-]{36})/)
+      if (candidateMatch) {
+        ctx.candidate_id = candidateMatch[1]
+      }
+
+      if (path.includes("/kanban") || path.includes("/pipeline")) {
+        ctx.page_type = "kanban"
+      } else if (path.includes("/candidat")) {
+        ctx.page_type = "candidates"
+      } else if (path.includes("/dashboard")) {
+        ctx.page_type = "dashboard"
+      } else if (path.includes("/job")) {
+        ctx.page_type = "job_detail"
+      }
+
+      const jobContextEl = document.querySelector("[data-job-context]")
+      if (jobContextEl) {
+        try {
+          const jobData = JSON.parse(jobContextEl.getAttribute("data-job-context") || "{}")
+          if (jobData.id) ctx.job_vacancy_id = jobData.id
+          if (jobData.title) ctx.job_title = jobData.title
+          if (jobData.company_id) ctx.company_id = jobData.company_id
+          ctx.job_context = jobData
+        } catch {}
+      }
+
+      const candidatesEl = document.querySelector("[data-candidates-context]")
+      if (candidatesEl) {
+        try {
+          const candidatesData = JSON.parse(candidatesEl.getAttribute("data-candidates-context") || "[]")
+          if (Array.isArray(candidatesData) && candidatesData.length > 0) {
+            ctx.candidates = candidatesData
+          }
+        } catch {}
+      }
+    } catch {}
+    return ctx
+  }, [])
+
   const sendMessage = useCallback(async (content: string, domain = "", scope?: string) => {
     setThinkingSteps([])
     setIsThinking(false)
@@ -297,6 +346,9 @@ export function useLiaChatConnection({
     if (conversationId) {
       context.conversation_id = conversationId
     }
+
+    const pageContext = getPageContext()
+    Object.assign(context, pageContext)
 
     if (isConnected) {
       wsSend(content, context, domain)
@@ -316,17 +368,44 @@ export function useLiaChatConnection({
           context,
         }),
       })
-      const data = await res.json() as { content?: string; conversation_id?: string }
+      const data = await res.json() as {
+        content?: string
+        conversation_id?: string
+        message_metadata?: {
+          pending_action?: {
+            pending_id?: string
+            intent?: string
+            action_id?: string
+            awaiting_confirmation?: boolean
+            missing_params?: string[]
+            collected_params?: Record<string, unknown>
+          }
+        }
+      }
       if (data.conversation_id && data.conversation_id !== conversationId) {
         setConversationId(data.conversation_id)
       }
+
+      const pendingAction = data.message_metadata?.pending_action
+      if (pendingAction?.awaiting_confirmation) {
+        const pending: HITLPending = {
+          pendingId: pendingAction.pending_id ?? "",
+          threadId: data.conversation_id ?? conversationId ?? "",
+          action: pendingAction.action_id ?? pendingAction.intent ?? "",
+          description: data.content ?? "",
+          data: pendingAction.collected_params ?? {},
+        }
+        hitlRef.current = pending
+        setHitlPending(pending)
+      }
+
       if (data.content) {
         onCompleteRef.current?.(data.content)
       }
     } catch {
       onCompleteRef.current?.("Erro ao conectar com a LIA. Tente novamente.")
     }
-  }, [wsSend, clearTokens, isConnected, sessionId, conversationId])
+  }, [wsSend, clearTokens, isConnected, sessionId, conversationId, getPageContext])
 
   const sendApproval = useCallback((approved: boolean) => {
     const pending = hitlRef.current

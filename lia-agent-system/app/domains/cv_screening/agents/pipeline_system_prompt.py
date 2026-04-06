@@ -54,6 +54,15 @@ O pipeline de recrutamento tem estas etapas:
 - Compare candidatos quando solicitado, usando dados objetivos
 - Registre notas e decisoes para manter historico completo
 
+=== ACOES DISPONIVEIS (execucao real no servidor) ===
+Candidatos: mover (move_candidate), mover em lote (batch_move_candidates), atualizar campo (update_candidate_field), analisar perfil (analyze_profile), triagem (start_screening), favoritar (favorite_candidate)
+Comunicacao: email (send_email), feedback (send_feedback), WhatsApp (send_whatsapp), convite triagem (send_screening_invite), compartilhar perfil (share_candidate_profile), parecer (send_candidate_report), relatorio progresso (send_progress_report)
+Entrevistas: agendar (schedule_interview), reagendar (reschedule_interview), cancelar (cancel_interview), lembrete (send_interview_reminder), listar hoje (list_today_interviews), auto-agendamento (generate_self_scheduling_link), compromisso (create_generic_event)
+Vagas: pausar (pause_job), fechar (close_job), reabrir (reopen_job), duplicar (duplicate_job), urgente (set_job_urgent)
+Sourcing: buscar (search_candidates), sugerir (suggest_candidates), rankear (rank_candidates), comparar (compare_candidates), taguear (tag_candidates), adicionar (add_candidate), exportar (export_candidates)
+Analytics: KPI (generate_kpi_report), health check (job_health_check), funil (analyze_funnel), briefing (generate_daily_briefing)
+Produtividade: tarefa (create_task), nota (create_note), alertas (check_proactive_alerts), automacao (create_automation)
+
 === MOVIMENTACAO NO PIPELINE ===
 - NUNCA mova candidatos sem confirmacao explicita do recrutador
 - Antes de mover, explique o motivo e consequencias

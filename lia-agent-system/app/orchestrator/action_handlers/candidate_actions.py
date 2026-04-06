@@ -61,6 +61,8 @@ async def execute_candidate_action(
         return await _start_screening(params, context)
     elif action_id == "analyze_profile":
         return await _analyze_profile(params, context)
+    elif action_id == "batch_move_candidates":
+        return await _batch_move_candidates(params, context)
     return None
 
 
@@ -360,4 +362,62 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
             message=f"Erro ao analisar perfil de **{params.get('candidate_name', 'o candidato')}**: {str(e)[:100]}",
             error_detail=str(e),
             action_type="analyze_profile",
+        )
+
+
+async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        candidate_ids = params.get("candidate_ids", [])
+        to_stage = params.get("to_stage", "")
+        from_stage = params.get("from_stage", "")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+
+        if not candidate_ids or not to_stage:
+            return ActionResult(
+                status="error",
+                message="Informe os candidatos e a etapa destino.",
+                error_detail="Missing candidate_ids or to_stage",
+                action_type="batch_move_candidates",
+            )
+
+        company_id = context.get("company_id") if context else None
+
+        async with AsyncSessionLocal() as db:
+            moved = 0
+            for cid in candidate_ids:
+                update_sql = """
+                    UPDATE vacancy_candidates
+                    SET stage = :to_stage, status = 'active', updated_at = NOW()
+                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = CAST(:cid AS uuid))
+                """
+                bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid)}
+                if company_id:
+                    update_sql += " AND company_id = CAST(:co AS uuid)"
+                    bind["co"] = str(company_id)
+                result = await db.execute(text(update_sql), bind)
+                moved += result.rowcount
+            await db.commit()
+
+        return ActionResult(
+            status="executed",
+            message=f"**{moved} candidato(s)** movido(s) para a etapa **{to_stage}**.",
+            data={
+                "candidate_ids": candidate_ids, "to_stage": to_stage,
+                "from_stage": from_stage, "moved_count": moved,
+                "moved_at": datetime.utcnow().isoformat(), "simulated": False,
+            },
+            action_type="batch_move_candidates",
+        )
+    except Exception as e:
+        logger.warning(f"batch_move_candidates failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao mover candidatos em lote.",
+            error_detail=str(e),
+            action_type="batch_move_candidates",
         )
