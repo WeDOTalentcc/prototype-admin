@@ -76,7 +76,6 @@ PENDING_MIGRATION = {
     "app/api/v1/communication_optout.py",
     "app/api/v1/communication_settings.py",
     "app/api/v1/company_benefits.py",
-    "app/api/v1/company_culture.py",
     "app/api/v1/company_retention.py",
     "app/api/v1/conversations.py",
     "app/api/v1/credits.py",
