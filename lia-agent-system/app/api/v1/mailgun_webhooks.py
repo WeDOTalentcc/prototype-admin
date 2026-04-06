@@ -5,10 +5,13 @@ Validates HMAC-SHA256 signature using MAILGUN_WEBHOOK_SIGNING_KEY,
 then updates CommunicationLog status accordingly.
 
 Events handled:
-- delivered  → status="delivered", delivered_at set
-- failed / bounced → status="failed", failed_at set
-- opened     → status="read", read_at set
-- complained → status="complained"
+- delivered   → status="delivered", delivered_at set
+- failed      → status="failed", failed_at set
+- bounced     → status="bounced", failed_at set
+- dropped     → status="failed", failed_at set
+- opened      → status="read", read_at set
+- clicked     → status="clicked", read_at set
+- complained  → status="complained"
 - unsubscribed → status="unsubscribed"
 """
 import hashlib
@@ -34,10 +37,10 @@ router = APIRouter(prefix="/webhooks/mailgun", tags=["mailgun-webhooks"])
 MAILGUN_EVENT_MAP = {
     "delivered": ("delivered", "delivered_at"),
     "failed": ("failed", "failed_at"),
-    "bounced": ("failed", "failed_at"),
+    "bounced": ("bounced", "failed_at"),
     "dropped": ("failed", "failed_at"),
     "opened": ("read", "read_at"),
-    "clicked": None,
+    "clicked": ("clicked", "read_at"),
     "complained": ("complained", None),
     "unsubscribed": ("unsubscribed", None),
 }
@@ -138,7 +141,8 @@ async def mailgun_webhook(request: Request):
         logger.warning("[MailgunWebhook] No message-id in event — skipping")
         return {"status": "skipped", "reason": "no_message_id"}
 
-    message_id = message_id.strip("<>")
+    message_id_raw = message_id
+    message_id_clean = message_id.strip("<>")
 
     event_ts_raw = event_data.get("timestamp")
     event_ts = (
@@ -160,13 +164,20 @@ async def mailgun_webhook(request: Request):
             if timestamp_field:
                 values[timestamp_field] = event_ts
 
-            if new_status == "failed":
+            if new_status in ("failed", "bounced"):
                 error_parts = [p for p in [severity, reason, delivery_message] if p]
                 values["error_message"] = " | ".join(error_parts) or "delivery failed"
 
+            from sqlalchemy import or_
             result = await db.execute(
                 update(CommunicationLog)
-                .where(CommunicationLog.provider_message_id == message_id)
+                .where(
+                    or_(
+                        CommunicationLog.provider_message_id == message_id_clean,
+                        CommunicationLog.provider_message_id == message_id_raw,
+                        CommunicationLog.provider_message_id == f"<{message_id_clean}>",
+                    )
+                )
                 .values(**values)
             )
             await db.commit()
@@ -193,4 +204,4 @@ async def mailgun_webhook(request: Request):
             detail="Internal error processing webhook",
         )
 
-    return {"status": "processed", "event": event_type, "message_id": message_id}
+    return {"status": "processed", "event": event_type, "message_id": message_id_clean}
