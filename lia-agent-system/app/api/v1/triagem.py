@@ -5,9 +5,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.triagem.dependencies import get_triagem_repo
+from app.domains.triagem.repositories.triagem_repository import TriagemRepository
 from app.services.triagem_session_service import triagem_service
 
 logger = logging.getLogger(__name__)
@@ -40,9 +40,9 @@ class InviteRequest(BaseModel):
 @router.get("/{token}", response_model=None)
 async def get_triagem_session(
     token: str,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
-    config = await triagem_service.get_session_config(db, token)
+    config = await triagem_service.get_session_config(repo.db, token)
 
     if config is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -64,9 +64,9 @@ async def get_triagem_session(
 async def send_message(
     token: str,
     request: SendMessageRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
 
     if not validation.get("valid"):
         error = validation.get("error")
@@ -79,7 +79,7 @@ async def send_message(
         raise HTTPException(status_code=409, detail="Triagem já foi concluída")
 
     result = await triagem_service.process_message(
-        db, token, request.content, request.message_type,
+        repo.db, token, request.content, request.message_type,
         voice_mode=request.voice_mode,
     )
 
@@ -94,9 +94,9 @@ async def send_message(
 @router.get("/{token}/history", response_model=None)
 async def get_history(
     token: str,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
-    result = await triagem_service.get_history(db, token)
+    result = await triagem_service.get_history(repo.db, token)
 
     if result.get("error") == "not_found":
         raise HTTPException(status_code=404, detail="Token inválido ou sessão não encontrada")
@@ -107,9 +107,9 @@ async def get_history(
 @router.post("/{token}/complete", response_model=None)
 async def complete_triagem(
     token: str,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
 
     if not validation.get("valid"):
         error = validation.get("error")
@@ -121,7 +121,7 @@ async def complete_triagem(
     if validation.get("completed"):
         raise HTTPException(status_code=409, detail="Triagem já foi concluída anteriormente")
 
-    result = await triagem_service.complete_session(db, token)
+    result = await triagem_service.complete_session(repo.db, token)
 
     if result.get("error") == "not_found":
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
@@ -137,7 +137,7 @@ async def complete_triagem(
 @router.post("/invite", status_code=201, response_model=None)
 async def create_invite(
     request: InviteRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
 ):
@@ -146,7 +146,7 @@ async def create_invite(
         raise HTTPException(status_code=400, detail="company_id é obrigatório")
 
     session = await triagem_service.create_session(
-        db=db,
+        db=repo.db,
         candidate_id=request.candidate_id,
         job_id=request.job_id,
         company_id=company_id,
@@ -201,10 +201,10 @@ class RequestCallRequest(BaseModel):
 async def request_phone_call(
     token: str,
     request: RequestCallRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
     """Request an automated phone call from LIA to the candidate via Twilio Voice."""
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
 
     if not validation.get("valid"):
         error = validation.get("error")
@@ -217,7 +217,7 @@ async def request_phone_call(
         raise HTTPException(status_code=409, detail="Triagem já foi concluída")
 
     result = await triagem_service.request_phone_call(
-        db, token, request.candidate_phone
+        repo.db, token, request.candidate_phone
     )
 
     if result.get("error") == "not_found":
@@ -244,9 +244,9 @@ class StartSessionRequest(BaseModel):
 async def start_triagem(
     token: str,
     request: StartSessionRequest | None = None,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
 
     if not validation.get("valid"):
         error = validation.get("error")
@@ -259,7 +259,7 @@ async def start_triagem(
         raise HTTPException(status_code=409, detail="Triagem já foi concluída")
 
     vm = request.voice_mode if request else None
-    result = await triagem_service.start_session(db, token, voice_mode=vm)
+    result = await triagem_service.start_session(repo.db, token, voice_mode=vm)
 
     if result.get("error") == "not_found":
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
@@ -272,10 +272,10 @@ async def transcribe_audio(
     token: str,
     audio: UploadFile = File(...),
     question_index: int | None = Form(None),
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
     """Transcribe candidate audio using OpenAI Whisper STT."""
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
     if not validation.get("valid"):
         error = validation.get("error")
         if error == "not_found":
@@ -324,10 +324,10 @@ class TTSRequest(BaseModel):
 async def synthesize_speech(
     token: str,
     request: TTSRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
     """Generate TTS audio for a triagem question using OpenAI TTS."""
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
     if not validation.get("valid"):
         error = validation.get("error")
         if error == "not_found":
@@ -355,10 +355,10 @@ async def synthesize_speech(
 async def synthesize_message_speech(
     token: str,
     message_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: TriagemRepository = Depends(get_triagem_repo),
 ):
     """Generate TTS audio on demand for a specific LIA message."""
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
     if not validation.get("valid"):
         error = validation.get("error")
         if error == "not_found":
@@ -366,7 +366,7 @@ async def synthesize_message_speech(
         if error == "expired":
             raise HTTPException(status_code=410, detail="Link expirado")
 
-    result = await triagem_service.generate_tts_for_message(db, token, message_id)
+    result = await triagem_service.generate_tts_for_message(repo.db, token, message_id)
 
     if result.get("error") == "not_found":
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
@@ -379,9 +379,9 @@ async def synthesize_message_speech(
 
 
 @router.get("/{token}/voice-status", response_model=None)
-async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
+async def voice_status(token: str, repo: TriagemRepository = Depends(get_triagem_repo)):
     """Check availability of voice services (STT/TTS) for the session."""
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
     if not validation.get("valid"):
         raise HTTPException(status_code=404, detail="Token inválido")
 
@@ -396,7 +396,7 @@ async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/{token}/voip-start", response_model=None)
-async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
+async def voip_start(token: str, repo: TriagemRepository = Depends(get_triagem_repo)):
     """
     Initiate a VoIP (browser call) screening session.
 
@@ -419,7 +419,7 @@ async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
         voice_screening_orchestrator,
     )
 
-    validation = await triagem_service.validate_token(db, token)
+    validation = await triagem_service.validate_token(repo.db, token)
     if not validation.get("valid"):
         error = validation.get("error")
         if error == "not_found":
@@ -447,7 +447,7 @@ async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
         company_id=company_id,
         job_id=job_id,
         language="pt-BR",
-        db=db,
+        db=repo.db,
     )
 
     if voip_session.status == "ready" and voip_session.voice_provider == "gemini_live":
