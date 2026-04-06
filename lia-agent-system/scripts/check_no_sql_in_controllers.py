@@ -207,6 +207,7 @@ PENDING_MIGRATION = {
     "app/api/wsi_endpoints.py",
     # Controllers that pass db to service layer (no direct db.execute)
     "app/api/v1/affirmative.py",
+    "app/api/v1/platform_event_handlers.py",  # TODO: migrate to repository
     "app/api/v1/calibration.py",
     # Re-export hub modules (not controllers — AsyncSession is re-exported for route handlers)
     "app/api/v1/job_vacancies/_shared.py",
