@@ -18,7 +18,7 @@ from lia_models.billing import (
 
 logger = logging.getLogger(__name__)
 
-INITIAL_FREE_CREDITS = 100
+INITIAL_FREE_CREDITS = 100  # Free-tier bootstrap; billing system overrides via add_credits(subscription_grant)
 
 DEFAULT_LOW_BALANCE_THRESHOLD = 20
 
