@@ -145,7 +145,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
 
   const revealContactHook = useRevealContact({
     setCreditsRemaining: (fn) =>
-      params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining) : fn),
+      params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining ?? 0) : fn),
   })
 
   const { setLastSuccessfulQuery: archetypeSetLastSuccessfulQuery } = archetypesHook.actions

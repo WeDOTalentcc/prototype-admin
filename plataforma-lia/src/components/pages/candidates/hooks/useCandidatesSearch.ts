@@ -437,7 +437,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
           localCount: searchResponse.local_count || localCandidates.length,
           globalCount: searchResponse.pearch_count || globalCandidates.length,
           showGlobalResults: true
-        }))
+        } as typeof prev))
 
         // Notificar usuário
         toast.success("Busca expandida com sucesso!", { description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.` })
@@ -526,7 +526,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       parts.push(`skills: ${((filters.skills as Record<string, unknown>).skills as string[]).join(', ')}`)
     }
     if ((filters as unknown as Record<string, unknown>).locations && (((filters as unknown as Record<string, unknown>).locations as Record<string, unknown>)?.locations as string[] | undefined)?.length > 0) {
-      parts.push(`localização: ${((((filters as unknown as Record<string, unknown>).locations as Record<string, unknown>).locations as string[]).join(', '))}`)
+      parts.push(`localização: ${((((filters as unknown as Record<string, unknown>).locations as Record<string, unknown>)?.locations as string[] | undefined)?.join(', ') ?? '')}`)
     }
     if (filters.general?.minExperience || filters.general?.maxExperience) {
       const min = filters.general.minExperience || 0

@@ -77,7 +77,7 @@ export function useCandidatesUIState() {
   // ── Search / pearch options ──────────────────────────────────────────────
   const [pearchSearchOptions, setPearchSearchOptions] = useState<PearchSearchOptions>(DEFAULT_PEARCH_OPTIONS)
   const [activeSearchFilters, setActiveSearchFilters] = useState<SearchFilters>({
-    ppiOptions: {} as Record<string, unknown>, general: {}, locations: {}, job: {}, company: {},
+    ppiOptions: {} as Record<string, unknown>, general: {}, job: {}, company: {},
     skills: {}, education: {}, languages: {},
   })
   const [searchResults, setSearchResults] = useState<{
