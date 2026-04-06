@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from app.domains.base import DomainAction
 
 SOURCING_ACTIONS: list[DomainAction] = [

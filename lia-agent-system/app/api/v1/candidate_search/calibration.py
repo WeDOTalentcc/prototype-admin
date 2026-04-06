@@ -1,8 +1,6 @@
 """
 Calibration workflows, vacancy goal-check, and candidate management routes.
 """
-from uuid import UUID
-import random
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException

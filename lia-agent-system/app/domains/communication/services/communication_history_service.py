@@ -5,10 +5,9 @@ Manages communication history records for tracking all candidate communications
 including emails, WhatsApp messages, screening invites, and feedback.
 """
 
-from fastapi import status
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Type
+from typing import Any
 
 from sqlalchemy import and_, desc, func, select
 

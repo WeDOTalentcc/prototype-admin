@@ -2,7 +2,6 @@
 Sourcing & Engagement State schema for workflow steps 14-27.
 Tracks candidate pipeline, outreach, screening, and feedback workflow.
 """
-from fastapi import status
 from datetime import datetime
 from enum import Enum
 from typing import Any, Literal

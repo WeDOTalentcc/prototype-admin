@@ -13,7 +13,7 @@ O CÁLCULO FINAL é sempre determinístico.
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

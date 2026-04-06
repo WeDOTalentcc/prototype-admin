@@ -8,11 +8,9 @@ This service generates personalized daily briefings including:
 - AI-powered insights
 - Anomaly detection
 """
-from fastapi import status
-from datetime import date
 import logging
 from datetime import datetime, time, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession

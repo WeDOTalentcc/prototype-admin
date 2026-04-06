@@ -1,17 +1,21 @@
-from typing import Any  # noqa: F401
-from app.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
-from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
+from datetime import datetime
+from typing import (
+    Any,  # noqa: F401
+    )
+from uuid import UUID
+
+from pydantic import Field
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from datetime import datetime
-from pydantic import Field
-from typing import List, Dict, Optional
+
+from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
+from app.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
+
 """
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import *
 
@@ -77,15 +81,15 @@ async def finalize_job_vacancy(
 
 class JobVacancySearchItem(BaseModel):
     id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
     title: str
     status: str
     created_at: str
-    description_preview: Optional[str] = None
+    description_preview: str | None = None
 
 
 class JobVacancySearchResponse(BaseModel):
-    items: List[JobVacancySearchItem]
+    items: list[JobVacancySearchItem]
     total_count: int
     has_more: bool
 
@@ -169,22 +173,22 @@ async def search_job_vacancies(
 class ArchetypeCandidateResponse(BaseModel):
     id: str
     name: str
-    current_title: Optional[str] = None
-    years_experience: Optional[int] = None
-    skills: Optional[List[str]] = []
-    hired_at: Optional[str] = None
+    current_title: str | None = None
+    years_experience: int | None = None
+    skills: list[str] | None = []
+    hired_at: str | None = None
 
 
 class ArchetypeVacancyResponse(BaseModel):
     id: str
     title: str
-    department: Optional[str] = None
-    closed_at: Optional[str] = None
-    hired_candidate: Optional[ArchetypeCandidateResponse] = None
+    department: str | None = None
+    closed_at: str | None = None
+    hired_candidate: ArchetypeCandidateResponse | None = None
 
 
 class ArchetypesResponse(BaseModel):
-    vacancies: List[ArchetypeVacancyResponse]
+    vacancies: list[ArchetypeVacancyResponse]
     total: int
 
 
@@ -360,8 +364,8 @@ async def get_job_vacancy(
 
 @router.get("/job-vacancies", response_model=None)
 async def list_job_vacancies(
-    status: Optional[str] = None,
-    visibility: Optional[str] = None,
+    status: str | None = None,
+    visibility: str | None = None,
     skip: int = 0,
     limit: int = 500,
     db: AsyncSession = Depends(get_db),
@@ -806,14 +810,14 @@ async def update_job_vacancy_status(
 class DuplicateJobRequest(BaseModel):
     copies: int = Field(default=1, ge=1, le=10)
     include_candidates: bool = Field(default=True)
-    candidate_filter: Optional[str] = Field(default=None)
-    candidate_status_override: Optional[str] = Field(default=None)
-    overrides: Optional[Dict[str, Any]] = Field(default=None)
+    candidate_filter: str | None = Field(default=None)
+    candidate_status_override: str | None = Field(default=None)
+    overrides: dict[str, Any] | None = Field(default=None)
 
 
 class CloneFromTemplateRequest(BaseModel):
-    new_title: Optional[str] = Field(default=None)
-    overrides: Optional[Dict[str, Any]] = Field(default=None)
+    new_title: str | None = Field(default=None)
+    overrides: dict[str, Any] | None = Field(default=None)
 
 
 @router.post("/job-vacancies/{job_id}/duplicate", response_model=None)

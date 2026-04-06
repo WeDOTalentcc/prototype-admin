@@ -4,7 +4,6 @@ Wraps CommunicationService, EmailService, TeamsService, WhatsAppService and
 CommunicationHistoryService into ToolDefinition format so the ReActLoop can
 autonomously decide which tools to call.
 """
-from fastapi import status
 import logging
 from typing import Any
 

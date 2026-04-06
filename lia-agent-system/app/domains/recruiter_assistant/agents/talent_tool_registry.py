@@ -5,10 +5,9 @@ Wraps talent funnel operations into ToolDefinition format so the ReActLoop
 can autonomously decide which tools to call for candidate analysis and
 management.
 """
-from fastapi import status
 import logging
 import uuid
-from typing import Any, List
+from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text

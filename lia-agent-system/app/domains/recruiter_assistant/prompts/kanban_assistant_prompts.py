@@ -2,7 +2,6 @@
 LIA Kanban Assistant - Structured Prompt Templates.
 Templates para análises inteligentes do pipeline de recrutamento.
 """
-from typing import Dict, Tuple
 from enum import Enum
 
 

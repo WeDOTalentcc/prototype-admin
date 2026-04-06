@@ -8,7 +8,6 @@ Question generation uses REAL data from:
 - VacancyCandidate: lia_score, match_percentage, stage
 - LiaOpinion: previous screening results, strengths, concerns, gaps
 """
-from typing import List
 import logging
 from datetime import datetime
 from enum import Enum

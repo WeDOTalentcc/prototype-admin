@@ -11,7 +11,7 @@ Provides shared memory store for:
 import logging
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

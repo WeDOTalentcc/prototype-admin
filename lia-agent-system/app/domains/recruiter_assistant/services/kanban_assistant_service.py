@@ -5,7 +5,7 @@ Uses Replit AI Integrations for Anthropic access.
 import json
 import logging
 import os
-from typing import Any, Dict, Final, List, Optional
+from typing import Any
 
 from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential

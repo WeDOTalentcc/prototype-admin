@@ -13,7 +13,7 @@ import json
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from app.services.ai_cache_service import ai_cache_service
 from app.services.llm import LLMProvider, llm_service

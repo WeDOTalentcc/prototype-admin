@@ -8,7 +8,7 @@ Provides function calling capabilities for:
 """
 import logging
 from datetime import datetime
-from typing import Any, Final, List, Optional, Type
+from typing import Any
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry

@@ -1,4 +1,4 @@
-from typing import Final
+
 """
 Few-shot examples for the Job Planner Agent.
 

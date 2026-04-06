@@ -8,7 +8,6 @@ Tests:
 - Both circuits open returns failure without sending
 - get_status reflects both providers
 """
-from fastapi import status
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 

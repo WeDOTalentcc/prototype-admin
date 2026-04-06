@@ -14,7 +14,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 from app.prompts import PromptLoader
 from app.services.llm import llm_service
 from app.shared.prompts.loader import PromptLoader

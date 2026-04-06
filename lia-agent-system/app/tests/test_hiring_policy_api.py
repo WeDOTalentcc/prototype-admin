@@ -8,7 +8,6 @@ Uses httpx AsyncClient + FastAPI TestClient pattern to test:
 - GET /{company_id}/progress → returns progress and blocks_completed
 - Invalid block returns 400
 """
-import json
 import uuid
 
 import pytest

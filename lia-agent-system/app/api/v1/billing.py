@@ -6,7 +6,6 @@ payment methods, and webhook integrations with Iugu/Vindi.
 
 SECURITY: All endpoints enforce multi-tenant isolation via X-Company-ID header.
 """
-import json
 import logging
 from datetime import datetime
 from typing import Any

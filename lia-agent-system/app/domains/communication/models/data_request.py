@@ -5,7 +5,6 @@ Sistema para solicitação de dados/documentos aos candidatos.
 Permite coleta de informações como CPF, documentos, dados bancários etc.
 com portal público de preenchimento e acompanhamento de status.
 """
-from fastapi import status
 import enum
 import secrets
 import uuid

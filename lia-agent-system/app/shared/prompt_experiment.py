@@ -13,7 +13,6 @@ Compliance note:
 """
 
 from __future__ import annotations
-from typing import List, Optional
 
 import asyncio
 import hashlib

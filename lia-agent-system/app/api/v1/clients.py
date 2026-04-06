@@ -11,7 +11,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from app.auth.workos_models import CompanyWorkOSConfig
 from app.domains.clients.dependencies import get_client_repo
 from app.domains.clients.repositories.client_account_repository import ClientAccountRepository
 from app.domains.communication.services.email_service import EmailService

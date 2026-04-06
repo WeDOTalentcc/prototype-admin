@@ -1,5 +1,5 @@
-from fastapi import status
-import time
+
+
 # LIA-T01 | LGPD Art. 7 (legitimate interest – recruitment) / EU AI Act Annex III (high-risk HR systems)
 """LangChain tools for Interview Scheduling domain."""
 import logging

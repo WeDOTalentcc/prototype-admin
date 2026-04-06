@@ -10,7 +10,7 @@ Provides recommendations and identifies misalignments.
 """
 import logging
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 from uuid import UUID as UUID_type
 
 from sqlalchemy import and_, or_, select

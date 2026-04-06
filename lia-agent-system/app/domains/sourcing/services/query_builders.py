@@ -4,7 +4,7 @@ Sourcing Query Builders - Utilities for boolean search and candidate matching.
 Extracted from the legacy SourcingAgent (Sprint 5 migration).
 Used by sourcing endpoints and the SourcingReActAgent tool registry.
 """
-from typing import Any, Dict
+from typing import Any
 
 
 class BooleanQueryBuilder:

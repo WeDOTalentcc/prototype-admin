@@ -39,6 +39,7 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_ids = params.get("candidate_ids", [])
@@ -101,6 +102,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
@@ -170,6 +172,7 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_ids = params.get("candidate_ids", [])
@@ -245,6 +248,7 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         query = params.get("query", "")
@@ -321,6 +325,7 @@ async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
@@ -401,7 +406,9 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         import uuid as uuid_mod
+
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         name = params.get("name", "")
@@ -450,7 +457,7 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
 
             await db.commit()
 
-        job_info = f" e vinculado à vaga" if job_id else ""
+        job_info = " e vinculado à vaga" if job_id else ""
         return ActionResult(
             status="executed",
             message=f"Candidato **{name}** cadastrado com sucesso{job_info}.",
@@ -476,6 +483,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
@@ -552,6 +560,7 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")

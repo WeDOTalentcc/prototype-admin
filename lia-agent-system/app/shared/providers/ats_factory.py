@@ -4,9 +4,9 @@ ATS Provider Factory
 Factory for creating and caching ATS client instances.
 Supports environment-variable-based configuration and provider status reporting.
 """
-from fastapi import status
 import logging
 import os
+
 
 from app.services.ats_clients.base import ATSClient, ATSClientConfig
 from app.services.ats_clients.gupy import GupyClient

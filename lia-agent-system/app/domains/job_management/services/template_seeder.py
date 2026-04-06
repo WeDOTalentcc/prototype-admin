@@ -2,10 +2,9 @@
 Template Seeder Service for creating default system templates.
 Creates templates for all channels: email, whatsapp, bell, chat_lia, briefing, parecer, report.
 """
-import time
 import logging
 import uuid
-from typing import Any, Dict, Final
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

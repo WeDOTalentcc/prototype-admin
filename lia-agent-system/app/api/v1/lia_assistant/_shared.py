@@ -2,7 +2,6 @@
 Shared imports, constants, Pydantic models, and helper utilities used
 across all lia_assistant sub-modules.
 """
-import time
 import json
 import logging
 import re
@@ -24,6 +23,10 @@ from app.models.structured_responses import (
     WizardOrchestrationResult,  # noqa: F401
 )
 from app.services.config_completeness_service import ConfigCompletenessService
+from app.services.enhanced_intent_classifier import (
+    EnhancedIntentType,  # noqa: F401
+    enhanced_intent_classifier,  # noqa: F401
+)
 from app.services.feedback_learning_service import FeedbackLearningService
 from app.services.intent_classifier import (
     ClassificationResult,
@@ -31,8 +34,6 @@ from app.services.intent_classifier import (
 from app.services.llm import LLMService, llm_service
 from app.services.market_benchmark_service import MarketBenchmarkService
 from app.services.skills_catalog_service import skills_catalog_service
-from app.services.enhanced_intent_classifier import EnhancedIntentType  # noqa: F401
-from app.services.enhanced_intent_classifier import enhanced_intent_classifier  # noqa: F401
 
 logger = logging.getLogger(__name__)
 

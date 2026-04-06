@@ -1,7 +1,6 @@
 """
 Affirmative Action Service for managing diversity criteria in job vacancies.
 """
-from fastapi import status
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID

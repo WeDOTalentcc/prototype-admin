@@ -4,7 +4,6 @@ Covers all VacancyCandidate DB operations from app/api/v1/candidates.py.
 """
 import logging
 import uuid
-from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select

@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.recruitment_stages import RecruitmentSubStatus

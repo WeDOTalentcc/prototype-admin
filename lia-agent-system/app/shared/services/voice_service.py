@@ -6,11 +6,10 @@ Provides:
 - Text-to-speech using OpenAI TTS API
 - Real-time streaming transcription support
 """
-import json
 import logging
 import os
 from collections.abc import AsyncGenerator
-from typing import Any, Final, Optional
+from typing import Any
 
 import httpx
 

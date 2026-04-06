@@ -17,7 +17,7 @@ Features:
 import logging
 from dataclasses import asdict, dataclass, field
 from difflib import SequenceMatcher
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

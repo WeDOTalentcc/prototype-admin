@@ -18,8 +18,6 @@ Usage (class-based):
     circuit = CircuitBreaker("anthropic", CircuitBreakerConfig(...))
     result = await circuit.call(my_func, arg1, arg2)
 """
-from fastapi import Request
-from sqlalchemy import func
 import asyncio
 import functools
 import logging
@@ -29,6 +27,7 @@ from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

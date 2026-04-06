@@ -1,15 +1,15 @@
+from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID
+
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from datetime import datetime
-from datetime import date
-from datetime import timedelta
-from typing import Any, List, Dict, Optional
+
 """
 Analytics routes: metrics, analytics deep-dive, history, stats/overview,
 archetypes (already in crud.py), job report.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import *
 
@@ -28,23 +28,23 @@ class FunnelMetrics(BaseModel):
 
 
 class PerformanceMetrics(BaseModel):
-    time_to_fill_days: Optional[int] = None
-    avg_time_in_stage_days: Optional[float] = None
+    time_to_fill_days: int | None = None
+    avg_time_in_stage_days: float | None = None
     conversion_rate: float = 0.0
-    source_breakdown: Dict[str, int] = {}
+    source_breakdown: dict[str, int] = {}
 
 
 class ActivityMetrics(BaseModel):
     views_7d: int = 0
     applications_7d: int = 0
     interviews_scheduled: int = 0
-    last_activity: Optional[str] = None
+    last_activity: str | None = None
 
 
 class SLAMetrics(BaseModel):
     within_sla: bool = True
-    days_remaining: Optional[int] = None
-    deadline: Optional[str] = None
+    days_remaining: int | None = None
+    deadline: str | None = None
 
 
 class JobVacancyMetricsResponse(BaseModel):
@@ -228,20 +228,20 @@ class DailyApplicationItem(BaseModel):
 class JobAnalyticsResponse(BaseModel):
     vacancy_id: str
     vacancy_title: str
-    funnel: List[FunnelStageItem]
+    funnel: list[FunnelStageItem]
     total_candidates: int
     total_hired: int
     overall_conversion_rate: float
     avg_time_to_hire: float
     avg_time_to_first_response: float
-    time_in_stage: Dict[str, float]
-    sources: List[SourceAnalysisItem]
+    time_in_stage: dict[str, float]
+    sources: list[SourceAnalysisItem]
     top_source: str
-    daily_applications: List[DailyApplicationItem]
+    daily_applications: list[DailyApplicationItem]
     weekly_trend: float
     avg_lia_score: float
     avg_skills_match: float
-    top_rejection_reasons: List[str]
+    top_rejection_reasons: list[str]
     company_avg_time_to_hire: float
     company_avg_conversion_rate: float
     position_percentile: int
@@ -272,9 +272,9 @@ async def get_job_analytics(
         vacancy_candidates = candidates_result.scalars().all()
         total_candidates = len(vacancy_candidates)
 
-        stage_counts: Dict[str, int] = {}
-        source_counts: Dict[str, int] = {}
-        source_hired_counts: Dict[str, int] = {}
+        stage_counts: dict[str, int] = {}
+        source_counts: dict[str, int] = {}
+        source_hired_counts: dict[str, int] = {}
         hired_count = 0
         lia_scores = []
         match_percentages = []
@@ -327,10 +327,10 @@ async def get_job_analytics(
         )
         stage_history = history_result.scalars().all()
 
-        time_in_stage: Dict[str, List[float]] = {}
-        rejection_reasons: List[str] = []
-        first_response_times: List[float] = []
-        hire_times: List[float] = []
+        time_in_stage: dict[str, list[float]] = {}
+        rejection_reasons: list[str] = []
+        first_response_times: list[float] = []
+        hire_times: list[float] = []
 
         for history_entry in stage_history:
             if history_entry.time_in_previous_stage_hours is not None and history_entry.from_stage_name:
@@ -353,7 +353,7 @@ async def get_job_analytics(
                 total_time = sum(h.time_in_previous_stage_hours or 0 for h in candidate_history)
                 hire_times.append(total_time / 24.0)
 
-        avg_time_in_stage: Dict[str, float] = {}
+        avg_time_in_stage: dict[str, float] = {}
         for stage_name, times in time_in_stage.items():
             avg_time_in_stage[stage_name] = round(sum(times) / len(times), 1) if times else 0.0
 
@@ -433,7 +433,7 @@ async def get_job_analytics(
         avg_lia_score = round(sum(lia_scores) / len(lia_scores), 1) if lia_scores else 0.0
         avg_skills_match = round(sum(match_percentages) / len(match_percentages), 1) if match_percentages else 0.0
 
-        reason_counts: Dict[str, int] = {}
+        reason_counts: dict[str, int] = {}
         for reason in rejection_reasons:
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
         top_rejection_reasons = sorted(reason_counts.keys(), key=lambda x: reason_counts[x], reverse=True)[:5]
@@ -511,18 +511,18 @@ class AuditLogItem(BaseModel):
     job_vacancy_id: str
     company_id: str
     action: str
-    field_changed: Optional[str] = None
-    old_value: Optional[Any] = None
-    new_value: Optional[Any] = None
+    field_changed: str | None = None
+    old_value: Any | None = None
+    new_value: Any | None = None
     changed_by: str
     changed_at: str
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
-    extra_data: Optional[Dict[str, Any]] = None
+    ip_address: str | None = None
+    user_agent: str | None = None
+    extra_data: dict[str, Any] | None = None
 
 
 class JobVacancyHistoryResponse(BaseModel):
-    items: List[AuditLogItem]
+    items: list[AuditLogItem]
     total: int
     limit: int
     offset: int
@@ -611,7 +611,7 @@ class ActiveJobsStats(BaseModel):
     total: int = 0
     avg_days_open: float = 0.0
     at_risk: int = 0
-    by_urgency: Dict[str, int] = {"alta": 0, "média": 0, "baixa": 0}
+    by_urgency: dict[str, int] = {"alta": 0, "média": 0, "baixa": 0}
     empty_pipeline: int = 0
     deadline_soon: int = 0
 
@@ -628,31 +628,31 @@ class AllJobsStats(BaseModel):
     hired_last_30d: int = 0
     hired_last_90d: int = 0
     within_sla_pct: float = 0.0
-    by_department: Dict[str, int] = {}
-    trend_weeks: List[WeeklyTrend] = []
+    by_department: dict[str, int] = {}
+    trend_weeks: list[WeeklyTrend] = []
 
 
 class Insight(BaseModel):
     type: str
     message: str
-    severity: Optional[str] = None
-    action: Optional[str] = None
+    severity: str | None = None
+    action: str | None = None
 
 
 class StatsOverviewResponse(BaseModel):
     my_jobs: MyJobsStats
     active_jobs: ActiveJobsStats
     all_jobs: AllJobsStats
-    insights: List[Insight] = []
+    insights: list[Insight] = []
 
 
 def _generate_insights(
-    my_jobs_list: List,
-    active_jobs_list: List,
-    completed_jobs_90d: List,
-    stats: Dict[str, Any],
+    my_jobs_list: list,
+    active_jobs_list: list,
+    completed_jobs_90d: list,
+    stats: dict[str, Any],
     now: datetime
-) -> List[Insight]:
+) -> list[Insight]:
     """Generate automatic insights based on metrics data."""
     insights = []
 
@@ -734,7 +734,7 @@ def _generate_insights(
 
 @router.get("/job-vacancies/stats/overview", response_model=StatsOverviewResponse)
 async def get_job_vacancies_stats_overview(
-    recruiter_email: Optional[str] = Query(None),
+    recruiter_email: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -869,12 +869,12 @@ async def get_job_vacancies_stats_overview(
                     within_sla_count += 1
         within_sla_pct = (within_sla_count / len(completed_jobs_90d) * 100) if completed_jobs_90d else 0.0
 
-        by_department: Dict[str, int] = {}
+        by_department: dict[str, int] = {}
         for job in active_jobs_list:
             dept = job.department or "Não definido"
             by_department[dept] = by_department.get(dept, 0) + 1
 
-        trend_weeks: List[WeeklyTrend] = []
+        trend_weeks: list[WeeklyTrend] = []
         for weeks_ago in range(7, -1, -1):
             week_start = now - timedelta(weeks=weeks_ago + 1)
             week_end = now - timedelta(weeks=weeks_ago)
@@ -952,8 +952,8 @@ class JobReportResponse(BaseModel):
     vacancy_id: str
     vacancy_title: str
     funnel_metrics: JobReportFunnelMetrics
-    channel_performance: List[JobReportChannelItem]
-    top_candidates: List[JobReportTopCandidate]
+    channel_performance: list[JobReportChannelItem]
+    top_candidates: list[JobReportTopCandidate]
 
 
 @router.get("/jobs/{job_id}/report", response_model=JobReportResponse)
@@ -980,9 +980,9 @@ async def get_job_report(
     vacancy_candidates = vc_result.scalars().all()
     total = len(vacancy_candidates)
 
-    stage_map: Dict[str, int] = {}
-    source_map: Dict[str, int] = {}
-    source_hired: Dict[str, int] = {}
+    stage_map: dict[str, int] = {}
+    source_map: dict[str, int] = {}
+    source_hired: dict[str, int] = {}
     hired_count = 0
 
     for vc in vacancy_candidates:

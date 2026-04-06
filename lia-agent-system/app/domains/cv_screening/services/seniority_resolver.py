@@ -25,12 +25,12 @@ Data: 2026-02-11
 Versão: 1.0
 """
 
-from sqlalchemy import String
 import asyncio
 import logging
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any
+
 
 from app.domains.cv_screening.services.calibration_profiles import SALARY_REFERENCE_RANGES_BRL
 from app.domains.cv_screening.services.seniority_utils import (

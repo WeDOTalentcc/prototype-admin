@@ -15,13 +15,13 @@ Design Principle:
 - Data without ATS field mapping stays in WedoTalent only
 - NO field creation in client ATS (not authorized)
 """
-from fastapi import status
 import logging
 import os
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional, Type
+from typing import Any
+
 
 from .ats_clients.base import ATSClient, ATSClientConfig
 from .ats_clients.gupy import GupyClient

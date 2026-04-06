@@ -4,11 +4,11 @@ Confidence Policy Service for Job Wizard Enhancement.
 Manages confidence calculations and decision policies for
 auto-applying inferred values during job creation wizard flow.
 """
-from pydantic import Field
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

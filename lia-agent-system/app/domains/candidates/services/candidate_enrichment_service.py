@@ -6,7 +6,7 @@ Supports MCP (Model Context Protocol) for simplified actor calls.
 import logging
 import re
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select

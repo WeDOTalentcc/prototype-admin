@@ -3,8 +3,8 @@ CandidateRepository — session-in-constructor pattern.
 Covers all DB operations needed by app/api/v1/candidates.py.
 """
 import logging
-import uuid
 import unicodedata
+import uuid
 from datetime import datetime
 from typing import Any
 from uuid import UUID

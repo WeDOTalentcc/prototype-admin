@@ -8,11 +8,10 @@ This service handles:
 - Integration with TaskService and JobAlertService
 - Configurable thresholds for sourcing decisions
 """
-from fastapi import status
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, List, Optional
+from typing import Any
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession

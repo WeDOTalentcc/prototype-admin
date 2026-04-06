@@ -6,7 +6,6 @@ instructions that improve LLM output quality and consistency.
 
 Moved from app/prompts/cot.py (I3b cleanup).
 """
-from typing import Type
 from enum import Enum
 
 

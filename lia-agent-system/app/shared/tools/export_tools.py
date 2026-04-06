@@ -5,11 +5,9 @@ Provides function calling capabilities for:
 - Exporting candidate lists to various formats
 - Generating recruitment reports
 """
-import json
-import time
 import logging
 from datetime import datetime
-from typing import Any, List, Optional, Type
+from typing import Any
 from uuid import UUID, uuid4
 
 from app.tools.registry import ToolDefinition, tool_registry

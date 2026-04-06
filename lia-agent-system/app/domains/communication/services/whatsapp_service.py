@@ -13,14 +13,13 @@ Environment Variables:
 - TWILIO_WHATSAPP_FROM: WhatsApp sender number (default: sandbox number)
 - ENVIRONMENT: 'development' for logging only, 'production' for real sending
 """
-from fastapi import status
 import asyncio
 import logging
 import os
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 from pydantic import BaseModel, Field
 

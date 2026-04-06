@@ -7,15 +7,14 @@ This service handles:
 3. Executing actions (email, whatsapp, tasks, notifications)
 4. Logging execution history for auditing
 """
-from fastapi import status
 import logging
 import os
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Type
+from typing import Any
 
-from sqlalchemy import Boolean, and_, desc, func, select
+from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal

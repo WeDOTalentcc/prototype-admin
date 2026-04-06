@@ -9,7 +9,6 @@ This service manages automatic triggers that fire based on events:
 - Candidate updates LinkedIn → Re-engagement notification
 - Offer accepted → Welcome email + manager notification
 """
-from fastapi import status
 import logging
 from datetime import datetime, timedelta
 from enum import Enum

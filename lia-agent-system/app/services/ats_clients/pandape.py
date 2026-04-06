@@ -4,8 +4,6 @@ Pandapé ATS Client Implementation
 Pandapé is a Brazilian ATS platform commonly used in Latin America.
 API Docs: https://api-ats.pandape.com/index.html
 """
-from fastapi import status
-import json
 import logging
 from datetime import datetime
 from typing import Any

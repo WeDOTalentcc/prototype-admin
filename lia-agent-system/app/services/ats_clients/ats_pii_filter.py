@@ -11,9 +11,9 @@ Dois filtros:
 LGPD Art. 6 (finalidade/necessidade) + Art. 46 (medidas de segurança).
 D5 — Consentimento granular: LGPD Art. 7 / EU AI Act Art. 13.
 """
-from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 from typing import Any
+
 
 from app.services.ats_clients.lgpd_field_registry import (
     OUTBOUND_SENSITIVE_FIELDS,

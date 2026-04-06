@@ -15,9 +15,6 @@ Tasks registradas:
   - ragas.evaluate_batch         — avaliação RAGAS de qualidade LLM (ACH-027)
   - digest.send_weekly           — envia weekly digest a todos os recrutadores ativos
 """
-from typing import Dict
-from uuid import UUID
-from datetime import date
 import asyncio
 from datetime import UTC
 

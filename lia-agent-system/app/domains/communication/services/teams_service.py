@@ -12,7 +12,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any
 
 import httpx
 

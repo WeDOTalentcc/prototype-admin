@@ -28,13 +28,13 @@ Session persistence:
 - Session survives server restarts; loaded from DB on first request
 """
 
-from fastapi import status
 import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
 from uuid import uuid4
+
 
 from app.domains.communication.services.twilio_voice_service import (
     TwilioVoiceUnconfiguredError,

@@ -5,8 +5,6 @@ Implements the ATSClient interface for Merge.dev's Unified ATS API.
 Merge provides a single API to integrate with 40+ ATS platforms including
 Greenhouse, Lever, Workable, BambooHR, iCIMS, and more.
 """
-from fastapi import status
-import json
 import logging
 from datetime import datetime
 from typing import Any

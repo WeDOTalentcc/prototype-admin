@@ -7,11 +7,10 @@ Provides:
 - Document/PDF analysis with structure extraction
 - Resume visual analysis with layout scoring
 """
-import json
 import base64
 import logging
 import os
-from typing import Any, Optional, Type
+from typing import Any
 
 import httpx
 

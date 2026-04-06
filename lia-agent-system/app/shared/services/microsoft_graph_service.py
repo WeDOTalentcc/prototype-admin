@@ -12,15 +12,13 @@ Environment Variables Required:
 - AZURE_CLIENT_SECRET: Azure AD Application client secret
 - AZURE_TENANT_ID: Azure AD Directory (tenant) ID
 """
-from fastapi import Query, Response
-import json
 import asyncio
 import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any
 
 import httpx
 

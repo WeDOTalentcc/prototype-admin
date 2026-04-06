@@ -2,11 +2,9 @@
 Simplified Microsoft Teams integration without Bot Framework SDK.
 Handles webhooks directly from Teams.
 """
-from fastapi import Response
-import json
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 

@@ -8,10 +8,9 @@ Provides fast lookups for:
 
 Gracefully degrades when no patterns exist (returns None/empty).
 """
-from pydantic import Field
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import and_, or_, select
 

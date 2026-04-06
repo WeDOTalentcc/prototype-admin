@@ -13,7 +13,6 @@ Guardrails:
   - Sempre incluir link para revisão humana (LGPD Art. 20)
   - Baseado em perfil real: NÃO template estático
 """
-from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)

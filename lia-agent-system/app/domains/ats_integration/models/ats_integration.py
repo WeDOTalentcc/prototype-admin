@@ -1,7 +1,6 @@
 """
 ATS Integration models for Gupy and Pandapé synchronization.
 """
-from fastapi import status
 import enum
 import uuid
 from datetime import datetime

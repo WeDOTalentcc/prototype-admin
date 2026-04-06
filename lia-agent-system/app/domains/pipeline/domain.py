@@ -2,7 +2,6 @@
 PipelineTransitionDomain - Exposes pipeline transitions as agent-callable tools.
 Part of the domain-driven architecture for agent orchestration.
 """
-import json
 import logging
 from typing import Any
 

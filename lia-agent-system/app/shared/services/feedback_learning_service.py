@@ -11,14 +11,13 @@ Example:
     If LIA suggests R$15k for "Dev Sênior" and recruiters consistently correct to R$18k+,
     the service learns to suggest R$18k for similar roles in the future.
 """
-from pydantic import Field
 import json
 import logging
 import statistics
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Final, Optional, Sequence, cast
+from typing import Any, cast
 from uuid import UUID
 
 from sqlalchemy import and_, func, select

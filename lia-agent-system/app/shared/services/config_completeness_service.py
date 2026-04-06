@@ -4,11 +4,10 @@ Config Completeness Service for Job Creation Wizard.
 Manages field completeness checking, hybrid suggestions, and
 publication readiness validation.
 """
-from pydantic import Field
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

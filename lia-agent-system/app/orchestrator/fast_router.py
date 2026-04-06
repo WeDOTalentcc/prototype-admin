@@ -4,7 +4,6 @@ Fast Router - Keyword and regex-based domain routing.
 Resolves ~80% of user queries without LLM calls using pattern matching.
 Part of the CascadedRouter pipeline: memory → fast → LLM fallback.
 """
-from typing import List
 import logging
 import math
 import re

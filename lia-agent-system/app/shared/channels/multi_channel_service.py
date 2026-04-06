@@ -1,6 +1,6 @@
-from fastapi import status
 import logging
 from typing import Optional
+
 
 from app.shared.channels.adapters.email_adapter import EmailChannelAdapter
 from app.shared.channels.adapters.in_app_adapter import InAppChannelAdapter

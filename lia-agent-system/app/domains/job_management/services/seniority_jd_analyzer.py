@@ -26,7 +26,7 @@ Versão: 1.0
 import logging
 import re
 from collections import Counter
-from typing import List, Dict, Optional, Any
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

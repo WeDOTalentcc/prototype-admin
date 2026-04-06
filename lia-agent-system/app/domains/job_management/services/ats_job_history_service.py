@@ -12,12 +12,12 @@ This data enriches the Job Wizard with:
 - Job description templates
 - Time-to-fill benchmarks
 """
-from fastapi import status
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, List, Type
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

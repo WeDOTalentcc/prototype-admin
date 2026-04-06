@@ -1,14 +1,13 @@
 """
 Shared Searches API endpoints - manage shared candidate searches with external stakeholders.
 """
-from uuid import UUID
 import hashlib
 import logging
 import secrets
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession

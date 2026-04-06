@@ -4,7 +4,7 @@ Provides complete audit trail for compliance and transparency.
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession

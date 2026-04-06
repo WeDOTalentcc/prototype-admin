@@ -2,7 +2,6 @@
 Automation Scheduler Service
 Runs periodic jobs to check for conditions and trigger automation handlers.
 """
-from fastapi import status
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any

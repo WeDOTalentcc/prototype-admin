@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.models import User, UserRole
+from app.auth.models import User
 
 logger = logging.getLogger(__name__)
 

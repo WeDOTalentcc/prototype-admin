@@ -2,12 +2,12 @@
 Abstract base class for email providers.
 Provides a unified interface for different email sending services.
 """
-from fastapi import status
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, List
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

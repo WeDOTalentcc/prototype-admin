@@ -13,7 +13,7 @@ Flow:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Tuple
+from typing import Any
 
 
 class ReconsiderationResult(str, Enum):

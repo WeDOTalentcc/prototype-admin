@@ -2,12 +2,12 @@
 Resend email provider implementation.
 Uses the Resend API for transactional email delivery.
 """
-from fastapi import status
 import asyncio
 import logging
 import os
 from datetime import datetime
 from typing import Any
+
 
 from app.shared.resilience.circuit_breaker import RESEND_CIRCUIT, circuit_breaker_decorator
 

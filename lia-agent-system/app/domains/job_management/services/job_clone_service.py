@@ -5,13 +5,11 @@ Two modes:
 1. DUPLICATE: Full clone including candidates and their statuses
 2. TEMPLATE: Clone job data only (no candidates)
 """
-from fastapi import status
-from uuid import UUID
 import copy
 import logging
 import uuid
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

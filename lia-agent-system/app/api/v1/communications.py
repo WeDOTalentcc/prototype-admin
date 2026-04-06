@@ -6,16 +6,16 @@ Also provides direct email and WhatsApp sending via Mailgun and Twilio integrati
 """
 
 import logging
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
-from app.domains.communication.services.communication_history_service import communication_history_service
 from app.domains.communication.schemas.email_schemas import (
     SendBulkEmailRequest,
     SendEmailRequest,
     SendTemplateEmailRequest,
 )
+from app.domains.communication.services.communication_history_service import communication_history_service
 from app.domains.communication.services.email_service import mailgun_email_service
 from app.domains.communication.services.whatsapp_service import (
     SendInteractiveRequest,

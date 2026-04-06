@@ -1,10 +1,9 @@
 """
 GET /lia/suggestions — Dynamic homepage suggestion cards.
 """
-from datetime import date
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -4,8 +4,6 @@ Gupy ATS Client Implementation
 Gupy is a popular Brazilian ATS platform.
 API Docs: https://developers.gupy.io/
 """
-from fastapi import status
-import json
 import logging
 from datetime import datetime
 from typing import Any

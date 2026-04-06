@@ -28,6 +28,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         company_id = context.get("company_id") if context else None
@@ -71,7 +72,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
         lines = ["**Relatório de KPIs de Recrutamento:**\n"]
         lines.append(f"**Vagas:** {jobs.active_jobs} ativas | {jobs.paused_jobs} pausadas | {jobs.closed_jobs} fechadas ({jobs.total_jobs} total)")
         lines.append(f"**Candidatos Únicos:** {cands.total_candidates}")
-        lines.append(f"\n**Distribuição no Pipeline:**")
+        lines.append("\n**Distribuição no Pipeline:**")
         lines.append(f"  - Novos: {cands.stage_new}")
         lines.append(f"  - Triagem: {cands.stage_screening}")
         lines.append(f"  - Entrevista: {cands.stage_interview}")
@@ -127,7 +128,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
             }
             ml_predictions = {"time_to_fill": ttf, "salary": sal}
 
-            lines.append(f"\n**Predições ML:**")
+            lines.append("\n**Predições ML:**")
             lines.append(f"  - Previsão Time-to-Fill: **{ttf['predicted_days']} dias** ({ttf['range_min']}-{ttf['range_max']}d, {round(ttf['confidence']*100)}% confiança)")
             lines.append(f"  - {ttf['comparison_to_market']}")
             lines.append(f"  - Faixa Salarial Sugerida: **R$ {sal['suggested_min']:,.0f} — R$ {sal['suggested_max']:,.0f}** (P{sal['market_percentile']})")
@@ -136,7 +137,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
             if ttf.get("factors"):
                 high_factors = [f for f in ttf["factors"] if f.get("impact") == "high"]
                 if high_factors:
-                    lines.append(f"\n**Fatores de Risco (alto impacto):**")
+                    lines.append("\n**Fatores de Risco (alto impacto):**")
                     for f in high_factors[:3]:
                         lines.append(f"  - ⚠️ {f['name']}: {f['value']}")
         except Exception as ml_err:
@@ -176,6 +177,7 @@ async def _job_health_check(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
@@ -279,6 +281,7 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")

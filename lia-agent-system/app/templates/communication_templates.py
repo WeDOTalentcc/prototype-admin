@@ -2,10 +2,9 @@
 Communication Templates for LIA Platform.
 Contains email and WhatsApp templates for candidate outreach and feedback.
 """
-from fastapi import status
-import time
 from datetime import datetime
 from typing import Any
+
 
 # ---------------------------------------------------------------------------
 # LGPD — Aviso de sub-processadores de dados (K1 — Sprint K)

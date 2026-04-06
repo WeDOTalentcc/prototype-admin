@@ -5,11 +5,12 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from .repositories.recruitment_stage_repository import RecruitmentStageRepository
-from .repositories.sub_status_repository import SubStatusRepository
+
 from .repositories.ats_mapping_repository import ATSMappingRepository
+from .repositories.recruitment_stage_repository import RecruitmentStageRepository
 from .repositories.screening_question_repository import ScreeningQuestionRepository
 from .repositories.stage_history_repository import StageHistoryRepository
+from .repositories.sub_status_repository import SubStatusRepository
 
 
 def get_stage_repo(db: AsyncSession = Depends(get_db)) -> RecruitmentStageRepository:

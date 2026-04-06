@@ -6,12 +6,11 @@ This service provides direct access to email and messaging APIs with:
 - Comprehensive logging of all attempts
 - Consistent return format with success/error status and message_id
 """
-import json
 import logging
 import os
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 

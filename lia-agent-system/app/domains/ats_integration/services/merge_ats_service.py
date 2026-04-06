@@ -2,8 +2,6 @@
 Merge.dev ATS Service
 Unified API for 40+ ATS platforms via Merge.dev
 """
-from fastapi import status
-import json
 import logging
 import os
 from datetime import datetime

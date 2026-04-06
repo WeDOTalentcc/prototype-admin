@@ -5,7 +5,7 @@ Based on Schmidt & Hunter (1998) and BARS methodology.
 """
 from datetime import datetime
 from enum import Enum
-from typing import Final, Any
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field

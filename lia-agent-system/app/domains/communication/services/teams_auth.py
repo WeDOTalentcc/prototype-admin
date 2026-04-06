@@ -2,7 +2,6 @@
 Microsoft Bot Framework JWT validation.
 Security layer for Teams webhook endpoints.
 """
-import json
 import logging
 from datetime import datetime, timedelta
 

@@ -2,8 +2,6 @@
 Proactive Service for LIA.
 Handles proactive notifications, briefings, and recruiter assistance.
 """
-from datetime import date
-import time
 import logging
 from datetime import datetime
 from enum import Enum

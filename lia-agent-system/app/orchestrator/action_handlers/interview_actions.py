@@ -33,6 +33,7 @@ async def _reschedule_interview(params: dict[str, Any], context: dict[str, Any])
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")
@@ -104,6 +105,7 @@ async def _cancel_interview(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")
@@ -173,6 +175,7 @@ async def _send_interview_reminder(params: dict[str, Any], context: dict[str, An
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")
@@ -252,6 +255,7 @@ async def _list_today_interviews(params: dict[str, Any], context: dict[str, Any]
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         user_id = context.get("user_id") if context else None
@@ -322,7 +326,9 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
     from app.orchestrator.action_executor import ActionResult
     try:
         import uuid as uuid_mod
+
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")

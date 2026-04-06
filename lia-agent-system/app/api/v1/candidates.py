@@ -3,17 +3,14 @@ Candidates API endpoints - 2-tier search architecture:
 1. Local search (proprietary PostgreSQL database) - FREE
 2. Global search (Pearch AI 190M+ profiles) - PAID (credits required)
 """
-from typing import Optional
-from uuid import UUID
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
 from app.domains.candidates.dependencies import (
     get_candidate_favorites_repo,
     get_candidate_hidden_repo,
@@ -32,8 +29,6 @@ from app.models.candidate import (
     CandidateFavorite,
     CandidateHidden,
     CandidateSearch,
-    VacancyCandidate,
-    ViewedCandidate,
 )
 from app.models.pearch import PearchSearchRequest, PearchSearchResponse
 from app.schemas.candidate import (

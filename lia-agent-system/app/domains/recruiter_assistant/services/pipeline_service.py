@@ -6,8 +6,6 @@ This service identifies candidates that need attention:
 - Suggests actions based on current stage
 - Groups candidates by job vacancy
 """
-from fastapi import status
-from uuid import UUID
 import logging
 from datetime import datetime, timedelta
 from typing import Any

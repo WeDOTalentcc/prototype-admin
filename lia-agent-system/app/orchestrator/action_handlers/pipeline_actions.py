@@ -306,7 +306,9 @@ async def _create_automation(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         import uuid as uuid_mod
+
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         trigger = params.get("trigger", "")
@@ -371,6 +373,7 @@ async def _check_proactive_alerts(params: dict[str, Any], context: dict[str, Any
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         company_id = context.get("company_id") if context else None

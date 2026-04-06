@@ -9,9 +9,9 @@ O sampling é determinístico por decision_id (via hash MD5):
 - Não depende de estado externo ou banco de dados
 - 5% = 1 em cada 20 decisões é marcada para revisão
 """
-from sqlalchemy.ext.asyncio import AsyncSession
 import hashlib
 import logging
+
 
 logger = logging.getLogger(__name__)
 

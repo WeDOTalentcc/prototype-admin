@@ -12,7 +12,6 @@ Features:
 - Intent-aware cache key generation
 """
 
-from sqlalchemy import func
 import hashlib
 import json
 import logging
@@ -20,7 +19,8 @@ import os
 import time
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import Any, Dict, Optional
+from typing import Any
+
 
 try:
     import redis.asyncio as aioredis

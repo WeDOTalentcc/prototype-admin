@@ -7,7 +7,7 @@ import logging
 import re
 import unicodedata
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import or_, select

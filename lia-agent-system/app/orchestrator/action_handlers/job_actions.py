@@ -232,6 +232,7 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id", "") or (context or {}).get("job_vacancy_id", "")

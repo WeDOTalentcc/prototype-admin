@@ -5,7 +5,6 @@ Provides async database sessions with proper transaction isolation,
 test users, job vacancies, and candidates. All test data is automatically
 rolled back after each test - no explicit cleanup needed.
 """
-from fastapi import status
 import os
 from collections.abc import AsyncGenerator
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse

@@ -20,8 +20,8 @@ Data: 2026-02-11
 Versão: 1.0
 """
 
-from sqlalchemy import String
 import logging
+
 
 logger = logging.getLogger(__name__)
 

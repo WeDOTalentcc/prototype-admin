@@ -9,11 +9,10 @@ This service provides:
 - Outlook calendar sync with meeting invites
 - Microsoft Bookings integration
 """
-from fastapi import status
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, List, Tuple, Type
+from typing import Any
 from uuid import UUID
 
 from icalendar import Calendar, Event, vText

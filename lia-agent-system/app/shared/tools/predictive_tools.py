@@ -12,7 +12,7 @@ and return Dict[str, Any] with 'success', 'data', and 'message' keys.
 """
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text

@@ -7,7 +7,7 @@ with session management, state persistence, and streaming support.
 import logging
 from collections.abc import AsyncIterator
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from lia_agents_core.state_machine import JobWizardState, WizardStage, create_initial_state

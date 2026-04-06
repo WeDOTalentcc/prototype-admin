@@ -2,14 +2,12 @@
 Email Service for managing email templates and sending emails.
 Supports multiple email providers (Mailgun primary, Resend fallback) with abstraction layer.
 """
-from fastapi import status
-import json
 import logging
 import os
 import re
 import uuid
 from datetime import datetime
-from typing import Any, List, Optional, Tuple, Type
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select

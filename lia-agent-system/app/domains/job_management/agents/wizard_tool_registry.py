@@ -6,7 +6,7 @@ so the ReActLoop can autonomously decide which tools to call.
 """
 import logging
 import uuid
-from typing import Any, List
+from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text as sql_text

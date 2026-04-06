@@ -1,4 +1,4 @@
-from typing import Final
+
 """
 Job Description Template Service
 

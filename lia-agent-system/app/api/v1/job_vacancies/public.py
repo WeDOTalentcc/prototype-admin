@@ -1,13 +1,14 @@
+from datetime import datetime
+from uuid import UUID
+
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from datetime import datetime
-from typing import List, Optional
+
 """
 Public routes (no authentication required) and share-link routes.
 Also includes router_public for candidate application flow.
 """
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from ._shared import *
 
@@ -31,40 +32,40 @@ class GeneratePublicLinkResponse(BaseModel):
 class ShareLinkResponse(BaseModel):
     share_link: str
     slug: str
-    qr_code_url: Optional[str] = None
-    expires_at: Optional[str] = None
+    qr_code_url: str | None = None
+    expires_at: str | None = None
     view_count: int = 0
 
 
 class PublicVacancyResponse(BaseModel):
     title: str
-    description: Optional[str] = None
-    requirements: Optional[List[str]] = []
-    benefits: Optional[List[str]] = []
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    department: Optional[str] = None
-    company_name: Optional[str] = None
-    company_description: Optional[str] = None
-    company_website: Optional[str] = None
-    company_logo: Optional[str] = None
+    description: str | None = None
+    requirements: list[str] | None = []
+    benefits: list[str] | None = []
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    seniority_level: str | None = None
+    department: str | None = None
+    company_name: str | None = None
+    company_description: str | None = None
+    company_website: str | None = None
+    company_logo: str | None = None
     is_confidential: bool = False
     is_affirmative: bool = False
-    technical_requirements: Optional[List[dict]] = []
-    languages: Optional[List[dict]] = []
-    behavioral_competencies: Optional[List[dict]] = []
-    salary_range: Optional[dict] = None
-    apply_url: Optional[str] = None
+    technical_requirements: list[dict] | None = []
+    languages: list[dict] | None = []
+    behavioral_competencies: list[dict] | None = []
+    salary_range: dict | None = None
+    apply_url: str | None = None
 
 
 class PublicApplicationResponse(BaseModel):
     status: str
     message: str
-    candidate_id: Optional[str] = None
-    adherence_score: Optional[float] = None
-    next_step: Optional[str] = None
+    candidate_id: str | None = None
+    adherence_score: float | None = None
+    next_step: str | None = None
 
 
 # ─── Authenticated share-link routes ─────────────────────────────────────────

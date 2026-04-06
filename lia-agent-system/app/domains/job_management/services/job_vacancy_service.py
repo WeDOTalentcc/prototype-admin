@@ -6,9 +6,8 @@ Integrates:
 - Deadline calculation from pipeline SLAs
 - Automatic recruiter/created_by population
 """
-from fastapi import status
-from uuid import UUID
 from typing import TYPE_CHECKING, Any
+
 
 if TYPE_CHECKING:
     pass

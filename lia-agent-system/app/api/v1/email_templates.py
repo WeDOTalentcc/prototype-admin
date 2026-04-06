@@ -1,7 +1,6 @@
 """
 Email Templates API endpoints for managing email communications.
 """
-from uuid import UUID
 import html
 import logging
 import re
@@ -9,7 +8,7 @@ import uuid as uuid_module
 from datetime import datetime, timedelta
 from typing import Any, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 

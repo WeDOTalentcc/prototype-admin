@@ -33,7 +33,6 @@ Usage:
         span.set_attribute("key", "value")
         ...
 """
-from sqlalchemy import func
 import functools
 import logging
 import os
@@ -43,6 +42,7 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

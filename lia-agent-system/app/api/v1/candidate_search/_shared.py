@@ -9,7 +9,18 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import (
+    assert_resource_ownership,  # noqa: F401
+    get_current_user_or_demo,  # noqa: F401
+    get_user_company_id,  # noqa: F401
+)
+from app.auth.models import User  # noqa: F401
+from app.auth.models import User as ImportUser  # noqa: F401
+from app.core.database import get_db  # noqa: F401
+from app.domains.cv_screening.services.cv_parser import cv_parser_service  # noqa: F401
 from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.sourcing.services.pearch_service import pearch_service  # noqa: F401
+from app.domains.sourcing.services.search_analytics import search_analytics_service  # noqa: F401
 from app.models.pearch import (  # noqa: F401
     CandidateProfile,
     HybridSearchRequest,
@@ -17,21 +28,16 @@ from app.models.pearch import (  # noqa: F401
     SearchType,
 )
 from app.models.rubric import JobRequirement
+from app.schemas.archetype import (
+    ArchetypeFromSearchCreate,  # noqa: F401
+    ArchetypeFromSearchResponse,  # noqa: F401
+    ArchetypeResponse,  # noqa: F401
+)
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.schemas.archetype import ArchetypeFromSearchCreate  # noqa: F401
-from app.schemas.archetype import ArchetypeFromSearchResponse  # noqa: F401
-from app.schemas.archetype import ArchetypeResponse  # noqa: F401
-from app.auth.models import User as ImportUser  # noqa: F401
-from app.auth.models import User  # noqa: F401
-from app.auth.dependencies import assert_resource_ownership  # noqa: F401
-from app.services.archetype_builder_service import build_archetype_from_search  # noqa: F401
-from app.domains.cv_screening.services.cv_parser import cv_parser_service  # noqa: F401
-from app.services.archetype_builder_service import extract_tags_from_search_spec  # noqa: F401
-from app.auth.dependencies import get_current_user_or_demo  # noqa: F401
-from app.core.database import get_db  # noqa: F401
-from app.auth.dependencies import get_user_company_id  # noqa: F401
-from app.domains.sourcing.services.pearch_service import pearch_service  # noqa: F401
-from app.domains.sourcing.services.search_analytics import search_analytics_service  # noqa: F401
+from app.services.archetype_builder_service import (
+    build_archetype_from_search,  # noqa: F401
+    extract_tags_from_search_spec,  # noqa: F401
+)
 
 logger = logging.getLogger(__name__)
 

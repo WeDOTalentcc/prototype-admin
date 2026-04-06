@@ -6,7 +6,6 @@ Admin > Jornada de Recrutamento
 SECURITY: All endpoints require authentication via JWT token.
 Company scoping is enforced server-side based on authenticated user context.
 """
-from uuid import UUID
 import asyncio
 import json
 import logging
@@ -14,7 +13,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
@@ -32,6 +31,16 @@ from app.domains.communication.services.return_event_service import (
     ReturnEventService,
 )
 from app.domains.recruiter_assistant.services.pipeline_stage_service import TransitionError, pipeline_stage_service
+from app.domains.recruitment.dependencies import (
+    get_ats_mapping_repo,
+    get_screening_question_repo,
+    get_stage_repo,
+    get_sub_status_repo,
+)
+from app.domains.recruitment.repositories.ats_mapping_repository import ATSMappingRepository
+from app.domains.recruitment.repositories.recruitment_stage_repository import RecruitmentStageRepository
+from app.domains.recruitment.repositories.screening_question_repository import ScreeningQuestionRepository
+from app.domains.recruitment.repositories.sub_status_repository import SubStatusRepository
 from app.models.recruitment_stages import (
     CANONICAL_SUB_STATUSES,
     DEFAULT_RECRUITMENT_STAGES,
@@ -39,21 +48,9 @@ from app.models.recruitment_stages import (
     GUPY_STAGE_MAPPINGS,
     PANDAPE_STAGE_MAPPINGS,
     STANDARD_STAGE_CATALOG,
-    ATSStageMapping,
     RecruitmentStage,
-    RecruitmentSubStatus,
     ScreeningQuestion,
 )
-from app.domains.recruitment.dependencies import (
-    get_stage_repo,
-    get_sub_status_repo,
-    get_ats_mapping_repo,
-    get_screening_question_repo,
-)
-from app.domains.recruitment.repositories.recruitment_stage_repository import RecruitmentStageRepository
-from app.domains.recruitment.repositories.sub_status_repository import SubStatusRepository
-from app.domains.recruitment.repositories.ats_mapping_repository import ATSMappingRepository
-from app.domains.recruitment.repositories.screening_question_repository import ScreeningQuestionRepository
 
 logger = logging.getLogger(__name__)
 
@@ -706,8 +703,7 @@ async def initialize_company_stages(
     Optionally also initializes ATS mappings for Gupy or Pandapé.
     """
     try:
-        from app.core.database import get_db as _get_db
-        from sqlalchemy.ext.asyncio import AsyncSession
+
 
         effective_company_id = get_user_company_id(current_user)
 
@@ -1858,6 +1854,7 @@ async def execute_transition(
         if request.action == "lia_auto" and not resolved_action_behavior:
             try:
                 from sqlalchemy import select as sa_select
+
                 from app.models.recruitment_stages import RecruitmentStage as _RS
                 stage_result = await stage_repo.db.execute(
                     sa_select(_RS).where(_RS.name == request.to_stage)
@@ -1990,9 +1987,11 @@ async def stream_return_events(
     company_id: str | None = None,
     current_user: User = Depends(get_current_active_user),
 ):
+    from sqlalchemy import and_ as sa_and
+    from sqlalchemy import select as sa_select
+
     from app.core.database import async_session_factory
     from app.models.activity_feed import ActivityFeed
-    from sqlalchemy import select as sa_select, and_ as sa_and
 
     effective_company_id = company_id or get_user_company_id(current_user)
 
@@ -2177,8 +2176,9 @@ async def get_recent_return_events(
 ):
     """Get recent return events for polling/real-time updates."""
     try:
-        from app.models.activity_feed import ActivityFeed
         from sqlalchemy import select as sa_select
+
+        from app.models.activity_feed import ActivityFeed
 
         query = sa_select(ActivityFeed).where(
             ActivityFeed.activity_type.like("return_event_%")  # type: ignore[union-attr]
@@ -2262,8 +2262,9 @@ async def get_pipeline_inheritance_status(
 ):
     """Check if a job's pipeline is customized or inherited from company default."""
     try:
-        from app.models.job_vacancy import JobVacancy
         from sqlalchemy import select as sa_select
+
+        from app.models.job_vacancy import JobVacancy
 
         result = await stage_repo.db.execute(
             sa_select(JobVacancy).where(JobVacancy.id == job_id)
@@ -2292,9 +2293,10 @@ async def copy_company_pipeline_to_job(
 ):
     """Copy company's default pipeline configuration to a job (reset to default)."""
     try:
-        from app.models.job_vacancy import JobVacancy
         from sqlalchemy import select as sa_select
         from sqlalchemy import update as sa_update
+
+        from app.models.job_vacancy import JobVacancy
 
         job_result = await stage_repo.db.execute(
             sa_select(JobVacancy).where(JobVacancy.id == job_id)
@@ -2362,6 +2364,7 @@ async def mark_pipeline_customized(
     """Mark a job's pipeline as customized (no longer inherits from company)."""
     try:
         from sqlalchemy import update as sa_update
+
         from app.models.job_vacancy import JobVacancy
 
         stmt = (

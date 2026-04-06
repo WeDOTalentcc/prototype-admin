@@ -7,14 +7,13 @@ This service handles:
 - Managing webhook configurations
 - Logging webhook delivery attempts
 """
-from fastapi import Request
 import hashlib
 import hmac
 import json
 import logging
 import secrets
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 import httpx
 from sqlalchemy import and_, desc, select

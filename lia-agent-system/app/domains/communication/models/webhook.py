@@ -8,7 +8,6 @@ Supports outbound webhooks to notify external systems about events:
 - offer.sent
 - hire.completed
 """
-from fastapi import status
 import uuid
 from datetime import datetime
 from enum import Enum

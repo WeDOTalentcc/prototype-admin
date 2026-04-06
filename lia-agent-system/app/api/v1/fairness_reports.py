@@ -1,7 +1,4 @@
-from uuid import UUID
-from datetime import date
-import time
-from typing import cast
+
 """
 FairnessGuard reports API — EU AI Act compliance reporting.
 

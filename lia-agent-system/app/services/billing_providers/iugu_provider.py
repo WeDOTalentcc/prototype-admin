@@ -7,11 +7,11 @@ Iugu is a Brazilian payment gateway that supports:
 - PIX
 - Recurring subscriptions
 """
-from fastapi import status
 import logging
 import os
 from datetime import date, datetime
 from typing import Any
+
 
 from app.services.billing_providers.base import (
     BillingProviderBase,

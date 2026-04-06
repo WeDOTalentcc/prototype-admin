@@ -3,10 +3,10 @@ Communication Actions — closed-loop communication and scheduling actions.
 
 Handles: send_email, schedule_interview, create_generic_event
 """
-from fastapi import status
 import logging
 from datetime import datetime
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +185,7 @@ async def _send_feedback(params: dict[str, Any], context: dict[str, Any]):
 
         if not candidate_email:
             from sqlalchemy import text
+
             from app.core.database import AsyncSessionLocal
             async with AsyncSessionLocal() as db:
                 result = await db.execute(text(
@@ -255,6 +256,7 @@ async def _send_whatsapp(params: dict[str, Any], context: dict[str, Any]):
 
         if not phone:
             from sqlalchemy import text
+
             from app.core.database import AsyncSessionLocal
             async with AsyncSessionLocal() as db:
                 result = await db.execute(text(
@@ -307,6 +309,7 @@ async def _send_screening_invite(params: dict[str, Any], context: dict[str, Any]
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
 
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
         async with AsyncSessionLocal() as db:
             result = await db.execute(text(
@@ -364,6 +367,7 @@ async def _send_candidate_report(params: dict[str, Any], context: dict[str, Any]
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
 
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
         async with AsyncSessionLocal() as db:
             result = await db.execute(text("""
@@ -426,6 +430,7 @@ async def _send_progress_report(params: dict[str, Any], context: dict[str, Any])
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id", "") or (context or {}).get("job_vacancy_id", "")
@@ -514,7 +519,9 @@ async def _share_candidate_profile(params: dict[str, Any], context: dict[str, An
     from app.orchestrator.action_executor import ActionResult
     try:
         import uuid as uuid_mod
+
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")

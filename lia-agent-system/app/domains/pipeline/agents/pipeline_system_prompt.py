@@ -5,8 +5,7 @@ Defines the identity, scope, capabilities, guardrails, and few-shot examples
 for LIA during candidate stage transitions.
 """
 
-from datetime import date
-import time
+
 from app.domains.pipeline.agents.pipeline_stage_context import (
     get_stage_context_prompt,
 )

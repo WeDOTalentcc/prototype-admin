@@ -5,7 +5,6 @@ These tests simulate complete user journeys through SSO authentication and SCIM 
 without requiring actual WorkOS credentials. They use mock fixtures to simulate WorkOS
 responses and verify the complete flow from authentication to database state.
 """
-import json
 import uuid
 from unittest.mock import MagicMock, patch
 

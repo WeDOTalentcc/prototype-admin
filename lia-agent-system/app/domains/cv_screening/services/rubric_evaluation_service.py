@@ -10,7 +10,6 @@ Enhanced Features (v2.0):
 - Variation logging to detect LLM inconsistencies
 - Calibration system with recruiter feedback
 """
-from sqlalchemy.ext.asyncio import AsyncSession
 import asyncio
 import hashlib
 import json
@@ -18,7 +17,8 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta
-from typing import Any, List, Optional, Tuple
+from typing import Any
+
 
 from app.schemas.rubric import (
     EvaluationLevelEnum,

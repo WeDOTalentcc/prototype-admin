@@ -1,6 +1,6 @@
-from fastapi import Depends, Request
-import json
-from typing import Final
+
+from fastapi import Request
+
 """
 Database setup and session management.
 

@@ -5,7 +5,6 @@ Supports LGPD Art. 18 rights including:
 - Access, Correction, Deletion, Portability, Objection, Restriction, Explanation
 """
 
-from fastapi import status
 from datetime import datetime
 from enum import Enum
 from typing import Any

@@ -7,7 +7,6 @@ PlannedTasks are structured tasks created by the TaskPlannerAgent that support:
 - Duration estimation and tracking
 - DAG-based execution planning
 """
-from fastapi import status
 import enum
 import uuid
 from datetime import datetime

@@ -4,7 +4,7 @@ Integration Hub API endpoints for centralized integration management.
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession

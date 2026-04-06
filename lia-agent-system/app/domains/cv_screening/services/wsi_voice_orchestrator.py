@@ -9,12 +9,11 @@ Orchestrates the complete voice screening workflow:
 4. Calculate WSI scores
 """
 
-from fastapi import status
 import json
 import logging
 import re
 import uuid
-from typing import Any, List, Optional
+from typing import Any
 
 from pydantic import BaseModel
 from sqlalchemy import text

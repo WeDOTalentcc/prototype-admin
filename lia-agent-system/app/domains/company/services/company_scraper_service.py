@@ -4,8 +4,6 @@ Extracts culture-related content from company websites using Apify.
 Supports multi-source extraction: Website + LinkedIn.
 Now with MCP (Model Context Protocol) support for simplified actor calls.
 """
-from typing import Dict, Optional
-import json
 import asyncio
 import logging
 import os

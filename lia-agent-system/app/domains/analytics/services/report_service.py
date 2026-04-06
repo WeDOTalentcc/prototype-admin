@@ -11,7 +11,7 @@ Integrates with BriefingService for data and EmailService for delivery.
 import logging
 import random
 from datetime import date, datetime, timedelta
-from typing import Any, Final, List, Optional, Type
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

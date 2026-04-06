@@ -4,10 +4,9 @@ Billing service for subscription management.
 Provides a unified interface for managing subscriptions, invoices,
 and payment methods using Iugu or Vindi as the payment gateway.
 """
-from fastapi import status
 import logging
 from datetime import datetime
-from typing import Any, List, Optional, Type
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import and_, select

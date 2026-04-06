@@ -2,7 +2,6 @@
 Pipeline Templates API endpoints.
 Manages reusable recruitment process stage templates for job creation.
 """
-from uuid import UUID
 import logging
 import uuid
 from datetime import datetime

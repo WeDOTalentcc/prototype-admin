@@ -2,7 +2,7 @@
 Authentication dependencies for FastAPI.
 """
 import os
-from typing import Any, List
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status

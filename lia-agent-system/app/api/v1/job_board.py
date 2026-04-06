@@ -2,7 +2,6 @@
 Job Board API endpoints.
 Handles publishing jobs to external job boards (LinkedIn, Indeed).
 """
-from typing import List
 import logging
 from datetime import datetime
 from uuid import UUID

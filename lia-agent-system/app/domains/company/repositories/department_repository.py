@@ -4,7 +4,7 @@ DepartmentRepository - session-in-constructor pattern.
 import logging
 from uuid import UUID
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company import Department, DepartmentMember

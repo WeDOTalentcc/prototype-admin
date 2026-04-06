@@ -5,7 +5,6 @@ Provides 17 tools for candidate data retrieval, profile updates, preference
 extraction, transition validation, fairness checks, and recruiter learning.
 Tools are filtered per action_behavior via STAGE_CAPABILITIES.
 """
-from fastapi import status
 import json
 import logging
 import re

@@ -8,12 +8,13 @@ import logging
 import os
 import uuid
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import httpx
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
@@ -24,44 +25,28 @@ from app.domains.company.dependencies import (
     get_benefit_repo,
     get_big_five_repo,
     get_company_profile_repo,
+    get_culture_profile_repo,
     get_culture_value_repo,
     get_department_repo,
     get_global_settings_repo,
     get_ideal_profile_repo,
     get_technical_test_repo,
-    get_user_repo,
-    get_culture_profile_repo,
     get_tenant_repo,
+    get_user_repo,
 )
 from app.domains.company.repositories.approver_repository import ApproverRepository
 from app.domains.company.repositories.benefit_repository import BenefitRepository
 from app.domains.company.repositories.big_five_repository import BigFiveRepository
 from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
+from app.domains.company.repositories.culture_profile_repository import CultureProfileRepository
 from app.domains.company.repositories.culture_value_repository import CultureValueRepository
 from app.domains.company.repositories.department_repository import DepartmentRepository
 from app.domains.company.repositories.global_settings_repository import GlobalSettingsRepository
 from app.domains.company.repositories.ideal_profile_repository import IdealProfileRepository
 from app.domains.company.repositories.technical_test_repository import TechnicalTestRepository
-from app.domains.company.repositories.user_repository import UserRepository
-from app.domains.company.repositories.culture_profile_repository import CultureProfileRepository
 from app.domains.company.repositories.tenant_repository import TenantRepository
+from app.domains.company.repositories.user_repository import UserRepository
 from app.domains.sourcing.services.apify_service import apify_service
-from app.models.company import (
-    Approver,
-    Benefit,
-    BigFiveQuestion,
-    BigFiveRoleProfile,
-    CompanyProfile,
-    CultureValue,
-    Department,
-    DepartmentMember,
-    GlobalSearchSettings,
-    IdealProfile,
-    TechnicalQuestion,
-    TechnicalTestTemplate,
-)
-from app.models.company_culture import CompanyCultureProfile
-from app.models.job_vacancy import JobVacancy
 from app.schemas.company import (
     ApproverCreate,
     ApproverResponse,
@@ -113,8 +98,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/company", tags=["company"])
 
 
-from app.auth.workos_models import CompanyWorkOSConfig
-from app.models.client_account import ClientAccount
 
 
 class TenantResolutionResponse(BaseModel):

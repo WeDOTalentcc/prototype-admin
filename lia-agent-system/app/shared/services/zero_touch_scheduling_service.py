@@ -16,8 +16,6 @@ Flow:
      → Updates SelfSchedulingLink status to "used"
 """
 from __future__ import annotations
-from fastapi import status
-from uuid import UUID
 
 import logging
 import uuid

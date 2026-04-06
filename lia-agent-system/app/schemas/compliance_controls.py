@@ -8,7 +8,6 @@ Includes schemas for:
 - SOX Controls
 """
 
-from fastapi import status
 from datetime import date, datetime
 from enum import Enum
 from typing import Any

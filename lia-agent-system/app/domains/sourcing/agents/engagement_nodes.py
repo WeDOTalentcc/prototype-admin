@@ -7,7 +7,6 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-
 from app.schemas.sourcing_engagement_state import (
     CalibrationSession,
     CandidateFeedback,

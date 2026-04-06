@@ -8,7 +8,7 @@ Architecture v2.2: 9 agents (1 orchestrator + 8 specialized)
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 

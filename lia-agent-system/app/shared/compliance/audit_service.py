@@ -7,7 +7,7 @@ made by LIA agents, ensuring transparency, accountability, and LGPD compliance.
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, List, Optional, Type
+from typing import Any
 
 from sqlalchemy import and_, desc, select
 

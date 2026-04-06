@@ -8,7 +8,6 @@ Improvements:
 - Enhanced SSE parsing with multi-event support
 - Better error handling and retry logic
 """
-from fastapi import Response
 import asyncio
 import json
 import logging
@@ -16,7 +15,7 @@ import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, List
+from typing import Any
 
 import httpx
 

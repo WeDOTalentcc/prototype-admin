@@ -17,7 +17,7 @@ Nós:
   6. interview_response_planner — planeja resposta final para o usuário
 """
 import logging
-from typing import Dict, Any
+from typing import Any
 
 try:
     from langsmith import traceable as _traceable

@@ -369,6 +369,7 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         candidate_ids = params.get("candidate_ids", [])

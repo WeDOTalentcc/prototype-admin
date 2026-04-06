@@ -1,8 +1,8 @@
 """
 Core search, evaluate, import, promote, persist-revealed, estimate, similar routes.
 """
-from uuid import UUID
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field

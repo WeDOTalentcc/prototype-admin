@@ -7,7 +7,7 @@ import logging
 import re
 import statistics
 from collections import Counter
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

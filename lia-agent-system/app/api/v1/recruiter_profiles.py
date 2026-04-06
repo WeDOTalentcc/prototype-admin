@@ -2,7 +2,6 @@
 Recruiter Profiles API endpoints.
 Manages recruiter personalization profiles, preferences, and settings.
 """
-import time
 import logging
 from typing import Any
 

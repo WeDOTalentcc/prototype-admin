@@ -4,12 +4,12 @@ Base ATS Client Interface
 Defines the abstract interface that all ATS clients must implement
 for bidirectional synchronization between WedoTalent and external ATS platforms.
 """
-from fastapi import status
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

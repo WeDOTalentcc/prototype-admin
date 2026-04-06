@@ -5,10 +5,10 @@ Contains the full logic of the /job-wizard/step endpoint, previously an inline
 2000-line handler. The router now delegates to wizard_step_service.process().
 """
 import json
-import re
 import logging
+import re
 from datetime import datetime
-from typing import Final, Any
+from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import and_, select, text

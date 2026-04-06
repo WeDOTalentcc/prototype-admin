@@ -7,16 +7,15 @@ This service provides:
 - Escalation workflow management
 - Integration with audit and notification services
 """
-from fastapi import status
 import fnmatch
 import logging
 import time
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, delete, func, or_, select
+from sqlalchemy import and_, delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal

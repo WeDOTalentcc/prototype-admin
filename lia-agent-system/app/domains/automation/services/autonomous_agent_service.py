@@ -7,8 +7,6 @@ Enables LIA to:
 - Generate proactive suggestions
 - Execute automatic actions
 """
-from fastapi import status
-from typing import Dict, List, Optional, Type
 import asyncio
 import logging
 from datetime import datetime, timedelta

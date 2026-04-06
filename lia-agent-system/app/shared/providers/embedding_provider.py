@@ -5,7 +5,6 @@ Defines the contract for embedding provider implementations.
 Allows swapping between Gemini, OpenAI, and future providers
 without changing business logic.
 """
-from typing import List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 

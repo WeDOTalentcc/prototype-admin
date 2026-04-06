@@ -25,10 +25,11 @@ Environment Variables:
 - MAILGUN_DOMAIN: Mailgun sending domain (required for Mailgun)
 - RESEND_API_KEY: Resend API key (required for Resend fallback)
 """
-from fastapi import status
 import logging
 import os
 from typing import Dict, Optional, Type
+
+from fastapi import status
 
 from .base import EmailMessage, EmailProvider, EmailResult
 from .fallback_provider import FallbackEmailProvider

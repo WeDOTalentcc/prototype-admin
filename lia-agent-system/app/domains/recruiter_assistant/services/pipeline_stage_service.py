@@ -10,12 +10,10 @@ This service handles all stage transitions for candidates:
 All agents and UI components should use this service for stage changes.
 Never update stage/sub-status directly in the database.
 """
-from fastapi import status
-from uuid import UUID
 import logging
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession

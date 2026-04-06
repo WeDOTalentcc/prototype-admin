@@ -3,7 +3,6 @@ LIA Field Toggles API endpoints.
 
 Manages field toggle configurations for companies in the LIA wizard.
 """
-from uuid import UUID
 import logging
 import uuid as uuid_lib
 from datetime import datetime

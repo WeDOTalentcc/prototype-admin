@@ -3,8 +3,6 @@ CandidateFavoritesRepository and CandidateHiddenRepository —
 session-in-constructor pattern.
 """
 import logging
-import uuid
-from datetime import datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

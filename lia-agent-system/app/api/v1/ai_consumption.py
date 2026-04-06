@@ -7,15 +7,13 @@ Provides endpoints for:
 - Managing credit limits (admin)
 - Analytics by agent, model, and day
 """
-from datetime import date
-import time
 import logging
 from datetime import datetime, timedelta
-from typing import cast, Any
+from typing import Any, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
-from sqlalchemy import Boolean, Date, and_, cast, desc, func, select
+from sqlalchemy import Date, and_, cast, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db

@@ -10,7 +10,6 @@ Handles wizard-specific actions via conversational interaction:
 - clear_field: Clear a specific field from the draft
 - reset_wizard: Reset the wizard session
 """
-from fastapi import status
 import json
 import logging
 import re
@@ -18,6 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
+
 
 logger = logging.getLogger(__name__)
 

@@ -4,10 +4,9 @@ Attachment Service
 Manages candidate file attachments including CVs, documents, certificates, videos, and transcripts.
 """
 
-from fastapi import File
 import logging
 from datetime import datetime
-from typing import Any, Dict, Type
+from typing import Any
 
 from sqlalchemy import and_, desc, func, select
 

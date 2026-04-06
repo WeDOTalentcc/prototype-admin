@@ -15,9 +15,9 @@ Fluxo:
   2. increment_usage(company_id, tokens_used) → após chamada LLM
   3. get_budget_status(company_id, plan_code) → para dashboard admin
 """
-from fastapi import status
 import logging
 from datetime import UTC, datetime
+
 
 logger = logging.getLogger(__name__)
 

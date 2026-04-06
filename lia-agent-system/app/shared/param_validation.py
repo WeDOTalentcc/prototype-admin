@@ -18,11 +18,10 @@ Usage:
         # params is now validated and typed
         ...
 """
-from sqlalchemy import func
 import functools
 import logging
 from collections.abc import Callable
-from typing import Optional, Any
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 

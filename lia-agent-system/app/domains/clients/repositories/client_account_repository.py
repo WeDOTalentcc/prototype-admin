@@ -4,8 +4,8 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import and_, func, or_, select, text
-from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.auth.workos_models import CompanyWorkOSConfig
 from app.models.client_account import ClientAccount, ClientStatus

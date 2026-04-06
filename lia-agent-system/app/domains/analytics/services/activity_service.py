@@ -7,7 +7,7 @@ Tracks voice screenings, emails, interviews, approvals, tests, and other activit
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type
+from typing import Any
 
 from sqlalchemy import and_, desc, or_, select
 

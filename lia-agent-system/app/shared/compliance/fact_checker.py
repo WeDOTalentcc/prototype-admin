@@ -7,13 +7,13 @@ Checks salary ranges, candidate counts, dates, and other verifiable claims.
 Adds confidence_verified flag to responses for transparency.
 Part of the 3-pillar compliance architecture (LGPD, SOX, EU AI Act).
 """
-from pydantic import validator
 import logging
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

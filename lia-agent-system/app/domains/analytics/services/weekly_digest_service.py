@@ -9,7 +9,6 @@ Aggregates data from:
 
 Delivers via Teams (Adaptive Card), Chat (proactive message), and Bell notification.
 """
-from fastapi import status
 from datetime import datetime, timedelta
 from typing import Any
 

@@ -13,7 +13,7 @@ Uses regex patterns for fast detection (no LLM calls).
 import logging
 import re
 from difflib import SequenceMatcher
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 from app.schemas.job_description import RequirementLevel
 from app.schemas.suggestion_interaction import (

@@ -1,15 +1,16 @@
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from datetime import datetime
-import json
-from typing import Any, List, Dict, Optional
+
 """
 Lifecycle routes: publish, confirm-global-search, sourcing-status,
 bulk operations (pause, resume, archive, assign-recruiter, change-status),
 close vacancy, duplicate/clone helpers.
 """
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ._shared import *
 
@@ -28,7 +29,7 @@ class JobPublishResponse(BaseModel):
     job_id: str
     status: str
     message: str
-    sourcing_result: Optional[dict] = None
+    sourcing_result: dict | None = None
 
 
 class JobPublishRequestV2(BaseModel):
@@ -42,7 +43,7 @@ class JobPublishResponseV2(BaseModel):
     job_id: str
     job_title: str
     status: str
-    sourcing_results: Dict[str, Any]
+    sourcing_results: dict[str, Any]
     message: str
 
 
@@ -64,7 +65,7 @@ class ConfirmGlobalSearchResponseV2(BaseModel):
     candidates_added: int
     credits_deducted: int
     message: str
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class SourcingStatusResponseSimple(BaseModel):
@@ -72,22 +73,22 @@ class SourcingStatusResponseSimple(BaseModel):
     total_candidates: int
     qualified_candidates: int
     pipeline_status: str
-    recommended_action: Optional[str] = None
+    recommended_action: str | None = None
 
 
 class SourcingStatusResponseV2(BaseModel):
     found: bool
-    job_id: Optional[str] = None
-    job_title: Optional[str] = None
+    job_id: str | None = None
+    job_title: str | None = None
     total_candidates: int = 0
     qualified_candidates: int = 0
     qualified_ratio: float = 0.0
     needs_more_candidates: bool = False
     days_open: int = 0
     pipeline_status: str = "idle"
-    recommended_action: Optional[str] = None
+    recommended_action: str | None = None
     min_candidates_target: int = 10
-    error: Optional[str] = None
+    error: str | None = None
 
 
 # ─── Publish (job-vacancies prefix) ──────────────────────────────────────────
@@ -518,7 +519,7 @@ async def close_vacancy(
     request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Close a vacancy after hiring a candidate."""
     try:
         company_id = get_user_company_id(current_user)
@@ -681,7 +682,7 @@ async def bulk_pause_job_vacancies(
 
     successful = 0
     failed = 0
-    errors: List[BulkActionError] = []
+    errors: list[BulkActionError] = []
 
     for job_id in request.job_ids:
         try:
@@ -775,7 +776,7 @@ async def bulk_resume_job_vacancies(
 
     successful = 0
     failed = 0
-    errors: List[BulkActionError] = []
+    errors: list[BulkActionError] = []
 
     for job_id in request.job_ids:
         try:
@@ -856,7 +857,7 @@ async def bulk_archive_job_vacancies(
 
     successful = 0
     failed = 0
-    errors: List[BulkActionError] = []
+    errors: list[BulkActionError] = []
 
     for job_id in request.job_ids:
         try:
@@ -932,7 +933,7 @@ async def bulk_assign_recruiter(
 
     successful = 0
     failed = 0
-    errors: List[BulkActionError] = []
+    errors: list[BulkActionError] = []
 
     for job_id in request.job_ids:
         try:
@@ -1009,7 +1010,7 @@ async def bulk_change_status(
 
     successful = 0
     failed = 0
-    errors: List[BulkActionError] = []
+    errors: list[BulkActionError] = []
 
     for job_id in request.job_ids:
         try:

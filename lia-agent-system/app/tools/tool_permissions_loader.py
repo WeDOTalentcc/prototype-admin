@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Set, Any
+from typing import Any
 
 try:
     import yaml

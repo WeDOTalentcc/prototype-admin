@@ -230,14 +230,13 @@ class ActionExecutorService:
 
         # Delegate to specialized action handler modules
         try:
+            from app.orchestrator.action_handlers.analytics_actions import execute_analytics_action
             from app.orchestrator.action_handlers.candidate_actions import execute_candidate_action
             from app.orchestrator.action_handlers.communication_actions import execute_communication_action
+            from app.orchestrator.action_handlers.interview_actions import execute_interview_action
             from app.orchestrator.action_handlers.job_actions import execute_job_action
             from app.orchestrator.action_handlers.pipeline_actions import execute_pipeline_action
-
             from app.orchestrator.action_handlers.sourcing_actions import execute_sourcing_action
-            from app.orchestrator.action_handlers.analytics_actions import execute_analytics_action
-            from app.orchestrator.action_handlers.interview_actions import execute_interview_action
 
             _COMMUNICATION_ACTIONS = {
                 "send_email", "schedule_interview", "create_generic_event",

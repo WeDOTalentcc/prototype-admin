@@ -1,7 +1,6 @@
 """
 Admin Settings API endpoints for RBAC, notifications, and security.
 """
-from uuid import UUID
 import logging
 import uuid
 from datetime import datetime

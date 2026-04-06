@@ -1,4 +1,4 @@
-from typing import List, Optional, Set, Type
+
 """
 Scope Configuration for Tool Access Control.
 

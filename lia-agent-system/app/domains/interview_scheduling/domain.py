@@ -1,7 +1,7 @@
 """Interview & Scheduling Domain - Interview management and WSI methodology."""
-from fastapi import status
 import logging
 from typing import Any
+
 
 from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt

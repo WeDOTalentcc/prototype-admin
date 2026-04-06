@@ -3,7 +3,7 @@ ATS Integration API endpoints (Gupy + Pandapé).
 """
 import logging
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession

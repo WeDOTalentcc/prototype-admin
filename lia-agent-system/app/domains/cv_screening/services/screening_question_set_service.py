@@ -1,4 +1,3 @@
-from uuid import UUID
 import hashlib
 import json
 import logging

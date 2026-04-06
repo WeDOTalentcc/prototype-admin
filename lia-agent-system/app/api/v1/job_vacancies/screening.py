@@ -1,12 +1,14 @@
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from datetime import datetime
-from typing import Any, List, Dict, Optional
+
 """
 Screening configuration routes.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 
 from ._shared import *
 
@@ -17,78 +19,78 @@ router = APIRouter()
 
 class ScreeningConfigStatus(BaseModel):
     enabled: bool = True
-    paused_at: Optional[str] = None
-    paused_by: Optional[str] = None
-    pause_reason: Optional[str] = None
-    scheduled_end_date: Optional[str] = None
-    last_updated: Optional[str] = None
-    screening_status: Optional[str] = "not_configured"
+    paused_at: str | None = None
+    paused_by: str | None = None
+    pause_reason: str | None = None
+    scheduled_end_date: str | None = None
+    last_updated: str | None = None
+    screening_status: str | None = "not_configured"
 
 
 class ScreeningConfigChannel(BaseModel):
     enabled: bool = True
-    label: Optional[str] = None
+    label: str | None = None
 
 
 class ScreeningConfigChannels(BaseModel):
-    whatsapp: Optional[ScreeningConfigChannel] = None
-    chat_web: Optional[ScreeningConfigChannel] = None
-    phone: Optional[ScreeningConfigChannel] = None
+    whatsapp: ScreeningConfigChannel | None = None
+    chat_web: ScreeningConfigChannel | None = None
+    phone: ScreeningConfigChannel | None = None
 
 
 class ScreeningConfigSettings(BaseModel):
-    min_score: Optional[int] = 70
-    response_timeout_hours: Optional[int] = 48
-    max_retries: Optional[int] = 2
+    min_score: int | None = 70
+    response_timeout_hours: int | None = 48
+    max_retries: int | None = 2
 
 
 class ScreeningConfigMetrics(BaseModel):
-    screened_count: Optional[int] = 0
-    completion_rate: Optional[float] = 0
-    average_rating: Optional[float] = 4.2
+    screened_count: int | None = 0
+    completion_rate: float | None = 0
+    average_rating: float | None = 4.2
 
 
 class ScreeningConfigScheduling(BaseModel):
-    auto_enabled: Optional[bool] = True
-    min_score_for_auto: Optional[int] = 75
-    calendar_provider: Optional[str] = "Microsoft"
-    available_hours: Optional[str] = "9h-18h"
-    interview_duration_min: Optional[int] = 45
+    auto_enabled: bool | None = True
+    min_score_for_auto: int | None = 75
+    calendar_provider: str | None = "Microsoft"
+    available_hours: str | None = "9h-18h"
+    interview_duration_min: int | None = 45
 
 
 class ScreeningConfigFeedback(BaseModel):
-    approved: Optional[str] = "Parabéns! Você foi aprovado na triagem inicial."
-    rejected: Optional[str] = "Agradecemos sua participação. Infelizmente não seguiremos com sua candidatura neste momento."
+    approved: str | None = "Parabéns! Você foi aprovado na triagem inicial."
+    rejected: str | None = "Agradecemos sua participação. Infelizmente não seguiremos com sua candidatura neste momento."
 
 
 class ScreeningConfigRequest(BaseModel):
-    status: Optional[ScreeningConfigStatus] = None
-    channels: Optional[ScreeningConfigChannels] = None
-    settings: Optional[ScreeningConfigSettings] = None
-    metrics: Optional[ScreeningConfigMetrics] = None
-    scheduling: Optional[ScreeningConfigScheduling] = None
-    feedback_templates: Optional[ScreeningConfigFeedback] = None
-    wsi_skills: Optional[List[str]] = []
+    status: ScreeningConfigStatus | None = None
+    channels: ScreeningConfigChannels | None = None
+    settings: ScreeningConfigSettings | None = None
+    metrics: ScreeningConfigMetrics | None = None
+    scheduling: ScreeningConfigScheduling | None = None
+    feedback_templates: ScreeningConfigFeedback | None = None
+    wsi_skills: list[str] | None = []
 
 
 class ScreeningConfigResponse(BaseModel):
     job_id: str
     is_default: bool = False
-    screening_status: Optional[str] = "not_configured"
-    status: Optional[Dict[str, Any]] = None
-    channels: Optional[Dict[str, Any]] = None
-    settings: Optional[Dict[str, Any]] = None
-    metrics: Optional[Dict[str, Any]] = None
-    scheduling: Optional[Dict[str, Any]] = None
-    feedback_templates: Optional[Dict[str, Any]] = None
-    wsi_skills: Optional[List[str]] = []
-    updated_at: Optional[str] = None
+    screening_status: str | None = "not_configured"
+    status: dict[str, Any] | None = None
+    channels: dict[str, Any] | None = None
+    settings: dict[str, Any] | None = None
+    metrics: dict[str, Any] | None = None
+    scheduling: dict[str, Any] | None = None
+    feedback_templates: dict[str, Any] | None = None
+    wsi_skills: list[str] | None = []
+    updated_at: str | None = None
 
 
 class ScreeningStatusUpdateRequest(BaseModel):
     screening_status: str
-    pause_reason: Optional[str] = None
-    scheduled_end_date: Optional[str] = None
+    pause_reason: str | None = None
+    scheduled_end_date: str | None = None
 
 
 # ─── Routes ──────────────────────────────────────────────────────────────────

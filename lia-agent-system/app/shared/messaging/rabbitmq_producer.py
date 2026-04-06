@@ -8,7 +8,6 @@ Configuração:
   RABBITMQ_URL      = amqp://user:pass@host:5672/
   RABBITMQ_EXCHANGE = lia_agent_chat (default)
 """
-from typing import Dict
 import json
 import logging
 from uuid import uuid4

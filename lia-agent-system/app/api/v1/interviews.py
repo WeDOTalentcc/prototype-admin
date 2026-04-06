@@ -1,15 +1,12 @@
 """
 Interview Scheduling API endpoints.
 """
-from uuid import UUID
-from datetime import date
-import time
 import json
 import uuid
 from datetime import datetime, timedelta
 
 from anthropic import AsyncAnthropic
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -1,4 +1,4 @@
-from typing import Any, List
+
 """
 Industry constants and normalization for bilingual (English/Portuguese) support.
 Mirrors the frontend industry-constants.ts for consistency.

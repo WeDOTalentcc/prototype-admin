@@ -14,7 +14,6 @@ Tests:
 import uuid
 from datetime import datetime
 
-
 from app.models.company_hiring_policy import (
     ALL_DEFAULTS,
     AUTOMATION_RULES_DEFAULTS,

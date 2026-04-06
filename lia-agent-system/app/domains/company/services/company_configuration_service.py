@@ -17,7 +17,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional, Type
+from typing import Any
 from uuid import UUID as UUID_type
 
 from sqlalchemy import and_, select

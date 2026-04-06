@@ -2,7 +2,6 @@
 Transition Dispatch Service - Deterministic auto-dispatch for pipeline transitions.
 Layer 1: Template-based message dispatch without AI interpretation.
 """
-from fastapi import status
 import logging
 import re
 import uuid

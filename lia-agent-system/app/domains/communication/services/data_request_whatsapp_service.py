@@ -12,12 +12,9 @@ Conversation Flow:
 5. For each document received: save, send documentReceived, ask for next
 6. When complete: send allComplete
 """
-from fastapi import File, status
-import time
-from pydantic import Field
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select

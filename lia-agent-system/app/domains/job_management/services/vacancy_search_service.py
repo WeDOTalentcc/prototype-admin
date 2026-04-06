@@ -6,12 +6,11 @@ Provides functionality to:
 - Search previous vacancies by criteria
 - Apply adjustments to reused vacancies
 """
-from fastapi import status
 import json
 import logging
 import re
 from datetime import datetime
-from typing import Any, List
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel

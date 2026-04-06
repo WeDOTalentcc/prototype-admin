@@ -3,7 +3,6 @@ Insights and expanded-prompt routes:
   POST /lia/job-insights
   POST /lia/expanded-prompt
 """
-from datetime import date
 from datetime import datetime
 from typing import Any
 from uuid import UUID

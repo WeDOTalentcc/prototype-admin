@@ -14,7 +14,7 @@ CRITICAL: Toggles control AI DATA CONSUMPTION only, not UI visibility.
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select

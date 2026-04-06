@@ -8,8 +8,6 @@ to prevent direct unauthorized access.
 The /webhooks/scim endpoint is the exception - it receives direct calls from WorkOS
 and validates the WorkOS-Signature header directly.
 """
-from uuid import UUID
-import json
 import hashlib
 import hmac
 import logging
@@ -23,7 +21,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, s
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.auth.models import User, UserRole
+from app.auth.models import UserRole
 from app.auth.workos_schemas import (
     SCIMActionResponse,
     SCIMGroupAction,
@@ -34,7 +32,7 @@ from app.auth.workos_schemas import (
     WorkOSSyncUserResponse,
 )
 from app.auth.workos_schemas import SCIMGroupMembership as SCIMGroupMembershipSchema
-from app.domains.auth.dependencies import get_workos_repo, get_user_repo
+from app.domains.auth.dependencies import get_user_repo, get_workos_repo
 from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.auth.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator

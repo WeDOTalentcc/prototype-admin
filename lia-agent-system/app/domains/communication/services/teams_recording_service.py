@@ -4,12 +4,10 @@ Teams Recording Service - Obtém gravações e transcrições do Microsoft Teams
 A transcrição do Teams é GRATUITA (incluída no Microsoft 365).
 Usa /communications/onlineMeetings/{meetingId}/transcripts endpoint.
 """
-from fastapi import Query, Request, Response
-import json
 import logging
 import re
 from datetime import datetime
-from typing import Any, List
+from typing import Any
 
 import httpx
 from pydantic import BaseModel

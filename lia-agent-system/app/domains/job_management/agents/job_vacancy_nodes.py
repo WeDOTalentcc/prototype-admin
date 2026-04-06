@@ -2,12 +2,12 @@
 Job Vacancy Creation Nodes for LangGraph workflow.
 Contains specialized collectors, router, validator, frame generator, etc.
 """
-from pydantic import validator
 import logging
 from typing import Any
 
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from pydantic import validator
 
 from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
 from app.domains.job_management.services.job_vacancy_service import job_vacancy_service

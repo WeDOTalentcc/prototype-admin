@@ -1,7 +1,6 @@
 """
 LangGraph nodes for interview scheduling conversational workflow.
 """
-import time
 import json
 import logging
 from datetime import date, datetime, timedelta

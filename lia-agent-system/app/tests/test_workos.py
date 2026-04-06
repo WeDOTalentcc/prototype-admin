@@ -1,8 +1,6 @@
 """
 Tests for WorkOS SSO/SCIM integration endpoints.
 """
-from fastapi import status
-import json
 import uuid
 from datetime import datetime
 from unittest.mock import patch

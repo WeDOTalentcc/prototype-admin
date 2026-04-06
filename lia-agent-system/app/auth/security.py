@@ -1,8 +1,6 @@
 """
 Security utilities for password hashing and JWT token handling.
 """
-from typing import Optional
-import time
 import secrets
 from datetime import datetime, timedelta
 

@@ -4,7 +4,6 @@ Pydantic schemas for SaaS Metrics API.
 All schemas use camelCase aliases for frontend compatibility.
 """
 
-import time
 from datetime import date, datetime
 from enum import Enum
 

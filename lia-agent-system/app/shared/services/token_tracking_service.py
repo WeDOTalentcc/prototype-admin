@@ -7,10 +7,9 @@ This service provides:
 - Cost estimation based on Claude/OpenAI pricing
 - Limit checking and enforcement
 """
-from fastapi import Response
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, Tuple, Type, cast
+from typing import Any, cast
 from uuid import UUID
 
 import redis.asyncio as aioredis

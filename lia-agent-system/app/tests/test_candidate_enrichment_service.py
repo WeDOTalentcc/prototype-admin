@@ -8,7 +8,6 @@ Tests cover:
 - URL normalization
 - Error handling
 """
-from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
