@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
 import { KanbanToolbar } from "@/components/pages/job-kanban/KanbanToolbar"
-import { KanbanLIASidebar } from "@/components/pages/job-kanban/KanbanLIASidebar"
+import { LiaChatShell } from "@/components/lia-float/LiaChatShell"
 import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
 import { KanbanBoardSection } from "@/components/pages/job-kanban/KanbanBoardSection"
 import { calculateNotaLiaGeral, getLiaAlerts } from "@/components/pages/job-kanban/utils/kanbanHelpers"
@@ -285,31 +285,19 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
         )}
 
         {showExpandedLIA && !showSuperChat && (
-          <KanbanLIASidebar
-            liaMessages={liaMessages as unknown as Parameters<typeof KanbanLIASidebar>[0]["liaMessages"]}
-            liaPromptValue={liaPromptValue}
-            isLiaLoading={isLiaLoading}
-            liaExpandedWidth={liaExpandedWidth}
-            computedSuggestions={computedSuggestions}
-            showLiaSuggestionsPanel={showLiaSuggestionsPanel}
-            selectedCandidates={selectedCandidates}
-            isResizingLIA={isResizingLIA}
-            candidatesData={candidatesData as unknown as Parameters<typeof KanbanLIASidebar>[0]["candidatesData"]}
-            chatScrollRef={chatScrollRef as unknown as Parameters<typeof KanbanLIASidebar>[0]["chatScrollRef"]}
-            setLiaMessages={setLiaMessages as unknown as Parameters<typeof KanbanLIASidebar>[0]["setLiaMessages"]}
-            setLiaPromptValue={setLiaPromptValue}
-            setLiaExpandedWidth={setLiaExpandedWidth}
-            setShowExpandedLIA={setShowExpandedLIA}
-            setUserCollapsedLIA={setUserCollapsedLIA}
-            setShowLiaSuggestionsPanel={setShowLiaSuggestionsPanel}
-            setSelectedCandidates={setSelectedCandidates}
-            setIsResizingLIA={setIsResizingLIA}
-            setSelectedCandidate={setSelectedCandidate}
-            setShowCandidatePage={setShowCandidatePage}
-            openSuperChat={openSuperChat}
-            handleAICommand={handleAICommand}
-            handleLiaUiAction={handleLiaUiAction}
-          />
+          <div className="flex-shrink-0 pl-4 py-4 pr-0" style={{ width: `${liaExpandedWidth}px` }}>
+            <LiaChatShell
+              mode="inline-left"
+              contextChips={[
+                { id: "rankear", label: "Rankear", prompt: "Rankear candidatos desta vaga", icon: <Star className="w-2.5 h-2.5" /> },
+                { id: "comparar", label: "Comparar", prompt: "Comparar os melhores candidatos", icon: <Users className="w-2.5 h-2.5" /> },
+                { id: "triagem", label: "Triagem", prompt: "Iniciar triagem dos candidatos pendentes", icon: <Brain className="w-2.5 h-2.5" /> },
+              ]}
+              onClose={() => { setShowExpandedLIA(false); setUserCollapsedLIA(true) }}
+              width="100%"
+              className="h-full"
+            />
+          </div>
         )}
 
         {viewMode === "kanban" && !showSuperChat && (

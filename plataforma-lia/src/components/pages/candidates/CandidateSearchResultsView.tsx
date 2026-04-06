@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useEffect } from "react"
+import React, { useRef } from "react"
 import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
@@ -9,8 +9,8 @@ import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
 import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database } from "lucide-react"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
 import { CompactLIAPrompt } from "./CompactLIAPrompt"
-import { useLiaFloat } from "@/contexts/lia-float-context"
 import { SearchControlsBar } from "./SearchControlsBar"
+import { LIASearchSidebar } from "./LIASearchSidebar"
 import { ActiveFiltersBadge } from "./ActiveFiltersBadge"
 import { CandidatesTableArea } from "./CandidatesTableArea"
 import { CandidatePreviewSidePanel } from "./CandidatePreviewSidePanel"
@@ -367,15 +367,6 @@ export function CandidateSearchResultsView({
   setShowAddToVacancyModal,
 }: CandidateSearchResultsViewProps) {
   const chatScrollRef = useRef<HTMLDivElement>(null)
-  const { open: openFloat } = useLiaFloat()
-
-  useEffect(() => {
-    if (showExpandedLIA) {
-      openFloat()
-      setShowExpandedLIA(false)
-      setUserCollapsedLIA(true)
-    }
-  }, [showExpandedLIA]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col h-[calc(100vh-9rem)] gap-2">
@@ -531,6 +522,55 @@ export function CandidateSearchResultsView({
 
       {/* Results Layout with Sidebars */}
       <div className="flex gap-4 overflow-hidden transition-colors motion-reduce:transition-none duration-300 flex-1 min-h-0 w-full">
+        {/* LIA Search Sidebar — painel inline esquerdo do Funil de Talentos */}
+        {showExpandedLIA && (
+          <LIASearchSidebar
+            isLiaSuperChat={isLiaSuperChat}
+            setIsLiaSuperChat={setIsLiaSuperChat}
+            liaWidth={liaWidth}
+            setLiaWidth={setLiaWidth}
+            isResizingLIA={isResizingLIA}
+            setIsResizingLIA={setIsResizingLIA}
+            activeSearchTab={activeSearchTab}
+            setActiveSearchTab={setActiveSearchTab}
+            liaPromptValue={liaPromptValue}
+            setLiaPromptValue={setLiaPromptValue}
+            chatMessages={chatMessages}
+            setChatMessages={setChatMessages}
+            searchResults={searchResults}
+            setSearchResults={setSearchResults}
+            currentSearchSource={currentSearchSource}
+            searchSource={searchSource}
+            pearchSearchOptions={pearchSearchOptions}
+            activeSearchFilters={activeSearchFilters}
+            setActiveSearchFilters={setActiveSearchFilters as (v: Record<string, Record<string, unknown>>) => void}
+            showTableFiltersPanel={showTableFiltersPanel}
+            setShowTableFiltersPanel={setShowTableFiltersPanel}
+            isCreatingArchetype={isCreatingArchetype}
+            setIsCreatingArchetype={setIsCreatingArchetype}
+            archetypeCreationStep={archetypeCreationStep}
+            setArchetypeCreationStep={setArchetypeCreationStep}
+            setNewArchetypeData={setNewArchetypeData as (v: { name: string; description: string; query: string; emoji: string }) => void}
+            setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
+            setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
+            selectedCandidatesForBatch={selectedCandidatesForBatch}
+            setCandidates={setCandidates as (v: unknown[]) => void}
+            setHasSearchResults={setHasSearchResults}
+            setSearchResultsCount={setSearchResultsCount}
+            setLocalResultsCount={setLocalResultsCount}
+            setPearchResultsCount={setPearchResultsCount}
+            setShowSearchResults={setShowSearchResults}
+            setDisplayedResultsCount={setDisplayedResultsCount}
+            onLIAChatMessage={onLIAChatMessage}
+            onAICommand={onAICommand}
+            onQuickAction={(actionId: string, actionType: string) => onQuickAction({ actionId, actionType })}
+            onCalibrationLike={(candidateId: string) => onCalibrationLike({ id: candidateId } as CalibrationCandidate)}
+            onCalibrationDislike={(candidateId: string) => onCalibrationDislike({ id: candidateId } as CalibrationCandidate)}
+            onClose={() => { setShowExpandedLIA(false); setUserCollapsedLIA(true) }}
+            chatScrollRef={chatScrollRef}
+          />
+        )}
+
         {/* Filtros da Tabela de Resultados */}
         {showTableFiltersPanel && (
           <CandidatesFilterPanel
