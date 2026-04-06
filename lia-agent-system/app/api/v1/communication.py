@@ -4,109 +4,23 @@ Communication API Endpoints using CommunicationDispatcher
 Provides endpoints for sending email and WhatsApp messages via the unified dispatcher.
 Logs all communications to the CommunicationHistory for tracking.
 """
-import uuid as uuid_mod
+import uuid
 from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, not_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.communication.dependencies import get_communication_repo
+from app.domains.communication.repositories.communication_repository import CommunicationRepository
 from app.domains.communication.services.communication_dispatcher import communication_dispatcher
 from app.domains.communication.services.communication_history_service import communication_history_service
-from app.models.candidate import VacancyCandidate
-from app.models.company import CompanyProfile
-from app.models.job_vacancy import JobVacancy
 from app.shared.compliance.audit_service import audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/communication", tags=["communication"])
-
-EXCLUDED_STATUSES = ('rejected', 'declined', 'withdrawn')
-ORGANIC_ORIGINS = ('web', 'whatsapp')
-SOURCING_ORIGINS = ('sourcing', 'ats')
-DEFAULT_SATURATION_THRESHOLD = 20
-
-
-async def _check_vacancy_saturation_for_invite(db: AsyncSession, vacancy_id: str) -> dict:
-    try:
-        vid = uuid_mod.UUID(vacancy_id)
-    except (ValueError, TypeError):
-        return {"is_saturated": False, "error": "invalid_vacancy_id"}
-
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == vid))
-    vacancy = result.scalar_one_or_none()
-    if not vacancy:
-        return {"is_saturated": False, "error": "vacancy_not_found"}
-
-    company = None
-    try:
-        cr = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == vacancy.company_id)
-        )
-        company = cr.scalar_one_or_none()
-    except Exception:
-        pass
-    if not company:
-        cr2 = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
-        )
-        company = cr2.scalar_one_or_none()
-
-    sat = {}
-    if company and company.additional_data:
-        sat = company.additional_data.get("saturation_settings", {})
-
-    governance_rules = vacancy.governance_rules or {}
-    threshold_web = governance_rules.get("threshold_web", sat.get("threshold_web", DEFAULT_SATURATION_THRESHOLD))
-    threshold_sourcing = governance_rules.get("threshold_sourcing", sat.get("threshold_sourcing", DEFAULT_SATURATION_THRESHOLD))
-
-    disabled_until_str = governance_rules.get("saturation_disabled_until")
-    bypass_active = False
-    if disabled_until_str:
-        try:
-            disabled_until = datetime.fromisoformat(disabled_until_str)
-            if disabled_until > datetime.utcnow():
-                bypass_active = True
-        except (ValueError, TypeError):
-            pass
-
-    active_filter = and_(
-        VacancyCandidate.vacancy_id == vid,
-        not_(VacancyCandidate.status.in_(EXCLUDED_STATUSES)),
-    )
-    channel_result = await db.execute(
-        select(
-            func.count(VacancyCandidate.id).filter(
-                VacancyCandidate.origin.in_(ORGANIC_ORIGINS) | VacancyCandidate.origin.is_(None)
-            ).label("organic"),
-            func.count(VacancyCandidate.id).filter(
-                VacancyCandidate.origin.in_(SOURCING_ORIGINS)
-            ).label("sourcing"),
-        ).where(active_filter)
-    )
-    row = channel_result.one()
-    organic_count = row.organic or 0
-    sourcing_count = row.sourcing or 0
-
-    organic_saturated = organic_count >= threshold_web and not bypass_active
-    sourcing_saturated = sourcing_count >= threshold_sourcing and not bypass_active
-    is_saturated = organic_saturated or sourcing_saturated
-
-    return {
-        "is_saturated": is_saturated,
-        "bypass_active": bypass_active,
-        "organic_count": organic_count,
-        "sourcing_count": sourcing_count,
-        "threshold_web": threshold_web,
-        "threshold_sourcing": threshold_sourcing,
-        "organic_saturated": organic_saturated,
-        "sourcing_saturated": sourcing_saturated,
-    }
 
 
 class SendEmailRequest(BaseModel):
@@ -183,7 +97,7 @@ async def send_email(
 ):
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
-    
+
     - Uses Mailgun when configured, Resend as automatic fallback
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
@@ -192,9 +106,9 @@ async def send_email(
         company_id = x_company_id or request.company_id
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
-        
-        logger.info(f"📧 Sending email for company {company_id}")
-        
+
+        logger.info(f"Sending email for company {company_id}")
+
         result = communication_dispatcher.send_email(
             to_email=request.to_email,
             subject=request.subject,
@@ -202,7 +116,7 @@ async def send_email(
             body_text=request.body_text,
             from_name=request.to_name,
         )
-        
+
         communication_logged = False
         if result.get("success"):
             try:
@@ -227,10 +141,10 @@ async def send_email(
                     },
                 )
                 communication_logged = True
-                logger.info("✅ Communication logged for email")
+                logger.info("Communication logged for email")
             except Exception as log_error:
-                logger.warning(f"⚠️ Failed to log communication: {log_error}")
-        
+                logger.warning(f"Failed to log communication: {log_error}")
+
         _masked_recipient = (request.to_email or "")[:3] + "***" if request.to_email else "unknown"
         if result.get("success"):
             try:
@@ -285,9 +199,9 @@ async def send_email(
             timestamp=result.get("timestamp"),
             communication_logged=communication_logged,
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Error sending email: {str(e)}", exc_info=True)
+        logger.error(f"Error sending email: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send email: {str(e)}"
@@ -301,7 +215,7 @@ async def send_whatsapp(
 ):
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
-    
+
     - Uses Twilio when configured
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
@@ -310,14 +224,14 @@ async def send_whatsapp(
         company_id = x_company_id or request.company_id
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
-        
-        logger.info(f"📱 Sending WhatsApp for company {company_id}")
-        
+
+        logger.info(f"Sending WhatsApp for company {company_id}")
+
         result = communication_dispatcher.send_whatsapp(
             to_phone=request.to_phone,
             message=request.message,
         )
-        
+
         communication_logged = False
         if result.get("success"):
             try:
@@ -342,10 +256,10 @@ async def send_whatsapp(
                     },
                 )
                 communication_logged = True
-                logger.info("✅ Communication logged for WhatsApp")
+                logger.info("Communication logged for WhatsApp")
             except Exception as log_error:
-                logger.warning(f"⚠️ Failed to log communication: {log_error}")
-        
+                logger.warning(f"Failed to log communication: {log_error}")
+
         _masked_phone = (request.to_phone or "")[:4] + "***" if request.to_phone else "unknown"
         if result.get("success"):
             try:
@@ -400,9 +314,9 @@ async def send_whatsapp(
             timestamp=result.get("timestamp"),
             communication_logged=communication_logged,
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Error sending WhatsApp: {str(e)}", exc_info=True)
+        logger.error(f"Error sending WhatsApp: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send WhatsApp message: {str(e)}"
@@ -413,19 +327,19 @@ async def send_whatsapp(
 async def send_screening_invite(
     request: SendScreeningInviteRequest,
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
-    db: AsyncSession = Depends(get_db),
+    repo: CommunicationRepository = Depends(get_communication_repo),
 ):
     """
     Send a WSI (Work Sample Interview) screening invite to a candidate.
-    
+
     Supports email and WhatsApp channels:
     - Email: Uses Mailgun via CommunicationDispatcher
     - WhatsApp: Uses Twilio via CommunicationDispatcher
     - Telefone: Logs the script for phone call (no actual call made)
-    
-    Checks saturation guardrail before sending — blocks if pipeline is saturated
+
+    Checks saturation guardrail before sending -- blocks if pipeline is saturated
     unless override_saturation is True (manual recruiter approval).
-    
+
     All invitations are logged to CommunicationHistory for tracking.
     """
     try:
@@ -433,11 +347,11 @@ async def send_screening_invite(
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         channel = request.channel.lower()
-        
+
         logger.info(f"Sending screening invite via {channel} for company {company_id}, candidate_id={request.candidate_id}")
 
         if request.vacancy_id and not request.override_saturation:
-            sat_status = await _check_vacancy_saturation_for_invite(db, request.vacancy_id)
+            sat_status = await repo.check_vacancy_saturation(request.vacancy_id)
             if sat_status.get("is_saturated"):
                 detail_parts = []
                 if sat_status.get("organic_saturated"):
@@ -465,7 +379,7 @@ async def send_screening_invite(
                 )
         elif request.vacancy_id and request.override_saturation:
             logger.info(f"Saturation override active for screening invite to candidate_id={request.candidate_id}")
-        
+
         result = {
             "success": False,
             "message_id": None,
@@ -474,14 +388,14 @@ async def send_screening_invite(
             "recipient": "",
             "timestamp": datetime.utcnow().isoformat()
         }
-        
+
         if channel == "email":
             if not request.candidate_email:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Email address is required for email channel"
                 )
-            
+
             result = communication_dispatcher.send_email(
                 to_email=request.candidate_email,
                 subject=request.subject or f"Convite para Triagem - {request.vacancy_title or 'Vaga'}",
@@ -490,22 +404,21 @@ async def send_screening_invite(
                 from_name="LIA Recrutamento"
             )
             result["recipient"] = request.candidate_email
-            
+
         elif channel == "whatsapp":
             if not request.candidate_phone:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Phone number is required for WhatsApp channel"
                 )
-            
+
             result = communication_dispatcher.send_whatsapp(
                 to_phone=request.candidate_phone,
                 message=request.message
             )
             result["recipient"] = request.candidate_phone
-            
+
         elif channel == "telefone":
-            import uuid
             result = {
                 "success": True,
                 "message_id": f"phone-script-{uuid.uuid4().hex[:12]}",
@@ -514,13 +427,13 @@ async def send_screening_invite(
                 "recipient": request.candidate_phone or "N/A",
                 "timestamp": datetime.utcnow().isoformat()
             }
-            logger.info(f"📞 Phone script prepared for candidate_id={request.candidate_id}")
+            logger.info(f"Phone script prepared for candidate_id={request.candidate_id}")
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid channel: {channel}. Must be 'email', 'whatsapp', or 'telefone'"
             )
-        
+
         communication_logged = False
         if result.get("success"):
             try:
@@ -548,10 +461,10 @@ async def send_screening_invite(
                     },
                 )
                 communication_logged = True
-                logger.info(f"✅ Screening invite logged via {channel}, candidate_id={request.candidate_id}")
+                logger.info(f"Screening invite logged via {channel}, candidate_id={request.candidate_id}")
             except Exception as log_error:
-                logger.warning(f"⚠️ Failed to log screening invite: {log_error}")
-        
+                logger.warning(f"Failed to log screening invite: {log_error}")
+
         _masked_invite_recipient = (request.candidate_name or "")[:3] + "***" if request.candidate_name else "unknown"
         if result.get("success"):
             try:
@@ -609,11 +522,11 @@ async def send_screening_invite(
             communication_logged=communication_logged,
             invite_type="screening"
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error sending screening invite: {str(e)}", exc_info=True)
+        logger.error(f"Error sending screening invite: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send screening invite: {str(e)}"

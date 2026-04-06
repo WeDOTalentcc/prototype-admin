@@ -1,5 +1,5 @@
 """
-Communication domain repository — handles DB operations for CommunicationLog.
+Communication domain repository -- handles DB operations for CommunicationLog.
 """
 import uuid as uuid_mod
 from datetime import datetime
@@ -12,9 +12,9 @@ from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy
 
-EXCLUDED_STATUSES = (rejected, declined, withdrawn)
-ORGANIC_ORIGINS = (web, whatsapp)
-SOURCING_ORIGINS = (sourcing, ats)
+EXCLUDED_STATUSES = ("rejected", "declined", "withdrawn")
+ORGANIC_ORIGINS = ("web", "whatsapp")
+SOURCING_ORIGINS = ("sourcing", "ats")
 DEFAULT_SATURATION_THRESHOLD = 20
 
 
@@ -45,12 +45,12 @@ class CommunicationRepository:
         try:
             vid = uuid_mod.UUID(vacancy_id)
         except (ValueError, TypeError):
-            return {is_saturated: False, error: invalid_vacancy_id}
+            return {"is_saturated": False, "error": "invalid_vacancy_id"}
 
         result = await self.db.execute(select(JobVacancy).where(JobVacancy.id == vid))
         vacancy = result.scalar_one_or_none()
         if not vacancy:
-            return {is_saturated: False, error: vacancy_not_found}
+            return {"is_saturated": False, "error": "vacancy_not_found"}
 
         company = None
         try:
@@ -68,13 +68,13 @@ class CommunicationRepository:
 
         sat = {}
         if company and company.additional_data:
-            sat = company.additional_data.get(saturation_settings, {})
+            sat = company.additional_data.get("saturation_settings", {})
 
         governance_rules = vacancy.governance_rules or {}
-        threshold_web = governance_rules.get(threshold_web, sat.get(threshold_web, DEFAULT_SATURATION_THRESHOLD))
-        threshold_sourcing = governance_rules.get(threshold_sourcing, sat.get(threshold_sourcing, DEFAULT_SATURATION_THRESHOLD))
+        threshold_web = governance_rules.get("threshold_web", sat.get("threshold_web", DEFAULT_SATURATION_THRESHOLD))
+        threshold_sourcing = governance_rules.get("threshold_sourcing", sat.get("threshold_sourcing", DEFAULT_SATURATION_THRESHOLD))
 
-        disabled_until_str = governance_rules.get(saturation_disabled_until)
+        disabled_until_str = governance_rules.get("saturation_disabled_until")
         bypass_active = False
         if disabled_until_str:
             try:
@@ -92,10 +92,10 @@ class CommunicationRepository:
             select(
                 func.count(VacancyCandidate.id).filter(
                     VacancyCandidate.origin.in_(ORGANIC_ORIGINS) | VacancyCandidate.origin.is_(None)
-                ).label(organic),
+                ).label("organic"),
                 func.count(VacancyCandidate.id).filter(
                     VacancyCandidate.origin.in_(SOURCING_ORIGINS)
-                ).label(sourcing),
+                ).label("sourcing"),
             ).where(active_filter)
         )
         row = channel_result.one()
@@ -107,12 +107,12 @@ class CommunicationRepository:
         is_saturated = organic_saturated or sourcing_saturated
 
         return {
-            is_saturated: is_saturated,
-            bypass_active: bypass_active,
-            organic_count: organic_count,
-            sourcing_count: sourcing_count,
-            threshold_web: threshold_web,
-            threshold_sourcing: threshold_sourcing,
-            organic_saturated: organic_saturated,
-            sourcing_saturated: sourcing_saturated,
+            "is_saturated": is_saturated,
+            "bypass_active": bypass_active,
+            "organic_count": organic_count,
+            "sourcing_count": sourcing_count,
+            "threshold_web": threshold_web,
+            "threshold_sourcing": threshold_sourcing,
+            "organic_saturated": organic_saturated,
+            "sourcing_saturated": sourcing_saturated,
         }
