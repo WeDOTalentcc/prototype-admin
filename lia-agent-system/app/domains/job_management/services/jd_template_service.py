@@ -624,7 +624,7 @@ class JDTemplateService:
             behavior = getattr(stage, "action_behavior", "passive") or "passive"
             if behavior == "terminal":
                 continue
-            if getattr(stage, "is_rejection", False) or getattr(stage, "is_hired", False):
+            if getattr(stage, "is_rejection", False) or getattr(stage, "is_hired", False) or getattr(stage, "is_final", False):
                 continue
 
             result.append(InterviewStage(
