@@ -327,12 +327,10 @@ export function LegacyChatPage() {
             {isEmptyChat && !isSmartSearchMode && (
               <div className="mb-6">
                 <div className="flex flex-col items-center text-center gap-3 mb-6">
-                  <div className="w-14 h-14 bg-wedo-cyan/[0.08] rounded-2xl flex items-center justify-center border border-wedo-cyan/[0.15]">
-                    <Brain className="w-7 h-7 text-wedo-cyan" />
-                  </div>
                   <div>
-                    <h1 className="text-2xl text-lia-text-primary tracking-tight flex items-baseline justify-center gap-1.5">
-                      <span className="font-light text-lia-text-secondary">Oi, eu sou a</span>
+                    <h1 className="text-2xl text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
+                      <Brain className="w-10 h-10 text-wedo-cyan" />
+                      <span className="font-normal text-lia-text-secondary">Oi, eu sou a</span>
                       <span className="font-bold text-3xl text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
                     </h1>
                     <p className="text-lia-text-secondary mt-1 text-sm font-medium">Como posso ajudar você hoje?</p>

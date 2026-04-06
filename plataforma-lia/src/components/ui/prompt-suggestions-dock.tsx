@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { Plus, Search, UserCheck, FileText, Calendar, MessageSquare, Bell, RefreshCcw, Brain, X, Move } from "lucide-react"
+import { Plus, Search, UserCheck, Calendar, RefreshCcw, Brain, X, Move } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
@@ -56,22 +56,6 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
     description: "Configure requisitos do sistema com descrição detalhada",
     command: "Criar uma nova vaga",
     category: "vagas"
-  },
-  {
-    id: "approve-job",
-    icon: FileText,
-    title: "Solicite aprovação de nova vaga",
-    description: "Encaminhe documentação para aprovação gerencial e justificativa",
-    command: "Solicite aprovação de nova vaga",
-    category: "vagas"
-  },
-  {
-    id: "share-candidates",
-    icon: UserCheck,
-    title: "Compartilhe candidatos com gestor",
-    description: "Crie relatório com perfis aprovados e recomendações",
-    command: "Compartilhe candidatos com gestor",
-    category: "candidatos"
   },
   {
     id: "search-candidates",
@@ -192,7 +176,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="flex items-center gap-3 p-3 text-left border border-lia-border-subtle rounded-xl bg-white transition-all duration-200 hover:scale-[1.02] hover:border-wedo-cyan/40 hover:shadow-sm group"
+                className="flex items-center gap-3 p-3 text-left rounded-xl bg-[var(--lia-bg-primary)] shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md group"
               >
                 <div className="bg-wedo-cyan/[0.08] text-wedo-cyan rounded-lg p-1.5 transition-colors group-hover:bg-wedo-cyan/[0.15] flex-shrink-0">
                   <Icon className="w-4 h-4" />
