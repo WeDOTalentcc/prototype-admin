@@ -54,25 +54,25 @@ interface AuthUser {
 
 export interface CandidatesLIAHandlersContext {
   candidates: Candidate[]
-  setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
+  setCandidates: (v: Candidate[]) => void
   chatMessages: LIAChatMessage[]
-  setChatMessages: React.Dispatch<React.SetStateAction<LIAChatMessage[]>>
+  setChatMessages: (v: LIAChatMessage[]) => void
   liaPromptValue: string
-  setLiaPromptValue: React.Dispatch<React.SetStateAction<string>>
+  setLiaPromptValue: (v: string) => void
   liaWidth: number
-  setLiaWidth: React.Dispatch<React.SetStateAction<number>>
+  setLiaWidth: (v: number) => void
   activeSearchTab: SearchTab
-  setActiveSearchTab: React.Dispatch<React.SetStateAction<SearchTab>>
+  setActiveSearchTab: (v: SearchTab) => void
   talentConversationId: string | undefined
-  setTalentConversationId: React.Dispatch<React.SetStateAction<string | undefined>>
+  setTalentConversationId: (v: string | undefined) => void
   liaIsParsingEntities: boolean
-  setLiaIsParsingEntities: React.Dispatch<React.SetStateAction<boolean>>
+  setLiaIsParsingEntities: (v: boolean) => void
   liaSuggestions: string[]
-  setLiaSuggestions: React.Dispatch<React.SetStateAction<string[]>>
+  setLiaSuggestions: (v: string[]) => void
   showLiaSuggestions: boolean
-  setShowLiaSuggestions: React.Dispatch<React.SetStateAction<boolean>>
+  setShowLiaSuggestions: (v: boolean) => void
   showLiaAssistant: boolean
-  setShowLiaAssistant: React.Dispatch<React.SetStateAction<boolean>>
+  setShowLiaAssistant: (v: boolean) => void
   selectedCandidatesForBatch: Set<string>
   searchResults: {
     local: Candidate[]
@@ -87,28 +87,28 @@ export interface CandidatesLIAHandlersContext {
   lastSearchQuery: string
   activeSearchFilters: SearchFilters
   liaPromptEntities: ParsedEntities
-  setLiaPromptEntities: React.Dispatch<React.SetStateAction<ParsedEntities>>
-  setShowExpandedLIA: React.Dispatch<React.SetStateAction<boolean>>
+  setLiaPromptEntities: (v: ParsedEntities) => void
+  setShowExpandedLIA: (v: boolean) => void
   userCollapsedLIA: boolean
-  setUserCollapsedLIA: React.Dispatch<React.SetStateAction<boolean>>
+  setUserCollapsedLIA: (v: boolean) => void
   selectedCandidateForLIA: Candidate | null
-  setSelectedCandidateForLIA: React.Dispatch<React.SetStateAction<Candidate | null>>
+  setSelectedCandidateForLIA: (v: Candidate | null) => void
   showLIAPromptForCandidate: boolean
-  setShowLIAPromptForCandidate: React.Dispatch<React.SetStateAction<boolean>>
+  setShowLIAPromptForCandidate: (v: boolean) => void
   selectedCandidate: Candidate | null
-  setSelectedCandidate: React.Dispatch<React.SetStateAction<Candidate | null>>
+  setSelectedCandidate: (v: Candidate | null) => void
   showQuickViewModal: boolean
-  setShowQuickViewModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowQuickViewModal: (v: boolean) => void
   showComparisonModal: boolean
-  setShowComparisonModal: React.Dispatch<React.SetStateAction<boolean>>
-  setShowScheduleModal: React.Dispatch<React.SetStateAction<boolean>>
-  setUnifiedModalCandidate: React.Dispatch<React.SetStateAction<Candidate | null>>
-  setUnifiedModalType: React.Dispatch<React.SetStateAction<CommunicationType>>
-  setUnifiedModalOpen: React.Dispatch<React.SetStateAction<boolean>>
-  setShowAddToListModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowComparisonModal: (v: boolean) => void
+  setShowScheduleModal: (v: boolean) => void
+  setUnifiedModalCandidate: (v: Candidate | null) => void
+  setUnifiedModalType: (v: CommunicationType) => void
+  setUnifiedModalOpen: (v: boolean) => void
+  setShowAddToListModal: (v: boolean) => void
   setSelectedCandidatesForBatch: React.Dispatch<React.SetStateAction<Set<string>>>
   isLIAThinking: boolean
-  setIsLIAThinking: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLIAThinking: (v: boolean) => void
   handleStartWSITextScreening: (candidate: Candidate) => void
   handleOpenWSIModal: (candidate: Candidate) => void
   openUnifiedModal: (candidate: Candidate, type: CommunicationType) => void

@@ -28,32 +28,32 @@ interface CandidateExperience {
 
 export interface CandidatesActionsContext {
   candidates: Candidate[]
-  setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
+  setCandidates: (v: Candidate[]) => void
   activeTab: string
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>
+  setActiveTab: (v: string) => void
   viewingList: { id: string; name: string; color?: string } | null
-  setViewingList: React.Dispatch<React.SetStateAction<{ id: string; name: string; color?: string } | null>>
+  setViewingList: (v: { id: string; name: string; color?: string } | null) => void
   candidateListsForModal: Array<{ id: string; name: string; color?: string }>
   selectedCandidatesForBatch: Set<string>
   setSelectedCandidatesForBatch: React.Dispatch<React.SetStateAction<Set<string>>>
   isSavingToBase: boolean
-  setIsSavingToBase: React.Dispatch<React.SetStateAction<boolean>>
+  setIsSavingToBase: (v: boolean) => void
   isAddingToList: boolean
-  setIsAddingToList: React.Dispatch<React.SetStateAction<boolean>>
+  setIsAddingToList: (v: boolean) => void
   showAddToListModal: boolean
-  setShowAddToListModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowAddToListModal: (v: boolean) => void
   addToListCandidateIds: string[]
-  setAddToListCandidateIds: React.Dispatch<React.SetStateAction<string[]>>
+  setAddToListCandidateIds: (v: string[]) => void
   addToListCandidateNames: string[]
-  setAddToListCandidateNames: React.Dispatch<React.SetStateAction<string[]>>
+  setAddToListCandidateNames: (v: string[]) => void
   showUnsavedWarningModal: boolean
-  setShowUnsavedWarningModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowUnsavedWarningModal: (v: boolean) => void
   pendingTabChange: string | null
-  setPendingTabChange: React.Dispatch<React.SetStateAction<string | null>>
+  setPendingTabChange: (v: string | null) => void
   hasUnsavedPearchCandidates: boolean
   unsavedPearchCandidates: Candidate[]
   showSearchResults: boolean
-  setShowSearchResults: React.Dispatch<React.SetStateAction<boolean>>
+  setShowSearchResults: (v: boolean) => void
   lastSearchQuery: string
   deselectAllCandidates: () => void
   user: { id?: string; name?: string; email?: string; [key: string]: unknown } | null

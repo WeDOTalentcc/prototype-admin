@@ -39,6 +39,10 @@ class CommunicationStatus:
     DELIVERED = "delivered"
     READ = "read"
     FAILED = "failed"
+    BOUNCED = "bounced"
+    CLICKED = "clicked"
+    COMPLAINED = "complained"
+    UNSUBSCRIBED = "unsubscribed"
 
 
 class CommunicationHistory(Base):

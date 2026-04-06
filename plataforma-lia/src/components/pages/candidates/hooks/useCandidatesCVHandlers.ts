@@ -5,14 +5,14 @@ import type { Candidate } from "../types"
 import { toast } from "sonner"
 
 export interface CandidatesCVHandlersContext {
-  setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
-  setIsDroppingCV: React.Dispatch<React.SetStateAction<boolean>>
-  setCvUploadLoading: React.Dispatch<React.SetStateAction<boolean>>
-  setHasSearchResults: React.Dispatch<React.SetStateAction<boolean>>
-  setSearchResultsCount: React.Dispatch<React.SetStateAction<number>>
-  setShowSearchResults: React.Dispatch<React.SetStateAction<boolean>>
-  setDisplayedResultsCount: React.Dispatch<React.SetStateAction<number>>
-  setChatMessages: React.Dispatch<React.SetStateAction<any[]>>
+  setCandidates: (v: Candidate[]) => void
+  setIsDroppingCV: (v: boolean) => void
+  setCvUploadLoading: (v: boolean) => void
+  setHasSearchResults: (v: boolean) => void
+  setSearchResultsCount: (v: number) => void
+  setShowSearchResults: (v: boolean) => void
+  setDisplayedResultsCount: (v: number) => void
+  setChatMessages: (v: any[]) => void
 }
 
 export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
