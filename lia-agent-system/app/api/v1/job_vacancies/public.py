@@ -1,16 +1,19 @@
-from datetime import datetime
-from uuid import UUID
-
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 """
 Public routes (no authentication required) and share-link routes.
 Also includes router_public for candidate application flow.
 """
+from datetime import datetime
+from uuid import UUID
+
+import uuid as uuid_lib
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from ._shared import *
+from app.domains.job_management.dependencies import get_job_vacancy_public_repo
+from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
+from app.models.candidate import Candidate, VacancyCandidate
+from app.services.notification_service import NotificationType
 
 router = APIRouter()
 router_public = APIRouter()
@@ -74,19 +77,14 @@ class PublicApplicationResponse(BaseModel):
 async def generate_public_link(
     vacancy_id: UUID,
     request: GeneratePublicLinkRequest = GeneratePublicLinkRequest(),
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Generate or retrieve public sharing link for a job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
 
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(JobVacancy.id == vacancy_id, JobVacancy.company_id == company_id)
-            )
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_id_and_company(vacancy_id, company_id)
 
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
@@ -108,17 +106,10 @@ async def generate_public_link(
 
         new_slug = generate_slug(job.title, company_short)
 
-        existing = await db.execute(
-            select(JobVacancy.id).where(JobVacancy.public_slug == new_slug)
-        )
-        if existing.scalar_one_or_none():
+        if await repo.slug_exists(new_slug):
             new_slug = generate_slug(job.title, secrets.token_hex(2))
 
-        job.public_slug = new_slug
-        job.updated_at = datetime.utcnow()
-
-        await db.flush()
-        await db.refresh(job)
+        job = await repo.save_public_slug(job, new_slug)
 
         logger.info(f"Generated public link for job {vacancy_id}: /vagas/{new_slug}")
 
@@ -133,26 +124,21 @@ async def generate_public_link(
         raise
     except Exception as e:
         logger.error(f"Error generating public link: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/job-vacancies/{vacancy_id}/share-link", response_model=ShareLinkResponse)
 async def get_share_link(
     vacancy_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get shareable link details for a job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
 
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(JobVacancy.id == vacancy_id, JobVacancy.company_id == company_id)
-            )
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_id_and_company(vacancy_id, company_id)
 
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
@@ -167,16 +153,10 @@ async def get_share_link(
 
             new_slug = generate_slug(job.title, company_short)
 
-            existing = await db.execute(
-                select(JobVacancy.id).where(JobVacancy.public_slug == new_slug)
-            )
-            if existing.scalar_one_or_none():
+            if await repo.slug_exists(new_slug):
                 new_slug = generate_slug(job.title, secrets.token_hex(2))
 
-            job.public_slug = new_slug
-            job.updated_at = datetime.utcnow()
-            await db.flush()
-            await db.refresh(job)
+            job = await repo.save_public_slug(job, new_slug)
             logger.info(f"Generated public slug for job {vacancy_id}: {new_slug}")
 
         share_link = f"https://app.wedotalent.com/jobs/{job.public_slug}"
@@ -202,14 +182,11 @@ async def get_share_link(
 @router_public.get("/p/{slug}", response_model=PublicVacancyResponse)
 async def get_public_vacancy(
     slug: str,
-    db: AsyncSession = Depends(get_db)
+    repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo)
 ):
     """Get public vacancy information by slug (no authentication required)."""
     try:
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.public_slug == slug)
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_slug(slug)
 
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
@@ -217,7 +194,7 @@ async def get_public_vacancy(
         if job.visibility == "hidden" or job.status not in ["Ativa", "Publicada"]:
             raise HTTPException(status_code=404, detail="Vaga não disponível")
 
-        job.view_count = (job.view_count or 0) + 1
+        await repo.increment_view_count(job)
 
         is_confidential = job.is_confidential or job.visibility == "confidential"
 
@@ -299,7 +276,7 @@ async def apply_to_public_vacancy(
     phone: str = Form(...),
     lgpd_consent: str = Form(...),
     cv_file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db)
+    repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo)
 ):
     try:
         if lgpd_consent.lower() not in ("true", "1", "yes", "sim"):
@@ -308,10 +285,7 @@ async def apply_to_public_vacancy(
                 detail="Consentimento LGPD obrigatório para prosseguir."
             )
 
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.public_slug == slug)
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_vacancy_by_slug(slug)
 
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
@@ -330,10 +304,7 @@ async def apply_to_public_vacancy(
         except Exception as e:
             logger.warning(f"CV parsing failed, continuing without parsed data: {e}")
 
-        result = await db.execute(
-            select(Candidate).where(Candidate.email == email)
-        )
-        existing_candidate = result.scalar_one_or_none()
+        existing_candidate = await repo.get_candidate_by_email(email)
 
         if existing_candidate:
             candidate = existing_candidate
@@ -349,6 +320,7 @@ async def apply_to_public_vacancy(
                 candidate.current_title = parsed_cv.get("current_title")
             candidate.communication_consent = True
             candidate.updated_at = datetime.utcnow()
+            await repo.flush_candidate(candidate)
         else:
             candidate = Candidate(
                 id=uuid_lib.uuid4(),
@@ -364,9 +336,7 @@ async def apply_to_public_vacancy(
                 current_company=parsed_cv.get("current_company"),
                 communication_consent=True
             )
-            db.add(candidate)
-
-        await db.flush()
+            await repo.add_candidate(candidate)
 
         adherence_score = 70.0
         try:
@@ -406,13 +376,8 @@ async def apply_to_public_vacancy(
                 next_step="improve_profile"
             )
 
-        existing_vc = await db.execute(
-            select(VacancyCandidate).where(
-                VacancyCandidate.vacancy_id == job.id,
-                VacancyCandidate.candidate_id == candidate.id
-            )
-        )
-        if existing_vc.scalar_one_or_none():
+        existing_vc = await repo.get_vacancy_candidate(job.id, candidate.id)
+        if existing_vc:
             return PublicApplicationResponse(
                 status="already_applied",
                 message="Você já se candidatou a esta vaga. Acompanhe seu email para atualizações.",
@@ -425,10 +390,7 @@ async def apply_to_public_vacancy(
         try:
             company = None
             if job.company_id:
-                cr = await db.execute(
-                    select(CompanyProfile).where(CompanyProfile.id == job.company_id)
-                )
-                company = cr.scalar_one_or_none()
+                company = await repo.get_company_profile(job.company_id)
 
             threshold_web = 20
             if company and company.additional_data:
@@ -438,15 +400,7 @@ async def apply_to_public_vacancy(
             governance = job.governance_rules or {}
             threshold_web = governance.get("threshold_web", threshold_web)
 
-            active_filter = and_(
-                VacancyCandidate.vacancy_id == job.id,
-                not_(VacancyCandidate.status.in_(SATURATION_EXCLUDED_STATUSES)),
-                VacancyCandidate.origin.in_(("web", "whatsapp"))
-            )
-            count_result = await db.execute(
-                select(func.count(VacancyCandidate.id)).where(active_filter)
-            )
-            organic_count = count_result.scalar() or 0
+            organic_count = await repo.count_organic_candidates(job.id, SATURATION_EXCLUDED_STATUSES)
             is_saturated = organic_count >= threshold_web
         except Exception as e:
             logger.warning(f"Saturation check failed, allowing application: {e}")
@@ -473,7 +427,7 @@ async def apply_to_public_vacancy(
                 "is_saturated_at_apply": is_saturated,
             },
         )
-        db.add(vacancy_candidate)
+        await repo.add_vacancy_candidate(vacancy_candidate)
 
         try:
             await notification_service.create_notification(
@@ -486,11 +440,10 @@ async def apply_to_public_vacancy(
                 related_candidate_id=str(candidate.id),
                 action_url=f"/candidates/{candidate.id}",
                 action_label="Ver Candidato",
-                db=db
+                db=repo.get_session()
             )
         except Exception as e:
             logger.warning(f"Notification creation failed: {e}")
-
 
         if is_saturated:
             return PublicApplicationResponse(

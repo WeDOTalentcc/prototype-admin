@@ -11,3 +11,13 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 
 def get_job_vacancy_crud_repo(db: AsyncSession = Depends(get_db)) -> JobVacancyCRUDRepository:
     return JobVacancyCRUDRepository(db)
+from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
+
+
+def get_job_vacancy_public_repo(db: AsyncSession = Depends(get_db)) -> JobVacancyPublicRepository:
+    return JobVacancyPublicRepository(db)
+from app.domains.job_management.repositories.job_vacancy_screening_repository import JobVacancyScreeningRepository
+
+
+def get_job_vacancy_screening_repo(db: AsyncSession = Depends(get_db)) -> JobVacancyScreeningRepository:
+    return JobVacancyScreeningRepository(db)

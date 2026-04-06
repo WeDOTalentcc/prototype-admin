@@ -1,0 +1,102 @@
+from datetime import datetime
+from uuid import UUID
+
+import uuid as uuid_lib
+
+from sqlalchemy import and_, func, not_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.job_vacancy import JobVacancy
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.company import CompanyProfile
+
+
+class JobVacancyPublicRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    # ── generate-public-link / share-link helpers ─────────────────────────────
+
+    async def get_vacancy_by_id_and_company(self, vacancy_id: UUID, company_id):
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                and_(JobVacancy.id == vacancy_id, JobVacancy.company_id == company_id)
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def slug_exists(self, slug: str) -> bool:
+        existing = await self.db.execute(
+            select(JobVacancy.id).where(JobVacancy.public_slug == slug)
+        )
+        return existing.scalar_one_or_none() is not None
+
+    async def save_public_slug(self, job: JobVacancy, new_slug: str) -> JobVacancy:
+        job.public_slug = new_slug
+        job.updated_at = datetime.utcnow()
+        await self.db.flush()
+        await self.db.refresh(job)
+        return job
+
+    # ── public vacancy view ────────────────────────────────────────────────────
+
+    async def get_vacancy_by_slug(self, slug: str):
+        result = await self.db.execute(
+            select(JobVacancy).where(JobVacancy.public_slug == slug)
+        )
+        return result.scalar_one_or_none()
+
+    async def increment_view_count(self, job: JobVacancy) -> None:
+        job.view_count = (job.view_count or 0) + 1
+
+    # ── apply flow ────────────────────────────────────────────────────────────
+
+    async def get_candidate_by_email(self, email: str):
+        result = await self.db.execute(
+            select(Candidate).where(Candidate.email == email)
+        )
+        return result.scalar_one_or_none()
+
+    async def add_candidate(self, candidate: Candidate) -> Candidate:
+        self.db.add(candidate)
+        await self.db.flush()
+        return candidate
+
+    async def flush_candidate(self, candidate: Candidate) -> None:
+        await self.db.flush()
+
+    async def get_vacancy_candidate(self, vacancy_id, candidate_id):
+        result = await self.db.execute(
+            select(VacancyCandidate).where(
+                VacancyCandidate.vacancy_id == vacancy_id,
+                VacancyCandidate.candidate_id == candidate_id
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_company_profile(self, company_id):
+        cr = await self.db.execute(
+            select(CompanyProfile).where(CompanyProfile.id == company_id)
+        )
+        return cr.scalar_one_or_none()
+
+    async def count_organic_candidates(self, vacancy_id, excluded_statuses: tuple) -> int:
+        active_filter = and_(
+            VacancyCandidate.vacancy_id == vacancy_id,
+            not_(VacancyCandidate.status.in_(excluded_statuses)),
+            VacancyCandidate.origin.in_(("web", "whatsapp"))
+        )
+        count_result = await self.db.execute(
+            select(func.count(VacancyCandidate.id)).where(active_filter)
+        )
+        return count_result.scalar() or 0
+
+    async def add_vacancy_candidate(self, vacancy_candidate: VacancyCandidate) -> VacancyCandidate:
+        self.db.add(vacancy_candidate)
+        return vacancy_candidate
+
+    async def rollback(self) -> None:
+        await self.db.rollback()
+
+    def get_session(self) -> AsyncSession:
+        return self.db
