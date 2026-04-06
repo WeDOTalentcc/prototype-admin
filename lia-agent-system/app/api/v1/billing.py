@@ -7,16 +7,18 @@ payment methods, and webhook integrations with Iugu/Vindi.
 SECURITY: All endpoints enforce multi-tenant isolation via X-Company-ID header.
 """
 import logging
+import uuid as uuid_module
 from datetime import datetime
 from typing import Any
 from uuid import UUID
 
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel, Field
+from sqlalchemy.orm.attributes import flag_modified
 
-from app.core.database import get_db
+from app.domains.billing.dependencies import get_billing_repo
+from app.domains.billing.repositories.billing_repository import BillingRepository
 from app.models.billing import (
     Invoice,
     InvoiceStatus,
@@ -55,13 +57,13 @@ def get_user_from_headers(
 def require_company_id(current_user: dict[str, Any]) -> str:
     """
     Validate that X-Company-ID header is present and return the company_id.
-    
+
     SECURITY: This is critical for multi-tenant isolation.
     All billing endpoints MUST call this function.
-    
+
     Returns:
         str: The validated company_id
-        
+
     Raises:
         HTTPException: 401 if X-Company-ID header is missing or invalid
     """
@@ -69,7 +71,7 @@ def require_company_id(current_user: dict[str, Any]) -> str:
     if not company_id:
         logger.warning(
             f"Multi-tenant security: Missing X-Company-ID header. "
-            f"User: {current_user.get('user_id')}, Role: {current_user.get('role')}"
+            f"User: {current_user.get(user_id)}, Role: {current_user.get(role)}"
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -97,7 +99,7 @@ def log_cross_tenant_attempt(
 ) -> None:
     """
     Log attempted cross-tenant access for security monitoring.
-    
+
     SECURITY: This helps detect and audit unauthorized access attempts.
     """
     logger.warning(
@@ -115,20 +117,20 @@ def verify_company_ownership(
     resource_id: str | None = None
 ) -> None:
     """
-    Verify that the current user has access to the target client's resources.
-    
+    Verify that the current user has access to the target clients resources.
+
     SECURITY: Admins can access any tenant, but regular users can only
-    access their own company's data.
-    
+    access their own companys data.
+
     Raises:
         HTTPException: 403 if access is denied
     """
     is_admin = current_user.get("is_admin", False)
     user_company_id = current_user.get("company_id")
-    
+
     if is_admin:
         return
-    
+
     if user_company_id != target_client_id:
         log_cross_tenant_attempt(
             action="access",
@@ -158,23 +160,23 @@ def parse_uuid(value: str, field_name: str = "ID") -> UUID:
 @router.get("/status", summary="Get billing providers status", response_model=None)
 async def get_billing_status(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ) -> BillingStatusResponse:
     """
     Get status of billing providers (Iugu/Vindi).
     """
     try:
         require_company_id(current_user)
-        
-        billing_service = BillingService(db)
-        
+
+        billing_service = BillingService(repo.db)
+
         providers_status = {}
         for provider_name in ["iugu", "vindi"]:
             try:
                 provider = billing_service.get_provider(provider_name)
                 providers_status[provider_name] = {
                     "status": "available",
-                    "configured": provider.is_configured() if hasattr(provider, 'is_configured') else True
+                    "configured": provider.is_configured() if hasattr(provider, "is_configured") else True
                 }
             except Exception as e:
                 providers_status[provider_name] = {
@@ -182,15 +184,15 @@ async def get_billing_status(
                     "configured": False,
                     "error": str(e)
                 }
-        
-        logger.info(f"Billing status checked by company {current_user.get('company_id')}")
-        
+
+        logger.info(f"Billing status checked by company {current_user.get(company_id)}")
+
         return BillingStatusResponse(
             status="healthy",
             providers=providers_status,
             timestamp=datetime.utcnow()
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -208,52 +210,40 @@ async def list_subscriptions(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     List subscriptions.
-    
-    SECURITY: 
+
+    SECURITY:
     - Admin users can see all subscriptions (optionally filtered by company_id)
-    - Non-admin users can only see their company's subscriptions
+    - Non-admin users can only see their companys subscriptions
     """
     try:
         company_id = require_company_id(current_user)
         company_uuid = parse_uuid(company_id, "company_id")
-        
+
         is_admin = current_user.get("is_admin", False)
-        
+
         conditions = []
-        
+
         if not is_admin:
             conditions.append(Subscription.client_id == company_uuid)
-        
+
         if status_filter:
             conditions.append(Subscription.status == status_filter)
-        
+
         if provider:
             conditions.append(Subscription.provider == provider)
-        
-        query = select(Subscription)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(Subscription.created_at.desc())
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        subscriptions = result.scalars().all()
-        
-        count_query = select(func.count(Subscription.id))
-        if conditions:
-            count_query = count_query.where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
+        subscriptions = await repo.list_subscriptions(conditions, limit, offset)
+        total = await repo.count_subscriptions(conditions)
+
         logger.info(
             f"Listed {len(subscriptions)} subscriptions (total: {total}) "
             f"for company {company_id}, admin={is_admin}"
         )
-        
+
         return {
             "success": True,
             "data": {
@@ -263,7 +253,7 @@ async def list_subscriptions(
                 "offset": offset
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -278,50 +268,46 @@ async def list_subscriptions(
 async def get_client_subscription(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Get subscription for a specific client.
-    
-    SECURITY: Non-admin users can only access their own company's subscription.
+
+    SECURITY: Non-admin users can only access their own companys subscription.
     """
     try:
         company_id = require_company_id(current_user)
         client_uuid = parse_uuid(client_id, "client_id")
-        
+
         verify_company_ownership(
             current_user=current_user,
             target_client_id=client_id,
             resource_type="subscription",
             resource_id=client_id
         )
-        
-        billing_service = BillingService(db)
+
+        billing_service = BillingService(repo.db)
         subscription = await billing_service.get_active_subscription(client_uuid)
-        
+
         if not subscription:
-            query = select(Subscription).where(
-                Subscription.client_id == client_uuid
-            ).order_by(Subscription.created_at.desc()).limit(1)
-            result = await db.execute(query)
-            subscription = result.scalar_one_or_none()
-        
+            subscription = await repo.get_latest_subscription_by_client(client_uuid)
+
         if not subscription:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No subscription found for this client"
             )
-        
+
         logger.info(
             f"Retrieved subscription {subscription.id} for client {client_id} "
             f"by company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": subscription.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -336,21 +322,21 @@ async def get_client_subscription(
 async def create_subscription(
     data: SubscriptionCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Create a new subscription for a client.
-    
+
     SECURITY: Admin-only. The subscription is associated with the specified client_id.
     """
     try:
         company_id = require_company_id(current_user)
         require_admin(current_user)
-        
+
         client_uuid = parse_uuid(data.client_id, "client_id")
-        
-        billing_service = BillingService(db)
-        
+
+        billing_service = BillingService(repo.db)
+
         result = await billing_service.create_subscription(
             client_id=client_uuid,
             plan_code=data.plan_code,
@@ -361,24 +347,24 @@ async def create_subscription(
             billing_cycle=data.billing_cycle,
             payment_method_id=data.payment_method_id,
         )
-        
+
         if not result.get("success"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=result.get("error", "Failed to create subscription")
             )
-        
+
         logger.info(
             f"Created subscription for client {data.client_id} "
             f"by admin company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": result.get("subscription"),
             "provider": result.get("provider")
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -394,28 +380,28 @@ async def update_subscription(
     subscription_id: str,
     data: SubscriptionUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Update an existing subscription (change plan, etc).
-    
+
     SECURITY: Admin-only. Verifies subscription ownership before modification.
     """
     try:
         company_id = require_company_id(current_user)
         require_admin(current_user)
-        
+
         sub_uuid = parse_uuid(subscription_id, "subscription_id")
-        
-        billing_service = BillingService(db)
+
+        billing_service = BillingService(repo.db)
         subscription = await billing_service.get_subscription(sub_uuid)
-        
+
         if not subscription:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Subscription not found"
             )
-        
+
         if data.plan_code:
             result = await billing_service.change_plan(
                 subscription_id=sub_uuid,
@@ -430,29 +416,28 @@ async def update_subscription(
                 subscription.price_cents = data.price_cents
             if data.status:
                 subscription.status = data.status
-            
+
             subscription.updated_at = datetime.utcnow()
-            await db.flush()
-            await db.refresh(subscription)
-            
+            await repo.flush_and_refresh_subscription(subscription)
+
             result = {"success": True, "subscription": subscription.to_dict()}
-        
+
         if not result.get("success"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=result.get("error", "Failed to update subscription")
             )
-        
+
         logger.info(
             f"Updated subscription {subscription_id} "
             f"by admin company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": result.get("subscription")
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -468,53 +453,53 @@ async def cancel_subscription(
     subscription_id: str,
     data: SubscriptionCancel | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Cancel a subscription.
-    
+
     SECURITY: Admin-only. Verifies subscription exists before cancellation.
     """
     try:
         company_id = require_company_id(current_user)
         require_admin(current_user)
-        
+
         sub_uuid = parse_uuid(subscription_id, "subscription_id")
-        
-        billing_service = BillingService(db)
-        
+
+        billing_service = BillingService(repo.db)
+
         subscription = await billing_service.get_subscription(sub_uuid)
         if not subscription:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Subscription not found"
             )
-        
+
         at_period_end = data.at_period_end if data else True
         reason = data.reason if data else None
-        
+
         result = await billing_service.cancel_subscription(
             subscription_id=sub_uuid,
             at_period_end=at_period_end,
             reason=reason
         )
-        
+
         if not result.get("success"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=result.get("error", "Failed to cancel subscription")
             )
-        
+
         logger.info(
             f"Cancelled subscription {subscription_id} "
             f"by admin company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": result.get("subscription")
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -532,52 +517,40 @@ async def list_invoices(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     List invoices.
-    
-    SECURITY: 
+
+    SECURITY:
     - Admin users can see all invoices
-    - Non-admin users can only see their company's invoices
+    - Non-admin users can only see their companys invoices
     """
     try:
         company_id = require_company_id(current_user)
         company_uuid = parse_uuid(company_id, "company_id")
-        
+
         is_admin = current_user.get("is_admin", False)
-        
+
         conditions = []
-        
+
         if not is_admin:
             conditions.append(Invoice.client_id == company_uuid)
-        
+
         if status_filter:
             conditions.append(Invoice.status == status_filter)
-        
+
         if provider:
             conditions.append(Invoice.provider == provider)
-        
-        query = select(Invoice)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(Invoice.created_at.desc())
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        invoices = result.scalars().all()
-        
-        count_query = select(func.count(Invoice.id))
-        if conditions:
-            count_query = count_query.where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
+        invoices = await repo.list_invoices(conditions, limit, offset)
+        total = await repo.count_invoices(conditions)
+
         logger.info(
             f"Listed {len(invoices)} invoices (total: {total}) "
             f"for company {company_id}, admin={is_admin}"
         )
-        
+
         return {
             "success": True,
             "data": {
@@ -587,7 +560,7 @@ async def list_invoices(
                 "offset": offset
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -604,36 +577,36 @@ async def get_client_invoices(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Get invoices for a specific client.
-    
-    SECURITY: Non-admin users can only access their own company's invoices.
+
+    SECURITY: Non-admin users can only access their own companys invoices.
     """
     try:
         company_id = require_company_id(current_user)
         client_uuid = parse_uuid(client_id, "client_id")
-        
+
         verify_company_ownership(
             current_user=current_user,
             target_client_id=client_id,
             resource_type="invoices",
             resource_id=client_id
         )
-        
-        billing_service = BillingService(db)
+
+        billing_service = BillingService(repo.db)
         invoices = await billing_service.list_invoices(
             client_id=client_uuid,
             status=status_filter,
             limit=limit
         )
-        
+
         logger.info(
             f"Retrieved {len(invoices)} invoices for client {client_id} "
             f"by company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": {
@@ -641,7 +614,7 @@ async def get_client_invoices(
                 "total": len(invoices)
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -656,26 +629,26 @@ async def get_client_invoices(
 async def get_invoice(
     invoice_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Get details of a specific invoice.
-    
+
     SECURITY: Non-admin users can only access invoices belonging to their company.
     """
     try:
         company_id = require_company_id(current_user)
         inv_uuid = parse_uuid(invoice_id, "invoice_id")
-        
-        billing_service = BillingService(db)
+
+        billing_service = BillingService(repo.db)
         invoice = await billing_service.get_invoice(inv_uuid)
-        
+
         if not invoice:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Invoice not found"
             )
-        
+
         invoice_client_id = invoice.get("client_id")
         if invoice_client_id:
             verify_company_ownership(
@@ -684,16 +657,16 @@ async def get_invoice(
                 resource_type="invoice",
                 resource_id=invoice_id
             )
-        
+
         logger.info(
             f"Retrieved invoice {invoice_id} by company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": invoice
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -709,66 +682,63 @@ async def refund_invoice(
     invoice_id: str,
     data: RefundRequest | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Process a refund for an invoice.
-    
+
     SECURITY: Admin-only. Verifies invoice exists before processing refund.
     """
     try:
         company_id = require_company_id(current_user)
         require_admin(current_user)
-        
+
         inv_uuid = parse_uuid(invoice_id, "invoice_id")
-        
-        query = select(Invoice).where(Invoice.id == inv_uuid)
-        result = await db.execute(query)
-        invoice = result.scalar_one_or_none()
-        
+
+        invoice = await repo.get_invoice_by_id(inv_uuid)
+
         if not invoice:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Invoice not found"
             )
-        
+
         if invoice.status != InvoiceStatus.PAID.value:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Only paid invoices can be refunded"
             )
-        
-        billing_service = BillingService(db)
+
+        billing_service = BillingService(repo.db)
         provider = billing_service.get_provider(invoice.provider)
-        
+
         refund_amount = data.amount_cents if data and data.amount_cents else invoice.total_cents
-        
+
         if invoice.external_id:
             refund_result = await provider.refund_invoice(
                 invoice_id=invoice.external_id,
                 amount_cents=refund_amount
             )
-            
+
             if not refund_result.success:
                 logger.warning(f"Failed to process refund in gateway: {refund_result.error}")
-        
+
         invoice.status = InvoiceStatus.REFUNDED.value
         invoice.updated_at = datetime.utcnow()
         if data and data.reason:
             invoice.notes = f"Refund reason: {data.reason}"
-        
-        await db.flush()
-        await db.refresh(invoice)
-        
+
+        await repo.flush_and_refresh_invoice(invoice)
+
         logger.info(
             f"Refunded invoice {invoice_id} by admin company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": invoice.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -783,39 +753,31 @@ async def refund_invoice(
 async def get_client_payment_methods(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Get payment methods for a specific client.
-    
-    SECURITY: Non-admin users can only access their own company's payment methods.
+
+    SECURITY: Non-admin users can only access their own companys payment methods.
     """
     try:
         company_id = require_company_id(current_user)
         client_uuid = parse_uuid(client_id, "client_id")
-        
+
         verify_company_ownership(
             current_user=current_user,
             target_client_id=client_id,
             resource_type="payment methods",
             resource_id=client_id
         )
-        
-        query = select(PaymentMethod).where(
-            and_(
-                PaymentMethod.client_id == client_uuid,
-                PaymentMethod.is_active
-            )
-        ).order_by(PaymentMethod.is_default.desc(), PaymentMethod.created_at.desc())
-        
-        result = await db.execute(query)
-        payment_methods = result.scalars().all()
-        
+
+        payment_methods = await repo.get_active_payment_methods_by_client(client_uuid)
+
         logger.info(
             f"Retrieved {len(payment_methods)} payment methods for client {client_id} "
             f"by company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": {
@@ -823,7 +785,7 @@ async def get_client_payment_methods(
                 "total": len(payment_methods)
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -838,35 +800,35 @@ async def get_client_payment_methods(
 async def add_payment_method(
     data: PaymentMethodCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Add a new payment method for a subscription.
-    
+
     SECURITY: Non-admin users can only add payment methods to their own company.
     """
     try:
         company_id = require_company_id(current_user)
-        
+
         sub_uuid = parse_uuid(data.subscription_id, "subscription_id")
         parse_uuid(data.client_id, "client_id")
-        
+
         verify_company_ownership(
             current_user=current_user,
             target_client_id=data.client_id,
             resource_type="payment method",
             resource_id=data.subscription_id
         )
-        
-        billing_service = BillingService(db)
-        
+
+        billing_service = BillingService(repo.db)
+
         subscription = await billing_service.get_subscription(sub_uuid)
         if not subscription:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Subscription not found"
             )
-        
+
         if str(subscription.client_id) != data.client_id:
             log_cross_tenant_attempt(
                 action="add_payment_method",
@@ -880,7 +842,7 @@ async def add_payment_method(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Subscription does not belong to this client"
             )
-        
+
         card_data = None
         if data.card_brand or data.card_last_digits:
             card_data = {
@@ -890,7 +852,7 @@ async def add_payment_method(
                 "expiry_month": data.card_expiry_month,
                 "expiry_year": data.card_expiry_year,
             }
-        
+
         result = await billing_service.add_payment_method(
             subscription_id=sub_uuid,
             payment_type=data.payment_type,
@@ -898,23 +860,23 @@ async def add_payment_method(
             card_data=card_data,
             set_as_default=data.set_as_default
         )
-        
+
         if not result.get("success"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=result.get("error", "Failed to add payment method")
             )
-        
+
         logger.info(
             f"Added payment method for subscription {data.subscription_id} "
             f"by company {company_id}"
         )
-        
+
         return {
             "success": True,
             "data": result.get("payment_method")
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -929,53 +891,50 @@ async def add_payment_method(
 async def remove_payment_method(
     payment_method_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Remove (deactivate) a payment method.
-    
+
     SECURITY: Non-admin users can only remove payment methods from their own company.
     """
     try:
         company_id = require_company_id(current_user)
         pm_uuid = parse_uuid(payment_method_id, "payment_method_id")
-        
-        query = select(PaymentMethod).where(PaymentMethod.id == pm_uuid)
-        result = await db.execute(query)
-        payment_method = result.scalar_one_or_none()
-        
+
+        payment_method = await repo.get_payment_method_by_id(pm_uuid)
+
         if not payment_method:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Payment method not found"
             )
-        
+
         verify_company_ownership(
             current_user=current_user,
             target_client_id=str(payment_method.client_id),
             resource_type="payment method",
             resource_id=payment_method_id
         )
-        
+
         if payment_method.is_default:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot remove default payment method. Set another as default first."
             )
-        
+
         payment_method.is_active = False
         payment_method.updated_at = datetime.utcnow()
-        
-        
+
         logger.info(
             f"Removed payment method {payment_method_id} by company {company_id}"
         )
-        
+
         return {
             "success": True,
             "message": "Payment method removed successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -989,12 +948,12 @@ async def remove_payment_method(
 @router.post("/webhooks/iugu", summary="Iugu webhook handler", response_model=None)
 async def handle_iugu_webhook(
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Handle webhooks from Iugu payment gateway.
-    
-    NOTE: Webhooks are server-to-server and don't require X-Company-ID header.
+
+    NOTE: Webhooks are server-to-server and dont require X-Company-ID header.
     Authentication is done via webhook signature verification.
     """
     try:
@@ -1003,22 +962,22 @@ async def handle_iugu_webhook(
             payload = await request.json()
         except Exception:
             payload = {}
-        
+
         signature = request.headers.get("X-Iugu-Signature")
-        
-        logger.info(f"Received Iugu webhook: {payload.get('event', 'unknown')}")
-        
-        billing_service = BillingService(db)
+
+        logger.info(f"Received Iugu webhook: {payload.get(event, unknown)}")
+
+        billing_service = BillingService(repo.db)
         result = await billing_service.process_webhook(
             provider="iugu",
             payload=payload,
             signature=signature
         )
-        
+
         logger.info(f"Processed Iugu webhook: {result}")
-        
+
         return {"status": "ok", "processed": True}
-        
+
     except Exception as e:
         logger.error(f"Error processing Iugu webhook: {str(e)}", exc_info=True)
         return {"status": "error", "message": str(e)}
@@ -1027,12 +986,12 @@ async def handle_iugu_webhook(
 @router.post("/webhooks/vindi", summary="Vindi webhook handler", response_model=None)
 async def handle_vindi_webhook(
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Handle webhooks from Vindi payment gateway.
-    
-    NOTE: Webhooks are server-to-server and don't require X-Company-ID header.
+
+    NOTE: Webhooks are server-to-server and dont require X-Company-ID header.
     Authentication is done via webhook signature verification.
     """
     try:
@@ -1041,31 +1000,25 @@ async def handle_vindi_webhook(
             payload = await request.json()
         except Exception:
             payload = {}
-        
+
         signature = request.headers.get("X-Vindi-Signature")
-        
-        logger.info(f"Received Vindi webhook: {payload.get('event', 'unknown')}")
-        
-        billing_service = BillingService(db)
+
+        logger.info(f"Received Vindi webhook: {payload.get(event, unknown)}")
+
+        billing_service = BillingService(repo.db)
         result = await billing_service.process_webhook(
             provider="vindi",
             payload=payload,
             signature=signature
         )
-        
+
         logger.info(f"Processed Vindi webhook: {result}")
-        
+
         return {"status": "ok", "processed": True}
-        
+
     except Exception as e:
         logger.error(f"Error processing Vindi webhook: {str(e)}", exc_info=True)
         return {"status": "error", "message": str(e)}
-
-
-from pydantic import BaseModel, Field
-from sqlalchemy.orm.attributes import flag_modified
-
-from app.models.client_account import ClientAccount
 
 
 class SubscriptionSettingsSchema(BaseModel):
@@ -1126,17 +1079,10 @@ class PaymentMethodCreateRequest(BaseModel):
     is_default: bool = False
 
 
-async def get_client_by_id(client_id: str, db: AsyncSession) -> ClientAccount:
+async def get_client_by_id(client_id: str, repo: BillingRepository):
     """Get client by ID with validation."""
     client_uuid = parse_uuid(client_id, "client_id")
-    query = select(ClientAccount).where(
-        and_(
-            ClientAccount.id == client_uuid,
-            not ClientAccount.is_deleted
-        )
-    )
-    result = await db.execute(query)
-    client = result.scalar_one_or_none()
+    client = await repo.get_client_by_id(client_uuid)
     if not client:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -1145,7 +1091,7 @@ async def get_client_by_id(client_id: str, db: AsyncSession) -> ClientAccount:
     return client
 
 
-def get_billing_settings(client: ClientAccount) -> dict[str, Any]:
+def get_billing_settings(client) -> dict[str, Any]:
     """Get or initialize billing settings for a client."""
     settings = client.settings or {}
     if "billing" not in settings:
@@ -1179,23 +1125,23 @@ def get_billing_settings(client: ClientAccount) -> dict[str, Any]:
 async def get_client_billing(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Get complete billing data for a client from settings.
-    
+
     Returns subscription, invoices, payment_methods, and usage.
     """
     try:
         require_company_id(current_user)
         verify_company_ownership(current_user, client_id, "billing")
-        
-        client = await get_client_by_id(client_id, db)
+
+        client = await get_client_by_id(client_id, repo)
         settings = get_billing_settings(client)
         billing = settings.get("billing", {})
-        
+
         logger.info(f"Retrieved billing data for client {client_id}")
-        
+
         return {
             "success": True,
             "data": {
@@ -1208,7 +1154,7 @@ async def get_client_billing(
                 "usage": billing.get("usage")
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1222,29 +1168,29 @@ async def get_client_billing(
 @router.get("/subscription", summary="Get current user subscription", response_model=None)
 async def get_current_subscription(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    Get subscription for the current user's company.
-    
+    Get subscription for the current users company.
+
     Data is stored in client.settings["billing"]["subscription"].
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         if client.settings != settings:
             client.settings = settings
             flag_modified(client, "settings")
-        
+
         billing = settings.get("billing", {})
-        
+
         return {
             "success": True,
             "data": billing.get("subscription")
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1259,21 +1205,21 @@ async def get_current_subscription(
 async def update_current_subscription(
     data: SubscriptionUpdateRequest,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    Update subscription for the current user's company.
-    
+    Update subscription for the current users company.
+
     Data is stored in client.settings["billing"]["subscription"].
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         subscription = billing.get("subscription", {})
-        
+
         if data.plan_id:
             subscription["plan_id"] = data.plan_id
             client.plan_id = data.plan_id
@@ -1283,23 +1229,22 @@ async def update_current_subscription(
             subscription["cancel_at_period_end"] = data.cancel_at_period_end
         if data.current_period_end:
             subscription["current_period_end"] = data.current_period_end.isoformat()
-        
+
         billing["subscription"] = subscription
         settings["billing"] = billing
         client.settings = settings
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
-        
-        await db.flush()
-        await db.refresh(client)
-        
+
+        await repo.flush_and_refresh_client(client)
+
         logger.info(f"Updated subscription for company {company_id}")
-        
+
         return {
             "success": True,
             "data": subscription
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1315,24 +1260,24 @@ async def list_my_invoices(
     status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(50, ge=1, le=200),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    List invoices for the current user's company from settings.
+    List invoices for the current users company from settings.
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         invoices = billing.get("invoices", [])
-        
+
         if status_filter:
             invoices = [inv for inv in invoices if inv.get("status") == status_filter]
-        
+
         invoices = invoices[:limit]
-        
+
         return {
             "success": True,
             "data": {
@@ -1340,7 +1285,7 @@ async def list_my_invoices(
                 "total": len(invoices)
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1355,32 +1300,32 @@ async def list_my_invoices(
 async def get_my_invoice(
     invoice_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Get details of a specific invoice from settings.
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         invoices = billing.get("invoices", [])
-        
+
         invoice = next((inv for inv in invoices if inv.get("id") == invoice_id), None)
-        
+
         if not invoice:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Invoice not found: {invoice_id}"
             )
-        
+
         return {
             "success": True,
             "data": invoice
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1395,56 +1340,55 @@ async def get_my_invoice(
 async def pay_my_invoice(
     invoice_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
     Mark an invoice as paid (simulation mode).
-    
+
     Updates invoice status in client.settings["billing"]["invoices"].
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         invoices = billing.get("invoices", [])
-        
+
         invoice_idx = next((i for i, inv in enumerate(invoices) if inv.get("id") == invoice_id), None)
-        
+
         if invoice_idx is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Invoice not found: {invoice_id}"
             )
-        
+
         invoice = invoices[invoice_idx]
-        
+
         if invoice.get("status") == "paid":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invoice is already paid"
             )
-        
+
         invoice["status"] = "paid"
         invoice["paid_at"] = datetime.utcnow().isoformat()
         invoices[invoice_idx] = invoice
-        
+
         billing["invoices"] = invoices
         settings["billing"] = billing
         client.settings = settings
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
-        
-        
+
         logger.info(f"Marked invoice {invoice_id} as paid for company {company_id}")
-        
+
         return {
             "success": True,
             "data": invoice,
             "message": "Invoice marked as paid successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1458,19 +1402,19 @@ async def pay_my_invoice(
 @router.get("/my-payment-methods", summary="List current user payment methods", response_model=None)
 async def list_my_payment_methods(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    List payment methods for the current user's company from settings.
+    List payment methods for the current users company from settings.
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         payment_methods = billing.get("payment_methods", [])
-        
+
         return {
             "success": True,
             "data": {
@@ -1478,7 +1422,7 @@ async def list_my_payment_methods(
                 "total": len(payment_methods)
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1493,20 +1437,19 @@ async def list_my_payment_methods(
 async def add_my_payment_method(
     data: PaymentMethodCreateRequest,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    Add a payment method for the current user's company.
+    Add a payment method for the current users company.
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         payment_methods = billing.get("payment_methods", [])
-        
-        import uuid as uuid_module
+
         new_method = {
             "id": str(uuid_module.uuid4()),
             "type": data.type,
@@ -1515,26 +1458,25 @@ async def add_my_payment_method(
             "is_default": data.is_default,
             "created_at": datetime.utcnow().isoformat()
         }
-        
+
         if data.is_default:
             for pm in payment_methods:
                 pm["is_default"] = False
-        
+
         payment_methods.append(new_method)
         billing["payment_methods"] = payment_methods
         settings["billing"] = billing
         client.settings = settings
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
-        
-        
+
         logger.info(f"Added payment method for company {company_id}")
-        
+
         return {
             "success": True,
             "data": new_method
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1549,50 +1491,49 @@ async def add_my_payment_method(
 async def remove_my_payment_method(
     method_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    Remove a payment method for the current user's company.
+    Remove a payment method for the current users company.
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         billing = settings.get("billing", {})
         payment_methods = billing.get("payment_methods", [])
-        
+
         method_idx = next((i for i, pm in enumerate(payment_methods) if pm.get("id") == method_id), None)
-        
+
         if method_idx is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Payment method not found: {method_id}"
             )
-        
+
         method = payment_methods[method_idx]
-        
+
         if method.get("is_default"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot remove default payment method. Set another as default first."
             )
-        
+
         payment_methods.pop(method_idx)
         billing["payment_methods"] = payment_methods
         settings["billing"] = billing
         client.settings = settings
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
-        
-        
+
         logger.info(f"Removed payment method {method_id} for company {company_id}")
-        
+
         return {
             "success": True,
             "message": "Payment method removed successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1606,34 +1547,34 @@ async def remove_my_payment_method(
 @router.get("/usage", summary="Get current usage", response_model=None)
 async def get_usage(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: BillingRepository = Depends(get_billing_repo)
 ):
     """
-    Get current usage data for the user's company.
-    
+    Get current usage data for the users company.
+
     Returns AI credits, jobs, and users usage vs limits.
     """
     try:
         company_id = require_company_id(current_user)
-        client = await get_client_by_id(company_id, db)
+        client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
-        
+
         if client.settings != settings:
             client.settings = settings
             flag_modified(client, "settings")
-        
+
         billing = settings.get("billing", {})
         usage = billing.get("usage", {})
-        
+
         usage["ai_credits_limit"] = client.ai_credits_monthly or 1000
         usage["jobs_limit"] = client.job_limit or 50
         usage["users_limit"] = client.user_limit or 10
-        
+
         return {
             "success": True,
             "data": usage
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
