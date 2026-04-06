@@ -157,6 +157,14 @@ diferem apenas em 1 import. Consolidar com alias de retrocompatibilidade.
 
 ## Changelog
 
-| Data | Item | Descrição |
-|---|---|---|
-| — | — | Plano criado |
+| Data | Item | Descrição | Arquivos |
+|---|---|---|---|
+| 2026-04-06 | Plano criado | Auditoria profunda de 1.820 arquivos | HARDENING_PLAN.md |
+| 2026-04-06 | P0.1 | SQL Injection no RLS corrigido — SET LOCAL → set_config parameterizado | app/core/database.py |
+| 2026-04-06 | P0.2 | Vazamento de stack traces bloqueado em 958 endpoints 5xx | app/main.py |
+| 2026-04-06 | P0.3 | python-jose (CVE-2024-33664/33663) → PyJWT 2.10.1 | app/auth/{security,rails_jwt,dependencies}.py |
+| 2026-04-06 | P1.1 | N+1 queries em candidate_lists: N×2 → 2 queries + bulk insert | app/api/v1/candidate_lists.py |
+| 2026-04-06 | P1.2 | N+1 queries em workforce: N×1 → 1 query + in-memory upsert | app/api/v1/workforce.py |
+| 2026-04-06 | P1.3 | Paginação adicionada em list_templates (skip/limit) | app/api/v1/recruitment_journey.py |
+| 2026-04-06 | P2.1 | 14 bare except: → except Exception: em 9 arquivos | billing, candidates, job_context_service, etc. |
+| 2026-04-06 | P2.2 | 26 PII em logs removidos (LGPD Art. 46) — emails de candidatos | event_handlers, email_service, automation_*, etc. |
