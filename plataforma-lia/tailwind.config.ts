@@ -220,6 +220,7 @@ export default {
         'inter': ['var(--font-inter)', 'sans-serif'],
         'open-sans': ['var(--font-open-sans)', 'sans-serif'],
         'crimson': ['var(--font-crimson)', 'serif'],
+        'source-serif-4': ['var(--font-source-serif-4)', 'serif'],
         'brand': ['var(--font-open-sans)', 'sans-serif'],
         'data': ['var(--font-inter)', 'sans-serif'],
       },

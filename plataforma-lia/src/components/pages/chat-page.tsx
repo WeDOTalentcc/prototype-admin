@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import {
   Send, Loader2, FileText, Search, MapPin, X,
-  ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain
+  ChevronDown, Play, Mic, AlertTriangle, Cpu
 } from "lucide-react"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
@@ -129,14 +129,8 @@ export function LegacyChatPage() {
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
-        <div className="py-3 px-6 flex-shrink-0 bg-white border-b border-lia-border-subtle">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <LIAIcon size="lg" />
-              <p className="text-sm font-open-sans text-lia-text-tertiary">
-                Lia - Assistente de Recrutamento
-              </p>
-            </div>
+        <div className="py-3 px-6 flex-shrink-0 bg-white">
+          <div className="flex items-center justify-end">
 
             <div className="flex items-center space-x-2">
               <Button
@@ -208,9 +202,8 @@ export function LegacyChatPage() {
           {isEmptyChat && (
             <div className={`text-left pt-6 ${messagesContainerClass}`}>
               <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary flex items-center gap-2">
-                  <Brain className="w-7 h-7 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
-                  Oi, eu sou a <span className="text-lia-text-secondary">LIA</span>.
+                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary">
+                  Oi, eu sou a <span className="font-source-serif-4">LIA</span>.
                 </h2>
                 <p className="text-sm text-lia-text-tertiary">
                   Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import type { Metadata } from "next";
-import { Inter, Open_Sans, Crimson_Text } from "next/font/google";
+import { Inter, Open_Sans, Crimson_Text, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { JWTAuthProvider } from "@/contexts/auth-context"
@@ -28,6 +28,12 @@ const crimsonText = Crimson_Text({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   variable: "--font-crimson",
+  display: "swap"
+});
+
+const sourceSerif4 = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-source-serif-4",
   display: "swap"
 });
 
@@ -90,7 +96,7 @@ export default function RootLayout({
       </head>
       
       <body 
-        className={`${inter.variable} ${openSans.variable} ${crimsonText.variable} antialiased`}
+        className={`${inter.variable} ${openSans.variable} ${crimsonText.variable} ${sourceSerif4.variable} antialiased`}
         suppressHydrationWarning
       >
       {/* Skip to content — acessibilidade para navegação por teclado */}
