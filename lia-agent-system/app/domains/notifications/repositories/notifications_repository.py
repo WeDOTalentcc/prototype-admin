@@ -118,7 +118,7 @@ class NotificationsRepository:
         channels: List[NotificationChannel],
         notification_type: NotificationType = NotificationType.INFO,
         proactive_type: Optional[ProactiveNotificationType] = None,
-        priority: str = normal,
+        priority: str = "normal",
         data: Optional[Dict[str, Any]] = None,
         related_job_id: Optional[str] = None,
         related_candidate_id: Optional[str] = None,
@@ -151,7 +151,7 @@ class NotificationsRepository:
         related_job_id: Optional[str] = None,
         related_candidate_id: Optional[str] = None,
         suggested_actions: Optional[List[str]] = None,
-        priority: str = normal,
+        priority: str = "normal",
     ) -> Dict[str, Any]:
         return await notification_service.send_proactive_notification(
             user_id=user_id,

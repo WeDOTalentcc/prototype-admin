@@ -326,7 +326,7 @@ async def send_recruiter_action_notification(
             actions_taken.append("testes cancelados")
 
         if actions_taken:
-            message_parts.append(f"A\u00e7\u00f5es executadas: {, .join(actions_taken)}.")
+            message_parts.append(f"Ações executadas: {', '.join(actions_taken)}.")
 
         if request.notified_candidates_count > 0:
             message_parts.append(f"{request.notified_candidates_count} candidato(s) notificado(s).")
@@ -746,7 +746,7 @@ async def send_job_created_notification(
         urgency_label = urgency_labels.get(request.urgency_level, "M\u00e9dia")
 
         tech_reqs_list = "\n".join([
-            f"  \u2022 {r.name} ({r.level}){ - Obrigat\u00f3rio if r.required else }"
+            f"  • {r.name} ({r.level})" + (" - Obrigatório" if r.required else "")
             for r in request.technical_requirements
         ]) if request.technical_requirements else "  Nenhum definido"
 
@@ -784,6 +784,11 @@ async def send_job_created_notification(
             elif request.salary_range.max:
                 salary_text = f"At\u00e9 R$ {request.salary_range.max:,.0f}"
 
+        created_at_str = datetime.now().strftime('%d/%m/%Y às %H:%M')
+        confidential_tag = '🔒 Vaga Confidencial' if request.is_confidential else ''
+        affirmative_tag = '🌈 Vaga Afirmativa' if request.is_affirmative else ''
+        manager_line = f'Gestor: {request.manager_name or request.manager_email}' if request.manager_email else ''
+
         workplan_content = f"""
 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 \ud83d\udccb WORKPLAN - NOVA VAGA CRIADA
@@ -792,13 +797,13 @@ async def send_job_created_notification(
 \ud83c\udfaf INFORMA\u00c7\u00d5ES GERAIS
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 T\u00edtulo:           {request.job_title}
-\u00c1rea/Departamento: {request.department or A definir}
-Localiza\u00e7\u00e3o:       {request.location or A definir}
-Modelo de Trabalho: {request.work_model or A definir}
-Senioridade:       {request.seniority_level or A definir}
+\u00c1rea/Departamento: {request.department or 'A definir'}
+Localiza\u00e7\u00e3o:       {request.location or 'A definir'}
+Modelo de Trabalho: {request.work_model or 'A definir'}
+Senioridade:       {request.seniority_level or 'A definir'}
 Urg\u00eancia:          {urgency_label}
-{\ud83d\udd12 Vaga Confidencial if request.is_confidential else }
-{\ud83c\udf08 Vaga Afirmativa if request.is_affirmative else }
+{confidential_tag}
+{affirmative_tag}
 
 \ud83d\udcb0 REMUNERA\u00c7\u00c3O
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -837,13 +842,13 @@ Plataformas:       {platforms_text}
 
 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 ID da Vaga: {request.job_id}
-Criado em: {datetime.now().strftime(%d/%m/%Y \u00e0s %H:%M)}
+Criado em: {created_at_str}
 Recrutador: {request.recruiter_name or request.recruiter_email}
-{fGestor: {request.manager_name or request.manager_email} if request.manager_email else }
+{manager_line}
 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 """
 
-        email_subject = f"\ud83d\ude80 Nova Vaga Criada: {request.job_title} | {request.department or Empresa}"
+        email_subject = f"\ud83d\ude80 Nova Vaga Criada: {request.job_title} | {request.department or 'Empresa'}"
         teams_title = f"\ud83d\udccb Nova Vaga: {request.job_title}"
 
         recipients = []
