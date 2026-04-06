@@ -327,10 +327,13 @@ class CreditAccount(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(100), nullable=False, unique=True, index=True)
+    plan_type = Column(String(50), nullable=False, default="free")
     balance = Column(Integer, nullable=False, default=0)
     lifetime_purchased = Column(Integer, nullable=False, default=0)
     lifetime_consumed = Column(Integer, nullable=False, default=0)
     lifetime_bonus = Column(Integer, nullable=False, default=0)
+    low_balance_threshold = Column(Integer, nullable=False, default=20)
+    reset_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -338,10 +341,13 @@ class CreditAccount(Base):
         return {
             "id": str(self.id),
             "company_id": self.company_id,
+            "plan_type": self.plan_type,
             "balance": self.balance,
             "lifetime_purchased": self.lifetime_purchased,
             "lifetime_consumed": self.lifetime_consumed,
             "lifetime_bonus": self.lifetime_bonus,
+            "low_balance_threshold": self.low_balance_threshold,
+            "reset_date": self.reset_date.isoformat() if self.reset_date else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -357,6 +363,7 @@ class CreditTransaction(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(100), nullable=False, index=True)
     transaction_type = Column(String(30), nullable=False, index=True)
+    action_type = Column(String(50), nullable=True, index=True)
     amount = Column(Integer, nullable=False)
     balance_after = Column(Integer, nullable=False)
     description = Column(String(500), nullable=True)
@@ -370,6 +377,7 @@ class CreditTransaction(Base):
             "id": str(self.id),
             "company_id": self.company_id,
             "transaction_type": self.transaction_type,
+            "action_type": self.action_type,
             "amount": self.amount,
             "balance_after": self.balance_after,
             "description": self.description,

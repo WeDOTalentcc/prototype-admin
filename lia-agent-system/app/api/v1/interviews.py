@@ -8,14 +8,11 @@ from datetime import datetime, timedelta
 from anthropic import AsyncAnthropic
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import and_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.interview_scheduling.dependencies import get_interview_repo
+from app.domains.interview_scheduling.repositories.interview_repository import InterviewRepository
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from app.models.candidate import Candidate
 from app.models.interview import Interview, InterviewFeedback
-from app.models.job_vacancy import JobVacancy
 from app.services.activity_service import activity_service
 from app.shared.compliance.audit_service import audit_service
 from app.shared.pii_masking import get_masked_logger
@@ -75,7 +72,7 @@ class InterviewFeedbackRequest(BaseModel):
 async def schedule_interview(
     request: ScheduleInterviewRequest,
     request_obj: Request,
-    db: AsyncSession = Depends(get_db),
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Schedule a new interview with automatic Microsoft Calendar integration.
@@ -85,15 +82,14 @@ async def schedule_interview(
         if request.candidate_id:
             try:
                 candidate_uuid = uuid.UUID(request.candidate_id)
-                result = await db.execute(
-                    select(Candidate).where(Candidate.id == candidate_uuid)
-                )
-                candidate = result.scalar_one_or_none()
-                
+                candidate = await repo.get_candidate_by_id(candidate_uuid)
+
                 if candidate:
-                    has_valid_email = candidate.email and '@' in candidate.email
-                    has_valid_phone = candidate.phone and len(candidate.phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')) >= 8
-                    
+                    has_valid_email = candidate.email and "@" in candidate.email
+                    has_valid_phone = candidate.phone and len(
+                        candidate.phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                    ) >= 8
+
                     if not has_valid_email and not has_valid_phone:
                         raise HTTPException(
                             status_code=400,
@@ -102,17 +98,17 @@ async def schedule_interview(
                                 "message": "Candidato não possui email ou telefone válido. É necessário ter pelo menos um contato para agendar entrevista.",
                                 "candidate_name": candidate.name,
                                 "email": candidate.email,
-                                "phone": candidate.phone
-                            }
+                                "phone": candidate.phone,
+                            },
                         )
             except ValueError:
-                logger.warning(f"Invalid candidate_id format: {request.candidate_id}")
-        
+                logger.warning("Invalid candidate_id format: %s", request.candidate_id)
+
         # Create calendar event
         all_interviewer_emails = [request.interviewer_email] + [
             i.get("email") for i in request.additional_interviewers if i.get("email")
         ]
-        
+
         calendar_event = await calendar_service.schedule_interview(
             organizer_email=request.interviewer_email,
             candidate_name=request.candidate_name,
@@ -123,28 +119,28 @@ async def schedule_interview(
             duration_minutes=request.duration_minutes,
             location=request.location,
             as_teams_meeting=request.as_teams_meeting,
-            notes=request.notes
+            notes=request.notes,
         )
-        
+
         # Resolve recruitment stage if provided
         resolved_stage_name = None
         resolved_stage_id = None
         if request.recruitment_stage_id:
             try:
-                from app.domains.automation.models.recruitment_stages import RecruitmentStage
-                req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
+                req_company_id = (
+                    getattr(request_obj.state, "company_id", None)
+                    if hasattr(request_obj, "state")
+                    else None
+                )
                 stage_uuid = uuid.UUID(request.recruitment_stage_id)
-                stage_query = select(RecruitmentStage).where(RecruitmentStage.id == stage_uuid)
-                if req_company_id:
-                    stage_query = stage_query.where(RecruitmentStage.company_id == req_company_id)
-                stage_result = await db.execute(stage_query)
-                stage = stage_result.scalar_one_or_none()
+                stage = await repo.get_recruitment_stage(stage_uuid, company_id=req_company_id)
                 if stage:
                     resolved_stage_name = stage.name
                     resolved_stage_id = stage.id
                     logger.info(
                         "Interview linked to stage: %s (%s)",
-                        stage.display_name, stage.name,
+                        stage.display_name,
+                        stage.name,
                     )
             except (ValueError, Exception) as e:
                 logger.warning("Invalid recruitment_stage_id: %s", e)
@@ -172,29 +168,24 @@ async def schedule_interview(
             is_synced_to_calendar=True,
             last_synced_at=datetime.utcnow(),
             status="scheduled",
-            created_by="system"
+            created_by="system",
         )
-        
+
         # Extract meeting URL from calendar event
         if request.as_teams_meeting and calendar_event.get("onlineMeeting"):
             interview.meeting_url = calendar_event["onlineMeeting"].get("joinUrl")
             interview.meeting_platform = "teams"
-        
-        db.add(interview)
-        await db.flush()
-        await db.refresh(interview)
-        
-        logger.info(f"✅ Interview scheduled: {interview.id}")
+
+        interview = await repo.add_interview(interview)
+
+        logger.info("Interview scheduled: %s", interview.id)
 
         try:
             audit_company_id = None
             if request.job_vacancy_id:
-                vac_result = await db.execute(
-                    select(JobVacancy.company_id).where(JobVacancy.id == uuid.UUID(request.job_vacancy_id))
+                audit_company_id = await repo.get_vacancy_company_id(
+                    uuid.UUID(request.job_vacancy_id)
                 )
-                vac_row = vac_result.scalar_one_or_none()
-                if vac_row:
-                    audit_company_id = str(vac_row)
             if audit_company_id:
                 await audit_service.log_decision(
                     company_id=audit_company_id,
@@ -209,15 +200,24 @@ async def schedule_interview(
                         f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
                         "Calendar sync status: confirmed",
                     ],
-                    criteria_used=["candidate_contact_info", "interviewer_availability", "calendar_sync", "interview_mode"],
+                    criteria_used=[
+                        "candidate_contact_info",
+                        "interviewer_availability",
+                        "calendar_sync",
+                        "interview_mode",
+                    ],
                     candidate_id=request.candidate_id,
                     job_vacancy_id=request.job_vacancy_id,
                     human_review_required=False,
                 )
             else:
-                logger.warning("Skipping audit log for schedule_interview: no company_id resolvable from vacancy")
+                logger.warning(
+                    "Skipping audit log for schedule_interview: no company_id resolvable from vacancy"
+                )
         except Exception as audit_err:
-            logger.warning(f"Audit log failed for schedule_interview: {audit_err}")
+            logger.warning("Audit log failed for schedule_interview: %s", audit_err)
+
+        await repo.commit()
 
         return {
             "success": True,
@@ -225,11 +225,11 @@ async def schedule_interview(
             "calendar_event_id": calendar_event.get("id"),
             "meeting_url": interview.meeting_url,
             "start_time": interview.start_time.isoformat(),
-            "end_time": interview.end_time.isoformat()
+            "end_time": interview.end_time.isoformat(),
         }
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to schedule interview: {e}")
+        logger.error("Failed to schedule interview: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -239,32 +239,19 @@ async def list_interviews(
     candidate_email: str | None = Query(None, description="Filter by candidate email"),
     interviewer_email: str | None = Query(None, description="Filter by interviewer email"),
     limit: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     List interviews with optional filters.
     """
     try:
-        from sqlalchemy.orm import aliased
-        jv = aliased(JobVacancy)
-        query = select(Interview, jv.job_id, jv.manager).outerjoin(jv, Interview.job_vacancy_id == jv.id)
-        
-        filters = []
-        if status:
-            filters.append(Interview.status == status)
-        if candidate_email:
-            filters.append(Interview.candidate_email == candidate_email)
-        if interviewer_email:
-            filters.append(Interview.interviewer_email == interviewer_email)
-        
-        if filters:
-            query = query.where(and_(*filters))
-        
-        query = query.order_by(Interview.start_time.desc()).limit(limit)
-        
-        result = await db.execute(query)
-        rows = result.all()
-        
+        rows = await repo.list_interviews(
+            status=status,
+            candidate_email=candidate_email,
+            interviewer_email=interviewer_email,
+            limit=limit,
+        )
+
         return [
             {
                 "id": str(interview.id),
@@ -297,9 +284,9 @@ async def list_interviews(
             }
             for interview, job_code, job_manager in rows
         ]
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to list interviews: {e}")
+        logger.error("Failed to list interviews: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -307,42 +294,40 @@ async def list_interviews(
 async def cancel_interview(
     interview_id: str,
     cancellation_message: str | None = None,
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Cancel a scheduled interview.
     """
     try:
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        interview = result.scalar_one_or_none()
-        
+        interview = await repo.get_interview_by_id(interview_id)
+
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-        
+
         # Cancel in calendar if synced
         if interview.graph_event_id and interview.graph_organizer_email:
             await calendar_service.cancel_interview(
                 organizer_email=interview.graph_organizer_email,
                 event_id=interview.graph_event_id,
-                cancellation_message=cancellation_message
+                cancellation_message=cancellation_message,
             )
-        
+
         # Update database
         interview.status = "cancelled"
         interview.cancelled_at = datetime.utcnow()
         interview.cancellation_reason = cancellation_message
-        
-        
-        logger.info(f"✅ Interview cancelled: {interview_id}")
-        
+
+        await repo.commit()
+
+        logger.info("Interview cancelled: %s", interview_id)
+
         return {"success": True, "message": "Interview cancelled successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Failed to cancel interview: {e}")
+        logger.error("Failed to cancel interview: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -356,14 +341,14 @@ class CompleteInterviewRequest(BaseModel):
 async def complete_interview(
     interview_id: str,
     request: CompleteInterviewRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Mark an interview as completed.
-    
+
     This endpoint dispatches the interview-completed event to automation handlers
     for further processing (e.g., stage changes, notifications).
-    
+
     Args:
         interview_id: UUID of the interview to complete
         outcome: Interview outcome (passed, failed, pending_review)
@@ -372,30 +357,30 @@ async def complete_interview(
     """
     try:
         from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
-        
+
         interview = await scheduling_service.complete_interview(
-            db=db,
+            db=repo.db,
             interview_id=interview_id,
             outcome=request.outcome,
             feedback=request.feedback,
             company_id=request.company_id,
-            dispatch_event=True
+            dispatch_event=True,
         )
-        
-        logger.info(f"✅ Interview completed: {interview_id}")
-        
+
+        logger.info("Interview completed: %s", interview_id)
+
         return {
             "success": True,
             "interview_id": str(interview.id),
             "status": interview.status,
             "outcome": request.outcome,
-            "completed_at": interview.completed_at.isoformat() if interview.completed_at else None
+            "completed_at": interview.completed_at.isoformat() if interview.completed_at else None,
         }
-        
+
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
-        logger.error(f"❌ Failed to complete interview: {e}")
+        logger.error("Failed to complete interview: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -403,56 +388,54 @@ async def complete_interview(
 async def reschedule_interview(
     interview_id: str,
     request: RescheduleInterviewRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Reschedule an existing interview.
     """
     try:
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        interview = result.scalar_one_or_none()
-        
+        interview = await repo.get_interview_by_id(interview_id)
+
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-        
+
         # Reschedule in calendar if synced
         if interview.graph_event_id and interview.graph_organizer_email:
             await calendar_service.reschedule_interview(
                 organizer_email=interview.graph_organizer_email,
                 event_id=interview.graph_event_id,
                 new_start_time=request.new_start_time,
-                new_duration_minutes=request.new_duration_minutes
+                new_duration_minutes=request.new_duration_minutes,
             )
-        
+
         # Update database
         old_start = interview.start_time
         interview.start_time = request.new_start_time
-        
+
         if request.new_duration_minutes:
             interview.duration_minutes = request.new_duration_minutes
             interview.end_time = request.new_start_time + timedelta(minutes=request.new_duration_minutes)
         else:
             interview.end_time = request.new_start_time + timedelta(minutes=interview.duration_minutes)
-        
+
         interview.status = "rescheduled"
         interview.last_synced_at = datetime.utcnow()
-        
-        
-        logger.info(f"✅ Interview rescheduled: {interview_id} from {old_start} to {request.new_start_time}")
-        
+
+        await repo.commit()
+
+        logger.info("Interview rescheduled: %s from %s to %s", interview_id, old_start, request.new_start_time)
+
         return {
             "success": True,
             "message": "Interview rescheduled successfully",
             "new_start_time": interview.start_time.isoformat(),
-            "new_end_time": interview.end_time.isoformat()
+            "new_end_time": interview.end_time.isoformat(),
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Failed to reschedule interview: {e}")
+        logger.error("Failed to reschedule interview: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -465,19 +448,19 @@ async def check_availability(request: CheckAvailabilityRequest):
         available_slots = await calendar_service.check_interviewer_availability(
             interviewer_email=request.interviewer_email,
             date=request.date,
-            duration_minutes=request.duration_minutes
+            duration_minutes=request.duration_minutes,
         )
-        
+
         return {
             "interviewer_email": request.interviewer_email,
             "date": request.date.isoformat(),
             "duration_minutes": request.duration_minutes,
             "available_slots": available_slots,
-            "total_slots": len(available_slots)
+            "total_slots": len(available_slots),
         }
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to check availability: {e}")
+        logger.error("Failed to check availability: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -485,21 +468,18 @@ async def check_availability(request: CheckAvailabilityRequest):
 async def submit_interview_feedback(
     interview_id: str,
     feedback: InterviewFeedbackRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Submit feedback for a completed interview.
     """
     try:
         # Verify interview exists
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        interview = result.scalar_one_or_none()
-        
+        interview = await repo.get_interview_by_id(interview_id)
+
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-        
+
         # Create feedback record
         feedback_record = InterviewFeedback(
             interview_id=interview_id,
@@ -514,28 +494,29 @@ async def submit_interview_feedback(
             weaknesses=feedback.weaknesses,
             notes=feedback.notes,
             recommendation=feedback.recommendation,
-            next_steps_suggested=feedback.next_steps_suggested
+            next_steps_suggested=feedback.next_steps_suggested,
         )
-        
-        db.add(feedback_record)
-        
+
+        await repo.add_feedback(feedback_record)
+
         # Update interview status
         if interview.status == "scheduled":
             interview.status = "completed"
-        
-        
-        logger.info(f"✅ Feedback submitted for interview {interview_id}")
-        
+
+        await repo.commit()
+
+        logger.info("Feedback submitted for interview %s", interview_id)
+
         return {
             "success": True,
             "feedback_id": str(feedback_record.id),
-            "message": "Feedback submitted successfully"
+            "message": "Feedback submitted successfully",
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Failed to submit feedback: {e}")
+        logger.error("Failed to submit feedback: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -571,7 +552,7 @@ async def generate_email_template(request: GenerateEmailTemplateRequest):
     """
     try:
         anthropic = AsyncAnthropic()
-        
+
         prompt = f"""Gere um email profissional de convite para entrevista.
 
 INFORMAÇÕES:
@@ -590,37 +571,37 @@ REQUISITOS:
 
 Retorne APENAS o corpo do email (sem assunto), formatado em HTML simples.
 """
-        
+
         response = await anthropic.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=1000,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
-        
+
         email_body = response.content[0].text
-        
+
         # Generate subject
         subject = f"Convite para Entrevista {request.interview_type.capitalize()} - {request.job_title}"
-        
-        logger.info(f"✅ Email template generated for {request.candidate_name}")
-        
+
+        logger.info("Email template generated for %s", request.candidate_name)
+
         return {
             "success": True,
             "subject": subject,
             "body": email_body,
             "to": request.candidate_email,
-            "candidate_name": request.candidate_name
+            "candidate_name": request.candidate_name,
         }
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to generate email template: {e}")
+        logger.error("Failed to generate email template: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/interviews/schedule-from-prompt", response_model=dict)
 async def schedule_from_prompt(
     request: ScheduleFromPromptRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Schedule interview using natural language prompt.
@@ -628,7 +609,7 @@ async def schedule_from_prompt(
     """
     try:
         anthropic = AsyncAnthropic()
-        
+
         # Parse natural language prompt using LIA
         parse_prompt = f"""Extraia informações de agendamento de entrevista do prompt em linguagem natural.
 
@@ -657,61 +638,65 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
     "notes": "Informações extras se houver"
 }}
 """
-        
+
         response = await anthropic.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=800,
-            messages=[{"role": "user", "content": parse_prompt}]
+            messages=[{"role": "user", "content": parse_prompt}],
         )
-        
+
         extracted_text = response.content[0].text
-        
+
         # Clean JSON
         if "```json" in extracted_text:
             extracted_text = extracted_text.split("```json")[1].split("```")[0]
         elif "```" in extracted_text:
             extracted_text = extracted_text.split("```")[1].split("```")[0]
-        
+
         try:
             extracted = json.loads(extracted_text.strip())
         except json.JSONDecodeError:
-            logger.error(f"❌ Failed to parse LLM JSON output: {extracted_text}")
+            logger.error("Failed to parse LLM JSON output: %s", extracted_text)
             raise HTTPException(
                 status_code=400,
-                detail="Não foi possível entender o prompt. Por favor, tente novamente com data e hora mais claras (ex: 'amanhã às 14h')."
+                detail="Não foi possível entender o prompt. Por favor, tente novamente com data e hora mais claras (ex: 'amanhã às 14h').",
             )
-        
+
         # Validate required fields
         if not extracted.get("date") or not extracted.get("time"):
             raise HTTPException(
                 status_code=400,
-                detail="Não foi possível identificar a data ou hora. Por favor, especifique quando deseja agendar (ex: 'amanhã às 14h')."
+                detail="Não foi possível identificar a data ou hora. Por favor, especifique quando deseja agendar (ex: 'amanhã às 14h').",
             )
-        
+
         # Parse and validate datetime
         try:
             interview_date = datetime.strptime(extracted["date"], "%Y-%m-%d").date()
             interview_time = datetime.strptime(extracted["time"], "%H:%M").time()
             start_time = datetime.combine(interview_date, interview_time)
-            
+
             # Validate not in the past
             if start_time < datetime.now():
                 raise HTTPException(
                     status_code=400,
-                    detail="Não é possível agendar entrevistas no passado. Por favor, escolha uma data futura."
+                    detail="Não é possível agendar entrevistas no passado. Por favor, escolha uma data futura.",
                 )
         except ValueError:
-            logger.error(f"❌ Invalid datetime format: date={extracted.get('date')}, time={extracted.get('time')}")
+            logger.error(
+                "Invalid datetime format: date=%s, time=%s",
+                extracted.get("date"),
+                extracted.get("time"),
+            )
             raise HTTPException(
                 status_code=400,
-                detail="Formato de data/hora inválido. Por favor, use formatos como 'amanhã às 14h' ou 'próxima segunda 10h'."
+                detail="Formato de data/hora inválido. Por favor, use formatos como 'amanhã às 14h' ou 'próxima segunda 10h'.",
             )
-        
+
         # Default to user if not specified or "comigo"
         interviewer_name = extracted.get("interviewer_name", request.user_name) or request.user_name
         interviewer_email = extracted.get("interviewer_email", request.user_email) or request.user_email
         duration_minutes = extracted.get("duration_minutes", 60) or 60
-        
+
         # Create calendar event with validated data
         try:
             calendar_event = await calendar_service.schedule_interview(
@@ -724,15 +709,15 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
                 duration_minutes=duration_minutes,
                 location="Microsoft Teams",
                 as_teams_meeting=True,
-                notes=extracted.get("notes")
+                notes=extracted.get("notes"),
             )
         except Exception as calendar_error:
-            logger.error(f"❌ Calendar service failed: {calendar_error}")
+            logger.error("Calendar service failed: %s", calendar_error)
             raise HTTPException(
                 status_code=500,
-                detail=f"Erro ao criar evento no calendário: {str(calendar_error)}"
+                detail=f"Erro ao criar evento no calendário: {str(calendar_error)}",
             )
-        
+
         # Create database record
         interview = Interview(
             title=f"Entrevista: {request.candidate_name} - {request.job_title}",
@@ -753,22 +738,20 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
             is_synced_to_calendar=True,
             last_synced_at=datetime.utcnow(),
             status="scheduled",
-            created_by=request.user_name
+            created_by=request.user_name,
         )
-        
+
         # Extract meeting URL
         if calendar_event.get("onlineMeeting"):
             interview.meeting_url = calendar_event["onlineMeeting"].get("joinUrl")
             interview.meeting_platform = "teams"
-        
-        db.add(interview)
-        await db.flush()
-        await db.refresh(interview)
-        
+
+        interview = await repo.add_interview(interview)
+
         # Create activity feed entry if candidate_id provided
         if request.candidate_id:
             await activity_service.create_activity(
-                db=db,
+                db=repo.db,
                 activity_type="interview_scheduled",
                 title=f"Entrevista {request.interview_type} agendada",
                 description=f"Entrevista agendada para {start_time.strftime('%d/%m/%Y às %H:%M')} com {interviewer_name}",
@@ -777,12 +760,14 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
                 metadata={
                     "interview_id": str(interview.id),
                     "meeting_url": interview.meeting_url,
-                    "interviewer": interviewer_name
-                }
+                    "interviewer": interviewer_name,
+                },
             )
-        
-        logger.info(f"✅ Interview scheduled from prompt for {request.candidate_name}")
-        
+
+        await repo.commit()
+
+        logger.info("Interview scheduled from prompt for %s", request.candidate_name)
+
         return {
             "success": True,
             "interview_id": str(interview.id),
@@ -790,14 +775,14 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
             "start_time": start_time.isoformat(),
             "end_time": interview.end_time.isoformat(),
             "interviewer": interviewer_name,
-            "parsed_data": extracted
+            "parsed_data": extracted,
         }
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions with their original status codes
         raise
     except Exception as e:
-        logger.error(f"❌ Unexpected error scheduling from prompt: {e}")
+        logger.error("Unexpected error scheduling from prompt: %s", e)
         raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
 
 
@@ -816,77 +801,62 @@ def is_valid_uuid(val: str) -> bool:
 
 @router.get("/interviews/shortlisted/filter", response_model=dict)
 async def get_shortlisted_candidate_ids(
-    scope: str = Query(..., description="Shortlist scope: shortlisted_by_you, shortlisted_org_this_project, shortlisted_org_all_projects"),
+    scope: str = Query(
+        ...,
+        description="Shortlist scope: shortlisted_by_you, shortlisted_org_this_project, shortlisted_org_all_projects",
+    ),
     user_email: str | None = Query(None, description="User email for 'shortlisted_by_you' scope"),
     company_id: str | None = Query(None, description="Company ID for org-level scopes"),
     project_id: str | None = Query(None, description="Project/Vacancy ID for project-specific scopes"),
     since_date: str | None = Query(None, description="Filter interviews since this date (ISO format)"),
-    db: AsyncSession = Depends(get_db)
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Get candidate IDs that have been shortlisted (have interview records).
-    
-    Business rule for "shortlisted": A candidate is shortlisted if they have at least 
+
+    Business rule for "shortlisted": A candidate is shortlisted if they have at least
     one interview record with status in ('scheduled', 'confirmed', 'completed', 'rescheduled').
-    
+
     Scopes:
     - shortlisted_by_you: Candidates where the user is the interviewer
     - shortlisted_org_this_project: Candidates interviewed for a specific project/vacancy
     - shortlisted_org_all_projects: All candidates interviewed by the company
     """
     try:
-        from app.models.job_vacancy import JobVacancy
-        
-        valid_statuses = ['scheduled', 'confirmed', 'completed', 'rescheduled']
-        
-        query = select(Interview.candidate_id).distinct()
-        filters = [Interview.status.in_(valid_statuses)]
-        
+        since_datetime = None
         if since_date:
             try:
-                since_datetime = datetime.fromisoformat(since_date.replace('Z', '+00:00'))
-                filters.append(Interview.created_at >= since_datetime)
+                since_datetime = datetime.fromisoformat(since_date.replace("Z", "+00:00"))
             except ValueError:
                 pass
-        
-        if scope == "shortlisted_by_you":
-            if not user_email:
-                return {"candidate_ids": [], "count": 0}
-            filters.append(Interview.interviewer_email == user_email)
-            
-        elif scope == "shortlisted_org_this_project":
-            if not project_id or not is_valid_uuid(project_id):
-                return {"candidate_ids": [], "count": 0}
-            filters.append(Interview.job_vacancy_id == project_id)
-            
-        elif scope == "shortlisted_org_all_projects":
-            if company_id:
-                vacancy_subquery = select(JobVacancy.id).where(JobVacancy.company_id == company_id)
-                filters.append(Interview.job_vacancy_id.in_(vacancy_subquery))
-        else:
+
+        if scope == "shortlisted_org_this_project" and (not project_id or not is_valid_uuid(project_id)):
             return {"candidate_ids": [], "count": 0}
-        
-        query = query.where(and_(*filters))
-        
-        result = await db.execute(query)
-        candidate_ids = [str(row[0]) for row in result.fetchall() if row[0] is not None]
-        
-        logger.info(f"✅ Found {len(candidate_ids)} shortlisted candidates for scope: {scope}")
-        
+
+        candidate_ids = await repo.get_shortlisted_candidate_ids(
+            scope=scope,
+            user_email=user_email,
+            company_id=company_id,
+            project_id=project_id,
+            since_datetime=since_datetime,
+        )
+
+        logger.info("Found %d shortlisted candidates for scope: %s", len(candidate_ids), scope)
+
         return {
             "candidate_ids": candidate_ids,
-            "count": len(candidate_ids)
+            "count": len(candidate_ids),
         }
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to get shortlisted candidates: {e}")
+        logger.error("Failed to get shortlisted candidates: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/interviews/stages", response_model=list[dict])
 async def get_interview_stages(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    repo: InterviewRepository = Depends(get_interview_repo),
 ):
     """
     Get the company's configured recruitment stages that can be used for interviews.
@@ -899,22 +869,7 @@ async def get_interview_stages(
     if not company_id:
         raise HTTPException(status_code=401, detail="Company context required")
     try:
-        from app.domains.automation.models.recruitment_stages import RecruitmentStage
-        result = await db.execute(
-            select(RecruitmentStage)
-            .where(
-                and_(
-                    RecruitmentStage.company_id == company_id,
-                    RecruitmentStage.is_active.is_(True),
-                    RecruitmentStage.is_initial.is_(False),
-                    RecruitmentStage.is_final.is_(False),
-                    RecruitmentStage.is_rejection.is_(False),
-                    RecruitmentStage.is_hired.is_(False),
-                )
-            )
-            .order_by(RecruitmentStage.stage_order)
-        )
-        stages = result.scalars().all()
+        stages = await repo.get_interview_stages(company_id)
 
         return [
             {

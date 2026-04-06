@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.credit_service import CreditService
+from app.services.credit_service import ACTION_CREDIT_COSTS, CreditService
 from lia_models.billing import CreditTransactionType
 
 logger = logging.getLogger(__name__)
@@ -29,9 +29,13 @@ def _get_company_id(request: Request) -> str:
 
 class CreditBalanceResponse(BaseModel):
     balance: int
+    plan_type: str = "free"
     lifetime_purchased: int
     lifetime_consumed: int
     lifetime_bonus: int
+    low_balance_warning: bool = False
+    low_balance_threshold: int = 20
+    reset_date: str | None = None
     updated_at: str | None = None
 
 
@@ -49,6 +53,13 @@ class AddCreditsRequest(BaseModel):
 class ConsumeCreditsRequest(BaseModel):
     amount: int = Field(..., gt=0, le=10000)
     description: str
+    action_type: str | None = None
+    reference_type: str | None = None
+    reference_id: str | None = None
+
+
+class ConsumeActionRequest(BaseModel):
+    action_type: str = Field(..., description="Action type (search, analysis, screening, report, etc.)")
     reference_type: str | None = None
     reference_id: str | None = None
 
@@ -57,6 +68,7 @@ class CreditTransactionResponse(BaseModel):
     id: str
     company_id: str
     transaction_type: str
+    action_type: str | None = None
     amount: int
     balance_after: int
     description: str | None
@@ -141,6 +153,7 @@ async def consume_credits(
             company_id,
             body.amount,
             body.description,
+            action_type=body.action_type,
             reference_type=body.reference_type,
             reference_id=body.reference_id,
             performed_by=user_id,
@@ -159,6 +172,58 @@ async def consume_credits(
     except Exception as e:
         logger.error("[Credits] Error consuming credits for %s: %s", company_id, e)
         raise HTTPException(status_code=500, detail="Error consuming credits")
+
+
+@router.post("/consume-action")
+async def consume_action_credits(
+    request: Request,
+    body: ConsumeActionRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    company_id = _get_company_id(request)
+    user_id = getattr(request.state, "user_id", "system")
+
+    if body.action_type not in ACTION_CREDIT_COSTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown action type '{body.action_type}'. Valid: {sorted(ACTION_CREDIT_COSTS.keys())}",
+        )
+
+    try:
+        success, remaining = await _credit_service.consume_action(
+            db,
+            company_id,
+            body.action_type,
+            reference_type=body.reference_type,
+            reference_id=body.reference_id,
+            performed_by=user_id,
+        )
+        if not success:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient credits. Current balance: {remaining}",
+            )
+        await db.commit()
+        return {
+            "success": True,
+            "action_type": body.action_type,
+            "cost": ACTION_CREDIT_COSTS[body.action_type],
+            "remaining_balance": remaining,
+        }
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("[Credits] Error consuming action credits for %s: %s", company_id, e)
+        raise HTTPException(status_code=500, detail="Error consuming credits")
+
+
+@router.get("/costs")
+async def get_action_costs():
+    return {
+        "costs": ACTION_CREDIT_COSTS,
+    }
 
 
 @router.get("/transactions", response_model=list[CreditTransactionResponse])

@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.domains.ats_integration.dependencies import get_ats_repo
@@ -486,7 +488,9 @@ async def list_sync_jobs(
     """
     try:
         jobs = await repo.list_sync_jobs(
-            connection_id=connection_id, status=status, limit=limit
+            connection_id=connection_id,
+            status=status,
+            limit=limit,
         )
 
         return [
@@ -525,7 +529,9 @@ async def list_ats_candidates(
     """
     try:
         candidates = await repo.list_candidates(
-            provider=provider, connection_id=connection_id, limit=limit
+            provider=provider,
+            connection_id=connection_id,
+            limit=limit,
         )
 
         return [
@@ -979,7 +985,9 @@ async def list_webhook_logs(
     """
     try:
         logs = await repo.list_webhook_logs(
-            provider=provider, processed=processed, limit=limit
+            provider=provider,
+            processed=processed,
+            limit=limit,
         )
 
         return [

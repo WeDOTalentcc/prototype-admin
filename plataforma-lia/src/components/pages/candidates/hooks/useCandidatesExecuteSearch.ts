@@ -37,7 +37,7 @@ interface ExecuteSearchDeps {
   searchThreadId: string | undefined
   setSearchThreadId: (id: string | undefined) => void
   hideViewedCandidatesFilter: (candidates: Candidate[]) => Candidate[]
-  talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void; [key: string]: unknown }
+  talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void }
   setCandidates: (c: Candidate[]) => void
   setSearchResults: (v: SearchResults | ((prev: SearchResults) => SearchResults)) => void
   setHasSearchResults: (v: boolean) => void
@@ -58,7 +58,7 @@ interface ExecuteSearchDeps {
   setShowExpandedLIA: (v: boolean) => void
   setUserCollapsedLIA: (v: boolean) => void
   setLastSuccessfulQuery: (q: string) => void
-  setChatMessages: (fn: unknown[] | ((prev: unknown[]) => unknown[])) => void
+  setChatMessages: (fn: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
   setIsLoading: (v: boolean) => void
   setIsSearchActive: (v: boolean) => void
 }

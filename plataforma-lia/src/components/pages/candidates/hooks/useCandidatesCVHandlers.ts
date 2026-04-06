@@ -12,7 +12,7 @@ export interface CandidatesCVHandlersContext {
   setSearchResultsCount: (v: number) => void
   setShowSearchResults: (v: boolean) => void
   setDisplayedResultsCount: (v: number) => void
-  setChatMessages: (v: unknown[] | ((prev: unknown[]) => unknown[])) => void
+  setChatMessages: (v: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
 }
 
 export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {

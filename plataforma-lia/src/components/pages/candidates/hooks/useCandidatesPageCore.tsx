@@ -89,10 +89,10 @@ export function useCandidatesPageCore({
 
   const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
 
-  const candidates = useCandidatesStore((s) => s.candidates) as Candidate[]
+  const candidates = useCandidatesStore((s) => s.candidates) as unknown as Candidate[]
   const storeCandidatesSetter = useCandidatesStore((s) => s.setCandidates)
   const setCandidates = useCallback((v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => {
-    storeCandidatesSetter(v as Record<string, unknown>[] | ((prev: Record<string, unknown>[]) => Record<string, unknown>[]))
+    storeCandidatesSetter(v as unknown as Record<string, unknown>[] | ((prev: Record<string, unknown>[]) => Record<string, unknown>[]))
   }, [storeCandidatesSetter])
   const isLoading = useCandidatesStore((s) => s.isLoading)
   const setIsLoading = useCandidatesStore((s) => s.setIsLoading)
@@ -333,7 +333,7 @@ export function useCandidatesPageCore({
   const confirmSourceChange = searchHandlers.confirmSourceChange
   const handleContactFilterChange = searchHandlers.handleContactFilterChange
   const confirmContactFilterChange = searchHandlers.confirmContactFilterChange
-  const handleSearchFeedbackChange = searchHandlers.handleSearchFeedbackChange
+  const handleSearchFeedbackChange = (candidateId: string, candidateName: string, feedback: 'like' | 'dislike' | null) => { searchHandlers.handleSearchFeedbackChange(candidateId, feedback) }
   const handleLoadMore = searchHandlers.handleLoadMore
   const handleExpandToGlobal = searchHandlers.handleExpandToGlobal
   const handleApplyAdvancedFilters = searchHandlers.handleApplyAdvancedFilters
@@ -346,7 +346,7 @@ export function useCandidatesPageCore({
 
   const viewComposition = useCandidatesViewComposition({
     candidates, setCandidates, searchResults, searchTerm, hasSearchResults,
-    quickFilters, columnFilters, advancedFilters, tableFilters, setTableFilters,
+    quickFilters, columnFilters: columnFilters as { position: string[]; company: string[]; location: string[]; scoreRange: string[]; bigFive?: Record<string, string> }, advancedFilters, tableFilters, setTableFilters,
     sortBy, setSortBy, sortOrder, setSortOrder, searchSortBy, searchFeedbacks,
     displayedResultsCount, showSearchResults, setShowSearchResults, currentPage, itemsPerPage,
     showOnlyNew, viewedCandidateIds, activeTab, setActiveTab,

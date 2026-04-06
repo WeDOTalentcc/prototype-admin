@@ -649,6 +649,17 @@ async def search_candidates(
             else:
                 expansion_message = f"Pool local limitado ({local_only_count} candidatos). Busca global pode encontrar mais perfis adequados."
         
+        try:
+            from app.services.credit_service import CreditService
+            _cs = CreditService()
+            _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
+            if _company_id:
+                _action = "bulk_search" if request.search_pearch else "search"
+                await _cs.consume_action(db, _company_id, _action, reference_type="search", reference_id=result.thread_id)
+                await db.commit()
+        except Exception as _credit_err:
+            logger.warning("[Credits] Non-blocking credit deduction failed: %s", _credit_err)
+
         return SearchResponseDTO(
             query=result.query,
             thread_id=result.thread_id,
