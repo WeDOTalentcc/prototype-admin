@@ -221,9 +221,9 @@ export function LegacyChatPage() {
         >
           {/* Empty state welcome message */}
           {isEmptyChat && (
-            <div className={`text-left pt-6 ${messagesContainerClass}`}>
+            <div className={`text-center pt-6 ${messagesContainerClass}`}>
               <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary flex items-center gap-2">
+                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary flex items-center justify-center gap-2">
                   <Brain className="w-7 h-7 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
                   Oi, eu sou a <span className="font-source-serif-4">LIA</span>.
                 </h2>
@@ -613,7 +613,7 @@ export function LegacyChatPage() {
         {isEmptyChat && recentChatItems.length > 0 && (
           <div className="px-6 pt-1 pb-5 flex-shrink-0 bg-white">
             <div className="max-w-3xl mx-auto">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3 mb-2">
                 <h3 className="text-xs font-semibold text-lia-text-primary tracking-[0.2em] uppercase">
                   Recentes
                 </h3>
@@ -628,7 +628,7 @@ export function LegacyChatPage() {
                 {recentChatItems.map((item) => (
                   <button
                     key={`${item.type}-${item.id}`}
-                    className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none duration-150 text-left group"
+                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none duration-150 text-left group"
                     onClick={() => {
                       const convId = item.meta?.conversationId
                       if (typeof convId === 'string' && convId.length > 0) {
@@ -637,10 +637,10 @@ export function LegacyChatPage() {
                     }}
                   >
                     <Brain className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
-                    <span className="flex-1 text-xs text-lia-text-primary truncate">
+                    <span className="text-xs text-lia-text-primary truncate">
                       {item.title}
                     </span>
-                    <span className="text-xs text-lia-text-disabled flex-shrink-0">
+                    <span className="text-xs text-lia-text-disabled flex-shrink-0 ml-1">
                       {formatRelativeTime(item.timestamp)}
                     </span>
                   </button>
