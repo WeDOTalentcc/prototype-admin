@@ -8,18 +8,14 @@ This endpoint provides a simpler interface for email operations:
 - Ready for Mailgun/Resend integration
 """
 import logging
-import uuid
 from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import desc, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models.candidate import Candidate
-from app.models.email_template import EmailLog
+from app.domains.communication.dependencies import get_email_repo
+from app.domains.communication.repositories.email_repository import EmailRepository
 
 logger = logging.getLogger(__name__)
 
@@ -73,16 +69,16 @@ class EmailHistoryResponse(BaseModel):
 @router.post("/send", response_model=DirectEmailResponse)
 async def send_direct_email(
     request: DirectEmailRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: EmailRepository = Depends(get_email_repo),
 ):
     """
     Send an email directly without using a template.
-    
+
     Current Status: SIMULATED/LOGGED
     - Emails are stored in the database for audit trail
     - Actual sending requires Mailgun/Resend configuration
     - Status will be 'queued' until provider is configured
-    
+
     Integration:
     - Mailgun API (primary)
     - Resend (automatic fallback via circuit breaker)
@@ -91,48 +87,36 @@ async def send_direct_email(
     """
     try:
         if request.candidate_id:
-            result = await db.execute(
-                select(Candidate).where(Candidate.id == request.candidate_id)
-            )
-            candidate = result.scalar_one_or_none()
+            candidate = await repo.find_candidate_by_id(request.candidate_id)
             if not candidate:
                 logger.warning(f"Candidate {request.candidate_id} not found, proceeding anyway")
-        
-        email_log = EmailLog(
-            id=uuid.uuid4(),
-            template_id=None,
-            candidate_id=request.candidate_id,
+
+        email_log = await repo.create_email_log(
             recipient_email=request.recipient_email,
             subject=request.subject,
             body_html=request.body_html,
             body_text=request.body_text,
-            status="queued",
-            variables_used=request.metadata or {},
-            created_at=datetime.utcnow(),
-            created_by="api"
+            candidate_id=request.candidate_id,
+            metadata=request.metadata,
         )
-        
-        db.add(email_log)
-        await db.flush()
-        await db.refresh(email_log)
-        
-        logger.info(f"📧 Email queued: {email_log.id} (recipient omitted — LGPD)")
+
+        logger.info(f"Email queued: {email_log.id} (recipient omitted - LGPD)")
         logger.info(f"   Subject: {request.subject}")
-        logger.info("   Status: QUEUED (SMTP not configured - Funcional - Aguardando Configuração SMTP)")
-        
+        logger.info("   Status: QUEUED (SMTP not configured - Funcional - Aguardando Configuracao SMTP)")
+
         return DirectEmailResponse(
             success=True,
             email_id=str(email_log.id),
             status="queued",
-            message="Email enfileirado com sucesso. Aguardando configuração SMTP para envio.",
+            message="Email enfileirado com sucesso. Aguardando configuracao SMTP para envio.",
             recipient_email=request.recipient_email,
             subject=request.subject,
             queued_at=email_log.created_at,
-            smtp_configured=False
+            smtp_configured=False,
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to queue email: {e}")
+        logger.error(f"Failed to queue email: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -141,58 +125,45 @@ async def get_email_history_by_candidate(
     candidate_id: str,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: EmailRepository = Depends(get_email_repo),
 ):
     """
     Get email history for a specific candidate.
-    
+
     Returns all emails sent to this candidate, including:
     - Direct emails
     - Template-based emails
     - Status of each email
     """
     try:
-        query = select(EmailLog).where(
-            EmailLog.candidate_id == candidate_id
-        ).order_by(desc(EmailLog.created_at))
-        
-        count_result = await db.execute(query)
-        total = len(count_result.scalars().all())
-        
-        query = query.offset(skip).limit(limit)
-        result = await db.execute(query)
-        logs = result.scalars().all()
-        
+        total, logs = await repo.get_logs_by_candidate(
+            candidate_id=candidate_id,
+            skip=skip,
+            limit=limit,
+        )
+
         items = []
         for log in logs:
-            body_preview = None
-            if log.body_text:
-                body_preview = log.body_text[:150] + "..." if len(log.body_text) > 150 else log.body_text
-            elif log.body_html:
-                import re
-                text = re.sub(r'<[^>]+>', '', log.body_html)
-                body_preview = text[:150] + "..." if len(text) > 150 else text
-            
             items.append(EmailHistoryItem(
                 id=str(log.id),
                 recipient_email=log.recipient_email,
                 subject=log.subject,
                 status=log.status,
-                body_preview=body_preview,
+                body_preview=repo.extract_body_preview(log),
                 template_id=str(log.template_id) if log.template_id else None,
                 sent_at=log.sent_at,
                 created_at=log.created_at,
-                error_message=log.error_message
+                error_message=log.error_message,
             ))
-        
+
         return EmailHistoryResponse(
             total=total,
             candidate_id=candidate_id,
-            items=items
+            items=items,
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to get email history: {e}")
+        logger.error(f"Failed to get email history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -202,28 +173,19 @@ async def get_all_email_history(
     status: str | None = Query(None, description="Filter by status: queued, sent, failed"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: EmailRepository = Depends(get_email_repo),
 ):
     """
     Get all email history with optional filters.
     """
     try:
-        query = select(EmailLog)
-        
-        if recipient_email:
-            query = query.where(EmailLog.recipient_email.ilike(f"%{recipient_email}%"))
-        if status:
-            query = query.where(EmailLog.status == status)
-        
-        query = query.order_by(desc(EmailLog.created_at))
-        
-        count_result = await db.execute(query)
-        total = len(count_result.scalars().all())
-        
-        query = query.offset(skip).limit(limit)
-        result = await db.execute(query)
-        logs = result.scalars().all()
-        
+        total, logs = await repo.get_all_logs(
+            recipient_email=recipient_email,
+            status=status,
+            skip=skip,
+            limit=limit,
+        )
+
         items = []
         for log in logs:
             items.append(EmailHistoryItem(
@@ -234,16 +196,16 @@ async def get_all_email_history(
                 template_id=str(log.template_id) if log.template_id else None,
                 sent_at=log.sent_at,
                 created_at=log.created_at,
-                error_message=log.error_message
+                error_message=log.error_message,
             ))
-        
+
         return EmailHistoryResponse(
             total=total,
-            items=items
+            items=items,
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to get email history: {e}")
+        logger.error(f"Failed to get email history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -251,14 +213,14 @@ async def get_all_email_history(
 async def get_email_system_status():
     """
     Get the current status of the email system.
-    
+
     Returns information about:
     - Whether SMTP is configured
     - Available email providers
     - Current mode (simulated/live)
     """
     import os
-    
+
     smtp_host = os.getenv("SMTP_HOST")
     mailgun_key = os.getenv("MAILGUN_API_KEY")
     mailgun_domain = os.getenv("MAILGUN_DOMAIN")
@@ -270,25 +232,25 @@ async def get_email_system_status():
     any_configured = smtp_configured or mailgun_configured or resend_configured
 
     return {
-        "status": "Funcional - Aguardando Configuração SMTP/Mailgun",
+        "status": "Funcional - Aguardando Configuracao SMTP/Mailgun",
         "mode": "live" if any_configured else "simulated",
         "providers": {
             "smtp": {
                 "configured": smtp_configured,
-                "host": smtp_host if smtp_configured else None
+                "host": smtp_host if smtp_configured else None,
             },
             "mailgun": {
-                "configured": mailgun_configured
+                "configured": mailgun_configured,
             },
             "resend": {
-                "configured": resend_configured
-            }
+                "configured": resend_configured,
+            },
         },
         "message": (
-            "Sistema de email operacional. Emails são armazenados no banco de dados."
+            "Sistema de email operacional. Emails sao armazenados no banco de dados."
             if any_configured else
             "Sistema de email em modo simulado. Configure SMTP_HOST, MAILGUN_API_KEY+MAILGUN_DOMAIN ou RESEND_API_KEY para habilitar envio real."
         ),
         "database_logging": True,
-        "audit_trail": True
+        "audit_trail": True,
     }

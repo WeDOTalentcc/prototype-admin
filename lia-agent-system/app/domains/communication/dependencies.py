@@ -11,3 +11,11 @@ def get_communication_repo(
     db: AsyncSession = Depends(get_db),
 ) -> CommunicationRepository:
     return CommunicationRepository(db)
+
+from app.domains.communication.repositories.email_repository import EmailRepository
+
+
+def get_email_repo(
+    db: AsyncSession = Depends(get_db),
+) -> EmailRepository:
+    return EmailRepository(db)
