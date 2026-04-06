@@ -7,9 +7,11 @@
  */
 
 import React from "react"
-import { Brain, User, CheckCircle2 } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { cleanAgentResponse, parseChatMarkdown } from "@/lib/chat-format"
+import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
+import { useAuthStore } from "@/stores/auth-store"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { ParecerLIACard } from "@/components/chat/parecer-lia-card"
 import { ActionResultCard } from "@/components/chat/action-result-card"
@@ -49,7 +51,6 @@ interface ChatMessageListProps {
   }
 }
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (21 ocorrências)
 export function ChatMessageList({
   messages,
   isTypingEffect,
@@ -76,12 +77,26 @@ export function ChatMessageList({
     setCurrentStage,
   } = useExpandedChatContext()
 
+  const authUser = useAuthStore((s) => s.user)
+  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+
   function formatMessageContent(content: string, isCurrentlyTyping: boolean, messageId: string) {
     const isLastTypingMessage = isCurrentlyTyping && messages[messages.length - 1]?.id === messageId
     const textToShow = isLastTypingMessage && displayedText.length > 0 ? displayedText : content
     const cleaned = cleanAgentResponse(textToShow)
     const html = parseChatMarkdown(cleaned)
     return <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />
+  }
+
+  function renderFeedback(messageId: string, content: string) {
+    return (
+      <MessageFeedback
+        sessionId={conversationId || 'default-session'}
+        messageId={messageId}
+        originalResponse={content}
+        className="mt-2"
+      />
+    )
   }
 
   return (
@@ -92,96 +107,59 @@ export function ChatMessageList({
           data-testid="chat-message"
           data-role={message.role}
           className={cn(
- "flex animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
+            "flex animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
             message.role === 'user' ? "justify-end" : "justify-start",
             message.role === 'system' && "justify-center"
           )}
           style={{animationDelay: `${Math.min(index * 50, 200)}ms`}}
         >
           {message.role === 'system' ? (
-            /* System Message - Field update notification */
             <div className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
               "bg-lia-bg-tertiary/80/60",
               "border border-lia-border-subtle/50/50",
               "max-w-[80%]"
             )}>
               <CheckCircle2 className="w-3 h-3 text-wedo-green flex-shrink-0" />
-              <span
-                className="text-micro text-lia-text-secondary"
-                style={{fontFamily: '"Inter", sans-serif'}}
-              >
+              <span className="text-micro text-lia-text-secondary font-['Inter',sans-serif]">
                 {message.content}
               </span>
             </div>
           ) : message.role === 'user' ? (
-            /* User Message */
-            <div className="flex items-start gap-2.5 max-w-[70%]">
-              <div className="flex flex-col items-end gap-1 flex-1">
-                <div
-                  className="px-3.5 py-2.5 rounded-[14px] rounded-br-[4px] bg-lia-bg-tertiary"
-                 
-                >
-                  <p className="text-base-ui text-lia-text-secondary leading-relaxed">{message.content}</p>
-                </div>
-                <span className="text-xs text-lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
-                  {formatTimestamp(message.timestamp)}
-                </span>
-              </div>
-              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center mt-0.5">
-                <User className="w-3.5 h-3.5 text-lia-text-tertiary" />
-              </div>
-            </div>
+            <ChatBubbleBase
+              sender="user"
+              timestamp={formatTimestamp(message.timestamp)}
+              userName={userDisplayName}
+            >
+              <p className="text-base-ui text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]">{message.content}</p>
+            </ChatBubbleBase>
           ) : message.messageType === 'parecer-lia' && message.parecerData ? (
-            <div className="flex items-start gap-2 max-w-[90%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-              </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <p className="text-base-ui text-lia-text-secondary mb-3">{message.content}</p>
-                <ParecerLIACard
-                  data={message.parecerData}
-                  onAcceptSuggestion={(suggestion) => {
-                    onSetInputValue(suggestion)
-                    if (inputRef?.current) inputRef.current.focus()
-                  }}
-                />
-                <MessageFeedback
-                  sessionId={conversationId || 'default-session'}
-                  messageId={message.id}
-                  originalResponse={message.content}
-                  className="mt-2"
-                />
-              </div>
-            </div>
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              afterBubble={renderFeedback(message.id, message.content)}
+              bubbleClassName="bg-transparent p-0"
+            >
+              <p className="text-base-ui text-lia-text-primary mb-3 font-['Open_Sans',sans-serif]">{message.content}</p>
+              <ParecerLIACard
+                data={message.parecerData}
+                onAcceptSuggestion={(suggestion) => {
+                  onSetInputValue(suggestion)
+                  if (inputRef?.current) inputRef.current.focus()
+                }}
+              />
+            </ChatBubbleBase>
           ) : message.messageType === 'compensation' ? (
-            /* Compensation Analysis */
-            <div className="flex items-start gap-2 max-w-[85%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              afterBubble={renderFeedback(message.id, message.content)}
+            >
+              <div className="text-base-ui text-lia-text-primary leading-relaxed whitespace-pre-wrap font-['Open_Sans',sans-serif]">
+                {formatSalaryAnalysisText(message.compensationAnalysis || null)}
               </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <div className="text-base-ui text-lia-text-secondary leading-relaxed whitespace-pre-wrap">
-                  {formatSalaryAnalysisText(message.compensationAnalysis || null)}
-                </div>
-                <MessageFeedback
-                  sessionId={conversationId || 'default-session'}
-                  messageId={message.id}
-                  originalResponse={message.content}
-                  className="mt-2"
-                />
-              </div>
-            </div>
+            </ChatBubbleBase>
           ) : message.messageType === 'competencies' ? (
-            /* Competencies Suggestions Chat Message */
             <CompetenciesChatMessage
               technicalSkills={message.competenciesSuggestions?.technicalSkills || []}
               behavioralCompetencies={message.competenciesSuggestions?.behavioralCompetencies || []}
@@ -233,7 +211,6 @@ export function ChatMessageList({
               }}
             />
           ) : message.messageType === 'vacancy-search' ? (
-            /* Fast Track - Vacancy Search Results */
             <VacancySearchResults
               vacancies={message.vacancySearchResults || []}
               isLoading={isSearchingVacancies}
@@ -250,7 +227,6 @@ export function ChatMessageList({
               }}
             />
           ) : message.messageType === 'vacancy-summary' ? (
-            /* Fast Track - Vacancy Full Summary */
             <VacancyFullSummary
               vacancy={message.vacancyFullDetails || null}
               editableFields={['salary_range', 'location', 'work_model', 'benefits']}
@@ -258,188 +234,151 @@ export function ChatMessageList({
               isLoading={false}
             />
           ) : message.messageType === 'tool-confirmation' && message.toolCall ? (
-            /* Tool Confirmation Message */
-            <div className="flex items-start gap-2 max-w-[85%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-              </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <ToolConfirmationMessage
-                  toolCall={message.toolCall}
-                  onConfirm={async () => {
-                    onSetIsLoading(true)
-                    try {
-                      const result = await toolCalling.confirmToolCall()
-                      const feedbackMessage: Message = {
-                        id: `tool-feedback-${Date.now()}`,
-                        role: 'assistant',
-                        content: result.success ? `✅ ${result.message}` : `❌ ${result.error || result.message}`,
-                        timestamp: new Date(),
-                        messageType: 'tool-execution-feedback',
-                        toolExecutionResult: result,
-                      }
-                      onSetMessages(prev => [...prev, feedbackMessage])
-                      onSetActiveToolConfirmationMessageId(null)
-                    } catch (error) {
-                      const errorMessage: Message = {
-                        id: `tool-error-${Date.now()}`,
-                        role: 'assistant',
-                        content: 'Tive um problema ao executar a ação. Por favor, tente novamente.',
-                        timestamp: new Date(),
-                      }
-                      onSetMessages(prev => [...prev, errorMessage])
-                      onSetActiveToolConfirmationMessageId(null)
-                    } finally {
-                      onSetIsLoading(false)
-                    }
-                  }}
-                  onCancel={() => {
-                    toolCalling.cancelToolCall()
-                    onSetActiveToolConfirmationMessageId(null)
-                    const cancelMessage: Message = {
-                      id: `tool-cancel-${Date.now()}`,
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+            >
+              <ToolConfirmationMessage
+                toolCall={message.toolCall}
+                onConfirm={async () => {
+                  onSetIsLoading(true)
+                  try {
+                    const result = await toolCalling.confirmToolCall()
+                    const feedbackMessage: Message = {
+                      id: `tool-feedback-${Date.now()}`,
                       role: 'assistant',
-                      content: 'Tudo bem, cancelei a ação. Se precisar de algo mais, é só me avisar!',
+                      content: result.success ? `✅ ${result.message}` : `❌ ${result.error || result.message}`,
+                      timestamp: new Date(),
+                      messageType: 'tool-execution-feedback',
+                      toolExecutionResult: result,
+                    }
+                    onSetMessages(prev => [...prev, feedbackMessage])
+                    onSetActiveToolConfirmationMessageId(null)
+                  } catch (error) {
+                    const errorMessage: Message = {
+                      id: `tool-error-${Date.now()}`,
+                      role: 'assistant',
+                      content: 'Tive um problema ao executar a ação. Por favor, tente novamente.',
                       timestamp: new Date(),
                     }
-                    onSetMessages(prev => [...prev, cancelMessage])
-                  }}
-                  isExecuting={toolCalling.isExecuting}
-                />
-              </div>
-            </div>
+                    onSetMessages(prev => [...prev, errorMessage])
+                    onSetActiveToolConfirmationMessageId(null)
+                  } finally {
+                    onSetIsLoading(false)
+                  }
+                }}
+                onCancel={() => {
+                  toolCalling.cancelToolCall()
+                  onSetActiveToolConfirmationMessageId(null)
+                  const cancelMessage: Message = {
+                    id: `tool-cancel-${Date.now()}`,
+                    role: 'assistant',
+                    content: 'Tudo bem, cancelei a ação. Se precisar de algo mais, é só me avisar!',
+                    timestamp: new Date(),
+                  }
+                  onSetMessages(prev => [...prev, cancelMessage])
+                }}
+                isExecuting={toolCalling.isExecuting}
+              />
+            </ChatBubbleBase>
           ) : message.messageType === 'tool-execution-feedback' && message.toolExecutionResult ? (
-            /* Tool Execution Feedback */
-            <div className="flex items-start gap-2 max-w-[85%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-              </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <ToolExecutionFeedback
-                  result={message.toolExecutionResult}
-                  isExecuting={false}
-                  canRollback={message.toolExecutionResult.success}
-                  onRollback={async () => {
-                    const result = await toolCalling.rollbackLastTool()
-                    if (result && result.success) {
-                      const rollbackMessage: Message = {
-                        id: `rollback-${Date.now()}`,
-                        role: 'assistant',
-                        content: '↩️ Ação desfeita com sucesso!',
-                        timestamp: new Date(),
-                      }
-                      onSetMessages(prev => [...prev, rollbackMessage])
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              afterBubble={renderFeedback(message.id, message.content)}
+            >
+              <ToolExecutionFeedback
+                result={message.toolExecutionResult}
+                isExecuting={false}
+                canRollback={message.toolExecutionResult.success}
+                onRollback={async () => {
+                  const result = await toolCalling.rollbackLastTool()
+                  if (result && result.success) {
+                    const rollbackMessage: Message = {
+                      id: `rollback-${Date.now()}`,
+                      role: 'assistant',
+                      content: '↩️ Ação desfeita com sucesso!',
+                      timestamp: new Date(),
                     }
-                  }}
-                />
-                <MessageFeedback
-                  sessionId={conversationId || 'default-session'}
-                  messageId={message.id}
-                  originalResponse={message.content}
-                  className="mt-2"
-                />
-              </div>
-            </div>
+                    onSetMessages(prev => [...prev, rollbackMessage])
+                  }
+                }}
+              />
+            </ChatBubbleBase>
           ) : message.messageType === 'action-result' && message.actionType ? (
-            /* Action Result */
-            <div className="flex items-start gap-2 max-w-[85%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-              </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-micro font-bold text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>ação executada</span>
-                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <ActionResultCard
-                  actionType={message.actionType}
-                  result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
-                />
-                {message.content && (
-                  <p className="text-base-ui text-lia-text-secondary mt-1.5 leading-relaxed">
-                    {message.content}
-                  </p>
-                )}
-                <MessageFeedback
-                  sessionId={conversationId || 'default-session'}
-                  messageId={message.id}
-                  originalResponse={message.content}
-                  className="mt-2"
-                />
-              </div>
-            </div>
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              labelExtra={
+                <span className="text-micro px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan font-['Inter',sans-serif]">ação executada</span>
+              }
+              afterBubble={renderFeedback(message.id, message.content)}
+            >
+              <ActionResultCard
+                actionType={message.actionType}
+                result={(message.actionResult || {}) as Record<string, unknown> & { candidate_id?: string; candidate_name?: string; from_stage?: string; to_stage?: string; subject?: string; datetime?: string; moved_at?: string; sent_at?: string; scheduled_at?: string; simulated?: boolean; action?: string }}
+              />
+              {message.content && (
+                <p className="text-base-ui text-lia-text-primary mt-1.5 leading-relaxed font-['Open_Sans',sans-serif]">
+                  {message.content}
+                </p>
+              )}
+            </ChatBubbleBase>
           ) : message.messageType === 'proactive' && message.proactiveData ? (
-            /* Proactive Suggestion */
-            <div className="flex items-start gap-2 max-w-[85%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              labelExtra={
+                <span className="text-micro px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan font-['Inter',sans-serif]">sugestão proativa</span>
+              }
+              bubbleClassName="bg-transparent p-0"
+            >
+              <div className={cn(
+                "rounded-md border-l-4 p-2.5 mb-1",
+                message.proactiveData.severity === 'urgent' ? "border-l-status-error bg-status-error/5" :
+                message.proactiveData.severity === 'warning' ? "border-l-status-warning bg-status-warning/5" :
+                "border-l-wedo-cyan bg-wedo-cyan/5"
+              )}>
+                <p className="text-xs text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]">{message.content}</p>
               </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-micro font-bold text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>sugestão proativa</span>
-                  <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <div className={cn(
- "rounded-md border-l-4 p-2.5 mb-1",
-                  message.proactiveData.severity === 'urgent' ? "border-l-status-error bg-status-error/5" :
-                  message.proactiveData.severity === 'warning' ? "border-l-status-warning bg-status-warning/5" :
-                  "border-l-wedo-cyan bg-wedo-cyan/5"
-                )}>
-                  <p className="text-xs text-lia-text-primary leading-relaxed">{message.content}</p>
-                </div>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <button
-                    onClick={() => onProactiveAccept(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs font-medium rounded-md bg-wedo-cyan/15 text-wedo-cyan hover:bg-wedo-cyan/25 transition-colors motion-reduce:transition-none"
-                    style={{fontFamily: '"Inter", sans-serif'}}
-                  >
-                    {message.proactiveData.actionLabel}
-                  </button>
-                  <button
-                    onClick={() => onProactiveReject(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs rounded-md text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-                    style={{fontFamily: '"Inter", sans-serif'}}
-                  >
-                    Ignorar
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 mt-1.5">
+                <button
+                  onClick={() => onProactiveAccept(message.proactiveData!.actionId, message.id)}
+                  className="px-3 py-1 text-xs font-medium rounded-md bg-wedo-cyan/15 text-wedo-cyan hover:bg-wedo-cyan/25 transition-colors motion-reduce:transition-none font-['Inter',sans-serif]"
+                >
+                  {message.proactiveData.actionLabel}
+                </button>
+                <button
+                  onClick={() => onProactiveReject(message.proactiveData!.actionId, message.id)}
+                  className="px-3 py-1 text-xs rounded-md text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Inter',sans-serif]"
+                >
+                  Ignorar
+                </button>
               </div>
-            </div>
+            </ChatBubbleBase>
           ) : message.messageType === 'detected-fields' && message.detectedFields && message.detectedFields.length > 0 ? (
-            <div className="flex items-start gap-2 max-w-[85%]">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-              </div>
-              <div className="pt-1 flex-1 min-w-0">
-                <DetectedFieldsCard
-                  fields={message.detectedFields}
-                  onEdit={(fieldLabel) => {
-                    if (inputRef.current) {
-                      inputRef.current.focus()
-                      onSetInputValue(`Alterar ${fieldLabel}: `)
-                    }
-                  }}
-                />
-              </div>
-            </div>
+            <ChatBubbleBase
+              sender="lia"
+              hideTimestamp
+              hideLabel
+              bubbleClassName="bg-transparent p-0"
+            >
+              <DetectedFieldsCard
+                fields={message.detectedFields}
+                onEdit={(fieldLabel) => {
+                  if (inputRef.current) {
+                    inputRef.current.focus()
+                    onSetInputValue(`Alterar ${fieldLabel}: `)
+                  }
+                }}
+              />
+            </ChatBubbleBase>
           ) : message.isProcessing ? (
-            /* Processing Message */
             <div
               className={cn(
- "px-3 py-2 rounded-md text-xs transition-colors duration-300",
+                "px-3 py-2 rounded-md text-xs transition-colors duration-300",
                 message.processingState === 'completed' ? "bg-lia-bg-tertiary text-lia-text-primary" : "bg-lia-bg-secondary text-lia-text-secondary"
               )}
-             
             >
               <div className="flex items-center gap-2">
                 {message.processingState !== 'completed' && (
@@ -449,53 +388,42 @@ export function ChatMessageList({
               </div>
             </div>
           ) : (
-            /* LIA Message - Standardized bubble */
-            <div
-              className="max-w-[85%] group overflow-hidden"
-             
-            >
-              <div className="flex items-start gap-2.5">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-                </div>
-                <div className="flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
-                  <div className="flex items-center gap-1.5 px-1">
-                    <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                    <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
-                  </div>
-                  <div className="px-3.5 py-2.5 bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px]">
-                    <div className="text-base-ui text-lia-text-secondary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
-                      {formatMessageContent(message.content, message.isTyping || false, message.id)}
-                      {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
-                        <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
-                      )}
-                    </div>
-                  </div>
-                  {message.detectedFieldsData && message.detectedFieldsData.length > 0 && (
-                    <DetectedFieldsCard
-                      fields={message.detectedFieldsData}
-                      onEdit={(fieldLabel) => {
-                        if (inputRef.current) {
-                          inputRef.current.focus()
-                          onSetInputValue(`Alterar ${fieldLabel}: `)
-                        }
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              className="group"
+              afterBubble={
+                !message.isTyping ? (
+                  <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
+                    <MessageFeedback
+                      sessionId={conversationId || 'default-session'}
+                      messageId={message.id}
+                      originalResponse={message.content}
+                      onFeedbackSubmitted={(type) => {
                       }}
                     />
-                  )}
-                  {!message.isTyping && (
-                    <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
-                      <MessageFeedback
-                        sessionId={conversationId || 'default-session'}
-                        messageId={message.id}
-                        originalResponse={message.content}
-                        onFeedbackSubmitted={(type) => {
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : undefined
+              }
+            >
+              <div className="text-base-ui text-lia-text-primary space-y-1 leading-relaxed break-words overflow-wrap-anywhere font-['Open_Sans',sans-serif]">
+                {formatMessageContent(message.content, message.isTyping || false, message.id)}
+                {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
+                  <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
+                )}
               </div>
-            </div>
+              {message.detectedFieldsData && message.detectedFieldsData.length > 0 && (
+                <DetectedFieldsCard
+                  fields={message.detectedFieldsData}
+                  onEdit={(fieldLabel) => {
+                    if (inputRef.current) {
+                      inputRef.current.focus()
+                      onSetInputValue(`Alterar ${fieldLabel}: `)
+                    }
+                  }}
+                />
+              )}
+            </ChatBubbleBase>
           )}
         </div>
       ))}

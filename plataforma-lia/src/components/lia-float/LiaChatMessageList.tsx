@@ -10,9 +10,11 @@ import {
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
+import { LIAIcon } from "@/components/ui/lia-icon"
 import { type FloatMessage } from "@/hooks/use-float-conversation"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
@@ -89,22 +91,17 @@ export function LiaChatMessageList({
             <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} />
           ))}
           {hitlPending && (
-            <div className="flex gap-2">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
-                </div>
-                <HITLConfirmCard
-                  action={hitlPending.action}
-                  description={hitlPending.description}
-                  onConfirm={() => sendApproval(true)}
-                  onCancel={() => sendApproval(false)}
-                />
-              </div>
-            </div>
+            <ChatBubbleBase
+              sender="lia"
+              hideTimestamp
+            >
+              <HITLConfirmCard
+                action={hitlPending.action}
+                description={hitlPending.description}
+                onConfirm={() => sendApproval(true)}
+                onCancel={() => sendApproval(false)}
+              />
+            </ChatBubbleBase>
           )}
           {isStreaming && !hitlPending && (
             streamingContent
@@ -176,7 +173,7 @@ function EmptyState({ scope, contextPage, onChipClick }: { scope: string; contex
     <div className="flex flex-col items-start h-full gap-2.5 pt-5 px-1">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+          <LIAIcon size="sm" />
         </div>
         <div>
           <p className="text-base-ui font-medium text-lia-text-primary">Como posso ajudar?</p>
@@ -213,19 +210,18 @@ function EmptyState({ scope, contextPage, onChipClick }: { scope: string; contex
 
 function ThinkingIndicator() {
   return (
-    <div className="flex gap-2.5">
-      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+    <ChatBubbleBase
+      sender="lia"
+      hideTimestamp
+      hideLabel
+    >
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <span className="text-xs font-semibold text-lia-text-primary font-['Inter',sans-serif]">LIA</span>
       </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
-        </div>
-        <span className="flex gap-1 items-center h-5">
-          <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
-        </span>
-      </div>
-    </div>
+      <span className="flex gap-1 items-center h-5">
+        <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
+      </span>
+    </ChatBubbleBase>
   )
 }
 
@@ -243,30 +239,22 @@ function StreamingBubble({ content }: { content: string }) {
   const html = useMemo(() => parseChatMarkdown(cleaned), [cleaned])
 
   return (
-    <div className="flex gap-2.5">
-      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
-        </div>
-        <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
-          <RichContent
-            html={html}
-            className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
-          />
-          <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
-        </div>
-      </div>
-    </div>
+    <ChatBubbleBase
+      sender="lia"
+      hideTimestamp
+    >
+      <RichContent
+        html={html}
+        className="text-base-ui text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+      />
+      <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
+    </ChatBubbleBase>
   )
 }
 
 function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversationId: string | null }) {
   const authUser = useAuthStore((s) => s.user)
   const userDisplayName = authUser?.name || authUser?.email || "Usuário"
-  const userInitials = userDisplayName.charAt(0).toUpperCase()
   const isUser = msg.sender === "user"
 
   const renderedHtml = useMemo(() => {
@@ -275,55 +263,29 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
     return parseChatMarkdown(cleaned)
   }, [msg.content, isUser])
 
-  if (isUser) {
-    return (
-      <div className="flex gap-2.5 justify-end">
-        <div className="flex flex-col items-end gap-1 max-w-[340px]">
-          <div className="bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px] px-3.5 py-2.5">
-            <RichContent
-              html={renderedHtml}
-              className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
-            />
-          </div>
-          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
-            {msg.timestamp}
-          </span>
-        </div>
-        <div className="w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-medium text-lia-text-tertiary">
-          {userInitials}
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex gap-2.5">
-      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
-          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
-        </div>
-        <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
-          <RichContent
-            html={renderedHtml}
-            className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
-          />
-          {msg.executionPlan && (
-            <PlanProgressCard plan={msg.executionPlan as unknown as ExecutionPlanData} />
-          )}
-        </div>
-        {conversationId && (
+    <ChatBubbleBase
+      sender={msg.sender}
+      timestamp={msg.timestamp}
+      userName={userDisplayName}
+      afterBubble={
+        !isUser && conversationId ? (
           <MessageFeedback
             sessionId={conversationId}
             messageId={msg.id}
             originalResponse={msg.content}
             className="mt-1 px-1"
           />
-        )}
-      </div>
-    </div>
+        ) : undefined
+      }
+    >
+      <RichContent
+        html={renderedHtml}
+        className="text-base-ui text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+      />
+      {!isUser && msg.executionPlan && (
+        <PlanProgressCard plan={msg.executionPlan as unknown as ExecutionPlanData} />
+      )}
+    </ChatBubbleBase>
   )
 }

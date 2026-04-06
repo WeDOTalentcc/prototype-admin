@@ -8,8 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuthStore } from "@/stores/auth-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { LIAIcon } from "@/components/ui/lia-icon"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   ProgressSteps,
   CommandExecution,
@@ -21,10 +21,6 @@ import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import { Message } from "@/types/chat"
 import { sanitizeHtml } from "@/lib/sanitize"
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Types
-// ──────────────────────────────────────────────────────────────────────────────
 
 interface Props {
   messages: Message[]
@@ -39,10 +35,6 @@ interface Props {
   onLoadMoreCandidates: (query: string, threadId?: string) => void
   onSendMessage: (customContent?: string) => void
 }
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Component
-// ──────────────────────────────────────────────────────────────────────────────
 
 const ChatMessageListComponent = memo(function ChatMessageList({
   messages,
@@ -59,7 +51,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
 }: Props) {
   const authUser = useAuthStore((s) => s.user)
   const userDisplayName = authUser?.name || authUser?.email || "Usuário"
-  const userInitials = userDisplayName.charAt(0).toUpperCase()
+  const userInitials = userDisplayName.split(/\s+/).filter(Boolean).map(w => w.charAt(0).toUpperCase()).slice(0, 2).join("")
 
   return (
     <div className={`${messagesContainerClass} space-y-2.5`}>
@@ -68,12 +60,13 @@ const ChatMessageListComponent = memo(function ChatMessageList({
           searchTerm &&
           message.content.toLowerCase().includes(searchTerm.toLowerCase())
         const isCurrentMessage = index === currentMessageIndex
+        const isLia = message.sender === "lia"
 
         return (
           <div
             key={message.id}
             data-message-id={message.id}
-            className={`flex ${message.sender === "lia" ? "justify-end" : "justify-start"} ${
+            className={`flex ${isLia ? "justify-start" : "justify-end"} ${
               isCurrentMessage ? "ring-2 ring-lia-btn-primary-bg/20 rounded-md" : ""
             } ${
               isHighlighted
@@ -82,42 +75,39 @@ const ChatMessageListComponent = memo(function ChatMessageList({
             }`}
           >
             <div
-              className={`flex items-start gap-2 ${
-                message.sender === "lia"
-                  ? "max-w-[80%] flex-row-reverse"
-                  : "max-w-[80%]"
-              }`}
+              className={`flex items-start gap-2 max-w-[80%]`}
             >
-              {message.sender === "lia" ? (
+              {isLia ? (
                 <div className="flex-shrink-0 pt-2">
                   <LIAIcon size="sm" />
                 </div>
               ) : (
-                <Avatar className="w-7 h-7 mt-1 flex-shrink-0">
-                  <AvatarImage
-                    src={undefined}
-                    alt={userDisplayName}
-                  />
-                  <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium">
-                    {userInitials}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="order-last flex-shrink-0 mt-1">
+                  <Avatar className="w-7 h-7">
+                    <AvatarImage
+                      src={undefined}
+                      alt={userDisplayName}
+                    />
+                    <AvatarFallback className="bg-lia-interactive-active text-lia-text-secondary text-xs font-medium">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
               )}
 
-              {/* Message content */}
               <div
-                className={`rounded-md px-3 py-2.5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
+                className={`px-3.5 py-2.5 flex-1 ${isLia ? "bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px]" : "bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px]"}`}
               >
                 <div className="flex items-center space-x-2 mb-1">
                   <span
-                    className={`text-xs font-medium text-lia-text-primary ${
-                      message.sender === "lia" ? "lia-name -ml-1" : ""
+                    className={`text-xs font-semibold text-lia-text-primary font-['Inter',sans-serif] ${
+                      isLia ? "lia-name -ml-1" : ""
                     }`}
                   >
-                    {message.sender === "lia" ? "Lia" : userDisplayName}
+                    {isLia ? "LIA" : userDisplayName}
                   </span>
                   <span
-                    className="text-xs text-lia-text-tertiary"
+                    className="text-xs text-lia-text-tertiary font-['Inter',sans-serif] tabular-nums"
                   >
                     {getRelativeTime(message.timestamp)}
                   </span>
@@ -133,11 +123,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   message.type !== "command" &&
                   message.type !== "file-creation" && (
                     <div
-                      className={`text-sm leading-relaxed text-lia-text-primary ${
-                        message.sender === "user"
-                          ? "font-open-sans"
-                          : "font-['Open_Sans',sans-serif] lia-markdown-content"
-                      }`}
+                      className="text-sm leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
@@ -148,7 +134,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   )}
 
 
-                {message.sender === "lia" &&
+                {isLia &&
                   (message.data as Record<string, any>)
 
                     ?.action_result && (
@@ -170,8 +156,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     </div>
                   )}
 
-                {/* Plan Progress Card — shown when orchestrator ran a multi-step plan */}
-                {message.sender === "lia" &&
+                {isLia &&
                   (message.data as Record<string, any>)?.execution_plan && (
                     <PlanProgressCard
                       plan={(message.data as Record<string, any>).execution_plan as ExecutionPlanData}
@@ -179,8 +164,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   )}
 
 
-                {/* Global Search Expansion Card */}
-                {message.sender === "lia" &&
+                {isLia &&
                   (message.data as Record<string, any>)?.workflow_data &&
                   ((message.data as Record<string, any>)
                     ?.workflow_data as Record<string, any>)
@@ -414,16 +398,14 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   />
                 )}
 
-                {/* Chat Cards inline */}
                 {message.chatCardType && message.chatCardData && (
                   <div className="mt-4">{onRenderChatCard(message)}</div>
                 )}
 
-                {/* Completion Message */}
                 {message.type === "completion" && message.completion && (
                   <>
                     <div
-                      className="text-sm text-lia-text-primary mb-4"
+                      className="text-sm text-lia-text-primary mb-4 font-['Open_Sans',sans-serif]"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
@@ -434,16 +416,13 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <CompletionMessage
                       message={message.completion.message}
                       onRating={(_rating) => {
-                        // Implementar lógica de rating
                       }}
                       onFollowUp={(_action) => {
-                        // Implementar lógica de follow-up
                       }}
                     />
                   </>
                 )}
 
-                {/* Approval Block */}
                 {message.needsApproval && message.approvalRequest && (
                   <div
                     className="mt-4 p-5 rounded-md bg-stone-50 dark:bg-stone-900/20"
@@ -499,7 +478,6 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   </div>
                 )}
 
-                {/* Action buttons */}
                 {message.actions && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {message.actions.map((action, idx) => {
@@ -573,20 +551,19 @@ const ChatMessageListComponent = memo(function ChatMessageList({
         )
       })}
 
-      {/* Loading indicator */}
       {isLoading && (
         <div className="flex justify-start">
-          <div className="flex items-start gap-1 max-w-4xl">
-            <div className="flex-shrink-0 pt-4">
-              <LIAIcon size="md" />
+          <div className="flex items-start gap-2 max-w-[80%]">
+            <div className="flex-shrink-0 pt-2">
+              <LIAIcon size="sm" />
             </div>
             <div
-              className="rounded-md p-5 flex-1 bg-lia-bg-tertiary"
+              className="rounded-[14px] rounded-bl-[4px] px-3 py-2.5 flex-1 bg-wedo-cyan/[0.04]"
             >
               <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 <span
-                  className="text-sm text-lia-text-secondary"
+                  className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]"
                 >
                   LIA está digitando...
                 </span>
