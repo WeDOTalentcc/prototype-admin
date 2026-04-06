@@ -622,7 +622,7 @@ class AutomationTriggerService:
                 template_variables["interview_date"] = item.start_time.strftime("%d/%m/%Y")
                 template_variables["interview_time"] = item.start_time.strftime("%H:%M")
         
-        logger.info(f"📧 [TRIGGER] Sending email to {recipient_email} using template '{template_name}'")
+        logger.info(f"📧 [TRIGGER] using template '{template_name}'")
         
         try:
             # Use template-based sending if template is specified
@@ -650,7 +650,7 @@ class AutomationTriggerService:
             error = result.get("error") if isinstance(result, dict) else getattr(result, "error", None)
             
             if success:
-                logger.info(f"✅ [TRIGGER] Email sent successfully to {recipient_email}")
+                logger.info(f"✅ [TRIGGER] Email sent successfully")
                 return {
                     "success": True,
                     "action": "send_email",
@@ -659,7 +659,7 @@ class AutomationTriggerService:
                     "message_id": message_id
                 }
             else:
-                logger.warning(f"⚠️ [TRIGGER] Failed to send email to {recipient_email}: {error}")
+                logger.warning(f"⚠️ [TRIGGER] Failed to send email: {error}")
                 return {
                     "success": False,
                     "action": "send_email",
@@ -668,7 +668,7 @@ class AutomationTriggerService:
                 }
                 
         except Exception as e:
-            logger.error(f"❌ [TRIGGER] Error sending email to {recipient_email}: {e}")
+            logger.error(f"❌ [TRIGGER] Error sending email: {e}")
             return {"success": False, "error": str(e)}
     
     async def _send_whatsapp_for_item(

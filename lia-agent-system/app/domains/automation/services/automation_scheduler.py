@@ -584,7 +584,7 @@ Equipe de Recrutamento
                 body=body
             )
             
-            logger.info(f"✉️ Reminder email sent to {interview.candidate_email}")
+            logger.info(f"✉️ Reminder email sent")
             
         except Exception as e:
             logger.error(f"Failed to send reminder email: {e}")

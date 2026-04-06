@@ -407,7 +407,7 @@ class AutomationService:
                 "error": "no_recipient_email"
             }
         
-        logger.info(f"📧 [AUTOMATION] Sending email to {recipient_email} with template {template_id}")
+        logger.info(f"📧 [AUTOMATION] with template {template_id}")
         
         try:
             template_variables = {
@@ -446,7 +446,7 @@ class AutomationService:
                 )
             
             if result.get("success"):
-                logger.info(f"✅ [AUTOMATION] Email sent successfully to {recipient_email}")
+                logger.info(f"✅ [AUTOMATION] Email sent successfully")
                 return {
                     "action": "send_email",
                     "status": "sent",
@@ -465,7 +465,7 @@ class AutomationService:
                 }
                 
         except Exception as e:
-            logger.error(f"❌ [AUTOMATION] Error sending email to {recipient_email}: {e}", exc_info=True)
+            logger.error(f"❌ [AUTOMATION] Error sending email: {e}", exc_info=True)
             return {
                 "action": "send_email",
                 "status": "error",
