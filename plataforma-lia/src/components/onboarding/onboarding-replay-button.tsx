@@ -33,7 +33,7 @@ export function OnboardingReplayButton({
         className={`gap-2 ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => window.open('/admin/configuracoes', '_self')}
+        onClick={() => window.open('/', '_self')}
       >
         <div
           className="transition-transform motion-reduce:transition-none duration-300"

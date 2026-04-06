@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ClientProvider, useClient } from "@/contexts/ClientContext"
 import { ClientSelector } from "@/components/admin/ClientSelector"
 import {
-  Settings,
   Users,
   CreditCard,
   BarChart3,
@@ -85,7 +84,6 @@ const globalNavigation: NavGroup[] = [
     label: "Configurações Globais",
     items: [
       { name: "Templates de Sistema", href: "/admin/templates", icon: FileText },
-      { name: "Configurações do Sistema", href: "/admin/configuracoes", icon: Settings },
       { name: "SSO Empresarial", href: "/admin/sso", icon: Lock },
     ]
   }
