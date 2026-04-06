@@ -101,7 +101,6 @@ PENDING_MIGRATION = {
     "app/api/v1/health_check.py",
     "app/api/v1/hiring_policy.py",
     "app/api/v1/hitl.py",
-    "app/api/v1/integrations_hub.py",
     "app/api/v1/intelligence.py",
     "app/api/v1/interview_analysis.py",
     "app/api/v1/interview_notes.py",
