@@ -35,7 +35,6 @@ PENDING_MIGRATION = {
     "app/api/public/candidate_portal.py",
     "app/api/public/shared_searches.py",
     "app/api/v1/ab_testing.py",
-    "app/api/v1/admin.py",
     "app/api/v1/admin_lgpd.py",
     "app/api/v1/admin_templates.py",
     "app/api/v1/agent_monitoring.py",
