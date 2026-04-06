@@ -20,15 +20,26 @@ interface PearchSearchOptions {
   requirePhoneNumbers: boolean
 }
 
+interface SearchResults {
+  local: import('./types').Candidate[]
+  global: import('./types').Candidate[]
+  localCount: number
+  globalCount: number
+  query: string
+  isLoading: boolean
+  showGlobalResults: boolean
+  globalDismissed: boolean
+}
+
 interface ExecuteSearchDeps {
   searchSource: SearchSource
   pearchSearchOptions: PearchSearchOptions
   searchThreadId: string | undefined
   setSearchThreadId: (id: string | undefined) => void
-  hideViewedCandidatesFilter: (candidates: Candidate[]) => Candidate[]
-  talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void }
-  setCandidates: (c: Candidate[]) => void
-  setSearchResults: (fn: (prev: Record<string, unknown>) => Record<string, unknown>) => void
+  hideViewedCandidatesFilter: (candidates: import('./types').Candidate[]) => import('./types').Candidate[]
+  talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void; [key: string]: unknown }
+  setCandidates: (c: import('./types').Candidate[]) => void
+  setSearchResults: (v: SearchResults | ((prev: SearchResults) => SearchResults)) => void
   setHasSearchResults: (v: boolean) => void
   setSearchResultsCount: (v: number) => void
   setLocalResultsCount: (v: number) => void
@@ -39,15 +50,15 @@ interface ExecuteSearchDeps {
   setDisplayedResultsCount: (v: number) => void
   setCurrentSearchSource: (s: string) => void
   setHasSearched: (v: boolean) => void
-  setLastSearchEntities: (e: ParsedEntities | null) => void
-  setLastSearchMetadata: (m: SearchMetadata | undefined) => void
+  setLastSearchEntities: (e: import('@/components/search/smart-search-input').ParsedEntities | null) => void
+  setLastSearchMetadata: (m: import('@/components/search/smart-search-input').SearchMetadata | undefined) => void
   setLastSearchUsedPearch: (v: boolean) => void
-  setSearchExecutionId: (fn: (prev: number) => number) => void
+  setSearchExecutionId: (fn: number | ((prev: number) => number)) => void
   setShowExpandGlobalOption: (v: boolean) => void
   setShowExpandedLIA: (v: boolean) => void
   setUserCollapsedLIA: (v: boolean) => void
   setLastSuccessfulQuery: (q: string) => void
-  setChatMessages: (fn: (prev: unknown[]) => unknown[]) => void
+  setChatMessages: (fn: unknown[] | ((prev: unknown[]) => unknown[])) => void
   setIsLoading: (v: boolean) => void
   setIsSearchActive: (v: boolean) => void
 }

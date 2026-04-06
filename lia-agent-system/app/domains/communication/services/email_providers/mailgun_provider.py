@@ -92,6 +92,19 @@ class MailgunProvider(EmailProvider):
         """Send a single email via Mailgun."""
 
         if not self._configured:
+            env = os.getenv("NODE_ENV", os.getenv("ENVIRONMENT", "development"))
+            if env in ("production", "staging"):
+                logger.critical(
+                    "[Mailgun] NOT CONFIGURED in %s — refusing to simulate. "
+                    "Set MAILGUN_API_KEY and MAILGUN_DOMAIN.",
+                    env,
+                )
+                return EmailResult(
+                    success=False,
+                    provider=self.provider_name,
+                    status="not_configured",
+                    error="Mailgun not configured in production",
+                )
             logger.info("[SIMULATED] Mailgun email to: %s, subject: %s", to, subject)
             return EmailResult(
                 success=True,

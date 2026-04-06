@@ -33,7 +33,16 @@ import type { useTalentFunnel } from "@/hooks/use-talent-funnel"
 export interface UseCandidatesViewCompositionParams {
   candidates: Candidate[]
   setCandidates: (v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
-  searchResults: { query: string; filters: SearchFilters }
+  searchResults: {
+    local: Candidate[]
+    global: Candidate[]
+    localCount: number
+    globalCount: number
+    query: string
+    isLoading: boolean
+    showGlobalResults: boolean
+    globalDismissed: boolean
+  }
   searchTerm: string
   hasSearchResults: boolean
   quickFilters: Set<string>
@@ -46,7 +55,7 @@ export interface UseCandidatesViewCompositionParams {
   sortOrder: string
   setSortOrder: (v: string) => void
   searchSortBy: string
-  searchFeedbacks: Record<string, 'up' | 'down'>
+  searchFeedbacks: Record<string, 'like' | 'dislike'>
   displayedResultsCount: number
   showSearchResults: boolean
   setShowSearchResults: (v: boolean) => void
@@ -146,12 +155,12 @@ export interface UseCandidatesViewCompositionParams {
   setShowWSITextModal: (v: boolean) => void
   setShowWSIVoiceModal: (v: boolean) => void
   setShowRubricModal: (v: boolean) => void
-  executeSearch: (query: string, opts?: Record<string, unknown>) => Promise<void>
+  executeSearch: (query: string, entities?: import('@/components/search/smart-search-input').ParsedEntities, mode?: import('@/components/search/smart-search-input').SearchMode, metadata?: import('@/components/search/smart-search-input').SearchMetadata, usePearch?: boolean) => Promise<void>
   talentFunnel: ReturnType<typeof useTalentFunnel>
   user: Record<string, unknown> | null
   router: AppRouterInstance
   openRevealModal: (candidate: Candidate, type: string) => void
-  handleSearchFeedbackChange: (candidateId: string, feedback: 'up' | 'down') => void
+  handleSearchFeedbackChange: (candidateId: string, candidateName: string, feedback: 'like' | 'dislike' | null) => void
   pearchSearchOptions: PearchSearchOptions
   setSearchTerm: (v: string) => void
   setQuickFilters: Dispatch<SetStateAction<Set<string>>>

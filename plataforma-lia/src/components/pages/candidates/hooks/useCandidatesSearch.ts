@@ -11,9 +11,16 @@ import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
 import { toast } from "sonner"
 
+export type PendingSearchRequest = {
+  query: string
+  entities?: ParsedEntities
+  mode?: SearchMode
+  metadata?: SearchMetadata
+} | null
+
 export interface CandidatesSearchContext {
   candidates: Candidate[]
-  setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
+  setCandidates: (v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
   searchResults: {
     local: Candidate[]
     global: Candidate[]
@@ -24,7 +31,7 @@ export interface CandidatesSearchContext {
     showGlobalResults: boolean
     globalDismissed: boolean
   }
-  setSearchResults: React.Dispatch<React.SetStateAction<CandidatesSearchContext['searchResults']>>
+  setSearchResults: (v: CandidatesSearchContext['searchResults'] | ((prev: CandidatesSearchContext['searchResults']) => CandidatesSearchContext['searchResults'])) => void
   searchTerm: string
   lastSearchQuery: string
   lastSearchEntities: ParsedEntities | null
@@ -32,11 +39,11 @@ export interface CandidatesSearchContext {
   lastSearchMetadata: SearchMetadata | undefined
   lastSearchUsedPearch: boolean
   searchSource: 'local' | 'hybrid' | 'global'
-  setSearchSource: React.Dispatch<React.SetStateAction<'local' | 'hybrid' | 'global'>>
+  setSearchSource: (v: 'local' | 'hybrid' | 'global') => void
   currentSearchSource: 'local' | 'global' | 'hybrid'
-  setCurrentSearchSource: React.Dispatch<React.SetStateAction<'local' | 'global' | 'hybrid'>>
+  setCurrentSearchSource: (v: 'local' | 'global' | 'hybrid') => void
   openCreditModals: { hybrid: boolean; global: boolean; email: boolean; phone: boolean }
-  setOpenCreditModals: React.Dispatch<React.SetStateAction<CandidatesSearchContext['openCreditModals']>>
+  setOpenCreditModals: (v: CandidatesSearchContext['openCreditModals'] | ((prev: CandidatesSearchContext['openCreditModals']) => CandidatesSearchContext['openCreditModals'])) => void
   pearchSearchOptions: {
     searchType: 'fast' | 'pro'
     limit: number
@@ -46,58 +53,53 @@ export interface CandidatesSearchContext {
     requireEmails: boolean
     requirePhoneNumbers: boolean
   }
-  setPearchSearchOptions: React.Dispatch<React.SetStateAction<CandidatesSearchContext['pearchSearchOptions']>>
+  setPearchSearchOptions: (v: CandidatesSearchContext['pearchSearchOptions'] | ((prev: CandidatesSearchContext['pearchSearchOptions']) => CandidatesSearchContext['pearchSearchOptions'])) => void
   creditsRemaining: number | null
-  setCreditsRemaining: React.Dispatch<React.SetStateAction<number | null>>
+  setCreditsRemaining: (v: number | null) => void
   creditsUsedInSearch: number
-  setCreditsUsedInSearch: React.Dispatch<React.SetStateAction<number>>
+  setCreditsUsedInSearch: (v: number) => void
   pearchResultsCount: number
-  setPearchResultsCount: React.Dispatch<React.SetStateAction<number>>
+  setPearchResultsCount: (v: number) => void
   localResultsCount: number
-  setLocalResultsCount: React.Dispatch<React.SetStateAction<number>>
+  setLocalResultsCount: (v: number) => void
   searchResultsCount: number
-  setSearchResultsCount: React.Dispatch<React.SetStateAction<number>>
+  setSearchResultsCount: (v: number) => void
   showSearchResults: boolean
-  setShowSearchResults: React.Dispatch<React.SetStateAction<boolean>>
+  setShowSearchResults: (v: boolean) => void
   hasSearchResults: boolean
-  setHasSearchResults: React.Dispatch<React.SetStateAction<boolean>>
+  setHasSearchResults: (v: boolean) => void
   showGlobalExpansionConfirm: boolean
-  setShowGlobalExpansionConfirm: React.Dispatch<React.SetStateAction<boolean>>
+  setShowGlobalExpansionConfirm: (v: boolean) => void
   isExpandingToGlobal: boolean
-  setIsExpandingToGlobal: React.Dispatch<React.SetStateAction<boolean>>
+  setIsExpandingToGlobal: (v: boolean) => void
   displayedResultsCount: number
-  setDisplayedResultsCount: React.Dispatch<React.SetStateAction<number>>
+  setDisplayedResultsCount: (v: number | ((prev: number) => number)) => void
   isLoadingMore: boolean
-  setIsLoadingMore: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLoadingMore: (v: boolean) => void
   searchFeedbacks: Record<string, 'like' | 'dislike'>
-  setSearchFeedbacks: React.Dispatch<React.SetStateAction<Record<string, 'like' | 'dislike'>>>
+  setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'> | ((prev: Record<string, 'like' | 'dislike'>) => Record<string, 'like' | 'dislike'>)) => void
   hasSearched: boolean
   lastSuccessfulQuery: string
-  setSearchThreadId: React.Dispatch<React.SetStateAction<string | undefined>>
+  setSearchThreadId: (id: string | undefined) => void
   searchThreadId: string | undefined
   showExpandGlobalOption: boolean
-  setShowExpandGlobalOption: React.Dispatch<React.SetStateAction<boolean>>
-  setChatMessages: React.Dispatch<React.SetStateAction<any[]>>
+  setShowExpandGlobalOption: (v: boolean) => void
+  setChatMessages: (v: unknown[] | ((prev: unknown[]) => unknown[])) => void
   showSourceChangeModal: boolean
-  setShowSourceChangeModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowSourceChangeModal: (v: boolean) => void
   pendingSourceChange: 'hybrid' | 'global' | null
-  setPendingSourceChange: React.Dispatch<React.SetStateAction<'hybrid' | 'global' | null>>
+  setPendingSourceChange: (v: 'hybrid' | 'global' | null) => void
   showContactFilterModal: boolean
-  setShowContactFilterModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowContactFilterModal: (v: boolean) => void
   pendingContactFilter: 'email' | 'phone' | null
-  setPendingContactFilter: React.Dispatch<React.SetStateAction<'email' | 'phone' | null>>
+  setPendingContactFilter: (v: 'email' | 'phone' | null) => void
   showCreditConfirmation: boolean
-  setShowCreditConfirmation: React.Dispatch<React.SetStateAction<boolean>>
-  pendingSearchRequest: {
-    query: string
-    entities?: ParsedEntities
-    mode?: SearchMode
-    metadata?: SearchMetadata
-  } | null
-  setPendingSearchRequest: React.Dispatch<React.SetStateAction<CandidatesSearchContext['pendingSearchRequest']>>
+  setShowCreditConfirmation: (v: boolean) => void
+  pendingSearchRequest: PendingSearchRequest
+  setPendingSearchRequest: (v: PendingSearchRequest | ((prev: PendingSearchRequest) => PendingSearchRequest)) => void
   activeSearchFilters: SearchFilters
-  setActiveSearchFilters: React.Dispatch<React.SetStateAction<SearchFilters>>
-  setSelectedTemplate: React.Dispatch<React.SetStateAction<string>>
+  setActiveSearchFilters: (v: SearchFilters | ((prev: SearchFilters) => SearchFilters)) => void
+  setSelectedTemplate: (v: string) => void
   executeSearch: (
     query: string,
     entities?: ParsedEntities | null,
