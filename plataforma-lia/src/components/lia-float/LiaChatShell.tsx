@@ -62,13 +62,14 @@ function InlineLeftShell({
   width = 400,
   className,
 }: Omit<LiaChatShellProps, "mode">) {
-  const { open } = useLiaFloat()
+  const { open, setHasInlineChat } = useLiaFloat()
   const state = useLiaChatPanelState()
   const router = useRouter()
 
-  // Garante que o chat está "aberto" no contexto global para ativar WebSocket
   useEffect(() => {
     open()
+    setHasInlineChat(true)
+    return () => { setHasInlineChat(false) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const bgTasks: BackgroundTask[] = useMemo(() =>
@@ -289,13 +290,14 @@ function InlineLeftShell({
  * LiaChatShell in "full-page" mode — ocupa toda a área disponível
  */
 function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
-  const { open } = useLiaFloat()
+  const { open, setHasInlineChat } = useLiaFloat()
   const state = useLiaChatPanelState()
   const router = useRouter()
 
-  // Garante que o chat está "aberto" no contexto global para ativar WebSocket
   useEffect(() => {
     open()
+    setHasInlineChat(true)
+    return () => { setHasInlineChat(false) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const bgTasks: BackgroundTask[] = useMemo(() =>

@@ -61,6 +61,7 @@ interface LiaFloatState {
   contextPage: string | null
   entityContext: EntityContext | null
   dynamicPanel: DynamicPanelData | null
+  hasInlineChat: boolean
 }
 
 interface LiaFloatContextType extends LiaFloatState {
@@ -76,6 +77,7 @@ interface LiaFloatContextType extends LiaFloatState {
   openWithEntity: (entity: EntityContext) => void
   openSplitView: (page: string, conversationId?: string) => void
   closeSplitView: () => void
+  setHasInlineChat: (active: boolean) => void
   openDynamicPanel: (panel: DynamicPanelData) => void
   closeDynamicPanel: () => void
   updateDynamicPanelData: (data: Record<string, unknown>) => void
@@ -144,6 +146,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     contextPage: null,
     entityContext: null,
     dynamicPanel: null,
+    hasInlineChat: false,
   })
 
   const [sharedConversationId, setSharedConversationId] = useState<string | null>(null)
@@ -336,6 +339,13 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, isOpen: true, isExpanded: false, entityContext: entity }))
   }, [])
 
+  const inlineChatCountRef = React.useRef(0)
+  const setHasInlineChat = useCallback((active: boolean) => {
+    inlineChatCountRef.current += active ? 1 : -1
+    if (inlineChatCountRef.current < 0) inlineChatCountRef.current = 0
+    setState(prev => ({ ...prev, hasInlineChat: inlineChatCountRef.current > 0 }))
+  }, [])
+
   const openDynamicPanel = useCallback((panel: DynamicPanelData) => {
     setState(prev => ({ ...prev, dynamicPanel: panel }))
   }, [])
@@ -373,6 +383,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     open, close, toggle, expand, collapse, closeAll,
     navigateToChat, setContextPage, setEntityContext, openWithEntity,
     openSplitView, closeSplitView,
+    setHasInlineChat,
     openDynamicPanel, closeDynamicPanel, updateDynamicPanelData,
     sharedMessages, addSharedMessage, setSharedMessages,
     sharedConversationId, setSharedConversationId,
@@ -408,6 +419,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     open, close, toggle, expand, collapse, closeAll,
     navigateToChat, setContextPage, setEntityContext, openWithEntity,
     openSplitView, closeSplitView,
+    setHasInlineChat,
     openDynamicPanel, closeDynamicPanel, updateDynamicPanelData,
     sharedMessages, addSharedMessage,
     sharedConversationId,

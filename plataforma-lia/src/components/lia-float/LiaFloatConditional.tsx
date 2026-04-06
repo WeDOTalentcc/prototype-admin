@@ -10,13 +10,13 @@ const HIDDEN_PATHS = ["/login", "/login/welcome", "/forgot-password", "/reset-pa
 
 export function LiaFloatConditional() {
   const pathname = usePathname()
-  const { splitView } = useLiaFloat()
+  const { splitView, hasInlineChat } = useLiaFloat()
   const isHidden = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
   if (isHidden) return null
   return (
     <>
-      <LiaChatPanel />
-      <LiaChatButton />
+      {!hasInlineChat && <LiaChatPanel />}
+      {!hasInlineChat && <LiaChatButton />}
       {!splitView.active && <LiaSuperPrompt />}
     </>
   )

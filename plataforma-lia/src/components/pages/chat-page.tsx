@@ -34,15 +34,16 @@ import { useChatPageCore } from "./chat-page/useChatPageCore"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export function ChatPage() {
-  return (
-    <div className="flex flex-col h-full w-full p-4 bg-lia-bg-primary">
-      <LiaChatShell mode="full-page" className="flex-1" />
-    </div>
-  )
+  return <LegacyChatPage />
 }
 
 export function LegacyChatPage() {
-  const { dynamicPanel, closeDynamicPanel } = useLiaFloat()
+  const { dynamicPanel, closeDynamicPanel, setHasInlineChat } = useLiaFloat()
+
+  React.useEffect(() => {
+    setHasInlineChat(true)
+    return () => { setHasInlineChat(false) }
+  }, [setHasInlineChat])
 
   const {
     messages, setMessages,
