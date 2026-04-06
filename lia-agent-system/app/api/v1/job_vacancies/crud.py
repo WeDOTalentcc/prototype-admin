@@ -5,8 +5,7 @@ from typing import (
 from uuid import UUID
 
 from pydantic import Field
-from sqlalchemy import and_, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, or_
 
 from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
 from app.services.plan_limits_service import check_active_jobs_limit_or_demo  # noqa: F401
@@ -18,6 +17,8 @@ DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import *
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ router = APIRouter()
 @router.post("/job-vacancies/finalize", response_model=FinalizeJobVacancyResponse)
 async def finalize_job_vacancy(
     request: FinalizeJobVacancyRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Finalize job vacancy creation from conversational flow."""
@@ -38,6 +39,7 @@ async def finalize_job_vacancy(
         if not request.job_vacancy_state.is_ready_for_publication():
             raise HTTPException(status_code=400, detail="Job vacancy is not ready for publication. Missing required fields.")
 
+        db = repo.get_session()
         job_vacancy = await job_vacancy_service.finalize_job_vacancy(
             state=request.job_vacancy_state,
             conversation_id=request.conversation_id,
@@ -45,7 +47,7 @@ async def finalize_job_vacancy(
             company_id=company_id,
             db=db,
             current_user=current_user,
-            pipeline_template_id=getattr(request.job_vacancy_state, 'pipeline_template_id', None)
+            pipeline_template_id=getattr(request.job_vacancy_state, "pipeline_template_id", None)
         )
 
         logger.info(f"Job vacancy finalized: {job_vacancy.id} - {job_vacancy.title}")
@@ -68,7 +70,7 @@ async def finalize_job_vacancy(
             job_vacancy_id=job_id,
             title=job_title,
             status=job_status,
-            message=f"Vaga '{job_title}' criada com sucesso!"
+            message=f"Vaga \{job_title}\ criada com sucesso!"
         )
 
     except Exception as e:
@@ -98,7 +100,7 @@ async def search_job_vacancies(
     query: str = Query("", min_length=0),
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=50),
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Search job vacancies by title or job_id."""
@@ -120,27 +122,8 @@ async def search_job_vacancies(
         else:
             search_filter = base_filter
 
-        count_stmt = select(func.count(JobVacancy.id)).where(search_filter)
-        count_result = await db.execute(count_stmt)
-        total_count = count_result.scalar() or 0
-
-        stmt = (
-            select(
-                JobVacancy.id,
-                JobVacancy.job_id,
-                JobVacancy.title,
-                JobVacancy.status,
-                JobVacancy.created_at,
-                JobVacancy.description
-            )
-            .where(search_filter)
-            .order_by(JobVacancy.created_at.desc())
-            .offset(offset)
-            .limit(page_size)
-        )
-
-        result = await db.execute(stmt)
-        rows = result.all()
+        total_count = await repo.search_count(search_filter)
+        rows = await repo.search_vacancies(search_filter, offset, page_size)
 
         items = []
         for row in rows:
@@ -193,20 +176,14 @@ class ArchetypesResponse(BaseModel):
 
 @router.get("/job-vacancies/archetypes", response_model=ArchetypesResponse)
 async def get_archetypes(
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get completed job vacancies with hired candidates for archetype search."""
     try:
         company_id = get_user_company_id(current_user)
 
-        result = await db.execute(
-            select(JobVacancy)
-            .where(JobVacancy.status == "Concluída")
-            .where(JobVacancy.company_id == company_id)
-            .order_by(JobVacancy.closed_at.desc())
-        )
-        job_vacancies = result.scalars().all()
+        job_vacancies = await repo.get_completed_vacancies(company_id)
 
         archetypes = []
         for jv in job_vacancies:
@@ -253,13 +230,14 @@ class FindJobRequest(BaseModel):
 @router.post("/job-vacancies/find-by-identifier", response_model=None)
 async def find_job_by_identifier(
     request: FindJobRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Find a job by ID, job_id code, or title."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 
     company_id = get_user_company_id(current_user)
+    db = repo.get_session()
 
     try:
         job = await job_clone_service.get_job_by_id_or_title(
@@ -286,27 +264,21 @@ async def find_job_by_identifier(
 @router.get("/job-vacancies/{job_vacancy_id}", response_model=None)
 async def get_job_vacancy(
     job_vacancy_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get job vacancy by ID."""
     try:
         user_company = get_user_company_id(current_user)
 
-        result = await db.execute(
-            select(JobVacancy).where(
-                JobVacancy.id == job_vacancy_id,
-                JobVacancy.company_id == user_company
-            )
-        )
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
         user_email = (current_user.email or "").lower()
         user_id = str(current_user.id) if current_user.id else ""
-        is_admin = current_user.role == UserRole.admin if hasattr(current_user, 'role') else False
+        is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
         jv_visibility = job_vacancy.visibility or "public"
 
         can_access = False
@@ -348,8 +320,8 @@ async def get_job_vacancy(
             "screening_config": job_vacancy.screening_config,
             "screening_status": derive_screening_status(job_vacancy.screening_config),
             "enriched_jd": job_vacancy.enriched_jd,
-            "created_at": job_vacancy.created_at.isoformat() if hasattr(job_vacancy.created_at, 'isoformat') else None,
-            "updated_at": job_vacancy.updated_at.isoformat() if hasattr(job_vacancy.updated_at, 'isoformat') else None,
+            "created_at": job_vacancy.created_at.isoformat() if hasattr(job_vacancy.created_at, "isoformat") else None,
+            "updated_at": job_vacancy.updated_at.isoformat() if hasattr(job_vacancy.updated_at, "isoformat") else None,
         }
 
     except HTTPException:
@@ -367,7 +339,7 @@ async def list_job_vacancies(
     visibility: str | None = None,
     skip: int = 0,
     limit: int = 500,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """List job vacancies with optional status filter."""
@@ -375,20 +347,15 @@ async def list_job_vacancies(
         company_id = get_user_company_id(current_user)
         user_email = current_user.email.lower() if current_user.email else ""
         user_id = str(current_user.id) if current_user.id else ""
-        is_admin = current_user.role == UserRole.admin if hasattr(current_user, 'role') else False
+        is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
 
-        query = select(JobVacancy).where(JobVacancy.company_id == company_id)
-
-        if status:
-            query = query.where(JobVacancy.status == status)
-
-        if visibility:
-            query = query.where(JobVacancy.visibility == visibility)
-
-        query = query.offset(skip).limit(limit).order_by(JobVacancy.created_at.desc())
-
-        result = await db.execute(query)
-        all_vacancies = result.scalars().all()
+        all_vacancies = await repo.list_vacancies(
+            company_id=company_id,
+            status=status,
+            visibility=visibility,
+            skip=skip,
+            limit=limit,
+        )
 
         job_vacancies = []
         for jv in all_vacancies:
@@ -445,9 +412,9 @@ async def list_job_vacancies(
                     "status": jv.status or "Rascunho",
                     "stage": jv.stage,
                     "priority": jv.priority or "média",
-                    "created_at": jv.created_at.isoformat() if hasattr(jv.created_at, 'isoformat') else None,
-                    "updated_at": jv.updated_at.isoformat() if hasattr(jv.updated_at, 'isoformat') else None,
-                    "deadline": jv.deadline.isoformat() if hasattr(jv, 'deadline') and jv.deadline else None,
+                    "created_at": jv.created_at.isoformat() if hasattr(jv.created_at, "isoformat") else None,
+                    "updated_at": jv.updated_at.isoformat() if hasattr(jv.updated_at, "isoformat") else None,
+                    "deadline": jv.deadline.isoformat() if hasattr(jv, "deadline") and jv.deadline else None,
                     "funnel_data": jv.funnel_data,
                     "lia_metrics": jv.lia_metrics or generate_lia_metrics(jv.funnel_data),
                     "nps": jv.nps,
@@ -490,7 +457,7 @@ async def list_job_vacancies(
 @router.post("/job-vacancies", response_model=JobVacancyResponse)
 async def create_job_vacancy(
     job_data: JobVacancyCreate,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     _trial_check: None = Depends(require_active_subscription_or_demo),
     _plan_check: None = Depends(check_active_jobs_limit_or_demo),
@@ -537,9 +504,7 @@ async def create_job_vacancy(
             updated_at=datetime.utcnow()
         )
 
-        db.add(job_vacancy)
-        await db.flush()
-        await db.refresh(job_vacancy)
+        job_vacancy = await repo.create_vacancy(job_vacancy)
 
         logger.info(f"Job vacancy created: {job_vacancy.id} - {job_vacancy.title}")
 
@@ -585,7 +550,7 @@ async def create_job_vacancy(
 async def update_job_vacancy(
     job_vacancy_id: UUID,
     job_data: JobVacancyUpdate,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Update an existing job vacancy."""
@@ -593,14 +558,9 @@ async def update_job_vacancy(
         logger.info(f"Updating job vacancy: {job_vacancy_id}")
 
         user_company = get_user_company_id(current_user)
+        db = repo.get_session()
 
-        query = select(JobVacancy).where(
-            JobVacancy.id == job_vacancy_id,
-            JobVacancy.company_id == user_company
-        )
-
-        result = await db.execute(query)
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -620,7 +580,7 @@ async def update_job_vacancy(
 
         if changes:
             from app.domains.job_management.services.job_audit_service import job_audit_service
-            changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+            changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
             await job_audit_service.log_update(
                 job_id=str(job_vacancy_id),
                 changes=changes,
@@ -629,8 +589,7 @@ async def update_job_vacancy(
                 db=db,
             )
 
-        await db.flush()
-        await db.refresh(job_vacancy)
+        await repo.flush_and_refresh(job_vacancy)
 
         logger.info(f"Job vacancy updated: {job_vacancy.id} - {job_vacancy.title} ({len(changes)} fields changed)")
 
@@ -678,22 +637,17 @@ async def update_job_vacancy(
 @router.delete("/job-vacancies/{job_vacancy_id}", response_model=None)
 async def delete_job_vacancy(
     job_vacancy_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Delete a job vacancy (soft delete - sets status to 'Arquivada')."""
+    """Delete a job vacancy (soft delete - sets status to Arquivada)."""
     try:
         logger.info(f"Deleting job vacancy: {job_vacancy_id}")
 
         user_company = get_user_company_id(current_user)
+        db = repo.get_session()
 
-        query = select(JobVacancy).where(
-            JobVacancy.id == job_vacancy_id,
-            JobVacancy.company_id == user_company
-        )
-
-        result = await db.execute(query)
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -702,7 +656,7 @@ async def delete_job_vacancy(
         job_vacancy.updated_at = datetime.utcnow()
 
         from app.domains.job_management.services.job_audit_service import job_audit_service
-        changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+        changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
         await job_audit_service.log_archive(
             job_id=str(job_vacancy_id),
             changed_by=changed_by,
@@ -710,12 +664,11 @@ async def delete_job_vacancy(
             db=db,
         )
 
-
         logger.info(f"Job vacancy archived: {job_vacancy_id}")
 
         return {
             "success": True,
-            "message": f"Vaga '{job_vacancy.title}' arquivada com sucesso",
+            "message": f"Vaga \{job_vacancy.title}\ arquivada com sucesso",
             "id": str(job_vacancy_id)
         }
 
@@ -732,7 +685,7 @@ async def delete_job_vacancy(
 async def update_job_vacancy_status(
     job_vacancy_id: UUID,
     status: str,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Update job vacancy status."""
@@ -741,18 +694,13 @@ async def update_job_vacancy_status(
         if status not in valid_statuses:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid status. Valid options: {', '.join(valid_statuses)}"
+                detail="Invalid status. Valid options: " + ", ".join(valid_statuses)
             )
 
         user_company = get_user_company_id(current_user)
+        db = repo.get_session()
 
-        query = select(JobVacancy).where(
-            JobVacancy.id == job_vacancy_id,
-            JobVacancy.company_id == user_company
-        )
-
-        result = await db.execute(query)
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -762,7 +710,7 @@ async def update_job_vacancy_status(
         job_vacancy.updated_at = datetime.utcnow()
 
         from app.domains.job_management.services.job_audit_service import job_audit_service
-        changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+        changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
         await job_audit_service.log_status_change(
             job_id=str(job_vacancy_id),
             old_status=old_status,
@@ -771,7 +719,6 @@ async def update_job_vacancy_status(
             company_id=user_company,
             db=db,
         )
-
 
         logger.info(f"Job vacancy status updated: {job_vacancy_id} ({old_status} -> {status})")
 
@@ -821,13 +768,14 @@ class CloneFromTemplateRequest(BaseModel):
 async def duplicate_job(
     job_id: UUID,
     request: DuplicateJobRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Duplicate a job vacancy with all its data."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 
     company_id = get_user_company_id(current_user)
+    db = repo.get_session()
 
     try:
         logger.info(f"Duplicating job {job_id} with {request.copies} copies")
@@ -840,14 +788,14 @@ async def duplicate_job(
             candidate_filter=request.candidate_filter,
             candidate_status_override=request.candidate_status_override,
             overrides=request.overrides,
-            created_by=current_user.email if hasattr(current_user, 'email') else "demo@wedotalent.com",
+            created_by=current_user.email if hasattr(current_user, "email") else "demo@wedotalent.com",
             company_id=company_id
         )
 
         if not result.get("success"):
             raise HTTPException(status_code=404, detail=result.get("error", "Failed to duplicate job"))
 
-        logger.info(f"Created {result['total_jobs_created']} duplicate jobs from {job_id}")
+        logger.info(f"Created {result[total_jobs_created]} duplicate jobs from {job_id}")
         return result
 
     except HTTPException:
@@ -861,13 +809,14 @@ async def duplicate_job(
 async def clone_from_template(
     job_id: UUID,
     request: CloneFromTemplateRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Create a new job using an existing job as a template (no candidates)."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 
     company_id = get_user_company_id(current_user)
+    db = repo.get_session()
 
     try:
         logger.info(f"Creating job from template {job_id}")
@@ -877,14 +826,14 @@ async def clone_from_template(
             source_job_id=job_id,
             new_title=request.new_title,
             overrides=request.overrides,
-            created_by=current_user.email if hasattr(current_user, 'email') else "demo@wedotalent.com",
+            created_by=current_user.email if hasattr(current_user, "email") else "demo@wedotalent.com",
             company_id=company_id
         )
 
         if not result.get("success"):
             raise HTTPException(status_code=404, detail=result.get("error", "Failed to create from template"))
 
-        logger.info(f"Created job from template: {result['created_job']['title']}")
+        logger.info(f"Created job from template: {result[created_job][title]}")
         return result
 
     except HTTPException:
@@ -897,10 +846,12 @@ async def clone_from_template(
 @router.get("/job-vacancies/{job_id}/clone-summary", response_model=None)
 async def get_clone_summary(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo)
 ):
     """Get a summary of a job for displaying before cloning."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
+
+    db = repo.get_session()
 
     try:
         summary = await job_clone_service.get_job_summary_for_clone(db, job_id)
