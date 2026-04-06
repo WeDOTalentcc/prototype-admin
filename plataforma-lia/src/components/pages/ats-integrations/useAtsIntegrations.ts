@@ -69,7 +69,7 @@ export interface UseSystemModalReturn {
   handleDrop: (e: React.DragEvent, targetField: SystemField) => void
   applyTemplate: (templateId: string) => void
   removeMapping: (mappingId: string) => void
-  handleSaveMappings: (connectionId: string) => void
+  handleSaveMappings: () => void
   isSavingMappings: boolean
   getFieldTypeIcon: (type: string) => string
   getConfidenceColor: (confidence: number) => string
@@ -248,14 +248,23 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
     }
   }, [credentials, system.type])
 
-  const handleSaveMappings = useCallback(async (connectionId: string) => {
+  const handleSaveMappings = useCallback(async () => {
     setIsSavingMappings(true)
     try {
+      const connRes = await fetch('/api/backend-proxy/ats/connections')
+      const allConns: ATSConnectionData[] = connRes.ok ? await connRes.json() : []
+      const conn = allConns.find(c => c.provider?.toLowerCase() === system.type && c.is_active)
+      if (!conn) {
+        setConnectionMessage('Nenhuma conexão ativa encontrada. Salve a conexão primeiro.')
+        setConnectionStatus('error')
+        return
+      }
+
       const res = await fetch('/api/backend-proxy/ats/field-mappings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          connection_id: connectionId,
+          connection_id: conn.id,
           mappings: mappings.map(m => ({
             sourceField: m.sourceField,
             targetField: m.targetField,
@@ -267,13 +276,29 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
         }),
       })
 
-      await res.json()
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        setConnectionMessage(errData.detail || `Erro ao salvar mapeamentos (${res.status})`)
+        setConnectionStatus('error')
+        return
+      }
+
+      const data = await res.json()
+      if (data.success === false) {
+        setConnectionMessage(data.detail || 'Erro ao salvar mapeamentos.')
+        setConnectionStatus('error')
+        return
+      }
+
+      setConnectionMessage('Mapeamentos salvos com sucesso!')
+      setConnectionStatus('success')
     } catch {
-      // silent
+      setConnectionMessage('Erro ao salvar mapeamentos.')
+      setConnectionStatus('error')
     } finally {
       setIsSavingMappings(false)
     }
-  }, [mappings])
+  }, [mappings, system.type])
 
   const handleDragStart = useCallback((field: SystemField) => {
     setDraggedField(field)

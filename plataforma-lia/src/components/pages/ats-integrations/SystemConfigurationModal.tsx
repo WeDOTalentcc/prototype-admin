@@ -1,13 +1,126 @@
 "use client"
 
+import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Link2, Settings, RefreshCw, Zap, Server, Database,
-  CheckCircle, XCircle, Wifi, ArrowRight, Trash2, GitBranch
+  CheckCircle, XCircle, Wifi, ArrowRight, Trash2, GitBranch, Save
 } from "lucide-react"
-import { useSystemModal } from './useAtsIntegrations'
+import { useSystemModal, type ATSConnectionData } from './useAtsIntegrations'
 import type { SystemConfigurationModalProps } from './ats-integrations.types'
+
+function SyncTab({ systemType }: { systemType: string }) {
+  const [connections, setConnections] = useState<ATSConnectionData[]>([])
+  const [syncing, setSyncing] = useState<string | null>(null)
+  const [syncResult, setSyncResult] = useState<{ id: string; message: string; success: boolean } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/backend-proxy/ats/connections')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setConnections(
+        (Array.isArray(data) ? data : []).filter(
+          (c: ATSConnectionData) => c.provider?.toLowerCase() === systemType
+        )
+      ))
+      .catch(() => {})
+  }, [systemType])
+
+  const triggerSync = useCallback(async (connectionId: string, syncType: string) => {
+    setSyncing(connectionId)
+    setSyncResult(null)
+    try {
+      const res = await fetch(`/api/v1/ats/connections/${connectionId}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sync_type: syncType }),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ detail: `Erro HTTP ${res.status}` }))
+        setSyncResult({ id: connectionId, message: errData.detail || `Erro (${res.status})`, success: false })
+        return
+      }
+      const data = await res.json()
+      setSyncResult({ id: connectionId, message: data.message || 'Concluído', success: data.success !== false })
+    } catch {
+      setSyncResult({ id: connectionId, message: 'Erro de rede', success: false })
+    } finally {
+      setSyncing(null)
+    }
+  }, [])
+
+  if (connections.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <RefreshCw className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
+        <h3 className="text-xs font-medium text-lia-text-primary mb-2">Nenhuma Conexão Ativa</h3>
+        <p className="text-lia-text-secondary">Configure uma conexão na aba Conexão para habilitar a sincronização.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h4 className="text-xs font-medium text-lia-text-primary mb-4">Sincronizar Dados</h4>
+        {connections.map((conn) => (
+          <div key={conn.id} className="border border-lia-border-subtle rounded-md p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="font-medium text-lia-text-primary">{conn.provider_name}</p>
+                <p className="text-xs text-lia-text-secondary">
+                  {conn.last_sync_at
+                    ? `Última sync: ${new Date(conn.last_sync_at).toLocaleString('pt-BR')}`
+                    : 'Nunca sincronizado'}
+                </p>
+              </div>
+              <p className="text-sm text-lia-text-secondary">{conn.total_candidates_synced || 0} candidatos</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={syncing === conn.id}
+                onClick={() => triggerSync(conn.id, 'candidates')}
+              >
+                {syncing === conn.id
+                  ? <><RefreshCw className="w-3 h-3 animate-spin" />Sincronizando...</>
+                  : 'Sincronizar Candidatos'}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={syncing === conn.id}
+                onClick={() => triggerSync(conn.id, 'jobs')}
+              >
+                Sincronizar Vagas
+              </Button>
+              <Button
+                size="sm"
+                className="gap-2"
+                disabled={syncing === conn.id}
+                onClick={() => triggerSync(conn.id, 'full')}
+              >
+                Sincronização Completa
+              </Button>
+            </div>
+            {syncResult && syncResult.id === conn.id && (
+              <div className={`mt-3 p-2 rounded-md text-sm ${
+                syncResult.success
+                  ? 'bg-status-success/10 text-status-success'
+                  : 'bg-status-error/10 text-status-error'
+              }`}>
+                {syncResult.message}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalProps) {
   const {
@@ -19,10 +132,11 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
     systemFields, liaFields, mappingTemplates,
     handleDragStart, handleDragOver, handleDrop,
     applyTemplate, removeMapping,
+    handleSaveMappings, isSavingMappings,
     getFieldTypeIcon, getConfidenceColor
   } = useSystemModal(system)
 
-  const isAtsProvider = system.type === 'gupy' || system.type === 'pandape'
+  const isAtsProvider = system.type === 'gupy' || system.type === 'pandape' || system.type === 'merge'
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -128,7 +242,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               {isAtsProvider && (
                 <div>
                   <h4 className="text-xs font-medium text-lia-text-primary mb-4">
-                    Credenciais {system.type === 'gupy' ? 'Gupy' : 'Pandapé'}
+                    Credenciais {system.type === 'gupy' ? 'Gupy' : system.type === 'pandape' ? 'Pandapé' : 'Merge.dev'}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
@@ -349,15 +463,25 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                   <li>• Clique no X para remover mapeamentos incorretos</li>
                 </ul>
               </div>
+
+              {mappings.length > 0 && (
+                <div className="flex justify-end">
+                  <Button
+                    className="gap-2"
+                    disabled={isSavingMappings}
+                    onClick={handleSaveMappings}
+                  >
+                    {isSavingMappings
+                      ? <><RefreshCw className="w-4 h-4 animate-spin" />Salvando...</>
+                      : <><Save className="w-4 h-4" />Salvar Mapeamentos</>}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
           {selectedTab === 'sync' && (
-            <div className="text-center py-12">
-              <RefreshCw className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-              <h3 className="text-xs font-medium text-lia-text-primary mb-2">Configuração de Sincronização</h3>
-              <p className="text-lia-text-secondary">Configurações de frequência e filtros em desenvolvimento</p>
-            </div>
+            <SyncTab systemType={system.type} />
           )}
 
           {selectedTab === 'webhooks' && (

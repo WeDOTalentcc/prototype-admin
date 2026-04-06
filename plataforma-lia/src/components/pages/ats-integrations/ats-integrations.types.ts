@@ -1,7 +1,7 @@
 export interface ATSSystem {
   id: string
   name: string
-  type: 'sap' | 'workday' | 'bamboohr' | 'greenhouse' | 'custom'
+  type: 'sap' | 'workday' | 'bamboohr' | 'greenhouse' | 'custom' | 'gupy' | 'pandape' | 'merge'
   status: 'connected' | 'connecting' | 'error' | 'disabled'
   description: string
   logo?: string

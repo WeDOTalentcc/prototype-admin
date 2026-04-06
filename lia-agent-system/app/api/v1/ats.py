@@ -1,20 +1,24 @@
 """
-ATS Integration API endpoints (Gupy + Pandapé).
+ATS Integration API endpoints (Gupy, Pandapé, Merge).
 """
+import hashlib
+import hmac
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy import and_, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.domains.ats_integration.services.gupy_service import GupyService
 from app.domains.ats_integration.services.pandape_service import PandapeService
 from app.models.ats_integration import (
     ATSCandidate,
     ATSConnection,
+    ATSJobMapping,
     ATSProvider,
     ATSSyncJob,
     ATSWebhookLog,
@@ -23,6 +27,8 @@ from app.models.ats_integration import (
 from app.shared.encryption import encrypt_value, decrypt_value
 
 logger = logging.getLogger(__name__)
+
+SUPPORTED_PROVIDERS = ("gupy", "pandape", "merge")
 
 router = APIRouter()
 
@@ -60,27 +66,20 @@ async def create_ats_connection(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Create a new ATS connection (Gupy or Pandapé).
+    Create a new ATS connection (Gupy, Pandapé, or Merge).
     """
     try:
-        # Validate provider
-        if request.provider.lower() not in ["gupy", "pandape"]:
+        provider = request.provider.lower()
+        if provider not in SUPPORTED_PROVIDERS:
             raise HTTPException(
                 status_code=400,
-                detail="Provider must be 'gupy' or 'pandape'"
+                detail=f"Provider must be one of: {', '.join(SUPPORTED_PROVIDERS)}"
             )
-        
-        # Test connection before saving
-        if request.provider.lower() == "gupy":
-            service = GupyService(api_key=request.api_key)
-        else:  # pandape
-            service = PandapeService(
-                api_key=request.api_key,
-                api_url=request.api_endpoint
-            )
-        
-        connection_ok = await service.test_connection()
-        
+
+        connection_ok = await _test_provider_connection(
+            provider, request.api_key, request.api_endpoint
+        )
+
         if not connection_ok:
             raise HTTPException(
                 status_code=400,
@@ -160,21 +159,15 @@ async def test_ats_connection(request: TestATSConnectionRequest):
     """
     try:
         provider = request.provider.lower()
-        if provider not in ["gupy", "pandape"]:
+        if provider not in SUPPORTED_PROVIDERS:
             raise HTTPException(
                 status_code=400,
-                detail="Provider must be 'gupy' or 'pandape'"
+                detail=f"Provider must be one of: {', '.join(SUPPORTED_PROVIDERS)}"
             )
 
-        if provider == "gupy":
-            service = GupyService(api_key=request.api_key)
-        else:
-            service = PandapeService(
-                api_key=request.api_key,
-                api_url=request.api_endpoint,
-            )
-
-        connection_ok = await service.test_connection()
+        connection_ok = await _test_provider_connection(
+            provider, request.api_key, request.api_endpoint
+        )
 
         return {
             "success": connection_ok,
@@ -197,17 +190,49 @@ async def test_ats_connection(request: TestATSConnectionRequest):
         }
 
 
+async def _test_provider_connection(
+    provider: str, api_key: str, api_endpoint: str | None = None
+) -> bool:
+    """Test connectivity for a given ATS provider."""
+    if provider == "gupy":
+        service = GupyService(api_key=api_key)
+    elif provider == "pandape":
+        service = PandapeService(api_key=api_key, api_url=api_endpoint)
+    elif provider == "merge":
+        import httpx
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    "https://api.merge.dev/api/ats/v1/account-details",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    timeout=15,
+                )
+                return resp.status_code == 200
+        except Exception:
+            return False
+    else:
+        return False
+    return await service.test_connection()
+
+
 @router.post("/ats/field-mappings", response_model=dict)
 async def save_field_mappings(
     request: SaveFieldMappingsRequest,
     db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Save field mappings for an ATS connection.
     """
     try:
+        company_id = get_user_company_id(current_user)
         result = await db.execute(
-            select(ATSConnection).where(ATSConnection.id == request.connection_id)
+            select(ATSConnection).where(
+                and_(
+                    ATSConnection.id == request.connection_id,
+                    ATSConnection.company_id == company_id,
+                )
+            )
         )
         connection = result.scalar_one_or_none()
 
@@ -242,13 +267,20 @@ async def save_field_mappings(
 async def get_field_mappings(
     connection_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Get field mappings for an ATS connection.
     """
     try:
+        company_id = get_user_company_id(current_user)
         result = await db.execute(
-            select(ATSConnection).where(ATSConnection.id == connection_id)
+            select(ATSConnection).where(
+                and_(
+                    ATSConnection.id == connection_id,
+                    ATSConnection.company_id == company_id,
+                )
+            )
         )
         connection = result.scalar_one_or_none()
 
@@ -272,14 +304,21 @@ async def get_field_mappings(
 async def trigger_ats_sync(
     connection_id: str,
     request: TriggerSyncRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Manually trigger synchronization for an ATS connection.
     """
     try:
+        company_id = get_user_company_id(current_user)
         result = await db.execute(
-            select(ATSConnection).where(ATSConnection.id == connection_id)
+            select(ATSConnection).where(
+                and_(
+                    ATSConnection.id == connection_id,
+                    ATSConnection.company_id == company_id,
+                )
+            )
         )
         connection = result.scalar_one_or_none()
 
@@ -523,21 +562,27 @@ async def list_ats_candidates(
 @router.post("/ats/webhooks/{provider}", response_model=dict)
 async def receive_ats_webhook(
     provider: str,
-    payload: dict = Body(...),
-    db: AsyncSession = Depends(get_db)
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    x_webhook_signature: str | None = Header(None, alias="X-Webhook-Signature"),
+    x_gupy_signature: str | None = Header(None, alias="X-Gupy-Signature"),
 ):
     """
     Receive and process webhook events from ATS platforms.
+    Verifies webhook signature when a webhook_secret is configured.
     """
     try:
         provider_lower = provider.lower()
-        if provider_lower not in ("gupy", "pandape"):
+        if provider_lower not in SUPPORTED_PROVIDERS:
             raise HTTPException(status_code=400, detail="Invalid provider")
+
+        raw_body = await request.body()
+        payload = await request.json() if raw_body else {}
 
         event_type = payload.get("event") or payload.get("eventType", "unknown")
         event_id = payload.get("id")
 
-        provider_enum = ATSProvider.GUPY if provider_lower == "gupy" else ATSProvider.PANDAPE
+        provider_enum = ATSProvider[provider_lower.upper()]
 
         conn_result = await db.execute(
             select(ATSConnection).where(
@@ -547,6 +592,23 @@ async def receive_ats_webhook(
         )
         connection = conn_result.scalar_one_or_none()
         connection_id = connection.id if connection else None
+
+        if connection and connection.webhook_secret:
+            secret = connection.webhook_secret
+            try:
+                secret = decrypt_value(secret)
+            except Exception:
+                pass
+            incoming_sig = x_gupy_signature or x_webhook_signature
+            if incoming_sig:
+                expected = hmac.new(
+                    secret.encode(), raw_body, hashlib.sha256
+                ).hexdigest()
+                if not hmac.compare_digest(incoming_sig, expected):
+                    logger.warning("Webhook signature mismatch for %s", provider)
+                    raise HTTPException(status_code=403, detail="Invalid webhook signature")
+            else:
+                logger.debug("Webhook secret configured but no signature header received for %s", provider)
 
         webhook_log = ATSWebhookLog(
             provider=provider_enum,
@@ -618,6 +680,8 @@ async def _process_webhook_event(
         return await _process_gupy_webhook(event_lower, payload, db, connection_id)
     elif provider == "pandape":
         return await _process_pandape_webhook(event_lower, payload, db, connection_id)
+    elif provider == "merge":
+        return await _process_merge_webhook(event_lower, payload, db, connection_id)
 
     return False
 
@@ -694,7 +758,41 @@ async def _process_gupy_webhook(
         return False
 
     if event_type in ("job.created", "job.updated"):
-        logger.info("Received Gupy job event: %s", event_type)
+        ats_job_id = str(data.get("id", data.get("jobId", "")))
+        if not ats_job_id:
+            logger.info("Gupy job event %s without id — skipped", event_type)
+            return True
+
+        existing = await db.execute(
+            select(ATSJobMapping).where(
+                ATSJobMapping.ats_job_id == ats_job_id,
+                ATSJobMapping.provider == ATSProvider.GUPY,
+            )
+        )
+        job = existing.scalar_one_or_none()
+
+        if job:
+            job.job_title = data.get("name", job.job_title)
+            job.department = data.get("department", job.department)
+            job.location = data.get("location", job.location)
+            job.ats_status = data.get("status", job.ats_status)
+            job.last_synced_at = datetime.now(timezone.utc)
+            job.ats_raw_data = data
+        else:
+            new_job = ATSJobMapping(
+                connection_id=connection_id,
+                provider=ATSProvider.GUPY,
+                ats_job_id=ats_job_id,
+                job_title=data.get("name", ""),
+                department=data.get("department"),
+                location=data.get("location"),
+                employment_type=data.get("type"),
+                ats_status=data.get("status", "open"),
+                ats_raw_data=data,
+            )
+            db.add(new_job)
+
+        logger.info("Processed Gupy %s for job %s", event_type, ats_job_id)
         return True
 
     logger.debug("Unhandled Gupy event type: %s", event_type)
@@ -771,10 +869,134 @@ async def _process_pandape_webhook(
         return False
 
     if event_type in ("vaga.criada", "vaga.atualizada"):
-        logger.info("Received Pandapé job event: %s", event_type)
+        ats_job_id = str(data.get("id", data.get("vaga_id", "")))
+        if not ats_job_id:
+            logger.info("Pandapé job event %s without id — skipped", event_type)
+            return True
+
+        existing = await db.execute(
+            select(ATSJobMapping).where(
+                ATSJobMapping.ats_job_id == ats_job_id,
+                ATSJobMapping.provider == ATSProvider.PANDAPE,
+            )
+        )
+        job = existing.scalar_one_or_none()
+
+        if job:
+            job.job_title = data.get("titulo", job.job_title)
+            job.department = data.get("departamento", job.department)
+            job.location = data.get("localidade", job.location)
+            job.ats_status = data.get("situacao", job.ats_status)
+            job.last_synced_at = datetime.now(timezone.utc)
+            job.ats_raw_data = data
+        else:
+            new_job = ATSJobMapping(
+                connection_id=connection_id,
+                provider=ATSProvider.PANDAPE,
+                ats_job_id=ats_job_id,
+                job_title=data.get("titulo", ""),
+                department=data.get("departamento"),
+                location=data.get("localidade"),
+                employment_type=data.get("tipo_contrato"),
+                ats_status=data.get("situacao", "aberta"),
+                ats_raw_data=data,
+            )
+            db.add(new_job)
+
+        logger.info("Processed Pandapé %s for job %s", event_type, ats_job_id)
         return True
 
     logger.debug("Unhandled Pandapé event type: %s", event_type)
+    return False
+
+
+async def _process_merge_webhook(
+    event_type: str, payload: dict, db: AsyncSession, connection_id: object
+) -> bool:
+    """Process Merge.dev unified webhook events."""
+    data = payload.get("data", payload)
+    hook_type = payload.get("hook", {}).get("event", event_type)
+
+    if hook_type in ("Candidate.created", "Candidate.changed"):
+        ats_candidate_id = str(data.get("id", ""))
+        if not ats_candidate_id:
+            return False
+
+        existing = await db.execute(
+            select(ATSCandidate).where(
+                ATSCandidate.ats_candidate_id == ats_candidate_id,
+                ATSCandidate.provider == ATSProvider.MERGE,
+            )
+        )
+        candidate = existing.scalar_one_or_none()
+
+        if candidate:
+            candidate.name = (
+                f"{data.get('first_name', '')} {data.get('last_name', '')}".strip()
+                or candidate.name
+            )
+            candidate.email = (
+                (data.get("email_addresses") or [{}])[0].get("value")
+                if data.get("email_addresses") else candidate.email
+            )
+            candidate.last_synced_at = datetime.now(timezone.utc)
+            candidate.ats_raw_data = data
+        else:
+            emails = data.get("email_addresses", [])
+            phones = data.get("phone_numbers", [])
+            new_candidate = ATSCandidate(
+                connection_id=connection_id,
+                provider=ATSProvider.MERGE,
+                ats_candidate_id=ats_candidate_id,
+                name=f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or "Unknown",
+                email=emails[0].get("value") if emails else None,
+                phone=phones[0].get("value") if phones else None,
+                current_company=data.get("company"),
+                current_title=data.get("title"),
+                application_status="new",
+                ats_raw_data=data,
+            )
+            db.add(new_candidate)
+
+        logger.info("Processed Merge %s for candidate %s", hook_type, ats_candidate_id)
+        return True
+
+    if hook_type in ("Job.created", "Job.changed"):
+        ats_job_id = str(data.get("id", ""))
+        if not ats_job_id:
+            return True
+
+        existing = await db.execute(
+            select(ATSJobMapping).where(
+                ATSJobMapping.ats_job_id == ats_job_id,
+                ATSJobMapping.provider == ATSProvider.MERGE,
+            )
+        )
+        job = existing.scalar_one_or_none()
+
+        if job:
+            job.job_title = data.get("name", job.job_title)
+            job.department = (data.get("departments") or [{}])[0].get("name") if data.get("departments") else job.department
+            job.ats_status = data.get("status", job.ats_status)
+            job.last_synced_at = datetime.now(timezone.utc)
+            job.ats_raw_data = data
+        else:
+            depts = data.get("departments", [])
+            new_job = ATSJobMapping(
+                connection_id=connection_id,
+                provider=ATSProvider.MERGE,
+                ats_job_id=ats_job_id,
+                job_title=data.get("name", ""),
+                department=depts[0].get("name") if depts else None,
+                ats_status=data.get("status", "open"),
+                ats_raw_data=data,
+            )
+            db.add(new_job)
+
+        logger.info("Processed Merge %s for job %s", hook_type, ats_job_id)
+        return True
+
+    logger.debug("Unhandled Merge event type: %s", hook_type)
     return False
 
 
