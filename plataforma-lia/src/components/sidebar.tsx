@@ -38,10 +38,10 @@ import Image from "next/image"
 // Memoizar os dados estáticos para evitar recriações
 // Menu principal - apenas páginas operacionais do dia-a-dia
 const menuItems: MenuItemType[] = [
-  { icon: MessageCircle, label: "Chat LIA", isCore: true },
   { icon: Target, label: "Tarefas", isCore: true },
-  { icon: Briefcase, label: "Vagas", isCore: true },
+  { icon: MessageCircle, label: "Chat LIA", isCore: true },
   { icon: Users, label: "Funil de Talentos", isCore: true },
+  { icon: Briefcase, label: "Vagas", isCore: true },
 ]
 
 
