@@ -489,6 +489,71 @@ class MockEmailProvider(MessageProvider):
         return True
 
 
+class ResendMessageProvider(MessageProvider):
+    """Resend email provider — fallback after Mailgun."""
+    
+    def __init__(self):
+        self.api_key = os.environ.get("RESEND_API_KEY")
+        self.from_email = os.environ.get("RESEND_FROM_EMAIL", "noreply@wedotalent.com")
+        self.from_name = os.environ.get("RESEND_FROM_NAME", "WeDo Talent")
+    
+    @property
+    def name(self) -> str:
+        return "resend"
+    
+    @property
+    def channel(self) -> MessageChannel:
+        return MessageChannel.EMAIL
+    
+    async def send(
+        self,
+        to: str,
+        subject: Optional[str],
+        body: str,
+        body_html: Optional[str] = None,
+        **kwargs
+    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+        if not self.api_key:
+            return False, None, {"error": "RESEND_API_KEY not configured"}
+        try:
+            import httpx
+            sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
+            payload = {
+                "from": sender,
+                "to": [to],
+                "subject": subject or "(sem assunto)",
+                "html": body_html or body,
+            }
+            if body and not body_html:
+                payload["text"] = body
+            async with httpx.AsyncClient(timeout=30) as client:
+                response = await client.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+            if response.status_code in (200, 201):
+                data = response.json()
+                message_id = data.get("id", f"resend-{uuid.uuid4().hex[:12]}")
+                logger.info(f"[RESEND] Email sent to {to}. ID: {message_id}")
+                return True, message_id, {"provider": "resend", "status_code": response.status_code}
+            else:
+                logger.error(f"[RESEND] Failed for {to}: {response.status_code} {response.text}")
+                return False, None, {"error": f"Resend API error: {response.status_code}"}
+        except Exception as e:
+            logger.error(f"[RESEND] Exception sending to {to}: {e}", exc_info=True)
+            return False, None, {"error": str(e)}
+    
+    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+        return "unknown", {"note": "Resend status tracking requires webhook setup"}
+    
+    def is_available(self) -> bool:
+        return bool(self.api_key)
+
+
 class MailgunMessageProvider(MessageProvider):
     """
     Mailgun email provider implementation using the Mailgun HTTP API.
@@ -1027,6 +1092,7 @@ class CommunicationService:
         
         self._email_providers: List[MessageProvider] = [
             MailgunMessageProvider(),
+            ResendMessageProvider(),
             AWSEmailProvider(),
             MockEmailProvider(),
         ]
