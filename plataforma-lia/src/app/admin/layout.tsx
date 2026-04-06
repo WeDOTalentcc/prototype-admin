@@ -16,12 +16,10 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
-  Shield,
   Home,
   LogOut,
   Building2,
   Plug,
-  Brain,
   FileText,
   Workflow,
   Mail,
@@ -29,10 +27,7 @@ import {
   LayoutDashboard,
   TrendingUp,
   X,
-  FileCheck,
-  Lock,
-  ClipboardList,
-  UserCheck
+  Lock
 } from "lucide-react"
 
 type NavItem = {
@@ -58,7 +53,6 @@ const overviewNavigation: NavGroup[] = [
     label: "Gestão de Clientes",
     items: [
       { name: "Lista de Clientes", href: "/admin/clientes", icon: Users },
-      { name: "Onboarding Clientes", href: "/admin/onboarding-clientes", icon: UserCheck },
     ]
   }
 ]
@@ -89,25 +83,9 @@ const globalNavigation: NavGroup[] = [
   {
     label: "Configurações Globais",
     items: [
-      { name: "Políticas Globais", href: "/admin/configuracoes/politicas", icon: Shield },
-      { name: "Comunicações", href: "/admin/configuracoes/comunicacoes", icon: Mail },
       { name: "Templates de Sistema", href: "/admin/templates", icon: FileText },
       { name: "Configurações do Sistema", href: "/admin/configuracoes", icon: Settings },
       { name: "SSO Empresarial", href: "/admin/sso", icon: Lock },
-    ]
-  }
-]
-
-const complianceNavigation: NavGroup[] = [
-  {
-    label: "Compliance & Segurança",
-    items: [
-      { name: "Dashboard Compliance", href: "/admin/compliance", icon: Shield },
-      { name: "Controles", href: "/admin/compliance/controles", icon: FileCheck },
-      { name: "LGPD & Privacidade", href: "/admin/compliance/lgpd", icon: Lock },
-      { name: "Sala de Auditoria", href: "/admin/compliance/auditoria", icon: ClipboardList },
-      { name: "Guardrails IA", href: "/admin/compliance/guardrails", icon: Shield },
-      { name: "Saúde dos Agentes", href: "/admin/monitoring/agents", icon: Brain },
     ]
   }
 ]
@@ -147,11 +125,10 @@ function AdminSidebar({
     if (activeClient) {
       return [
         ...getClientNavigation(activeClient.id),
-        ...complianceNavigation,
         ...globalNavigation
       ]
     }
-    return [...overviewNavigation, ...complianceNavigation, ...globalNavigation]
+    return [...overviewNavigation, ...globalNavigation]
   }, [activeClient])
 
   const handleClearClient = () => {
@@ -215,12 +192,6 @@ function AdminSidebar({
       <nav className="flex-1 px-2 py-4 space-y-4 overflow-y-auto">
         {navigationGroups.map((group) => (
           <div key={group.label}>
-            {group.label === "Compliance & Segurança" && (
-              <div 
-                className="my-3 mx-3 border-t border-lia-border-subtle" 
-                
-              />
-            )}
             {!sidebarCollapsed && (
               <p 
                 className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary"
@@ -233,7 +204,6 @@ function AdminSidebar({
               {group.items.map((item) => {
                 const isActive = isItemActive(item.href)
                 const Icon = item.icon
-                const isComplianceItem = item.href.startsWith('/admin/compliance')
                 return (
                   <Link
                     key={item.name}
@@ -246,12 +216,7 @@ function AdminSidebar({
                     )}
                     title={sidebarCollapsed ? item.name : undefined}
                   >
-                    <Icon 
-                      className={cn(
-                        "w-5 h-5 shrink-0",
-                        isComplianceItem && item.name === "Dashboard Compliance" && !isActive && "text-lia-text-secondary"
-                      )}
-                    />
+                    <Icon className="w-5 h-5 shrink-0" />
                     {!sidebarCollapsed && (
                       <span className="text-sm font-medium">{item.name}</span>
                     )}

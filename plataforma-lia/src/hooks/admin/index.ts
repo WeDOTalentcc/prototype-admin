@@ -1,27 +1,3 @@
-export { useLGPDCompliance } from './useLGPDCompliance'
-export type {
-  UseLGPDComplianceResult,
-} from './useLGPDCompliance'
-export type {
-  LGPDStats,
-  DPORegistry,
-  BreachNotification,
-  AutomatedDecision,
-} from './useLGPDCompliance'
-
-export { useComplianceControls } from './useComplianceControls'
-export type {
-  UseComplianceControlsResult,
-} from './useComplianceControls'
-export type {
-  ComplianceDashboard,
-  CompanyControl,
-  ControlLibrary,
-  ComplianceAudit,
-  SOXControl,
-  FrameworkStats,
-} from './useComplianceControls'
-
 export { useBiasAudits } from './useBiasAudits'
 export type {
   UseBiasAuditsResult,
@@ -56,14 +32,6 @@ export type {
   UseClientHealthResult,
   UseClientPaymentsResult,
 } from './useClientSaasMetrics'
-
-export { useGlobalPolicies } from './useGlobalPolicies'
-export type {
-  UseGlobalPoliciesResult,
-  Policy,
-  PolicyCategory,
-  PolicyHistoryEntry,
-} from './useGlobalPolicies'
 
 export { useTechnicalTests } from './useTechnicalTests'
 export type {

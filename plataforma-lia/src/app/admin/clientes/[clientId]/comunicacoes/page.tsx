@@ -152,7 +152,7 @@ export default function ClientComunicacoesPage({
             Configurações de comunicação do cliente
           </p>
         </div>
-        <Link href="/admin/configuracoes/comunicacoes" target="_blank">
+        <Link href="/admin/configuracoes" target="_blank">
           <Button variant="outline" size="sm">
             <ExternalLink className="w-4 h-4 mr-2" />
             Abrir Configurações Globais
