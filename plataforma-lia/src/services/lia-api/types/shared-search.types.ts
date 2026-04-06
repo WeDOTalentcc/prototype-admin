@@ -47,9 +47,11 @@ export interface SharedSearch {
   recipients: SharedSearchRecipientSummary[]
 }
 
+import type { CandidateSnapshot, CandidateFeedback } from "./candidate.types"
+
 export interface SharedSearchDetail extends SharedSearch {
-  candidates: Record<string, unknown>[]
-  feedbacks: Record<string, unknown>[]
+  candidates: CandidateSnapshot[]
+  feedbacks: CandidateFeedback[]
 }
 
 export interface AddToJobRequest {

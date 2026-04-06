@@ -50,6 +50,9 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
     score: c.lia_score ?? 0,
     contractType: ((c.contract_type_preference || "CLT") as "CLT" | "PJ" | "Freelancer"),
     linkedin: c.linkedin_url ?? "",
+    skills: [] as string[],
+    experience: 0,
+    education: [] as Array<{ school?: string; degree?: string }>,
   }
 }
 

@@ -218,14 +218,14 @@ export function JobEditTab({
               {activeSection === "info-geral" && (
                 <JobInfoGeralSection
                   jobEditForm={jobEditForm}
-                  job={job}
-                  companyDefaults={companyDefaults}
+                  job={job as Record<string, unknown>}
+                  companyDefaults={companyDefaults as Record<string, unknown> | undefined}
                   isEditing={isEditing}
                   updateField={updateField}
                   setActiveSection={setActiveSection}
-                  setStatusChangeConfirm={setStatusChangeConfirm}
+                  setStatusChangeConfirm={setStatusChangeConfirm as (state: { newStatus: string; screeningImpact: string } | null) => void}
                   getScreeningImpact={getScreeningImpact}
-                  publicLink={publicLink}
+                  publicLink={publicLink ?? undefined}
                 />
               )}
 
@@ -286,7 +286,7 @@ export function JobEditTab({
               {activeSection === "remuneracao" && (
                 <JobRemuneracaoSection
                   jobEditForm={jobEditForm}
-                  companyDefaults={companyDefaults}
+                  companyDefaults={companyDefaults as Record<string, unknown> | undefined}
                   isEditing={isEditing}
                   updateField={updateField}
                 />
