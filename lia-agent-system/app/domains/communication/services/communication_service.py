@@ -1093,7 +1093,6 @@ class CommunicationService:
         self._email_providers: List[MessageProvider] = [
             MailgunMessageProvider(),
             ResendMessageProvider(),
-            AWSEmailProvider(),
             MockEmailProvider(),
         ]
         
