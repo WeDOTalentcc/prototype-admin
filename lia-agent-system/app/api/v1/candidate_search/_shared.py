@@ -15,6 +15,20 @@ from app.models.pearch import (
 )
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
+from app.schemas.archetype import ArchetypeFromSearchCreate  # noqa: F401
+from app.schemas.archetype import ArchetypeFromSearchResponse  # noqa: F401
+from app.schemas.archetype import ArchetypeResponse  # noqa: F401
+from app.api.v1.candidate_search.core_search import ImportUser  # noqa: F401
+from app.api.v1.admin_settings import User  # noqa: F401
+from app.auth.dependencies import assert_resource_ownership  # noqa: F401
+from app.services.archetype_builder_service import build_archetype_from_search  # noqa: F401
+from app.domains.cv_screening.services.cv_parser import cv_parser_service  # noqa: F401
+from app.services.archetype_builder_service import extract_tags_from_search_spec  # noqa: F401
+from app.auth.dependencies import get_current_user_or_demo  # noqa: F401
+from app.api.v1.stage_transition_automation import get_db  # noqa: F401
+from app.auth.dependencies import get_user_company_id  # noqa: F401
+from app.domains.sourcing.services.pearch_service import pearch_service  # noqa: F401
+from app.domains.sourcing.services.search_analytics import search_analytics_service  # noqa: F401
 
 logger = logging.getLogger(__name__)
 

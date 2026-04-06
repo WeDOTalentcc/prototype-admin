@@ -29,6 +29,13 @@ from app.services.intent_classifier import (
 from app.services.llm import LLMService, llm_service
 from app.services.market_benchmark_service import MarketBenchmarkService
 from app.services.skills_catalog_service import skills_catalog_service
+from app.services.enhanced_intent_classifier import EnhancedIntentType  # noqa: F401
+from app.api.v1.policies import by  # noqa: F401
+from app.api.v1.voice import data  # noqa: F401
+from app.services.enhanced_intent_classifier import enhanced_intent_classifier  # noqa: F401
+from app.api.v1.saas_metrics import models  # noqa: F401
+from app.api.v1.wsi_questions import needed  # noqa: F401
+from app.api.v1.microsoft_graph import services  # noqa: F401
 
 logger = logging.getLogger(__name__)
 

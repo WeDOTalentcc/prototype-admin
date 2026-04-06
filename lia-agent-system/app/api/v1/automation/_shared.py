@@ -17,6 +17,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 from app.services.audit_service import audit_service
+from app.domains.automation.services.automation_service import automation_service  # noqa: F401
+from app.domains.automation.services.automation_trigger_service import automation_trigger_service  # noqa: F401
+from app.domains.communication.services.communication_service import communication_service  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
