@@ -332,6 +332,7 @@ export function WorkModelAnalyticsPage() {
               </Card>
 
               {/* Distribuição por Senioridade */}
+              {seniorityData.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -397,6 +398,7 @@ export function WorkModelAnalyticsPage() {
                   </div>
                 </CardContent>
               </Card>
+              )}
             </div>
 
             {/* Análise Regional */}

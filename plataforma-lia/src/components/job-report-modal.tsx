@@ -173,6 +173,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       candidateSatisfaction: 4.6,
       hiringManagerSatisfaction: 4.8,
       timeToFillBenchmark: timeToFill?.comparison_to_market || "Calculando...",
+      marketPercentile: salary ? `P${salary.market_percentile}` : "--",
       qualityOfHireBenchmark: salary?.competitive_analysis || "Calculando..."
     }
   }
@@ -624,6 +625,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="p-2 bg-status-success/10 rounded-md border border-status-success/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Salário vs Mercado</p>
+                    <p className="text-sm font-bold text-status-success">{reportData.qualityMetrics.marketPercentile}</p>
                     <p className="text-micro font-medium text-status-success">{reportData.qualityMetrics.qualityOfHireBenchmark}</p>
                   </div>
                 </div>
