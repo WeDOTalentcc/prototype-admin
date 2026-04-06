@@ -248,8 +248,8 @@ export function useLiaChatConnection({
         setIsThinking(false)
         hitlRef.current = null
         setHitlPending(null)
-        if (event.conversation_id && typeof event.conversation_id === "string" && event.conversation_id !== conversationId) {
-          setConversationId(event.conversation_id)
+        if ((event as any).conversation_id && typeof (event as any).conversation_id === "string" && (event as any).conversation_id !== conversationId) {
+          setConversationId((event as any).conversation_id)
         }
         if (event.fairness_warnings && (event.fairness_warnings as string[]).length > 0) {
           setFairnessWarnings(event.fairness_warnings as string[])

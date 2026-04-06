@@ -100,10 +100,10 @@ export function useWorkforcePlanning(): UseWorkforcePlanningResult {
               department: (hc.department_name as string) || (hc.department as string) || '',
               plannedMonth: (hc.target_month as number) || 1,
               plannedYear: (hc.target_year as number) || (planItem.fiscal_year as number) || currentYear,
-              status: (hc.status as string) || 'planned',
-              priority: (hc.priority as string) || 'medium',
+              status: ((hc.status as string) || 'planned') as 'open' | 'cancelled' | 'filled' | 'planned',
+              priority: ((hc.priority as string) || 'medium') as 'critical' | 'high' | 'medium' | 'low',
               budgetApproved: (hc.budget_approved as boolean) ?? true,
-              headcountType: (hc.headcount_type as string) || 'expansion'
+              headcountType: ((hc.headcount_type as string) || 'expansion') as 'replacement' | 'expansion' | 'new_role'
             })
             
             if (hc.status === 'open') totalOpen++
