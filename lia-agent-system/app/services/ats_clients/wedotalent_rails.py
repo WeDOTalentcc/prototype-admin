@@ -271,6 +271,81 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/selective_processes", params=params)
         return self._extract_list(resp)
 
+
+    # ------------------------------------------------------------------
+    # Write Operations (Work C)
+    # ------------------------------------------------------------------
+
+    async def create_candidate(self, candidate_data: Dict) -> Optional[Dict]:
+        """Create a candidate in Rails."""
+        resp = await self.post("/v1/users/candidates", json_body={"candidate": candidate_data})
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] create_candidate failed: %s", resp.errors)
+        return None
+
+    async def update_candidate(self, candidate_id: int, candidate_data: Dict) -> Optional[Dict]:
+        """Update a candidate in Rails."""
+        resp = await self.put(f"/v1/users/candidates/{candidate_id}", json_body={"candidate": candidate_data})
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] update_candidate %s failed: %s", candidate_id, resp.errors)
+        return None
+
+    async def create_job(self, job_data: Dict) -> Optional[Dict]:
+        """Create a job in Rails."""
+        resp = await self.post("/v1/users/jobs", json_body={"job": job_data})
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] create_job failed: %s", resp.errors)
+        return None
+
+    async def update_job(self, job_id: int, job_data: Dict) -> Optional[Dict]:
+        """Update a job in Rails."""
+        resp = await self.put(f"/v1/users/jobs/{job_id}", json_body={"job": job_data})
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] update_job %s failed: %s", job_id, resp.errors)
+        return None
+
+    async def update_apply(self, apply_id: int, apply_data: Dict) -> Optional[Dict]:
+        """Update an apply in Rails."""
+        resp = await self.put(f"/v1/users/applies/{apply_id}", json_body={"apply": apply_data})
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] update_apply %s failed: %s", apply_id, resp.errors)
+        return None
+
+    async def delete_candidate(self, candidate_id: int) -> bool:
+        """Delete a candidate in Rails."""
+        resp = await self.delete(f"/v1/users/candidates/{candidate_id}")
+        return resp.success
+
+    async def delete_job(self, job_id: int) -> bool:
+        """Delete a job in Rails."""
+        resp = await self.delete(f"/v1/users/jobs/{job_id}")
+        return resp.success
+
+    # ------------------------------------------------------------------
+    # New Resources (Work C)
+    # ------------------------------------------------------------------
+
+    async def list_interviews(self, **filters) -> List[Dict]:
+        params = {"search": "*"}
+        if filters:
+            import json
+            params["where"] = json.dumps(filters)
+        resp = await self.get("/v1/users/interviews", params=params)
+        return self._extract_list(resp)
+
+    async def list_notifications(self, **filters) -> List[Dict]:
+        resp = await self.get("/v1/users/notifications")
+        return self._extract_list(resp)
+
+    async def list_email_templates(self, **filters) -> List[Dict]:
+        resp = await self.get("/v1/users/email_templates")
+        return self._extract_list(resp)
+
     # ------------------------------------------------------------------
     # JSONAPI Helpers
     # ------------------------------------------------------------------

@@ -50,7 +50,7 @@ CANDIDATE_FORK_TO_RAILS = {
     # --- Professional ---
     "current_title": "role_name",
     "current_company": "current_company",
-    "seniority_level": "position_level",
+    "seniority_level": "seniority_level",  # Work C: Rails now has this column directly
     "self_introduction": "self_introduction",
     "resume_text": "curriculum_text",
     "resume_url": "curriculum_pdf_url",
@@ -75,12 +75,25 @@ CANDIDATE_FORK_TO_RAILS = {
     "willing_to_relocate": "mobility",
     # --- Meta ---
     "source": "source",
-    # --- Fork-only (no Rails equivalent — stored locally until Fase 2) ---
-    # technical_skills, soft_skills, languages, certifications,
-    # years_of_experience, diversity_* (8 campos), timezone,
-    # candidate_experiences (tabela), candidate_education (tabela),
-    # embeddings, pearch_profile_id, ats_candidate_id, cover_letter,
-    # is_open_to_work, is_decision_maker, headline
+    # --- Expanded fields (Work C — now in both fork and Rails) ---
+    "technical_skills": "technical_skills",
+    "soft_skills": "soft_skills",
+    "languages": "languages",
+    "certifications": "certifications",
+    "years_of_experience": "years_of_experience",
+    "diversity_race_ethnicity": "diversity_race_ethnicity",
+    "diversity_disability": "diversity_disability",
+    "diversity_disability_type": "diversity_disability_type",
+    "diversity_lgbtqia": "diversity_lgbtqia",
+    "diversity_refugee": "diversity_refugee",
+    "diversity_age_50_plus": "diversity_age_50_plus",
+    "diversity_indigenous": "diversity_indigenous",
+    "diversity_documents": "diversity_documents",
+    "diversity_self_declared_at": "diversity_self_declared_at",
+    "diversity_document_deadline": "diversity_document_deadline",
+    # --- Fork-only (remain local) ---
+    # timezone, embeddings, pearch_profile_id, ats_candidate_id,
+    # cover_letter, is_open_to_work, is_decision_maker, headline
     # --- Rails-only (no Fork equivalent) ---
     # uid, completed_register, accept_terms, interests (string vs array), comments
 }
@@ -103,13 +116,36 @@ JOB_FORK_TO_RAILS = {
     # --- Rails-only ---
     # user_id, account_id, provider_job_id, company_id (bigint FK),
     # job_url, career_page_*, friendly_badge
-    # --- Fork-only (no Rails equivalent — Fase 2) ---
-    # department, seniority_level, employment_type, salary_range, bonus_range,
-    # technical_requirements, behavioral_competencies, languages,
-    # screening_questions, interview_stages, organizational_structure,
-    # deadline_screening, deadline_shortlist, deadline_closing,
-    # priority, urgency_level, affirmative_criteria_* (6 campos),
-    # benefits, manager, recruiter, created_by
+    # --- Expanded fields (Work C — now in both fork and Rails) ---
+    "status": "status",
+    "department": "department",
+    "employment_type": "employment_type",
+    "seniority_level": "seniority_level",
+    "priority": "priority",
+    "urgency_level": "urgency_level",
+    "technical_requirements": "technical_requirements",
+    "behavioral_competencies": "behavioral_competencies",
+    "screening_questions": "screening_questions",
+    "interview_stages": "interview_stages",
+    "languages": "languages",
+    "salary_range": "salary_range",
+    "bonus_range": "bonus_range",
+    "benefits": "benefits",
+    "deadline_screening": "deadline_screening",
+    "deadline_shortlist": "deadline_shortlist",
+    "deadline_closing": "deadline_closing",
+    "manager": "manager",
+    "manager_email": "manager_email",
+    "recruiter": "recruiter",
+    "recruiter_email": "recruiter_email",
+    "created_by": "created_by",
+    "organizational_structure": "organizational_structure",
+    "tags": "tags",
+    "visibility": "visibility",
+    "public_slug": "public_slug",
+    "budget": "budget",
+    "budget_used": "budget_used",
+    "fork_uuid": "fork_uuid",
 }
 
 APPLY_FORK_TO_RAILS = {
@@ -409,6 +445,109 @@ class RailsAdapter:
             except Exception as e:
                 logger.warning("[RailsAdapter] Rails list_applies failed: %s", e)
         return []
+
+
+    # ---- Write Operations (Work C) ----
+
+    async def create_candidate(self, candidate_data: Dict) -> Optional[Dict]:
+        """Create candidate: Rails first, local DB fallback."""
+        # Map fork fields to Rails fields
+        rails_data = {}
+        for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
+            if fork_field in candidate_data and rails_field != "id":
+                rails_data[rails_field] = candidate_data[fork_field]
+
+        client = await self._get_rails_client()
+        if client:
+            try:
+                result = await client.create_candidate(rails_data)
+                if result:
+                    logger.info("[RailsAdapter] Candidate created in Rails: %s", result.get("id"))
+                    return rails_candidate_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails create_candidate failed: %s", e)
+
+        # Fallback: local DB
+        if self.db:
+            try:
+                from libs.models.lia_models.candidate import Candidate
+                candidate = Candidate(**candidate_data)
+                self.db.add(candidate)
+                await self.db.commit()
+                await self.db.refresh(candidate)
+                return {"source": "local", "id": str(candidate.id)}
+            except Exception as e:
+                logger.warning("[RailsAdapter] Local create_candidate failed: %s", e)
+                await self.db.rollback()
+
+        return None
+
+    async def update_candidate(self, candidate_id: str, candidate_data: Dict) -> Optional[Dict]:
+        """Update candidate: Rails first, local DB fallback."""
+        rails_data = {}
+        for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
+            if fork_field in candidate_data and rails_field != "id":
+                rails_data[rails_field] = candidate_data[fork_field]
+
+        client = await self._get_rails_client()
+        if client:
+            try:
+                result = await client.update_candidate(int(candidate_id) if candidate_id.isdigit() else 0, rails_data)
+                if result:
+                    return rails_candidate_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails update_candidate failed: %s", e)
+
+        return None
+
+    async def create_job(self, job_data: Dict) -> Optional[Dict]:
+        """Create job: Rails first, local DB fallback."""
+        rails_data = {}
+        for fork_field, rails_field in JOB_FORK_TO_RAILS.items():
+            if fork_field in job_data and rails_field != "id":
+                rails_data[rails_field] = job_data[fork_field]
+
+        client = await self._get_rails_client()
+        if client:
+            try:
+                result = await client.create_job(rails_data)
+                if result:
+                    logger.info("[RailsAdapter] Job created in Rails: %s", result.get("id"))
+                    return rails_job_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails create_job failed: %s", e)
+
+        if self.db:
+            try:
+                from libs.models.lia_models.job_vacancy import JobVacancy
+                job = JobVacancy(**job_data)
+                self.db.add(job)
+                await self.db.commit()
+                await self.db.refresh(job)
+                return {"source": "local", "id": str(job.id), "title": job.title}
+            except Exception as e:
+                logger.warning("[RailsAdapter] Local create_job failed: %s", e)
+                await self.db.rollback()
+
+        return None
+
+    async def update_job(self, job_id: str, job_data: Dict) -> Optional[Dict]:
+        """Update job: Rails first, local DB fallback."""
+        rails_data = {}
+        for fork_field, rails_field in JOB_FORK_TO_RAILS.items():
+            if fork_field in job_data and rails_field != "id":
+                rails_data[rails_field] = job_data[fork_field]
+
+        client = await self._get_rails_client()
+        if client:
+            try:
+                result = await client.update_job(int(job_id) if job_id.isdigit() else 0, rails_data)
+                if result:
+                    return rails_job_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails update_job failed: %s", e)
+
+        return None
 
     # ---- Cleanup ----
 

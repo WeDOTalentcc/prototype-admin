@@ -69,20 +69,19 @@ def validate_rails_token(
         return None
 
 
-def resolve_company_from_rails_user(
+async def resolve_company_from_rails_user(
     user_id: int,
     ats_client: "WeDOTalentATSClient",
 ) -> Optional[str]:
     """
     Resolve company_id/account from a Rails user_id.
-
-    Since Rails JWT doesn't carry company_id, we need to look it up.
-    In the Rails schema, User.account_id → Account.tenant.
-
-    This would call the Rails /v1/me endpoint to get the user's account.
-    For now, returns None until the ATSClient is connected.
+    Calls /v1/me to get the users account_id.
     """
-    # TODO: Implement when Rails is accessible
-    # response = await ats_client.get("/v1/me")
-    # return response.get("account_id") or response.get("company_id")
-    return None
+    try:
+        user_info = await ats_client.get_current_user()
+        if user_info:
+            return str(user_info.get("account_id") or user_info.get("company_id") or "")
+        return None
+    except Exception as e:
+        logger.warning("[RailsJWT] Failed to resolve company: %s", e)
+        return None
