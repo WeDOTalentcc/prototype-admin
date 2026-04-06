@@ -24,11 +24,10 @@ import { CreditConfirmationDialog } from "@/components/search/credit-confirmatio
 import { SmartSearchInput } from "@/components/search/smart-search-input"
 import { AdvancedFiltersModal } from "@/components/search/advanced-filters-modal"
 import { SidePanelContainer } from "@/components/ui-actions"
-import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
+import { useLiaFloat } from "@/contexts/lia-float-context"
 import { DynamicContextPanel } from "@/components/lia-float/panels"
 import { EmptyFieldNotificationMessage } from "@/components/chat/empty-field-notification-message"
 import { AgentMemoryIndicator } from "@/components/chat/agent-memory-indicator"
-import { useRecentItems } from "@/hooks/use-recent-items"
 import { ChatContextPanel } from "@/components/chat/ChatContextPanel"
 import { ChatMessageList } from "@/components/chat/ChatMessageList"
 import type { Message } from "./chat-page/types"
@@ -124,26 +123,6 @@ export function LegacyChatPage() {
     handleLoadMoreCandidates,
     uiActions,
   } = useChatPageCore()
-
-  const { setChatConversationId, loadChatHistory } = useLiaChatContext()
-  const { recentItems, clearAll: clearRecentItems } = useRecentItems()
-  const recentChatItems = recentItems.filter(item => item.type === 'chat').slice(0, 5)
-
-  const formatRelativeTime = (timestamp: number) => {
-    const diffMs = Date.now() - timestamp
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-    if (diffMins < 1) return 'agora'
-    if (diffMins < 60) return `${diffMins}min atrás`
-    if (diffHours < 24) return `${diffHours}h atrás`
-    return `${diffDays}d atrás`
-  }
-
-  const handleRecentChatClick = React.useCallback(async (conversationId: string) => {
-    setChatConversationId(conversationId)
-    await loadChatHistory(conversationId)
-  }, [setChatConversationId, loadChatHistory])
 
   return (
     <ErrorBoundarySection>
@@ -628,46 +607,6 @@ export function LegacyChatPage() {
           </div>
         </div>
 
-        {/* Recentes — empty state only */}
-        {isEmptyChat && recentChatItems.length > 0 && (
-          <div className="px-6 pt-1 pb-5 flex-shrink-0 bg-white">
-            <div className="max-w-3xl mx-auto">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-xs font-semibold text-lia-text-primary tracking-[0.2em] uppercase">
-                  Recentes
-                </h3>
-                <button
-                  onClick={clearRecentItems}
-                  className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
-                >
-                  Limpar recentes
-                </button>
-              </div>
-              <div className="space-y-0.5">
-                {recentChatItems.map((item) => (
-                  <button
-                    key={`${item.type}-${item.id}`}
-                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none duration-150 text-left group"
-                    onClick={() => {
-                      const convId = item.meta?.conversationId
-                      if (typeof convId === 'string' && convId.length > 0) {
-                        handleRecentChatClick(convId)
-                      }
-                    }}
-                  >
-                    <Brain className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
-                    <span className="text-xs text-lia-text-primary truncate">
-                      {item.title}
-                    </span>
-                    <span className="text-xs text-lia-text-disabled flex-shrink-0 ml-1">
-                      {formatRelativeTime(item.timestamp)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         </>
         )}
