@@ -110,7 +110,6 @@ PENDING_MIGRATION = {
     "app/api/v1/job_qualification.py",
     "app/api/v1/job_status_webhooks.py",
     "app/api/v1/job_templates.py",
-    "app/api/v1/job_vacancies/analytics.py",
     "app/api/v1/job_vacancies/crud.py",
     "app/api/v1/job_vacancies/export.py",
     "app/api/v1/job_vacancies/lifecycle.py",
