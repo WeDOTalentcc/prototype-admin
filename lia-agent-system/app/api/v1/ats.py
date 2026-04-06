@@ -385,6 +385,12 @@ async def trigger_ats_sync(
                 elif provider_name == "pandape":
                     from app.domains.ats_integration.services.ats_clients.pandape import PandapeClient
                     sync_service.register_client("pandape", PandapeClient(config))
+                elif provider_name == "merge":
+                    try:
+                        from app.domains.ats_integration.services.ats_clients.merge import MergeClient
+                        sync_service.register_client("merge", MergeClient(config))
+                    except ImportError:
+                        logger.warning("MergeClient not available, using env-initialized client for merge sync")
 
             if request.sync_type in ("full", "candidates"):
                 pull_result = await sync_service.pull_candidates(
@@ -593,33 +599,44 @@ async def receive_ats_webhook(
         event_id = payload.get("id")
 
         provider_enum = ATSProvider[provider_lower.upper()]
+        incoming_sig = x_gupy_signature or x_webhook_signature
 
         conn_result = await db.execute(
             select(ATSConnection).where(
                 ATSConnection.provider == provider_enum,
                 ATSConnection.is_active == True,
-            ).order_by(desc(ATSConnection.created_at)).limit(1)
+            ).order_by(desc(ATSConnection.created_at))
         )
-        connection = conn_result.scalar_one_or_none()
-        connection_id = connection.id if connection else None
+        all_connections = conn_result.scalars().all()
 
-        if connection and connection.webhook_secret:
-            secret = connection.webhook_secret
-            try:
-                secret = decrypt_value(secret)
-            except Exception:
-                pass
-            incoming_sig = x_gupy_signature or x_webhook_signature
-            if incoming_sig:
+        connection = None
+        if incoming_sig and all_connections:
+            for candidate_conn in all_connections:
+                if not candidate_conn.webhook_secret:
+                    continue
+                secret = candidate_conn.webhook_secret
+                try:
+                    secret = decrypt_value(secret)
+                except Exception:
+                    pass
                 expected = hmac.new(
                     secret.encode(), raw_body, hashlib.sha256
                 ).hexdigest()
-                if not hmac.compare_digest(incoming_sig, expected):
-                    logger.warning("Webhook signature mismatch for %s", provider)
-                    raise HTTPException(status_code=403, detail="Invalid webhook signature")
-            else:
-                logger.warning("Webhook secret configured but no signature header received for %s — rejecting", provider)
+                if hmac.compare_digest(incoming_sig, expected):
+                    connection = candidate_conn
+                    break
+
+            if not connection:
+                logger.warning("Webhook signature did not match any %s connection", provider)
+                raise HTTPException(status_code=403, detail="Invalid webhook signature")
+        elif all_connections:
+            connections_with_secret = [c for c in all_connections if c.webhook_secret]
+            if connections_with_secret:
+                logger.warning("Webhook secret configured but no signature header for %s — rejecting", provider)
                 raise HTTPException(status_code=403, detail="Missing webhook signature header")
+            connection = all_connections[0]
+
+        connection_id = connection.id if connection else None
 
         webhook_log = ATSWebhookLog(
             provider=provider_enum,

@@ -233,13 +233,27 @@ export function IntegrationDetailDrawer({
           )}
 
           {!isComingSoon && integration.id !== "google-calendar" && resolvedStatus !== "connected" && (
-            <Button
-              size="sm"
-              className="w-full rounded-md text-xs gap-2"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Configurar Integração
-            </Button>
+            integration.category === "ats" ? (
+              <Button
+                size="sm"
+                className="w-full rounded-md text-xs gap-2"
+                onClick={() => {
+                  onClose()
+                  window.location.href = "/integracoes-ats"
+                }}
+              >
+                <ExternalLink className="w-3 h-3" />
+                Configurar no Painel ATS
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="w-full rounded-md text-xs gap-2"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Configurar Integração
+              </Button>
+            )
           )}
         </div>
       </SheetContent>
