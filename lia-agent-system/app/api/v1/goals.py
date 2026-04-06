@@ -11,11 +11,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models.goal import Goal, GoalTemplate
+from app.domains.goals.dependencies import get_goals_repo
+from app.domains.goals.repositories.goals_repository import GoalsRepository
+from app.models.goal import Goal
 
 logger = logging.getLogger(__name__)
 
@@ -112,36 +111,20 @@ async def list_goals(
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=200),
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """List all goals with optional filters."""
     try:
-        query = select(Goal)
-        
-        if user_id:
-            query = query.where(Goal.user_id == user_id)
-        
-        if company_id:
-            query = query.where(Goal.company_id == company_id)
-        
-        if period:
-            query = query.where(Goal.period == period)
-        
-        if category:
-            query = query.where(Goal.category == category)
-        
-        if status:
-            query = query.where(Goal.status == status)
-        
-        if not include_inactive:
-            query = query.where(Goal.is_active)
-        
-        query = query.order_by(Goal.created_at.desc())
-        query = query.offset(skip).limit(limit)
-        
-        result = await db.execute(query)
-        goals = result.scalars().all()
-        
+        goals = await repo.list_goals(
+            user_id=user_id,
+            company_id=company_id,
+            period=period,
+            category=category,
+            status=status,
+            include_inactive=include_inactive,
+            skip=skip,
+            limit=limit,
+        )
         return goals
     except Exception as e:
         logger.error(f"Error listing goals: {e}")
@@ -152,26 +135,18 @@ async def list_goals(
 async def get_goals_by_user(
     user_id: str,
     include_inactive: bool = Query(False),
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Get all goals for a specific user, grouped by period."""
     try:
-        query = select(Goal).where(Goal.user_id == user_id)
-        
-        if not include_inactive:
-            query = query.where(Goal.is_active)
-        
-        query = query.order_by(Goal.created_at.desc())
-        
-        result = await db.execute(query)
-        goals = result.scalars().all()
-        
-        grouped = {
+        goals = await repo.list_goals(user_id=user_id, include_inactive=include_inactive)
+
+        grouped: dict[str, list[dict]] = {
             "monthly": [],
             "quarterly": [],
-            "yearly": []
+            "yearly": [],
         }
-        
+
         for goal in goals:
             goal_data = {
                 "id": str(goal.id),
@@ -188,12 +163,12 @@ async def get_goals_by_user(
                 "startDate": goal.start_date.isoformat() if goal.start_date else None,
                 "endDate": goal.end_date.isoformat() if goal.end_date else None,
                 "progress": goal.progress,
-                "isCustom": goal.is_custom
+                "isCustom": goal.is_custom,
             }
-            
+
             if goal.period in grouped:
                 grouped[goal.period].append(goal_data)
-        
+
         return grouped
     except Exception as e:
         logger.error(f"Error getting goals for user {user_id}: {e}")
@@ -203,18 +178,15 @@ async def get_goals_by_user(
 @router.get("/{goal_id}", response_model=GoalResponse)
 async def get_goal(
     goal_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Get a specific goal by ID."""
     try:
-        result = await db.execute(
-            select(Goal).where(Goal.id == goal_id)
-        )
-        goal = result.scalar_one_or_none()
-        
+        goal = await repo.get_by_id(goal_id)
+
         if not goal:
             raise HTTPException(status_code=404, detail="Goal not found")
-        
+
         return goal
     except HTTPException:
         raise
@@ -226,29 +198,22 @@ async def get_goal(
 @router.post("", response_model=GoalResponse)
 async def create_goal(
     data: GoalCreate,
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Create a new goal."""
     try:
         goal_data = data.model_dump()
-        
-        if goal_data.get('start_date') and hasattr(goal_data['start_date'], 'tzinfo') and goal_data['start_date'].tzinfo:
-            goal_data['start_date'] = goal_data['start_date'].replace(tzinfo=None)
-        if goal_data.get('end_date') and hasattr(goal_data['end_date'], 'tzinfo') and goal_data['end_date'].tzinfo:
-            goal_data['end_date'] = goal_data['end_date'].replace(tzinfo=None)
-        
-        goal = Goal(**goal_data)
-        goal.calculate_progress()
-        goal.update_status()
-        
-        db.add(goal)
-        await db.commit()
-        await db.refresh(goal)
-        
+
+        if goal_data.get("start_date") and hasattr(goal_data["start_date"], "tzinfo") and goal_data["start_date"].tzinfo:
+            goal_data["start_date"] = goal_data["start_date"].replace(tzinfo=None)
+        if goal_data.get("end_date") and hasattr(goal_data["end_date"], "tzinfo") and goal_data["end_date"].tzinfo:
+            goal_data["end_date"] = goal_data["end_date"].replace(tzinfo=None)
+
+        goal = await repo.create(goal_data)
+
         logger.info(f"Created goal: {goal.name} for user {goal.user_id}")
         return goal
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating goal: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -257,35 +222,21 @@ async def create_goal(
 async def update_goal(
     goal_id: uuid.UUID,
     data: GoalUpdate,
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Update an existing goal."""
     try:
-        result = await db.execute(
-            select(Goal).where(Goal.id == goal_id)
-        )
-        goal = result.scalar_one_or_none()
-        
+        update_data = data.model_dump(exclude_unset=True)
+        goal = await repo.update(goal_id, update_data)
+
         if not goal:
             raise HTTPException(status_code=404, detail="Goal not found")
-        
-        update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(goal, field, value)
-        
-        goal.calculate_progress()
-        goal.update_status()
-        goal.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(goal)
-        
+
         logger.info(f"Updated goal: {goal.name}")
         return goal
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating goal: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -293,28 +244,19 @@ async def update_goal(
 @router.delete("/{goal_id}", response_model=None)
 async def delete_goal(
     goal_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Soft delete a goal."""
     try:
-        result = await db.execute(
-            select(Goal).where(Goal.id == goal_id)
-        )
-        goal = result.scalar_one_or_none()
-        
+        goal = await repo.soft_delete(goal_id)
+
         if not goal:
             raise HTTPException(status_code=404, detail="Goal not found")
-        
-        goal.is_active = False
-        goal.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        
+
         return {"success": True, "message": "Goal deleted successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting goal: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -322,35 +264,21 @@ async def delete_goal(
 @router.post("/bulk", response_model=None)
 async def create_goals_bulk(
     goals: list[GoalCreate],
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Create multiple goals at once (for applying templates to multiple users)."""
     try:
-        created_goals = []
-        
-        for data in goals:
-            goal_data = data.model_dump()
-            goal = Goal(**goal_data)
-            goal.calculate_progress()
-            goal.update_status()
-            
-            db.add(goal)
-            created_goals.append(goal)
-        
-        await db.commit()
-        
-        for goal in created_goals:
-            await db.refresh(goal)
-        
+        goals_data = [g.model_dump() for g in goals]
+        created_goals = await repo.create_bulk(goals_data)
+
         logger.info(f"Created {len(created_goals)} goals in bulk")
-        
+
         return {
             "success": True,
             "message": f"Created {len(created_goals)} goals",
-            "goals": [GoalResponse.model_validate(g) for g in created_goals]
+            "goals": [GoalResponse.model_validate(g) for g in created_goals],
         }
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating goals in bulk: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -360,31 +288,15 @@ async def list_goal_templates(
     company_id: uuid.UUID | None = Query(None),
     category: str | None = Query(None),
     include_inactive: bool = Query(False),
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """List all goal templates."""
     try:
-        query = select(GoalTemplate)
-        
-        if company_id:
-            query = query.where(
-                or_(
-                    GoalTemplate.company_id == company_id,
-                    GoalTemplate.is_system
-                )
-            )
-        
-        if category:
-            query = query.where(GoalTemplate.category == category)
-        
-        if not include_inactive:
-            query = query.where(GoalTemplate.is_active)
-        
-        query = query.order_by(GoalTemplate.name)
-        
-        result = await db.execute(query)
-        templates = result.scalars().all()
-        
+        templates = await repo.list_templates(
+            company_id=company_id,
+            category=category,
+            include_inactive=include_inactive,
+        )
         return templates
     except Exception as e:
         logger.error(f"Error listing goal templates: {e}")
@@ -394,27 +306,22 @@ async def list_goal_templates(
 @router.post("/templates", response_model=GoalTemplateResponse)
 async def create_goal_template(
     data: GoalTemplateCreate,
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Create a new goal template."""
     try:
-        template = GoalTemplate(**data.model_dump())
-        
-        db.add(template)
-        await db.commit()
-        await db.refresh(template)
-        
+        template = await repo.create_template(data.model_dump())
+
         logger.info(f"Created goal template: {template.name}")
         return template
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating goal template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/seed-templates", response_model=None)
 async def seed_default_templates(
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """Seed default goal templates."""
     try:
@@ -426,7 +333,7 @@ async def seed_default_templates(
                 "default_target": 5,
                 "unit": "contratações",
                 "period": "monthly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "Time to Fill",
@@ -435,7 +342,7 @@ async def seed_default_templates(
                 "default_target": 30,
                 "unit": "dias",
                 "period": "monthly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "NPS dos Candidatos",
@@ -444,7 +351,7 @@ async def seed_default_templates(
                 "default_target": 85,
                 "unit": "%",
                 "period": "quarterly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "Taxa de Conversão",
@@ -453,7 +360,7 @@ async def seed_default_templates(
                 "default_target": 2.5,
                 "unit": "%",
                 "period": "quarterly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "Score de Qualidade",
@@ -462,7 +369,7 @@ async def seed_default_templates(
                 "default_target": 4.0,
                 "unit": "pontos",
                 "period": "yearly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "Entrevistas Mensais",
@@ -471,7 +378,7 @@ async def seed_default_templates(
                 "default_target": 40,
                 "unit": "entrevistas",
                 "period": "monthly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "Taxa de Resposta",
@@ -480,7 +387,7 @@ async def seed_default_templates(
                 "default_target": 75,
                 "unit": "%",
                 "period": "monthly",
-                "is_system": True
+                "is_system": True,
             },
             {
                 "name": "Taxa de Aceitação",
@@ -489,38 +396,29 @@ async def seed_default_templates(
                 "default_target": 85,
                 "unit": "%",
                 "period": "quarterly",
-                "is_system": True
-            }
+                "is_system": True,
+            },
         ]
-        
+
         created = 0
         skipped = 0
-        
+
         for template_data in default_templates:
-            existing = await db.execute(
-                select(GoalTemplate).where(
-                    GoalTemplate.name == template_data["name"],
-                    GoalTemplate.is_system
-                )
-            )
-            if existing.scalar_one_or_none():
+            existing = await repo.find_system_template_by_name(template_data["name"])
+            if existing:
                 skipped += 1
                 continue
-            
-            template = GoalTemplate(**template_data)
-            db.add(template)
+
+            await repo.create_template(template_data)
             created += 1
-        
-        await db.commit()
-        
+
         return {
             "success": True,
             "message": f"Seeded {created} templates, skipped {skipped} existing",
             "created": created,
-            "skipped": skipped
+            "skipped": skipped,
         }
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error seeding goal templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -535,7 +433,7 @@ class GoalImportResponse(BaseModel):
 
 def parse_csv_file_goals(content: bytes) -> list[dict[str, str]]:
     """Parse CSV file content and return list of dictionaries."""
-    text = content.decode('utf-8-sig')
+    text = content.decode("utf-8-sig")
     reader = csv.DictReader(io.StringIO(text))
     return list(reader)
 
@@ -544,31 +442,33 @@ def parse_excel_file_goals(content: bytes) -> list[dict[str, str]]:
     """Parse Excel file content and return list of dictionaries."""
     try:
         from openpyxl import load_workbook
+
         wb = load_workbook(filename=io.BytesIO(content), read_only=True, data_only=True)
         ws = wb.active
-        
+
         rows = list(ws.iter_rows(values_only=True))
         if not rows:
             return []
-        
+
         headers = [str(h).strip().lower() if h else f"col_{i}" for i, h in enumerate(rows[0])]
-        
+
         result = []
         for row in rows[1:]:
-            if all(cell is None or str(cell).strip() == '' for cell in row):
+            if all(cell is None or str(cell).strip() == "" for cell in row):
                 continue
             row_dict = {}
             for i, cell in enumerate(row):
                 if i < len(headers):
-                    row_dict[headers[i]] = str(cell) if cell is not None else ''
+                    row_dict[headers[i]] = str(cell) if cell is not None else ""
             result.append(row_dict)
-        
+
         return result
     except ImportError:
         from fastapi import HTTPException
+
         raise HTTPException(
-            status_code=400, 
-            detail="Excel file support requires openpyxl. Please upload a CSV file instead."
+            status_code=400,
+            detail="Excel file support requires openpyxl. Please upload a CSV file instead.",
         )
 
 
@@ -576,18 +476,18 @@ async def parse_goal_import_file(file: UploadFile) -> list[dict[str, str]]:
     """Parse uploaded file (CSV or Excel) and return data."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
-    
+
     content = await file.read()
-    file_ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
-    
-    if file_ext == 'csv':
+    file_ext = file.filename.lower().split(".")[-1] if "." in file.filename else ""
+
+    if file_ext == "csv":
         return parse_csv_file_goals(content)
-    elif file_ext in ['xlsx', 'xls']:
+    elif file_ext in ["xlsx", "xls"]:
         return parse_excel_file_goals(content)
     else:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Unsupported file type: .{file_ext}. Allowed: .csv, .xlsx, .xls"
+            status_code=400,
+            detail=f"Unsupported file type: .{file_ext}. Allowed: .csv, .xlsx, .xls",
         )
 
 
@@ -596,21 +496,19 @@ async def download_goals_import_template():
     """Download CSV template for goals import."""
     try:
         headers = ["user_id", "name", "description", "target", "unit", "period", "category"]
-        
+
         csv_content = ",".join(headers) + "\n"
         csv_content += "recruiter1,Monthly Hires,Number of hires per month,10,hires,monthly,recruitment\n"
         csv_content += "recruiter1,Time to Fill,Average days to fill positions,25,days,monthly,efficiency\n"
         csv_content += "recruiter2,Candidate NPS,Candidate satisfaction score,85,%,quarterly,satisfaction\n"
-        
-        buffer = io.BytesIO(csv_content.encode('utf-8'))
+
+        buffer = io.BytesIO(csv_content.encode("utf-8"))
         buffer.seek(0)
-        
+
         return StreamingResponse(
             buffer,
             media_type="text/csv",
-            headers={
-                "Content-Disposition": "attachment; filename=goals_import_template.csv"
-            }
+            headers={"Content-Disposition": "attachment; filename=goals_import_template.csv"},
         )
     except Exception as e:
         logger.error(f"Error generating goals import template: {e}")
@@ -621,7 +519,7 @@ async def download_goals_import_template():
 async def import_goals(
     file: UploadFile = File(...),
     company_id: uuid.UUID | None = Query(None),
-    db: AsyncSession = Depends(get_db)
+    repo: GoalsRepository = Depends(get_goals_repo),
 ):
     """
     Import goals from Excel/CSV file with AI processing.
@@ -630,112 +528,114 @@ async def import_goals(
     """
     try:
         logger.info(f"Starting goals import from file: {file.filename}")
-        
+
         rows = await parse_goal_import_file(file)
-        
+
         if not rows:
             return GoalImportResponse(
                 success=False,
                 imported_count=0,
                 error_count=0,
                 errors=[{"message": "No data found in file"}],
-                items=[]
+                items=[],
             )
-        
-        imported_items = []
-        errors = []
-        
+
+        imported_items: list[dict] = []
+        errors: list[dict] = []
+
         valid_periods = ["monthly", "quarterly", "yearly"]
         valid_categories = ["recruitment", "efficiency", "quality", "satisfaction"]
-        
+
         for idx, row in enumerate(rows, start=2):
-            row_errors = []
-            
-            user_id = row.get('user_id', '').strip()
-            name = row.get('name', '').strip()
-            target_str = row.get('target', '').strip()
-            
+            row_errors: list[str] = []
+
+            user_id = row.get("user_id", "").strip()
+            name = row.get("name", "").strip()
+            target_str = row.get("target", "").strip()
+
             if not user_id:
                 row_errors.append(f"Row {idx}: Missing required field 'user_id'")
             if not name:
                 row_errors.append(f"Row {idx}: Missing required field 'name'")
             if not target_str:
                 row_errors.append(f"Row {idx}: Missing required field 'target'")
-            
-            target = 0
+
+            target = 0.0
             if target_str:
                 try:
                     target = float(target_str)
                 except ValueError:
                     row_errors.append(f"Row {idx}: 'target' must be a number")
-            
-            period = row.get('period', '').strip().lower() or 'monthly'
+
+            period = row.get("period", "").strip().lower() or "monthly"
             if period not in valid_periods:
-                row_errors.append(f"Row {idx}: Invalid period '{period}'. Must be one of: {', '.join(valid_periods)}")
-            
-            category = row.get('category', '').strip().lower() or 'recruitment'
+                row_errors.append(
+                    f"Row {idx}: Invalid period '{period}'. Must be one of: {', '.join(valid_periods)}"
+                )
+
+            category = row.get("category", "").strip().lower() or "recruitment"
             if category not in valid_categories:
-                row_errors.append(f"Row {idx}: Invalid category '{category}'. Must be one of: {', '.join(valid_categories)}")
-            
+                row_errors.append(
+                    f"Row {idx}: Invalid category '{category}'. Must be one of: {', '.join(valid_categories)}"
+                )
+
             if row_errors:
-                errors.append({
-                    "row": idx,
-                    "data": row,
-                    "errors": row_errors
-                })
+                errors.append({"row": idx, "data": row, "errors": row_errors})
                 continue
-            
+
             goal = Goal(
                 user_id=user_id,
                 company_id=company_id,
                 name=name,
-                description=row.get('description', '').strip() or None,
+                description=row.get("description", "").strip() or None,
                 target=target,
                 current=0,
-                unit=row.get('unit', '').strip() or None,
+                unit=row.get("unit", "").strip() or None,
                 period=period,
                 category=category,
-                status='pending',
+                status="pending",
                 progress=0,
                 is_custom=True,
-                is_active=True
+                is_active=True,
             )
-            
-            db.add(goal)
-            
+
             try:
-                await db.flush()
-                
-                imported_items.append({
-                    "id": str(goal.id),
-                    "user_id": goal.user_id,
-                    "name": goal.name,
-                    "target": goal.target,
-                    "period": goal.period,
-                    "category": goal.category,
-                    "row": idx
-                })
+                await repo.add_and_flush(goal)
+
+                imported_items.append(
+                    {
+                        "id": str(goal.id),
+                        "user_id": goal.user_id,
+                        "name": goal.name,
+                        "target": goal.target,
+                        "period": goal.period,
+                        "category": goal.category,
+                        "row": idx,
+                    }
+                )
             except Exception as flush_error:
-                errors.append({
-                    "row": idx,
-                    "data": row,
-                    "errors": [f"Row {idx}: Database error - {str(flush_error)}"]
-                })
-        
+                errors.append(
+                    {
+                        "row": idx,
+                        "data": row,
+                        "errors": [f"Row {idx}: Database error - {str(flush_error)}"],
+                    }
+                )
+
         if imported_items:
-            await db.commit()
+            await repo.commit()
             logger.info(f"Imported {len(imported_items)} goals successfully")
-        
+
         return GoalImportResponse(
             success=len(errors) == 0,
             imported_count=len(imported_items),
             error_count=len(errors),
             errors=errors,
-            items=imported_items
+            items=imported_items,
         )
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error importing goals: {e}")
         raise HTTPException(status_code=500, detail=str(e))
