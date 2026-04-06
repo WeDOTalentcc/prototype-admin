@@ -10,17 +10,17 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
-from sqlalchemy import and_, case, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.technical_tests.dependencies import get_technical_tests_repo
+from app.domains.technical_tests.repositories.technical_tests_repository import (
+    TechnicalTestsRepository,
+)
 from app.models.technical_tests import (
     DEFAULT_TESTS,
     TEST_CATEGORY_OPTIONS,
     TEST_DIFFICULTY_OPTIONS,
     ClientTestConfig,
     TechnicalTest,
-    TestResult,
     TestSubcategory,
 )
 from app.schemas.technical_tests import (
@@ -45,7 +45,7 @@ def get_user_from_headers(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Company ID required. Please provide X-Company-ID header."
         )
-    
+
     return {
         "company_id": x_company_id,
         "user_id": x_user_id or "system",
@@ -61,7 +61,7 @@ async def get_test_options():
         {"value": s.value, "label": s.value.replace("_", " ").title()}
         for s in TestSubcategory
     ]
-    
+
     return {
         "success": True,
         "data": {
@@ -83,53 +83,32 @@ async def list_technical_tests(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """List all available tests from the global library."""
     try:
-        conditions = []
-        
-        if is_active is not None:
-            conditions.append(TechnicalTest.is_active == is_active)
-        
-        if category:
-            conditions.append(TechnicalTest.category == category)
-        
-        if subcategory:
-            conditions.append(TechnicalTest.subcategory == subcategory)
-        
-        if difficulty:
-            conditions.append(TechnicalTest.difficulty == difficulty)
-        
-        if is_global is not None:
-            conditions.append(TechnicalTest.is_global == is_global)
-        
-        if search:
-            search_term = f"%{search}%"
-            conditions.append(
-                or_(
-                    TechnicalTest.name.ilike(search_term),
-                    TechnicalTest.description.ilike(search_term)
-                )
-            )
-        
-        query = select(TechnicalTest)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(TechnicalTest.category, TechnicalTest.name)
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        tests = result.scalars().all()
-        
-        count_query = select(func.count(TechnicalTest.id))
-        if conditions:
-            count_query = count_query.where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
-        logger.info(f"📋 Listed {len(tests)} technical tests (total: {total})")
-        
+        tests = await repo.list_tests(
+            category=category,
+            subcategory=subcategory,
+            difficulty=difficulty,
+            is_global=is_global,
+            is_active=is_active,
+            search=search,
+            limit=limit,
+            offset=offset,
+        )
+
+        total = await repo.count_tests(
+            category=category,
+            subcategory=subcategory,
+            difficulty=difficulty,
+            is_global=is_global,
+            is_active=is_active,
+            search=search,
+        )
+
+        logger.info(f"Listed {len(tests)} technical tests (total: {total})")
+
         return {
             "success": True,
             "data": {
@@ -139,9 +118,9 @@ async def list_technical_tests(
                 "offset": offset
             }
         }
-        
+
     except Exception as e:
-        logger.error(f"❌ Error listing technical tests: {str(e)}", exc_info=True)
+        logger.error(f"Error listing technical tests: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list technical tests: {str(e)}"
@@ -152,7 +131,7 @@ async def list_technical_tests(
 async def get_technical_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Get details of a specific test."""
     try:
@@ -163,26 +142,24 @@ async def get_technical_test(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid test ID format"
             )
-        
-        query = select(TechnicalTest).where(TechnicalTest.id == test_uuid)
-        result = await db.execute(query)
-        test = result.scalar_one_or_none()
-        
+
+        test = await repo.get_by_id(test_uuid)
+
         if not test:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Test not found: {test_id}"
             )
-        
+
         return {
             "success": True,
             "data": test.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting technical test: {str(e)}", exc_info=True)
+        logger.error(f"Error getting technical test: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get technical test: {str(e)}"
@@ -193,18 +170,18 @@ async def get_technical_test(
 async def create_technical_test(
     data: TechnicalTestCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Create a new technical test (admin only)."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         if not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can create technical tests"
             )
-        
+
         test = TechnicalTest(
             name=data.name,
             category=data.category.value,
@@ -220,24 +197,22 @@ async def create_technical_test(
             is_active=True,
             created_by=current_user.get("user_id"),
         )
-        
-        db.add(test)
-        await db.commit()
-        await db.refresh(test)
-        
-        logger.info(f"✅ Created technical test: {test.name} (ID: {test.id})")
-        
+
+        test = await repo.create_test(test)
+
+        logger.info(f"Created technical test: {test.name} (ID: {test.id})")
+
         return {
             "success": True,
             "message": "Technical test created successfully",
             "data": test.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error creating technical test: {str(e)}", exc_info=True)
+        await repo.rollback()
+        logger.error(f"Error creating technical test: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create technical test: {str(e)}"
@@ -249,18 +224,18 @@ async def update_technical_test(
     test_id: str,
     data: TechnicalTestUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Update an existing technical test."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         if not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can update technical tests"
             )
-        
+
         try:
             test_uuid = UUID(test_id)
         except ValueError:
@@ -268,42 +243,39 @@ async def update_technical_test(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid test ID format"
             )
-        
-        query = select(TechnicalTest).where(TechnicalTest.id == test_uuid)
-        result = await db.execute(query)
-        test = result.scalar_one_or_none()
-        
+
+        test = await repo.get_by_id(test_uuid)
+
         if not test:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Test not found: {test_id}"
             )
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        
+
         for field, value in update_data.items():
-            if hasattr(value, 'value'):
+            if hasattr(value, "value"):
                 value = value.value
             setattr(test, field, value)
-        
+
         test.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(test)
-        
-        logger.info(f"✅ Updated technical test: {test.name} (ID: {test.id})")
-        
+
+        test = await repo.update_test(test)
+
+        logger.info(f"Updated technical test: {test.name} (ID: {test.id})")
+
         return {
             "success": True,
             "message": "Technical test updated successfully",
             "data": test.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error updating technical test: {str(e)}", exc_info=True)
+        await repo.rollback()
+        logger.error(f"Error updating technical test: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update technical test: {str(e)}"
@@ -314,18 +286,18 @@ async def update_technical_test(
 async def delete_technical_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Delete a technical test (soft delete by deactivating)."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         if not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can delete technical tests"
             )
-        
+
         try:
             test_uuid = UUID(test_id)
         except ValueError:
@@ -333,34 +305,29 @@ async def delete_technical_test(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid test ID format"
             )
-        
-        query = select(TechnicalTest).where(TechnicalTest.id == test_uuid)
-        result = await db.execute(query)
-        test = result.scalar_one_or_none()
-        
+
+        test = await repo.get_by_id(test_uuid)
+
         if not test:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Test not found: {test_id}"
             )
-        
-        test.is_active = False
-        test.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        
-        logger.info(f"✅ Deactivated technical test: {test.name} (ID: {test.id})")
-        
+
+        await repo.deactivate_test(test)
+
+        logger.info(f"Deactivated technical test: {test.name} (ID: {test.id})")
+
         return {
             "success": True,
             "message": f"Technical test '{test.name}' has been deactivated"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error deleting technical test: {str(e)}", exc_info=True)
+        await repo.rollback()
+        logger.error(f"Error deleting technical test: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete technical test: {str(e)}"
@@ -375,7 +342,7 @@ async def get_client_tests(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Get tests configured for a specific client."""
     try:
@@ -386,44 +353,35 @@ async def get_client_tests(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid client ID format"
             )
-        
+
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
         user_company_id = current_user.get("company_id")
-        
+
         if not is_admin and str(client_uuid) != user_company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this client's tests"
             )
-        
-        conditions = [ClientTestConfig.client_id == client_uuid]
-        
-        if is_enabled is not None:
-            conditions.append(ClientTestConfig.is_enabled == is_enabled)
-        
-        query = select(ClientTestConfig, TechnicalTest).join(
-            TechnicalTest, ClientTestConfig.test_id == TechnicalTest.id
-        ).where(and_(*conditions))
-        
-        if category:
-            query = query.where(TechnicalTest.category == category)
-        
-        query = query.order_by(ClientTestConfig.priority.desc(), TechnicalTest.name)
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        rows = result.all()
-        
+
+        rows = await repo.list_client_tests(
+            client_id=client_uuid,
+            is_enabled=is_enabled,
+            category=category,
+            limit=limit,
+            offset=offset,
+        )
+
         configs = []
         for config, test in rows:
             config_dict = config.to_dict()
             config_dict["test"] = test.to_dict()
             configs.append(config_dict)
-        
-        count_query = select(func.count(ClientTestConfig.id)).where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
+        total = await repo.count_client_tests(
+            client_id=client_uuid,
+            is_enabled=is_enabled,
+        )
+
         return {
             "success": True,
             "data": {
@@ -433,11 +391,11 @@ async def get_client_tests(
                 "offset": offset
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting client tests: {str(e)}", exc_info=True)
+        logger.error(f"Error getting client tests: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get client tests: {str(e)}"
@@ -450,7 +408,7 @@ async def configure_client_test(
     test_id: str,
     data: ClientTestConfigCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Configure a test for a specific client (enable/disable, custom settings)."""
     try:
@@ -462,35 +420,27 @@ async def configure_client_test(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid client or test ID format"
             )
-        
+
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
         user_company_id = current_user.get("company_id")
-        
+
         if not is_admin and str(client_uuid) != user_company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to configure this client's tests"
             )
-        
-        test_query = select(TechnicalTest).where(TechnicalTest.id == test_uuid)
-        test_result = await db.execute(test_query)
-        test = test_result.scalar_one_or_none()
-        
+
+        test = await repo.get_by_id(test_uuid)
+
         if not test:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Test not found: {test_id}"
             )
-        
-        config_query = select(ClientTestConfig).where(
-            and_(
-                ClientTestConfig.client_id == client_uuid,
-                ClientTestConfig.test_id == test_uuid
-            )
-        )
-        config_result = await db.execute(config_query)
-        config = config_result.scalar_one_or_none()
-        
+
+        config = await repo.get_client_test_config(client_uuid, test_uuid)
+
+        is_new = config is None
         if config:
             config.is_enabled = data.is_enabled
             config.custom_time_limit = data.custom_time_limit
@@ -513,28 +463,26 @@ async def configure_client_test(
                 priority=data.priority,
                 required_for_roles=data.required_for_roles or [],
             )
-            db.add(config)
             message = "Test configuration created successfully"
-        
-        await db.commit()
-        await db.refresh(config)
-        
+
+        config = await repo.upsert_client_test_config(config, is_new=is_new)
+
         config_dict = config.to_dict()
         config_dict["test"] = test.to_dict()
-        
-        logger.info(f"✅ Configured test {test.name} for client {client_id}")
-        
+
+        logger.info(f"Configured test {test.name} for client {client_id}")
+
         return {
             "success": True,
             "message": message,
             "data": config_dict
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error configuring client test: {str(e)}", exc_info=True)
+        await repo.rollback()
+        logger.error(f"Error configuring client test: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to configure client test: {str(e)}"
@@ -546,7 +494,7 @@ async def remove_client_test(
     client_id: str,
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Remove a test configuration from a client."""
     try:
@@ -558,46 +506,38 @@ async def remove_client_test(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid client or test ID format"
             )
-        
+
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
         user_company_id = current_user.get("company_id")
-        
+
         if not is_admin and str(client_uuid) != user_company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to remove this client's tests"
             )
-        
-        config_query = select(ClientTestConfig).where(
-            and_(
-                ClientTestConfig.client_id == client_uuid,
-                ClientTestConfig.test_id == test_uuid
-            )
-        )
-        config_result = await db.execute(config_query)
-        config = config_result.scalar_one_or_none()
-        
+
+        config = await repo.get_client_test_config(client_uuid, test_uuid)
+
         if not config:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Test configuration not found"
             )
-        
-        await db.delete(config)
-        await db.commit()
-        
-        logger.info(f"✅ Removed test {test_id} from client {client_id}")
-        
+
+        await repo.delete_client_test_config(config)
+
+        logger.info(f"Removed test {test_id} from client {client_id}")
+
         return {
             "success": True,
             "message": "Test configuration removed successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error removing client test: {str(e)}", exc_info=True)
+        await repo.rollback()
+        logger.error(f"Error removing client test: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to remove client test: {str(e)}"
@@ -608,7 +548,7 @@ async def remove_client_test(
 async def get_client_test_stats(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Get test statistics for a specific client."""
     try:
@@ -619,61 +559,39 @@ async def get_client_test_stats(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid client ID format"
             )
-        
+
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
         user_company_id = current_user.get("company_id")
-        
+
         if not is_admin and str(client_uuid) != user_company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this client's stats"
             )
-        
-        enabled_count_query = select(func.count(ClientTestConfig.id)).where(
-            and_(
-                ClientTestConfig.client_id == client_uuid,
-                ClientTestConfig.is_enabled
-            )
-        )
-        enabled_result = await db.execute(enabled_count_query)
-        total_tests_enabled = enabled_result.scalar() or 0
-        
-        results_query = select(
-            TestResult.test_id,
-            func.count(TestResult.id).label('total_taken'),
-            func.count(case((TestResult.completed_at.isnot(None), 1))).label('total_completed'),
-            func.avg(TestResult.score).label('avg_score'),
-            func.avg(TestResult.time_taken_seconds).label('avg_time'),
-            func.sum(case((TestResult.passed, 1), else_=0)).label('passed_count')
-        ).where(
-            TestResult.client_id == client_uuid
-        ).group_by(TestResult.test_id)
-        
-        results_result = await db.execute(results_query)
-        test_stats_rows = results_result.all()
-        
+
+        total_tests_enabled = await repo.count_enabled_client_tests(client_uuid)
+        test_stats_rows = await repo.get_test_results_stats(client_uuid)
+
         total_results = 0
         total_passed = 0
         total_score_sum = 0
         stats_by_test = []
-        
+
         for row in test_stats_rows:
-            test_query = select(TechnicalTest).where(TechnicalTest.id == row.test_id)
-            test_result = await db.execute(test_query)
-            test = test_result.scalar_one_or_none()
-            
+            test = await repo.get_by_id(row.test_id)
+
             total_taken = row.total_taken or 0
             total_completed = row.total_completed or 0
             avg_score = float(row.avg_score or 0)
             passed_count = row.passed_count or 0
-            
+
             completion_rate = (total_completed / total_taken * 100) if total_taken > 0 else 0
             pass_rate = (passed_count / total_completed * 100) if total_completed > 0 else 0
-            
+
             total_results += total_taken
             total_passed += passed_count
             total_score_sum += avg_score * total_completed
-            
+
             stats_by_test.append({
                 "test_id": str(row.test_id),
                 "test_name": test.name if test else "Unknown",
@@ -684,24 +602,13 @@ async def get_client_test_stats(
                 "pass_rate": round(pass_rate, 2),
                 "avg_time_seconds": float(row.avg_time) if row.avg_time else None
             })
-        
+
         overall_pass_rate = (total_passed / total_results * 100) if total_results > 0 else 0
         completed_count = sum(s["total_completed"] for s in stats_by_test)
         overall_avg_score = (total_score_sum / completed_count) if completed_count > 0 else 0
-        
-        category_query = select(
-            TechnicalTest.category,
-            func.count(TestResult.id).label('count'),
-            func.avg(TestResult.score).label('avg_score')
-        ).join(
-            TestResult, TechnicalTest.id == TestResult.test_id
-        ).where(
-            TestResult.client_id == client_uuid
-        ).group_by(TechnicalTest.category)
-        
-        category_result = await db.execute(category_query)
-        category_rows = category_result.all()
-        
+
+        category_rows = await repo.get_category_stats(client_uuid)
+
         stats_by_category = {
             row.category: {
                 "count": row.count,
@@ -709,7 +616,7 @@ async def get_client_test_stats(
             }
             for row in category_rows
         }
-        
+
         return {
             "success": True,
             "data": {
@@ -722,11 +629,11 @@ async def get_client_test_stats(
                 "stats_by_category": stats_by_category
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting client test stats: {str(e)}", exc_info=True)
+        logger.error(f"Error getting client test stats: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get client test stats: {str(e)}"
@@ -736,32 +643,28 @@ async def get_client_test_stats(
 @router.post("/technical-tests/seed", summary="Seed default tests", response_model=None)
 async def seed_default_tests(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
     """Seed the database with default tests (admin only)."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         if not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can seed tests"
             )
-        
+
         created_count = 0
         skipped_count = 0
-        
+
         for test_data in DEFAULT_TESTS:
-            existing_query = select(TechnicalTest).where(
-                TechnicalTest.name == test_data["name"]
-            )
-            existing_result = await db.execute(existing_query)
-            existing = existing_result.scalar_one_or_none()
-            
+            existing = await repo.get_by_name(test_data["name"])
+
             if existing:
                 skipped_count += 1
                 continue
-            
+
             test = TechnicalTest(
                 name=test_data["name"],
                 category=test_data["category"],
@@ -776,13 +679,11 @@ async def seed_default_tests(
                 is_active=True,
                 created_by=current_user.get("user_id"),
             )
-            db.add(test)
+            await repo.create_test(test)
             created_count += 1
-        
-        await db.commit()
-        
-        logger.info(f"✅ Seeded {created_count} default tests (skipped {skipped_count} existing)")
-        
+
+        logger.info(f"Seeded {created_count} default tests (skipped {skipped_count} existing)")
+
         return {
             "success": True,
             "message": f"Seeded {created_count} tests ({skipped_count} already existed)",
@@ -791,12 +692,12 @@ async def seed_default_tests(
                 "skipped": skipped_count
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error seeding default tests: {str(e)}", exc_info=True)
+        await repo.rollback()
+        logger.error(f"Error seeding default tests: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to seed default tests: {str(e)}"
