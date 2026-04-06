@@ -180,7 +180,7 @@ async def handle_job_closed(event: PlatformEvent) -> None:
             logger.warning("[EventHandler] Vacancy %s not found for company %s", job_id, company_id)
             return
 
-        terminal_statuses = ("rejected", "hired", "withdrawn")
+        terminal_statuses = ("rejected", "hired", "cancelled", "not_selected")
         open_candidates_result = await db.execute(
             select(VacancyCandidate).where(
                 VacancyCandidate.vacancy_id == vacancy.id,
@@ -193,7 +193,9 @@ async def handle_job_closed(event: PlatformEvent) -> None:
         candidates_to_notify: list[tuple[str, str, str | None]] = []
 
         for vc in open_candidates:
-            vc.status = "withdrawn"
+            vc.previous_status = vc.status
+            vc.status = "cancelled"
+            vc.notes = (vc.notes or "") + f"\n[{datetime.now(UTC).isoformat()}] Vaga encerrada: {reason}"
             vc.updated_at = datetime.now(UTC)
             archived_count += 1
 
@@ -323,6 +325,12 @@ async def handle_candidate_moved(event: PlatformEvent) -> None:
                             time_in_stage_hours,
                             from_stage,
                         )
+                    else:
+                        logger.info(
+                            "[EventHandler] Velocity: no stage_entered_at for candidate %s stage '%s'",
+                            candidate_id,
+                            from_stage,
+                        )
             except Exception as exc:
                 logger.warning("[EventHandler] Velocity tracking error: %s", exc)
 
@@ -437,14 +445,31 @@ async def handle_company_configured(event: PlatformEvent) -> None:
             seed_result = await seed_default_templates(db)
             templates_seeded = seed_result.get("created_count", 0)
             logger.info(
-                "[EventHandler] Seeded %d default communication templates for company %s",
+                "[EventHandler] Seeded %d system-wide communication templates",
                 templates_seeded,
-                company_id,
             )
         except ImportError:
             logger.debug("[EventHandler] template_seeder not available")
         except Exception as exc:
-            logger.warning("[EventHandler] Failed to seed default templates: %s", exc)
+            logger.warning("[EventHandler] Failed to seed system templates: %s", exc)
+
+        email_templates_seeded = 0
+        try:
+            from app.domains.job_management.services.recruitment_email_templates import (
+                seed_default_templates as seed_email_templates,
+            )
+
+            email_result = await seed_email_templates(db, company_id=company_id)
+            email_templates_seeded = len(email_result) if email_result else 0
+            logger.info(
+                "[EventHandler] Seeded %d recruitment email templates for company %s",
+                email_templates_seeded,
+                company_id,
+            )
+        except ImportError:
+            logger.debug("[EventHandler] recruitment_email_templates not available")
+        except Exception as exc:
+            logger.warning("[EventHandler] Failed to seed email templates: %s", exc)
 
         await _create_activity(
             activity_type="company_configured",
@@ -452,7 +477,8 @@ async def handle_company_configured(event: PlatformEvent) -> None:
             description=(
                 f"Empresa '{company_name}' configurada com sucesso. "
                 f"{stages_count} estágios de pipeline criados, "
-                f"{templates_seeded} templates de comunicação semeados."
+                f"{templates_seeded} templates de comunicação e "
+                f"{email_templates_seeded} templates de email semeados."
             ),
             target_id=company_id,
             target_type="company",
@@ -461,6 +487,7 @@ async def handle_company_configured(event: PlatformEvent) -> None:
                 "company_name": company_name,
                 "stages_created": stages_count,
                 "templates_seeded": templates_seeded,
+                "email_templates_seeded": email_templates_seeded,
                 "event_id": event.event_id,
             },
             category="onboarding",
@@ -543,7 +570,6 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
             decision = "rejected"
 
         auto_advance = False
-        auto_reject = False
 
         try:
             from app.models.company_hiring_policy import CompanyHiringPolicy
@@ -557,7 +583,6 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
 
             if policy and policy.automation_rules:
                 auto_advance = policy.automation_rules.get("auto_stage_advance", False)
-                auto_reject = policy.automation_rules.get("auto_screening", False)
         except ImportError:
             logger.debug("[EventHandler] CompanyHiringPolicy model not available")
         except Exception as exc:
@@ -590,6 +615,23 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
             logger.warning("[EventHandler] WSIFeedbackGenerator error: %s", exc)
 
         vc = await _get_vacancy_candidate(db, candidate_id, vacancy_id)
+
+        decision_labels = {
+            "approved": "Aprovado WSI",
+            "review": "Revisão Necessária",
+            "rejected": "Reprovado WSI",
+        }
+        if vc:
+            existing_data = vc.additional_data or {}
+            existing_data["screening_decision"] = decision
+            existing_data["screening_label"] = decision_labels.get(decision, decision)
+            existing_data["wsi_final_score"] = wsi_final
+            existing_data["screening_completed_at"] = datetime.now(UTC).isoformat()
+            vc.additional_data = existing_data
+            try:
+                await db.flush()
+            except Exception as exc:
+                logger.warning("[EventHandler] Failed to persist screening badge: %s", exc)
 
         if decision == "approved" and auto_advance:
             await handle_screening_completed(
@@ -624,7 +666,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 except Exception as exc:
                     logger.warning("[EventHandler] Auto-advance failed: %s", exc)
 
-        elif decision == "rejected" and auto_reject:
+        elif decision == "rejected":
             await handle_screening_completed(
                 candidate_id=candidate_id,
                 vacancy_id=vacancy_id,
@@ -634,7 +676,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 passed=False,
             )
 
-            if vc:
+            if vc and auto_advance:
                 try:
                     from app.domains.recruiter_assistant.services.pipeline_stage_service import (
                         PipelineStageService,
@@ -683,7 +725,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                             candidate_name=candidate_name or candidate.name,
                         )
                         logger.info(
-                            "[EventHandler] Sent rejection feedback to candidate %s",
+                            "[EventHandler] Sent WSI rejection feedback to candidate %s",
                             candidate_id,
                         )
                 except Exception as exc:
@@ -696,7 +738,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 company_id=company_id,
                 db=db,
                 wsi_scores=wsi_scores,
-                passed=(decision != "rejected"),
+                passed=True,
             )
             logger.info(
                 "[EventHandler] Screening result=%s for candidate %s (WSI=%.2f, auto_advance=%s)",
