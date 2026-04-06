@@ -255,7 +255,7 @@ export function CandidatePageProfileTab({
               <h5 className="text-xs font-medium text-lia-text-primary mb-1">Localização</h5>
               <p className="text-sm text-lia-text-secondary">
                 {[candidate.location_city, candidate.location_state, candidate.location_country]
-                  .filter(Boolean).join(', ') || candidate.location || 'Não informado'}
+                  .filter(Boolean).join(', ') || (candidate.location as string) || 'Não informado'}
               </p>
               {(candidate.address_street || candidate.address_district) && (
                 <p className="text-xs text-lia-text-tertiary mt-0.5">
@@ -331,14 +331,14 @@ export function CandidatePageProfileTab({
               </div>
             </CardHeader>
             <CardContent className="p-4 space-y-2">
-              {(candidate.date_of_birth || candidate.estimated_age) && (
+              {(candidate.date_of_birth || (candidate.estimated_age as number | undefined)) && (
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-lia-text-tertiary flex items-center gap-1">
                     <Cake className="w-3.5 h-3.5" />
                     Idade
                   </span>
                   <span className="text-sm font-medium text-lia-text-primary">
-                    {calculateAge(candidate.date_of_birth) || candidate.estimated_age} anos
+                    {calculateAge(candidate.date_of_birth) || (candidate.estimated_age as number)} anos
                     {candidate.date_of_birth && (
                       <span className="text-xs text-lia-text-secondary ml-1">
                         ({formatDate(candidate.date_of_birth)})
@@ -383,14 +383,14 @@ export function CandidatePageProfileTab({
               </div>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
-              {candidate.headline && (
+              {(candidate.headline as string | undefined) && (
                 <div>
-                  <p className="text-sm text-lia-text-primary italic">&quot;{candidate.headline}&quot;</p>
+                  <p className="text-sm text-lia-text-primary italic">&quot;{candidate.headline as string}&quot;</p>
                 </div>
               )}
               
               <div className="flex flex-wrap gap-1.5">
-                {candidate.is_open_to_work && (
+                {(candidate.is_open_to_work as boolean | undefined) && (
                   <Badge className="text-xs bg-status-success/10 text-status-success border-status-success/30">
                     ✓ Open to Work
                   </Badge>
@@ -405,27 +405,27 @@ export function CandidatePageProfileTab({
                     🎓 Top Universities
                   </Badge>
                 )}
-                {candidate.is_hiring && (
+                {(candidate.is_hiring as boolean | undefined) && (
                   <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">
                     📢 Hiring
                   </Badge>
                 )}
               </div>
 
-              {(candidate.linkedin_connections_count || candidate.linkedin_followers_count) && (
+              {((candidate.linkedin_connections_count as number | undefined) || (candidate.linkedin_followers_count as number | undefined)) && (
                 <div className="flex gap-4 pt-2 border-t border-lia-border-subtle">
-                  {candidate.linkedin_connections_count && (
+                  {(candidate.linkedin_connections_count as number | undefined) && (
                     <div className="text-center">
                       <p className="text-lg font-semibold text-lia-text-primary">
-                        {candidate.linkedin_connections_count.toLocaleString('pt-BR')}
+                        {(candidate.linkedin_connections_count as number).toLocaleString('pt-BR')}
                       </p>
                       <p className="text-micro text-lia-text-tertiary">Conexões</p>
                     </div>
                   )}
-                  {candidate.linkedin_followers_count && (
+                  {(candidate.linkedin_followers_count as number | undefined) && (
                     <div className="text-center">
                       <p className="text-lg font-semibold text-lia-text-primary">
-                        {candidate.linkedin_followers_count.toLocaleString('pt-BR')}
+                        {(candidate.linkedin_followers_count as number).toLocaleString('pt-BR')}
                       </p>
                       <p className="text-micro text-lia-text-tertiary">Seguidores</p>
                     </div>

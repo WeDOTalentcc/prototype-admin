@@ -377,7 +377,7 @@ export function CandidateSearchResultsView({
             <CompactLIAPrompt
               isLIAThinking={isLIAThinking}
               liaPromptValue={liaPromptValue}
-              setLiaPromptValue={setLiaPromptValue}
+              setLiaPromptValue={((v: React.SetStateAction<string>) => setLiaPromptValue(typeof v === 'function' ? v('') : v)) as React.Dispatch<React.SetStateAction<string>>}
               setShowExpandedLIA={setShowExpandedLIA}
               onAICommand={onAICommand}
             />
@@ -531,25 +531,26 @@ export function CandidateSearchResultsView({
             setLiaWidth={setLiaWidth}
             isResizingLIA={isResizingLIA}
             setIsResizingLIA={setIsResizingLIA}
-            activeSearchTab={activeSearchTab}
-            setActiveSearchTab={setActiveSearchTab}
+            activeSearchTab={activeSearchTab as unknown as never}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setActiveSearchTab={setActiveSearchTab as unknown as any}
             liaPromptValue={liaPromptValue}
             setLiaPromptValue={setLiaPromptValue}
             chatMessages={chatMessages}
             setChatMessages={setChatMessages}
             searchResults={searchResults}
-            setSearchResults={setSearchResults}
+            setSearchResults={setSearchResults as unknown as never}
             currentSearchSource={currentSearchSource}
             searchSource={searchSource}
             pearchSearchOptions={pearchSearchOptions}
-            activeSearchFilters={activeSearchFilters}
+            activeSearchFilters={activeSearchFilters as unknown as Record<string, Record<string, unknown>>}
             setActiveSearchFilters={setActiveSearchFilters as (v: Record<string, Record<string, unknown>>) => void}
             showTableFiltersPanel={showTableFiltersPanel}
             setShowTableFiltersPanel={setShowTableFiltersPanel}
             isCreatingArchetype={isCreatingArchetype}
             setIsCreatingArchetype={setIsCreatingArchetype}
             archetypeCreationStep={archetypeCreationStep}
-            setArchetypeCreationStep={setArchetypeCreationStep}
+            setArchetypeCreationStep={setArchetypeCreationStep as (v: string) => void}
             setNewArchetypeData={setNewArchetypeData as (v: { name: string; description: string; query: string; emoji: string }) => void}
             setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
             setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
@@ -567,7 +568,7 @@ export function CandidateSearchResultsView({
             onCalibrationLike={(candidateId: string) => onCalibrationLike({ id: candidateId } as CalibrationCandidate)}
             onCalibrationDislike={(candidateId: string) => onCalibrationDislike({ id: candidateId } as CalibrationCandidate)}
             onClose={() => { setShowExpandedLIA(false); setUserCollapsedLIA(true) }}
-            chatScrollRef={chatScrollRef}
+            chatScrollRef={chatScrollRef as React.RefObject<HTMLDivElement>}
           />
         )}
 
