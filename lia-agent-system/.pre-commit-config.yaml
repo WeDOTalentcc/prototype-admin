@@ -1,0 +1,38 @@
+repos:
+  # ── Ruff: linting + formatting ──────────────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        exclude: ^(tests/|migrations/)
+      - id: ruff-format
+        exclude: ^(tests/|migrations/)
+
+  # ── Local guardrails ─────────────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: no-sql-in-controllers
+        name: "G1: No SQL in API controllers"
+        language: python
+        entry: python3 scripts/check_no_sql_in_controllers.py
+        files: ^app/api/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-pii-in-logs
+        name: "G4: No PII in log calls (LGPD)"
+        language: python
+        entry: python3 scripts/check_no_pii_in_logs.py
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+        exclude: ^(tests/|scripts/)
+
+      - id: response-model-required
+        name: "G2: response_model required on all endpoints"
+        language: python
+        entry: python3 scripts/check_response_models.py
+        files: ^app/api/.*\.py$
+        pass_filenames: false
+        always_run: false

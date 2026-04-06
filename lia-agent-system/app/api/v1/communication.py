@@ -193,7 +193,7 @@ async def send_email(
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         
-        logger.info(f"📧 Sending email to {request.to_email} for company {company_id}")
+        logger.info(f"📧 Sending email for company {company_id}")
         
         result = communication_dispatcher.send_email(
             to_email=request.to_email,
@@ -227,7 +227,7 @@ async def send_email(
                     },
                 )
                 communication_logged = True
-                logger.info(f"✅ Communication logged for email to {request.to_email}")
+                logger.info("✅ Communication logged for email")
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log communication: {log_error}")
         
@@ -311,7 +311,7 @@ async def send_whatsapp(
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         
-        logger.info(f"📱 Sending WhatsApp to {request.to_phone} for company {company_id}")
+        logger.info(f"📱 Sending WhatsApp for company {company_id}")
         
         result = communication_dispatcher.send_whatsapp(
             to_phone=request.to_phone,
@@ -342,7 +342,7 @@ async def send_whatsapp(
                     },
                 )
                 communication_logged = True
-                logger.info(f"✅ Communication logged for WhatsApp to {request.to_phone}")
+                logger.info("✅ Communication logged for WhatsApp")
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log communication: {log_error}")
         
@@ -434,7 +434,7 @@ async def send_screening_invite(
             raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         channel = request.channel.lower()
         
-        logger.info(f"Sending screening invite via {channel} to {request.candidate_name} for company {company_id}")
+        logger.info(f"Sending screening invite via {channel} for company {company_id}, candidate_id={request.candidate_id}")
 
         if request.vacancy_id and not request.override_saturation:
             sat_status = await _check_vacancy_saturation_for_invite(db, request.vacancy_id)
@@ -464,7 +464,7 @@ async def send_screening_invite(
                     },
                 )
         elif request.vacancy_id and request.override_saturation:
-            logger.info(f"Saturation override active for screening invite to {request.candidate_name}")
+            logger.info(f"Saturation override active for screening invite to candidate_id={request.candidate_id}")
         
         result = {
             "success": False,
@@ -514,7 +514,7 @@ async def send_screening_invite(
                 "recipient": request.candidate_phone or "N/A",
                 "timestamp": datetime.utcnow().isoformat()
             }
-            logger.info(f"📞 Phone script prepared for {request.candidate_name}")
+            logger.info(f"📞 Phone script prepared for candidate_id={request.candidate_id}")
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -548,7 +548,7 @@ async def send_screening_invite(
                     },
                 )
                 communication_logged = True
-                logger.info(f"✅ Screening invite logged for {request.candidate_name} via {channel}")
+                logger.info(f"✅ Screening invite logged via {channel}, candidate_id={request.candidate_id}")
             except Exception as log_error:
                 logger.warning(f"⚠️ Failed to log screening invite: {log_error}")
         

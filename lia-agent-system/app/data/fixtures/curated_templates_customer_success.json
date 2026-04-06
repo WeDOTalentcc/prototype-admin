@@ -1,0 +1,1825 @@
+[
+  {
+    "category": "customer_success",
+    "subcategory": "cs_management",
+    "title": "Customer Success Manager",
+    "title_alternatives": [
+      "CSM",
+      "Gerente de Sucesso do Cliente",
+      "Gestor de Sucesso do Cliente",
+      "Client Success Manager"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno",
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Carteira de Clientes",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "CRM (Salesforce, HubSpot, Pipedrive)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Análise de Health Score",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Churn",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Upsell e Cross-sell",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de CS (Gainsight, ChurnZero, Totango)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Análise de Dados e Métricas",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Gestão de Stakeholders",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Metodologias de CS (LAER, Maturity Model)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Excel/Google Sheets Avançado",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Orientação para o Cliente",
+        "weight": 1.0,
+        "justification": "Foco central na satisfação e sucesso do cliente"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 1.0,
+        "justification": "Interação constante com clientes e stakeholders internos"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.9,
+        "justification": "Antecipação de problemas e oportunidades"
+      },
+      {
+        "name": "Resiliência",
+        "weight": 0.9,
+        "justification": "Gestão de clientes em risco e situações difíceis"
+      },
+      {
+        "name": "Pensamento Analítico",
+        "weight": 0.8,
+        "justification": "Análise de métricas e indicadores de saúde do cliente"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar carteira de clientes garantindo adoção e expansão do produto",
+      "Monitorar health score e NPS dos clientes da carteira",
+      "Conduzir QBRs (Quarterly Business Reviews) com clientes estratégicos",
+      "Identificar oportunidades de upsell e cross-sell",
+      "Desenvolver playbooks e processos de CS para escala",
+      "Atuar na prevenção e recuperação de churn",
+      "Colaborar com times de Produto e Suporte para resolução de problemas",
+      "Documentar casos de sucesso e gerar referências de clientes"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 4000,
+        "max": 6000
+      },
+      "pleno": {
+        "min": 6000,
+        "max": 10000
+      },
+      "senior": {
+        "min": 10000,
+        "max": 16000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "implementation",
+    "title": "Implementation Specialist",
+    "title_alternatives": [
+      "Especialista de Implementação",
+      "Implantação de Sistemas",
+      "Consultor de Implementação",
+      "Implementation Consultant"
+    ],
+    "seniorities": [
+      "pleno",
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Projetos de Implementação",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Configuração de Sistemas",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Mapeamento de Processos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Migração de Dados",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Treinamento de Usuários",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "APIs e Integrações",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "SQL Básico",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Ferramentas de PM (Jira, Asana, Monday)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Documentação Técnica",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Gestão de múltiplos projetos de implementação simultâneos"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interação com clientes e times técnicos"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.9,
+        "justification": "Troubleshooting durante implementações"
+      },
+      {
+        "name": "Paciência",
+        "weight": 0.8,
+        "justification": "Treinamento e suporte a usuários com diferentes níveis técnicos"
+      },
+      {
+        "name": "Flexibilidade",
+        "weight": 0.8,
+        "justification": "Adaptação a diferentes contextos e requisitos de clientes"
+      }
+    ],
+    "default_responsibilities": [
+      "Conduzir projetos de implementação do software do início ao go-live",
+      "Realizar discovery e mapeamento de processos do cliente",
+      "Configurar e customizar o sistema conforme necessidades do cliente",
+      "Executar migração e validação de dados",
+      "Treinar usuários finais e administradores do sistema",
+      "Documentar configurações e criar materiais de apoio",
+      "Garantir entrega dentro do prazo e escopo acordados",
+      "Realizar handoff estruturado para equipe de Customer Success"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5500,
+        "max": 9000
+      },
+      "senior": {
+        "min": 9000,
+        "max": 14000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "implementation",
+    "title": "Onboarding Specialist",
+    "title_alternatives": [
+      "Especialista de Onboarding",
+      "Analista de Onboarding",
+      "Customer Onboarding Specialist",
+      "Activation Specialist"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Condução de Onboarding",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Treinamento de Clientes",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Configuração Inicial de Sistemas",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de Videoconferência (Zoom, Meet)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "CRM (Salesforce, HubSpot)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Criação de Materiais de Treinamento",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Gestão de Tempo",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Ferramentas de Produtividade",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.6,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Didática",
+        "weight": 1.0,
+        "justification": "Capacidade de explicar funcionalidades de forma clara"
+      },
+      {
+        "name": "Empatia",
+        "weight": 0.9,
+        "justification": "Compreensão das dificuldades do cliente na adoção"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Gestão de múltiplos onboardings simultâneos"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.8,
+        "justification": "Identificação de gaps e necessidades do cliente"
+      },
+      {
+        "name": "Paciência",
+        "weight": 0.8,
+        "justification": "Suporte a usuários com diferentes níveis de conhecimento"
+      }
+    ],
+    "default_responsibilities": [
+      "Conduzir sessões de onboarding para novos clientes",
+      "Realizar configuração inicial do produto para o cliente",
+      "Treinar usuários nas funcionalidades principais do sistema",
+      "Acompanhar métricas de ativação e first value",
+      "Criar e atualizar materiais de treinamento e tutoriais",
+      "Identificar riscos durante o onboarding e escalar quando necessário",
+      "Garantir handoff estruturado para o time de CS após onboarding"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 3000,
+        "max": 4500
+      },
+      "pleno": {
+        "min": 4500,
+        "max": 7000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "tam",
+    "title": "Technical Account Manager",
+    "title_alternatives": [
+      "TAM",
+      "Gerente Técnico de Contas",
+      "Technical Customer Manager",
+      "Strategic Technical Advisor"
+    ],
+    "seniorities": [
+      "pleno",
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Conhecimento Técnico do Produto",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "APIs e Integrações",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Contas Estratégicas",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Troubleshooting Técnico",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Arquitetura de Sistemas",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "SQL",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Cloud (AWS, GCP, Azure)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Scripting (Python, JavaScript)",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.6,
+        "required": false
+      },
+      {
+        "name": "Documentação Técnica",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Comunicação Técnica",
+        "weight": 1.0,
+        "justification": "Tradução entre linguagem técnica e de negócios"
+      },
+      {
+        "name": "Pensamento Analítico",
+        "weight": 0.9,
+        "justification": "Diagnóstico de problemas complexos"
+      },
+      {
+        "name": "Orientação para o Cliente",
+        "weight": 0.9,
+        "justification": "Foco no sucesso técnico do cliente"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.8,
+        "justification": "Antecipação de necessidades técnicas"
+      },
+      {
+        "name": "Gestão de Relacionamento",
+        "weight": 0.8,
+        "justification": "Relacionamento de longo prazo com clientes enterprise"
+      }
+    ],
+    "default_responsibilities": [
+      "Ser o ponto focal técnico para contas estratégicas",
+      "Conduzir revisões técnicas e arquiteturais com clientes",
+      "Apoiar em integrações e customizações complexas",
+      "Escalar e acompanhar issues técnicos críticos",
+      "Prover consultoria técnica para maximizar uso do produto",
+      "Documentar requisitos técnicos e roadmap do cliente",
+      "Colaborar com times de Produto e Engenharia em melhorias",
+      "Realizar health checks técnicos periódicos"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 8000,
+        "max": 13000
+      },
+      "senior": {
+        "min": 13000,
+        "max": 20000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "cs_management",
+    "title": "Customer Success Analyst",
+    "title_alternatives": [
+      "Analista de Sucesso do Cliente",
+      "Analista de CS",
+      "CS Analyst",
+      "Analista de Customer Success"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "CRM (Salesforce, HubSpot)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Atendimento ao Cliente",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Análise de Métricas de CS",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Excel/Google Sheets",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de Comunicação (Intercom, Zendesk)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Elaboração de Relatórios",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Gestão de Tickets",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "NPS e Pesquisas de Satisfação",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Comunicação",
+        "weight": 1.0,
+        "justification": "Contato frequente com clientes por diversos canais"
+      },
+      {
+        "name": "Empatia",
+        "weight": 0.9,
+        "justification": "Compreensão das necessidades e dores do cliente"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Gestão de múltiplos atendimentos e follow-ups"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.8,
+        "justification": "Antecipação de necessidades do cliente"
+      },
+      {
+        "name": "Trabalho em Equipe",
+        "weight": 0.8,
+        "justification": "Colaboração com outras áreas para resolver demandas"
+      }
+    ],
+    "default_responsibilities": [
+      "Atender e acompanhar solicitações de clientes",
+      "Monitorar indicadores de saúde da base de clientes",
+      "Realizar contatos proativos de engajamento",
+      "Apoiar CSMs na gestão de carteiras de clientes",
+      "Coletar e documentar feedbacks de clientes",
+      "Elaborar relatórios de performance da área",
+      "Identificar e escalar riscos de churn",
+      "Contribuir para melhoria de processos de CS"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 3000,
+        "max": 4500
+      },
+      "pleno": {
+        "min": 4500,
+        "max": 7000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "experiencia",
+    "title": "Customer Experience Specialist",
+    "title_alternatives": [
+      "Especialista de Experiência do Cliente",
+      "CX Specialist",
+      "Analista de CX",
+      "Customer Experience Analyst"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Mapeamento de Jornada do Cliente",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Pesquisas de Satisfação (NPS, CSAT, CES)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Análise de Dados de CX",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de Survey (Typeform, SurveyMonkey)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Design Thinking",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Voice of Customer (VoC)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Excel/Google Sheets Avançado",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Ferramentas de CX (Medallia, Qualtrics)",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.6,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Pensamento Analítico",
+        "weight": 1.0,
+        "justification": "Análise de dados para insights de melhoria"
+      },
+      {
+        "name": "Orientação para o Cliente",
+        "weight": 1.0,
+        "justification": "Advocacia do cliente na organização"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Apresentação de insights e recomendações"
+      },
+      {
+        "name": "Criatividade",
+        "weight": 0.8,
+        "justification": "Proposição de soluções inovadoras para melhorar experiência"
+      },
+      {
+        "name": "Influência",
+        "weight": 0.8,
+        "justification": "Engajamento de stakeholders para mudanças de CX"
+      }
+    ],
+    "default_responsibilities": [
+      "Mapear e otimizar jornadas do cliente em todos os touchpoints",
+      "Implementar e analisar pesquisas de NPS, CSAT e CES",
+      "Gerar insights a partir de feedback de clientes",
+      "Propor e implementar melhorias na experiência do cliente",
+      "Desenvolver programas de Voice of Customer",
+      "Criar dashboards e relatórios de métricas de CX",
+      "Colaborar com áreas de Produto, Marketing e CS em iniciativas de CX",
+      "Identificar pontos de fricção e propor soluções"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5500,
+        "max": 9000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "cs_management",
+    "title": "Renewals Manager",
+    "title_alternatives": [
+      "Gerente de Renovações",
+      "Renewal Specialist",
+      "Especialista de Renovação",
+      "Customer Renewals Manager"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Negociação de Contratos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Renovações SaaS",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "CRM (Salesforce)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Análise de Risco de Churn",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Forecasting de Receita",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Upsell e Expansão",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Precificação e Proposta Comercial",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Negociação",
+        "weight": 1.0,
+        "justification": "Core skill para renovação de contratos"
+      },
+      {
+        "name": "Orientação para Resultados",
+        "weight": 0.9,
+        "justification": "Foco em metas de retenção e receita"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interação com stakeholders internos e externos"
+      },
+      {
+        "name": "Resiliência",
+        "weight": 0.8,
+        "justification": "Gestão de objeções e negociações difíceis"
+      },
+      {
+        "name": "Pensamento Estratégico",
+        "weight": 0.8,
+        "justification": "Planejamento de estratégias de retenção"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar pipeline de renovações e garantir NRR (Net Revenue Retention)",
+      "Conduzir negociações de renovação com clientes",
+      "Identificar e executar oportunidades de expansão durante renovação",
+      "Desenvolver estratégias para recuperação de clientes em risco",
+      "Manter forecast preciso de renovações",
+      "Colaborar com CS e Vendas para maximizar renovações",
+      "Analisar métricas de churn e propor ações corretivas",
+      "Reportar resultados e KPIs de renovação para liderança"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 12000,
+        "max": 18000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "suporte",
+    "title": "Suporte Técnico N1",
+    "title_alternatives": [
+      "Analista de Suporte N1",
+      "Help Desk N1",
+      "Suporte de Primeiro Nível",
+      "Technical Support Level 1"
+    ],
+    "seniorities": [
+      "junior"
+    ],
+    "default_skills": [
+      {
+        "name": "Atendimento ao Cliente",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Troubleshooting Básico",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Sistemas de Tickets (Zendesk, Freshdesk, Jira Service)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Conhecimento de Produto",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Documentação de Atendimentos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Comunicação Escrita",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Noções de TI (Navegadores, SO)",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Inglês Técnico",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.6,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Paciência",
+        "weight": 1.0,
+        "justification": "Atendimento a usuários com diferentes níveis de conhecimento"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Clareza na explicação de soluções"
+      },
+      {
+        "name": "Empatia",
+        "weight": 0.9,
+        "justification": "Compreensão da frustração do cliente"
+      },
+      {
+        "name": "Agilidade",
+        "weight": 0.8,
+        "justification": "Resolução rápida de chamados simples"
+      },
+      {
+        "name": "Trabalho sob Pressão",
+        "weight": 0.8,
+        "justification": "Volume alto de atendimentos"
+      }
+    ],
+    "default_responsibilities": [
+      "Realizar primeiro atendimento via chat, telefone ou e-mail",
+      "Registrar e categorizar chamados no sistema de tickets",
+      "Resolver problemas básicos e dúvidas frequentes",
+      "Escalar chamados complexos para N2/N3",
+      "Seguir scripts e procedimentos padrão de atendimento",
+      "Manter base de conhecimento atualizada",
+      "Cumprir SLAs de primeiro atendimento"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 2000,
+        "max": 3500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "suporte",
+    "title": "Suporte Técnico N2",
+    "title_alternatives": [
+      "Analista de Suporte N2",
+      "Suporte de Segundo Nível",
+      "Technical Support Level 2",
+      "Especialista de Suporte"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Troubleshooting Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Análise de Logs e Diagnóstico",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "SQL Básico",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Sistemas de Tickets (Zendesk, Jira Service)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "APIs e Integrações",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Conhecimento de Infraestrutura",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Scripting Básico",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Documentação Técnica",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Pensamento Analítico",
+        "weight": 1.0,
+        "justification": "Diagnóstico de problemas complexos"
+      },
+      {
+        "name": "Comunicação Técnica",
+        "weight": 0.9,
+        "justification": "Explicação de soluções técnicas para clientes"
+      },
+      {
+        "name": "Persistência",
+        "weight": 0.9,
+        "justification": "Investigação até resolução do problema"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.8,
+        "justification": "Gestão de múltiplos casos simultaneamente"
+      },
+      {
+        "name": "Colaboração",
+        "weight": 0.8,
+        "justification": "Trabalho com N1, N3 e times de desenvolvimento"
+      }
+    ],
+    "default_responsibilities": [
+      "Resolver chamados escalados pelo N1",
+      "Realizar análise aprofundada de problemas técnicos",
+      "Consultar logs e banco de dados para diagnóstico",
+      "Reproduzir e documentar bugs para escalar ao time de desenvolvimento",
+      "Criar e atualizar artigos na base de conhecimento",
+      "Apoiar e treinar equipe de N1",
+      "Escalar casos críticos para N3 com documentação completa",
+      "Participar de calls técnicas com clientes quando necessário"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4000,
+        "max": 6500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "suporte",
+    "title": "Suporte Técnico N3",
+    "title_alternatives": [
+      "Analista de Suporte N3",
+      "Suporte de Terceiro Nível",
+      "Technical Support Level 3",
+      "Especialista Técnico Sênior"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Troubleshooting Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Programação (Python, JavaScript)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "SQL Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Arquitetura de Sistemas",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Cloud (AWS, GCP, Azure)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "APIs e Webhooks",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Análise de Performance",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "DevOps Básico",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Pensamento Crítico",
+        "weight": 1.0,
+        "justification": "Análise de problemas sistêmicos e arquiteturais"
+      },
+      {
+        "name": "Autonomia",
+        "weight": 0.9,
+        "justification": "Resolução independente de casos complexos"
+      },
+      {
+        "name": "Comunicação Técnica",
+        "weight": 0.9,
+        "justification": "Interface com times de engenharia e clientes técnicos"
+      },
+      {
+        "name": "Liderança Técnica",
+        "weight": 0.8,
+        "justification": "Mentoria de N1 e N2"
+      },
+      {
+        "name": "Orientação para Qualidade",
+        "weight": 0.8,
+        "justification": "Garantia de resoluções definitivas"
+      }
+    ],
+    "default_responsibilities": [
+      "Resolver casos mais complexos e críticos escalados",
+      "Realizar debugging em código e investigação profunda",
+      "Colaborar diretamente com time de desenvolvimento em correções",
+      "Desenvolver scripts e ferramentas para resolução de problemas",
+      "Participar de post-mortems e análise de causa raiz",
+      "Definir e melhorar processos de suporte",
+      "Mentorar e treinar N1 e N2",
+      "Representar suporte em discussões técnicas com clientes enterprise"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 7000,
+        "max": 12000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "suporte",
+    "title": "Help Desk Analyst",
+    "title_alternatives": [
+      "Analista de Help Desk",
+      "Analista de Service Desk",
+      "IT Support Analyst",
+      "Analista de Suporte TI"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Suporte a Hardware e Software",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Windows/macOS/Linux",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Active Directory",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de ITSM (ServiceNow, Freshservice)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Troubleshooting de Rede",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Office 365 / Google Workspace",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "VPN e Acesso Remoto",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "ITIL Foundation",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.6,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Paciência",
+        "weight": 1.0,
+        "justification": "Atendimento a usuários com diferentes níveis técnicos"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Explicação de soluções de forma clara"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.9,
+        "justification": "Diagnóstico e correção de issues de TI"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.8,
+        "justification": "Gestão de múltiplos chamados"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.8,
+        "justification": "Identificação de melhorias e automações"
+      }
+    ],
+    "default_responsibilities": [
+      "Atender chamados de suporte técnico de TI interna",
+      "Realizar troubleshooting de hardware, software e rede",
+      "Administrar contas de usuários no Active Directory",
+      "Configurar estações de trabalho e periféricos",
+      "Documentar procedimentos e soluções na base de conhecimento",
+      "Cumprir SLAs de atendimento conforme prioridade",
+      "Escalar problemas complexos para times especializados",
+      "Apoiar em projetos de infraestrutura de TI"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 2500,
+        "max": 4000
+      },
+      "pleno": {
+        "min": 4000,
+        "max": 6000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "suporte",
+    "title": "Service Desk Coordinator",
+    "title_alternatives": [
+      "Coordenador de Service Desk",
+      "Supervisor de Suporte",
+      "IT Support Coordinator",
+      "Help Desk Coordinator"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Equipes de Suporte",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "ITIL",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de ITSM (ServiceNow, Jira Service)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de SLAs",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Métricas de Suporte (MTTR, FCR, CSAT)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Escalation",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Capacitação de Equipes",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Gestão de Projetos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Liderança",
+        "weight": 1.0,
+        "justification": "Gestão e desenvolvimento de equipe de suporte"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Coordenação de múltiplas demandas e prioridades"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interação com stakeholders e clientes"
+      },
+      {
+        "name": "Orientação para Resultados",
+        "weight": 0.8,
+        "justification": "Foco em KPIs de suporte"
+      },
+      {
+        "name": "Tomada de Decisão",
+        "weight": 0.8,
+        "justification": "Gestão de crises e escalations"
+      }
+    ],
+    "default_responsibilities": [
+      "Coordenar equipe de analistas de suporte N1 e N2",
+      "Garantir cumprimento de SLAs e metas da área",
+      "Gerenciar escalations e incidentes críticos",
+      "Desenvolver e capacitar a equipe de suporte",
+      "Definir e otimizar processos de atendimento",
+      "Elaborar relatórios gerenciais de performance",
+      "Implementar melhorias contínuas baseadas em métricas",
+      "Garantir satisfação do cliente através de monitoramento de CSAT"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 8000,
+        "max": 13000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "experiencia",
+    "title": "Customer Advocate",
+    "title_alternatives": [
+      "Advogado do Cliente",
+      "Defensor do Cliente",
+      "Customer Champion",
+      "Voice of Customer Specialist"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Análise de Feedback de Clientes",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Reclamações",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "CRM e Ferramentas de CS",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Resolução de Conflitos",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Comunicação Executiva",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Pesquisas de Satisfação",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Análise de Dados",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Negociação",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Empatia",
+        "weight": 1.0,
+        "justification": "Representação genuína dos interesses do cliente"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Articulação de necessidades do cliente internamente"
+      },
+      {
+        "name": "Resiliência",
+        "weight": 0.9,
+        "justification": "Gestão de situações difíceis e clientes insatisfeitos"
+      },
+      {
+        "name": "Influência",
+        "weight": 0.8,
+        "justification": "Mobilização de times para resolver issues de clientes"
+      },
+      {
+        "name": "Pensamento Crítico",
+        "weight": 0.8,
+        "justification": "Análise de padrões em feedbacks"
+      }
+    ],
+    "default_responsibilities": [
+      "Ser a voz do cliente dentro da organização",
+      "Gerenciar e resolver escalations de clientes insatisfeitos",
+      "Analisar feedbacks e identificar padrões de insatisfação",
+      "Propor melhorias de produto e processos baseadas em VOC",
+      "Colaborar com times para resolução de problemas sistêmicos",
+      "Acompanhar clientes críticos até resolução satisfatória",
+      "Reportar insights de cliente para liderança",
+      "Desenvolver programas de retenção para clientes em risco"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5500,
+        "max": 9000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "experiencia",
+    "title": "Community Manager",
+    "title_alternatives": [
+      "Gerente de Comunidade",
+      "Community Lead",
+      "Customer Community Manager",
+      "Gestor de Comunidade"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Comunidades Online",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Criação de Conteúdo",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Plataformas de Comunidade (Discourse, Slack, Discord)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Social Media Management",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Organização de Eventos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Análise de Engajamento",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Programas de Advocacy/Embaixadores",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Copywriting",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Criatividade",
+        "weight": 1.0,
+        "justification": "Desenvolvimento de conteúdos e iniciativas engajadoras"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 1.0,
+        "justification": "Interação constante com membros da comunidade"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.9,
+        "justification": "Criação de ações para crescer e engajar a comunidade"
+      },
+      {
+        "name": "Empatia",
+        "weight": 0.8,
+        "justification": "Compreensão das necessidades da comunidade"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.8,
+        "justification": "Gestão de múltiplas iniciativas e eventos"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar plataformas de comunidade de clientes",
+      "Criar conteúdo relevante para engajamento da comunidade",
+      "Moderar discussões e garantir ambiente positivo",
+      "Organizar eventos online e presenciais para a comunidade",
+      "Identificar e desenvolver programa de embaixadores/champions",
+      "Analisar métricas de engajamento e crescimento",
+      "Coletar insights e feedbacks da comunidade para times internos",
+      "Fomentar peer-to-peer support entre membros"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5000,
+        "max": 8500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "customer_success",
+    "subcategory": "cs_management",
+    "title": "Head of Customer Success",
+    "title_alternatives": [
+      "Diretor de Customer Success",
+      "VP of Customer Success",
+      "Líder de Customer Success",
+      "Head de Sucesso do Cliente"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Equipes de CS",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Estratégia de Customer Success",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Métricas de CS (NRR, Churn, NPS)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de P&L",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Customer Journey Design",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de CS (Gainsight, ChurnZero)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Metodologias de CS",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "People Management",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Comunicação Executiva",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Visão Estratégica",
+        "weight": 1.0,
+        "justification": "Definição de direção e estratégia de CS"
+      },
+      {
+        "name": "Liderança",
+        "weight": 1.0,
+        "justification": "Gestão e desenvolvimento de times de CS"
+      },
+      {
+        "name": "Orientação para Resultados",
+        "weight": 0.9,
+        "justification": "Foco em métricas de retenção e expansão"
+      },
+      {
+        "name": "Influência",
+        "weight": 0.9,
+        "justification": "Alinhamento com C-level e outras áreas"
+      },
+      {
+        "name": "Tomada de Decisão",
+        "weight": 0.8,
+        "justification": "Decisões estratégicas sobre clientes e equipe"
+      }
+    ],
+    "default_responsibilities": [
+      "Definir estratégia e visão de Customer Success para a empresa",
+      "Liderar e desenvolver equipe de CSMs, TAMs e especialistas",
+      "Garantir metas de NRR, retenção e expansão de receita",
+      "Reportar métricas e resultados para liderança executiva",
+      "Definir processos, playbooks e tecnologia de CS",
+      "Colaborar com Vendas, Produto e Marketing em iniciativas cross-funcionais",
+      "Atuar em renovações e expansões estratégicas",
+      "Desenvolver cultura customer-centric na organização"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 18000,
+        "max": 35000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  }
+]

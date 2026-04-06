@@ -375,7 +375,7 @@ async def seed_brazilian_market_templates(
     - HR (People Analytics)
     - Sales (Executivo de Vendas B2B, Customer Success)
     """
-    from app.data.brazilian_job_templates import BRAZILIAN_TEMPLATES
+    from app.data.loader import get_brazilian_templates as _get_br; BRAZILIAN_TEMPLATES = _get_br()
     from app.domains.job_management.services.job_embedding_service import job_embedding_service
     
     created = []
@@ -424,7 +424,7 @@ async def get_brazilian_market_templates():
     
     Returns templates without database lookup - useful for preview/documentation.
     """
-    from app.data.brazilian_job_templates import BRAZILIAN_TEMPLATES
+    from app.data.loader import get_brazilian_templates as _get_br; BRAZILIAN_TEMPLATES = _get_br()
     
     return {
         "success": True,
