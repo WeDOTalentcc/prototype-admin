@@ -384,6 +384,86 @@ class JobVacancyService:
         return frame
 
 
+    _BEHAVIOR_FORMAT_MAP = {
+        "screening": "Triagem",
+        "scheduling": "Comportamental",
+        "evaluation": "Técnica",
+        "intake": "Sistema",
+        "passive": "Informativa",
+    }
+
+    _BEHAVIOR_DURATION_MAP = {
+        "screening": 15,
+        "scheduling": 45,
+        "evaluation": 60,
+        "intake": 10,
+        "passive": 30,
+    }
+
+    @staticmethod
+    async def _populate_default_interview_stages(
+        state: JobVacancyState,
+        company_id: str,
+        db,
+    ) -> JobVacancyState:
+        """Populate interview stages from company pipeline if not set by user."""
+        try:
+            from app.domains.recruiter_assistant.services.pipeline_stage_service import pipeline_stage_service
+
+            stages = await pipeline_stage_service._get_company_stages(db, company_id)
+            if stages:
+                interview_stages = []
+                for stage in stages:
+                    behavior = getattr(stage, "action_behavior", "passive") or "passive"
+                    if behavior == "terminal":
+                        continue
+                    if getattr(stage, "is_rejection", False) or getattr(stage, "is_hired", False):
+                        continue
+
+                    interview_stages.append(InterviewStage(
+                        stage_name=stage.display_name,
+                        interviewers=[],
+                        format=JobVacancyService._BEHAVIOR_FORMAT_MAP.get(behavior, "Informativa"),
+                        duration=JobVacancyService._BEHAVIOR_DURATION_MAP.get(behavior, 30),
+                        scheduling_window="A definir",
+                    ))
+
+                if interview_stages:
+                    state.interview_stages = interview_stages
+                    logger.info(
+                        f"Populated {len(interview_stages)} default interview stages from company pipeline"
+                    )
+                    return state
+        except Exception as e:
+            logger.warning(f"Failed to load company pipeline for interview stages: {e}", exc_info=True)
+
+        try:
+            from app.models.recruitment_stages import DEFAULT_RECRUITMENT_STAGES
+
+            interview_stages = []
+            for stage_def in DEFAULT_RECRUITMENT_STAGES:
+                behavior = stage_def.get("action_behavior", "passive")
+                if behavior == "terminal":
+                    continue
+                if stage_def.get("is_final"):
+                    continue
+
+                interview_stages.append(InterviewStage(
+                    stage_name=stage_def["display_name"],
+                    interviewers=[],
+                    format=JobVacancyService._BEHAVIOR_FORMAT_MAP.get(behavior, "Informativa"),
+                    duration=JobVacancyService._BEHAVIOR_DURATION_MAP.get(behavior, 30),
+                    scheduling_window="A definir",
+                ))
+
+            if interview_stages:
+                state.interview_stages = interview_stages
+                logger.info("Populated interview stages from DEFAULT_RECRUITMENT_STAGES")
+        except Exception as e:
+            logger.warning(f"Failed to build default interview stages: {e}", exc_info=True)
+
+        return state
+
     @staticmethod
     async def finalize_job_vacancy(
         state: JobVacancyState,
@@ -419,7 +499,10 @@ class JobVacancyService:
         from datetime import datetime
 
         from app.models.job_vacancy import JobVacancy
-        
+
+        if not state.interview_stages:
+            state = await JobVacancyService._populate_default_interview_stages(state, company_id, db)
+
         # === PEOPLE INFERENCE ===
         # Infer manager email if name provided but email missing
         manager_email = await infer_manager_email_if_missing(
