@@ -46,9 +46,9 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
     position: c.current_title ?? "—",
     monthlySalary: c.current_salary ?? 0,
     location: locationStr,
-    workModel: (c.work_model_preference as "presencial" | "remoto" | "híbrido") ?? "" as "presencial" | "remoto" | "híbrido",
+    workModel: ((c.work_model_preference || "remoto") as "presencial" | "remoto" | "híbrido"),
     score: c.lia_score ?? 0,
-    contractType: (c.contract_type_preference as "CLT" | "PJ" | "Freelancer" | "") ?? "",
+    contractType: ((c.contract_type_preference || "CLT") as "CLT" | "PJ" | "Freelancer"),
     linkedin: c.linkedin_url ?? "",
   }
 }

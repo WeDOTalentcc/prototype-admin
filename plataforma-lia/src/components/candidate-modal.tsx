@@ -153,7 +153,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
       type: noteType
     }
 
-    onAddNote?.(candidate.id, newNote as any)
+    onAddNote?.(candidate.id as number, newNote as any)
     candidateData.notes.unshift(note)
     setNewNote("")
   }

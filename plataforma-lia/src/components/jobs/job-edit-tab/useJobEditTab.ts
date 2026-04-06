@@ -34,7 +34,7 @@ export function useJobEditTab({
     useCompanyPipeline()
 
   const { config: screeningConfig } = useScreeningConfig(
-    job?.backendId || job?.jobId || null
+    (job?.backendId || job?.jobId || null) as string | number | null
   )
 
   const [statusChangeConfirm, setStatusChangeConfirm] =
