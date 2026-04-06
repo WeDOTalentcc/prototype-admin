@@ -45,7 +45,6 @@ PENDING_MIGRATION = {
     "app/api/v1/alerts.py",
     "app/api/v1/applications.py",
     "app/api/v1/approvals.py",
-    "app/api/v1/ats.py",
     "app/api/v1/audit_logs.py",
     "app/api/v1/audit_timeline.py",
     "app/api/v1/auth.py",
