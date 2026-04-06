@@ -3,25 +3,18 @@ Admin Settings API endpoints for RBAC, notifications, and security.
 """
 import logging
 import uuid
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import desc, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.core.database import get_db
 from app.models.admin_settings import (
     AVAILABLE_PERMISSIONS,
-    DEFAULT_ROLES,
     NOTIFICATION_EVENT_TYPES,
-    AdminAuditLog,
-    AdminRole,
-    AdminUserRole,
-    NotificationPolicy,
     PermissionLevel,
-    SecuritySetting,
+)
+from app.domains.admin_settings.dependencies import get_admin_settings_repo
+from app.domains.admin_settings.repositories.admin_settings_repository import (
+    AdminSettingsRepository,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,21 +92,17 @@ class SecuritySettingUpdate(BaseModel):
 async def list_roles(
     company_id: str = Query(..., description="Company ID"),
     include_inactive: bool = Query(False, description="Include inactive roles"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """List all roles for a company."""
     try:
-        query = select(AdminRole).where(AdminRole.company_id == uuid.UUID(company_id))
-        if not include_inactive:
-            query = query.where(AdminRole.is_active)
-        query = query.order_by(AdminRole.is_system_role.desc(), AdminRole.name)
-        
-        result = await db.execute(query)
-        roles = result.scalars().all()
-        
+        roles = await repo.list_roles(
+            company_id=uuid.UUID(company_id),
+            include_inactive=include_inactive,
+        )
         return {
             "success": True,
-            "data": [role.to_dict() for role in roles]
+            "data": [role.to_dict() for role in roles],
         }
     except Exception as e:
         logger.error(f"Error listing roles: {e}")
@@ -124,24 +113,20 @@ async def list_roles(
 async def create_role(
     data: RoleCreate,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Create a new role."""
     try:
-        role = AdminRole(
+        role = await repo.create_role(
             company_id=uuid.UUID(company_id),
             name=data.name,
             description=data.description,
             permissions=data.permissions,
             is_system_role=False,
-            is_active=True
         )
-        db.add(role)
-        await db.flush()
-        
         return {
             "success": True,
-            "data": role.to_dict()
+            "data": role.to_dict(),
         }
     except Exception as e:
         logger.error(f"Error creating role: {e}")
@@ -153,34 +138,27 @@ async def update_role(
     role_id: str,
     data: RoleUpdate,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Update a role."""
     try:
-        result = await db.execute(
-            select(AdminRole).where(AdminRole.id == uuid.UUID(role_id))
-        )
-        role = result.scalar_one_or_none()
-        
+        role = await repo.get_role_by_id(uuid.UUID(role_id))
+
         verify_ownership(role, uuid.UUID(company_id), "Role")
-        
+
         if role.is_system_role and data.name is not None:
             raise HTTPException(status_code=400, detail="Cannot rename system roles")
-        
-        if data.name is not None:
-            role.name = data.name
-        if data.description is not None:
-            role.description = data.description
-        if data.permissions is not None:
-            role.permissions = data.permissions
-        if data.is_active is not None:
-            role.is_active = data.is_active
-        
-        role.updated_at = datetime.utcnow()
-        
+
+        role = await repo.update_role(
+            role=role,
+            name=data.name,
+            description=data.description,
+            permissions=data.permissions,
+            is_active=data.is_active,
+        )
         return {
             "success": True,
-            "data": role.to_dict()
+            "data": role.to_dict(),
         }
     except HTTPException:
         raise
@@ -193,26 +171,21 @@ async def update_role(
 async def delete_role(
     role_id: str,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Delete a role (soft delete by setting is_active=False)."""
     try:
-        result = await db.execute(
-            select(AdminRole).where(AdminRole.id == uuid.UUID(role_id))
-        )
-        role = result.scalar_one_or_none()
-        
+        role = await repo.get_role_by_id(uuid.UUID(role_id))
+
         verify_ownership(role, uuid.UUID(company_id), "Role")
-        
+
         if role.is_system_role:
             raise HTTPException(status_code=400, detail="Cannot delete system roles")
-        
-        role.is_active = False
-        role.updated_at = datetime.utcnow()
-        
+
+        await repo.soft_delete_role(role)
         return {
             "success": True,
-            "message": "Role deleted successfully"
+            "message": "Role deleted successfully",
         }
     except HTTPException:
         raise
@@ -224,41 +197,15 @@ async def delete_role(
 @router.post("/roles/initialize", response_model=None)
 async def initialize_default_roles(
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Initialize default roles for a company."""
     try:
-        company_uuid = uuid.UUID(company_id)
-        
-        existing = await db.execute(
-            select(AdminRole).where(
-                AdminRole.company_id == company_uuid,
-                AdminRole.is_system_role
-            )
-        )
-        existing_roles = existing.scalars().all()
-        existing_names = {r.name for r in existing_roles}
-        
-        created_roles = []
-        for role_data in DEFAULT_ROLES:
-            if role_data["name"] not in existing_names:
-                role = AdminRole(
-                    company_id=company_uuid,
-                    name=role_data["name"],
-                    description=role_data["description"],
-                    permissions=role_data["permissions"],
-                    is_system_role=True,
-                    is_active=True
-                )
-                db.add(role)
-                created_roles.append(role_data["name"])
-        
-        await db.flush()
-        
+        created_roles = await repo.initialize_default_roles(uuid.UUID(company_id))
         return {
             "success": True,
             "message": f"Initialized {len(created_roles)} default roles",
-            "created_roles": created_roles
+            "created_roles": created_roles,
         }
     except Exception as e:
         logger.error(f"Error initializing default roles: {e}")
@@ -269,23 +216,18 @@ async def initialize_default_roles(
 async def list_user_roles(
     company_id: str = Query(..., description="Company ID"),
     user_id: str | None = Query(None, description="Filter by user ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """List user role assignments."""
     try:
-        query = select(AdminUserRole).options(
-            selectinload(AdminUserRole.role)
-        ).where(AdminUserRole.company_id == uuid.UUID(company_id))
-        
-        if user_id:
-            query = query.where(AdminUserRole.user_id == uuid.UUID(user_id))
-        
-        result = await db.execute(query)
-        assignments = result.scalars().all()
-        
+        uid = uuid.UUID(user_id) if user_id else None
+        assignments = await repo.list_user_roles(
+            company_id=uuid.UUID(company_id),
+            user_id=uid,
+        )
         return {
             "success": True,
-            "data": [a.to_dict() for a in assignments]
+            "data": [a.to_dict() for a in assignments],
         }
     except Exception as e:
         logger.error(f"Error listing user roles: {e}")
@@ -296,45 +238,35 @@ async def list_user_roles(
 async def assign_role_to_user(
     data: UserRoleAssign,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Assign a role to a user."""
     try:
         company_uuid = uuid.UUID(company_id)
         user_uuid = uuid.UUID(data.user_id)
         role_uuid = uuid.UUID(data.role_id)
-        
-        role_result = await db.execute(
-            select(AdminRole).where(AdminRole.id == role_uuid)
-        )
-        role = role_result.scalar_one_or_none()
+
+        role = await repo.get_role_by_id(role_uuid)
         if not role:
             raise HTTPException(status_code=404, detail="Role not found")
-        
-        existing = await db.execute(
-            select(AdminUserRole).where(
-                AdminUserRole.user_id == user_uuid,
-                AdminUserRole.role_id == role_uuid,
-                AdminUserRole.company_id == company_uuid
-            )
-        )
-        if existing.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="User already has this role")
-        
-        assignment = AdminUserRole(
+
+        existing = await repo.get_user_role_assignment(
             user_id=user_uuid,
             role_id=role_uuid,
             company_id=company_uuid,
-            assigned_by=data.assigned_by
         )
-        db.add(assignment)
-        await db.flush()
-        
-        await db.refresh(assignment, ['role'])
-        
+        if existing:
+            raise HTTPException(status_code=400, detail="User already has this role")
+
+        assignment = await repo.assign_role(
+            user_id=user_uuid,
+            role_id=role_uuid,
+            company_id=company_uuid,
+            assigned_by=data.assigned_by,
+        )
         return {
             "success": True,
-            "data": assignment.to_dict()
+            "data": assignment.to_dict(),
         }
     except HTTPException:
         raise
@@ -347,22 +279,18 @@ async def assign_role_to_user(
 async def remove_role_assignment(
     assignment_id: str,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Remove a role assignment."""
     try:
-        result = await db.execute(
-            select(AdminUserRole).where(AdminUserRole.id == uuid.UUID(assignment_id))
-        )
-        assignment = result.scalar_one_or_none()
-        
+        assignment = await repo.get_user_role_by_id(uuid.UUID(assignment_id))
+
         verify_ownership(assignment, uuid.UUID(company_id), "Assignment")
-        
-        await db.delete(assignment)
-        
+
+        await repo.remove_role_assignment(assignment)
         return {
             "success": True,
-            "message": "Role assignment removed successfully"
+            "message": "Role assignment removed successfully",
         }
     except HTTPException:
         raise
@@ -375,26 +303,18 @@ async def remove_role_assignment(
 async def list_notification_policies(
     company_id: str = Query(..., description="Company ID"),
     event_type: str | None = Query(None, description="Filter by event type"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """List notification policies."""
     try:
-        query = select(NotificationPolicy).where(
-            NotificationPolicy.company_id == uuid.UUID(company_id)
+        policies = await repo.list_notification_policies(
+            company_id=uuid.UUID(company_id),
+            event_type=event_type,
         )
-        
-        if event_type:
-            query = query.where(NotificationPolicy.event_type == event_type)
-        
-        query = query.order_by(NotificationPolicy.event_type, NotificationPolicy.name)
-        
-        result = await db.execute(query)
-        policies = result.scalars().all()
-        
         return {
             "success": True,
             "data": [p.to_dict() for p in policies],
-            "event_types": NOTIFICATION_EVENT_TYPES
+            "event_types": NOTIFICATION_EVENT_TYPES,
         }
     except Exception as e:
         logger.error(f"Error listing notification policies: {e}")
@@ -405,11 +325,11 @@ async def list_notification_policies(
 async def create_notification_policy(
     data: NotificationPolicyCreate,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Create a notification policy."""
     try:
-        policy = NotificationPolicy(
+        policy = await repo.create_notification_policy(
             company_id=uuid.UUID(company_id),
             name=data.name,
             event_type=data.event_type,
@@ -418,14 +338,11 @@ async def create_notification_policy(
             recipients=data.recipients,
             subject_template=data.subject_template,
             body_template=data.body_template,
-            is_enabled=data.is_enabled
+            is_enabled=data.is_enabled,
         )
-        db.add(policy)
-        await db.flush()
-        
         return {
             "success": True,
-            "data": policy.to_dict()
+            "data": policy.to_dict(),
         }
     except Exception as e:
         logger.error(f"Error creating notification policy: {e}")
@@ -437,39 +354,28 @@ async def update_notification_policy(
     policy_id: str,
     data: NotificationPolicyUpdate,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Update a notification policy."""
     try:
-        result = await db.execute(
-            select(NotificationPolicy).where(NotificationPolicy.id == uuid.UUID(policy_id))
-        )
-        policy = result.scalar_one_or_none()
-        
+        policy = await repo.get_notification_policy_by_id(uuid.UUID(policy_id))
+
         verify_ownership(policy, uuid.UUID(company_id), "Policy")
-        
-        if data.name is not None:
-            policy.name = data.name
-        if data.event_type is not None:
-            policy.event_type = data.event_type
-        if data.channels is not None:
-            policy.channels = data.channels
-        if data.recipient_type is not None:
-            policy.recipient_type = data.recipient_type
-        if data.recipients is not None:
-            policy.recipients = data.recipients
-        if data.subject_template is not None:
-            policy.subject_template = data.subject_template
-        if data.body_template is not None:
-            policy.body_template = data.body_template
-        if data.is_enabled is not None:
-            policy.is_enabled = data.is_enabled
-        
-        policy.updated_at = datetime.utcnow()
-        
+
+        policy = await repo.update_notification_policy(
+            policy=policy,
+            name=data.name,
+            event_type=data.event_type,
+            channels=data.channels,
+            recipient_type=data.recipient_type,
+            recipients=data.recipients,
+            subject_template=data.subject_template,
+            body_template=data.body_template,
+            is_enabled=data.is_enabled,
+        )
         return {
             "success": True,
-            "data": policy.to_dict()
+            "data": policy.to_dict(),
         }
     except HTTPException:
         raise
@@ -482,22 +388,18 @@ async def update_notification_policy(
 async def delete_notification_policy(
     policy_id: str,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Delete a notification policy."""
     try:
-        result = await db.execute(
-            select(NotificationPolicy).where(NotificationPolicy.id == uuid.UUID(policy_id))
-        )
-        policy = result.scalar_one_or_none()
-        
+        policy = await repo.get_notification_policy_by_id(uuid.UUID(policy_id))
+
         verify_ownership(policy, uuid.UUID(company_id), "Policy")
-        
-        await db.delete(policy)
-        
+
+        await repo.delete_notification_policy(policy)
         return {
             "success": True,
-            "message": "Policy deleted successfully"
+            "message": "Policy deleted successfully",
         }
     except HTTPException:
         raise
@@ -509,25 +411,14 @@ async def delete_notification_policy(
 @router.get("/security", response_model=None)
 async def get_security_settings(
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Get security settings for a company."""
     try:
-        result = await db.execute(
-            select(SecuritySetting).where(
-                SecuritySetting.company_id == uuid.UUID(company_id)
-            )
-        )
-        settings = result.scalar_one_or_none()
-        
-        if not settings:
-            settings = SecuritySetting(company_id=uuid.UUID(company_id))
-            db.add(settings)
-            await db.flush()
-        
+        settings = await repo.get_or_create_security_settings(uuid.UUID(company_id))
         return {
             "success": True,
-            "data": settings.to_dict()
+            "data": settings.to_dict(),
         }
     except Exception as e:
         logger.error(f"Error getting security settings: {e}")
@@ -538,56 +429,31 @@ async def get_security_settings(
 async def update_security_settings(
     data: SecuritySettingUpdate,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Update security settings."""
     try:
-        result = await db.execute(
-            select(SecuritySetting).where(
-                SecuritySetting.company_id == uuid.UUID(company_id)
-            )
+        settings = await repo.get_or_create_security_settings(uuid.UUID(company_id))
+        settings = await repo.update_security_settings(
+            settings=settings,
+            require_2fa=data.require_2fa,
+            session_timeout_minutes=data.session_timeout_minutes,
+            max_login_attempts=data.max_login_attempts,
+            password_min_length=data.password_min_length,
+            password_require_uppercase=data.password_require_uppercase,
+            password_require_numbers=data.password_require_numbers,
+            password_require_special=data.password_require_special,
+            password_expiry_days=data.password_expiry_days,
+            ip_whitelist=data.ip_whitelist,
+            ip_blacklist=data.ip_blacklist,
+            audit_logging_enabled=data.audit_logging_enabled,
+            audit_retention_days=data.audit_retention_days,
+            data_export_allowed=data.data_export_allowed,
+            data_retention_days=data.data_retention_days,
         )
-        settings = result.scalar_one_or_none()
-        
-        if not settings:
-            settings = SecuritySetting(company_id=uuid.UUID(company_id))
-            db.add(settings)
-        
-        if data.require_2fa is not None:
-            settings.require_2fa = data.require_2fa
-        if data.session_timeout_minutes is not None:
-            settings.session_timeout_minutes = data.session_timeout_minutes
-        if data.max_login_attempts is not None:
-            settings.max_login_attempts = data.max_login_attempts
-        if data.password_min_length is not None:
-            settings.password_min_length = data.password_min_length
-        if data.password_require_uppercase is not None:
-            settings.password_require_uppercase = data.password_require_uppercase
-        if data.password_require_numbers is not None:
-            settings.password_require_numbers = data.password_require_numbers
-        if data.password_require_special is not None:
-            settings.password_require_special = data.password_require_special
-        if data.password_expiry_days is not None:
-            settings.password_expiry_days = data.password_expiry_days
-        if data.ip_whitelist is not None:
-            settings.ip_whitelist = data.ip_whitelist
-        if data.ip_blacklist is not None:
-            settings.ip_blacklist = data.ip_blacklist
-        if data.audit_logging_enabled is not None:
-            settings.audit_logging_enabled = data.audit_logging_enabled
-        if data.audit_retention_days is not None:
-            settings.audit_retention_days = data.audit_retention_days
-        if data.data_export_allowed is not None:
-            settings.data_export_allowed = data.data_export_allowed
-        if data.data_retention_days is not None:
-            settings.data_retention_days = data.data_retention_days
-        
-        settings.updated_at = datetime.utcnow()
-        await db.flush()
-        
         return {
             "success": True,
-            "data": settings.to_dict()
+            "data": settings.to_dict(),
         }
     except Exception as e:
         logger.error(f"Error updating security settings: {e}")
@@ -604,35 +470,26 @@ async def get_audit_logs(
     end_date: str | None = Query(None, description="End date (ISO format)"),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
     """Get audit logs with filtering and pagination."""
     try:
-        query = select(AdminAuditLog).where(
-            AdminAuditLog.company_id == uuid.UUID(company_id)
+        from datetime import datetime
+
+        uid = uuid.UUID(user_id) if user_id else None
+        sd = datetime.fromisoformat(start_date) if start_date else None
+        ed = datetime.fromisoformat(end_date) if end_date else None
+
+        logs, total = await repo.get_audit_logs(
+            company_id=uuid.UUID(company_id),
+            action=action,
+            resource_type=resource_type,
+            user_id=uid,
+            start_date=sd,
+            end_date=ed,
+            page=page,
+            page_size=page_size,
         )
-        
-        if action:
-            query = query.where(AdminAuditLog.action == action)
-        if resource_type:
-            query = query.where(AdminAuditLog.resource_type == resource_type)
-        if user_id:
-            query = query.where(AdminAuditLog.user_id == uuid.UUID(user_id))
-        if start_date:
-            query = query.where(AdminAuditLog.created_at >= datetime.fromisoformat(start_date))
-        if end_date:
-            query = query.where(AdminAuditLog.created_at <= datetime.fromisoformat(end_date))
-        
-        count_query = select(func.count()).select_from(query.subquery())
-        total_result = await db.execute(count_query)
-        total = total_result.scalar() or 0
-        
-        query = query.order_by(desc(AdminAuditLog.created_at))
-        query = query.offset((page - 1) * page_size).limit(page_size)
-        
-        result = await db.execute(query)
-        logs = result.scalars().all()
-        
         return {
             "success": True,
             "data": [log.to_dict() for log in logs],
@@ -640,8 +497,8 @@ async def get_audit_logs(
                 "page": page,
                 "page_size": page_size,
                 "total": total,
-                "total_pages": (total + page_size - 1) // page_size
-            }
+                "total_pages": (total + page_size - 1) // page_size,
+            },
         }
     except Exception as e:
         logger.error(f"Error getting audit logs: {e}")
@@ -655,8 +512,8 @@ async def get_permissions_matrix():
         "success": True,
         "data": {
             "permissions": AVAILABLE_PERMISSIONS,
-            "levels": [level.value for level in PermissionLevel]
-        }
+            "levels": [level.value for level in PermissionLevel],
+        },
     }
 
 
@@ -665,5 +522,5 @@ async def get_notification_event_types():
     """Get available notification event types."""
     return {
         "success": True,
-        "data": NOTIFICATION_EVENT_TYPES
+        "data": NOTIFICATION_EVENT_TYPES,
     }

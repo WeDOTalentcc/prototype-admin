@@ -6,18 +6,12 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, desc, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models.integration_hub import (
-    DEFAULT_INTEGRATION_PROVIDERS,
-    IntegrationCategory,
-    IntegrationConnection,
-    IntegrationProvider,
-    IntegrationStatus,
-    IntegrationSyncLog,
+from app.domains.integrations_hub.dependencies import get_integrations_hub_repo
+from app.domains.integrations_hub.repositories.integrations_hub_repository import (
+    IntegrationsHubRepository,
 )
+from app.models.integration_hub import IntegrationCategory
 
 logger = logging.getLogger(__name__)
 
@@ -124,51 +118,59 @@ class AIRecommendationResponse(BaseModel):
     tips: list[str]
 
 
+def _provider_to_response(p) -> ProviderResponse:
+    return ProviderResponse(
+        id=str(p.id),
+        name=p.name,
+        category=p.category,
+        slug=p.slug,
+        description=p.description,
+        logo_url=p.logo_url,
+        supports_oauth=p.supports_oauth,
+        supports_api_key=p.supports_api_key,
+        supports_webhook=p.supports_webhook,
+        features=p.features or [],
+        is_active=p.is_active,
+        is_premium=p.is_premium,
+    )
+
+
+def _connection_to_response(conn, provider) -> ConnectionResponse:
+    return ConnectionResponse(
+        id=str(conn.id),
+        company_id=str(conn.company_id),
+        provider_id=str(conn.provider_id),
+        provider_name=provider.name if provider else None,
+        provider_category=provider.category if provider else None,
+        status=conn.status,
+        auth_type=conn.auth_type,
+        sync_enabled=conn.sync_enabled,
+        sync_direction=conn.sync_direction,
+        sync_frequency=conn.sync_frequency,
+        last_sync_at=conn.last_sync_at,
+        last_sync_status=conn.last_sync_status,
+        health_score=conn.health_score,
+        error_count=conn.error_count,
+        created_at=conn.created_at,
+        updated_at=conn.updated_at,
+    )
+
+
 @router.get("/providers", response_model=list[ProviderResponse])
 async def list_providers(
     category: str | None = Query(None, description="Filter by category"),
     active_only: bool = Query(True),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """List all available integration providers."""
     try:
-        query = select(IntegrationProvider)
-        
-        filters = []
-        if active_only:
-            filters.append(IntegrationProvider.is_active)
-        if category:
-            filters.append(IntegrationProvider.category == category)
-        
-        if filters:
-            query = query.where(and_(*filters))
-        
-        query = query.order_by(IntegrationProvider.name)
-        
-        result = await db.execute(query)
-        providers = result.scalars().all()
-        
+        providers = await repo.list_providers(active_only=active_only, category=category)
+
         if not providers:
-            return await seed_default_providers(db)
-        
-        return [
-            ProviderResponse(
-                id=str(p.id),
-                name=p.name,
-                category=p.category,
-                slug=p.slug,
-                description=p.description,
-                logo_url=p.logo_url,
-                supports_oauth=p.supports_oauth,
-                supports_api_key=p.supports_api_key,
-                supports_webhook=p.supports_webhook,
-                features=p.features or [],
-                is_active=p.is_active,
-                is_premium=p.is_premium
-            )
-            for p in providers
-        ]
-        
+            providers = await repo.seed_default_providers()
+
+        return [_provider_to_response(p) for p in providers]
+
     except Exception as e:
         logger.error(f"Failed to list providers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -177,17 +179,17 @@ async def list_providers(
 @router.get("/providers/{category}", response_model=list[ProviderResponse])
 async def list_providers_by_category(
     category: str,
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """List providers filtered by category."""
     valid_categories = [c.value for c in IntegrationCategory]
     if category not in valid_categories:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid category. Must be one of: {valid_categories}"
+            detail=f"Invalid category. Must be one of: {valid_categories}",
         )
-    
-    return await list_providers(category=category, db=db)
+
+    return await list_providers(category=category, repo=repo)
 
 
 @router.get("/connections", response_model=list[ConnectionResponse])
@@ -195,50 +197,15 @@ async def list_connections(
     company_id: str = Query(..., description="Company ID"),
     status: str | None = Query(None),
     category: str | None = Query(None),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Get company's integration connections."""
     try:
-        query = select(IntegrationConnection, IntegrationProvider).join(
-            IntegrationProvider,
-            IntegrationConnection.provider_id == IntegrationProvider.id
+        rows = await repo.list_connections(
+            company_id=company_id, status=status, category=category
         )
-        
-        filters = [IntegrationConnection.company_id == company_id]
-        if status:
-            filters.append(IntegrationConnection.status == status)
-        if category:
-            filters.append(IntegrationProvider.category == category)
-        
-        query = query.where(and_(*filters))
-        
-        query = query.order_by(desc(IntegrationConnection.created_at))
-        
-        result = await db.execute(query)
-        rows = result.all()
-        
-        return [
-            ConnectionResponse(
-                id=str(conn.id),
-                company_id=str(conn.company_id),
-                provider_id=str(conn.provider_id),
-                provider_name=provider.name,
-                provider_category=provider.category,
-                status=conn.status,
-                auth_type=conn.auth_type,
-                sync_enabled=conn.sync_enabled,
-                sync_direction=conn.sync_direction,
-                sync_frequency=conn.sync_frequency,
-                last_sync_at=conn.last_sync_at,
-                last_sync_status=conn.last_sync_status,
-                health_score=conn.health_score,
-                error_count=conn.error_count,
-                created_at=conn.created_at,
-                updated_at=conn.updated_at
-            )
-            for conn, provider in rows
-        ]
-        
+        return [_connection_to_response(conn, provider) for conn, provider in rows]
+
     except Exception as e:
         logger.error(f"Failed to list connections: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -247,60 +214,33 @@ async def list_connections(
 @router.post("/connections", response_model=ConnectionResponse)
 async def create_connection(
     request: ConnectionCreate,
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Create a new integration connection."""
     try:
-        provider_result = await db.execute(
-            select(IntegrationProvider).where(IntegrationProvider.id == request.provider_id)
-        )
-        provider = provider_result.scalar_one_or_none()
-        
+        provider = await repo.get_provider_by_id(request.provider_id)
         if not provider:
             raise HTTPException(status_code=404, detail="Provider not found")
-        
-        connection = IntegrationConnection(
+
+        connection = await repo.create_connection(
             company_id=request.company_id,
             provider_id=request.provider_id,
-            status=IntegrationStatus.CONNECTING.value,
             auth_type=request.auth_type,
             credentials=request.credentials,
             sync_enabled=request.sync_enabled,
             sync_direction=request.sync_direction,
             sync_frequency=request.sync_frequency,
-            field_mappings=request.field_mappings
+            field_mappings=request.field_mappings,
         )
-        
-        db.add(connection)
-        await db.commit()
-        await db.refresh(connection)
-        
+
         logger.info(f"Created integration connection: {connection.id} for provider {provider.name}")
-        
-        return ConnectionResponse(
-            id=str(connection.id),
-            company_id=str(connection.company_id),
-            provider_id=str(connection.provider_id),
-            provider_name=provider.name,
-            provider_category=provider.category,
-            status=connection.status,
-            auth_type=connection.auth_type,
-            sync_enabled=connection.sync_enabled,
-            sync_direction=connection.sync_direction,
-            sync_frequency=connection.sync_frequency,
-            last_sync_at=connection.last_sync_at,
-            last_sync_status=connection.last_sync_status,
-            health_score=connection.health_score,
-            error_count=connection.error_count,
-            created_at=connection.created_at,
-            updated_at=connection.updated_at
-        )
-        
+        return _connection_to_response(connection, provider)
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to create connection: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -309,64 +249,34 @@ async def update_connection(
     connection_id: str,
     request: ConnectionUpdate,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Update an integration connection."""
     try:
-        result = await db.execute(
-            select(IntegrationConnection, IntegrationProvider).join(
-                IntegrationProvider,
-                IntegrationConnection.provider_id == IntegrationProvider.id
-            ).where(IntegrationConnection.id == connection_id)
-        )
-        row = result.first()
-        
+        row = await repo.get_connection_with_provider(connection_id)
+
         if not row:
             raise HTTPException(status_code=404, detail="Connection not found")
-        
+
         connection, provider = row
         verify_connection_ownership(connection, company_id)
-        
-        if request.sync_enabled is not None:
-            connection.sync_enabled = request.sync_enabled
-        if request.sync_direction is not None:
-            connection.sync_direction = request.sync_direction
-        if request.sync_frequency is not None:
-            connection.sync_frequency = request.sync_frequency
-        if request.field_mappings is not None:
-            connection.field_mappings = request.field_mappings
-        if request.credentials is not None:
-            connection.credentials = request.credentials
-        
-        connection.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(connection)
-        
-        return ConnectionResponse(
-            id=str(connection.id),
-            company_id=str(connection.company_id),
-            provider_id=str(connection.provider_id),
-            provider_name=provider.name,
-            provider_category=provider.category,
-            status=connection.status,
-            auth_type=connection.auth_type,
-            sync_enabled=connection.sync_enabled,
-            sync_direction=connection.sync_direction,
-            sync_frequency=connection.sync_frequency,
-            last_sync_at=connection.last_sync_at,
-            last_sync_status=connection.last_sync_status,
-            health_score=connection.health_score,
-            error_count=connection.error_count,
-            created_at=connection.created_at,
-            updated_at=connection.updated_at
+
+        connection = await repo.update_connection(
+            connection,
+            sync_enabled=request.sync_enabled,
+            sync_direction=request.sync_direction,
+            sync_frequency=request.sync_frequency,
+            field_mappings=request.field_mappings,
+            credentials=request.credentials,
         )
-        
+
+        return _connection_to_response(connection, provider)
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to update connection: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -374,29 +284,23 @@ async def update_connection(
 async def delete_connection(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Remove an integration connection."""
     try:
-        result = await db.execute(
-            select(IntegrationConnection).where(IntegrationConnection.id == connection_id)
-        )
-        connection = result.scalar_one_or_none()
-        
+        connection = await repo.get_connection_by_id(connection_id)
         verify_connection_ownership(connection, company_id)
-        
-        await db.delete(connection)
-        await db.commit()
-        
+
+        await repo.delete_connection(connection)
+
         logger.info(f"Deleted integration connection: {connection_id}")
-        
         return {"success": True, "message": "Connection deleted successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to delete connection: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -404,39 +308,28 @@ async def delete_connection(
 async def test_connection(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Test an integration connection."""
     try:
-        result = await db.execute(
-            select(IntegrationConnection, IntegrationProvider).join(
-                IntegrationProvider,
-                IntegrationConnection.provider_id == IntegrationProvider.id
-            ).where(IntegrationConnection.id == connection_id)
-        )
-        row = result.first()
-        
+        row = await repo.get_connection_with_provider(connection_id)
+
         if not row:
             raise HTTPException(status_code=404, detail="Connection not found")
-        
+
         connection, provider = row
         verify_connection_ownership(connection, company_id)
-        
-        connection.status = IntegrationStatus.CONNECTED.value
-        connection.health_score = 100.0
-        connection.error_count = 0
-        connection.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        
+
+        await repo.mark_connection_tested(connection)
+
         return {
             "success": True,
             "connection_id": connection_id,
             "provider": provider.name,
             "status": "connected",
-            "message": f"Successfully connected to {provider.name}"
+            "message": f"Successfully connected to {provider.name}",
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -449,48 +342,31 @@ async def trigger_sync(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
     sync_type: str = Query("full", description="full, incremental, or webhook"),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Trigger a sync operation for a connection."""
     try:
-        result = await db.execute(
-            select(IntegrationConnection).where(IntegrationConnection.id == connection_id)
-        )
-        connection = result.scalar_one_or_none()
-        
+        connection = await repo.get_connection_by_id(connection_id)
         verify_connection_ownership(connection, company_id)
-        
-        sync_log = IntegrationSyncLog(
-            connection_id=connection.id,
-            sync_type=sync_type,
-            direction="inbound",
-            status="pending"
-        )
-        
-        db.add(sync_log)
-        
-        connection.last_sync_at = datetime.utcnow()
-        connection.last_sync_status = "pending"
-        
-        await db.commit()
-        await db.refresh(sync_log)
-        
+
+        sync_log = await repo.start_sync(connection, sync_type=sync_type)
+
         logger.info(f"Triggered sync for connection {connection_id}: {sync_type}")
-        
+
         return {
             "success": True,
             "sync_log_id": str(sync_log.id),
             "connection_id": connection_id,
             "sync_type": sync_type,
             "status": "pending",
-            "message": "Sync operation started"
+            "message": "Sync operation started",
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to trigger sync: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -499,24 +375,15 @@ async def get_sync_logs(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
     limit: int = Query(20, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Get sync logs for a connection."""
     try:
-        conn_result = await db.execute(
-            select(IntegrationConnection).where(IntegrationConnection.id == connection_id)
-        )
-        connection = conn_result.scalar_one_or_none()
+        connection = await repo.get_connection_by_id(connection_id)
         verify_connection_ownership(connection, company_id)
-        
-        result = await db.execute(
-            select(IntegrationSyncLog)
-            .where(IntegrationSyncLog.connection_id == connection_id)
-            .order_by(desc(IntegrationSyncLog.started_at))
-            .limit(limit)
-        )
-        logs = result.scalars().all()
-        
+
+        logs = await repo.get_sync_logs(connection_id=connection_id, limit=limit)
+
         return [
             SyncLogResponse(
                 id=str(log.id),
@@ -531,11 +398,11 @@ async def get_sync_logs(
                 error_message=log.error_message,
                 started_at=log.started_at,
                 completed_at=log.completed_at,
-                duration_seconds=log.duration_seconds
+                duration_seconds=log.duration_seconds,
             )
             for log in logs
         ]
-        
+
     except Exception as e:
         logger.error(f"Failed to get sync logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -544,24 +411,20 @@ async def get_sync_logs(
 @router.get("/health", response_model=HealthResponse)
 async def get_integration_health(
     company_id: str = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Get overall integration health status."""
     try:
-        query = select(IntegrationConnection, IntegrationProvider).join(
-            IntegrationProvider,
-            IntegrationConnection.provider_id == IntegrationProvider.id
-        ).where(IntegrationConnection.company_id == company_id)
-        
-        result = await db.execute(query)
-        rows = result.all()
-        
+        from app.models.integration_hub import IntegrationStatus
+
+        rows = await repo.get_connections_with_providers_for_company(company_id)
+
         total = len(rows)
         connected = sum(1 for conn, _ in rows if conn.status == IntegrationStatus.CONNECTED.value)
         errors = sum(1 for conn, _ in rows if conn.status == IntegrationStatus.ERROR.value)
         needs_reauth = sum(1 for conn, _ in rows if conn.status == IntegrationStatus.NEEDS_REAUTH.value)
-        
-        connections_by_category = {}
+
+        connections_by_category: dict = {}
         for conn, provider in rows:
             cat = provider.category
             if cat not in connections_by_category:
@@ -569,18 +432,18 @@ async def get_integration_health(
             connections_by_category[cat]["total"] += 1
             if conn.status == IntegrationStatus.CONNECTED.value:
                 connections_by_category[cat]["connected"] += 1
-        
+
         overall_health = (connected / total * 100) if total > 0 else 100.0
-        
+
         return HealthResponse(
             total_connections=total,
             connected=connected,
             errors=errors,
             needs_reauth=needs_reauth,
             overall_health=overall_health,
-            connections_by_category=connections_by_category
+            connections_by_category=connections_by_category,
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to get integration health: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -589,47 +452,46 @@ async def get_integration_health(
 @router.post("/ai/recommend", response_model=AIRecommendationResponse)
 async def get_ai_recommendations(
     request: AIRecommendationRequest,
-    db: AsyncSession = Depends(get_db)
 ):
     """Get AI-powered recommendations for integration setup."""
     try:
         recommendations = []
         setup_order = []
         tips = []
-        
+
         if "ats" not in [t.lower() for t in request.current_tools]:
             recommendations.append({
                 "provider": "Gupy",
                 "category": "ats",
                 "priority": "high",
-                "reason": "Essential for managing candidates and job postings"
+                "reason": "Essential for managing candidates and job postings",
             })
             setup_order.append("gupy")
-        
+
         if "linkedin" not in [t.lower() for t in request.current_tools]:
             recommendations.append({
                 "provider": "LinkedIn Jobs",
                 "category": "job_board",
                 "priority": "high",
-                "reason": "Reach the largest professional network"
+                "reason": "Reach the largest professional network",
             })
             setup_order.append("linkedin_jobs")
-        
+
         if "slack" not in [t.lower() for t in request.current_tools] and "teams" not in [t.lower() for t in request.current_tools]:
             recommendations.append({
                 "provider": "Slack",
                 "category": "communication",
                 "priority": "medium",
-                "reason": "Real-time notifications and team collaboration"
+                "reason": "Real-time notifications and team collaboration",
             })
             setup_order.append("slack")
-        
+
         if "merge" not in [t.lower() for t in request.current_tools]:
             recommendations.append({
                 "provider": "Merge.dev",
                 "category": "ats",
                 "priority": "high",
-                "reason": "Universal ATS connector supporting 40+ HR systems via single API"
+                "reason": "Universal ATS connector supporting 40+ HR systems via single API",
             })
             setup_order.append("merge")
 
@@ -639,83 +501,48 @@ async def get_ai_recommendations(
                     "provider": "Workday",
                     "category": "hris",
                     "priority": "medium",
-                    "reason": "Enterprise HR management and org sync"
+                    "reason": "Enterprise HR management and org sync",
                 })
                 setup_order.append("workday")
-            
+
         tips = [
             "Start with your ATS integration to sync existing candidates",
             "Connect job boards to expand your talent reach",
             "Set up communication integrations for real-time updates",
-            "Enable webhooks for instant data synchronization"
+            "Enable webhooks for instant data synchronization",
         ]
-        
+
         if request.company_size == "enterprise":
             tips.append("Consider Merge.dev for unified API access across multiple systems")
-        
+
         time_per_integration = {"small": "15min", "medium": "30min", "large": "1hr", "enterprise": "2hr"}
         time_per_integration.get(request.company_size, "30min")
         estimated_time = f"{len(recommendations) * 30} minutes" if recommendations else "No setup needed"
-        
+
         return AIRecommendationResponse(
             recommended_integrations=recommendations,
             setup_order=setup_order,
             estimated_setup_time=estimated_time,
-            tips=tips
+            tips=tips,
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to get AI recommendations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/seed-providers", response_model=None)
-async def seed_providers(db: AsyncSession = Depends(get_db)):
+async def seed_providers(
+    repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
+):
     """Seed default integration providers."""
     try:
-        providers = await seed_default_providers(db)
+        providers = await repo.seed_default_providers()
         return {
             "success": True,
             "message": f"Seeded {len(providers)} providers",
-            "providers": [p.dict() for p in providers]
+            "providers": [_provider_to_response(p).dict() for p in providers],
         }
     except Exception as e:
         logger.error(f"Failed to seed providers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-async def seed_default_providers(db: AsyncSession) -> list[ProviderResponse]:
-    """Seed default providers if they don't exist."""
-    
-    for provider_data in DEFAULT_INTEGRATION_PROVIDERS:
-        existing = await db.execute(
-            select(IntegrationProvider).where(IntegrationProvider.slug == provider_data["slug"])
-        )
-        if existing.scalar_one_or_none():
-            continue
-        
-        provider = IntegrationProvider(**provider_data)
-        db.add(provider)
-    
-    await db.commit()
-    
-    result = await db.execute(select(IntegrationProvider).order_by(IntegrationProvider.name))
-    providers = result.scalars().all()
-    
-    return [
-        ProviderResponse(
-            id=str(p.id),
-            name=p.name,
-            category=p.category,
-            slug=p.slug,
-            description=p.description,
-            logo_url=p.logo_url,
-            supports_oauth=p.supports_oauth,
-            supports_api_key=p.supports_api_key,
-            supports_webhook=p.supports_webhook,
-            features=p.features or [],
-            is_active=p.is_active,
-            is_premium=p.is_premium
-        )
-        for p in providers
-    ]
