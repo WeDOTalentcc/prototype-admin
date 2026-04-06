@@ -26,17 +26,64 @@ async def _get_db() -> AsyncSession:
     return AsyncSessionLocal()
 
 
+async def _create_activity(
+    activity_type: str,
+    title: str,
+    description: str,
+    target_id: str,
+    target_type: str,
+    extra_data: dict,
+    category: str,
+    priority: str = "normal",
+) -> None:
+    try:
+        from app.services.activity_service import ActivityService
+
+        svc = ActivityService()
+        await svc.create_activity(
+            activity_type=activity_type,
+            title=title,
+            description=description,
+            actor_id="system",
+            actor_name="LIA Platform Events",
+            actor_type="system",
+            target_id=target_id,
+            target_type=target_type,
+            extra_data=extra_data,
+            category=category,
+            priority=priority,
+        )
+    except Exception as exc:
+        logger.warning("[EventHandler] Failed to create activity '%s': %s", activity_type, exc)
+
+
+async def _get_vacancy_candidate(
+    db: AsyncSession, candidate_id: str, vacancy_id: str
+):
+    from app.models.candidate import VacancyCandidate
+
+    result = await db.execute(
+        select(VacancyCandidate).where(
+            VacancyCandidate.candidate_id == candidate_id,
+            VacancyCandidate.vacancy_id == vacancy_id,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
 async def handle_job_published(event: PlatformEvent) -> None:
     """
-    Quando uma vaga é publicada (api-vagas), preparar estrutura de pipeline (api-funil).
+    Quando uma vaga é publicada (api-vagas), preparar estrutura de pipeline.
 
     Responsabilidades:
-    - Inicializar os estágios do pipeline para a nova vaga (via company stages)
+    - Garantir que a empresa tem os estágios do pipeline inicializados
+    - Notificar recrutadores responsáveis (atividade de alta prioridade)
     - Registrar atividade no log de auditoria
     """
     job_id = event.payload.get("job_id")
     company_id = event.company_id
     job_title = event.payload.get("title", "")
+    recruiter_ids = event.payload.get("recruiter_ids", [])
     logger.info(
         "[EventHandler] job.published job_id=%s company=%s",
         job_id,
@@ -57,28 +104,41 @@ async def handle_job_published(event: PlatformEvent) -> None:
             job_id,
         )
 
-        try:
-            from app.services.activity_service import ActivityService
+        await _create_activity(
+            activity_type="job_published",
+            title="Vaga Publicada",
+            description=f"Vaga '{job_title}' publicada e pipeline inicializado.",
+            target_id=job_id or "",
+            target_type="job",
+            extra_data={
+                "company_id": company_id,
+                "job_title": job_title,
+                "recruiter_ids": recruiter_ids,
+                "event_id": event.event_id,
+            },
+            category="automation",
+            priority="high",
+        )
 
-            activity_svc = ActivityService()
-            await activity_svc.create_activity(
-                activity_type="job_published",
-                title="Vaga Publicada",
-                description=f"Vaga '{job_title}' publicada e pipeline inicializado.",
-                actor_id="system",
-                actor_name="LIA Platform Events",
-                actor_type="system",
-                target_id=job_id or "",
-                target_type="job",
-                extra_data={
-                    "company_id": company_id,
-                    "job_title": job_title,
-                    "event_id": event.event_id,
-                },
-                category="automation",
-            )
-        except Exception as exc:
-            logger.warning("[EventHandler] Failed to create activity for job_published: %s", exc)
+        if recruiter_ids:
+            for recruiter_id in recruiter_ids:
+                await _create_activity(
+                    activity_type="recruiter_notification",
+                    title="Nova Vaga Atribuída",
+                    description=(
+                        f"Você foi designado como recrutador para a vaga '{job_title}'. "
+                        f"O pipeline está pronto para receber candidatos."
+                    ),
+                    target_id=job_id or "",
+                    target_type="job",
+                    extra_data={
+                        "company_id": company_id,
+                        "job_title": job_title,
+                        "recruiter_id": recruiter_id,
+                    },
+                    category="notification",
+                    priority="high",
+                )
     except Exception as exc:
         logger.error("[EventHandler] handle_job_published error: %s", exc)
     finally:
@@ -91,6 +151,7 @@ async def handle_job_closed(event: PlatformEvent) -> None:
 
     Responsabilidades:
     - Marcar candidatos pendentes como 'withdrawn' (vaga encerrada)
+    - Persistir DB state ANTES de enviar comunicações externas
     - Enviar feedback humanizado aos candidatos afetados
     - Registrar atividade
     """
@@ -119,17 +180,16 @@ async def handle_job_closed(event: PlatformEvent) -> None:
             logger.warning("[EventHandler] Vacancy %s not found for company %s", job_id, company_id)
             return
 
-        active_statuses = ("rejected", "hired", "withdrawn")
+        terminal_statuses = ("rejected", "hired", "withdrawn")
         open_candidates_result = await db.execute(
             select(VacancyCandidate).where(
                 VacancyCandidate.vacancy_id == vacancy.id,
-                VacancyCandidate.status.notin_(active_statuses),
+                VacancyCandidate.status.notin_(terminal_statuses),
             )
         )
         open_candidates = open_candidates_result.scalars().all()
 
         archived_count = 0
-        feedback_sent = 0
         candidates_to_notify: list[tuple[str, str, str | None]] = []
 
         for vc in open_candidates:
@@ -154,7 +214,13 @@ async def handle_job_closed(event: PlatformEvent) -> None:
                 )
 
         await db.commit()
+        logger.info(
+            "[EventHandler] job.closed committed %d candidates as withdrawn for job_id=%s",
+            archived_count,
+            job_id,
+        )
 
+        feedback_sent = 0
         for cand_name, cand_email, cand_phone in candidates_to_notify:
             try:
                 from app.domains.communication.services.communication_dispatcher import (
@@ -182,41 +248,25 @@ async def handle_job_closed(event: PlatformEvent) -> None:
                     exc,
                 )
 
-        logger.info(
-            "[EventHandler] job.closed archived=%d feedback_sent=%d job_id=%s",
-            archived_count,
-            feedback_sent,
-            job_id,
+        await _create_activity(
+            activity_type="job_closed",
+            title="Vaga Encerrada",
+            description=(
+                f"Vaga '{vacancy.title}' encerrada. "
+                f"{archived_count} candidatos arquivados, "
+                f"{feedback_sent} notificados."
+            ),
+            target_id=job_id or "",
+            target_type="job",
+            extra_data={
+                "company_id": company_id,
+                "archived_count": archived_count,
+                "feedback_sent": feedback_sent,
+                "reason": reason,
+                "event_id": event.event_id,
+            },
+            category="automation",
         )
-
-        try:
-            from app.services.activity_service import ActivityService
-
-            activity_svc = ActivityService()
-            await activity_svc.create_activity(
-                activity_type="job_closed",
-                title="Vaga Encerrada",
-                description=(
-                    f"Vaga '{vacancy.title}' encerrada. "
-                    f"{archived_count} candidatos arquivados, "
-                    f"{feedback_sent} notificados."
-                ),
-                actor_id="system",
-                actor_name="LIA Platform Events",
-                actor_type="system",
-                target_id=job_id or "",
-                target_type="job",
-                extra_data={
-                    "company_id": company_id,
-                    "archived_count": archived_count,
-                    "feedback_sent": feedback_sent,
-                    "reason": reason,
-                    "event_id": event.event_id,
-                },
-                category="automation",
-            )
-        except Exception as exc:
-            logger.warning("[EventHandler] Failed to create activity for job_closed: %s", exc)
     except Exception as exc:
         logger.error("[EventHandler] handle_job_closed error: %s", exc)
         try:
@@ -229,14 +279,17 @@ async def handle_job_closed(event: PlatformEvent) -> None:
 
 async def handle_candidate_moved(event: PlatformEvent) -> None:
     """
-    Quando um candidato muda de estágio (api-funil), atualizar analytics e disparar automações.
+    Quando um candidato muda de estágio (api-funil), disparar automações e
+    registrar métricas de velocidade.
 
     Responsabilidades:
+    - Atualizar stage_entered_at via velocity tracking
     - Disparar automações configuradas para o estágio destino
     - Registrar atividade de transição
     """
     candidate_id = event.payload.get("candidate_id")
     vacancy_id = event.payload.get("vacancy_id")
+    vacancy_candidate_id = event.payload.get("vacancy_candidate_id")
     from_stage = event.payload.get("from_stage")
     to_stage = event.payload.get("to_stage")
     company_id = event.company_id
@@ -254,26 +307,42 @@ async def handle_candidate_moved(event: PlatformEvent) -> None:
 
     db = await _get_db()
     try:
-        from app.domains.automation.services.stage_automation_engine import (
-            AutomationEvent,
-            TriggerType,
-        )
+        if from_stage and from_stage != to_stage and vacancy_candidate_id:
+            try:
+                from app.models.candidate import VacancyCandidate
 
-        automation_event = AutomationEvent(
-            trigger_type=TriggerType.STAGE_CHANGED,
-            candidate_id=candidate_id,
-            vacancy_id=vacancy_id or "",
-            company_id=company_id,
-            payload={
-                "from_stage": from_stage,
-                "to_stage": to_stage,
-                "event_id": event.event_id,
-            },
-        )
+                vc = await db.get(VacancyCandidate, vacancy_candidate_id)
+                if vc and vc.company_id == company_id:
+                    if vc.stage_entered_at:
+                        time_in_stage_hours = (
+                            datetime.now(UTC) - vc.stage_entered_at.replace(tzinfo=UTC)
+                        ).total_seconds() / 3600
+                        logger.info(
+                            "[EventHandler] Velocity: candidate %s spent %.1fh in stage '%s'",
+                            candidate_id,
+                            time_in_stage_hours,
+                            from_stage,
+                        )
+            except Exception as exc:
+                logger.warning("[EventHandler] Velocity tracking error: %s", exc)
 
         try:
             from app.domains.automation.services.stage_automation_engine import (
+                AutomationEvent,
+                TriggerType,
                 stage_automation_engine,
+            )
+
+            automation_event = AutomationEvent(
+                trigger_type=TriggerType.STAGE_CHANGED,
+                candidate_id=candidate_id,
+                vacancy_id=vacancy_id or "",
+                company_id=company_id,
+                payload={
+                    "from_stage": from_stage,
+                    "to_stage": to_stage,
+                    "event_id": event.event_id,
+                },
             )
 
             await stage_automation_engine.process_event(automation_event, db=db)
@@ -283,34 +352,25 @@ async def handle_candidate_moved(event: PlatformEvent) -> None:
                 to_stage,
             )
         except ImportError:
-            logger.debug("[EventHandler] stage_automation_engine singleton not available")
+            logger.debug("[EventHandler] stage_automation_engine not available")
         except Exception as exc:
             logger.warning("[EventHandler] Stage automation error: %s", exc)
 
-        try:
-            from app.services.activity_service import ActivityService
-
-            activity_svc = ActivityService()
-            await activity_svc.create_activity(
-                activity_type="candidate_moved",
-                title="Candidato Movido no Pipeline",
-                description=f"Candidato movido de '{from_stage}' para '{to_stage}'.",
-                actor_id="system",
-                actor_name="LIA Platform Events",
-                actor_type="system",
-                target_id=candidate_id,
-                target_type="candidate",
-                extra_data={
-                    "company_id": company_id,
-                    "vacancy_id": vacancy_id,
-                    "from_stage": from_stage,
-                    "to_stage": to_stage,
-                    "event_id": event.event_id,
-                },
-                category="pipeline",
-            )
-        except Exception as exc:
-            logger.warning("[EventHandler] Failed to create activity for candidate_moved: %s", exc)
+        await _create_activity(
+            activity_type="candidate_moved",
+            title="Candidato Movido no Pipeline",
+            description=f"Candidato movido de '{from_stage}' para '{to_stage}'.",
+            target_id=candidate_id,
+            target_type="candidate",
+            extra_data={
+                "company_id": company_id,
+                "vacancy_id": vacancy_id,
+                "from_stage": from_stage,
+                "to_stage": to_stage,
+                "event_id": event.event_id,
+            },
+            category="pipeline",
+        )
     except Exception as exc:
         logger.error("[EventHandler] handle_candidate_moved error: %s", exc)
     finally:
@@ -319,11 +379,12 @@ async def handle_candidate_moved(event: PlatformEvent) -> None:
 
 async def handle_company_configured(event: PlatformEvent) -> None:
     """
-    Quando empresa completa onboarding (api-onboarding), inicializar pipeline padrão.
+    Quando empresa completa onboarding (api-onboarding), inicializar tudo.
 
     Responsabilidades:
     - Criar pipeline padrão com estágios pré-configurados
     - Criar policy de hiring padrão
+    - Semear templates de comunicação padrão (email/whatsapp)
     - Registrar atividade
     """
     company_id = event.company_id
@@ -367,32 +428,43 @@ async def handle_company_configured(event: PlatformEvent) -> None:
             except Exception:
                 pass
 
+        templates_seeded = 0
         try:
-            from app.services.activity_service import ActivityService
-
-            activity_svc = ActivityService()
-            await activity_svc.create_activity(
-                activity_type="company_configured",
-                title="Empresa Configurada",
-                description=(
-                    f"Empresa '{company_name}' configurada com sucesso. "
-                    f"{stages_count} estágios de pipeline criados."
-                ),
-                actor_id="system",
-                actor_name="LIA Platform Events",
-                actor_type="system",
-                target_id=company_id,
-                target_type="company",
-                extra_data={
-                    "company_id": company_id,
-                    "company_name": company_name,
-                    "stages_created": stages_count,
-                    "event_id": event.event_id,
-                },
-                category="onboarding",
+            from app.domains.job_management.services.template_seeder import (
+                seed_default_templates,
             )
+
+            seed_result = await seed_default_templates(db)
+            templates_seeded = seed_result.get("created_count", 0)
+            logger.info(
+                "[EventHandler] Seeded %d default communication templates for company %s",
+                templates_seeded,
+                company_id,
+            )
+        except ImportError:
+            logger.debug("[EventHandler] template_seeder not available")
         except Exception as exc:
-            logger.warning("[EventHandler] Failed to create activity for company_configured: %s", exc)
+            logger.warning("[EventHandler] Failed to seed default templates: %s", exc)
+
+        await _create_activity(
+            activity_type="company_configured",
+            title="Empresa Configurada",
+            description=(
+                f"Empresa '{company_name}' configurada com sucesso. "
+                f"{stages_count} estágios de pipeline criados, "
+                f"{templates_seeded} templates de comunicação semeados."
+            ),
+            target_id=company_id,
+            target_type="company",
+            extra_data={
+                "company_id": company_id,
+                "company_name": company_name,
+                "stages_created": stages_count,
+                "templates_seeded": templates_seeded,
+                "event_id": event.event_id,
+            },
+            category="onboarding",
+        )
     except Exception as exc:
         logger.error("[EventHandler] handle_company_configured error: %s", exc)
     finally:
@@ -404,15 +476,22 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
     Quando triagem WSI é concluída, avaliar resultado e decidir próximo passo.
 
     Usa WSI_CUTOFFS para decisão automática:
-      - wsi_final >= 3.75 → auto-advance (se auto_stage_advance habilitado)
-      - 3.00 <= wsi_final < 3.75 → review (mantém para revisão humana)
-      - wsi_final < 3.00 → auto-reject (se auto_screening habilitado)
+      - wsi_final >= 3.75 → auto-advance to interview_hr (se auto_stage_advance)
+      - 3.00 <= wsi_final < 3.75 → review (mantém + notifica recrutador)
+      - wsi_final < 3.00 → auto-reject (se auto_screening) com feedback humanizado
 
-    Sempre gera feedback humanizado via WSIFeedbackGenerator.
+    Sempre:
+      - Valida tenant ownership antes de qualquer side-effect
+      - Gera feedback via WSIFeedbackGenerator
+      - Notifica recrutador responsável
     """
     candidate_id = event.payload.get("candidate_id")
     vacancy_id = event.payload.get("vacancy_id")
     wsi_scores = event.payload.get("wsi_scores", {})
+    response_scores = event.payload.get("response_scores", [])
+    job_title = event.payload.get("job_title", "")
+    seniority_level = event.payload.get("seniority_level", "pleno")
+    candidate_name = event.payload.get("candidate_name", "")
     company_id = event.company_id
 
     try:
@@ -488,6 +567,30 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
             handle_screening_completed,
         )
 
+        feedback_text = ""
+        try:
+            from app.domains.cv_screening.services.wsi_feedback_generator import (
+                WSIFeedbackGenerator,
+            )
+
+            generator = WSIFeedbackGenerator()
+            feedback_result = generator.generate(
+                response_scores=response_scores,
+                job_title=job_title,
+                seniority_level=seniority_level,
+                candidate_name=candidate_name,
+            )
+            feedback_text = feedback_result.get("plain_text", "")
+            logger.info(
+                "[EventHandler] Generated WSI feedback for candidate %s (%d chars)",
+                candidate_id,
+                len(feedback_text),
+            )
+        except Exception as exc:
+            logger.warning("[EventHandler] WSIFeedbackGenerator error: %s", exc)
+
+        vc = await _get_vacancy_candidate(db, candidate_id, vacancy_id)
+
         if decision == "approved" and auto_advance:
             await handle_screening_completed(
                 candidate_id=candidate_id,
@@ -498,21 +601,12 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 passed=True,
             )
 
-            try:
-                from app.domains.recruiter_assistant.services.pipeline_stage_service import (
-                    PipelineStageService,
-                )
-                from app.models.candidate import VacancyCandidate
-
-                vc_result = await db.execute(
-                    select(VacancyCandidate).where(
-                        VacancyCandidate.candidate_id == candidate_id,
-                        VacancyCandidate.vacancy_id == vacancy_id,
+            if vc:
+                try:
+                    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+                        PipelineStageService,
                     )
-                )
-                vc = vc_result.scalar_one_or_none()
 
-                if vc:
                     svc = PipelineStageService()
                     await svc.transition_candidate(
                         vacancy_candidate_id=str(vc.id),
@@ -527,8 +621,8 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                         candidate_id,
                         wsi_final,
                     )
-            except Exception as exc:
-                logger.warning("[EventHandler] Auto-advance failed: %s", exc)
+                except Exception as exc:
+                    logger.warning("[EventHandler] Auto-advance failed: %s", exc)
 
         elif decision == "rejected" and auto_reject:
             await handle_screening_completed(
@@ -539,12 +633,61 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 wsi_scores=wsi_scores,
                 passed=False,
             )
-            logger.info(
-                "[EventHandler] Auto-rejected candidate %s (WSI=%.2f < %.2f)",
-                candidate_id,
-                wsi_final,
-                review_threshold,
-            )
+
+            if vc:
+                try:
+                    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+                        PipelineStageService,
+                    )
+
+                    svc = PipelineStageService()
+                    await svc.transition_candidate(
+                        vacancy_candidate_id=str(vc.id),
+                        to_stage="rejected",
+                        triggered_by="automation",
+                        reason=f"WSI auto-reject: score {wsi_final:.2f} < {review_threshold}",
+                        context={"company_id": company_id},
+                        force=True,
+                        db=db,
+                    )
+                    logger.info(
+                        "[EventHandler] Auto-rejected candidate %s (WSI=%.2f < %.2f)",
+                        candidate_id,
+                        wsi_final,
+                        review_threshold,
+                    )
+                except Exception as exc:
+                    logger.warning("[EventHandler] Auto-reject transition failed: %s", exc)
+
+            if feedback_text:
+                try:
+                    from app.models.candidate import Candidate
+
+                    cand_result = await db.execute(
+                        select(Candidate).where(Candidate.id == candidate_id)
+                    )
+                    candidate = cand_result.scalar_one_or_none()
+
+                    if candidate and candidate.email:
+                        from app.domains.communication.services.communication_dispatcher import (
+                            CommunicationDispatcher,
+                        )
+
+                        dispatcher = CommunicationDispatcher()
+                        await dispatcher.dispatch_message(
+                            company_id=company_id,
+                            recipient_email=candidate.email,
+                            recipient_phone=getattr(candidate, "phone", None),
+                            subject=f"Feedback sobre sua candidatura - {job_title}",
+                            message=feedback_text,
+                            candidate_name=candidate_name or candidate.name,
+                        )
+                        logger.info(
+                            "[EventHandler] Sent rejection feedback to candidate %s",
+                            candidate_id,
+                        )
+                except Exception as exc:
+                    logger.warning("[EventHandler] Failed to send rejection feedback: %s", exc)
 
         else:
             await handle_screening_completed(
@@ -563,35 +706,59 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 auto_advance,
             )
 
-        try:
-            from app.services.activity_service import ActivityService
+        decision_labels = {
+            "approved": "Aprovado na Triagem WSI",
+            "review": "Triagem WSI - Revisão Necessária",
+            "rejected": "Reprovado na Triagem WSI",
+        }
+        await _create_activity(
+            activity_type="screening_completed",
+            title=decision_labels.get(decision, "Triagem WSI Concluída"),
+            description=(
+                f"Triagem concluída com decisão '{decision}'. "
+                f"WSI Score: {wsi_final:.2f}."
+            ),
+            target_id=candidate_id,
+            target_type="candidate",
+            extra_data={
+                "company_id": company_id,
+                "vacancy_id": vacancy_id,
+                "wsi_final_score": wsi_final,
+                "decision": decision,
+                "auto_advance": auto_advance,
+                "auto_reject": auto_reject,
+                "event_id": event.event_id,
+            },
+            category="screening",
+            priority="high" if decision in ("approved", "rejected") else "normal",
+        )
 
-            activity_svc = ActivityService()
-            await activity_svc.create_activity(
-                activity_type="screening_completed",
-                title="Triagem WSI Concluída",
-                description=(
-                    f"Triagem concluída com decisão '{decision}'. "
-                    f"WSI Score: {wsi_final:.2f}."
-                ),
-                actor_id="system",
-                actor_name="LIA Platform Events",
-                actor_type="system",
-                target_id=candidate_id,
-                target_type="candidate",
-                extra_data={
-                    "company_id": company_id,
-                    "vacancy_id": vacancy_id,
-                    "wsi_final_score": wsi_final,
-                    "decision": decision,
-                    "auto_advance": auto_advance,
-                    "auto_reject": auto_reject,
-                    "event_id": event.event_id,
-                },
-                category="screening",
-            )
-        except Exception as exc:
-            logger.warning("[EventHandler] Failed to create activity for screening: %s", exc)
+        await _create_activity(
+            activity_type="recruiter_screening_notification",
+            title=f"Resultado de Triagem: {decision.upper()}",
+            description=(
+                f"Candidato '{candidate_name}' recebeu decisão '{decision}' "
+                f"na triagem WSI (score: {wsi_final:.2f}). "
+                + (
+                    "Ação automática executada."
+                    if (decision == "approved" and auto_advance)
+                    or (decision == "rejected" and auto_reject)
+                    else "Requer revisão manual do recrutador."
+                )
+            ),
+            target_id=vacancy_id,
+            target_type="job",
+            extra_data={
+                "company_id": company_id,
+                "candidate_id": candidate_id,
+                "candidate_name": candidate_name,
+                "wsi_final_score": wsi_final,
+                "decision": decision,
+                "requires_action": decision == "review" or not (auto_advance or auto_reject),
+            },
+            category="notification",
+            priority="high",
+        )
     except Exception as exc:
         logger.error("[EventHandler] handle_screening_completed_event error: %s", exc)
     finally:
