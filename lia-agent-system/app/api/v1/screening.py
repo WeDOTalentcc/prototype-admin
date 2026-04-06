@@ -4,12 +4,11 @@ import uuid as uuid_mod
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db
+from app.domains.cv_screening.dependencies import get_screening_repo
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.models.screening import ScreeningTask
 from app.schemas.screening import (
     RegenerateQuestionsRequest,
@@ -201,11 +200,11 @@ async def get_screening_frameworks(
             for k in DREYFUS_STAGE_LABELS
         },
         "big_five_traits": {
-            "openness": {"label": "Abertura", "description": "Criatividade, curiosidade, inovação"},
-            "conscientiousness": {"label": "Conscienciosidade", "description": "Organização, responsabilidade, disciplina"},
-            "extraversion": {"label": "Extroversão", "description": "Sociabilidade, energia, assertividade"},
-            "agreeableness": {"label": "Amabilidade", "description": "Cooperação, empatia, harmonia"},
-            "stability": {"label": "Estabilidade", "description": "Calma, resiliência, equilíbrio emocional"}
+            "openness": {"label": "Abertura", "description": "Criatividade, curiosidade, inovacao"},
+            "conscientiousness": {"label": "Conscienciosidade", "description": "Organizacao, responsabilidade, disciplina"},
+            "extraversion": {"label": "Extraversao", "description": "Sociabilidade, energia, assertividade"},
+            "agreeableness": {"label": "Amabilidade", "description": "Cooperacao, empatia, harmonia"},
+            "stability": {"label": "Estabilidade", "description": "Calma, resiliencia, equilibrio emocional"}
         },
         "seniority_mapping": {
             k: {"dreyfus": SENIORITY_TO_DREYFUS[k], "bloom_range": SENIORITY_TO_BLOOM[k]}
@@ -217,7 +216,7 @@ async def get_screening_frameworks(
 @router.post("/auto-trigger", status_code=202, response_model=None)
 async def auto_trigger_screening(
     request: AutoScreeningRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     if request.source != "website":
         raise HTTPException(
@@ -235,9 +234,7 @@ async def auto_trigger_screening(
             resume_text=request.resume_text,
             resume_url=request.resume_url,
         )
-        db.add(task)
-        await db.flush()
-        await db.refresh(task)
+        task = await repo.create_task(task)
 
         logger.info(
             f"Auto-screening task created: {task.id} for candidate={request.candidate_id} "
@@ -250,23 +247,17 @@ async def auto_trigger_screening(
         )
     except Exception as e:
         logger.error(f"Failed to create auto-screening task: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail="Failed to create screening task")
 
 
 @router.get("/tasks/{job_id}", response_model=None)
 async def list_screening_tasks(
     job_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     try:
-        result = await db.execute(
-            select(ScreeningTask)
-            .where(ScreeningTask.job_id == job_id)
-            .order_by(ScreeningTask.created_at.desc())
-        )
-        tasks = result.scalars().all()
-
+        tasks = await repo.list_tasks_by_job(job_id)
         return {"job_id": job_id, "tasks": [t.to_dict() for t in tasks], "total": len(tasks)}
     except Exception as e:
         logger.error(f"Failed to list screening tasks for job {job_id}: {e}")
@@ -276,7 +267,7 @@ async def list_screening_tasks(
 @router.post("/tasks/{task_id}/execute", response_model=None)
 async def execute_screening_task(
     task_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     try:
         task_uuid = uuid_mod.UUID(task_id)
@@ -284,10 +275,7 @@ async def execute_screening_task(
         raise HTTPException(status_code=400, detail="Invalid task_id format")
 
     try:
-        result = await db.execute(
-            select(ScreeningTask).where(ScreeningTask.id == task_uuid)
-        )
-        task = result.scalar_one_or_none()
+        task = await repo.get_task_by_id(task_uuid)
 
         if not task:
             raise HTTPException(status_code=404, detail="Screening task not found")
@@ -298,9 +286,7 @@ async def execute_screening_task(
                 detail=f"Task cannot be executed in current status: {task.status}"
             )
 
-        task.status = "processing"
-        await db.flush()
-        await db.refresh(task)
+        task = await repo.update_task_status(task, "processing")
 
         logger.info(f"Screening task {task_id} status updated to processing")
 
@@ -309,5 +295,5 @@ async def execute_screening_task(
         raise
     except Exception as e:
         logger.error(f"Failed to execute screening task {task_id}: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail="Failed to execute screening task")
