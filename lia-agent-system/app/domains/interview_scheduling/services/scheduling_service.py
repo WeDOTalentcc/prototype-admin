@@ -464,7 +464,7 @@ class SchedulingService:
                     job_vacancy_id=job_vacancy_id
                 )
                 if confirmation_result.get("success"):
-                    logger.info(f"📧 Interview confirmation email sent to {candidate_email}")
+                    logger.info(f"📧 Interview confirmation email sent")
                 else:
                     logger.warning(f"⚠️ Failed to send confirmation email: {confirmation_result.get('message')}")
             except Exception as email_error:
@@ -907,7 +907,7 @@ class SchedulingService:
             )
             
             if send_result.get("success"):
-                logger.info(f"📧 Interview invite sent to {candidate_email} for {job_title}")
+                logger.info(f"📧 Interview invite sent for {job_title}")
                 logger.info(f"   Bookings Link: {bookings_link}")
                 
                 return {
@@ -928,7 +928,7 @@ class SchedulingService:
                 }
             
         except Exception as e:
-            logger.error(f"❌ Failed to send interview invite to {candidate_email}: {e}")
+            logger.error(f"❌ Failed to send interview invite: {e}")
             return {
                 "success": False,
                 "error": "send_failed",
@@ -1024,7 +1024,7 @@ class SchedulingService:
             )
             
             if send_result.get("success"):
-                logger.info(f"📧 Interview confirmation sent to {candidate_email}")
+                logger.info(f"📧 Interview confirmation sent")
                 logger.info(f"   Date: {data_entrevista} at {horario_entrevista}")
                 logger.info(f"   Meeting Link: {interview_link}")
 
@@ -1058,7 +1058,7 @@ class SchedulingService:
                 }
             
         except Exception as e:
-            logger.error(f"❌ Failed to send interview confirmation to {candidate_email}: {e}")
+            logger.error(f"❌ Failed to send interview confirmation: {e}")
             return {
                 "success": False,
                 "error": "send_failed",

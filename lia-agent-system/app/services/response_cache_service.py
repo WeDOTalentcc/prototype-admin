@@ -135,7 +135,7 @@ class InMemoryCache:
             import re
             regex = re.compile(pattern.replace("*", ".*"))
             return [k for k in self._cache.keys() if regex.match(k)]
-        except:
+        except Exception:
             return [k for k in self._cache.keys() if fnmatch.fnmatch(k, pattern)]
     
     def _evict_oldest(self):

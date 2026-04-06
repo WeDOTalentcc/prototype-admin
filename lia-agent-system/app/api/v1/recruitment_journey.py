@@ -137,6 +137,8 @@ async def list_templates(
     company_id: str = Query(..., description="Company ID"),
     template_type: Optional[str] = None,
     is_active: bool = True,
+    skip: int = Query(0, ge=0, description="Offset for pagination"),
+    limit: int = Query(200, ge=1, le=500, description="Max templates to return"),
     db: AsyncSession = Depends(get_db)
 ):
     """List recruitment templates for a company."""
@@ -145,14 +147,14 @@ async def list_templates(
             RecruitmentTemplate.company_id == uuid.UUID(company_id),
             RecruitmentTemplate.is_active == is_active,
         ]
-        
+
         if template_type:
             conditions.append(RecruitmentTemplate.template_type == template_type)
-        
-        query = select(RecruitmentTemplate).where(and_(*conditions))
+
+        query = select(RecruitmentTemplate).where(and_(*conditions)).offset(skip).limit(limit)
         result = await db.execute(query)
         templates = result.scalars().all()
-        
+
         return {
             "templates": [t.to_dict() for t in templates],
             "total": len(templates),

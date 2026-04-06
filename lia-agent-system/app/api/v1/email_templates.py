@@ -584,7 +584,7 @@ async def send_email(
         if request.recipient_name and "candidate_name" not in variables:
             variables["candidate_name"] = sanitize_variable_value(request.recipient_name)
         
-        logger.info(f"Email send by {current_user.email} to {request.recipient_email} using template {template_id}")
+        logger.info(f"Email send using template {template_id}")
         
         email_log = await email_service.send_email(
             db=db,

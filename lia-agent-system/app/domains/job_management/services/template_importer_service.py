@@ -468,7 +468,7 @@ class TemplateImporterService:
             logger.error(f"Failed to create template from ESCO data: {e}", exc_info=True)
             try:
                 await self.db.rollback()
-            except:
+            except Exception:
                 pass
             return None
     

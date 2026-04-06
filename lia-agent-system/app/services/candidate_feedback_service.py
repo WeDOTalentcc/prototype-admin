@@ -261,7 +261,7 @@ class CandidateFeedbackService:
                     channels_used.append("email")
                     feedback_record.email_sent = True
                     feedback_record.email_sent_at = datetime.utcnow()
-                    logger.info(f"📧 Email feedback sent to {candidate_email}")
+                    logger.info(f"📧 Email feedback sent")
                 except Exception as e:
                     channels_failed.append({"channel": "email", "error": str(e)})
                     logger.error(f"Failed to send email feedback: {e}")

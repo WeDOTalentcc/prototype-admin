@@ -115,7 +115,7 @@ async def send_direct_email(
         await db.commit()
         await db.refresh(email_log)
         
-        logger.info(f"📧 Email queued: {email_log.id} to {request.recipient_email}")
+        logger.info(f"📧 Email queued: {email_log.id} (recipient omitted — LGPD)")
         logger.info(f"   Subject: {request.subject}")
         logger.info(f"   Status: QUEUED (SMTP not configured - Funcional - Aguardando Configuração SMTP)")
         

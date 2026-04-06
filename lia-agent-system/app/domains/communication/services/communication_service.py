@@ -1934,7 +1934,7 @@ class CommunicationService:
             )
             
             if send_result.get("success"):
-                logger.info(f"📧 Templated message sent: {message_type.value} to {candidate_email}")
+                logger.info(f"📧 Templated message sent: {message_type.value}")
                 send_result["template_used"] = template.name
                 send_result["template_situation"] = situation
 

@@ -342,7 +342,7 @@ IMPORTANTE: Retorne APENAS o JSON, sem texto adicional."""
                         entities.salario_min = value
                     elif not entities.salario_max and value != entities.salario_min:
                         entities.salario_max = value
-                except:
+                except Exception:
                     pass
         
         work_model_match = re.search(r"\b(remoto|híbrido|hibrido|presencial|home\s*office)\b", text_lower)

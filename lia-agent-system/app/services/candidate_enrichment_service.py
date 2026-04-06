@@ -508,7 +508,7 @@ class CandidateEnrichmentService:
                         if months_match:
                             years += int(months_match.group(1)) / 12
                     experience.duration_years = round(years, 1)
-                except:
+                except Exception:
                     pass
             
             db.add(experience)

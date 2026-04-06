@@ -295,7 +295,7 @@ class JobContextService:
             numbers = re.findall(r'\d+(?:\.\d+)?', cleaned)
             if numbers:
                 return float(numbers[0])
-        except:
+        except Exception:
             pass
         return None
     
@@ -311,7 +311,7 @@ class JobContextService:
             numbers = re.findall(r'\d+(?:\.\d+)?', cleaned)
             if len(numbers) >= 2:
                 return float(numbers[1])
-        except:
+        except Exception:
             pass
         return None
     
@@ -321,7 +321,7 @@ class JobContextService:
             return None
         try:
             return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-        except:
+        except Exception:
             return None
     
     def _parse_experience(self, experience: Optional[str]) -> Optional[int]:
@@ -333,7 +333,7 @@ class JobContextService:
             numbers = re.findall(r'\d+', experience)
             if numbers:
                 return int(numbers[0])
-        except:
+        except Exception:
             pass
         return None
     

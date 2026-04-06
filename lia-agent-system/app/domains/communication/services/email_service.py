@@ -221,16 +221,16 @@ class EmailService:
                 if success:
                     email_log.status = "sent"  # type: ignore[assignment]
                     email_log.sent_at = datetime.utcnow()  # type: ignore[assignment]
-                    logger.info(f"Email sent successfully to {recipient_email}")
+                    logger.info(f"Email sent successfully")
                 else:
                     email_log.status = "failed"  # type: ignore[assignment]
                     email_log.error_message = "Email provider returned failure"  # type: ignore[assignment]
-                    logger.error(f"Failed to send email to {recipient_email}")
+                    logger.error(f"Failed to send email")
                     
             except Exception as e:
                 email_log.status = "failed"  # type: ignore[assignment]
                 email_log.error_message = str(e)  # type: ignore[assignment]
-                logger.error(f"Error sending email to {recipient_email}: {e}")
+                logger.error(f"Error sending email: {e}")
         
         db.add(email_log)
         await db.commit()
@@ -364,13 +364,13 @@ class EmailService:
             )
             
             if success:
-                logger.info(f"Notification email ({notification_type}) sent to {recipient_email}")
+                logger.info(f"Notification email ({notification_type}) sent")
             else:
-                logger.error(f"Failed to send notification email ({notification_type}) to {recipient_email}")
+                logger.error(f"Failed to send notification email ({notification_type})")
             
             return success
         except Exception as e:
-            logger.error(f"Error sending notification email ({notification_type}) to {recipient_email}: {e}")
+            logger.error(f"Error sending notification email ({notification_type}): {e}")
             return False
     
     async def seed_default_templates(self, db: AsyncSession, created_by: str = "system") -> List[EmailTemplate]:

@@ -1009,7 +1009,7 @@ async def handle_iugu_webhook(
         body = await request.body()
         try:
             payload = await request.json()
-        except:
+        except Exception:
             payload = {}
         
         signature = request.headers.get("X-Iugu-Signature")
@@ -1047,7 +1047,7 @@ async def handle_vindi_webhook(
         body = await request.body()
         try:
             payload = await request.json()
-        except:
+        except Exception:
             payload = {}
         
         signature = request.headers.get("X-Vindi-Signature")

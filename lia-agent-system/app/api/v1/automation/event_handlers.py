@@ -629,7 +629,7 @@ async def handle_interview_scheduled(
                 )
                 
                 email_sent = send_result.get("success", False)
-                logger.info(f"📧 [INTERVIEW_SCHEDULED] Email sent to {candidate_email}: {email_sent}")
+                logger.info(f"📧 [INTERVIEW_SCHEDULED] Email sent (ok={email_sent})")
             except Exception as e:
                 logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send email: {e}")
         else:
@@ -1223,7 +1223,7 @@ async def handle_candidate_inactive(
                 if not email_sent:
                     email_error = send_result.get("error", "Unknown email send failure")
                     communication_failures.append({"channel": "email", "error": email_error})
-                logger.info(f"📧 [CANDIDATE_INACTIVE] Email sent to {candidate_email}: {email_sent}")
+                logger.info(f"📧 [CANDIDATE_INACTIVE] Email sent (ok=: {email_sent}")
             except Exception as e:
                 email_error = str(e)
                 communication_failures.append({"channel": "email", "error": email_error})
@@ -1531,7 +1531,7 @@ async def handle_candidate_no_show(
                     )
                     
                     email_sent = send_result.get("success", False)
-                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Reschedule email sent to {candidate_email}: {email_sent}")
+                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Reschedule email sent (ok=: {email_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send reschedule email: {e}")
             
@@ -1582,7 +1582,7 @@ async def handle_candidate_no_show(
                     )
                     
                     email_sent = send_result.get("success", False)
-                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Final notice email sent to {candidate_email}: {email_sent}")
+                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Final notice email sent (ok=: {email_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send final notice email: {e}")
             
@@ -2119,7 +2119,7 @@ async def handle_offer_sent(
                 )
                 email_sent = True
                 actions_taken.append("offer_email_sent")
-                logger.info(f"✅ [OFFER_SENT] Offer email sent to {request.candidate_email}")
+                logger.info(f"✅ [OFFER_SENT] Offer email sent")
         except Exception as e:
             logger.error(f"❌ [OFFER_SENT] Failed to send offer email: {e}")
         
@@ -2283,7 +2283,7 @@ async def handle_candidate_hired(
                 )
                 email_sent = True
                 actions_taken.append("welcome_email_sent")
-                logger.info(f"✅ [CANDIDATE_HIRED] Welcome email sent to {request.candidate_email}")
+                logger.info(f"✅ [CANDIDATE_HIRED] Welcome email sent")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to send welcome email: {e}")
         
@@ -2498,7 +2498,7 @@ async def handle_candidate_rejected(
                     )
                     email_sent = True
                     actions_taken.append("rejection_email_sent")
-                    logger.info(f"✅ [CANDIDATE_REJECTED] Rejection email sent to {request.candidate_email}")
+                    logger.info(f"✅ [CANDIDATE_REJECTED] Rejection email sent")
             except Exception as e:
                 logger.error(f"❌ [CANDIDATE_REJECTED] Failed to send rejection email: {e}")
         

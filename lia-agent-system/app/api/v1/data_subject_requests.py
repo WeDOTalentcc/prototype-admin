@@ -85,12 +85,12 @@ async def _notify_subject(
                 "company_id": company_id,
             },
         )
-        logger.info("DSR notification sent to %s (company=%s)", subject_email, company_id)
+        logger.info("DSR notification sent (company=%s)", company_id)
         return True
     except Exception as exc:
         logger.warning(
-            "DSR notification failed for %s (company=%s): %s",
-            subject_email, company_id, exc
+            "DSR notification failed (company=%s): %s",
+            company_id, exc
         )
         return False
 

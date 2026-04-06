@@ -264,7 +264,7 @@ class WSIVoiceOrchestrator:
                         WHERE id = :session_id
                     """), {"session_id": session_id})
                     await session.commit()
-                except:
+                except Exception:
                     pass
                 
                 raise

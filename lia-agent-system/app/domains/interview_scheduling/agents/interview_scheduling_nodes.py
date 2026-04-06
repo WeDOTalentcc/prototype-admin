@@ -70,7 +70,7 @@ class InterviewSchedulingService:
         try:
             hour, minute = map(int, time_str.split(":"))
             return datetime.combine(preferred_date, datetime.min.time()).replace(hour=hour, minute=minute)
-        except:
+        except Exception:
             # Default to 14:00
             logger.warning(f"Failed to parse time '{preferred_time}', defaulting to 14:00")
             return datetime.combine(preferred_date, datetime.min.time()).replace(hour=14, minute=0)
@@ -238,7 +238,7 @@ async def interview_details_collector(state: Dict[str, Any]) -> Dict[str, Any]:
                 if field == "preferred_date" and isinstance(value, str):
                     try:
                         value = datetime.strptime(value, "%Y-%m-%d").date()
-                    except:
+                    except Exception:
                         logger.warning(f"Failed to parse date: {value}")
                         continue
                 

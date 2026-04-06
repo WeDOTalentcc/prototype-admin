@@ -208,7 +208,7 @@ def parse_pg_array_string(array_str: str) -> list:
         parsed = json.loads(array_str)
         if isinstance(parsed, list):
             return parsed
-    except:
+    except Exception:
         pass
     
     # Try comma-separated
