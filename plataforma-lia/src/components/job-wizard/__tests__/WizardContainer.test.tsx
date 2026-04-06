@@ -109,4 +109,23 @@ describe('WizardContainer', () => {
     const rootDiv = container.firstChild as HTMLElement
     expect(rootDiv.className).toContain('rounded-md')
   })
+
+  it('Avançar button is disabled when validation fails (canAdvance is false)', () => {
+    render(<WizardContainer onClose={onClose} />)
+    const advanceBtn = screen.getByText('Avançar').closest('button')!
+    expect(advanceBtn.disabled).toBe(true)
+    expect(advanceBtn.className).toContain('cursor-not-allowed')
+  })
+
+  it('footer shows progress bar element', () => {
+    const { container } = render(<WizardContainer onClose={onClose} />)
+    const progressBar = container.querySelector('.bg-lia-btn-primary-bg')
+    expect(progressBar).toBeTruthy()
+  })
+
+  it('renders onJobCreated prop without error', () => {
+    expect(() =>
+      render(<WizardContainer onClose={onClose} onJobCreated={onJobCreated} />)
+    ).not.toThrow()
+  })
 })

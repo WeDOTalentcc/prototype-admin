@@ -113,4 +113,59 @@ describe('kanban-store', () => {
     expect(s.searchQuery).toBe('')
     expect(s.selectedCandidates.size).toBe(0)
   })
+
+  it('simulates stage transition by moving candidate between stages', () => {
+    const initial = {
+      sourcing: [{ id: '1', name: 'Ana' }],
+      entrevista_rh: [],
+    }
+    act(() => getState().setCandidatesData(initial))
+    expect(getState().candidatesData.sourcing).toHaveLength(1)
+    expect(getState().candidatesData.entrevista_rh).toHaveLength(0)
+
+    act(() =>
+      getState().setCandidatesData((prev) => {
+        const candidate = prev.sourcing[0]
+        return {
+          ...prev,
+          sourcing: prev.sourcing.filter(c => c.id !== '1'),
+          entrevista_rh: [...prev.entrevista_rh, { ...candidate, stage: 'entrevista_rh' }],
+        }
+      })
+    )
+    expect(getState().candidatesData.sourcing).toHaveLength(0)
+    expect(getState().candidatesData.entrevista_rh).toHaveLength(1)
+    expect(getState().candidatesData.entrevista_rh[0].name).toBe('Ana')
+  })
+
+  it('bulk selection and clear simulates bulk action flow', () => {
+    act(() => getState().selectAllCandidates(['c-1', 'c-2', 'c-3', 'c-4', 'c-5']))
+    expect(getState().selectedCandidates.size).toBe(5)
+
+    act(() => {
+      const selected = getState().selectedCandidates
+      expect(selected.has('c-1')).toBe(true)
+      expect(selected.has('c-5')).toBe(true)
+    })
+
+    act(() => getState().clearSelection())
+    expect(getState().selectedCandidates.size).toBe(0)
+  })
+
+  it('setSelectedCandidates with function applies partial update', () => {
+    act(() => getState().setSelectedCandidates(new Set(['a', 'b'])))
+    expect(getState().selectedCandidates.size).toBe(2)
+
+    act(() =>
+      getState().setSelectedCandidates((prev) => {
+        const next = new Set(prev)
+        next.delete('a')
+        next.add('c')
+        return next
+      })
+    )
+    expect(getState().selectedCandidates.has('a')).toBe(false)
+    expect(getState().selectedCandidates.has('b')).toBe(true)
+    expect(getState().selectedCandidates.has('c')).toBe(true)
+  })
 })

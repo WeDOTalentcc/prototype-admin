@@ -143,4 +143,18 @@ describe('useWizardNavigation — stage progression flow', () => {
     act(() => result.current.goToNextStage())
     expect(result.current.currentStageConfig.title).toBe('Descrição da Vaga')
   })
+
+  it('navigating to search-calibration (last stage) signals submission readiness', () => {
+    const { result } = renderHook(() => useWizardNavigation(), { wrapper })
+    act(() => result.current.goToStage('search-calibration'))
+    expect(result.current.currentStage).toBe('search-calibration')
+    expect(result.current.currentStageIndex).toBe(6)
+  })
+
+  it('navigating to review-publish (6th stage) signals publish readiness', () => {
+    const { result } = renderHook(() => useWizardNavigation(), { wrapper })
+    act(() => result.current.goToStage('review-publish'))
+    expect(result.current.currentStage).toBe('review-publish')
+    expect(result.current.currentStageIndex).toBe(5)
+  })
 })
