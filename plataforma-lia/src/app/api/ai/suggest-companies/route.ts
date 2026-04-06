@@ -46,7 +46,7 @@ Example format: [{"name": "Stripe", "domain": "stripe.com", "linkedinUrl": "link
 
 Focus on well-known companies that recruiters would search for. Include both global and Brazilian companies when relevant.`
     } else {
-      const companyNames = companies.map((c: { name: string } | string) => 
+      const companyNames = (companies ?? []).map((c: { name: string } | string) => 
         typeof c === 'string' ? c : c.name
       )
       

@@ -71,7 +71,7 @@ export function CommunicationStep({ hook }: StepProps) {
           <Button
             type="button"
             size="sm"
-            variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'default' : 'outline'}
+            variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'whatsapp' ? 'email' : notificationChannel === 'email' ? 'both' : 'email')}
             className={cn(
               "h-7 px-2.5 text-micro",
@@ -86,7 +86,7 @@ export function CommunicationStep({ hook }: StepProps) {
           <Button
             type="button"
             size="sm"
-            variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'default' : 'outline'}
+            variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'email' ? 'whatsapp' : notificationChannel === 'whatsapp' ? 'both' : 'whatsapp')}
             className={cn(
               "h-7 px-2.5 text-micro",
@@ -234,7 +234,7 @@ export function UnpublishCommunicationStep({
           <Button
             type="button"
             size="sm"
-            variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'default' : 'outline'}
+            variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'whatsapp' ? 'email' : notificationChannel === 'email' ? 'both' : 'email')}
             className={cn(
               "h-7 px-2.5 text-micro",
@@ -249,7 +249,7 @@ export function UnpublishCommunicationStep({
           <Button
             type="button"
             size="sm"
-            variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'default' : 'outline'}
+            variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'primary' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'email' ? 'whatsapp' : notificationChannel === 'whatsapp' ? 'both' : 'whatsapp')}
             className={cn(
               "h-7 px-2.5 text-micro",

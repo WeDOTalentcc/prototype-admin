@@ -194,7 +194,7 @@ export function InsightsOverviewSection({
           {calculatedConversionRates.map((rate) => {
             const colors = CONVERSION_STATUS_COLORS[rate.status]
             return (
-              <div key={(rate as unknown as Record<string, unknown>).stage as string || rate.from} className={`rounded-md p-3 border ${colors.bg} ${colors.border}`}>
+              <div key={(rate as Record<string, unknown>).stage as string || rate.from} className={`rounded-md p-3 border ${colors.bg} ${colors.border}`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-lia-text-secondary">{rate.from}</span>
@@ -403,7 +403,7 @@ export function InsightsOverviewSection({
           </h3>
           <div className="space-y-2">
             {bottlenecks.map((b) => (
-              <div key={b.stage || (b as unknown as Record<string, unknown>).title as string} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
+              <div key={b.stage || (b as Record<string, unknown>).title as string} className="bg-lia-bg-primary rounded-md p-3 border border-status-warning/30">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-lia-text-primary">{b.stage}</span>
                   {b.stuckCount > 0 && (

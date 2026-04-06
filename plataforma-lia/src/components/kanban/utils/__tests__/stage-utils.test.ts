@@ -13,8 +13,15 @@ import { describe, it, expect } from "vitest"
 import {
   buildSubStatusMap,
   enrichStagesWithSubStatuses,
+  createStageSlug,
+  mapInterviewStagesToKanban,
+  organizeCandidatesByDynamicStages,
+  isTransitionAllowed,
+  getActiveStages,
+  getFinalStages,
+  createInitialCandidatesData,
 } from "../stage-utils"
-import type { DynamicStage } from "../../types"
+import type { DynamicStage, KanbanCandidate } from "../../types"
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -172,6 +179,134 @@ describe("enrichStagesWithSubStatuses", () => {
     const result = enrichStagesWithSubStatuses(stages, map)
     expect(result).not.toBe(stages)
     expect(stages[0].subStatuses).toBeUndefined() // original não alterado
+  })
+})
+
+// ── createStageSlug ───────────────────────────────────────────────────────────
+
+describe("createStageSlug", () => {
+  it("converts display name to lowercase slug", () => {
+    expect(createStageSlug("Entrevista RH")).toBe("entrevista_rh")
+  })
+
+  it("removes accents", () => {
+    expect(createStageSlug("Proposta Técnica")).toBe("proposta_tecnica")
+  })
+
+  it("strips leading/trailing underscores from whitespace", () => {
+    expect(createStageSlug("  Test  ")).toBe("test")
+  })
+})
+
+// ── mapInterviewStagesToKanban ────────────────────────────────────────────────
+
+describe("mapInterviewStagesToKanban", () => {
+  it("returns fallback stages when no interview stages provided", () => {
+    const result = mapInterviewStagesToKanban(undefined)
+    expect(result.length).toBeGreaterThan(0)
+  })
+
+  it("maps custom interview stages and infers action behavior", () => {
+    const custom = [
+      { stageName: "Entrevista Técnica", order: 1, type: "interview" },
+      { stageName: "Teste Prático", order: 2, type: "test" },
+    ]
+    const result = mapInterviewStagesToKanban(custom)
+    const techInterview = result.find(s => s.id === "entrevista_tecnica")
+    expect(techInterview?.actionBehavior).toBe("scheduling")
+    const practicalTest = result.find(s => s.id === "teste_pratico")
+    expect(practicalTest?.actionBehavior).toBe("evaluation")
+  })
+
+  it("includes system initial and final stages around custom stages", () => {
+    const custom = [{ stageName: "Custom Stage", order: 1, type: "interview" }]
+    const result = mapInterviewStagesToKanban(custom)
+    expect(result.some(s => s.isInitial)).toBe(true)
+    expect(result.some(s => s.isFinal)).toBe(true)
+  })
+})
+
+// ── organizeCandidatesByDynamicStages ─────────────────────────────────────────
+
+describe("organizeCandidatesByDynamicStages", () => {
+  const stages: DynamicStage[] = [
+    mockDynamicStage("sourcing", { isInitial: true }),
+    mockDynamicStage("entrevista_rh", { displayName: "Entrevista RH" }),
+    mockDynamicStage("hired", { stageType: "final", isFinal: true }),
+  ]
+
+  it("places candidates into correct stages", () => {
+    const candidates = [
+      { id: "1", name: "Ana", stage: "sourcing" },
+      { id: "2", name: "Bruno", stage: "entrevista_rh" },
+    ] as KanbanCandidate[]
+    const result = organizeCandidatesByDynamicStages(candidates, stages)
+    expect(result["sourcing"]).toHaveLength(1)
+    expect(result["entrevista_rh"]).toHaveLength(1)
+    expect(result["hired"]).toHaveLength(0)
+  })
+
+  it("falls back to sourcing for unknown stages", () => {
+    const candidates = [
+      { id: "1", name: "Ana", stage: "nonexistent" },
+    ] as KanbanCandidate[]
+    const result = organizeCandidatesByDynamicStages(candidates, stages)
+    expect(result["sourcing"]).toHaveLength(1)
+  })
+
+  it("initializes all stages with empty arrays", () => {
+    const result = organizeCandidatesByDynamicStages([], stages)
+    expect(Object.keys(result)).toHaveLength(3)
+    expect(result["sourcing"]).toEqual([])
+  })
+})
+
+// ── isTransitionAllowed ──────────────────────────────────────────────────────
+
+describe("isTransitionAllowed", () => {
+  const from = mockDynamicStage("sourcing")
+  const to = mockDynamicStage("entrevista_rh")
+
+  it("allows all transitions when no restrictions", () => {
+    expect(isTransitionAllowed(from, to)).toBe(true)
+  })
+
+  it("allows transition when target is in allowed list", () => {
+    expect(isTransitionAllowed(from, to, ["entrevista_rh"])).toBe(true)
+  })
+
+  it("blocks transition when target is not in allowed list", () => {
+    expect(isTransitionAllowed(from, to, ["hired"])).toBe(false)
+  })
+})
+
+// ── getActiveStages / getFinalStages ─────────────────────────────────────────
+
+describe("getActiveStages / getFinalStages", () => {
+  const stages = [
+    mockDynamicStage("sourcing"),
+    mockDynamicStage("hired", { stageType: "final" }),
+    mockDynamicStage("rejected", { stageType: "final" }),
+  ]
+
+  it("getActiveStages returns only active stages", () => {
+    expect(getActiveStages(stages)).toHaveLength(1)
+    expect(getActiveStages(stages)[0].id).toBe("sourcing")
+  })
+
+  it("getFinalStages returns only final stages", () => {
+    expect(getFinalStages(stages)).toHaveLength(2)
+  })
+})
+
+// ── createInitialCandidatesData ──────────────────────────────────────────────
+
+describe("createInitialCandidatesData", () => {
+  it("creates empty arrays for each stage", () => {
+    const stages = [mockDynamicStage("a"), mockDynamicStage("b")]
+    const result = createInitialCandidatesData(stages)
+    expect(Object.keys(result)).toEqual(["a", "b"])
+    expect(result["a"]).toEqual([])
   })
 })
 

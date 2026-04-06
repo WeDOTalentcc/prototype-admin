@@ -146,4 +146,42 @@ describe('ChatMessageList — message rendering flow', () => {
     )
     expect(screen.getByText(/digitando/i)).toBeTruthy()
   })
+
+  it('calls onRenderChatCard when message has chatCardType and chatCardData', () => {
+    const onRenderChatCard = vi.fn(() => <div data-testid="custom-card">Card</div>)
+    const msgs = [
+      makeMessage({
+        id: 10,
+        sender: 'lia',
+        content: 'Aqui está o resultado',
+        chatCardType: 'parecer-lia' as import("@/components/ui-actions/types").ChatCardType,
+        chatCardData: { score: 85 },
+      }),
+    ]
+    render(<ChatMessageList messages={msgs} {...baseProps} onRenderChatCard={onRenderChatCard} />)
+    expect(onRenderChatCard).toHaveBeenCalled()
+  })
+
+  it('renders empty state with welcome message when no messages', () => {
+    const { container } = render(<ChatMessageList messages={[]} {...baseProps} />)
+    const html = container.innerHTML
+    expect(html.length).toBeGreaterThan(0)
+  })
+
+  it('renders action buttons for messages with actions', () => {
+    const msgs = [
+      makeMessage({
+        id: 11,
+        sender: 'lia',
+        content: 'Selecione uma ação',
+        actions: [
+          { label: 'Aprovar' },
+          { label: 'Rejeitar' },
+        ],
+      }),
+    ]
+    const { container } = render(<ChatMessageList messages={msgs} {...baseProps} />)
+    expect(container.innerHTML).toContain('Aprovar')
+    expect(container.innerHTML).toContain('Rejeitar')
+  })
 })

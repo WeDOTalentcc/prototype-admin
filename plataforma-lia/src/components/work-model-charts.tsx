@@ -134,7 +134,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         {/* Legenda */}
         <div className="ml-8 space-y-3">
           {donutData.map((item) => (
-            <div key={item.label || (item as unknown as Record<string, unknown>).name as string} className="flex items-center gap-3">
+            <div key={item.label || (item as Record<string, unknown>).name as string} className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <div className={`w-4 h-4 rounded-full ${item.color}`}></div>
                 {item.icon}
@@ -158,7 +158,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
   const BarChart = () => (
     <div className="space-y-6">
       {cargoData.map((item) => (
-        <div key={(item as unknown as Record<string, unknown>).label as string || item.cargo || (item as unknown as Record<string, unknown>).name as string} className="space-y-2">
+        <div key={(item as Record<string, unknown>).label as string || item.cargo || (item as Record<string, unknown>).name as string} className="space-y-2">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-lia-text-primary">
               {item.cargo}
@@ -233,7 +233,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       <div className="space-y-4">
         <div className="grid grid-cols-5 gap-4">
           {trendData.map((item) => (
-            <div key={(item as unknown as Record<string, unknown>).month as string || (item as unknown as Record<string, unknown>).label as string || (item as unknown as Record<string, unknown>).name as string} className="text-center">
+            <div key={(item as Record<string, unknown>).month as string || (item as Record<string, unknown>).label as string || (item as Record<string, unknown>).name as string} className="text-center">
               <div className="mb-2 text-xs font-medium text-lia-text-secondary">
                 {item.period}
               </div>
@@ -306,7 +306,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <div className="grid grid-cols-3 gap-4">
           {regionData.map((region) => (
             <div
-              key={(region as unknown as Record<string, unknown>).name as string || (region as unknown as Record<string, unknown>).region as string}
+              key={(region as Record<string, unknown>).name as string || (region as Record<string, unknown>).region as string}
               className={`p-4 rounded-md text-white text-center transition-transform motion-reduce:transition-none duration-300 hover:scale-105 ${getDensityColor(region.densidade)}`}
             >
               <div className="font-bold text-lg">{region.regiao}</div>

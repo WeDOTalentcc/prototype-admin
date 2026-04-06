@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const existingList = existing.length > 0 
-      ? `\n\nAlready selected (DO NOT include these): ${existing.join(', ')}`
+    const existingList = (existing ?? []).length > 0 
+      ? `\n\nAlready selected (DO NOT include these): ${(existing ?? []).join(', ')}`
       : ''
 
     const prompt = findSimilar
@@ -70,7 +70,7 @@ Focus on professional expertise areas like:
             .filter((s: unknown): s is string => 
               typeof s === 'string' && 
               s.length > 0 && 
-              !existing.map((e: string) => e.toLowerCase()).includes(s.toLowerCase())
+              !(existing ?? []).map((e: string) => e.toLowerCase()).includes(s.toLowerCase())
             )
             .slice(0, findSimilar ? 6 : 5)
           

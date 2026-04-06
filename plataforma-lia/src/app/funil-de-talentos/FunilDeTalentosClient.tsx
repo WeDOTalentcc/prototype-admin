@@ -46,9 +46,9 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
     position: c.current_title ?? "—",
     monthlySalary: c.current_salary ?? 0,
     location: locationStr,
-    workModel: (c.work_model_preference as string) ?? "",
+    workModel: (c.work_model_preference as "presencial" | "remoto" | "híbrido") ?? "" as "presencial" | "remoto" | "híbrido",
     score: c.lia_score ?? 0,
-    contractType: (c.contract_type_preference as string) ?? "",
+    contractType: (c.contract_type_preference as "CLT" | "PJ" | "Freelancer" | "") ?? "",
     linkedin: c.linkedin_url ?? "",
   }
 }
@@ -300,7 +300,7 @@ export default function FunilDeTalentosPage() {
                     return (
                       <Button
                         key={page}
-                        variant={page === currentPage ? "default" : "outline"}
+                        variant={page === currentPage ? "primary" : "outline"}
                         size="sm"
                         onClick={() => goToPage(page)}
                         className={cn(

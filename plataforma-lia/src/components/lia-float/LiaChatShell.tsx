@@ -176,7 +176,7 @@ function InlineLeftShell({
           isStreaming={state.isStreaming}
           streamingContent={state.streamingContent}
           conversationId={state.conversationId}
-          messagesEndRef={state.messagesEndRef as React.RefObject<HTMLDivElement>}
+          messagesEndRef={state.messagesEndRef}
         />
 
         {completedTasks.length > 0 && (
@@ -239,8 +239,8 @@ function InlineLeftShell({
             maxInputChars={state.MAX_INPUT_CHARS}
             attachedCvFile={state.attachedCvFile}
             setAttachedCvFile={state.setAttachedCvFile}
-            cvFileInputRef={state.cvFileInputRef as React.RefObject<HTMLInputElement>}
-            inputRef={state.inputRef as React.RefObject<HTMLInputElement>}
+            cvFileInputRef={state.cvFileInputRef}
+            inputRef={state.inputRef}
             handleCvFileAttach={state.handleCvFileAttach}
             handleCvFileButtonClick={state.handleCvFileButtonClick}
             handleSend={state.handleSend}
@@ -397,7 +397,7 @@ function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
             isStreaming={state.isStreaming}
             streamingContent={state.streamingContent}
             conversationId={state.conversationId}
-            messagesEndRef={state.messagesEndRef as React.RefObject<HTMLDivElement>}
+            messagesEndRef={state.messagesEndRef}
           />
 
           {completedTasks.length > 0 && (
@@ -460,8 +460,8 @@ function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
               maxInputChars={state.MAX_INPUT_CHARS}
               attachedCvFile={state.attachedCvFile}
               setAttachedCvFile={state.setAttachedCvFile}
-              cvFileInputRef={state.cvFileInputRef as React.RefObject<HTMLInputElement>}
-              inputRef={state.inputRef as React.RefObject<HTMLInputElement>}
+              cvFileInputRef={state.cvFileInputRef}
+              inputRef={state.inputRef}
               handleCvFileAttach={state.handleCvFileAttach}
               handleCvFileButtonClick={state.handleCvFileButtonClick}
               handleSend={state.handleSend}

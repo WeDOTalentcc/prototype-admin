@@ -107,7 +107,7 @@ export function useFloatStreaming(
         break
 
       case 'plan_progress': {
-        const planEvent = event as unknown as Record<string, unknown>
+        const planEvent = event as Record<string, unknown>
         const planEventType = planEvent.event as string
         if (planEventType === 'plan_started') {
           setActivePlanId(planEvent.plan_id as string || null)
@@ -154,10 +154,10 @@ export function useFloatStreaming(
         break
 
       case 'panel_update': {
-        const panelEvent = event as unknown as Record<string, unknown>
+        const panelEvent = event as Record<string, unknown>
         onPanelUpdateRef.current?.({
           panel_type: (panelEvent.panel_type as string) || "",
-          panel_data: (panelEvent.panel_data as unknown as Record<string, unknown>) || {},
+          panel_data: (panelEvent.panel_data as Record<string, unknown>) || {},
           panel_title: panelEvent.panel_title as string | undefined,
           action: (panelEvent.action as "open" | "update" | "close") || "open",
         })
@@ -165,7 +165,7 @@ export function useFloatStreaming(
       }
 
       case 'background_task_update': {
-        const bgEvent = event as unknown as Record<string, unknown>
+        const bgEvent = event as Record<string, unknown>
         const taskUpdate: BackgroundTaskEvent = {
           task_id: (bgEvent.task_id as string) || "",
           task_type: (bgEvent.task_type as BackgroundTaskEvent["task_type"]) || "analysis",
@@ -173,7 +173,7 @@ export function useFloatStreaming(
           status: (bgEvent.status as BackgroundTaskEvent["status"]) || "running",
           progress: bgEvent.progress as number | undefined,
           message: bgEvent.message as string | undefined,
-          result: bgEvent.result as unknown as Record<string, unknown> | undefined,
+          result: bgEvent.result as Record<string, unknown> | undefined,
         }
         setBackgroundTasks(prev => {
           const idx = prev.findIndex(t => t.task_id === taskUpdate.task_id)
@@ -198,7 +198,7 @@ export function useFloatStreaming(
           setFairnessWarnings([])
         }
         if (event.content) {
-          const _execPlan = (event as unknown as Record<string, unknown>).execution_plan as unknown as Record<string, unknown> | undefined
+          const _execPlan = (event as Record<string, unknown>).execution_plan as Record<string, unknown> | undefined
           onCompleteRef.current(event.content, _execPlan)
         }
         break

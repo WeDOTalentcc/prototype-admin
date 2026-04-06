@@ -319,7 +319,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             {candidate.status || 'Novo'}
           </div>
           <CandidateBadges
-            subStatus={(candidate as unknown as Record<string, unknown>).subStatus as string || candidate.status}
+            subStatus={(candidate as Record<string, unknown>).subStatus as string || candidate.status}
             actionBehavior={candidate.actionBehavior}
             stageId={candidate.stageId}
             needsAction={candidate.needsAction}
