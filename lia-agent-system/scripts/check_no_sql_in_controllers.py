@@ -62,7 +62,6 @@ PENDING_MIGRATION = {
     "app/api/v1/big_five.py",
     "app/api/v1/billing.py",
     "app/api/v1/briefing.py",
-    "app/api/v1/bulk_actions.py",
     "app/api/v1/calendar.py",
     "app/api/v1/candidate_compare.py",
     "app/api/v1/candidate_search/_shared.py",
