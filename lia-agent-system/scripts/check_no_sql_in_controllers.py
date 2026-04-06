@@ -87,7 +87,6 @@ PENDING_MIGRATION = {
     "app/api/v1/cultural_fit.py",
     "app/api/v1/cv_parser.py",
     "app/api/v1/data_request.py",
-    "app/api/v1/data_subject_requests.py",
     "app/api/v1/default_templates.py",
     "app/api/v1/digest.py",
     "app/api/v1/drift.py",
