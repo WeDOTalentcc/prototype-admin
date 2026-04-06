@@ -5,13 +5,10 @@ Validates HMAC-SHA256 signature using MAILGUN_WEBHOOK_SIGNING_KEY,
 then updates CommunicationLog status accordingly.
 
 Events handled:
-- delivered   → status="delivered", delivered_at set
-- failed      → status="failed", failed_at set
-- bounced     → status="bounced", failed_at set
-- dropped     → status="failed", failed_at set
-- opened      → status="read", read_at set
-- clicked     → status="clicked", read_at set
-- complained  → status="complained"
+- delivered  → status="delivered", delivered_at set
+- failed / bounced → status="failed", failed_at set
+- opened     → status="read", read_at set
+- complained → status="complained"
 - unsubscribed → status="unsubscribed"
 """
 import hashlib
@@ -21,12 +18,12 @@ import os
 import time
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Request, status
-from sqlalchemy import update
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.core.database import AsyncSessionLocal
-from app.domains.communication.services.communication_service import CommunicationLog
+from app.domains.communication.dependencies import get_communication_repo
+from app.domains.communication.repositories.communication_repository import (
+    CommunicationRepository,
+)
 
 MAX_TIMESTAMP_AGE_SECONDS = 300
 
@@ -37,10 +34,10 @@ router = APIRouter(prefix="/webhooks/mailgun", tags=["mailgun-webhooks"])
 MAILGUN_EVENT_MAP = {
     "delivered": ("delivered", "delivered_at"),
     "failed": ("failed", "failed_at"),
-    "bounced": ("bounced", "failed_at"),
+    "bounced": ("failed", "failed_at"),
     "dropped": ("failed", "failed_at"),
     "opened": ("read", "read_at"),
-    "clicked": ("clicked", "read_at"),
+    "clicked": None,
     "complained": ("complained", None),
     "unsubscribed": ("unsubscribed", None),
 }
@@ -63,7 +60,10 @@ def _verify_mailgun_signature(
 
 
 @router.post("", status_code=200)
-async def mailgun_webhook(request: Request):
+async def mailgun_webhook(
+    request: Request,
+    repo: CommunicationRepository = Depends(get_communication_repo),
+):
     """
     Receive Mailgun delivery events.
 
@@ -141,8 +141,7 @@ async def mailgun_webhook(request: Request):
         logger.warning("[MailgunWebhook] No message-id in event — skipping")
         return {"status": "skipped", "reason": "no_message_id"}
 
-    message_id_raw = message_id
-    message_id_clean = message_id.strip("<>")
+    message_id = message_id.strip("<>")
 
     event_ts_raw = event_data.get("timestamp")
     event_ts = (
@@ -156,46 +155,32 @@ async def mailgun_webhook(request: Request):
     delivery_message = event_data.get("delivery-status", {}).get("message", "")
 
     try:
-        async with AsyncSessionLocal() as db:
-            values: dict = {
-                "status": new_status,
-                "updated_at": datetime.utcnow(),
-            }
-            if timestamp_field:
-                values[timestamp_field] = event_ts
+        values: dict = {
+            "status": new_status,
+            "updated_at": datetime.utcnow(),
+        }
+        if timestamp_field:
+            values[timestamp_field] = event_ts
 
-            if new_status in ("failed", "bounced"):
-                error_parts = [p for p in [severity, reason, delivery_message] if p]
-                values["error_message"] = " | ".join(error_parts) or "delivery failed"
+        if new_status == "failed":
+            error_parts = [p for p in [severity, reason, delivery_message] if p]
+            values["error_message"] = " | ".join(error_parts) or "delivery failed"
 
-            from sqlalchemy import or_
-            result = await db.execute(
-                update(CommunicationLog)
-                .where(
-                    or_(
-                        CommunicationLog.provider_message_id == message_id_clean,
-                        CommunicationLog.provider_message_id == message_id_raw,
-                        CommunicationLog.provider_message_id == f"<{message_id_clean}>",
-                    )
-                )
-                .values(**values)
+        rows = await repo.update_log_by_provider_message_id(message_id, values)
+
+        if rows == 0:
+            logger.info(
+                "[MailgunWebhook] No CommunicationLog found for message_id=%s (event=%s)",
+                message_id,
+                event_type,
             )
-            await db.commit()
-
-            rows = result.rowcount  # type: ignore[union-attr]
-            if rows == 0:
-                logger.info(
-                    "[MailgunWebhook] No CommunicationLog found for message_id=%s (event=%s)",
-                    message_id,
-                    event_type,
-                )
-            else:
-                logger.info(
-                    "[MailgunWebhook] Updated %d log(s): message_id=%s → status=%s",
-                    rows,
-                    message_id,
-                    new_status,
-                )
+        else:
+            logger.info(
+                "[MailgunWebhook] Updated %d log(s): message_id=%s → status=%s",
+                rows,
+                message_id,
+                new_status,
+            )
 
     except Exception:
         logger.exception("[MailgunWebhook] DB error processing event %s", event_type)
@@ -204,4 +189,4 @@ async def mailgun_webhook(request: Request):
             detail="Internal error processing webhook",
         )
 
-    return {"status": "processed", "event": event_type, "message_id": message_id_clean}
+    return {"status": "processed", "event": event_type, "message_id": message_id}
