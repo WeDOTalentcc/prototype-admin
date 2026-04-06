@@ -12,7 +12,6 @@ import logging
 from datetime import datetime
 
 from app.core.database import AsyncSessionLocal
-from app.models.recruitment_stages import DEFAULT_RECRUITMENT_STAGES
 from app.schemas.job_description import (
     CompanyInfo,
     CompensationData,
@@ -592,7 +591,7 @@ class JDTemplateService:
     async def _get_company_interview_stages(self, company_id: str | None) -> list[InterviewStage]:
         """Load interview stages from the company pipeline via PipelineStageService.
 
-        Falls back to DEFAULT_RECRUITMENT_STAGES when the company has no
+        Falls back to canonical default interview stages when the company has no
         configured pipeline or when the DB is unreachable.
         """
         if company_id:
@@ -638,38 +637,14 @@ class JDTemplateService:
 
     @staticmethod
     def _map_default_recruitment_stages() -> list[InterviewStage]:
-        """Build InterviewStage list from the canonical DEFAULT_RECRUITMENT_STAGES."""
-        behavior_format = {
-            "screening": "WhatsApp/Online",
-            "scheduling": "Vídeo",
-            "evaluation": "Online/Presencial",
-            "intake": "Sistema",
-            "passive": "-",
-            "offer": "-",
-        }
-        behavior_duration = {
-            "screening": "~15 min",
-            "scheduling": "45 min",
-            "evaluation": "60 min",
-            "intake": "-",
-            "passive": "-",
-            "offer": "5-7 dias úteis",
-        }
-        result = []
-        for stage_def in DEFAULT_RECRUITMENT_STAGES:
-            behavior = stage_def.get("action_behavior", "passive")
-            if behavior == "terminal":
-                continue
-            if stage_def.get("is_final"):
-                continue
-            result.append(InterviewStage(
-                order=stage_def["stage_order"],
-                name=stage_def["display_name"],
-                format=behavior_format.get(behavior, "-"),
-                duration=behavior_duration.get(behavior, "-"),
-                description=stage_def.get("description") or stage_def["display_name"],
-            ))
-        return result
+        """Canonical fallback interview stages for companies without a pipeline."""
+        return [
+            InterviewStage(order=1, name="Triagem LIA", format="WhatsApp", duration="~10 min", description="Perguntas rápidas de pré-qualificação"),
+            InterviewStage(order=2, name="Entrevista RH", format="Vídeo", duration="30 min", description="Alinhamento cultural e expectativas"),
+            InterviewStage(order=3, name="Entrevista Técnica", format="Vídeo", duration="60 min", description="Avaliação de competências técnicas"),
+            InterviewStage(order=4, name="Entrevista Gestor", format="Presencial/Vídeo", duration="45 min", description="Conversa com gestor da área"),
+            InterviewStage(order=5, name="Proposta", format="-", duration="5-7 dias úteis", description="Feedback e oferta"),
+        ]
     
     def _calculate_timeline(self, stages: list[InterviewStage]) -> str:
         """Calcula timeline total do processo."""

@@ -390,6 +390,7 @@ class JobVacancyService:
         "evaluation": "Técnica",
         "intake": "Sistema",
         "passive": "Informativa",
+        "offer": "Proposta",
     }
 
     _BEHAVIOR_DURATION_MAP = {
@@ -398,6 +399,7 @@ class JobVacancyService:
         "evaluation": 60,
         "intake": 10,
         "passive": 30,
+        "offer": 30,
     }
 
     @staticmethod
@@ -437,30 +439,14 @@ class JobVacancyService:
         except Exception as e:
             logger.warning(f"Failed to load company pipeline for interview stages: {e}", exc_info=True)
 
-        try:
-            from app.models.recruitment_stages import DEFAULT_RECRUITMENT_STAGES
-
-            interview_stages = []
-            for stage_def in DEFAULT_RECRUITMENT_STAGES:
-                behavior = stage_def.get("action_behavior", "passive")
-                if behavior == "terminal":
-                    continue
-                if stage_def.get("is_final"):
-                    continue
-
-                interview_stages.append(InterviewStage(
-                    stage_name=stage_def["display_name"],
-                    interviewers=[],
-                    format=JobVacancyService._BEHAVIOR_FORMAT_MAP.get(behavior, "Informativa"),
-                    duration=JobVacancyService._BEHAVIOR_DURATION_MAP.get(behavior, 30),
-                    scheduling_window="A definir",
-                ))
-
-            if interview_stages:
-                state.interview_stages = interview_stages
-                logger.info("Populated interview stages from DEFAULT_RECRUITMENT_STAGES")
-        except Exception as e:
-            logger.warning(f"Failed to build default interview stages: {e}", exc_info=True)
+        state.interview_stages = [
+            InterviewStage(stage_name="Triagem LIA", interviewers=[], format="Triagem", duration=10, scheduling_window="A definir"),
+            InterviewStage(stage_name="Entrevista RH", interviewers=[], format="Comportamental", duration=30, scheduling_window="A definir"),
+            InterviewStage(stage_name="Entrevista Técnica", interviewers=[], format="Técnica", duration=60, scheduling_window="A definir"),
+            InterviewStage(stage_name="Entrevista Gestor", interviewers=[], format="Comportamental", duration=45, scheduling_window="A definir"),
+            InterviewStage(stage_name="Proposta", interviewers=[], format="Proposta", duration=30, scheduling_window="A definir"),
+        ]
+        logger.info("Populated interview stages from canonical defaults")
 
         return state
 
