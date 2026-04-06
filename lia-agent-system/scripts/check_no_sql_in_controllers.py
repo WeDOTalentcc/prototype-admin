@@ -146,7 +146,6 @@ PENDING_MIGRATION = {
     "app/api/v1/pipeline_templates.py",
     "app/api/v1/pipeline_velocity.py",
     "app/api/v1/policies.py",
-    "app/api/v1/policy_engine.py",
     "app/api/v1/predictive_analytics.py",
     "app/api/v1/rag_search.py",
     "app/api/v1/recruiter_behavior.py",
