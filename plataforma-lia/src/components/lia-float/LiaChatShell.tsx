@@ -169,6 +169,7 @@ function InlineLeftShell({
           isEmpty={state.isEmpty}
           messages={state.messages}
           currentScope={state.currentScope}
+          contextPage={state.contextPage}
           handleChipSend={state.handleChipSend}
           hitlPending={state.hitlPending}
           sendApproval={state.sendApproval}
@@ -249,6 +250,9 @@ function InlineLeftShell({
             isScreening={state.isScreening}
             hitlPending={state.hitlPending}
             canSend={state.canSend}
+            contextPage={state.contextPage}
+            contextDismissed={state.contextDismissed}
+            onContextDismiss={() => state.setContextDismissed(true)}
           />
           {contextChips && contextChips.length > 0 && (
             <div className="px-4 pb-3 pt-1 flex items-center gap-1.5 flex-wrap">
@@ -386,6 +390,7 @@ function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
             isEmpty={state.isEmpty}
             messages={state.messages}
             currentScope={state.currentScope}
+            contextPage={state.contextPage}
             handleChipSend={state.handleChipSend}
             hitlPending={state.hitlPending}
             sendApproval={state.sendApproval}
@@ -466,6 +471,9 @@ function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
               isScreening={state.isScreening}
               hitlPending={state.hitlPending}
               canSend={state.canSend}
+              contextPage={state.contextPage}
+              contextDismissed={state.contextDismissed}
+              onContextDismiss={() => state.setContextDismissed(true)}
             />
           </div>
         </div>

@@ -3,6 +3,9 @@ type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/arch-compare/EstadoAtual.tsx": () => import("../components/mockups/arch-compare/EstadoAtual.tsx"),
   "./components/mockups/arch-compare/EstadoDesejado.tsx": () => import("../components/mockups/arch-compare/EstadoDesejado.tsx"),
+  "./components/mockups/chat-layouts/CompactCommand.tsx": () => import("../components/mockups/chat-layouts/CompactCommand.tsx"),
+  "./components/mockups/chat-layouts/InputFirst.tsx": () => import("../components/mockups/chat-layouts/InputFirst.tsx"),
+  "./components/mockups/chat-layouts/SplitPanel.tsx": () => import("../components/mockups/chat-layouts/SplitPanel.tsx"),
   "./components/mockups/funil-elevenlabs/FunilElevenLabs.tsx": () => import("../components/mockups/funil-elevenlabs/FunilElevenLabs.tsx"),
   "./components/mockups/chat-layouts/BentoMosaic.tsx": () => import("../components/mockups/chat-layouts/BentoMosaic.tsx"),
   "./components/mockups/chat-layouts/CompactCommand.tsx": () => import("../components/mockups/chat-layouts/CompactCommand.tsx"),

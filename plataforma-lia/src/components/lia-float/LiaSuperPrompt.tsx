@@ -23,6 +23,7 @@ import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { ContextBadge } from "@/components/lia-float/ContextBadge"
 
 // [OPT-043] TODO: revisar inline styles dinâmicos (23 ocorrências)
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
@@ -37,7 +38,7 @@ export function LiaSuperPrompt() {
     isExpanded, collapse, closeAll, conversationId: ctxConvId,
     sharedMessages, addSharedMessage, setSharedMessages,
     sharedConversationId, setSharedConversationId,
-    openSplitView,
+    openSplitView, contextPage,
   } = useLiaFloat()
   const {
     chatConversationId,
@@ -61,6 +62,8 @@ export function LiaSuperPrompt() {
   const [input, setInput] = useState("")
   const [showHistory, setShowHistory] = useState(false)
   const [recentChats, setRecentChats] = useState<Array<{ id: string; title: string; timestamp: number }>>([])
+  const [contextDismissed, setContextDismissed] = useState(false)
+  useEffect(() => { setContextDismissed(false) }, [contextPage])
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -134,11 +137,13 @@ export function LiaSuperPrompt() {
     }
 
     const domain = actionResult.actionType ? actionTypeToDomain(actionResult.actionType) : ""
-    sendChatMessage(messageText, domain, currentScope)
+    const effectiveScope = contextDismissed ? "global" : currentScope
+    sendChatMessage(messageText, domain, effectiveScope)
   }, [
     input, conversationId, isCreating, isStreaming,
     addSharedMessage, initConversation, detectAction, detectIntent,
     collapse, openSplitView, sendChatMessage, connectChat, setSharedConversationId, setChatConversationId, currentScope,
+    contextDismissed,
   ])
 
   const handleSuggestionClick = useCallback((suggestion: DynamicSuggestion) => {
@@ -163,6 +168,7 @@ export function LiaSuperPrompt() {
     setSharedConversationId(null)
     setChatConversationId(null)
     setShowHistory(false)
+    setContextDismissed(false)
   }, [disconnectChat, setSharedMessages, setSharedConversationId, setChatConversationId])
 
   const handleClear = useCallback(() => {
@@ -452,6 +458,12 @@ export function LiaSuperPrompt() {
                   <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
                     <div className="max-w-3xl mx-auto">
                       <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
+                        {!contextDismissed && contextPage && contextPage !== "Chat LIA" && (
+                          <ContextBadge
+                            contextPage={contextPage}
+                            onRemove={() => setContextDismissed(true)}
+                          />
+                        )}
                         <textarea
                           ref={inputRef}
                           value={input}

@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
@@ -12,6 +12,7 @@ import { LiaQueriesGuide } from "@/components/ui/lia-queries-guide"
 import { CandidateQueriesGuide } from "@/components/ui/candidate-queries-guide"
 import { FileUploadButton } from "@/components/ui/file-upload-button"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { ContextBadge, PAGE_ROUTE_TO_CONTEXT_LABEL } from "@/components/lia-float/ContextBadge"
 
 interface EAPInputBarProps {
   inputValue: string
@@ -37,6 +38,7 @@ interface EAPInputBarProps {
   selectedCandidates: Record<string, unknown>[]
   onClose?: () => void
   candidateContext: Record<string, unknown> | null
+  onContextDismiss?: () => void
 }
 
 export function EAPInputBar(props: EAPInputBarProps) {
@@ -46,7 +48,11 @@ export function EAPInputBar(props: EAPInputBarProps) {
     searchSource, setSearchSource, handleSourceChange, showGlobalSearchOptions,
     requireEmails, setRequireEmails, requirePhoneNumbers, setRequirePhoneNumbers,
     statusInfo, jobContext, pageContext, selectedCandidates, onClose, candidateContext,
+    onContextDismiss,
   } = props
+
+  const [contextDismissed, setContextDismissed] = useState(false)
+  const contextBadgeLabel = PAGE_ROUTE_TO_CONTEXT_LABEL[pageContext] ?? null
 
   return (
     <div className="p-3">
@@ -57,6 +63,13 @@ export function EAPInputBar(props: EAPInputBarProps) {
           animate={isProcessing}
           className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isProcessing ? 'scale-110' : ''}`}
         />
+
+        {!contextDismissed && contextBadgeLabel && (
+          <ContextBadge
+            contextPage={contextBadgeLabel}
+            onRemove={() => { setContextDismissed(true); onContextDismiss?.() }}
+          />
+        )}
 
         <input
           type="text"

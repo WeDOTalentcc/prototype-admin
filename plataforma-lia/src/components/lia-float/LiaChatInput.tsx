@@ -4,6 +4,7 @@ import React from "react"
 import { Loader2, Send, Paperclip, FileText, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
+import { ContextBadge } from "@/components/lia-float/ContextBadge"
 
 export interface LiaChatInputProps {
   inputText: string
@@ -22,6 +23,9 @@ export interface LiaChatInputProps {
   isScreening: boolean
   hitlPending: { action: string; description: string } | null
   canSend: boolean
+  contextPage?: string | null
+  contextDismissed?: boolean
+  onContextDismiss?: () => void
 }
 
 export function LiaChatInput({
@@ -41,7 +45,12 @@ export function LiaChatInput({
   isScreening,
   hitlPending,
   canSend,
+  contextPage,
+  contextDismissed = false,
+  onContextDismiss,
 }: LiaChatInputProps) {
+  const showBadge = !contextDismissed && !!contextPage && contextPage !== "Chat LIA"
+
   return (
     <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">
       {attachedCvFile && (
@@ -58,6 +67,12 @@ export function LiaChatInput({
         </div>
       )}
       <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
+        {showBadge && (
+          <ContextBadge
+            contextPage={contextPage}
+            onRemove={onContextDismiss}
+          />
+        )}
         <input
           ref={inputRef}
           type="text"

@@ -51,6 +51,8 @@ export function useLiaChatPanelState() {
   const { result: navIntent, detect: detectIntent, clear: clearIntent } = useNavigationIntent()
   const { detect: detectAction } = useActionIntent()
   const currentScope = resolveScopeFromPathname(typeof window !== 'undefined' ? window.location.pathname : '')
+  const [contextDismissed, setContextDismissed] = useState(false)
+  useEffect(() => { setContextDismissed(false) }, [contextPage])
   const [activeActionType, setActiveActionType] = useState<ActionType>(null)
   const [attachedCvFile, setAttachedCvFile] = useState<File | null>(null)
   const cvFileInputRef = React.useRef<HTMLInputElement>(null)
@@ -180,6 +182,7 @@ export function useLiaChatPanelState() {
     setShowHistory(false)
     closeDynamicPanel()
     resetBackgroundTasks()
+    setContextDismissed(false)
   }, [disconnectChat, setMessages, setConversationId, clearIntent, closeDynamicPanel, resetBackgroundTasks])
 
   const handleClear = useCallback(() => {
@@ -344,8 +347,9 @@ export function useLiaChatPanelState() {
       setChatConversationId(convId)
       connectChat()
     }
-    wsSend(text, "", currentScope)
-  }, [conversationId, initConversation, setSharedConversationId, setChatConversationId, connectChat, wsSend, currentScope])
+    const effectiveScope = contextDismissed ? "global" : currentScope
+    wsSend(text, "", effectiveScope)
+  }, [conversationId, initConversation, setSharedConversationId, setChatConversationId, connectChat, wsSend, currentScope, contextDismissed])
 
   const updateRecentItem = useCallback((text: string, overrideConvId?: string) => {
     const cid = overrideConvId ?? conversationId
@@ -562,12 +566,14 @@ export function useLiaChatPanelState() {
     }
 
     const domain = actionResult.actionType ? actionTypeToDomain(actionResult.actionType) : ""
-    wsSend(text, domain, currentScope)
+    const effectiveScope = contextDismissed ? "global" : currentScope
+    wsSend(text, domain, effectiveScope)
 
   }, [
     inputText, conversationId, isCreating, isStreaming,
     addMessage, initConversation, detectAction, detectIntent,
     openSplitView, wsSend, connectChat, setSharedConversationId, currentScope,
+    contextDismissed,
     pendingCvFields, uploadedFileInfo, setPendingCvFields, setUploadedFileInfo,
     updateRecentItem,
   ])
@@ -590,6 +596,7 @@ export function useLiaChatPanelState() {
     dynamicPanel, closeDynamicPanel, messages, addMessage,
     setMessages, setConversationId, setSharedConversationId,
     navIntent, detectIntent, clearIntent, detectAction, currentScope,
+    contextDismissed, setContextDismissed,
     activeActionType, setActiveActionType, actionLabel, setActionLabel,
     attachedCvFile, setAttachedCvFile, cvFileInputRef, screenCv, isScreening,
     isCreating, isFetchingHistory, initConversation,

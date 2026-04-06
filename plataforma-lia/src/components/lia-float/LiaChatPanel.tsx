@@ -110,6 +110,7 @@ export function LiaChatPanel() {
             isEmpty={state.isEmpty}
             messages={state.messages}
             currentScope={state.currentScope}
+            contextPage={state.contextPage}
             handleChipSend={state.handleChipSend}
             hitlPending={state.hitlPending}
             sendApproval={state.sendApproval}
@@ -190,6 +191,9 @@ export function LiaChatPanel() {
               isScreening={state.isScreening}
               hitlPending={state.hitlPending}
               canSend={state.canSend}
+              contextPage={state.contextPage}
+              contextDismissed={state.contextDismissed}
+              onContextDismiss={() => state.setContextDismissed(true)}
             />
           </div>
         </div>

@@ -26,6 +26,7 @@ export interface LiaChatMessageListProps {
   isEmpty: boolean
   messages: FloatMessage[]
   currentScope: string
+  contextPage?: string | null
   handleChipSend: (text: string) => void
   hitlPending: { action: string; description: string } | null
   sendApproval: (approved: boolean) => void
@@ -37,7 +38,7 @@ export interface LiaChatMessageListProps {
 
 export function LiaChatMessageList({
   showHistory, recentChats, handleLoadConversation,
-  isFetchingHistory, isEmpty, messages, currentScope, handleChipSend,
+  isFetchingHistory, isEmpty, messages, currentScope, contextPage, handleChipSend,
   hitlPending, sendApproval, isStreaming, streamingContent,
   conversationId, messagesEndRef,
 }: LiaChatMessageListProps) {
@@ -81,7 +82,7 @@ export function LiaChatMessageList({
           <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
         </div>
       ) : isEmpty ? (
-        <EmptyState scope={currentScope} onChipClick={handleChipSend} />
+        <EmptyState scope={currentScope} contextPage={contextPage} onChipClick={handleChipSend} />
       ) : (
         <>
           {messages.map(msg => (
@@ -138,6 +139,19 @@ function scopeToContextPage(scope: string): string {
   }
 }
 
+function contextPageToBackendPage(contextPage: string | null | undefined, fallbackScope: string): string {
+  if (contextPage) {
+    switch (contextPage) {
+      case "Funil de Talentos": return "candidato"
+      case "Vagas":             return "vaga"
+      case "Painel de Controle": return "home"
+      case "Indicadores":       return "relatorios"
+      case "Configurações":     return "configuracoes"
+    }
+  }
+  return scopeToContextPage(fallbackScope)
+}
+
 const ICON_MAP: Record<string, LucideIcon> = {
   Sun, AlertTriangle, Users, Plus, FileText, TrendingUp, Search, Activity,
   ClipboardCheck, DollarSign, Edit, GitMerge, Zap, Calendar, Star, ArrowRight,
@@ -145,20 +159,18 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Link, Home, Briefcase, User, GitBranch, Settings, Clock, Brain,
 }
 
-function EmptyState({ scope, onChipClick }: { scope: string; onChipClick: (prompt: string) => void }) {
+function EmptyState({ scope, contextPage, onChipClick }: { scope: string; contextPage?: string | null; onChipClick: (prompt: string) => void }) {
   const [suggestions, setSuggestions] = React.useState<Array<{ id: string; icon: string; label: string; prompt: string }>>([])
-  const [badge, setBadge] = React.useState<{ label: string; icon: string; color: string } | null>(null)
 
   React.useEffect(() => {
-    const page = scopeToContextPage(scope)
+    const page = contextPageToBackendPage(contextPage, scope)
     fetch(`/api/backend-proxy/lia/context-suggestions?page=${page}&limit=4`)
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then((data: { suggestions?: typeof suggestions; context_badge?: typeof badge }) => {
+      .then((data: { suggestions?: typeof suggestions }) => {
         setSuggestions(data.suggestions ?? [])
-        setBadge(data.context_badge ?? null)
       })
       .catch(() => {})
-  }, [scope])
+  }, [scope, contextPage])
 
   return (
     <div className="flex flex-col items-start h-full gap-2.5 pt-5 px-1">
@@ -168,18 +180,6 @@ function EmptyState({ scope, onChipClick }: { scope: string; onChipClick: (promp
         </div>
         <div>
           <p className="text-base-ui font-medium text-lia-text-primary">Como posso ajudar?</p>
-          {badge && (() => {
-            const BadgeIcon = ICON_MAP[badge.icon] || Brain
-            return (
-              <span
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-0.5"
-                style={{ backgroundColor: badge.color + "18", color: badge.color, border: `1px solid ${badge.color}35` }}
-              >
-                <BadgeIcon className="w-3 h-3" />
-                <span>{badge.label}</span>
-              </span>
-            )
-          })()}
         </div>
       </div>
       {suggestions.length > 0 && (
