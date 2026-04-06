@@ -121,7 +121,6 @@ PENDING_MIGRATION = {
     "app/api/v1/llm_config.py",
     "app/api/v1/ml_feedback.py",
     "app/api/v1/ml_predictions.py",
-    "app/api/v1/notifications.py",
     "app/api/v1/pipeline.py",
     "app/api/v1/pipeline_policy.py",
     "app/api/v1/pipeline_templates.py",
