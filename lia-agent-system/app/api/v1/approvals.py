@@ -166,14 +166,9 @@ async def list_approval_requests(
         try:
             parsed_company_id = UUID(company_id)
         except (ValueError, TypeError):
-            from app.models.company import CompanyProfile
-            from sqlalchemy import select
-            result = await repo.db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
-            )
-            default_company = result.scalar_one_or_none()
-            if default_company:
-                parsed_company_id = default_company.id
+            default_id = await repo.get_default_company_id()
+            if default_id:
+                parsed_company_id = default_id
             else:
                 return []
 

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from app.models.approval import ApprovalRequest
+from app.models.company import CompanyProfile
 import uuid
 from uuid import UUID
 from typing import Optional
@@ -69,3 +70,12 @@ class ApprovalsRepository:
         query = query.order_by(ApprovalRequest.created_at.desc())
         result = await self.db.execute(query)
         return list(result.scalars().all())
+
+    async def get_default_company_id(self):
+        from sqlalchemy import select
+        result = await self.db.execute(
+            select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
+        )
+        default = result.scalar_one_or_none()
+        return default.id if default else None
+
