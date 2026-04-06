@@ -450,7 +450,7 @@ export function LiaSuperPrompt() {
                   {/* Input */}
                   <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
                     <div className="max-w-3xl mx-auto">
-                      <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
+                      <div className="flex items-center gap-2 px-4 py-2.5">
                         <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
                           <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                         </div>

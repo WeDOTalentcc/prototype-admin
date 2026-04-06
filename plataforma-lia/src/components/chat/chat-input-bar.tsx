@@ -62,7 +62,7 @@ export function ChatInputBar({
   return (
     <div
       className={cn(
-        "flex items-end gap-2 rounded-[24px] border border-lia-border-subtle bg-lia-bg-primary px-3 py-2",
+        "flex items-end gap-2 px-3 py-2",
         className
       )}
     >

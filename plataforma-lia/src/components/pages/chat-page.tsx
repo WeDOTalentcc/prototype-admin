@@ -342,7 +342,7 @@ export function LegacyChatPage() {
                 </div>
               )}
 
-              <div className="rounded-lg p-5 space-y-4 bg-white border border-lia-border-subtle">
+              <div className="space-y-4">
                 
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !== "collecting_profile" && (
@@ -537,7 +537,7 @@ export function LegacyChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 border border-lia-border-subtle bg-white text-lia-text-primary"
+                      className="w-full resize-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
                       rows={1}
                     />
                   </div>
