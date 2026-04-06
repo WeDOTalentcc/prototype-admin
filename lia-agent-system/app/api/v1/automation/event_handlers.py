@@ -1531,7 +1531,7 @@ async def handle_candidate_no_show(
                     )
                     
                     email_sent = send_result.get("success", False)
-                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Reschedule email sent (ok=: {email_sent}")
+                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Reschedule email sent ok={email_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send reschedule email: {e}")
             
@@ -1582,7 +1582,7 @@ async def handle_candidate_no_show(
                     )
                     
                     email_sent = send_result.get("success", False)
-                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Final notice email sent (ok=: {email_sent}")
+                    logger.info(f"📧 [CANDIDATE_NO_SHOW] Final notice email sent ok={email_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send final notice email: {e}")
             

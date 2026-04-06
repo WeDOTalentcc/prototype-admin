@@ -1153,16 +1153,16 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 | Phase | Status | LOC Before | LOC After | Delta | Completed |
 |---|---|---|---|---|---|
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
-| 1 — Hardcoded data | ⬜ TODO | | | | |
+| 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
 | 2 — Extract DB to repos | ⬜ TODO | | | | |
 | 3 — Model consolidation | ⬜ TODO | | | | |
 | 4 — DDD migration | ⬜ TODO | | | | |
 | 5 — Response models | ⬜ TODO | | | | |
-| 6 — Prompts to .md | ⬜ TODO | | | | |
-| 7 — Fix tests | ⬜ TODO | | | | |
-| 8 — Guardrails & CI | ⬜ TODO | | | | |
+| 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
+| 7 — Fix tests | ✅ DONE | — | — | rename only | 2026-04-06 |
+| 8 — Guardrails & CI | ✅ DONE | — | — | +scripts | 2026-04-06 |
 | 9 — Circular imports | ⬜ TODO | | | | |
-| 10 — Error handling | ⬜ TODO | | | | |
+| 10 — Error handling | ✅ DONE | — | — | +4 handlers | 2026-04-06 |
 
 ### Key Metrics Dashboard
 

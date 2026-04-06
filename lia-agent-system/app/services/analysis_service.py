@@ -574,7 +574,70 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
             f"archetype={inferred_archetype}, bars={'yes' if bars_result else 'no'}"
         )
 
+        await self._persist_enriched_analysis(candidate_id, vacancy_id, result)
+
         return result
+
+    async def _persist_enriched_analysis(
+        self,
+        candidate_id: str,
+        vacancy_id: Optional[str],
+        analysis: Dict[str, Any],
+    ) -> None:
+        try:
+            from app.core.database import AsyncSessionLocal
+            from sqlalchemy import select
+            from app.models.candidate import Candidate, VacancyCandidate
+            from uuid import UUID
+            from datetime import datetime
+
+            async with AsyncSessionLocal() as db:
+                if vacancy_id:
+                    vc_result = await db.execute(
+                        select(VacancyCandidate).where(
+                            VacancyCandidate.candidate_id == UUID(candidate_id),
+                            VacancyCandidate.job_vacancy_id == UUID(vacancy_id),
+                        )
+                    )
+                    vc = vc_result.scalar_one_or_none()
+                    if vc and hasattr(vc, "ai_analysis"):
+                        current = vc.ai_analysis or {}
+                        current["enriched_analysis"] = {
+                            "overall_score": analysis.get("overall_assessment", {}).get("score"),
+                            "recommendation": analysis.get("overall_assessment", {}).get("recommendation"),
+                            "recommendation_level": analysis.get("overall_assessment", {}).get("recommendation_level"),
+                            "confidence": analysis.get("confidence"),
+                            "archetype": analysis.get("behavioral_profile", {}).get("archetype"),
+                            "big_five": analysis.get("behavioral_profile", {}).get("big_five"),
+                            "bars_score": analysis.get("technical_fit", {}).get("bars_score"),
+                            "lia_score": analysis.get("lia_analysis", {}).get("lia_score"),
+                            "vacancy_id": vacancy_id,
+                            "analyzed_at": analysis.get("analyzed_at"),
+                        }
+                        vc.ai_analysis = current
+                        await db.commit()
+                        logger.info(f"[ENRICHED_ANALYSIS] Persisted to VacancyCandidate: candidate={candidate_id}, vacancy={vacancy_id}")
+                        return
+
+                cand_result = await db.execute(
+                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                )
+                cand = cand_result.scalar_one_or_none()
+                if cand and hasattr(cand, "lia_insights"):
+                    current = cand.lia_insights or {}
+                    current["enriched_analysis"] = {
+                        "overall_score": analysis.get("overall_assessment", {}).get("score"),
+                        "recommendation": analysis.get("overall_assessment", {}).get("recommendation"),
+                        "confidence": analysis.get("confidence"),
+                        "archetype": analysis.get("behavioral_profile", {}).get("archetype"),
+                        "big_five": analysis.get("behavioral_profile", {}).get("big_five"),
+                        "analyzed_at": analysis.get("analyzed_at"),
+                    }
+                    cand.lia_insights = current
+                    await db.commit()
+                    logger.info(f"[ENRICHED_ANALYSIS] Persisted to Candidate.lia_insights: candidate={candidate_id}")
+        except Exception as e:
+            logger.error(f"[ENRICHED_ANALYSIS] Persistence failed for {candidate_id}: {e}", exc_info=True)
 
 
 analysis_service = AnalysisService()

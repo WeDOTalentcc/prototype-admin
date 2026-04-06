@@ -230,9 +230,12 @@ async def _analyze_profile(params: Dict[str, Any], context: Dict[str, Any]):
         from uuid import UUID
         from app.services.analysis_service import analysis_service
 
+        from sqlalchemy import text as sql_text
+
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
         vacancy_id = params.get("vacancy_id") or params.get("job_vacancy_id") or (context or {}).get("job_vacancy_id")
+        company_id = (context or {}).get("company_id")
 
         if not candidate_id:
             return ActionResult(
@@ -243,6 +246,23 @@ async def _analyze_profile(params: Dict[str, Any], context: Dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
+            if company_id:
+                authz = await db.execute(
+                    sql_text(
+                        "SELECT 1 FROM vacancy_candidates "
+                        "WHERE candidate_id = CAST(:cid AS uuid) "
+                        "AND company_id = CAST(:co AS uuid) LIMIT 1"
+                    ),
+                    {"cid": candidate_id, "co": str(company_id)},
+                )
+                if authz.fetchone() is None:
+                    return ActionResult(
+                        status="error",
+                        message="Sem permissão para analisar este candidato.",
+                        error_detail="Candidate does not belong to caller's company",
+                        action_type="analyze_profile",
+                    )
+
             result = await db.execute(
                 select(Candidate).where(Candidate.id == UUID(candidate_id))
             )

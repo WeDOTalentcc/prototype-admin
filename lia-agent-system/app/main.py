@@ -309,7 +309,9 @@ app.add_middleware(RequestIdMiddleware)
 app.add_middleware(StructuredLoggingMiddleware)
 
 from fastapi import Request as FastAPIRequest
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError as PydanticValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
@@ -351,6 +353,46 @@ async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
             "message": "Internal server error",
             "request_id": request_id,
         }
+    )
+
+
+@app.exception_handler(PydanticValidationError)
+async def pydantic_validation_error_handler(request: FastAPIRequest, exc: PydanticValidationError) -> JSONResponse:
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "Pydantic validation error: %d errors on %s %s",
+        len(exc.errors()), request.method, request.url.path,
+    )
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": True,
+            "status_code": 422,
+            "code": "VALIDATION_ERROR",
+            "message": "Validation error",
+            "errors": exc.errors(include_url=False),
+            "request_id": request_id,
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_error_handler(request: FastAPIRequest, exc: RequestValidationError) -> JSONResponse:
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "Request validation error: %d errors on %s %s",
+        len(exc.errors()), request.method, request.url.path,
+    )
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": True,
+            "status_code": 422,
+            "code": "REQUEST_VALIDATION_ERROR",
+            "message": "Request validation failed",
+            "errors": exc.errors(),
+            "request_id": request_id,
+        },
     )
 
 
