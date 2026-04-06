@@ -8,11 +8,10 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel
-from sqlalchemy import and_, desc, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.domains.ats_integration.dependencies import get_ats_repo
+from app.domains.ats_integration.repositories.ats_repository import ATSRepository
 from app.domains.ats_integration.services.gupy_service import GupyService
 from app.domains.ats_integration.services.pandape_service import PandapeService
 from app.models.ats_integration import (
@@ -63,7 +62,7 @@ class TriggerSyncRequest(BaseModel):
 @router.post("/ats/connections", response_model=dict)
 async def create_ats_connection(
     request: CreateATSConnectionRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
     """
@@ -89,7 +88,7 @@ async def create_ats_connection(
                 status_code=400,
                 detail="Failed to connect to ATS. Please verify your API credentials."
             )
-        
+
         connection = ATSConnection(
             provider=ATSProvider[request.provider.upper()],
             provider_name=request.provider_name,
@@ -102,20 +101,18 @@ async def create_ats_connection(
             sync_frequency_hours=request.sync_frequency_hours,
             created_by=str(current_user.id)
         )
-        
-        db.add(connection)
-        await db.flush()
-        await db.refresh(connection)
-        
+
+        connection = await repo.add_connection(connection)
+
         logger.info(f"✅ ATS connection created: {request.provider} - {connection.id}")
-        
+
         return {
             "success": True,
             "connection_id": str(connection.id),
             "provider": request.provider,
             "message": f"{request.provider_name} connected successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -125,7 +122,7 @@ async def create_ats_connection(
 
 @router.get("/ats/connections", response_model=list[dict])
 async def list_ats_connections(
-    db: AsyncSession = Depends(get_db),
+    repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
     """
@@ -133,16 +130,8 @@ async def list_ats_connections(
     """
     try:
         company_id = get_user_company_id(current_user)
-        result = await db.execute(
-            select(ATSConnection).where(
-                and_(
-                    ATSConnection.is_active,
-                    ATSConnection.company_id == company_id,
-                )
-            )
-        )
-        connections = result.scalars().all()
-        
+        connections = await repo.get_active_connections_by_company(company_id)
+
         return [
             {
                 "id": str(conn.id),
@@ -158,7 +147,7 @@ async def list_ats_connections(
             }
             for conn in connections
         ]
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to list ATS connections: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -259,7 +248,7 @@ async def _test_provider_connection(
 @router.post("/ats/field-mappings", response_model=dict)
 async def save_field_mappings(
     request: SaveFieldMappingsRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
     """
@@ -267,15 +256,9 @@ async def save_field_mappings(
     """
     try:
         company_id = get_user_company_id(current_user)
-        result = await db.execute(
-            select(ATSConnection).where(
-                and_(
-                    ATSConnection.id == request.connection_id,
-                    ATSConnection.company_id == company_id,
-                )
-            )
+        connection = await repo.get_connection_by_id_and_company(
+            request.connection_id, company_id
         )
-        connection = result.scalar_one_or_none()
 
         if not connection:
             raise HTTPException(status_code=404, detail="Connection not found")
@@ -306,7 +289,7 @@ async def save_field_mappings(
 @router.get("/ats/field-mappings/{connection_id}", response_model=dict)
 async def get_field_mappings(
     connection_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
     """
@@ -314,15 +297,7 @@ async def get_field_mappings(
     """
     try:
         company_id = get_user_company_id(current_user)
-        result = await db.execute(
-            select(ATSConnection).where(
-                and_(
-                    ATSConnection.id == connection_id,
-                    ATSConnection.company_id == company_id,
-                )
-            )
-        )
-        connection = result.scalar_one_or_none()
+        connection = await repo.get_connection_by_id_and_company(connection_id, company_id)
 
         if not connection:
             raise HTTPException(status_code=404, detail="Connection not found")
@@ -344,7 +319,7 @@ async def get_field_mappings(
 async def trigger_ats_sync(
     connection_id: str,
     request: TriggerSyncRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
     """
@@ -352,15 +327,7 @@ async def trigger_ats_sync(
     """
     try:
         company_id = get_user_company_id(current_user)
-        result = await db.execute(
-            select(ATSConnection).where(
-                and_(
-                    ATSConnection.id == connection_id,
-                    ATSConnection.company_id == company_id,
-                )
-            )
-        )
-        connection = result.scalar_one_or_none()
+        connection = await repo.get_connection_by_id_and_company(connection_id, company_id)
 
         if not connection:
             raise HTTPException(status_code=404, detail="Connection not found")
@@ -383,9 +350,7 @@ async def trigger_ats_sync(
             triggered_by="user"
         )
 
-        db.add(sync_job)
-        await db.flush()
-        await db.refresh(sync_job)
+        sync_job = await repo.add_sync_job(sync_job)
 
         records_created = 0
         records_updated = 0
@@ -479,7 +444,6 @@ async def trigger_ats_sync(
             (connection.total_candidates_synced or 0) + records_created
         )
 
-
         logger.info(
             "Sync job %s completed: created=%d, updated=%d, failed=%d",
             sync_job.id,
@@ -515,28 +479,16 @@ async def list_sync_jobs(
     connection_id: str | None = Query(None),
     status: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: ATSRepository = Depends(get_ats_repo),
 ):
     """
     List ATS synchronization jobs.
     """
     try:
-        query = select(ATSSyncJob)
-        
-        filters = []
-        if connection_id:
-            filters.append(ATSSyncJob.connection_id == connection_id)
-        if status:
-            filters.append(ATSSyncJob.status == SyncStatus[status.upper()])
-        
-        if filters:
-            query = query.where(and_(*filters))
-        
-        query = query.order_by(desc(ATSSyncJob.created_at)).limit(limit)
-        
-        result = await db.execute(query)
-        jobs = result.scalars().all()
-        
+        jobs = await repo.list_sync_jobs(
+            connection_id=connection_id, status=status, limit=limit
+        )
+
         return [
             {
                 "id": str(job.id),
@@ -555,7 +507,7 @@ async def list_sync_jobs(
             }
             for job in jobs
         ]
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to list sync jobs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -566,27 +518,16 @@ async def list_ats_candidates(
     provider: str | None = Query(None, description="Filter by provider (gupy/pandape)"),
     connection_id: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
-    db: AsyncSession = Depends(get_db)
+    repo: ATSRepository = Depends(get_ats_repo),
 ):
     """
     List candidates imported from ATS platforms.
     """
     try:
-        query = select(ATSCandidate)
-        
-        filters = [ATSCandidate.is_active]
-        
-        if provider:
-            filters.append(ATSCandidate.provider == ATSProvider[provider.upper()])
-        if connection_id:
-            filters.append(ATSCandidate.connection_id == connection_id)
-        
-        query = query.where(and_(*filters))
-        query = query.order_by(desc(ATSCandidate.last_synced_at)).limit(limit)
-        
-        result = await db.execute(query)
-        candidates = result.scalars().all()
-        
+        candidates = await repo.list_candidates(
+            provider=provider, connection_id=connection_id, limit=limit
+        )
+
         return [
             {
                 "id": str(candidate.id),
@@ -605,7 +546,7 @@ async def list_ats_candidates(
             }
             for candidate in candidates
         ]
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to list ATS candidates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -615,7 +556,7 @@ async def list_ats_candidates(
 async def receive_ats_webhook(
     provider: str,
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    repo: ATSRepository = Depends(get_ats_repo),
     x_webhook_signature: str | None = Header(None, alias="X-Webhook-Signature"),
     x_gupy_signature: str | None = Header(None, alias="X-Gupy-Signature"),
 ):
@@ -637,13 +578,7 @@ async def receive_ats_webhook(
         provider_enum = ATSProvider[provider_lower.upper()]
         incoming_sig = x_gupy_signature or x_webhook_signature
 
-        conn_result = await db.execute(
-            select(ATSConnection).where(
-                ATSConnection.provider == provider_enum,
-                ATSConnection.is_active == True,
-            ).order_by(desc(ATSConnection.created_at))
-        )
-        all_connections = conn_result.scalars().all()
+        all_connections = await repo.get_active_connections_by_provider(provider_enum)
 
         connection = None
         if incoming_sig and all_connections:
@@ -693,8 +628,7 @@ async def receive_ats_webhook(
         if connection_id:
             webhook_log.connection_id = connection_id
 
-        db.add(webhook_log)
-        await db.flush()
+        webhook_log = await repo.add_webhook_log(webhook_log)
 
         logger.info("Webhook received: %s - %s (id=%s)", provider, event_type, event_id)
 
@@ -704,7 +638,7 @@ async def receive_ats_webhook(
                 provider=provider_lower,
                 event_type=event_type,
                 payload=payload,
-                db=db,
+                repo=repo,
                 connection_id=connection_id,
             )
             webhook_log.processed = processed
@@ -713,7 +647,6 @@ async def receive_ats_webhook(
             processing_error = str(proc_exc)
             webhook_log.processing_error = processing_error
             logger.warning("Webhook processing error: %s", proc_exc)
-
 
         return {
             "success": True,
@@ -734,7 +667,7 @@ async def _process_webhook_event(
     provider: str,
     event_type: str,
     payload: dict,
-    db: AsyncSession,
+    repo: ATSRepository,
     connection_id: object | None = None,
 ) -> bool:
     """
@@ -749,17 +682,17 @@ async def _process_webhook_event(
     event_lower = event_type.lower()
 
     if provider == "gupy":
-        return await _process_gupy_webhook(event_lower, payload, db, connection_id)
+        return await _process_gupy_webhook(event_lower, payload, repo, connection_id)
     elif provider == "pandape":
-        return await _process_pandape_webhook(event_lower, payload, db, connection_id)
+        return await _process_pandape_webhook(event_lower, payload, repo, connection_id)
     elif provider == "merge":
-        return await _process_merge_webhook(event_lower, payload, db, connection_id)
+        return await _process_merge_webhook(event_lower, payload, repo, connection_id)
 
     return False
 
 
 async def _process_gupy_webhook(
-    event_type: str, payload: dict, db: AsyncSession, connection_id: object
+    event_type: str, payload: dict, repo: ATSRepository, connection_id: object
 ) -> bool:
     """Process Gupy webhook events."""
     data = payload.get("data", payload)
@@ -769,14 +702,9 @@ async def _process_gupy_webhook(
         if not ats_candidate_id:
             return False
 
-        existing = await db.execute(
-            select(ATSCandidate).where(
-                ATSCandidate.ats_candidate_id == ats_candidate_id,
-                ATSCandidate.provider == ATSProvider.GUPY,
-                ATSCandidate.connection_id == connection_id,
-            )
+        candidate = await repo.get_candidate_by_ats_id(
+            ats_candidate_id, ATSProvider.GUPY, connection_id
         )
-        candidate = existing.scalar_one_or_none()
 
         if candidate:
             candidate.name = data.get("name", candidate.name)
@@ -801,7 +729,7 @@ async def _process_gupy_webhook(
                 current_stage=data.get("stage"),
                 ats_raw_data=data,
             )
-            db.add(new_candidate)
+            await repo.add_candidate(new_candidate)
 
         logger.info("Processed Gupy %s for candidate %s", event_type, ats_candidate_id)
         return True
@@ -812,14 +740,9 @@ async def _process_gupy_webhook(
         new_status = data.get("status")
 
         if ats_candidate_id:
-            result = await db.execute(
-                select(ATSCandidate).where(
-                    ATSCandidate.ats_candidate_id == ats_candidate_id,
-                    ATSCandidate.provider == ATSProvider.GUPY,
-                    ATSCandidate.connection_id == connection_id,
-                )
+            candidate = await repo.get_candidate_by_ats_id(
+                ats_candidate_id, ATSProvider.GUPY, connection_id
             )
-            candidate = result.scalar_one_or_none()
             if candidate:
                 if new_stage:
                     candidate.current_stage = new_stage
@@ -837,14 +760,7 @@ async def _process_gupy_webhook(
             logger.info("Gupy job event %s without id — skipped", event_type)
             return True
 
-        existing = await db.execute(
-            select(ATSJobMapping).where(
-                ATSJobMapping.ats_job_id == ats_job_id,
-                ATSJobMapping.provider == ATSProvider.GUPY,
-                ATSJobMapping.connection_id == connection_id,
-            )
-        )
-        job = existing.scalar_one_or_none()
+        job = await repo.get_job_by_ats_id(ats_job_id, ATSProvider.GUPY, connection_id)
 
         if job:
             job.job_title = data.get("name", job.job_title)
@@ -865,7 +781,7 @@ async def _process_gupy_webhook(
                 ats_status=data.get("status", "open"),
                 ats_raw_data=data,
             )
-            db.add(new_job)
+            await repo.add_job(new_job)
 
         logger.info("Processed Gupy %s for job %s", event_type, ats_job_id)
         return True
@@ -875,7 +791,7 @@ async def _process_gupy_webhook(
 
 
 async def _process_pandape_webhook(
-    event_type: str, payload: dict, db: AsyncSession, connection_id: object
+    event_type: str, payload: dict, repo: ATSRepository, connection_id: object
 ) -> bool:
     """Process Pandapé webhook events."""
     data = payload.get("dados", payload.get("data", payload))
@@ -885,14 +801,9 @@ async def _process_pandape_webhook(
         if not ats_candidate_id:
             return False
 
-        existing = await db.execute(
-            select(ATSCandidate).where(
-                ATSCandidate.ats_candidate_id == ats_candidate_id,
-                ATSCandidate.provider == ATSProvider.PANDAPE,
-                ATSCandidate.connection_id == connection_id,
-            )
+        candidate = await repo.get_candidate_by_ats_id(
+            ats_candidate_id, ATSProvider.PANDAPE, connection_id
         )
-        candidate = existing.scalar_one_or_none()
 
         if candidate:
             candidate.name = data.get("nome_completo", candidate.name)
@@ -915,7 +826,7 @@ async def _process_pandape_webhook(
                 application_status=data.get("situacao", "novo"),
                 ats_raw_data=data,
             )
-            db.add(new_candidate)
+            await repo.add_candidate(new_candidate)
 
         logger.info("Processed Pandapé %s for candidate %s", event_type, ats_candidate_id)
         return True
@@ -926,14 +837,9 @@ async def _process_pandape_webhook(
         nova_situacao = data.get("situacao")
 
         if ats_candidate_id:
-            result = await db.execute(
-                select(ATSCandidate).where(
-                    ATSCandidate.ats_candidate_id == ats_candidate_id,
-                    ATSCandidate.provider == ATSProvider.PANDAPE,
-                    ATSCandidate.connection_id == connection_id,
-                )
+            candidate = await repo.get_candidate_by_ats_id(
+                ats_candidate_id, ATSProvider.PANDAPE, connection_id
             )
-            candidate = result.scalar_one_or_none()
             if candidate:
                 if nova_etapa:
                     candidate.current_stage = nova_etapa
@@ -951,14 +857,7 @@ async def _process_pandape_webhook(
             logger.info("Pandapé job event %s without id — skipped", event_type)
             return True
 
-        existing = await db.execute(
-            select(ATSJobMapping).where(
-                ATSJobMapping.ats_job_id == ats_job_id,
-                ATSJobMapping.provider == ATSProvider.PANDAPE,
-                ATSJobMapping.connection_id == connection_id,
-            )
-        )
-        job = existing.scalar_one_or_none()
+        job = await repo.get_job_by_ats_id(ats_job_id, ATSProvider.PANDAPE, connection_id)
 
         if job:
             job.job_title = data.get("titulo", job.job_title)
@@ -979,7 +878,7 @@ async def _process_pandape_webhook(
                 ats_status=data.get("situacao", "aberta"),
                 ats_raw_data=data,
             )
-            db.add(new_job)
+            await repo.add_job(new_job)
 
         logger.info("Processed Pandapé %s for job %s", event_type, ats_job_id)
         return True
@@ -989,7 +888,7 @@ async def _process_pandape_webhook(
 
 
 async def _process_merge_webhook(
-    event_type: str, payload: dict, db: AsyncSession, connection_id: object
+    event_type: str, payload: dict, repo: ATSRepository, connection_id: object
 ) -> bool:
     """Process Merge.dev unified webhook events."""
     data = payload.get("data", payload)
@@ -1000,14 +899,9 @@ async def _process_merge_webhook(
         if not ats_candidate_id:
             return False
 
-        existing = await db.execute(
-            select(ATSCandidate).where(
-                ATSCandidate.ats_candidate_id == ats_candidate_id,
-                ATSCandidate.provider == ATSProvider.MERGE,
-                ATSCandidate.connection_id == connection_id,
-            )
+        candidate = await repo.get_candidate_by_ats_id(
+            ats_candidate_id, ATSProvider.MERGE, connection_id
         )
-        candidate = existing.scalar_one_or_none()
 
         if candidate:
             candidate.name = (
@@ -1035,7 +929,7 @@ async def _process_merge_webhook(
                 application_status="new",
                 ats_raw_data=data,
             )
-            db.add(new_candidate)
+            await repo.add_candidate(new_candidate)
 
         logger.info("Processed Merge %s for candidate %s", hook_type, ats_candidate_id)
         return True
@@ -1045,14 +939,7 @@ async def _process_merge_webhook(
         if not ats_job_id:
             return True
 
-        existing = await db.execute(
-            select(ATSJobMapping).where(
-                ATSJobMapping.ats_job_id == ats_job_id,
-                ATSJobMapping.provider == ATSProvider.MERGE,
-                ATSJobMapping.connection_id == connection_id,
-            )
-        )
-        job = existing.scalar_one_or_none()
+        job = await repo.get_job_by_ats_id(ats_job_id, ATSProvider.MERGE, connection_id)
 
         if job:
             job.job_title = data.get("name", job.job_title)
@@ -1071,7 +958,7 @@ async def _process_merge_webhook(
                 ats_status=data.get("status", "open"),
                 ats_raw_data=data,
             )
-            db.add(new_job)
+            await repo.add_job(new_job)
 
         logger.info("Processed Merge %s for job %s", hook_type, ats_job_id)
         return True
@@ -1085,28 +972,16 @@ async def list_webhook_logs(
     provider: str | None = Query(None),
     processed: bool | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
-    db: AsyncSession = Depends(get_db)
+    repo: ATSRepository = Depends(get_ats_repo),
 ):
     """
     List webhook logs from ATS platforms.
     """
     try:
-        query = select(ATSWebhookLog)
-        
-        filters = []
-        if provider:
-            filters.append(ATSWebhookLog.provider == ATSProvider[provider.upper()])
-        if processed is not None:
-            filters.append(ATSWebhookLog.processed == processed)
-        
-        if filters:
-            query = query.where(and_(*filters))
-        
-        query = query.order_by(desc(ATSWebhookLog.received_at)).limit(limit)
-        
-        result = await db.execute(query)
-        logs = result.scalars().all()
-        
+        logs = await repo.list_webhook_logs(
+            provider=provider, processed=processed, limit=limit
+        )
+
         return [
             {
                 "id": str(log.id),
@@ -1120,7 +995,7 @@ async def list_webhook_logs(
             }
             for log in logs
         ]
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to list webhook logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
