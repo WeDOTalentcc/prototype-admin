@@ -10,7 +10,6 @@ from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
@@ -914,7 +913,7 @@ class EnrichmentRequest(BaseModel):
 async def enrich_candidate(
     candidate_id: str,
     request: EnrichmentRequest = EnrichmentRequest(),
-    db: AsyncSession = Depends(get_db),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Enrich candidate data from LinkedIn using Apify scrapers.
@@ -934,7 +933,7 @@ async def enrich_candidate(
         from app.services.candidate_enrichment_service import candidate_enrichment_service
 
         result = await candidate_enrichment_service.enrich_candidate(
-            db=db,
+            db=candidate_repo.db,
             candidate_id=uuid.UUID(candidate_id),
             linkedin_url=request.linkedin_url,
             include_experiences=request.include_experiences,
@@ -1852,11 +1851,11 @@ class ConsentCreateRequest(BaseModel):
 async def get_candidate_consents(
     candidate_id: uuid.UUID,
     x_company_id: str | None = Header(None),
-    db: AsyncSession = Depends(get_db),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """Lista todos os consentimentos LGPD de um candidato."""
     company_id = x_company_id or "admin_company"
-    svc = ConsentCheckerService(db)
+    svc = ConsentCheckerService(candidate_repo.db)
     consents = await svc.get_candidate_consents(str(candidate_id), company_id)
     return {"candidate_id": str(candidate_id), "consents": consents}
 
@@ -1866,11 +1865,11 @@ async def create_or_update_candidate_consent(
     candidate_id: uuid.UUID,
     request: ConsentCreateRequest,
     x_company_id: str | None = Header(None),
-    db: AsyncSession = Depends(get_db),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """Registra ou atualiza consentimento LGPD de um candidato por finalidade."""
     company_id = x_company_id or "admin_company"
-    svc = ConsentCheckerService(db)
+    svc = ConsentCheckerService(candidate_repo.db)
     consent = await svc.register_consent(
         candidate_id=str(candidate_id),
         company_id=company_id,
@@ -1880,7 +1879,7 @@ async def create_or_update_candidate_consent(
         consent_text=request.consent_text,
         ip_address=request.ip_address,
     )
-    await db.commit()
+    await candidate_repo.db.commit()
     return consent.to_dict()
 
 
@@ -1889,11 +1888,11 @@ async def revoke_candidate_consent(
     candidate_id: uuid.UUID,
     consent_type: str,
     x_company_id: str | None = Header(None),
-    db: AsyncSession = Depends(get_db),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """Revoga consentimento LGPD de um candidato para uma finalidade específica."""
     company_id = x_company_id or "admin_company"
-    svc = ConsentCheckerService(db)
+    svc = ConsentCheckerService(candidate_repo.db)
     consent = await svc.register_consent(
         candidate_id=str(candidate_id),
         company_id=company_id,
@@ -1901,7 +1900,7 @@ async def revoke_candidate_consent(
         consent_given=False,
         consent_source="candidate_request",
     )
-    await db.commit()
+    await candidate_repo.db.commit()
     return {"success": True, "message": f"Consentimento '{consent_type}' revogado", "consent": consent.to_dict()}
 
 
