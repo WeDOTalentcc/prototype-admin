@@ -13,6 +13,7 @@ from typing import Any, Dict, Optional
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.base_agent import AgentType
+from app.shared.prompts.loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 

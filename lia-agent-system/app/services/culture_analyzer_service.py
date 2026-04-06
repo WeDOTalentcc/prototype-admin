@@ -10,6 +10,7 @@ from datetime import timedelta
 from typing import Any, Dict, Optional
 
 from app.services.llm import LLMProvider, llm_service
+from app.shared.prompts.loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
