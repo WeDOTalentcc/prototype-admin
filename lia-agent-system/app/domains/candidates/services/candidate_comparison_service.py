@@ -9,7 +9,7 @@ This service compares candidates using scenario-based weights:
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Literal
 
 from langchain_core.output_parsers import JsonOutputParser
@@ -27,7 +27,7 @@ from app.services.llm import llm_service
 logger = logging.getLogger(__name__)
 
 
-class ComparisonScenario(str, Enum):
+class ComparisonScenario(StrEnum):
     """Comparison scenario types based on available data."""
     SCENARIO_A = "scenario_a"  # All candidates screened (WSI completed)
     SCENARIO_B = "scenario_b"  # Non-screened candidates (CV only)

@@ -246,7 +246,7 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
             and_(
                 ConsentVersion.company_id == company_uuid,
                 ConsentVersion.consent_type == "communication_email",
-                ConsentVersion.is_current == True,
+                ConsentVersion.is_current,
             )
         ).limit(1)
         cv_result = await db.execute(cv_query)

@@ -4,10 +4,10 @@ Baseada em CBO (Classificação Brasileira de Ocupações), ESCO e padrões de m
 """
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 
 
-class TaxonomyCategory(str, Enum):
+class TaxonomyCategory(StrEnum):
     JOB_TITLE = "job_title"
     SKILL_TECHNICAL = "skill_technical"
     SKILL_SOFT = "skill_soft"

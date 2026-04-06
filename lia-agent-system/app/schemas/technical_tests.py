@@ -3,13 +3,13 @@ Pydantic schemas for Technical Tests API.
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class TestCategoryEnum(str, Enum):
+class TestCategoryEnum(StrEnum):
     """Category of technical test."""
     CODING = "coding"
     LOGIC = "logic"
@@ -17,7 +17,7 @@ class TestCategoryEnum(str, Enum):
     PERSONALITY = "personality"
 
 
-class TestSubcategoryEnum(str, Enum):
+class TestSubcategoryEnum(StrEnum):
     """Subcategory/technology of technical test."""
     PYTHON = "python"
     JAVASCRIPT = "javascript"
@@ -37,7 +37,7 @@ class TestSubcategoryEnum(str, Enum):
     GENERAL = "general"
 
 
-class TestDifficultyEnum(str, Enum):
+class TestDifficultyEnum(StrEnum):
     """Difficulty level of test."""
     EASY = "easy"
     MEDIUM = "medium"

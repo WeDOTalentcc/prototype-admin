@@ -2,12 +2,12 @@
 Pydantic schemas for Trust Center API.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class SubprocessorCategoryEnum(str, Enum):
+class SubprocessorCategoryEnum(StrEnum):
     """Categories of data subprocessors."""
     CLOUD_HOSTING = "cloud_hosting"
     CRM = "crm"
@@ -20,7 +20,7 @@ class SubprocessorCategoryEnum(str, Enum):
     OTHER = "other"
 
 
-class ResourceCategoryEnum(str, Enum):
+class ResourceCategoryEnum(StrEnum):
     """Categories of trust center resources."""
     POLICY = "policy"
     REPORT = "report"
@@ -29,7 +29,7 @@ class ResourceCategoryEnum(str, Enum):
     OTHER = "other"
 
 
-class UpdateCategoryEnum(str, Enum):
+class UpdateCategoryEnum(StrEnum):
     """Categories of trust center updates."""
     GENERAL = "general"
     COMPLIANCE = "compliance"

@@ -10,7 +10,7 @@ This module provides:
 import html
 import logging
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 logger = logging.getLogger(__name__)
 
 
-class SupportedLanguage(str, Enum):
+class SupportedLanguage(StrEnum):
     """Supported languages for the platform."""
     PT_BR = "pt-BR"
     EN_US = "en-US"

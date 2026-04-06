@@ -18,14 +18,14 @@ from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 
-class ChurnRisk(str, enum.Enum):
+class ChurnRisk(enum.StrEnum):
     """Churn risk levels."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
 
-class EngagementLevel(str, enum.Enum):
+class EngagementLevel(enum.StrEnum):
     """Engagement level categories."""
     INACTIVE = "inactive"
     LOW = "low"
@@ -34,7 +34,7 @@ class EngagementLevel(str, enum.Enum):
     POWER_USER = "power_user"
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(enum.StrEnum):
     """Payment status options."""
     PAID = "paid"
     PENDING = "pending"
@@ -42,14 +42,14 @@ class PaymentStatus(str, enum.Enum):
     REFUNDED = "refunded"
 
 
-class PaymentMethod(str, enum.Enum):
+class PaymentMethod(enum.StrEnum):
     """Payment method types."""
     CARD = "card"
     BOLETO = "boleto"
     PIX = "pix"
 
 
-class BillingCycle(str, enum.Enum):
+class BillingCycle(enum.StrEnum):
     """Billing cycle options."""
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"

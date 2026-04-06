@@ -97,7 +97,7 @@ async def accept_invitation(
         query = select(ClientUser).where(
             and_(
                 ClientUser.invitation_token == data.token,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)
@@ -180,7 +180,7 @@ async def validate_invitation(
         query = select(ClientUser).where(
             and_(
                 ClientUser.invitation_token == token,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)
@@ -277,7 +277,7 @@ async def verify_client_exists(client_id: str, db: AsyncSession) -> ClientAccoun
     query = select(ClientAccount).where(
         and_(
             ClientAccount.id == client_uuid,
-            ClientAccount.is_deleted == False
+            not ClientAccount.is_deleted
         )
     )
     result = await db.execute(query)
@@ -326,7 +326,7 @@ async def list_client_users(
         
         conditions = [
             ClientUser.company_id == client_uuid,
-            ClientUser.is_deleted == False
+            not ClientUser.is_deleted
         ]
         
         if status:
@@ -404,7 +404,7 @@ async def get_client_user(
             and_(
                 ClientUser.id == user_uuid,
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)
@@ -451,7 +451,7 @@ async def create_client_user(
         active_users_query = select(func.count(ClientUser.id)).where(
             and_(
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         active_users_result = await db.execute(active_users_query)
@@ -474,7 +474,7 @@ async def create_client_user(
             and_(
                 ClientUser.company_id == client_uuid,
                 ClientUser.email == data.email,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         existing_result = await db.execute(existing_query)
@@ -579,7 +579,7 @@ async def update_client_user(
             and_(
                 ClientUser.id == user_uuid,
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)
@@ -664,7 +664,7 @@ async def delete_client_user(
             and_(
                 ClientUser.id == user_uuid,
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)
@@ -737,7 +737,7 @@ async def resend_invite(
             and_(
                 ClientUser.id == user_uuid,
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)
@@ -844,7 +844,7 @@ async def update_user_role(
             and_(
                 ClientUser.id == user_uuid,
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         result = await db.execute(query)

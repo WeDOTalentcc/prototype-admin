@@ -10,7 +10,7 @@ Supports 4 intent types:
 import json
 import logging
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -20,7 +20,7 @@ from app.services.llm import llm_service
 logger = logging.getLogger(__name__)
 
 
-class IntentType(str, Enum):
+class IntentType(StrEnum):
     DATA_INPUT = "DATA_INPUT"
     QUESTION = "QUESTION"
     CORRECTION = "CORRECTION"

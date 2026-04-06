@@ -18,7 +18,7 @@ import logging
 import os
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -35,7 +35,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class WhatsAppStatus(str, Enum):
+class WhatsAppStatus(StrEnum):
     """WhatsApp message delivery status."""
     PENDING = "pending"
     QUEUED = "queued"

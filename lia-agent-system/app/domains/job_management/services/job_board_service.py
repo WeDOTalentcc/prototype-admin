@@ -308,7 +308,7 @@ class JobBoardService:
         query = select(JobVacancy).where(
             and_(
                 JobVacancy.company_id == company_id,
-                JobVacancy.published_indeed == True,
+                JobVacancy.published_indeed,
                 JobVacancy.status.in_(["Ativa", "Publicada"])
             )
         )

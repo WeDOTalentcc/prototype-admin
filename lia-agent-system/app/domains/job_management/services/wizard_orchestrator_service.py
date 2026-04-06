@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 MAX_CONTEXT_CHARS = 16000
 
 
-class WizardIntent(str, Enum):
+class WizardIntent(StrEnum):
     PUBLISH_JOB = "publish_job"
     PAUSE_JOB = "pause_job"
     CLOSE_JOB = "close_job"

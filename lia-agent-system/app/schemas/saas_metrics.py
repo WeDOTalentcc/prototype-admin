@@ -5,19 +5,19 @@ All schemas use camelCase aliases for frontend compatibility.
 """
 
 from datetime import date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class ChurnRiskEnum(str, Enum):
+class ChurnRiskEnum(StrEnum):
     """Churn risk levels."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
 
-class EngagementLevelEnum(str, Enum):
+class EngagementLevelEnum(StrEnum):
     """Engagement level categories."""
     INACTIVE = "inactive"
     LOW = "low"
@@ -26,7 +26,7 @@ class EngagementLevelEnum(str, Enum):
     POWER_USER = "power_user"
 
 
-class PaymentStatusEnum(str, Enum):
+class PaymentStatusEnum(StrEnum):
     """Payment status options."""
     PAID = "paid"
     PENDING = "pending"
@@ -34,14 +34,14 @@ class PaymentStatusEnum(str, Enum):
     REFUNDED = "refunded"
 
 
-class PaymentMethodEnum(str, Enum):
+class PaymentMethodEnum(StrEnum):
     """Payment method types."""
     CARD = "card"
     BOLETO = "boleto"
     PIX = "pix"
 
 
-class BillingCycleEnum(str, Enum):
+class BillingCycleEnum(StrEnum):
     """Billing cycle options."""
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"

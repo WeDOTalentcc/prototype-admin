@@ -115,7 +115,7 @@ async def create_opinion_from_analysis(
             LiaOpinion.candidate_id == candidate_id,
             LiaOpinion.opinion_type == new_opinion_type.value,
             LiaOpinion.company_id == company_id,
-            LiaOpinion.is_current == True
+            LiaOpinion.is_current
         )
         
         # If job_vacancy_id is specified, also filter by it

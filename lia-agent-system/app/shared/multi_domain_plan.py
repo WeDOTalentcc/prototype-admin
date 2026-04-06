@@ -7,11 +7,11 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
-class PlanStepStatus(str, Enum):
+class PlanStepStatus(StrEnum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"

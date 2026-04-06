@@ -122,7 +122,7 @@ class ManagerInferenceService:
             if company:
                 member_query = select(DepartmentMember).where(
                     DepartmentMember.company_id == company.id,
-                    DepartmentMember.is_active == True,
+                    DepartmentMember.is_active,
                     DepartmentMember.email.isnot(None),
                     or_(
                         func.lower(DepartmentMember.level).in_(self.MANAGER_LEVELS),
@@ -259,7 +259,7 @@ class ManagerInferenceService:
             
             dept_query = select(Department).where(
                 Department.company_id == company.id,
-                Department.is_active == True,
+                Department.is_active,
                 Department.manager_name.isnot(None)
             )
             
@@ -280,7 +280,7 @@ class ManagerInferenceService:
             
             member_query = select(DepartmentMember).where(
                 DepartmentMember.company_id == company.id,
-                DepartmentMember.is_active == True,
+                DepartmentMember.is_active,
                 DepartmentMember.email.isnot(None),
                 or_(
                     func.lower(DepartmentMember.level).in_(self.MANAGER_LEVELS),

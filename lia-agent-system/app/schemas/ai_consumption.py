@@ -3,13 +3,13 @@ Pydantic schemas for AI Consumption API.
 """
 
 from datetime import date
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class AgentTypeEnum(str, Enum):
+class AgentTypeEnum(StrEnum):
     """Types of AI agents for consumption tracking."""
     SCREENING = "screening"
     SCORING = "scoring"
@@ -21,7 +21,7 @@ class AgentTypeEnum(str, Enum):
     ANALYSIS = "analysis"
 
 
-class ModelEnum(str, Enum):
+class ModelEnum(StrEnum):
     """AI models used."""
     CLAUDE_SONNET = "claude-sonnet"
     CLAUDE_HAIKU = "claude-haiku"

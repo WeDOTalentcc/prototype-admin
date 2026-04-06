@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ WSI_SESSION_TIMEOUT_HOURS = 48
 WSI_SESSION_TTL_SECONDS = WSI_SESSION_TIMEOUT_HOURS * 3600
 
 
-class WSIAsyncSessionStatus(str, Enum):
+class WSIAsyncSessionStatus(StrEnum):
     PENDING = "pending"        # Convite enviado, aguardando início
     IN_PROGRESS = "in_progress"  # Candidato iniciou
     COMPLETED = "completed"    # Candidato finalizou

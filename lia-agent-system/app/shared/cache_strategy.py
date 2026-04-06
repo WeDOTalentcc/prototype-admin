@@ -14,13 +14,13 @@ Usage:
 import hashlib
 import json
 import logging
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class CacheDomain(str, Enum):
+class CacheDomain(StrEnum):
     CANDIDATE_SEARCH = "candidate_search"
     CANDIDATE_PROFILE = "candidate_profile"
     JOB_VACANCY = "job_vacancy"

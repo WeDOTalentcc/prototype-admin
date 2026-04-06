@@ -113,7 +113,7 @@ class JobPatternService:
             
             conditions = [
                 JobPattern.company_id == company_uuid,
-                JobPattern.is_active == True,
+                JobPattern.is_active,
                 JobPattern.sample_count >= self.MIN_SAMPLES_FOR_RECOMMENDATION
             ]
             
@@ -129,7 +129,7 @@ class JobPatternService:
             if department:
                 conditions.append(
                     or_(
-                        JobPattern.department == None,
+                        JobPattern.department is None,
                         JobPattern.department == department.lower().strip()
                     )
                 )
@@ -687,7 +687,7 @@ class JobPatternService:
                     and_(
                         JobPattern.company_id == outcome.company_id,
                         JobPattern.pattern_key == pattern_key,
-                        JobPattern.is_active == True
+                        JobPattern.is_active
                     )
                 )
             )

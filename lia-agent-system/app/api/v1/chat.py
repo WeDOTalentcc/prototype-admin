@@ -1064,7 +1064,7 @@ async def list_conversations(
     result = await db.execute(
         select(Conversation)
         .where(Conversation.user_id == user_id)
-        .where(Conversation.is_archived == False)
+        .where(not Conversation.is_archived)
         .order_by(desc(Conversation.updated_at))
         .limit(page_size)
         .offset(offset)
@@ -1075,7 +1075,7 @@ async def list_conversations(
     count_result = await db.execute(
         select(Conversation)
         .where(Conversation.user_id == user_id)
-        .where(Conversation.is_archived == False)
+        .where(not Conversation.is_archived)
     )
     total = len(count_result.scalars().all())
     

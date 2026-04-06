@@ -16,7 +16,7 @@ fluxos com raciocínio autônomo = ReAct.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import uuid4
 
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # State
 # ---------------------------------------------------------------------------
 
-class WSIInterviewStage(str, Enum):
+class WSIInterviewStage(StrEnum):
     INIT = "init"
     LOAD_CONTEXT = "load_context"
     GENERATE_QUESTION = "generate_question"

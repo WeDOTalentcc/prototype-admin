@@ -2,13 +2,13 @@
 Pydantic schemas for authentication.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
     """User role enumeration."""
     admin = "admin"
     recruiter = "recruiter"

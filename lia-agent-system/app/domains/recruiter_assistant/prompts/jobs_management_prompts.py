@@ -9,12 +9,12 @@ For WIZARD CREATION flow prompts (field extraction, JD generation), see:
 """
 import json
 import logging
-from enum import Enum
+from enum import Enum, StrEnum
 
 logger = logging.getLogger(__name__)
 
 
-class JobsManagementCommandType(str, Enum):
+class JobsManagementCommandType(StrEnum):
     VISAO_GERAL = "visao_geral"
     VAGAS_URGENTES = "vagas_urgentes"
     VAGAS_PARADAS = "vagas_paradas"

@@ -126,7 +126,7 @@ class FeatureFlagService:
             global_stmt = select(FeatureFlag).where(
                 and_(
                     FeatureFlag.flag_key == flag_key,
-                    FeatureFlag.company_id == None
+                    FeatureFlag.company_id is None
                 )
             )
             result = await db.execute(global_stmt)
@@ -173,7 +173,7 @@ class FeatureFlagService:
             stmt = select(FeatureFlag).where(
                 and_(
                     FeatureFlag.flag_key == flag_key,
-                    FeatureFlag.company_id == company_id if company_id else FeatureFlag.company_id == None
+                    FeatureFlag.company_id == company_id if company_id else FeatureFlag.company_id is None
                 )
             )
             result = await db.execute(stmt)
@@ -234,11 +234,11 @@ class FeatureFlagService:
                 stmt = stmt.where(
                     or_(
                         FeatureFlag.company_id == company_id,
-                        FeatureFlag.company_id == None
+                        FeatureFlag.company_id is None
                     )
                 )
             else:
-                stmt = stmt.where(FeatureFlag.company_id == None)
+                stmt = stmt.where(FeatureFlag.company_id is None)
             
             if category:
                 stmt = stmt.where(FeatureFlag.category == category)
@@ -310,7 +310,7 @@ class FeatureFlagService:
             stmt = select(FeatureFlag).where(
                 and_(
                     FeatureFlag.flag_key == flag_key,
-                    FeatureFlag.company_id == company_id if company_id else FeatureFlag.company_id == None
+                    FeatureFlag.company_id == company_id if company_id else FeatureFlag.company_id is None
                 )
             )
             result = await db.execute(stmt)

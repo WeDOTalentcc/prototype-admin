@@ -129,7 +129,7 @@ class BenefitsService:
                 .where(
                     and_(
                         Benefit.company_id == company_id,
-                        Benefit.is_active == True
+                        Benefit.is_active
                     )
                 )
                 .order_by(Benefit.order, Benefit.category, Benefit.name)
@@ -181,8 +181,8 @@ class BenefitsService:
                 .where(
                     and_(
                         Benefit.company_id == company_id,
-                        Benefit.is_active == True,
-                        Benefit.is_highlighted == True
+                        Benefit.is_active,
+                        Benefit.is_highlighted
                     )
                 )
                 .order_by(Benefit.order, Benefit.name)
@@ -236,7 +236,7 @@ class BenefitsService:
                 .where(
                     and_(
                         Benefit.company_id == company_id,
-                        Benefit.is_active == True,
+                        Benefit.is_active,
                         Benefit.category == category
                     )
                 )
@@ -292,7 +292,7 @@ class BenefitsService:
                 .where(
                     and_(
                         Benefit.company_id == company_id,
-                        Benefit.is_active == True
+                        Benefit.is_active
                     )
                 )
                 .order_by(Benefit.order, Benefit.category, Benefit.name)

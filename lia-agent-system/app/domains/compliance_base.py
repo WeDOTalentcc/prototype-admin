@@ -19,7 +19,7 @@ Referências legais:
 import logging
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Optional
 
 from app.domains.base import DomainContext, DomainPrompt, DomainResponse, IntentResult
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 # LIA-C07: StageContext — contexto de estágio de contratação
 # ---------------------------------------------------------------------------
 
-class HiringStage(str, Enum):
+class HiringStage(StrEnum):
     SOURCING = "sourcing"
     SCREENING = "screening"
     SHORTLIST = "shortlist"

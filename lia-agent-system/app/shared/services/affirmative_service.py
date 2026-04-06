@@ -103,11 +103,11 @@ class AffirmativeService:
         check_map = {
             "gender": lambda c: c.gender and c.gender.lower() in ["feminino", "mulher", "female", "trans"],
             "race_ethnicity": lambda c: c.diversity_race_ethnicity in ["black", "brown", "preta", "parda", "negra"],
-            "disability": lambda c: c.diversity_disability == True,
-            "age": lambda c: c.diversity_age_50_plus == True,
-            "lgbtqia": lambda c: c.diversity_lgbtqia == True,
-            "refugee": lambda c: c.diversity_refugee == True,
-            "indigenous": lambda c: c.diversity_indigenous == True,
+            "disability": lambda c: c.diversity_disability,
+            "age": lambda c: c.diversity_age_50_plus,
+            "lgbtqia": lambda c: c.diversity_lgbtqia,
+            "refugee": lambda c: c.diversity_refugee,
+            "indigenous": lambda c: c.diversity_indigenous,
             "other": lambda c: True
         }
         
@@ -323,7 +323,7 @@ class AffirmativeService:
             CandidateAffirmativeDocument.company_id == company_id,
             CandidateAffirmativeDocument.status == "pending_upload",
             CandidateAffirmativeDocument.upload_deadline < now,
-            CandidateAffirmativeDocument.is_expired == False
+            not CandidateAffirmativeDocument.is_expired
         ).all()
         
         for doc in expired:

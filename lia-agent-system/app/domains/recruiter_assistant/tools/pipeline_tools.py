@@ -63,7 +63,7 @@ async def create_pipeline_stage(
                     and_(
                         RecruitmentStage.company_id == effective_company_id,
                         RecruitmentStage.name == _slugify(stage_name),
-                        RecruitmentStage.is_active == True
+                        RecruitmentStage.is_active
                     )
                 )
             )
@@ -78,7 +78,7 @@ async def create_pipeline_stage(
                 select(func.max(RecruitmentStage.stage_order)).where(
                     and_(
                         RecruitmentStage.company_id == effective_company_id,
-                        RecruitmentStage.is_active == True
+                        RecruitmentStage.is_active
                     )
                 )
             )
@@ -89,8 +89,8 @@ async def create_pipeline_stage(
                     select(RecruitmentStage).where(
                         and_(
                             RecruitmentStage.company_id == effective_company_id,
-                            RecruitmentStage.is_final == True,
-                            RecruitmentStage.is_active == True
+                            RecruitmentStage.is_final,
+                            RecruitmentStage.is_active
                         )
                     ).order_by(RecruitmentStage.stage_order)
                 )
@@ -103,8 +103,8 @@ async def create_pipeline_stage(
                         select(RecruitmentStage).where(
                             and_(
                                 RecruitmentStage.company_id == effective_company_id,
-                                RecruitmentStage.is_active == True,
-                                RecruitmentStage.is_final == False,
+                                RecruitmentStage.is_active,
+                                not RecruitmentStage.is_final,
                                 RecruitmentStage.stage_order >= insert_order
                             )
                         )

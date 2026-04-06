@@ -6,11 +6,11 @@ Concrete implementations wrap specific provider SDKs while exposing a unified AP
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
-class VoiceProviderType(str, Enum):
+class VoiceProviderType(StrEnum):
     GEMINI = "gemini"
     TWILIO = "twilio"
 

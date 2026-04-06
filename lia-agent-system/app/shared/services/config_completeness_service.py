@@ -6,7 +6,7 @@ publication readiness validation.
 """
 import logging
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import select
@@ -15,14 +15,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-class FieldCategory(str, Enum):
+class FieldCategory(StrEnum):
     """Field categorization for completeness checking."""
     CRITICAL = "critical"
     IMPORTANT = "important"
     OPTIONAL = "optional"
 
 
-class SuggestionSource(str, Enum):
+class SuggestionSource(StrEnum):
     """Sources for field value suggestions."""
     COMPANY_HISTORY = "company_history"
     COMPANY_DEFAULTS = "company_defaults"

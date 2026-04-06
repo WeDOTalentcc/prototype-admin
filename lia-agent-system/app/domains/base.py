@@ -15,13 +15,13 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class ConfidenceLevel(str, Enum):
+class ConfidenceLevel(StrEnum):
     HIGH = "high"      # >= 0.8
     MEDIUM = "medium"  # >= 0.5
     LOW = "low"        # < 0.5

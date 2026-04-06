@@ -82,7 +82,7 @@ async def get_lgpd_stats(
         breach_pending_anpd_query = select(func.count(BreachNotification.id)).where(
             and_(
                 BreachNotification.company_id == company_uuid,
-                BreachNotification.notification_sent_to_anpd == False,
+                not BreachNotification.notification_sent_to_anpd,
                 BreachNotification.status != "resolved"
             )
         )
@@ -98,8 +98,8 @@ async def get_lgpd_stats(
         pending_review_query = select(func.count(AutomatedDecisionExplanation.id)).where(
             and_(
                 AutomatedDecisionExplanation.company_id == company_uuid,
-                AutomatedDecisionExplanation.human_review_requested == True,
-                AutomatedDecisionExplanation.human_review_completed_at == None
+                AutomatedDecisionExplanation.human_review_requested,
+                AutomatedDecisionExplanation.human_review_completed_at is None
             )
         )
         pending_review_result = await db.execute(pending_review_query)
@@ -108,7 +108,7 @@ async def get_lgpd_stats(
         completed_review_query = select(func.count(AutomatedDecisionExplanation.id)).where(
             and_(
                 AutomatedDecisionExplanation.company_id == company_uuid,
-                AutomatedDecisionExplanation.human_review_completed_at != None
+                AutomatedDecisionExplanation.human_review_completed_at is not None
             )
         )
         completed_review_result = await db.execute(completed_review_query)
@@ -622,10 +622,10 @@ async def list_automated_decisions(
             conditions.append(AutomatedDecisionExplanation.vacancy_id == UUID(vacancy_id))
         if pending_review is not None:
             if pending_review:
-                conditions.append(AutomatedDecisionExplanation.human_review_requested == True)
-                conditions.append(AutomatedDecisionExplanation.human_review_completed_at == None)
+                conditions.append(AutomatedDecisionExplanation.human_review_requested)
+                conditions.append(AutomatedDecisionExplanation.human_review_completed_at is None)
             else:
-                conditions.append(AutomatedDecisionExplanation.human_review_completed_at != None)
+                conditions.append(AutomatedDecisionExplanation.human_review_completed_at is not None)
         
         query = select(AutomatedDecisionExplanation).where(and_(*conditions))
         query = query.order_by(desc(AutomatedDecisionExplanation.created_at)).limit(limit).offset(offset)

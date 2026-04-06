@@ -329,7 +329,7 @@ class WizardStepService:
                 benefits_query = select(CompanyBenefit).where(
                     and_(
                         CompanyBenefit.company_id == company_id,
-                        CompanyBenefit.is_active == True
+                        CompanyBenefit.is_active
                     )
                 ).order_by(CompanyBenefit.order)
                 benefits_result = await db.execute(benefits_query)
@@ -342,7 +342,7 @@ class WizardStepService:
 
             try:
                 profile_query = select(CompanyProfile).where(
-                    CompanyProfile.is_active == True
+                    CompanyProfile.is_active
                 ).limit(1)
                 profile_result = await db.execute(profile_query)
                 company_profile = profile_result.scalar_one_or_none()

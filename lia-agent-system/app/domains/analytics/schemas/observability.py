@@ -3,13 +3,13 @@ Pydantic schemas for Observability and Governance API.
 """
 
 from datetime import date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class AgentTypeEnum(str, Enum):
+class AgentTypeEnum(StrEnum):
     """Types of AI agents."""
     SCREENING = "screening"
     SCORING = "scoring"
@@ -20,7 +20,7 @@ class AgentTypeEnum(str, Enum):
     ANALYSIS = "analysis"
 
 
-class DataOperationTypeEnum(str, Enum):
+class DataOperationTypeEnum(StrEnum):
     """Types of data operations."""
     VIEW = "view"
     EXPORT = "export"
@@ -30,7 +30,7 @@ class DataOperationTypeEnum(str, Enum):
     ANONYMIZE = "anonymize"
 
 
-class DataTypeEnum(str, Enum):
+class DataTypeEnum(StrEnum):
     """Types of data accessed."""
     CV = "cv"
     SCORE = "score"
@@ -41,7 +41,7 @@ class DataTypeEnum(str, Enum):
     ASSESSMENT_RESULTS = "assessment_results"
 
 
-class ConsentTypeEnum(str, Enum):
+class ConsentTypeEnum(StrEnum):
     """Types of consent."""
     DATA_PROCESSING = "data_processing"
     AI_SCORING = "ai_scoring"
@@ -51,7 +51,7 @@ class ConsentTypeEnum(str, Enum):
     PROFILE_ENRICHMENT = "profile_enrichment"
 
 
-class LegalBasisEnum(str, Enum):
+class LegalBasisEnum(StrEnum):
     """LGPD legal bases."""
     CONSENT = "consent"
     CONTRACT = "contract"
@@ -61,7 +61,7 @@ class LegalBasisEnum(str, Enum):
     VITAL_INTEREST = "vital_interest"
 
 
-class IncidentTypeEnum(str, Enum):
+class IncidentTypeEnum(StrEnum):
     """Types of incidents."""
     DATA_BREACH = "data_breach"
     UNAUTHORIZED_ACCESS = "unauthorized_access"
@@ -72,7 +72,7 @@ class IncidentTypeEnum(str, Enum):
     PRIVACY_VIOLATION = "privacy_violation"
 
 
-class IncidentSeverityEnum(str, Enum):
+class IncidentSeverityEnum(StrEnum):
     """Severity levels."""
     LOW = "low"
     MEDIUM = "medium"
@@ -80,7 +80,7 @@ class IncidentSeverityEnum(str, Enum):
     CRITICAL = "critical"
 
 
-class IncidentStatusEnum(str, Enum):
+class IncidentStatusEnum(StrEnum):
     """Incident status options."""
     OPEN = "open"
     IN_PROGRESS = "in_progress"
@@ -88,7 +88,7 @@ class IncidentStatusEnum(str, Enum):
     CLOSED = "closed"
 
 
-class EvaluationTypeEnum(str, Enum):
+class EvaluationTypeEnum(StrEnum):
     """Types of model evaluations."""
     BIAS_CHECK = "bias_check"
     FAIRNESS_AUDIT = "fairness_audit"
@@ -97,7 +97,7 @@ class EvaluationTypeEnum(str, Enum):
     DRIFT_DETECTION = "drift_detection"
 
 
-class EvaluationDimensionEnum(str, Enum):
+class EvaluationDimensionEnum(StrEnum):
     """Dimensions for bias/fairness evaluation - Tezi AI 11 categories."""
     SEX_BIAS = "sex_bias"
     RACE_ETHNICITY_BIAS = "race_ethnicity_bias"
@@ -112,7 +112,7 @@ class EvaluationDimensionEnum(str, Enum):
     INTERSECTIONAL_BIAS = "intersectional_bias"
 
 
-class BiasAuditTypeEnum(str, Enum):
+class BiasAuditTypeEnum(StrEnum):
     """Types of bias audits."""
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
@@ -120,21 +120,21 @@ class BiasAuditTypeEnum(str, Enum):
     ON_DEMAND = "on_demand"
 
 
-class AuditorTypeEnum(str, Enum):
+class AuditorTypeEnum(StrEnum):
     """Types of auditors."""
     INTERNAL = "internal"
     EXTERNAL = "external"
     THIRD_PARTY = "third_party"
 
 
-class BiasStatusEnum(str, Enum):
+class BiasStatusEnum(StrEnum):
     """Status levels for bias results."""
     CLEAR = "clear"
     CONSIDER = "consider"
     CONCERN = "concern"
 
 
-class BiasComplianceFrameworkEnum(str, Enum):
+class BiasComplianceFrameworkEnum(StrEnum):
     """Compliance frameworks for bias auditing."""
     NYC_LL144 = "NYC_LL144"
     CO_SB205 = "CO_SB205"
@@ -143,7 +143,7 @@ class BiasComplianceFrameworkEnum(str, Enum):
     LGPD_BRAZIL = "LGPD_BRAZIL"
 
 
-class ComplianceFrameworkEnum(str, Enum):
+class ComplianceFrameworkEnum(StrEnum):
     """Compliance frameworks."""
     ISO27001 = "ISO27001"
     SOC2 = "SOC2"
@@ -152,7 +152,7 @@ class ComplianceFrameworkEnum(str, Enum):
     AI_ETHICS = "AI_ETHICS"
 
 
-class ControlStatusEnum(str, Enum):
+class ControlStatusEnum(StrEnum):
     """Status of compliance controls."""
     IMPLEMENTED = "implemented"
     PARTIAL = "partial"

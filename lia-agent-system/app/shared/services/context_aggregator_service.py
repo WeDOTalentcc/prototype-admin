@@ -201,7 +201,7 @@ class ContextAggregatorService:
         """Obtém contexto da empresa."""
         try:
             result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_active == True).limit(1)
+                select(CompanyProfile).where(CompanyProfile.is_active).limit(1)
             )
             company = result.scalar_one_or_none()
             
@@ -211,7 +211,7 @@ class ContextAggregatorService:
             dept_result = await db.execute(
                 select(Department)
                 .where(Department.company_id == company.id)
-                .where(Department.is_active == True)
+                .where(Department.is_active)
                 .order_by(Department.name)
             )
             departments = dept_result.scalars().all()
@@ -219,7 +219,7 @@ class ContextAggregatorService:
             benefit_result = await db.execute(
                 select(CompanyBenefit)
                 .where(CompanyBenefit.company_id == company_id)
-                .where(CompanyBenefit.is_active == True)
+                .where(CompanyBenefit.is_active)
                 .order_by(CompanyBenefit.order)
             )
             benefits = benefit_result.scalars().all()

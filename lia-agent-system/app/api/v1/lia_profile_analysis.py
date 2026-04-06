@@ -194,7 +194,7 @@ async def save_profile_analysis(
                 LiaProfileAnalysis.candidate_id == request.candidate_id,
                 LiaProfileAnalysis.analysis_type == request.analysis_type,
                 LiaProfileAnalysis.company_id == company_id,
-                LiaProfileAnalysis.is_active == True
+                LiaProfileAnalysis.is_active
             )
         )
         result = await db.execute(existing_query)
@@ -259,7 +259,7 @@ async def get_candidate_analyses(
             and_(
                 LiaProfileAnalysis.candidate_id == candidate_id,
                 LiaProfileAnalysis.company_id == company_id,
-                LiaProfileAnalysis.is_active == True
+                LiaProfileAnalysis.is_active
             )
         ).order_by(desc(LiaProfileAnalysis.created_at))
         
@@ -319,7 +319,7 @@ async def delete_candidate_analysis(
                 LiaProfileAnalysis.candidate_id == candidate_id,
                 LiaProfileAnalysis.analysis_type == analysis_type,
                 LiaProfileAnalysis.company_id == company_id,
-                LiaProfileAnalysis.is_active == True
+                LiaProfileAnalysis.is_active
             )
         )
         result = await db.execute(query)

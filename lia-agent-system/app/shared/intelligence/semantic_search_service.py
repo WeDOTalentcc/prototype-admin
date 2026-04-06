@@ -20,7 +20,7 @@ Architecture:
 import hashlib
 import json
 import os
-from enum import Enum
+from enum import Enum, StrEnum
 
 try:
     import google.generativeai as genai
@@ -41,7 +41,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SemanticDomain(str, Enum):
+class SemanticDomain(StrEnum):
     SKILLS = "skills"
     JOB_TITLES = "job_titles"
     ROLES = "roles"

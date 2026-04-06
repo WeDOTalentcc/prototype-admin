@@ -389,7 +389,7 @@ class AgentMonitoringService:
         stmt = select(AgentActivity).where(
             and_(
                 AgentActivity.started_at >= today_start,
-                AgentActivity.sla_breach == True
+                AgentActivity.sla_breach
             )
         ).order_by(AgentActivity.started_at.desc()).limit(5)
         result = await self.db.execute(stmt)

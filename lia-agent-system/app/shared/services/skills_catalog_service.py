@@ -670,7 +670,7 @@ class SkillsCatalogService:
             conditions = [CompanySkill.company_id == company_id]
             
             if only_promoted:
-                conditions.append(CompanySkill.is_promoted == True)
+                conditions.append(CompanySkill.is_promoted)
             
             stmt = (
                 select(CompanySkill)
@@ -821,7 +821,7 @@ class SkillsCatalogDBService:
             conditions = [CompanySkillsCatalog.company_id == company_id]
             
             if not include_inactive:
-                conditions.append(CompanySkillsCatalog.is_active == True)
+                conditions.append(CompanySkillsCatalog.is_active)
             
             if category:
                 conditions.append(CompanySkillsCatalog.category == category)
@@ -841,7 +841,7 @@ class SkillsCatalogDBService:
             
             competency_conditions = [BehavioralCompetencyCatalog.company_id == company_id]
             if not include_inactive:
-                competency_conditions.append(BehavioralCompetencyCatalog.is_active == True)
+                competency_conditions.append(BehavioralCompetencyCatalog.is_active)
             
             stmt_competencies = (
                 select(BehavioralCompetencyCatalog)
@@ -1178,7 +1178,7 @@ class SkillsCatalogDBService:
                 .where(
                     and_(
                         SkillSuggestionPattern.company_id == company_id,
-                        SkillSuggestionPattern.is_promoted == True,
+                        SkillSuggestionPattern.is_promoted,
                         or_(
                             SkillSuggestionPattern.context_key == context_key,
                             SkillSuggestionPattern.context_key.contains(job_title.lower())
@@ -1212,7 +1212,7 @@ class SkillsCatalogDBService:
                 .where(
                     and_(
                         CompanySkillsCatalog.company_id == company_id,
-                        CompanySkillsCatalog.is_active == True
+                        CompanySkillsCatalog.is_active
                     )
                 )
                 .order_by(CompanySkillsCatalog.usage_count.desc())

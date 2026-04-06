@@ -136,7 +136,7 @@ async def list_archetypes(
         query = select(SearchArchetype)
         
         if not include_inactive:
-            query = query.where(SearchArchetype.is_active == True)
+            query = query.where(SearchArchetype.is_active)
         
         if industry:
             query = query.where(SearchArchetype.industry == industry)

@@ -127,7 +127,7 @@ async def _find_company(db: AsyncSession, company_id: str):
     except (ValueError, AttributeError):
         pass
     result2 = await db.execute(
-        select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
+        select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
     )
     return result2.scalar_one_or_none()
 

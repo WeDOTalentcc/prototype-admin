@@ -31,7 +31,7 @@ class ABTestingService:
                 select(PromptVariant).where(
                     and_(
                         PromptVariant.test_name == test_name,
-                        PromptVariant.is_active == True,
+                        PromptVariant.is_active,
                     )
                 ).order_by(PromptVariant.variant_name)
             )
@@ -230,7 +230,7 @@ class ABTestingService:
         try:
             result = await db.execute(
                 select(PromptVariant).where(
-                    PromptVariant.is_active == True,
+                    PromptVariant.is_active,
                 ).order_by(PromptVariant.test_name, PromptVariant.variant_name)
             )
             variants = result.scalars().all()
@@ -267,7 +267,7 @@ class ABTestingService:
                 select(func.count(PromptVariant.id)).where(
                     and_(
                         PromptVariant.test_name == test_name,
-                        PromptVariant.is_active == True,
+                        PromptVariant.is_active,
                     )
                 )
             )

@@ -226,7 +226,7 @@ class BriefingService:
                 select(
                     Candidate.status,
                     func.count(Candidate.id)
-                ).where(Candidate.is_active == True).group_by(Candidate.status)
+                ).where(Candidate.is_active).group_by(Candidate.status)
             )
             
             stages = {}

@@ -2,14 +2,14 @@ import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
 logger = logging.getLogger(__name__)
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -17,7 +17,7 @@ class TaskStatus(str, Enum):
     SKIPPED = "skipped"
 
 
-class PlanStatus(str, Enum):
+class PlanStatus(StrEnum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"

@@ -78,10 +78,10 @@ UNIVERSAL_WEIGHTS = ScoringWeights()
 
 IndustryWeights = ScoringWeights
 
-from enum import Enum
+from enum import Enum, StrEnum
 
 
-class Industry(str, Enum):
+class Industry(StrEnum):
     """
     Industry enum kept for backward compatibility.
     

@@ -6,14 +6,14 @@ auto-applying inferred values during job creation wizard flow.
 """
 import logging
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
 logger = logging.getLogger(__name__)
 
 
-class ConfidenceAction(str, Enum):
+class ConfidenceAction(StrEnum):
     """Actions to take based on confidence levels."""
     APPLY_SILENT = "apply_silent"
     APPLY_NOTIFY = "apply_notify"

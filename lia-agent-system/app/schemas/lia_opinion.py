@@ -2,19 +2,19 @@
 Pydantic schemas for LIA Opinion (Parecer) API.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 
-class OpinionTypeEnum(str, Enum):
+class OpinionTypeEnum(StrEnum):
     GENERAL = "general"
     WSI = "wsi"
 
 
-class OpinionSourceEnum(str, Enum):
+class OpinionSourceEnum(StrEnum):
     CV_ANALYSIS = "cv_analysis"
     TEXT_SCREENING = "text_screening"
     VOICE_SCREENING = "voice_screening"
@@ -23,7 +23,7 @@ class OpinionSourceEnum(str, Enum):
     CALIBRATION = "calibration"
 
 
-class RecommendationEnum(str, Enum):
+class RecommendationEnum(StrEnum):
     APPROVED = "approved"
     PENDING_REVIEW = "pending_review"
     NOT_APPROVED = "not_approved"

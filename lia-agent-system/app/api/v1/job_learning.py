@@ -318,7 +318,7 @@ async def list_patterns(
         async with AsyncSessionLocal() as db:
             conditions = [
                 JobPattern.company_id == UUID(company_id),
-                JobPattern.is_active == True,
+                JobPattern.is_active,
                 JobPattern.sample_count >= min_samples,
             ]
             

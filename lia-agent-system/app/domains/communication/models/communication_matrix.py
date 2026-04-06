@@ -18,7 +18,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 
-class ModuleType(str, enum.Enum):
+class ModuleType(enum.StrEnum):
     """Module types for communication matrix."""
     CANDIDATE_JOURNEY = "candidate_journey"
     PIPELINE = "pipeline"
@@ -29,7 +29,7 @@ class ModuleType(str, enum.Enum):
     WORKFORCE = "workforce"
 
 
-class RecipientType(str, enum.Enum):
+class RecipientType(enum.StrEnum):
     """Recipient types for communications."""
     CANDIDATE = "candidate"
     RECRUITER = "recruiter"
@@ -40,7 +40,7 @@ class RecipientType(str, enum.Enum):
     STAKEHOLDERS = "stakeholders"
 
 
-class ChannelType(str, enum.Enum):
+class ChannelType(enum.StrEnum):
     """Available communication channels."""
     EMAIL = "email"
     WHATSAPP = "whatsapp"

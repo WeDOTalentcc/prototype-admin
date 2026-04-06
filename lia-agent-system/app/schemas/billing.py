@@ -3,13 +3,13 @@ Pydantic schemas for Billing API.
 """
 
 from datetime import date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class SubscriptionStatusEnum(str, Enum):
+class SubscriptionStatusEnum(StrEnum):
     """Subscription status options."""
     ACTIVE = "active"
     CANCELLED = "cancelled"
@@ -19,7 +19,7 @@ class SubscriptionStatusEnum(str, Enum):
     SUSPENDED = "suspended"
 
 
-class InvoiceStatusEnum(str, Enum):
+class InvoiceStatusEnum(StrEnum):
     """Invoice status options."""
     PENDING = "pending"
     PAID = "paid"
@@ -29,7 +29,7 @@ class InvoiceStatusEnum(str, Enum):
     EXPIRED = "expired"
 
 
-class PaymentMethodTypeEnum(str, Enum):
+class PaymentMethodTypeEnum(StrEnum):
     """Payment method types."""
     CREDIT_CARD = "credit_card"
     BOLETO = "boleto"
@@ -37,7 +37,7 @@ class PaymentMethodTypeEnum(str, Enum):
     BANK_TRANSFER = "bank_transfer"
 
 
-class BillingProviderEnum(str, Enum):
+class BillingProviderEnum(StrEnum):
     """Supported billing providers."""
     IUGU = "iugu"
     VINDI = "vindi"

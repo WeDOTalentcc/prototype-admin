@@ -282,7 +282,7 @@ async def get_request_stats(
         sla_met_query = select(func.count(DataSubjectRequest.id)).where(
             and_(
                 DataSubjectRequest.company_id == company_uuid,
-                DataSubjectRequest.sla_met == True
+                DataSubjectRequest.sla_met
             )
         )
         sla_met_result = await db.execute(sla_met_query)

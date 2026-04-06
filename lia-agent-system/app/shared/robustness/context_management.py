@@ -12,14 +12,14 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
 logger = logging.getLogger(__name__)
 
 
-class ContextStatus(str, Enum):
+class ContextStatus(StrEnum):
     """Status of a conversation context."""
     ACTIVE = "active"
     PAUSED = "paused"

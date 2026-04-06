@@ -7,12 +7,12 @@ Includes schemas for:
 - Category listings
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class PolicyCategoryEnum(str, Enum):
+class PolicyCategoryEnum(StrEnum):
     """Categories for global policies."""
     DATA_RETENTION = "data_retention"
     AI_LIMITS = "ai_limits"
@@ -20,7 +20,7 @@ class PolicyCategoryEnum(str, Enum):
     COMPLIANCE = "compliance"
 
 
-class PolicyValueTypeEnum(str, Enum):
+class PolicyValueTypeEnum(StrEnum):
     """Value types for policies."""
     BOOLEAN = "boolean"
     NUMBER = "number"

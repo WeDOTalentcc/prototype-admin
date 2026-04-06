@@ -379,7 +379,7 @@ class JobEmbeddingService:
                 query = select(JobEmbedding).where(
                     and_(
                         JobEmbedding.company_id == UUID(company_id),
-                        JobEmbedding.is_active == True,
+                        JobEmbedding.is_active,
                         or_(
                             JobEmbedding.job_title_normalized.ilike(f"%{normalized}%"),
                             JobEmbedding.department == department if department else True
@@ -475,14 +475,14 @@ class JobEmbeddingService:
                         and_(
                             JobEmbedding.company_id == UUID(company_id),
                             JobEmbedding.job_id.in_([UUID(jid) for jid in job_ids]),
-                            JobEmbedding.embedding == None
+                            JobEmbedding.embedding is None
                         )
                     ).limit(limit)
                 else:
                     query = select(JobEmbedding).where(
                         and_(
                             JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.embedding == None
+                            JobEmbedding.embedding is None
                         )
                     ).limit(limit)
                 
@@ -551,7 +551,7 @@ class JobEmbeddingService:
                     select(func.count(JobEmbedding.id)).where(
                         and_(
                             JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.embedding != None
+                            JobEmbedding.embedding is not None
                         )
                     )
                 )
@@ -560,7 +560,7 @@ class JobEmbeddingService:
                     select(func.count(JobEmbedding.id)).where(
                         and_(
                             JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.is_template == True
+                            JobEmbedding.is_template
                         )
                     )
                 )

@@ -9,13 +9,13 @@ Includes schemas for:
 """
 
 from datetime import date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class ComplianceFrameworkTypeEnum(str, Enum):
+class ComplianceFrameworkTypeEnum(StrEnum):
     """Compliance frameworks for control inventory."""
     ISO_27001 = "ISO_27001"
     SOC_2_TYPE_I = "SOC_2_TYPE_I"
@@ -27,7 +27,7 @@ class ComplianceFrameworkTypeEnum(str, Enum):
     PCI_DSS = "PCI_DSS"
 
 
-class CompanyControlStatusEnum(str, Enum):
+class CompanyControlStatusEnum(StrEnum):
     """Status of company's control implementation."""
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
@@ -36,21 +36,21 @@ class CompanyControlStatusEnum(str, Enum):
     NOT_APPLICABLE = "not_applicable"
 
 
-class AuditResultTypeEnum(str, Enum):
+class AuditResultTypeEnum(StrEnum):
     """Audit result types."""
     PASS = "pass"
     CONDITIONAL_PASS = "conditional_pass"
     FAIL = "fail"
 
 
-class AuditTypeEnum(str, Enum):
+class AuditTypeEnum(StrEnum):
     """Types of compliance audits."""
     INTERNAL = "internal"
     EXTERNAL = "external"
     CERTIFICATION = "certification"
 
 
-class SOXSectionEnum(str, Enum):
+class SOXSectionEnum(StrEnum):
     """SOX sections relevant to HR/Payroll."""
     SECTION_302 = "302"
     SECTION_404 = "404"
@@ -58,14 +58,14 @@ class SOXSectionEnum(str, Enum):
     SECTION_802 = "802"
 
 
-class SOXTestResultEnum(str, Enum):
+class SOXTestResultEnum(StrEnum):
     """SOX control test result."""
     EFFECTIVE = "effective"
     INEFFECTIVE = "ineffective"
     NOT_TESTED = "not_tested"
 
 
-class SOXControlFrequencyEnum(str, Enum):
+class SOXControlFrequencyEnum(StrEnum):
     """Frequency of SOX control execution."""
     DAILY = "daily"
     WEEKLY = "weekly"

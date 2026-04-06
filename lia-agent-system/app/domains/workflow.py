@@ -11,7 +11,7 @@ Compatible with the JobWizardGraph pattern but generalized for any domain.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from app.domains.base import (
@@ -34,7 +34,7 @@ def _get_compliance_class():
 logger = logging.getLogger(__name__)
 
 
-class WorkflowStep(str, Enum):
+class WorkflowStep(StrEnum):
     PRE_CHECK = "pre_check"
     RESOLVE_REFERENCES = "resolve_references"
     SMART_EXTRACT = "smart_extract"

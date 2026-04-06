@@ -117,7 +117,7 @@ async def list_ats_connections(db: AsyncSession = Depends(get_db)):
     """
     try:
         result = await db.execute(
-            select(ATSConnection).where(ATSConnection.is_active == True)
+            select(ATSConnection).where(ATSConnection.is_active)
         )
         connections = result.scalars().all()
         
@@ -259,7 +259,7 @@ async def list_ats_candidates(
     try:
         query = select(ATSCandidate)
         
-        filters = [ATSCandidate.is_active == True]
+        filters = [ATSCandidate.is_active]
         
         if provider:
             filters.append(ATSCandidate.provider == ATSProvider[provider.upper()])

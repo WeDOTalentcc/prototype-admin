@@ -175,7 +175,7 @@ async def get_alert_config(
     try:
         result = await db.execute(
             select(AlertConfig).where(
-                AlertConfig.is_active == True,
+                AlertConfig.is_active,
                 AlertConfig.company_id == company_id
             ).order_by(AlertConfig.created_at.desc()).limit(1)
         )
@@ -208,7 +208,7 @@ async def update_alert_config(
     try:
         result = await db.execute(
             select(AlertConfig).where(
-                AlertConfig.is_active == True,
+                AlertConfig.is_active,
                 AlertConfig.company_id == company_id
             ).order_by(AlertConfig.created_at.desc()).limit(1)
         )

@@ -282,7 +282,7 @@ class CompanyConfigurationService:
                 logger.warning(f"Company profile not found for {company_id}, using default (multi-tenant risk)")
                 result = await db.execute(
                     select(CompanyProfile)
-                    .where(CompanyProfile.is_default == True)
+                    .where(CompanyProfile.is_default)
                     .options(selectinload(CompanyProfile.culture_values))
                 )
                 profile = result.scalar_one_or_none()
@@ -339,7 +339,7 @@ class CompanyConfigurationService:
                 .where(
                     and_(
                         Benefit.company_id == company_uuid,
-                        Benefit.is_active == True
+                        Benefit.is_active
                     )
                 )
                 .order_by(Benefit.order)
@@ -375,7 +375,7 @@ class CompanyConfigurationService:
                 .where(
                     and_(
                         PipelineTemplate.company_id == company_id,
-                        PipelineTemplate.is_active == True
+                        PipelineTemplate.is_active
                     )
                 )
                 .order_by(PipelineTemplate.is_default.desc())
@@ -409,7 +409,7 @@ class CompanyConfigurationService:
                 .where(
                     and_(
                         CompanyScreeningQuestion.company_id == company_id,
-                        CompanyScreeningQuestion.is_active == True
+                        CompanyScreeningQuestion.is_active
                     )
                 )
                 .order_by(CompanyScreeningQuestion.order)

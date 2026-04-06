@@ -105,7 +105,7 @@ async def list_system_templates(
     Only returns templates where is_system_template=true.
     """
     try:
-        query = select(EmailTemplate).where(EmailTemplate.is_system_template == True)
+        query = select(EmailTemplate).where(EmailTemplate.is_system_template)
         
         if category:
             query = query.where(EmailTemplate.category == category)
@@ -129,7 +129,7 @@ async def list_system_templates(
                 )
             )
         
-        count_query = select(func.count(EmailTemplate.id)).where(EmailTemplate.is_system_template == True)
+        count_query = select(func.count(EmailTemplate.id)).where(EmailTemplate.is_system_template)
         if category:
             count_query = count_query.where(EmailTemplate.category == category)
         if channel:
@@ -182,7 +182,7 @@ async def create_system_template(
         existing = await db.execute(
             select(EmailTemplate).where(
                 EmailTemplate.name == template_data.name,
-                EmailTemplate.is_system_template == True
+                EmailTemplate.is_system_template
             )
         )
         if existing.scalar_one_or_none():
@@ -238,7 +238,7 @@ async def get_system_template(
         result = await db.execute(
             select(EmailTemplate).where(
                 EmailTemplate.id == uuid_module.UUID(template_id),
-                EmailTemplate.is_system_template == True
+                EmailTemplate.is_system_template
             )
         )
         template = result.scalar_one_or_none()
@@ -271,7 +271,7 @@ async def update_system_template(
         result = await db.execute(
             select(EmailTemplate).where(
                 EmailTemplate.id == uuid_module.UUID(template_id),
-                EmailTemplate.is_system_template == True
+                EmailTemplate.is_system_template
             )
         )
         template = result.scalar_one_or_none()
@@ -285,7 +285,7 @@ async def update_system_template(
             existing = await db.execute(
                 select(EmailTemplate).where(
                     EmailTemplate.name == update_data['name'],
-                    EmailTemplate.is_system_template == True,
+                    EmailTemplate.is_system_template,
                     EmailTemplate.id != uuid_module.UUID(template_id)
                 )
             )
@@ -333,7 +333,7 @@ async def delete_system_template(
         result = await db.execute(
             select(EmailTemplate).where(
                 EmailTemplate.id == uuid_module.UUID(template_id),
-                EmailTemplate.is_system_template == True
+                EmailTemplate.is_system_template
             )
         )
         template = result.scalar_one_or_none()
@@ -381,7 +381,7 @@ async def publish_template_to_companies(
         result = await db.execute(
             select(EmailTemplate).where(
                 EmailTemplate.id == uuid_module.UUID(template_id),
-                EmailTemplate.is_system_template == True
+                EmailTemplate.is_system_template
             )
         )
         template = result.scalar_one_or_none()
@@ -400,7 +400,7 @@ async def publish_template_to_companies(
             companies_result = await db.execute(
                 select(UserModel.company_id).where(
                     UserModel.company_id.isnot(None),
-                    UserModel.is_active == True
+                    UserModel.is_active
                 ).distinct()
             )
             target_companies = [c for c in companies_result.scalars().all() if c]
@@ -419,7 +419,7 @@ async def publish_template_to_companies(
                 select(EmailTemplate).where(
                     EmailTemplate.name == template.name,
                     EmailTemplate.company_id == company_id,
-                    EmailTemplate.is_system_template == False
+                    not EmailTemplate.is_system_template
                 )
             )
             if existing.scalar_one_or_none():

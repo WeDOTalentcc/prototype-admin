@@ -16,7 +16,7 @@ from sqlalchemy.sql import func
 from app.core.database import Base
 
 
-class ComplianceFrameworkType(str, enum.Enum):
+class ComplianceFrameworkType(enum.StrEnum):
     """Supported compliance frameworks."""
     SOX = "SOX"
     SOC2 = "SOC2"
@@ -27,7 +27,7 @@ class ComplianceFrameworkType(str, enum.Enum):
     NYC144 = "NYC144"
 
 
-class HealthCheckStatus(str, enum.Enum):
+class HealthCheckStatus(enum.StrEnum):
     """Status options for health check items."""
     IMPLEMENTED = "implemented"
     PARTIAL = "partial"
@@ -36,7 +36,7 @@ class HealthCheckStatus(str, enum.Enum):
     NOT_CHECKED = "not_checked"
 
 
-class ReviewFrequency(str, enum.Enum):
+class ReviewFrequency(enum.StrEnum):
     """Review frequency options."""
     WEEKLY = "weekly"
     MONTHLY = "monthly"
@@ -44,7 +44,7 @@ class ReviewFrequency(str, enum.Enum):
     ANNUAL = "annual"
 
 
-class Priority(str, enum.Enum):
+class Priority(enum.StrEnum):
     """Priority levels for health check items."""
     CRITICAL = "critical"
     HIGH = "high"

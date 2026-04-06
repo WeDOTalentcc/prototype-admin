@@ -11,7 +11,7 @@ This service manages automatic triggers that fire based on events:
 """
 import logging
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import and_, or_, select
@@ -28,7 +28,7 @@ from app.services.activity_service import ActivityService
 logger = logging.getLogger(__name__)
 
 
-class TriggerType(str, Enum):
+class TriggerType(StrEnum):
     """Types of automation triggers."""
     CANDIDATE_NO_CONTACT_48H = "candidate_no_contact_48h"
     INTERVIEW_REMINDER_24H = "interview_reminder_24h"
@@ -41,7 +41,7 @@ class TriggerType(str, Enum):
     JOB_DEADLINE_APPROACHING = "job_deadline_approaching"
 
 
-class AutomationAction(str, Enum):
+class AutomationAction(StrEnum):
     """Actions that can be triggered automatically."""
     SEND_EMAIL = "send_email"
     SEND_WHATSAPP = "send_whatsapp"
@@ -262,7 +262,7 @@ class AutomationTriggerService:
                 select(Candidate).where(
                     and_(
                         Candidate.status.in_(["new", "screening"]),
-                        Candidate.is_active == True,
+                        Candidate.is_active,
                         or_(
                             Candidate.last_contacted_at.is_(None),
                             Candidate.last_contacted_at < threshold
@@ -280,7 +280,7 @@ class AutomationTriggerService:
                         Interview.start_time >= now,
                         Interview.start_time <= tomorrow,
                         Interview.status == "scheduled",
-                        Interview.reminder_sent == False
+                        not Interview.reminder_sent
                     )
                 )
             )

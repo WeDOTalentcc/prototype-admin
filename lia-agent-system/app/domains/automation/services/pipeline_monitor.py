@@ -12,7 +12,7 @@ Scans all active companies for pipeline health issues including:
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import text
@@ -24,7 +24,7 @@ from app.shared.policy_middleware import get_policy_for_company
 logger = logging.getLogger(__name__)
 
 
-class PipelineEventType(str, Enum):
+class PipelineEventType(StrEnum):
     CANDIDATE_STAGNANT = "candidate_stagnant"
     HIGH_SCORE_NO_ACTION = "high_score_no_action"
     DEADLINE_APPROACHING = "deadline_approaching"

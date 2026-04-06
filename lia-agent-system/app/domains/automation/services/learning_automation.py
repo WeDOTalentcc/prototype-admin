@@ -110,7 +110,7 @@ class LearningAutomationService:
                         and_(
                             CompanySkill.company_id == company_id,
                             CompanySkill.times_confirmed >= self.SKILL_PROMOTION_THRESHOLD,
-                            CompanySkill.is_promoted == False,
+                            not CompanySkill.is_promoted,
                         )
                     )
                     .values(is_promoted=True)

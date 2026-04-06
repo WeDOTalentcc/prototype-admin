@@ -193,7 +193,7 @@ class LearningConfirmationService:
         try:
             conditions = [CompanySkill.company_id == company_id]
             if only_promoted:
-                conditions.append(CompanySkill.is_promoted == True)
+                conditions.append(CompanySkill.is_promoted)
 
             stmt = (
                 select(CompanySkill)
@@ -365,7 +365,7 @@ class LearningConfirmationService:
         try:
             conditions = [CompanyResponsibility.company_id == company_id]
             if only_promoted:
-                conditions.append(CompanyResponsibility.is_promoted == True)
+                conditions.append(CompanyResponsibility.is_promoted)
             stmt = (
                 select(CompanyResponsibility)
                 .where(and_(*conditions))

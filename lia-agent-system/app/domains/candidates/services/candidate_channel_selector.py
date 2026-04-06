@@ -141,7 +141,7 @@ class CandidateChannelSelector:
                     and_(
                         LGPDConsent.candidate_id == candidate_id,
                         LGPDConsent.company_id == company_id,
-                        LGPDConsent.consent_given == True,
+                        LGPDConsent.consent_given,
                     )
                 )
             )

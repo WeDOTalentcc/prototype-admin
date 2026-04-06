@@ -202,7 +202,7 @@ class AttachmentService:
             where_conditions = [
                 CandidateAttachment.candidate_id == candidate_id,
                 CandidateAttachment.company_id == company_id,
-                CandidateAttachment.is_active == True,
+                CandidateAttachment.is_active,
             ]
             
             count_query = (

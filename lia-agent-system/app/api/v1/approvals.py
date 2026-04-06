@@ -172,7 +172,7 @@ async def list_approval_requests(
         except (ValueError, TypeError):
             from app.models.company import CompanyProfile
             result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
+                select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
             )
             default_company = result.scalar_one_or_none()
             if default_company:

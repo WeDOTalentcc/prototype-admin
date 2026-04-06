@@ -4,7 +4,7 @@ Handles proactive notifications, briefings, and recruiter assistance.
 """
 import logging
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from app.templates.communication_templates import RecruiterNotificationTemplates
@@ -23,7 +23,7 @@ def get_event_dispatcher():
     return _event_dispatcher
 
 
-class NotificationPriority(str, Enum):
+class NotificationPriority(StrEnum):
     """Notification priority levels."""
     LOW = "low"
     MEDIUM = "medium"
@@ -31,7 +31,7 @@ class NotificationPriority(str, Enum):
     CRITICAL = "critical"
 
 
-class NotificationType(str, Enum):
+class NotificationType(StrEnum):
     """Types of proactive notifications."""
     DAILY_BRIEFING = "daily_briefing"
     END_OF_DAY = "end_of_day"

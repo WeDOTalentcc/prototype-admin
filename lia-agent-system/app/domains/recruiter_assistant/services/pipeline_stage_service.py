@@ -525,7 +525,7 @@ class PipelineStageService:
                     ATSStageMapping.company_id == company_id,
                     ATSStageMapping.ats_type == ats_type,
                     ATSStageMapping.ats_stage_name == ats_stage_name,
-                    ATSStageMapping.is_active == True
+                    ATSStageMapping.is_active
                 ))
             )
             mapping = result.scalar_one_or_none()
@@ -570,8 +570,8 @@ class PipelineStageService:
                     ATSStageMapping.company_id == company_id,
                     ATSStageMapping.ats_type == ats_type,
                     ATSStageMapping.wedotalent_stage_id == stage_obj.id,
-                    ATSStageMapping.is_active == True,
-                    ATSStageMapping.is_default_for_sync == True
+                    ATSStageMapping.is_active,
+                    ATSStageMapping.is_default_for_sync
                 ))
             )
             mapping = result.scalar_one_or_none()
@@ -585,7 +585,7 @@ class PipelineStageService:
                     ATSStageMapping.company_id == company_id,
                     ATSStageMapping.ats_type == ats_type,
                     ATSStageMapping.wedotalent_stage_id == stage_obj.id,
-                    ATSStageMapping.is_active == True
+                    ATSStageMapping.is_active
                 ))
                 .order_by(ATSStageMapping.priority.desc())
                 .limit(1)
@@ -665,7 +665,7 @@ class PipelineStageService:
             select(RecruitmentStage)
             .where(and_(
                 RecruitmentStage.company_id == company_id,
-                RecruitmentStage.is_active == True
+                RecruitmentStage.is_active
             ))
             .order_by(RecruitmentStage.stage_order)
         )
@@ -681,7 +681,7 @@ class PipelineStageService:
             select(RecruitmentSubStatus)
             .where(and_(
                 RecruitmentSubStatus.stage_id == uuid.UUID(stage_id),
-                RecruitmentSubStatus.is_active == True
+                RecruitmentSubStatus.is_active
             ))
             .order_by(RecruitmentSubStatus.sub_status_order)
         )

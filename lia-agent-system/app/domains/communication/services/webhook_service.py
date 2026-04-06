@@ -399,7 +399,7 @@ class WebhookService:
                 select(Webhook).where(
                     and_(
                         Webhook.company_id == company_id,
-                        Webhook.is_active == True
+                        Webhook.is_active
                     )
                 )
             )

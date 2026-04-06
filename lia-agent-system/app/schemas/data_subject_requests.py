@@ -6,13 +6,13 @@ Supports LGPD Art. 18 rights including:
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class RequestTypeEnum(str, Enum):
+class RequestTypeEnum(StrEnum):
     """Types of data subject requests under LGPD Art. 18."""
     ACCESS = "access"
     CORRECTION = "correction"
@@ -23,7 +23,7 @@ class RequestTypeEnum(str, Enum):
     EXPLANATION = "explanation"
 
 
-class RequestStatusEnum(str, Enum):
+class RequestStatusEnum(StrEnum):
     """Status of data subject requests."""
     PENDING = "pending"
     IN_REVIEW = "in_review"
@@ -33,7 +33,7 @@ class RequestStatusEnum(str, Enum):
     CANCELLED = "cancelled"
 
 
-class SourceChannelEnum(str, Enum):
+class SourceChannelEnum(StrEnum):
     """Source channel for data subject requests."""
     PORTAL = "portal"
     EMAIL = "email"

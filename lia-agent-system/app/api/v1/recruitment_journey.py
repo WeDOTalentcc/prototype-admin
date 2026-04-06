@@ -192,13 +192,13 @@ async def create_template(
                 select(RecruitmentTemplate)
                 .where(
                     RecruitmentTemplate.company_id == uuid.UUID(company_id),
-                    RecruitmentTemplate.is_default == True
+                    RecruitmentTemplate.is_default
                 )
             )
             existing = (await db.execute(
                 select(RecruitmentTemplate).where(
                     RecruitmentTemplate.company_id == uuid.UUID(company_id),
-                    RecruitmentTemplate.is_default == True
+                    RecruitmentTemplate.is_default
                 )
             )).scalars().all()
             for t in existing:
@@ -788,7 +788,7 @@ async def ai_suggest_template(
             select(RecruitmentTemplate).where(
                 RecruitmentTemplate.company_id == uuid.UUID(company_id),
                 RecruitmentTemplate.template_type == suggested_type,
-                RecruitmentTemplate.is_active == True
+                RecruitmentTemplate.is_active
             )
         )
         company_template = result.scalar_one_or_none()
@@ -817,7 +817,7 @@ async def ai_optimize_sla(
         result = await db.execute(
             select(RecruitmentSLA).where(
                 RecruitmentSLA.company_id == uuid.UUID(company_id),
-                RecruitmentSLA.is_active == True
+                RecruitmentSLA.is_active
             )
         )
         current_slas = result.scalars().all()

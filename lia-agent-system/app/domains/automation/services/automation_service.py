@@ -130,7 +130,7 @@ class AutomationService:
                     and_(
                         CommunicationAutomation.company_id == company_id,
                         CommunicationAutomation.trigger_type == trigger_type,
-                        CommunicationAutomation.is_active == True
+                        CommunicationAutomation.is_active
                     )
                 )
             )

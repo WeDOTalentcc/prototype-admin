@@ -7,13 +7,13 @@ Both Meta Cloud API and Twilio implementations must follow this interface.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class ProviderType(str, Enum):
+class ProviderType(StrEnum):
     """Supported WhatsApp provider types."""
     META = "meta"
     TWILIO = "twilio"

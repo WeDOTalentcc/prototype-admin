@@ -53,7 +53,7 @@ async def _check_vacancy_saturation_for_invite(db: AsyncSession, vacancy_id: str
         pass
     if not company:
         cr2 = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
+            select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
         )
         company = cr2.scalar_one_or_none()
 

@@ -458,7 +458,7 @@ class AutomationScheduler:
                             Interview.start_time >= window_24h_start,
                             Interview.start_time <= window_24h_end,
                             Interview.status.in_(['scheduled', 'confirmed']),
-                            Interview.reminder_sent == False
+                            not Interview.reminder_sent
                         )
                     )
                     .limit(50)
@@ -687,7 +687,7 @@ Equipe de Recrutamento
                     .where(
                         and_(
                             Interview.end_time < cutoff,
-                            Interview.reminder_sent == True
+                            Interview.reminder_sent
                         )
                     )
                     .values(reminder_sent=False, reminder_sent_at=None)

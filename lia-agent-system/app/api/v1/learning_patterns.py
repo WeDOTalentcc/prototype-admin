@@ -81,7 +81,7 @@ async def get_promoted_skills(
     try:
         conditions = [
             CompanySkill.company_id == company_id,
-            CompanySkill.is_promoted == True,
+            CompanySkill.is_promoted,
         ]
 
         result = await db.execute(

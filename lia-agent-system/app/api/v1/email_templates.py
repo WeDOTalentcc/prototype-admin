@@ -96,7 +96,7 @@ async def validate_recipient_is_known_candidate(db: AsyncSession, email: str) ->
     result = await db.execute(
         select(Candidate.id).where(
             Candidate.email == email,
-            Candidate.is_active == True
+            Candidate.is_active
         )
     )
     return result.scalar_one_or_none() is not None

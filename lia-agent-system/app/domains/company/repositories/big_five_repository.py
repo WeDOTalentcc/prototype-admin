@@ -15,7 +15,7 @@ class BigFiveRepository:
         self.db = db
 
     async def list_questions(self, trait: str | None = None) -> list[BigFiveQuestion]:
-        query = select(BigFiveQuestion).where(BigFiveQuestion.is_active == True)
+        query = select(BigFiveQuestion).where(BigFiveQuestion.is_active)
         if trait:
             query = query.where(BigFiveQuestion.trait == trait)
         query = query.order_by(BigFiveQuestion.trait, BigFiveQuestion.order)

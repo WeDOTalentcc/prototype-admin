@@ -391,7 +391,7 @@ class DataRequestService:
         )
         
         if active_only:
-            query = query.where(DataRequestTemplate.is_active == True)
+            query = query.where(DataRequestTemplate.is_active)
         
         query = query.order_by(DataRequestTemplate.created_at.desc())
         
@@ -486,7 +486,7 @@ class DataRequestService:
         
         query = select(DataRequestField).where(
             DataRequestField.company_id == company_id,
-            DataRequestField.is_active == True
+            DataRequestField.is_active
         ).order_by(DataRequestField.order)
         
         result = await db.execute(query)
@@ -655,7 +655,7 @@ class DataRequestService:
                 and_(
                     DataRequestTemplate.company_id == company_id,
                     DataRequestTemplate.trigger_stage == stage,
-                    DataRequestTemplate.is_active == True,
+                    DataRequestTemplate.is_active,
                     DataRequestTemplate.trigger_type.in_([
                         TriggerType.STAGE_ENTRY,
                         TriggerType.AUTOMATIC

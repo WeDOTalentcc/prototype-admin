@@ -4,21 +4,21 @@ Pydantic schemas for Rubric Evaluation API.
 Based on Schmidt & Hunter (1998) and BARS methodology.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 
-class RequirementPriorityEnum(str, Enum):
+class RequirementPriorityEnum(StrEnum):
     """Priority levels for job requirements."""
     ESSENTIAL = "essential"
     IMPORTANT = "important"
     NICE_TO_HAVE = "nice_to_have"
 
 
-class EvaluationLevelEnum(str, Enum):
+class EvaluationLevelEnum(StrEnum):
     """Evaluation levels based on BARS."""
     EXCEEDS = "exceeds"
     MEETS = "meets"
@@ -26,7 +26,7 @@ class EvaluationLevelEnum(str, Enum):
     MISSING = "missing"
 
 
-class EvidenceType(str, Enum):
+class EvidenceType(StrEnum):
     """Type of evidence supporting an evaluation."""
     EXPLICIT = "explicit"
     IMPLICIT = "implicit"

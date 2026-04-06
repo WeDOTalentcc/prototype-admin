@@ -25,7 +25,7 @@ Key Principles:
 """
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -44,21 +44,21 @@ _fairness_guard = FairnessGuard()
 logger = get_masked_logger(__name__)
 
 
-class FeedbackChannel(str, Enum):
+class FeedbackChannel(StrEnum):
     """Channels for sending feedback."""
     EMAIL = "email"
     WHATSAPP = "whatsapp"
     BOTH = "both"
 
 
-class FeedbackTone(str, Enum):
+class FeedbackTone(StrEnum):
     """Tone for the feedback message."""
     WARM = "warm"
     PROFESSIONAL = "professional"
     ENCOURAGING = "encouraging"
 
 
-class PersonalizedFeedbackStatus(str, Enum):
+class PersonalizedFeedbackStatus(StrEnum):
     """Status of personalized feedback."""
     DRAFT = "draft"
     PENDING_APPROVAL = "pending_approval"

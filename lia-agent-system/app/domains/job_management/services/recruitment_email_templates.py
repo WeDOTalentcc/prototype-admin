@@ -813,7 +813,7 @@ async def get_template_for_stage(
                     RecruitmentEmailTemplate.stage_name == stage_name,
                     RecruitmentEmailTemplate.template_type == template_type,
                     RecruitmentEmailTemplate.company_id == company_id,
-                    RecruitmentEmailTemplate.is_active == True
+                    RecruitmentEmailTemplate.is_active
                 )
             )
         )
@@ -827,7 +827,7 @@ async def get_template_for_stage(
                 RecruitmentEmailTemplate.stage_name == stage_name,
                 RecruitmentEmailTemplate.template_type == template_type,
                 RecruitmentEmailTemplate.company_id.is_(None),
-                RecruitmentEmailTemplate.is_active == True
+                RecruitmentEmailTemplate.is_active
             )
         )
     )
@@ -911,7 +911,7 @@ async def clone_templates_for_company(
         select(RecruitmentEmailTemplate).where(
             and_(
                 RecruitmentEmailTemplate.company_id.is_(None),
-                RecruitmentEmailTemplate.is_system == True
+                RecruitmentEmailTemplate.is_system
             )
         )
     )

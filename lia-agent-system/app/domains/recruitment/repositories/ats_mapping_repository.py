@@ -27,7 +27,7 @@ class ATSMappingRepository:
             ATSStageMapping.company_id == company_id
         )
         if not include_inactive:
-            query = query.where(ATSStageMapping.is_active == True)
+            query = query.where(ATSStageMapping.is_active)
         if ats_type:
             query = query.where(ATSStageMapping.ats_type == ats_type)
         query = query.order_by(ATSStageMapping.ats_type, ATSStageMapping.priority.desc())

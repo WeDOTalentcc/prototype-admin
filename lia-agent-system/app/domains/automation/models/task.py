@@ -14,7 +14,7 @@ from sqlalchemy import Enum as SQLEnum
 from app.core.database import Base
 
 
-class TaskPriority(str, enum.Enum):
+class TaskPriority(enum.StrEnum):
     """Priority levels for tasks."""
     CRITICAL = "critical"
     HIGH = "high"
@@ -22,7 +22,7 @@ class TaskPriority(str, enum.Enum):
     LOW = "low"
 
 
-class TaskStatus(str, enum.Enum):
+class TaskStatus(enum.StrEnum):
     """Status of tasks."""
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -31,7 +31,7 @@ class TaskStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
-class TaskType(str, enum.Enum):
+class TaskType(enum.StrEnum):
     """Types of tasks."""
     FEEDBACK_PENDING = "feedback_pending"
     INTERVIEW_SCHEDULE = "interview_schedule"

@@ -50,7 +50,7 @@ async def _check_vacancy_saturation(db: AsyncSession, vacancy: JobVacancy) -> di
         pass
     if not company:
         result2 = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
+            select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
         )
         company = result2.scalar_one_or_none()
 

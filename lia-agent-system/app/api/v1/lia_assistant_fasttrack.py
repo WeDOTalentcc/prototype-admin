@@ -6,7 +6,7 @@ All routes share prefix="/lia" to preserve existing /api/v1/lia/fast-track/* URL
 """
 import logging
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -30,7 +30,7 @@ router = APIRouter(prefix="/lia", tags=["lia-fasttrack"])
 # Pydantic schemas
 # ---------------------------------------------------------------------------
 
-class FastTrackState(str, Enum):
+class FastTrackState(StrEnum):
     PRE_WIZARD = "pre_wizard"
     SEARCHING = "searching"
     SELECTING = "selecting"

@@ -9,7 +9,7 @@ This module implements a complete function-calling system where:
 2. LLM agents can invoke tools to execute real actions
 3. Results are returned to the user with appropriate messaging
 """
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel
@@ -23,7 +23,7 @@ from app.tools.tool_registry_loader import (
 )
 
 
-class ToolStatus(str, Enum):
+class ToolStatus(StrEnum):
     """Status of a tool execution."""
     SUCCESS = "success"
     ERROR = "error"

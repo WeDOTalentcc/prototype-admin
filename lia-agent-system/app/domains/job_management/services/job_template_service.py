@@ -123,19 +123,19 @@ class JobTemplateService:
         Returns:
             List of JobTemplate objects
         """
-        query = select(JobTemplate).where(JobTemplate.is_active == True)
+        query = select(JobTemplate).where(JobTemplate.is_active)
         
         if company_id and include_system:
             query = query.where(
                 or_(
                     JobTemplate.company_id == company_id,
-                    JobTemplate.is_system == True
+                    JobTemplate.is_system
                 )
             )
         elif company_id:
             query = query.where(JobTemplate.company_id == company_id)
         elif include_system:
-            query = query.where(JobTemplate.is_system == True)
+            query = query.where(JobTemplate.is_system)
         
         if category:
             query = query.where(JobTemplate.category == category)
@@ -171,7 +171,7 @@ class JobTemplateService:
         
         sql_query = (
             select(JobTemplate)
-            .where(JobTemplate.is_active == True)
+            .where(JobTemplate.is_active)
             .where(
                 or_(
                     func.lower(JobTemplate.title).like(query_lower),
@@ -185,11 +185,11 @@ class JobTemplateService:
             sql_query = sql_query.where(
                 or_(
                     JobTemplate.company_id == company_id,
-                    JobTemplate.is_system == True
+                    JobTemplate.is_system
                 )
             )
         else:
-            sql_query = sql_query.where(JobTemplate.is_system == True)
+            sql_query = sql_query.where(JobTemplate.is_system)
         
         sql_query = sql_query.order_by(JobTemplate.popularity_score.desc())
         sql_query = sql_query.limit(limit)
@@ -206,7 +206,7 @@ class JobTemplateService:
         """Get most popular templates."""
         query = (
             select(JobTemplate)
-            .where(JobTemplate.is_active == True)
+            .where(JobTemplate.is_active)
             .order_by(JobTemplate.usage_count.desc())
             .limit(limit)
         )
@@ -218,7 +218,7 @@ class JobTemplateService:
             query = query.where(
                 or_(
                     JobTemplate.company_id == company_id,
-                    JobTemplate.is_system == True
+                    JobTemplate.is_system
                 )
             )
         
@@ -391,7 +391,7 @@ class JobTemplateService:
         for data in templates_data:
             existing = await self.db.execute(
                 select(JobTemplate).where(
-                    JobTemplate.is_system == True,
+                    JobTemplate.is_system,
                     JobTemplate.title == data["title"],
                     JobTemplate.seniority == data["seniority"],
                 )
@@ -415,8 +415,8 @@ class JobTemplateService:
                 JobTemplate.category,
                 func.count(JobTemplate.id).label("count")
             )
-            .where(JobTemplate.is_active == True)
-            .where(JobTemplate.is_system == True)
+            .where(JobTemplate.is_active)
+            .where(JobTemplate.is_system)
             .group_by(JobTemplate.category)
         )
         

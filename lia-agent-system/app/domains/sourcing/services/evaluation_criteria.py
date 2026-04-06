@@ -367,7 +367,7 @@ class EvaluationCriteriaService:
         min_score: float = 0.4,
     ) -> list[dict[str, Any]]:
         result = await db.execute(
-            select(EvaluationCriteria).where(EvaluationCriteria.is_active == True)
+            select(EvaluationCriteria).where(EvaluationCriteria.is_active)
         )
         all_criteria = result.scalars().all()
 
@@ -443,7 +443,7 @@ class EvaluationCriteriaService:
         db: AsyncSession,
         category: str | None = None,
     ) -> list[EvaluationCriteria]:
-        query = select(EvaluationCriteria).where(EvaluationCriteria.is_active == True)
+        query = select(EvaluationCriteria).where(EvaluationCriteria.is_active)
         if category:
             query = query.where(EvaluationCriteria.category == category)
         query = query.order_by(EvaluationCriteria.effectiveness_score.desc())

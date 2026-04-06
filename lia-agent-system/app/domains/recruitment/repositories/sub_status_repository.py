@@ -26,7 +26,7 @@ class SubStatusRepository:
             RecruitmentSubStatus.stage_id == stage_id
         )
         if not include_inactive:
-            query = query.where(RecruitmentSubStatus.is_active == True)
+            query = query.where(RecruitmentSubStatus.is_active)
         query = query.order_by(RecruitmentSubStatus.sub_status_order)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -40,7 +40,7 @@ class SubStatusRepository:
             RecruitmentSubStatus.company_id == company_id
         )
         if not include_inactive:
-            query = query.where(RecruitmentSubStatus.is_active == True)
+            query = query.where(RecruitmentSubStatus.is_active)
         query = query.order_by(RecruitmentSubStatus.sub_status_order)
         result = await self.db.execute(query)
         return list(result.scalars().all())

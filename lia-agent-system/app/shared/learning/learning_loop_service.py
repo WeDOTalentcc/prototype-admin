@@ -15,7 +15,7 @@ import logging
 import statistics
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import and_, func, select
@@ -26,7 +26,7 @@ from app.shared.tracing import trace_span
 logger = logging.getLogger(__name__)
 
 
-class FeedbackOutcome(str, Enum):
+class FeedbackOutcome(StrEnum):
     """Possible outcomes for a suggestion."""
     ACCEPTED = "accepted"
     MODIFIED = "modified"
@@ -34,7 +34,7 @@ class FeedbackOutcome(str, Enum):
     IGNORED = "ignored"
 
 
-class PatternType(str, Enum):
+class PatternType(StrEnum):
     """Types of learnable patterns."""
     SALARY_PREFERENCE = "salary_preference"
     SKILL_PREFERENCE = "skill_preference"
@@ -344,7 +344,7 @@ class LearningLoopService:
                 .where(
                     and_(
                         FeedbackEvent.company_id == company_id,
-                        FeedbackEvent.processed_for_learning == False
+                        not FeedbackEvent.processed_for_learning
                     )
                 )
                 .order_by(FeedbackEvent.created_at)
@@ -610,7 +610,7 @@ class LearningLoopService:
             conditions = [
                 LearningPattern.company_id == company_id,
                 LearningPattern.pattern_type == pattern_type,
-                LearningPattern.is_active == True,
+                LearningPattern.is_active,
                 LearningPattern.confidence_score >= min_confidence
             ]
             

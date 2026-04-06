@@ -5,13 +5,13 @@ Define estruturas para sugestões enriquecidas com justificativas,
 métricas de impacto e contexto para tomada de decisão do recrutador.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 
-class SuggestionSource(str, Enum):
+class SuggestionSource(StrEnum):
     MARKET_BENCHMARK = "market_benchmark"
     COMPANY_HISTORY = "company_history"
     SKILLS_CATALOG = "skills_catalog"
@@ -19,7 +19,7 @@ class SuggestionSource(str, Enum):
     ATS_INTEGRATION = "ats_integration"
 
 
-class SuggestionImpactLevel(str, Enum):
+class SuggestionImpactLevel(StrEnum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"

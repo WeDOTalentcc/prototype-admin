@@ -134,7 +134,7 @@ async def list_goals(
             query = query.where(Goal.status == status)
         
         if not include_inactive:
-            query = query.where(Goal.is_active == True)
+            query = query.where(Goal.is_active)
         
         query = query.order_by(Goal.created_at.desc())
         query = query.offset(skip).limit(limit)
@@ -159,7 +159,7 @@ async def get_goals_by_user(
         query = select(Goal).where(Goal.user_id == user_id)
         
         if not include_inactive:
-            query = query.where(Goal.is_active == True)
+            query = query.where(Goal.is_active)
         
         query = query.order_by(Goal.created_at.desc())
         
@@ -370,7 +370,7 @@ async def list_goal_templates(
             query = query.where(
                 or_(
                     GoalTemplate.company_id == company_id,
-                    GoalTemplate.is_system == True
+                    GoalTemplate.is_system
                 )
             )
         
@@ -378,7 +378,7 @@ async def list_goal_templates(
             query = query.where(GoalTemplate.category == category)
         
         if not include_inactive:
-            query = query.where(GoalTemplate.is_active == True)
+            query = query.where(GoalTemplate.is_active)
         
         query = query.order_by(GoalTemplate.name)
         
@@ -500,7 +500,7 @@ async def seed_default_templates(
             existing = await db.execute(
                 select(GoalTemplate).where(
                     GoalTemplate.name == template_data["name"],
-                    GoalTemplate.is_system == True
+                    GoalTemplate.is_system
                 )
             )
             if existing.scalar_one_or_none():

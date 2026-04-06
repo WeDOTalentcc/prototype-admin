@@ -26,7 +26,7 @@ class ClientAccountRepository:
             select(ClientAccount).where(
                 and_(
                     ClientAccount.id == client_id,
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                 )
             )
         )
@@ -37,7 +37,7 @@ class ClientAccountRepository:
             select(ClientAccount).where(
                 and_(
                     ClientAccount.cnpj == cnpj,
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                 )
             )
         )
@@ -108,7 +108,7 @@ class ClientAccountRepository:
         company_size: str | None,
         company_id: str | None,
     ) -> list:
-        conditions: list = [ClientAccount.is_deleted == False]
+        conditions: list = [not ClientAccount.is_deleted]
         if status:
             conditions.append(ClientAccount.status == status)
         if plan_id:
@@ -238,7 +238,7 @@ class ClientAccountRepository:
             select(func.count(ClientAccount.id)).where(
                 and_(
                     ClientAccount.status == status_value,
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                 )
             )
         )
@@ -247,7 +247,7 @@ class ClientAccountRepository:
     async def count_total(self) -> int:
         result = await self.db.execute(
             select(func.count(ClientAccount.id)).where(
-                ClientAccount.is_deleted == False
+                not ClientAccount.is_deleted
             )
         )
         return result.scalar() or 0
@@ -258,7 +258,7 @@ class ClientAccountRepository:
             .where(
                 and_(
                     ClientAccount.status == status_value,
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                 )
             )
             .order_by(ClientAccount.created_at.desc())
@@ -274,7 +274,7 @@ class ClientAccountRepository:
                 and_(
                     ClientAccount.created_at >= start,
                     ClientAccount.created_at <= end,
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                 )
             )
             .order_by(ClientAccount.created_at.desc())
@@ -291,7 +291,7 @@ class ClientAccountRepository:
                     ClientAccount.status == ClientStatus.CHURNED.value,
                     ClientAccount.updated_at >= start,
                     ClientAccount.updated_at <= end,
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                 )
             )
             .order_by(ClientAccount.updated_at.desc())
@@ -303,7 +303,7 @@ class ClientAccountRepository:
             select(ClientAccount.plan_id, func.count(ClientAccount.id).label("count"))
             .where(
                 and_(
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                     ClientAccount.plan_id.isnot(None),
                 )
             )
@@ -319,7 +319,7 @@ class ClientAccountRepository:
             )
             .where(
                 and_(
-                    ClientAccount.is_deleted == False,
+                    not ClientAccount.is_deleted,
                     ClientAccount.company_size.isnot(None),
                 )
             )

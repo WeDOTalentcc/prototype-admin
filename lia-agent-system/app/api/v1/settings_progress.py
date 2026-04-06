@@ -21,7 +21,7 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 async def get_default_company(db: AsyncSession) -> CompanyProfile:
     """Get default company or first available."""
     result = await db.execute(
-        select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
+        select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
     )
     company = result.scalar_one_or_none()
     
@@ -75,7 +75,7 @@ async def calculate_departments_progress(company_id, db: AsyncSession) -> tuple[
     result = await db.execute(
         select(func.count(Department.id)).where(
             Department.company_id == company_id,
-            Department.is_active == True
+            Department.is_active
         )
     )
     count = result.scalar() or 0
@@ -92,7 +92,7 @@ async def calculate_benefits_progress(company_id, db: AsyncSession) -> tuple[int
     result = await db.execute(
         select(func.count(Benefit.id)).where(
             Benefit.company_id == company_id,
-            Benefit.is_active == True
+            Benefit.is_active
         )
     )
     count = result.scalar() or 0
@@ -109,7 +109,7 @@ async def calculate_approvers_progress(company_id, db: AsyncSession) -> tuple[in
     result = await db.execute(
         select(func.count(Approver.id)).where(
             Approver.company_id == company_id,
-            Approver.is_active == True
+            Approver.is_active
         )
     )
     count = result.scalar() or 0
@@ -126,7 +126,7 @@ async def calculate_templates_progress(company_id, db: AsyncSession) -> tuple[in
     result = await db.execute(
         select(func.count(RecruitmentTemplate.id)).where(
             RecruitmentTemplate.company_id == company_id,
-            RecruitmentTemplate.is_active == True
+            RecruitmentTemplate.is_active
         )
     )
     count = result.scalar() or 0
@@ -143,7 +143,7 @@ async def calculate_slas_progress(company_id, db: AsyncSession) -> tuple[int, bo
     result = await db.execute(
         select(func.count(RecruitmentSLA.id)).where(
             RecruitmentSLA.company_id == company_id,
-            RecruitmentSLA.is_active == True
+            RecruitmentSLA.is_active
         )
     )
     count = result.scalar() or 0
@@ -160,7 +160,7 @@ async def calculate_automations_progress(company_id, db: AsyncSession) -> tuple[
     result = await db.execute(
         select(func.count(RecruitmentAutomation.id)).where(
             RecruitmentAutomation.company_id == company_id,
-            RecruitmentAutomation.is_enabled == True
+            RecruitmentAutomation.is_enabled
         )
     )
     count = result.scalar() or 0

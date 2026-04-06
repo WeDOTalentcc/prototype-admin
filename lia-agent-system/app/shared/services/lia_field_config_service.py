@@ -13,7 +13,7 @@ CRITICAL: Toggles control AI DATA CONSUMPTION only, not UI visibility.
 """
 import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
@@ -31,7 +31,7 @@ from app.models.lia_field_toggles import (
 logger = logging.getLogger(__name__)
 
 
-class DataSource(str, Enum):
+class DataSource(StrEnum):
     """Source of data used by AI agents."""
     COMPANY_CONFIG = "company_config"
     JOB_HISTORY = "job_history"

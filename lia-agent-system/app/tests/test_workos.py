@@ -60,7 +60,7 @@ class TestWorkOSSyncUser:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["is_new_user"] == True
+        assert data["is_new_user"]
         assert "workos_id" in data
 
     async def test_sync_existing_user(self, test_client: AsyncClient):
@@ -79,7 +79,7 @@ class TestWorkOSSyncUser:
             headers=INTERNAL_AUTH_HEADER
         )
         assert response1.status_code == 200
-        assert response1.json()["is_new_user"] == True
+        assert response1.json()["is_new_user"]
         
         response2 = await test_client.post(
             "/api/v1/auth/workos/sync-user",
@@ -92,7 +92,7 @@ class TestWorkOSSyncUser:
             headers=INTERNAL_AUTH_HEADER
         )
         assert response2.status_code == 200
-        assert response2.json()["is_new_user"] == False
+        assert not response2.json()["is_new_user"]
 
     async def test_unauthorized_without_header(self, test_client: AsyncClient):
         """Test that requests without auth header are rejected."""
@@ -123,7 +123,7 @@ class TestSCIMUserEndpoints:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"]
         assert data["action"] == "created"
 
     async def test_scim_user_updated(self, test_client: AsyncClient):
@@ -151,7 +151,7 @@ class TestSCIMUserEndpoints:
             headers=INTERNAL_AUTH_HEADER
         )
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
 
     async def test_scim_user_deleted(self, test_client: AsyncClient):
         """Test SCIM user deactivation (soft delete)."""
@@ -172,7 +172,7 @@ class TestSCIMUserEndpoints:
             headers=INTERNAL_AUTH_HEADER
         )
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         assert response.json()["message"] == "User deactivated successfully"
 
 
@@ -193,7 +193,7 @@ class TestSCIMGroupEndpoints:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"]
         assert data["action"] == "created"
 
     async def test_scim_group_deleted(self, test_client: AsyncClient):
@@ -212,7 +212,7 @@ class TestSCIMGroupEndpoints:
             headers=INTERNAL_AUTH_HEADER
         )
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
 
 
 @pytest.mark.asyncio

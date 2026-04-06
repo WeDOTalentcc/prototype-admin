@@ -53,7 +53,7 @@ async def generate_screening_pipeline(
 
                 stmt = select(CompanyScreeningQuestion).where(
                     CompanyScreeningQuestion.company_id == company_id,
-                    CompanyScreeningQuestion.is_active == True,
+                    CompanyScreeningQuestion.is_active,
                 ).order_by(CompanyScreeningQuestion.order)
 
                 result = await db.execute(stmt)

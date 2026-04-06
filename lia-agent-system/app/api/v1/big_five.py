@@ -138,7 +138,7 @@ async def get_client(company_id: str, db: AsyncSession) -> ClientAccount:
     query = select(ClientAccount).where(
         and_(
             ClientAccount.id == client_uuid,
-            ClientAccount.is_deleted == False
+            not ClientAccount.is_deleted
         )
     )
     result = await db.execute(query)

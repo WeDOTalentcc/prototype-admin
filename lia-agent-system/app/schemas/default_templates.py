@@ -2,13 +2,13 @@
 Pydantic schemas for Default Templates API.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 
-class TemplateCategoryEnum(str, Enum):
+class TemplateCategoryEnum(StrEnum):
     """Category of communication template."""
     EMAIL = "email"
     SMS = "sms"
@@ -16,7 +16,7 @@ class TemplateCategoryEnum(str, Enum):
     PUSH = "push"
 
 
-class TemplateStatusEnum(str, Enum):
+class TemplateStatusEnum(StrEnum):
     """Status of the template."""
     ACTIVE = "active"
     DRAFT = "draft"

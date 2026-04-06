@@ -62,7 +62,7 @@ class DepartmentRepository:
         result = await self.db.execute(
             select(func.count(DepartmentMember.id)).where(
                 DepartmentMember.department_id == dept_id,
-                DepartmentMember.is_active == True,
+                DepartmentMember.is_active,
             )
         )
         return result.scalar() or 0
@@ -72,7 +72,7 @@ class DepartmentRepository:
             select(DepartmentMember)
             .where(
                 DepartmentMember.department_id == dept_id,
-                DepartmentMember.is_active == True,
+                DepartmentMember.is_active,
             )
             .order_by(DepartmentMember.order, DepartmentMember.name)
         )

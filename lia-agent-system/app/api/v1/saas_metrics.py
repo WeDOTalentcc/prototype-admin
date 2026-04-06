@@ -172,7 +172,7 @@ async def get_aggregate_metrics(
         cac_sum = 0.0
         cac_count = 0
         
-        clients_query = select(ClientAccount).where(ClientAccount.is_deleted == False)
+        clients_query = select(ClientAccount).where(not ClientAccount.is_deleted)
         result = await db.execute(clients_query)
         clients = result.scalars().all()
         total_clients = len(clients)
@@ -296,14 +296,14 @@ async def get_platform_summary(
         require_admin(current_user)
         
         total_query = select(func.count(ClientAccount.id)).where(
-            ClientAccount.is_deleted == False
+            not ClientAccount.is_deleted
         )
         total_result = await db.execute(total_query)
         total_clients = total_result.scalar() or 0
         
         active_query = select(func.count(ClientAccount.id)).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.ACTIVE.value
             )
         )
@@ -312,7 +312,7 @@ async def get_platform_summary(
         
         trial_query = select(func.count(ClientAccount.id)).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.TRIAL.value
             )
         )
@@ -321,7 +321,7 @@ async def get_platform_summary(
         
         churned_query = select(func.count(ClientAccount.id)).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.CHURNED.value
             )
         )
@@ -329,7 +329,7 @@ async def get_platform_summary(
         churned_clients = churned_result.scalar() or 0
         
         total_users_query = select(func.count(ClientUser.id)).where(
-            ClientUser.is_deleted == False
+            not ClientUser.is_deleted
         )
         total_users_result = await db.execute(total_users_query)
         total_users = total_users_result.scalar() or 0
@@ -337,7 +337,7 @@ async def get_platform_summary(
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         active_users_query = select(func.count(ClientUser.id)).where(
             and_(
-                ClientUser.is_deleted == False,
+                not ClientUser.is_deleted,
                 ClientUser.status == ClientUserStatus.ACTIVE.value,
                 or_(
                     ClientUser.last_login_at >= thirty_days_ago,
@@ -354,7 +354,7 @@ async def get_platform_summary(
             func.count(ClientAccount.id).label('count')
         ).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.ACTIVE.value,
                 ClientAccount.plan_id.isnot(None)
             )
@@ -375,7 +375,7 @@ async def get_platform_summary(
         sixty_days_ago = datetime.utcnow() - timedelta(days=60)
         old_clients_query = select(func.count(ClientAccount.id)).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.created_at <= sixty_days_ago
             )
         )
@@ -672,7 +672,7 @@ async def create_payment(
         client_query = select(ClientAccount).where(
             and_(
                 ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
+                not ClientAccount.is_deleted
             )
         )
         result = await db.execute(client_query)
@@ -752,7 +752,7 @@ async def get_client_metrics(
         query = select(ClientAccount).where(
             and_(
                 ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
+                not ClientAccount.is_deleted
             )
         )
         result = await db.execute(query)
@@ -767,7 +767,7 @@ async def get_client_metrics(
         users_query = select(func.count(ClientUser.id)).where(
             and_(
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False
+                not ClientUser.is_deleted
             )
         )
         users_result = await db.execute(users_query)
@@ -777,7 +777,7 @@ async def get_client_metrics(
         active_users_query = select(func.count(ClientUser.id)).where(
             and_(
                 ClientUser.company_id == client_uuid,
-                ClientUser.is_deleted == False,
+                not ClientUser.is_deleted,
                 ClientUser.status == ClientUserStatus.ACTIVE.value
             )
         )
@@ -870,7 +870,7 @@ async def list_client_metrics(
     try:
         require_admin(current_user)
         
-        conditions = [ClientAccount.is_deleted == False]
+        conditions = [not ClientAccount.is_deleted]
         
         if status_filter:
             conditions.append(ClientAccount.status == status_filter)
@@ -894,7 +894,7 @@ async def list_client_metrics(
             users_query = select(func.count(ClientUser.id)).where(
                 and_(
                     ClientUser.company_id == client.id,
-                    ClientUser.is_deleted == False
+                    not ClientUser.is_deleted
                 )
             )
             users_result = await db.execute(users_query)
@@ -982,7 +982,7 @@ async def get_churn_analysis(
         previous_churned = previous_churned_result.scalar() or 0
         
         total_query = select(func.count(ClientAccount.id)).where(
-            ClientAccount.is_deleted == False
+            not ClientAccount.is_deleted
         )
         total_result = await db.execute(total_query)
         total_clients = total_result.scalar() or 1
@@ -991,7 +991,7 @@ async def get_churn_analysis(
         
         at_risk_query = select(func.count(ClientAccount.id)).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.SUSPENDED.value
             )
         )
@@ -1036,7 +1036,7 @@ async def get_revenue_analysis(
             func.count(ClientAccount.id).label('count')
         ).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.ACTIVE.value,
                 ClientAccount.plan_id.isnot(None)
             )
@@ -1068,7 +1068,7 @@ async def get_revenue_analysis(
             func.count(ClientAccount.id).label('count')
         ).where(
             and_(
-                ClientAccount.is_deleted == False,
+                not ClientAccount.is_deleted,
                 ClientAccount.status == ClientStatus.ACTIVE.value,
                 ClientAccount.company_size.isnot(None)
             )

@@ -17,7 +17,7 @@ Features:
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-class DataSource(str, Enum):
+class DataSource(StrEnum):
     """Data sources in priority order."""
     LEARNING_PATTERNS = "learning_patterns"
     COMPANY_SKILLS_CATALOG = "company_skills_catalog"
@@ -36,7 +36,7 @@ class DataSource(str, Enum):
     LLM_INFERENCE = "llm_inference"
 
 
-class ConfidenceLevel(str, Enum):
+class ConfidenceLevel(StrEnum):
     """Confidence levels for data sources."""
     VERY_HIGH = "very_high"
     HIGH = "high"

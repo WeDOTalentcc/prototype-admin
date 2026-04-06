@@ -5,7 +5,7 @@ Based on Schmidt & Hunter (1998) meta-analysis and BARS methodology.
 """
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from app.core.database import Base
 
 
-class RequirementPriority(str, Enum):
+class RequirementPriority(StrEnum):
     """Priority levels for job requirements with multipliers."""
     ESSENTIAL = "essential"      # 3x multiplier - eliminatory requirements
     IMPORTANT = "important"      # 2x multiplier - significant impact on performance
@@ -30,7 +30,7 @@ class RequirementPriority(str, Enum):
         return multipliers[self]
 
 
-class EvaluationLevel(str, Enum):
+class EvaluationLevel(StrEnum):
     """Evaluation levels based on BARS (Behaviorally Anchored Rating Scales)."""
     EXCEEDS = "exceeds"   # 100 pts - Exceptional evidence, exceeds requirements
     MEETS = "meets"       # 75 pts  - Clearly demonstrates the competency

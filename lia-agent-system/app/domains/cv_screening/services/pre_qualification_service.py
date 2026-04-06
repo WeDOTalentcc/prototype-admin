@@ -10,13 +10,13 @@ and generates appropriate messages based on thresholds.
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class PreQualificationResult(str, Enum):
+class PreQualificationResult(StrEnum):
     """Result categories for pre-qualification."""
     ALIGNED = "aligned"
     PARTIAL = "partial"
@@ -24,7 +24,7 @@ class PreQualificationResult(str, Enum):
     VERY_DISTANT = "very_distant"
 
 
-class PreQualificationDecision(str, Enum):
+class PreQualificationDecision(StrEnum):
     """Candidate decision after pre-qualification message."""
     CONTINUE = "continue"
     VIEW_OTHER_JOBS = "view_other_jobs"

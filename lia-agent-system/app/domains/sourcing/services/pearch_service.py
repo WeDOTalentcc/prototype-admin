@@ -684,7 +684,7 @@ class PearchService:
         
         # Query base
         stmt = select(Candidate).where(
-            Candidate.is_active == True
+            Candidate.is_active
         )
         
         if conditions:
@@ -882,9 +882,9 @@ class PearchService:
             
             # Filtro por email/telefone for staging
             if require_email:
-                staging_stmt = staging_stmt.where(ExternalCandidateProfile.has_email == True)
+                staging_stmt = staging_stmt.where(ExternalCandidateProfile.has_email)
             if require_phone:
-                staging_stmt = staging_stmt.where(ExternalCandidateProfile.has_phone == True)
+                staging_stmt = staging_stmt.where(ExternalCandidateProfile.has_phone)
             
             # Calculate remaining limit
             remaining_limit = max(0, limit - len(profiles))

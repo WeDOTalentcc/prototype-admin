@@ -5,12 +5,12 @@ Schemas para geração de Job Description em duas versões:
 - JD Final (v2): Versão completa para publicação com todas as informações
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class SuggestionSource(str, Enum):
+class SuggestionSource(StrEnum):
     DETECTED = "detected"
     LIA_CATALOG = "lia_catalog"
     LIA_MARKET = "lia_market"
@@ -18,18 +18,18 @@ class SuggestionSource(str, Enum):
     RECRUITER = "recruiter"
 
 
-class RequirementLevel(str, Enum):
+class RequirementLevel(StrEnum):
     REQUIRED = "required"
     NICE_TO_HAVE = "nice_to_have"
 
 
-class WorkModel(str, Enum):
+class WorkModel(StrEnum):
     REMOTE = "remoto"
     HYBRID = "hibrido"
     ONSITE = "presencial"
 
 
-class ContractType(str, Enum):
+class ContractType(StrEnum):
     CLT = "CLT"
     PJ = "PJ"
     ESTAGIO = "Estágio"
@@ -37,7 +37,7 @@ class ContractType(str, Enum):
     FREELANCER = "Freelancer"
 
 
-class Priority(str, Enum):
+class Priority(StrEnum):
     LOW = "baixa"
     MEDIUM = "media"
     HIGH = "alta"

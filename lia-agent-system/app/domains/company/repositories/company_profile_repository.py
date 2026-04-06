@@ -32,7 +32,7 @@ class CompanyProfileRepository:
 
     async def get_default(self) -> CompanyProfile | None:
         result = await self.db.execute(
-            select(CompanyProfile).where(CompanyProfile.is_default == True)
+            select(CompanyProfile).where(CompanyProfile.is_default)
         )
         return result.scalar_one_or_none()
 
@@ -84,7 +84,7 @@ class CompanyProfileRepository:
         deps_result = await self.db.execute(
             select(Department).where(
                 Department.company_id == profile_id,
-                Department.is_active == True,
+                Department.is_active,
             )
         )
         departments = list(deps_result.scalars().all())
@@ -92,7 +92,7 @@ class CompanyProfileRepository:
         bens_result = await self.db.execute(
             select(Benefit).where(
                 Benefit.company_id == profile_id,
-                Benefit.is_active == True,
+                Benefit.is_active,
             )
         )
         benefits = list(bens_result.scalars().all())
@@ -100,7 +100,7 @@ class CompanyProfileRepository:
         vals_result = await self.db.execute(
             select(CultureValue).where(
                 CultureValue.company_id == profile_id,
-                CultureValue.is_active == True,
+                CultureValue.is_active,
             )
         )
         culture_values = list(vals_result.scalars().all())

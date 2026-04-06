@@ -632,7 +632,7 @@ async def get_client_test_stats(
         enabled_count_query = select(func.count(ClientTestConfig.id)).where(
             and_(
                 ClientTestConfig.client_id == client_uuid,
-                ClientTestConfig.is_enabled == True
+                ClientTestConfig.is_enabled
             )
         )
         enabled_result = await db.execute(enabled_count_query)
@@ -644,7 +644,7 @@ async def get_client_test_stats(
             func.count(case((TestResult.completed_at.isnot(None), 1))).label('total_completed'),
             func.avg(TestResult.score).label('avg_score'),
             func.avg(TestResult.time_taken_seconds).label('avg_time'),
-            func.sum(case((TestResult.passed == True, 1), else_=0)).label('passed_count')
+            func.sum(case((TestResult.passed, 1), else_=0)).label('passed_count')
         ).where(
             TestResult.client_id == client_uuid
         ).group_by(TestResult.test_id)

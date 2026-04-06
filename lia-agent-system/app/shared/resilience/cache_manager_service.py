@@ -18,7 +18,7 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Generic, TypeVar
 
 from sqlalchemy import and_, delete, select
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
-class CacheNamespace(str, Enum):
+class CacheNamespace(StrEnum):
     """Cache namespaces for different data types."""
     SALARY_BENCHMARK = "salary_benchmark"
     MARKET_DATA = "market_data"

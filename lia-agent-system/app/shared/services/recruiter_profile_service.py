@@ -6,18 +6,18 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 
 logger = logging.getLogger(__name__)
 
 
-class TonePreference(str, Enum):
+class TonePreference(StrEnum):
     DIRECT = "direct"        # Respostas curtas, direto ao ponto
     CONSULTIVE = "consultive"  # Mais explicações, sugestões proativas
     BALANCED = "balanced"    # Padrão
 
 
-class DetailLevel(str, Enum):
+class DetailLevel(StrEnum):
     HIGH = "high"      # Dados brutos, tabelas, números
     MEDIUM = "medium"  # Equilíbrio entre narrativa e dados
     LOW = "low"        # Narrativa simples, sem muitos números

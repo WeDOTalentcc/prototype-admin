@@ -185,7 +185,7 @@ async def fetch_share_template(db: AsyncSession, channel: str, company_id: str |
                 select(EmailTemplate).where(
                     EmailTemplate.situation == "share_with_manager",
                     EmailTemplate.channel == channel,
-                    EmailTemplate.is_active == True,
+                    EmailTemplate.is_active,
                     EmailTemplate.company_id == company_id,
                 )
             )
@@ -197,8 +197,8 @@ async def fetch_share_template(db: AsyncSession, channel: str, company_id: str |
             select(EmailTemplate).where(
                 EmailTemplate.situation == "share_with_manager",
                 EmailTemplate.channel == channel,
-                EmailTemplate.is_active == True,
-                EmailTemplate.is_system_template == True,
+                EmailTemplate.is_active,
+                EmailTemplate.is_system_template,
             )
         )
         return result.scalar_one_or_none()
@@ -297,7 +297,7 @@ async def create_shared_search(
         if not company_uuid:
             from app.models.company import CompanyProfile
             result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
+                select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
             )
             default_company = result.scalar_one_or_none()
             if default_company:

@@ -5,14 +5,14 @@ Modelos para detecção e resposta a comandos de aceitação, rejeição,
 substituição, ajuste de nível e clarificação de sugestões durante
 a criação de Job Descriptions.
 """
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
 from .job_description import RequirementLevel
 
 
-class SuggestionInteractionType(str, Enum):
+class SuggestionInteractionType(StrEnum):
     """Tipos de interações possíveis com sugestões"""
     ACCEPT = "accept"
     REJECT = "reject"

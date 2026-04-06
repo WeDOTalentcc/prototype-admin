@@ -123,7 +123,7 @@ class TaskScheduler:
         async with AsyncSessionLocal() as session:
             try:
                 stmt = select(TaskSchedule).where(
-                    TaskSchedule.is_active == True,
+                    TaskSchedule.is_active,
                     TaskSchedule.next_run_at <= now,
                 )
                 result = await session.execute(stmt)
@@ -234,7 +234,7 @@ class TaskScheduler:
             try:
                 stmt = select(TaskSchedule)
                 if active_only:
-                    stmt = stmt.where(TaskSchedule.is_active == True)
+                    stmt = stmt.where(TaskSchedule.is_active)
                 stmt = stmt.order_by(TaskSchedule.created_at.desc()).limit(limit).offset(offset)
                 result = await session.execute(stmt)
                 records = result.scalars().all()

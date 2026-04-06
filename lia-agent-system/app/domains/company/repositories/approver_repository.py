@@ -17,7 +17,7 @@ class ApproverRepository:
     async def list_for_company(self, company_id: UUID) -> list[Approver]:
         result = await self.db.execute(
             select(Approver)
-            .where(Approver.company_id == company_id, Approver.is_active == True)
+            .where(Approver.company_id == company_id, Approver.is_active)
             .order_by(Approver.level)
         )
         return list(result.scalars().all())

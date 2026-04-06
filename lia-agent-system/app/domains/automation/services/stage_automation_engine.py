@@ -6,7 +6,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import select
@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-class TriggerType(str, Enum):
+class TriggerType(StrEnum):
     """Types of automation triggers."""
     SCREENING_COMPLETED = "screening_completed"
     INTERVIEW_SCHEDULED = "interview_scheduled"
@@ -199,7 +199,7 @@ class StageAutomationEngine:
                 select(CommunicationAutomation).where(
                     CommunicationAutomation.company_id == company_id,
                     CommunicationAutomation.trigger_type == db_trigger_type,
-                    CommunicationAutomation.is_active == True
+                    CommunicationAutomation.is_active
                 )
             )
             rule = result.scalar_one_or_none()

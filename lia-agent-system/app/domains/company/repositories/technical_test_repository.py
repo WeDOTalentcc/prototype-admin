@@ -17,7 +17,7 @@ class TechnicalTestRepository:
     async def list_questions(
         self, company_id: UUID | None = None
     ) -> list[TechnicalQuestion]:
-        query = select(TechnicalQuestion).where(TechnicalQuestion.is_active == True)
+        query = select(TechnicalQuestion).where(TechnicalQuestion.is_active)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
@@ -63,7 +63,7 @@ class TechnicalTestRepository:
             .where(
                 or_(
                     TechnicalTestTemplate.company_id == company_id,
-                    TechnicalTestTemplate.is_public == True,
+                    TechnicalTestTemplate.is_public,
                 )
             )
             .order_by(TechnicalTestTemplate.name)

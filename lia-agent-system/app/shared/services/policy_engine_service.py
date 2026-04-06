@@ -240,9 +240,9 @@ class PolicyEngineService:
             try:
                 query = select(BusinessRule).where(
                     and_(
-                        BusinessRule.is_active == True,
+                        BusinessRule.is_active,
                         or_(
-                            BusinessRule.company_id == None,
+                            BusinessRule.company_id is None,
                             BusinessRule.company_id == _company_uuid if _company_uuid else True,
                         )
                     )
@@ -448,10 +448,10 @@ class PolicyEngineService:
         async def _check(db_session: AsyncSession) -> RateLimitResult:
             query = select(RateLimitRule).where(
                 and_(
-                    RateLimitRule.is_active == True,
+                    RateLimitRule.is_active,
                     RateLimitRule.target_type == target_type,
                     or_(
-                        RateLimitRule.company_id == None,
+                        RateLimitRule.company_id is None,
                         RateLimitRule.company_id == UUID(company_id) if company_id else True
                     )
                 )
@@ -623,16 +623,16 @@ class PolicyEngineService:
                     query = select(EscalationRule).where(
                         and_(
                             EscalationRule.id == UUID(rule_id),
-                            EscalationRule.is_active == True
+                            EscalationRule.is_active
                         )
                     )
                 elif trigger_type:
                     query = select(EscalationRule).where(
                         and_(
                             EscalationRule.trigger_type == trigger_type,
-                            EscalationRule.is_active == True,
+                            EscalationRule.is_active,
                             or_(
-                                EscalationRule.company_id == None,
+                                EscalationRule.company_id is None,
                                 EscalationRule.company_id == UUID(company_id) if company_id else True
                             )
                         )

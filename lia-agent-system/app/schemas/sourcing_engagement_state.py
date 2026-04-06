@@ -3,7 +3,7 @@ Sourcing & Engagement State schema for workflow steps 14-27.
 Tracks candidate pipeline, outreach, screening, and feedback workflow.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -21,7 +21,7 @@ class CandidateMatchScore(BaseModel):
     needs_review: bool = False
 
 
-class CandidateStatus(str, Enum):
+class CandidateStatus(StrEnum):
     """Candidate status in the pipeline."""
     IDENTIFIED = "identified"
     CALIBRATION = "calibration"

@@ -15,14 +15,14 @@ This data enriches the Job Wizard with:
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
 logger = logging.getLogger(__name__)
 
 
-class ATSJobStatus(str, Enum):
+class ATSJobStatus(StrEnum):
     """Job status in ATS."""
     OPEN = "open"
     FILLED = "filled"

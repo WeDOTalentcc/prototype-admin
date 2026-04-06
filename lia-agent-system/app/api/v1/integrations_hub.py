@@ -136,7 +136,7 @@ async def list_providers(
         
         filters = []
         if active_only:
-            filters.append(IntegrationProvider.is_active == True)
+            filters.append(IntegrationProvider.is_active)
         if category:
             filters.append(IntegrationProvider.category == category)
         

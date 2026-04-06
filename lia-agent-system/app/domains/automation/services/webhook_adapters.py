@@ -1,12 +1,12 @@
 import logging
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class WebhookEventType(str, Enum):
+class WebhookEventType(StrEnum):
     INTERVIEW_CONFIRMED = "interview_confirmed"
     INTERVIEW_COMPLETED = "interview_completed"
     INTERVIEW_CANCELLED = "interview_cancelled"

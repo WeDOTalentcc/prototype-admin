@@ -18,7 +18,7 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 
-class PlannedTaskPriority(str, enum.Enum):
+class PlannedTaskPriority(enum.StrEnum):
     """Priority levels for planned tasks."""
     CRITICAL = "critical"
     HIGH = "high"
@@ -26,7 +26,7 @@ class PlannedTaskPriority(str, enum.Enum):
     LOW = "low"
 
 
-class PlannedTaskStatus(str, enum.Enum):
+class PlannedTaskStatus(enum.StrEnum):
     """Status of planned tasks."""
     PENDING = "pending"
     READY = "ready"

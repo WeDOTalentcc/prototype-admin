@@ -123,7 +123,7 @@ class TestSSOLoginFlow:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["is_new_user"] == True
+        assert data["is_new_user"]
         assert data["email"] == email
         assert data["workos_id"] == workos_id
         assert data["sso_provider"] == "GoogleOAuth"
@@ -147,7 +147,7 @@ class TestSSOLoginFlow:
         assert audit_log is not None
         assert audit_log.company_id == organization_id
         assert audit_log.actor_email == email
-        assert audit_log.payload["is_new_user"] == True
+        assert audit_log.payload["is_new_user"]
 
     async def test_sso_login_flow_returning_user(self, test_client: AsyncClient, db_session: AsyncSession):
         """
@@ -173,7 +173,7 @@ class TestSSOLoginFlow:
             headers=INTERNAL_AUTH_HEADER
         )
         assert response1.status_code == 200
-        assert response1.json()["is_new_user"] == True
+        assert response1.json()["is_new_user"]
         
         result = await db_session.execute(
             select(User).where(User.workos_id == workos_id)
@@ -194,7 +194,7 @@ class TestSSOLoginFlow:
         
         assert response2.status_code == 200
         data = response2.json()
-        assert data["is_new_user"] == False
+        assert not data["is_new_user"]
         assert data["email"] == email
         
         await db_session.refresh(user)
@@ -237,7 +237,7 @@ class TestSSOLoginFlow:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["is_new_user"] == False
+        assert not data["is_new_user"]
         assert str(data["id"]) == str(existing_user_id)
         
         result = await db_session.execute(
@@ -278,7 +278,7 @@ class TestSCIMUserLifecycle:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"]
         assert data["action"] == "created"
         
         result = await db_session.execute(
@@ -288,8 +288,8 @@ class TestSCIMUserLifecycle:
         assert user is not None
         assert user.email == email
         assert user.name == "SCIM User"
-        assert user.is_scim_managed == True
-        assert user.is_active == True
+        assert user.is_scim_managed
+        assert user.is_active
         assert user.workos_directory_id == directory_id
         
         result = await db_session.execute(
@@ -313,7 +313,7 @@ class TestSCIMUserLifecycle:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         
         await db_session.refresh(user)
         assert user.name == "Updated SCIMUser"
@@ -334,11 +334,11 @@ class TestSCIMUserLifecycle:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         assert response.json()["message"] == "User deactivated successfully"
         
         await db_session.refresh(user)
-        assert user.is_active == False
+        assert not user.is_active
         
         result = await db_session.execute(
             select(SSOAuditLog).where(
@@ -382,7 +382,7 @@ class TestSCIMUserLifecycle:
             select(User).where(User.workos_id == workos_id)
         )
         user = result.scalar_one()
-        assert user.is_active == False
+        assert not user.is_active
 
 
 @pytest.mark.asyncio
@@ -417,7 +417,7 @@ class TestSCIMGroupLifecycle:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         assert response.json()["action"] == "created"
         
         result = await db_session.execute(
@@ -426,7 +426,7 @@ class TestSCIMGroupLifecycle:
         group = result.scalar_one_or_none()
         assert group is not None
         assert group.name == "Engineering Team"
-        assert group.is_active == True
+        assert group.is_active
         
         await test_client.post(
             "/api/v1/workos/users/created",
@@ -456,7 +456,7 @@ class TestSCIMGroupLifecycle:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         assert response.json()["message"] == "User added to group"
         
         result = await db_session.execute(
@@ -488,7 +488,7 @@ class TestSCIMGroupLifecycle:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         assert response.json()["message"] == "User removed from group"
         
         result = await db_session.execute(
@@ -510,10 +510,10 @@ class TestSCIMGroupLifecycle:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         
         await db_session.refresh(group)
-        assert group.is_active == False
+        assert not group.is_active
 
     async def test_group_membership_idempotency(
         self, 
@@ -601,7 +601,7 @@ class TestSSOWithRoleMapping:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == True
+        assert response.json()["success"]
         assert response.json()["role"] == "admin"
         
         result = await db_session.execute(
@@ -878,7 +878,7 @@ class TestErrorHandling:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == False
+        assert not data["success"]
         assert "Email required" in data["message"]
 
     async def test_group_membership_unknown_user_fails(self, test_client: AsyncClient):
@@ -903,7 +903,7 @@ class TestErrorHandling:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == False
+        assert not response.json()["success"]
         assert "User not found" in response.json()["message"]
 
     async def test_group_membership_unknown_group_fails(self, test_client: AsyncClient):
@@ -934,7 +934,7 @@ class TestErrorHandling:
         )
         
         assert response.status_code == 200
-        assert response.json()["success"] == False
+        assert not response.json()["success"]
         assert "Group not found" in response.json()["message"]
 
     async def test_unauthorized_request_rejected(self, test_client: AsyncClient):

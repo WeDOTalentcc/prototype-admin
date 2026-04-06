@@ -3,7 +3,7 @@ User model for authentication.
 """
 import uuid
 from datetime import datetime
-from enum import Enum as PyEnum
+from enum import Enum as PyEnum, StrEnum
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from app.core.database import Base
 
 
-class UserRole(str, PyEnum):
+class UserRole(StrEnum):
     """User role enumeration."""
     admin = "admin"
     recruiter = "recruiter"

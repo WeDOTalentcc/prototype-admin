@@ -2,13 +2,13 @@
 Pydantic schemas for Compensation Analysis.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class CompensationAlignmentStatus(str, Enum):
+class CompensationAlignmentStatus(StrEnum):
     """Alignment status for compensation components."""
     ALIGNED = "aligned"
     BELOW_MARKET = "below_market"
@@ -18,7 +18,7 @@ class CompensationAlignmentStatus(str, Enum):
     NO_DATA = "no_data"
 
 
-class DataSource(str, Enum):
+class DataSource(StrEnum):
     """Sources of compensation data."""
     COMPANY_POLICY = "company_policy"
     MARKET_BENCHMARK = "market_benchmark"

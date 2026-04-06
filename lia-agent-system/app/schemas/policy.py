@@ -1,26 +1,26 @@
 """
 Pydantic schemas for Policy Engine API.
 """
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class RuleTypeEnum(str, Enum):
+class RuleTypeEnum(StrEnum):
     ALLOW = "allow"
     DENY = "deny"
     REQUIRE_APPROVAL = "require_approval"
 
 
-class TargetTypeEnum(str, Enum):
+class TargetTypeEnum(StrEnum):
     COMPANY = "company"
     USER = "user"
     AGENT = "agent"
     ACTION = "action"
 
 
-class TriggerTypeEnum(str, Enum):
+class TriggerTypeEnum(StrEnum):
     TIMEOUT = "timeout"
     FAILURE = "failure"
     FAILURE_COUNT = "failure_count"
@@ -28,7 +28,7 @@ class TriggerTypeEnum(str, Enum):
     SLA_BREACH = "sla_breach"
 
 
-class EscalationActionEnum(str, Enum):
+class EscalationActionEnum(StrEnum):
     NOTIFY_MANAGER = "notify_manager"
     NOTIFY_ADMIN = "notify_admin"
     PAUSE_WORKFLOW = "pause_workflow"
@@ -37,7 +37,7 @@ class EscalationActionEnum(str, Enum):
     CREATE_TASK = "create_task"
 
 
-class PolicyEvaluationResultEnum(str, Enum):
+class PolicyEvaluationResultEnum(StrEnum):
     ALLOW = "allow"
     DENY = "deny"
     REQUIRE_APPROVAL = "require_approval"

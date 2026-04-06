@@ -26,7 +26,7 @@ class NotificationRepository(SQLAlchemyRepository[Notification]):
             self.model_class.user_id == user_id
         )
         if not include_read:
-            query = query.where(self.model_class.is_read == False)
+            query = query.where(not self.model_class.is_read)
         query = query.order_by(self.model_class.created_at.desc())
         query = query.limit(limit)
         if hasattr(db, 'execute'):
@@ -62,7 +62,7 @@ class NotificationRepository(SQLAlchemyRepository[Notification]):
             sa_update(self.model_class)
             .where(
                 self.model_class.user_id == user_id,
-                self.model_class.is_read == False,
+                not self.model_class.is_read,
             )
             .values(is_read=True, read_at=datetime.utcnow())
         )
@@ -77,12 +77,12 @@ class NotificationRepository(SQLAlchemyRepository[Notification]):
         """Get count of unread notifications for a user."""
         query = select(func.count()).select_from(self.model_class).where(
             self.model_class.user_id == user_id,
-            self.model_class.is_read == False,
+            not self.model_class.is_read,
         )
         if hasattr(db, 'execute'):
             result = await db.execute(query)
             return result.scalar() or 0
         return db.query(func.count(self.model_class.id)).filter(
             self.model_class.user_id == user_id,
-            self.model_class.is_read == False,
+            not self.model_class.is_read,
         ).scalar() or 0

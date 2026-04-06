@@ -477,7 +477,7 @@ class TaskService:
                 Task.due_date <= reminder_threshold,
                 Task.due_date > now,
                 or_(
-                    Task.reminder_sent == False,
+                    not Task.reminder_sent,
                     Task.reminder_sent.is_(None)
                 )
             )
@@ -638,7 +638,7 @@ class TaskService:
         query = select(Task).where(
             and_(
                 Task.status == TaskStatus.PENDING,
-                Task.requires_confirmation == True,
+                Task.requires_confirmation,
                 Task.confirmed_at.is_(None),
                 Task.rejected_at.is_(None)
             )

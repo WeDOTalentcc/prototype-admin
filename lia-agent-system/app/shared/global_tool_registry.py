@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from langchain_core.tools import BaseTool
@@ -16,7 +16,7 @@ from langchain_core.tools import BaseTool
 logger = logging.getLogger(__name__)
 
 
-class ToolPermission(str, Enum):
+class ToolPermission(StrEnum):
     READ_ONLY = "read_only"     # Can only retrieve data
     READ_WRITE = "read_write"   # Can retrieve and modify
     ADMIN = "admin"             # Full access including delete

@@ -11,7 +11,7 @@ Environment Variables:
 import logging
 import os
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 import httpx
@@ -21,7 +21,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-class AlertSeverity(str, Enum):
+class AlertSeverity(StrEnum):
     """Alert severity levels for Teams notifications."""
     INFO = "info"
     SUCCESS = "success"

@@ -51,7 +51,7 @@ async def get_credit_balance(
         result = await db.execute(
             select(
                 func.coalesce(func.sum(CandidateSearch.credits_consumed), 0).label("total_consumed"),
-                func.count(CandidateSearch.id).filter(CandidateSearch.used_global_search == True).label("global_searches")
+                func.count(CandidateSearch.id).filter(CandidateSearch.used_global_search).label("global_searches")
             ).where(CandidateSearch.user_id == user_id)
         )
         

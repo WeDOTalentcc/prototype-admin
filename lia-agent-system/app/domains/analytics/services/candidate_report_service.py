@@ -13,7 +13,7 @@ for hiring managers, including:
 """
 import logging
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from langchain_core.output_parsers import JsonOutputParser
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-class RecommendationLevel(str, Enum):
+class RecommendationLevel(StrEnum):
     HIGHLY_RECOMMENDED = "HIGHLY_RECOMMENDED"
     RECOMMENDED = "RECOMMENDED"
     POTENTIAL = "POTENTIAL"
@@ -40,7 +40,7 @@ class RecommendationLevel(str, Enum):
     INCOMPLETE = "INCOMPLETE"
 
 
-class DataSourceType(str, Enum):
+class DataSourceType(StrEnum):
     CV = "cv"
     TEXT_SCREENING = "text_screening"
     VOICE_SCREENING = "voice_screening"

@@ -245,7 +245,7 @@ class IntelligenceLayerService:
                 patterns_query = select(CorrectionPattern).where(
                     and_(
                         CorrectionPattern.company_id == company_id,
-                        CorrectionPattern.is_active == True
+                        CorrectionPattern.is_active
                     )
                 )
                 if seniority:

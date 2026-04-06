@@ -137,7 +137,7 @@ async def submit_calibration_feedback(
         if not session and request.vacancy_id:
             stmt = select(CalibrationSession).where(
                 CalibrationSession.vacancy_id == request.vacancy_id,
-                CalibrationSession.sourcing_blocked == True
+                CalibrationSession.sourcing_blocked
             ).order_by(CalibrationSession.created_at.desc())
             result = await db.execute(stmt)
             session = result.scalars().first()

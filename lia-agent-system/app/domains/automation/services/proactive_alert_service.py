@@ -14,7 +14,7 @@ Alert Categories:
 """
 import logging
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import and_, func, select
@@ -34,7 +34,7 @@ from app.services.notification_service import (
 logger = logging.getLogger(__name__)
 
 
-class AlertCategory(str, Enum):
+class AlertCategory(StrEnum):
     """Categories of proactive alerts."""
     PIPELINE = "pipeline"
     PRODUCTIVITY = "productivity"
@@ -43,7 +43,7 @@ class AlertCategory(str, Enum):
     SYSTEM = "system"
 
 
-class AlertCondition(str, Enum):
+class AlertCondition(StrEnum):
     """Specific alert conditions that can be triggered."""
     CONVERSION_RATE_LOW = "conversion_rate_low"
     CANDIDATES_STAGNANT = "candidates_stagnant"
@@ -274,7 +274,7 @@ class ProactiveAlertService:
         try:
             result = await db.execute(
                 select(Candidate.status, func.count(Candidate.id))
-                .where(Candidate.is_active == True)
+                .where(Candidate.is_active)
                 .group_by(Candidate.status)
             )
             stage_counts = {row[0]: row[1] for row in result.all()}
@@ -306,7 +306,7 @@ class ProactiveAlertService:
                     and_(
                         Candidate.status.in_(["screening", "triagem", "Triagem"]),
                         Candidate.updated_at < cutoff_date,
-                        Candidate.is_active == True
+                        Candidate.is_active
                     )
                 )
             )
@@ -333,7 +333,7 @@ class ProactiveAlertService:
                     and_(
                         Candidate.status.in_(["offer", "oferta", "Proposta"]),
                         Candidate.updated_at < cutoff_time,
-                        Candidate.is_active == True
+                        Candidate.is_active
                     )
                 )
             )
@@ -520,7 +520,7 @@ class ProactiveAlertService:
                         CommunicationLog.created_at < cutoff,
                         CommunicationLog.created_at >= week_ago,
                         CommunicationLog.status == "sent",
-                        CommunicationLog.response_received == False
+                        not CommunicationLog.response_received
                     )
                 )
             )
@@ -585,7 +585,7 @@ class ProactiveAlertService:
             result = await db.execute(
                 select(Candidate).where(
                     and_(
-                        Candidate.is_active == True,
+                        Candidate.is_active,
                         Candidate.lia_score >= threshold.get("threshold_match", 90)
                     )
                 ).order_by(Candidate.created_at.desc()).limit(5)

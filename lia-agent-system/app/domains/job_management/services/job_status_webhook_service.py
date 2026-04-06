@@ -145,7 +145,7 @@ class JobStatusWebhookService:
             select(WebhookRegistration).where(
                 and_(
                     WebhookRegistration.company_id == company_id,
-                    WebhookRegistration.is_active == True
+                    WebhookRegistration.is_active
                 )
             )
         )

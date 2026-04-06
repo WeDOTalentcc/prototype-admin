@@ -5,7 +5,7 @@ across all lia_assistant sub-modules.
 import json
 import logging
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -301,7 +301,7 @@ class ExpandedPromptResponse(BaseModel):
     follow_up_suggestions: list[str] | None = None
 
 
-class InterpretMessageAction(str, Enum):
+class InterpretMessageAction(StrEnum):
     CONFIRM = "confirm"
     ADVANCE_STAGE = "advance_stage"
     ASK_QUESTION = "ask_question"
@@ -353,7 +353,7 @@ class WizardOrchestratorRequest(BaseModel):
     llm_provider: str | None = "gemini"
 
 
-class WizardOrchestratorAction(str, Enum):
+class WizardOrchestratorAction(StrEnum):
     RESPOND = "respond"
     ADVANCE_STAGE = "advance_stage"
     UPDATE_FIELDS = "update_fields"

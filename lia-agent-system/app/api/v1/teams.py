@@ -12,7 +12,7 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/teams", tags=["teams"])
 
 
-class TeamsCardAction(str, Enum):
+class TeamsCardAction(StrEnum):
     """Supported Adaptive Card actions from Teams."""
     APPROVE = "approve"
     REJECT = "reject"
@@ -829,7 +829,7 @@ async def send_proactive_notification(
         result = await db.execute(
             select(TeamsConversation).where(
                 TeamsConversation.user_id == user_id,
-                TeamsConversation.is_active == True
+                TeamsConversation.is_active
             )
         )
         teams_conv = result.scalar_one_or_none()
@@ -1510,7 +1510,7 @@ async def teams_tab_events(
     # Find TeamsConversation by user_aad_object_id
     stmt = select(TeamsConversation).where(
         TeamsConversation.user_aad_object_id == teams_user_id,
-        TeamsConversation.is_active == True,
+        TeamsConversation.is_active,
     ).limit(1)
     result = await db.execute(stmt)
     conv = result.scalar_one_or_none()

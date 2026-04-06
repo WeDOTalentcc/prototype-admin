@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
-class ParamType(str, Enum):
+class ParamType(StrEnum):
     INTEGER = "integer"
     FLOAT = "float"
     STRING = "string"

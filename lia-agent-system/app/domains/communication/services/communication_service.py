@@ -27,7 +27,7 @@ import random
 import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 BRAZIL_TZ_OFFSET_HOURS = -3
 
 
-class MessageType(str, Enum):
+class MessageType(StrEnum):
     """Types of messages that can be sent."""
     INITIAL_CONTACT = "initial_contact"
     SCREENING_INVITATION = "screening_invitation"
@@ -80,14 +80,14 @@ class MessageType(str, Enum):
     GENERAL = "general"
 
 
-class MessageChannel(str, Enum):
+class MessageChannel(StrEnum):
     """Communication channels."""
     EMAIL = "email"
     WHATSAPP = "whatsapp"
     SMS = "sms"
 
 
-class ApprovalStatus(str, Enum):
+class ApprovalStatus(StrEnum):
     """Status of approval requests."""
     PENDING = "pending"
     APPROVED = "approved"
@@ -96,7 +96,7 @@ class ApprovalStatus(str, Enum):
     AUTO_APPROVED = "auto_approved"
 
 
-class CommunicationStatus(str, Enum):
+class CommunicationStatus(StrEnum):
     """Status of sent communications."""
     PENDING = "pending"
     QUEUED = "queued"
@@ -1189,7 +1189,7 @@ class CommunicationService:
                 and_(
                     CandidateOptOut.candidate_id == candidate_id,
                     CandidateOptOut.company_id == company_id,
-                    CandidateOptOut.is_active == True,
+                    CandidateOptOut.is_active,
                     or_(
                         CandidateOptOut.channel == channel.value,
                         CandidateOptOut.opt_out_type == "all"
@@ -1220,7 +1220,7 @@ class CommunicationService:
                 and_(
                     CandidateQuarantine.candidate_id == candidate_id,
                     CandidateQuarantine.company_id == company_id,
-                    CandidateQuarantine.is_active == True,
+                    CandidateQuarantine.is_active,
                     CandidateQuarantine.quarantine_end > now
                 )
             )
@@ -1941,7 +1941,7 @@ class CommunicationService:
                     select(EmailTemplate).where(
                         and_(
                             EmailTemplate.id == recommended_template_id,
-                            EmailTemplate.is_active == True,
+                            EmailTemplate.is_active,
                         )
                     ).limit(1)
                 )
@@ -1954,7 +1954,7 @@ class CommunicationService:
                     select(EmailTemplate).where(
                         and_(
                             EmailTemplate.situation == situation,
-                            EmailTemplate.is_active == True,
+                            EmailTemplate.is_active,
                             EmailTemplate.channel == channel.value
                         )
                     ).limit(1)
@@ -2159,7 +2159,7 @@ class CommunicationService:
                         CandidateOptOut.candidate_id == candidate_id,
                         CandidateOptOut.company_id == company_id,
                         CandidateOptOut.channel == channel.value,
-                        CandidateOptOut.is_active == True
+                        CandidateOptOut.is_active
                     )
                 )
             )

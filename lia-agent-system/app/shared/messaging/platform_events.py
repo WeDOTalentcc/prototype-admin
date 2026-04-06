@@ -71,6 +71,12 @@ class CompanyConfiguredEvent(PlatformEvent):
     source_api: str = "api-onboarding"
 
 
+class ScreeningCompletedEvent(PlatformEvent):
+    """Emitido quando a triagem WSI de um candidato é concluída."""
+    event_type: str = "screening.wsi.completed"
+    source_api: str = "api-funil"
+
+
 # ---------------------------------------------------------------------------
 # Publisher
 # ---------------------------------------------------------------------------

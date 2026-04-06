@@ -2,10 +2,10 @@
 LIA Kanban Assistant - Structured Prompt Templates.
 Templates para análises inteligentes do pipeline de recrutamento.
 """
-from enum import Enum
+from enum import Enum, StrEnum
 
 
-class KanbanCommandType(str, Enum):
+class KanbanCommandType(StrEnum):
     RANKEAR_CANDIDATOS = "rankear_candidatos"
     PERFORMANCE_FUNIL = "performance_funil"
     GARGALOS_PROCESSO = "gargalos_processo"

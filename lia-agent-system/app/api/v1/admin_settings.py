@@ -105,7 +105,7 @@ async def list_roles(
     try:
         query = select(AdminRole).where(AdminRole.company_id == uuid.UUID(company_id))
         if not include_inactive:
-            query = query.where(AdminRole.is_active == True)
+            query = query.where(AdminRole.is_active)
         query = query.order_by(AdminRole.is_system_role.desc(), AdminRole.name)
         
         result = await db.execute(query)
@@ -233,7 +233,7 @@ async def initialize_default_roles(
         existing = await db.execute(
             select(AdminRole).where(
                 AdminRole.company_id == company_uuid,
-                AdminRole.is_system_role == True
+                AdminRole.is_system_role
             )
         )
         existing_roles = existing.scalars().all()

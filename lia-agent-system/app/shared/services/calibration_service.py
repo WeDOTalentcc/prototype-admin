@@ -365,7 +365,7 @@ class CalibrationService:
             weight_stmt = select(CalibrationWeight).where(
                 and_(
                     CalibrationWeight.dimension == suggestion.dimension,
-                    CalibrationWeight.is_active == True
+                    CalibrationWeight.is_active
                 )
             )
             weight_result = await self.db.execute(weight_stmt)
@@ -457,7 +457,7 @@ class CalibrationService:
     async def get_weights(self, job_id: str | None = None) -> list[dict[str, Any]]:
         """Get current calibration weights."""
         stmt = select(CalibrationWeight).where(
-            CalibrationWeight.is_active == True
+            CalibrationWeight.is_active
         )
         
         if job_id:

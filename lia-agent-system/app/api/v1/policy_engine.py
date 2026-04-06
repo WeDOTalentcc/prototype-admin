@@ -72,36 +72,36 @@ async def list_policies(
 ):
     """List all policy rules (business, rate limit, escalation)."""
     try:
-        business_conditions = [BusinessRule.is_active == True] if is_active is None else [BusinessRule.is_active == is_active]
+        business_conditions = [BusinessRule.is_active] if is_active is None else [BusinessRule.is_active == is_active]
         if rule_type:
             business_conditions.append(BusinessRule.rule_type == rule_type)
         if company_id:
             business_conditions.append(
-                or_(BusinessRule.company_id == None, BusinessRule.company_id == UUID(company_id))
+                or_(BusinessRule.company_id is None, BusinessRule.company_id == UUID(company_id))
             )
         
         business_query = select(BusinessRule).where(and_(*business_conditions)).order_by(BusinessRule.priority.asc())
         business_result = await db.execute(business_query)
         business_rules = business_result.scalars().all()
         
-        rate_conditions = [RateLimitRule.is_active == True] if is_active is None else [RateLimitRule.is_active == is_active]
+        rate_conditions = [RateLimitRule.is_active] if is_active is None else [RateLimitRule.is_active == is_active]
         if target_type:
             rate_conditions.append(RateLimitRule.target_type == target_type)
         if company_id:
             rate_conditions.append(
-                or_(RateLimitRule.company_id == None, RateLimitRule.company_id == UUID(company_id))
+                or_(RateLimitRule.company_id is None, RateLimitRule.company_id == UUID(company_id))
             )
         
         rate_query = select(RateLimitRule).where(and_(*rate_conditions))
         rate_result = await db.execute(rate_query)
         rate_limit_rules = rate_result.scalars().all()
         
-        esc_conditions = [EscalationRule.is_active == True] if is_active is None else [EscalationRule.is_active == is_active]
+        esc_conditions = [EscalationRule.is_active] if is_active is None else [EscalationRule.is_active == is_active]
         if trigger_type:
             esc_conditions.append(EscalationRule.trigger_type == trigger_type)
         if company_id:
             esc_conditions.append(
-                or_(EscalationRule.company_id == None, EscalationRule.company_id == UUID(company_id))
+                or_(EscalationRule.company_id is None, EscalationRule.company_id == UUID(company_id))
             )
         
         esc_query = select(EscalationRule).where(and_(*esc_conditions)).order_by(EscalationRule.priority.asc())

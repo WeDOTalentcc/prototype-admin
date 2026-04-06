@@ -151,7 +151,7 @@ async def create_pipeline_template(
         existing_default = await db.execute(
             select(PipelineTemplate).where(
                 PipelineTemplate.company_id == company_id,
-                PipelineTemplate.is_default == True
+                PipelineTemplate.is_default
             )
         )
         for t in existing_default.scalars():
@@ -265,7 +265,7 @@ async def update_pipeline_template(
         existing_default = await db.execute(
             select(PipelineTemplate).where(
                 PipelineTemplate.company_id == company_id,
-                PipelineTemplate.is_default == True,
+                PipelineTemplate.is_default,
                 PipelineTemplate.id != template_uuid
             )
         )
@@ -420,7 +420,7 @@ async def seed_default_templates(
     existing = await db.execute(
         select(func.count()).select_from(PipelineTemplate).where(
             PipelineTemplate.company_id == company_id,
-            PipelineTemplate.is_active == True
+            PipelineTemplate.is_active
         )
     )
     count = existing.scalar() or 0

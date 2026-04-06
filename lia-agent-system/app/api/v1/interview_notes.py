@@ -10,7 +10,7 @@ Question generation uses REAL data from:
 """
 import logging
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -59,7 +59,7 @@ WSI_THRESHOLDS = {
 WSI_BLOCK_LABELS = WSI_DIMENSION_LABELS
 
 
-class QuestionBlockType(str, Enum):
+class QuestionBlockType(StrEnum):
     technical = "technical"
     behavioral = "behavioral"
     gap_analysis = "gap_analysis"
@@ -508,7 +508,7 @@ async def generate_interview_questions(
                         LiaOpinion.candidate_id == request.candidateId,
                         LiaOpinion.job_vacancy_id == request.jobId,
                         LiaOpinion.company_id == company_id,
-                        LiaOpinion.is_current == True
+                        LiaOpinion.is_current
                     )
                 ).order_by(LiaOpinion.created_at.desc()).limit(1)
             )

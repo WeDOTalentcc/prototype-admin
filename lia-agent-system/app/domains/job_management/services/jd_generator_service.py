@@ -12,7 +12,7 @@ collected criteria, with support for:
 import json
 import logging
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from app.services.ai_cache_service import ai_cache_service
@@ -21,7 +21,7 @@ from app.services.llm import LLMProvider, llm_service
 logger = logging.getLogger(__name__)
 
 
-class JobDescriptionSection(str, Enum):
+class JobDescriptionSection(StrEnum):
     ABOUT_COMPANY = "about_company"
     RESPONSIBILITIES = "responsibilities"
     REQUIREMENTS = "requirements"

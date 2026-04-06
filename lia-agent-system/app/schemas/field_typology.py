@@ -5,12 +5,12 @@ Defines the classification system for job vacancy fields,
 enabling intelligent field handling during wizard flow.
 """
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
 
-class FieldTypology(str, Enum):
+class FieldTypology(StrEnum):
     """
     Classification of job vacancy fields by their nature and source.
     

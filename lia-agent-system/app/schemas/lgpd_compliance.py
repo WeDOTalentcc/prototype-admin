@@ -8,13 +8,13 @@ Includes schemas for:
 """
 
 from datetime import date, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class BreachSeverityEnum(str, Enum):
+class BreachSeverityEnum(StrEnum):
     """Severity levels for data breaches."""
     LOW = "low"
     MEDIUM = "medium"
@@ -22,7 +22,7 @@ class BreachSeverityEnum(str, Enum):
     CRITICAL = "critical"
 
 
-class BreachStatusEnum(str, Enum):
+class BreachStatusEnum(StrEnum):
     """Status of breach notification workflow."""
     DETECTED = "detected"
     INVESTIGATING = "investigating"
@@ -30,7 +30,7 @@ class BreachStatusEnum(str, Enum):
     RESOLVED = "resolved"
 
 
-class DecisionTypeEnum(str, Enum):
+class DecisionTypeEnum(StrEnum):
     """Types of automated decisions for LGPD Article 20."""
     SCREENING = "screening"
     RANKING = "ranking"

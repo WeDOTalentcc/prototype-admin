@@ -2,33 +2,33 @@
 Pydantic schemas for Shared Searches feature.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
 
-class ShareType(str, Enum):
+class ShareType(StrEnum):
     """Type of shared content."""
     search = "search"
     list = "list"
 
 
-class ShareStatus(str, Enum):
+class ShareStatus(StrEnum):
     """Status of a shared search."""
     active = "active"
     expired = "expired"
     revoked = "revoked"
 
 
-class ShareChannel(str, Enum):
+class ShareChannel(StrEnum):
     """Channel used for sharing."""
     email = "email"
     whatsapp = "whatsapp"
     both = "both"
 
 
-class FeedbackDecision(str, Enum):
+class FeedbackDecision(StrEnum):
     """Decision made by reviewer on a candidate."""
     approved = "approved"
     maybe = "maybe"

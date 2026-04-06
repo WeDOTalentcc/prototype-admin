@@ -2,12 +2,12 @@
 Pydantic schemas for LIA Profile Analysis API.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class AnalysisTypeEnum(str, Enum):
+class AnalysisTypeEnum(StrEnum):
     BULLET_POINTS = "bullet_points"
     SHORT_PARAGRAPH = "short_paragraph"
     DETAILED_BULLETS = "detailed_bullets"

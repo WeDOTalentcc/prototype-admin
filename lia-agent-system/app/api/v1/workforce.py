@@ -63,7 +63,7 @@ async def list_hiring_plans(
             query = query.where(HiringPlan.status == status)
         
         if not include_inactive:
-            query = query.where(HiringPlan.is_active == True)
+            query = query.where(HiringPlan.is_active)
         
         query = query.order_by(HiringPlan.fiscal_year.desc(), HiringPlan.created_at.desc())
         query = query.offset(skip).limit(limit)
@@ -236,7 +236,7 @@ async def list_plan_headcounts(
             query = query.where(PlannedHeadcount.target_year == target_year)
         
         if not include_inactive:
-            query = query.where(PlannedHeadcount.is_active == True)
+            query = query.where(PlannedHeadcount.is_active)
         
         query = query.order_by(
             PlannedHeadcount.target_year,
@@ -646,7 +646,7 @@ async def get_workforce_stats(
 ):
     """Get workforce planning statistics."""
     try:
-        query = select(HiringPlan).where(HiringPlan.is_active == True)
+        query = select(HiringPlan).where(HiringPlan.is_active)
         
         if company_id:
             query = query.where(HiringPlan.company_id == company_id)
@@ -681,7 +681,7 @@ async def get_workforce_stats(
         headcount_result = await db.execute(
             select(PlannedHeadcount).where(
                 PlannedHeadcount.hiring_plan_id == plan.id,
-                PlannedHeadcount.is_active == True
+                PlannedHeadcount.is_active
             )
         )
         headcounts = headcount_result.scalars().all()
@@ -790,7 +790,7 @@ async def get_hiring_timeline(
         current_year = today.year
         
         query = select(PlannedHeadcount).where(
-            PlannedHeadcount.is_active == True,
+            PlannedHeadcount.is_active,
             PlannedHeadcount.status.in_(['planned', 'pending', 'in_progress'])
         )
         
@@ -849,7 +849,7 @@ async def get_workforce_alerts(
         today = date.today()
         
         query = select(PlannedHeadcount).where(
-            PlannedHeadcount.is_active == True,
+            PlannedHeadcount.is_active,
             PlannedHeadcount.status.in_(['planned', 'pending', 'in_progress'])
         )
         
@@ -965,7 +965,7 @@ async def get_workforce_entries(
         
         result = await db.execute(
             select(WorkforceEntry).where(
-                WorkforceEntry.is_active == True,
+                WorkforceEntry.is_active,
                 WorkforceEntry.year == current_year
             ).order_by(WorkforceEntry.month, WorkforceEntry.department)
         )
@@ -1020,7 +1020,7 @@ async def save_workforce_entries(
         
         result = await db.execute(
             select(WorkforceEntry).where(
-                WorkforceEntry.is_active == True,
+                WorkforceEntry.is_active,
                 WorkforceEntry.year == data.year
             ).order_by(WorkforceEntry.month, WorkforceEntry.department)
         )

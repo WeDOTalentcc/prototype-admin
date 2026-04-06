@@ -121,7 +121,7 @@ class ActivityService:
         
         async with AsyncSessionLocal() as session:
             # Build WHERE conditions (reusable for both queries)
-            where_conditions = [ActivityFeed.is_visible == True]
+            where_conditions = [ActivityFeed.is_visible]
             
             if activity_type:
                 where_conditions.append(ActivityFeed.activity_type == activity_type)
@@ -204,7 +204,7 @@ class ActivityService:
         async with AsyncSessionLocal() as session:
             query = select(ActivityFeed).where(
                 and_(
-                    ActivityFeed.is_visible == True,
+                    ActivityFeed.is_visible,
                     ActivityFeed.priority == "urgent"
                 )
             )

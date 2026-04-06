@@ -26,7 +26,7 @@ class ScreeningQuestionRepository:
             ScreeningQuestion.company_id == company_id
         )
         if not include_inactive:
-            query = query.where(ScreeningQuestion.is_active == True)
+            query = query.where(ScreeningQuestion.is_active)
         query = query.order_by(ScreeningQuestion.order)
         result = await self.db.execute(query)
         return list(result.scalars().all())

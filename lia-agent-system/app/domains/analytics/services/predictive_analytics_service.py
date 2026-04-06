@@ -11,7 +11,7 @@ This service provides intelligent predictions for:
 """
 import logging
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import and_, select, text
@@ -25,7 +25,7 @@ from app.models.job_vacancy import JobVacancy
 logger = logging.getLogger(__name__)
 
 
-class PredictionType(str, Enum):
+class PredictionType(StrEnum):
     """Types of predictions available."""
     HIRING_PROBABILITY = "hiring_probability"
     TIME_TO_FILL = "time_to_fill"
@@ -36,7 +36,7 @@ class PredictionType(str, Enum):
     JOB_SUCCESS = "job_success"
 
 
-class RiskLevel(str, Enum):
+class RiskLevel(StrEnum):
     """Risk level classification."""
     LOW = "low"
     MEDIUM = "medium"

@@ -8,13 +8,13 @@ Includes schemas for:
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class ConsentEventTypeEnum(str, Enum):
+class ConsentEventTypeEnum(StrEnum):
     """Types of consent events."""
     GRANTED = "granted"
     REVOKED = "revoked"
@@ -22,7 +22,7 @@ class ConsentEventTypeEnum(str, Enum):
     EXPIRED = "expired"
 
 
-class ConsentChannelEnum(str, Enum):
+class ConsentChannelEnum(StrEnum):
     """Channels for consent collection."""
     WEB = "web"
     WHATSAPP = "whatsapp"

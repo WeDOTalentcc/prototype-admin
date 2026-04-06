@@ -1,18 +1,18 @@
 """
 Schemas for LIA Candidate Analysis.
 """
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
-class AnalysisType(str, Enum):
+class AnalysisType(StrEnum):
     CONTEXTUAL = "contextual"
     GENERAL = "general"
 
 
-class ArchetypeEnum(str, Enum):
+class ArchetypeEnum(StrEnum):
     CATALISADOR_VISIONARIO = "Catalisador Visionário"
     EXECUTOR_CONFIAVEL = "Executor Confiável"
     GUARDIAO_CLIENTES = "Guardião de Clientes"

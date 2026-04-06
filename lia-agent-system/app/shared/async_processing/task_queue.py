@@ -3,7 +3,7 @@ import logging
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class TaskPriority(int, Enum):
     URGENT = 3
 
 
-class TaskState(str, Enum):
+class TaskState(StrEnum):
     QUEUED = "queued"
     RUNNING = "running"
     COMPLETED = "completed"

@@ -88,7 +88,7 @@ class ConversationMemory:
                     Conversation.user_id == user_id,
                     Conversation.context_type == context_type,
                     Conversation.context_id == context_id,
-                    Conversation.is_active == True,
+                    Conversation.is_active,
                 )
             ).order_by(desc(Conversation.updated_at))
             
@@ -418,7 +418,7 @@ class ConversationMemory:
             conditions.append(Conversation.context_type == context_type)
         
         if not include_archived:
-            conditions.append(Conversation.is_archived == False)
+            conditions.append(not Conversation.is_archived)
         
         query = (
             select(Conversation)

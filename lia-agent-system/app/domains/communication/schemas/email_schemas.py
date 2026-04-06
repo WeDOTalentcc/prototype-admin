@@ -5,13 +5,13 @@ Extracted from email_service.py for better modularity.
 Used by MailgunEmailService and API endpoints.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class EmailDeliveryStatus(str, Enum):
+class EmailDeliveryStatus(StrEnum):
     PENDING = "pending"
     QUEUED = "queued"
     SENT = "sent"

@@ -107,7 +107,7 @@ class PipelineService:
             
             query = select(Candidate).where(
                 and_(
-                    Candidate.is_active == True,
+                    Candidate.is_active,
                     ~Candidate.status.in_(final_statuses),
                     or_(
                         Candidate.last_activity_at < stale_threshold,

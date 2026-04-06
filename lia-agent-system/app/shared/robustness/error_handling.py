@@ -10,7 +10,7 @@ import logging
 import traceback
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from functools import wraps
 from typing import Any, TypeVar
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
-class AgentErrorCode(str, Enum):
+class AgentErrorCode(StrEnum):
     """Standard error codes for agent operations."""
     VALIDATION_ERROR = "VALIDATION_ERROR"
     MISSING_REQUIRED_ENTITY = "MISSING_REQUIRED_ENTITY"

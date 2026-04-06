@@ -16,7 +16,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import relationship
 
 
-class DataRequestStatus(str, enum.Enum):
+class DataRequestStatus(enum.StrEnum):
     """Status da solicitação de dados"""
     PENDING = "pending"
     PARTIALLY_FILLED = "partially_filled"
@@ -25,7 +25,7 @@ class DataRequestStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
-class DataFieldType(str, enum.Enum):
+class DataFieldType(enum.StrEnum):
     """Tipos de campos disponíveis"""
     TEXT = "text"
     CPF = "cpf"
@@ -43,7 +43,7 @@ class DataFieldType(str, enum.Enum):
     TEXTAREA = "textarea"
 
 
-class TriggerType(str, enum.Enum):
+class TriggerType(enum.StrEnum):
     """Tipo de gatilho para solicitação"""
     MANUAL = "manual"
     AUTOMATIC = "automatic"

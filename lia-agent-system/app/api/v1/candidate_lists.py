@@ -64,7 +64,7 @@ async def list_candidate_lists(
         query = select(CandidateList).where(
             and_(
                 CandidateList.company_id == company_id,
-                CandidateList.is_active == True
+                CandidateList.is_active
             )
         )
         
@@ -172,7 +172,7 @@ async def get_candidate_list(
                 and_(
                     CandidateList.id == uuid.UUID(list_id),
                     CandidateList.company_id == company_id,
-                    CandidateList.is_active == True
+                    CandidateList.is_active
                 )
             )
         )
@@ -268,7 +268,7 @@ async def update_candidate_list(
                 and_(
                     CandidateList.id == uuid.UUID(list_id),
                     CandidateList.company_id == company_id,
-                    CandidateList.is_active == True
+                    CandidateList.is_active
                 )
             )
         )
@@ -329,7 +329,7 @@ async def delete_candidate_list(
                 and_(
                     CandidateList.id == uuid.UUID(list_id),
                     CandidateList.company_id == company_id,
-                    CandidateList.is_active == True
+                    CandidateList.is_active
                 )
             )
         )
@@ -371,7 +371,7 @@ async def add_candidates_to_list(
                 and_(
                     CandidateList.id == uuid.UUID(list_id),
                     CandidateList.company_id == company_id,
-                    CandidateList.is_active == True
+                    CandidateList.is_active
                 )
             )
         )
@@ -477,7 +477,7 @@ async def remove_candidates_from_list(
                 and_(
                     CandidateList.id == uuid.UUID(list_id),
                     CandidateList.company_id == company_id,
-                    CandidateList.is_active == True
+                    CandidateList.is_active
                 )
             )
         )
@@ -549,7 +549,7 @@ async def assign_list_to_jobs(
                 and_(
                     CandidateList.id == uuid.UUID(list_id),
                     CandidateList.company_id == company_id,
-                    CandidateList.is_active == True
+                    CandidateList.is_active
                 )
             )
         )

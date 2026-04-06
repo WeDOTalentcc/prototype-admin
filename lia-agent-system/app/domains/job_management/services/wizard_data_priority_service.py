@@ -14,7 +14,7 @@ suggestion for each field in the job wizard.
 """
 import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
@@ -29,7 +29,7 @@ from app.models.job_pattern import JobPattern
 logger = logging.getLogger(__name__)
 
 
-class DataSource(str, Enum):
+class DataSource(StrEnum):
     """Available data sources in priority order."""
     COMPANY_SETTINGS = "company_settings"
     LIA_HISTORY = "lia_history"
@@ -263,7 +263,7 @@ class WizardDataPriorityService:
                 select(CompanySkill).where(
                     and_(
                         CompanySkill.company_id == str(context.company_id),
-                        CompanySkill.is_promoted == True,
+                        CompanySkill.is_promoted,
                         CompanySkill.skill_type == "technical"
                     )
                 ).order_by(desc(CompanySkill.times_confirmed)).limit(20)
@@ -282,7 +282,7 @@ class WizardDataPriorityService:
                 select(CompanyResponsibility).where(
                     and_(
                         CompanyResponsibility.company_id == str(context.company_id),
-                        CompanyResponsibility.is_promoted == True
+                        CompanyResponsibility.is_promoted
                     )
                 ).order_by(desc(CompanyResponsibility.times_confirmed)).limit(10)
             )
@@ -332,7 +332,7 @@ class WizardDataPriorityService:
         
         filters = [
             ImportedJobDescription.company_id == context.company_id,
-            ImportedJobDescription.is_used_for_learning == True,
+            ImportedJobDescription.is_used_for_learning,
         ]
         
         if context.job_title:

@@ -257,7 +257,7 @@ class TaskPersistenceService:
                 by_state = {row[0]: row[1] for row in by_state_result.all()}
 
                 dlq_stmt = select(func.count(DeadLetterRecord.id)).where(
-                    DeadLetterRecord.resolved == False
+                    not DeadLetterRecord.resolved
                 )
                 dlq_result = await session.execute(dlq_stmt)
                 dlq_unresolved = dlq_result.scalar() or 0

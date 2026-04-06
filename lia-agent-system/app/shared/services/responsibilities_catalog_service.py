@@ -571,7 +571,7 @@ class ResponsibilitiesCatalogService:
         try:
             conditions = [
                 CompanyResponsibility.company_id == company_id,
-                CompanyResponsibility.is_promoted == True
+                CompanyResponsibility.is_promoted
             ]
             
             stmt = select(CompanyResponsibility).where(and_(*conditions))

@@ -2,7 +2,7 @@
 Pydantic schemas for Compliance Health Check API.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
 
@@ -13,7 +13,7 @@ class ChecklistItem(BaseModel):
     completed: bool = Field(False, description="Whether this item is completed")
 
 
-class ComplianceFrameworkEnum(str, Enum):
+class ComplianceFrameworkEnum(StrEnum):
     """Supported compliance frameworks."""
     SOX = "SOX"
     SOC2 = "SOC2"
@@ -24,7 +24,7 @@ class ComplianceFrameworkEnum(str, Enum):
     NYC144 = "NYC144"
 
 
-class HealthCheckStatusEnum(str, Enum):
+class HealthCheckStatusEnum(StrEnum):
     """Status options for health check items."""
     IMPLEMENTED = "implemented"
     PARTIAL = "partial"
@@ -33,7 +33,7 @@ class HealthCheckStatusEnum(str, Enum):
     NOT_CHECKED = "not_checked"
 
 
-class ReviewFrequencyEnum(str, Enum):
+class ReviewFrequencyEnum(StrEnum):
     """Review frequency options."""
     WEEKLY = "weekly"
     MONTHLY = "monthly"
@@ -41,7 +41,7 @@ class ReviewFrequencyEnum(str, Enum):
     ANNUAL = "annual"
 
 
-class PriorityEnum(str, Enum):
+class PriorityEnum(StrEnum):
     """Priority levels for health check items."""
     CRITICAL = "critical"
     HIGH = "high"

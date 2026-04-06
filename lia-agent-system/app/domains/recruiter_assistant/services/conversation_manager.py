@@ -591,7 +591,7 @@ class ConversationManager:
             
             company_result = await self.db.execute(
                 select(CompanyProfile).where(
-                    CompanyProfile.is_default == True
+                    CompanyProfile.is_default
                 ).limit(1)
             )
             company = company_result.scalar_one_or_none()

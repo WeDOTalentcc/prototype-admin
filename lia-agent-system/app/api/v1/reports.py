@@ -1,7 +1,7 @@
 """
 Reports API - Endpoints for generating candidate reports and automated briefings.
 """
-from enum import Enum
+from enum import Enum, StrEnum
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
@@ -15,7 +15,7 @@ from app.domains.analytics.services.report_service import report_service
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
-class ReportType(str, Enum):
+class ReportType(StrEnum):
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"

@@ -13,13 +13,13 @@ for data-driven, accurate responses.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class FunnelHealthStatus(str, Enum):
+class FunnelHealthStatus(StrEnum):
     HEALTHY = "saudável"
     ATTENTION = "atenção"
     CRITICAL = "crítico"

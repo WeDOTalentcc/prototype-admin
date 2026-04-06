@@ -183,7 +183,7 @@ class LearningAnalyticsService:
                     select(func.count(CompanySkill.id)).where(
                         and_(
                             CompanySkill.company_id == company_id,
-                            CompanySkill.is_promoted == True,
+                            CompanySkill.is_promoted,
                         )
                     )
                 )

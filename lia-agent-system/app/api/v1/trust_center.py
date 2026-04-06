@@ -247,7 +247,7 @@ async def get_trust_center_bias_audits(
         query = select(BiasAuditReport).where(
             and_(
                 BiasAuditReport.company_id == settings.company_id,
-                BiasAuditReport.is_public == True
+                BiasAuditReport.is_public
             )
         ).order_by(desc(BiasAuditReport.published_at))
         
@@ -297,7 +297,7 @@ async def get_trust_center_subprocessors(
         
         conditions = [
             Subprocessor.company_id == settings.company_id,
-            Subprocessor.is_public == True
+            Subprocessor.is_public
         ]
         
         if category:
@@ -330,7 +330,7 @@ async def get_trust_center_resources(
         
         conditions = [
             TrustCenterResource.company_id == settings.company_id,
-            TrustCenterResource.is_public == True
+            TrustCenterResource.is_public
         ]
         
         if category:
@@ -364,7 +364,7 @@ async def get_trust_center_updates(
         
         conditions = [
             TrustCenterUpdate.company_id == settings.company_id,
-            TrustCenterUpdate.is_published == True
+            TrustCenterUpdate.is_published
         ]
         
         if category:

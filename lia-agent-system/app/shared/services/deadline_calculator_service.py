@@ -163,8 +163,8 @@ class DeadlineCalculatorService:
                 result = await db.execute(
                     select(PipelineTemplate).where(
                         PipelineTemplate.company_id == company_id,
-                        PipelineTemplate.is_default == True,
-                        PipelineTemplate.is_active == True
+                        PipelineTemplate.is_default,
+                        PipelineTemplate.is_active
                     )
                 )
                 default_pipeline = result.scalar_one_or_none()

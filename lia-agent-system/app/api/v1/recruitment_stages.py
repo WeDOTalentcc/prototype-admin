@@ -2003,7 +2003,7 @@ async def stream_return_events(
                     filters = [
                         ActivityFeed.activity_type.like("return_event_%"),
                         ActivityFeed.created_at > last_check,
-                        ActivityFeed.is_visible == True,
+                        ActivityFeed.is_visible,
                     ]
 
                     if effective_company_id:

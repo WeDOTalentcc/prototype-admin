@@ -24,7 +24,7 @@ import logging
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from functools import wraps
 from typing import Any
 
@@ -76,7 +76,7 @@ async def _notify_circuit_open(service_name: str) -> None:
         logger.debug("[CircuitBreaker] Notification failed (non-blocking): %s", _e)
 
 
-class CircuitState(str, Enum):
+class CircuitState(StrEnum):
     """Circuit breaker states."""
     CLOSED = "closed"
     OPEN = "open"

@@ -73,7 +73,7 @@ async def create_consent_version(
             and_(
                 ConsentVersion.company_id == company_uuid,
                 ConsentVersion.consent_type == data.consent_type,
-                ConsentVersion.is_current == True
+                ConsentVersion.is_current
             )
         )
         result = await db.execute(update_query)
@@ -163,7 +163,7 @@ async def get_current_consent_version(
             and_(
                 ConsentVersion.company_id == company_uuid,
                 ConsentVersion.consent_type == consent_type,
-                ConsentVersion.is_current == True
+                ConsentVersion.is_current
             )
         )
         result = await db.execute(query)
@@ -437,7 +437,7 @@ async def revoke_consent(
                 and_(
                     ConsentVersion.company_id == company_uuid,
                     ConsentVersion.consent_type == data.consent_type,
-                    ConsentVersion.is_current == True
+                    ConsentVersion.is_current
                 )
             )
         
@@ -453,7 +453,7 @@ async def revoke_consent(
                 ConsentEvent.consent_version_id == version.id,
                 ConsentEvent.subject_identifier == data.subject_identifier,
                 ConsentEvent.event_type == "granted",
-                ConsentEvent.consent_given == True
+                ConsentEvent.consent_given
             )
         ).order_by(desc(ConsentEvent.created_at)).limit(1)
         
@@ -540,7 +540,7 @@ async def get_consent_stats(
             and_(
                 ConsentEvent.company_id == company_uuid,
                 ConsentEvent.event_type == "granted",
-                ConsentEvent.consent_given == True
+                ConsentEvent.consent_given
             )
         )
         granted_result = await db.execute(granted_query)
@@ -559,7 +559,7 @@ async def get_consent_stats(
             and_(
                 ConsentEvent.company_id == company_uuid,
                 ConsentEvent.event_type == "granted",
-                ConsentEvent.expires_at != None,
+                ConsentEvent.expires_at is not None,
                 ConsentEvent.expires_at < now
             )
         )
@@ -590,7 +590,7 @@ async def get_consent_stats(
                 and_(
                     ConsentEvent.consent_version_id.in_(version_ids),
                     ConsentEvent.event_type == "granted",
-                    ConsentEvent.consent_given == True
+                    ConsentEvent.consent_given
                 )
             )
             type_granted_result = await db.execute(type_granted_query)
@@ -609,7 +609,7 @@ async def get_consent_stats(
                 and_(
                     ConsentEvent.consent_version_id.in_(version_ids),
                     ConsentEvent.event_type == "granted",
-                    ConsentEvent.expires_at != None,
+                    ConsentEvent.expires_at is not None,
                     ConsentEvent.expires_at < now
                 )
             )

@@ -4,7 +4,7 @@ Provides autocomplete, search analysis, and smart alerts for recruiters.
 Uses centralized taxonomy library for comprehensive term matching.
 """
 import logging
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/search-assistant", tags=["search-assistant"])
 
 
-class SuggestionCategory(str, Enum):
+class SuggestionCategory(StrEnum):
     JOB_TITLE = "job_title"
     SKILL = "skill"
     LOCATION = "location"
@@ -45,7 +45,7 @@ class SearchSuggestion(BaseModel):
     popularity_score: float = 0.0
 
 
-class AlertSeverity(str, Enum):
+class AlertSeverity(StrEnum):
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"

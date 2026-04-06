@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
-class ChannelType(str, Enum):
+class ChannelType(StrEnum):
     EMAIL = "email"
     WHATSAPP = "whatsapp"
     SMS = "sms"
@@ -12,7 +12,7 @@ class ChannelType(str, Enum):
     MS_TEAMS = "ms_teams"
 
 
-class DeliveryStatus(str, Enum):
+class DeliveryStatus(StrEnum):
     QUEUED = "queued"
     SENT = "sent"
     DELIVERED = "delivered"

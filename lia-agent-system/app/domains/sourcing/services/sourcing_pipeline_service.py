@@ -476,8 +476,8 @@ class SourcingPipelineService:
         
         query = select(Candidate).where(
             and_(
-                Candidate.is_active == True,
-                Candidate.is_blacklisted == False
+                Candidate.is_active,
+                not Candidate.is_blacklisted
             )
         )
         

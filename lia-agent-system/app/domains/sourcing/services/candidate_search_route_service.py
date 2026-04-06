@@ -804,7 +804,7 @@ class CandidateSearchRouteService:
         from app.models.candidate import Candidate, ExternalCandidateProfile
 
         total_result = await db.execute(
-            select(sqla_func.count(Candidate.id)).where(Candidate.is_active == True)
+            select(sqla_func.count(Candidate.id)).where(Candidate.is_active)
         )
         total_candidates = total_result.scalar() or 0
 
@@ -819,7 +819,7 @@ class CandidateSearchRouteService:
                 Candidate.source,
                 sqla_func.count(Candidate.id).label("count"),
             )
-            .where(Candidate.is_active == True)
+            .where(Candidate.is_active)
             .group_by(Candidate.source)
         )
         source_breakdown = {row.source: row.count for row in source_result.all()}

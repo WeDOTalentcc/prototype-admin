@@ -272,7 +272,7 @@ class CompensationAnalysisService:
             
             base_conditions = [
                 CompensationPolicy.company_id == company_uuid,
-                CompensationPolicy.is_active == True,
+                CompensationPolicy.is_active,
                 or_(
                     CompensationPolicy.effective_from.is_(None),
                     CompensationPolicy.effective_from <= now

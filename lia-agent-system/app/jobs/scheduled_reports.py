@@ -483,7 +483,7 @@ class ScheduledReportJob:
                 result = await db.execute(
                     select(User, Company)
                     .join(Company, User.company_id == Company.id, isouter=True)
-                    .where(User.is_active == True)
+                    .where(User.is_active)
                 )
                 
                 for user, company in result.all():
@@ -526,7 +526,7 @@ class ScheduledReportJob:
                 result = await db.execute(
                     select(User, Company)
                     .join(Company, User.company_id == Company.id, isouter=True)
-                    .where(User.is_active == True)
+                    .where(User.is_active)
                 )
                 
                 for user, company in result.all():
@@ -576,7 +576,7 @@ class ScheduledReportJob:
                 result = await db.execute(
                     select(User, Company)
                     .join(Company, User.company_id == Company.id, isouter=True)
-                    .where(User.is_active == True)
+                    .where(User.is_active)
                 )
                 
                 for user, company in result.all():

@@ -6,10 +6,10 @@ instructions that improve LLM output quality and consistency.
 
 Moved from app/prompts/cot.py (I3b cleanup).
 """
-from enum import Enum
+from enum import Enum, StrEnum
 
 
-class CoTStrategy(str, Enum):
+class CoTStrategy(StrEnum):
     """Different CoT strategies for different use cases."""
     STANDARD = "standard"
     ZERO_SHOT = "zero_shot"

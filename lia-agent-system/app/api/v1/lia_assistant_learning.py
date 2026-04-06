@@ -5,7 +5,7 @@ Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/learning/* URLs.
 """
 import logging
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
@@ -76,7 +76,7 @@ class LearningContextResponse(BaseModel):
     success_rate: dict[str, float]
 
 
-class JobOutcomeType(str, Enum):
+class JobOutcomeType(StrEnum):
     FILLED = "filled"
     CANCELLED = "cancelled"
     EXPIRED = "expired"

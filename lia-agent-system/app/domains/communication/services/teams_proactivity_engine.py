@@ -343,7 +343,7 @@ class TeamsProactivityEngine:
                 expiring_q = select(func.count(JobVacancy.id)).where(
                     and_(
                         JobVacancy.status.in_(["open", "active", "Open", "Active"]),
-                        JobVacancy.deadline != None,
+                        JobVacancy.deadline is not None,
                         JobVacancy.deadline <= week_ahead,
                     )
                 )

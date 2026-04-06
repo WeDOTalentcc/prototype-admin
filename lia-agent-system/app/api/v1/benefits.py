@@ -134,7 +134,7 @@ async def get_benefit_templates(
     Optionally filter by category, search term, or popularity.
     """
     try:
-        query = select(BenefitTemplate).where(BenefitTemplate.is_active == True)
+        query = select(BenefitTemplate).where(BenefitTemplate.is_active)
         
         if category:
             query = query.where(BenefitTemplate.category == category)
@@ -149,7 +149,7 @@ async def get_benefit_templates(
             )
         
         if popular_only:
-            query = query.where(BenefitTemplate.is_popular == True)
+            query = query.where(BenefitTemplate.is_popular)
         
         query = query.order_by(BenefitTemplate.category, BenefitTemplate.order, BenefitTemplate.name)
         

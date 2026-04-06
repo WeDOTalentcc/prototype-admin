@@ -48,7 +48,7 @@ class DatabaseSessionStore:
                 select(GraphSession).where(
                     and_(
                         GraphSession.session_id == session_id,
-                        GraphSession.is_active == True
+                        GraphSession.is_active
                     )
                 )
             )
@@ -100,7 +100,7 @@ class DatabaseSessionStore:
     async def list_sessions(self, company_id: str | None = None, limit: int = 100) -> list[str]:
         """List all active sessions, optionally filtered by company."""
         async with AsyncSessionLocal() as db:
-            query = select(GraphSession.session_id).where(GraphSession.is_active == True)
+            query = select(GraphSession.session_id).where(GraphSession.is_active)
             
             if company_id:
                 query = query.where(GraphSession.company_id == UUID(company_id))
@@ -120,8 +120,8 @@ class DatabaseSessionStore:
                 .where(
                     and_(
                         GraphSession.last_activity_at < cutoff,
-                        GraphSession.is_active == True,
-                        GraphSession.is_complete == False
+                        GraphSession.is_active,
+                        not GraphSession.is_complete
                     )
                 )
                 .values(is_active=False)

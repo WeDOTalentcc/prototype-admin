@@ -5,20 +5,20 @@ This module provides structured schemas for intent detection and routing,
 enabling dynamic confidence scoring based on entity presence and quality.
 """
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from app.agents.base_agent import AgentType
 
 
-class EntityImportance(str, Enum):
+class EntityImportance(StrEnum):
     """Importance level of an entity for intent handling."""
     REQUIRED = "required"
     RECOMMENDED = "recommended"
     OPTIONAL = "optional"
 
 
-class EntityType(str, Enum):
+class EntityType(StrEnum):
     """Types of entities that can be extracted."""
     JOB_ID = "job_id"
     JOB_TITLE = "job_title"

@@ -11,7 +11,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from app.prompts import PromptLoader
@@ -21,7 +21,7 @@ from app.shared.prompts.loader import PromptLoader
 logger = logging.getLogger(__name__)
 
 
-class EnhancedIntentType(str, Enum):
+class EnhancedIntentType(StrEnum):
     CREATE_JOB = "CREATE_JOB"
     UPDATE_FIELD = "UPDATE_FIELD"
     QUESTION = "QUESTION"

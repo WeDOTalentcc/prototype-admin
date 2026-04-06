@@ -15,7 +15,7 @@ from sqlalchemy.sql import func
 from app.core.database import Base
 
 
-class ConversationState(str, enum.Enum):
+class ConversationState(enum.StrEnum):
     """
     States for the WhatsApp conversation flow.
     

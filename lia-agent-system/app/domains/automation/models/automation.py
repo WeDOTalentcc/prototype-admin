@@ -14,7 +14,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 
-class TriggerType(str, enum.Enum):
+class TriggerType(enum.StrEnum):
     """Types of automation triggers."""
     CANDIDATE_STAGE_CHANGED = "candidate_stage_changed"
     INTERVIEW_SCHEDULED = "interview_scheduled"
@@ -28,7 +28,7 @@ class TriggerType(str, enum.Enum):
     DEADLINE_APPROACHING = "deadline_approaching"
 
 
-class ActionType(str, enum.Enum):
+class ActionType(enum.StrEnum):
     """Types of automation actions."""
     SEND_EMAIL = "send_email"
     SEND_WHATSAPP = "send_whatsapp"
@@ -161,7 +161,7 @@ class AutomationExecutionLog(Base):
         }
 
 
-class SuggestionStatus(str, enum.Enum):
+class SuggestionStatus(enum.StrEnum):
     """Status of AI suggestions."""
     PENDING = "pending"
     APPROVED = "approved"

@@ -52,7 +52,7 @@ class CandidateRepository:
         skip: int = 0,
         limit: int = 50,
     ) -> list[Candidate]:
-        query = select(Candidate).where(Candidate.is_active == True)
+        query = select(Candidate).where(Candidate.is_active)
 
         if ids:
             query = query.where(Candidate.id.in_(ids))
@@ -129,7 +129,7 @@ class CandidateRepository:
             query = query.where(or_(*loc_conds))
 
         if filters.remote_only:
-            query = query.where(Candidate.is_remote == True)
+            query = query.where(Candidate.is_remote)
 
         if filters.min_salary is not None:
             query = query.where(Candidate.desired_salary_max >= filters.min_salary)

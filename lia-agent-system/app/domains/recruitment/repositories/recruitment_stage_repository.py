@@ -27,7 +27,7 @@ class RecruitmentStageRepository:
             RecruitmentStage.company_id == company_id
         )
         if not include_inactive:
-            query = query.where(RecruitmentStage.is_active == True)
+            query = query.where(RecruitmentStage.is_active)
         query = query.order_by(RecruitmentStage.stage_order)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -60,7 +60,7 @@ class RecruitmentStageRepository:
             select(RecruitmentStage).where(
                 and_(
                     RecruitmentStage.company_id == company_id,
-                    RecruitmentStage.is_active == True,
+                    RecruitmentStage.is_active,
                 )
             ).order_by(RecruitmentStage.stage_order)
         )

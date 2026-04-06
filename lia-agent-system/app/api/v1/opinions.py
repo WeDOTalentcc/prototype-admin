@@ -41,7 +41,7 @@ async def get_candidate_opinions_summary(
         and_(
             LiaOpinion.candidate_id == candidate_id,
             LiaOpinion.company_id == company_id,
-            LiaOpinion.is_current == True
+            LiaOpinion.is_current
         )
     ).order_by(desc(LiaOpinion.created_at))
     
@@ -179,7 +179,7 @@ async def list_candidate_opinions(
     ]
     
     if not include_history:
-        conditions.append(LiaOpinion.is_current == True)
+        conditions.append(LiaOpinion.is_current)
     
     if opinion_type:
         conditions.append(LiaOpinion.opinion_type == opinion_type)
@@ -357,7 +357,7 @@ async def create_opinion(
                     LiaOpinion.job_vacancy_id == data.job_vacancy_id,
                     LiaOpinion.opinion_type == data.opinion_type.value,
                     LiaOpinion.company_id == company_id,
-                    LiaOpinion.is_current == True
+                    LiaOpinion.is_current
                 )
             )
             .values(is_current=False)
@@ -382,7 +382,7 @@ async def create_opinion(
                     LiaOpinion.candidate_id == data.candidate_id,
                     LiaOpinion.opinion_type == "general",
                     LiaOpinion.company_id == company_id,
-                    LiaOpinion.is_current == True
+                    LiaOpinion.is_current
                 )
             )
             .values(is_current=False)

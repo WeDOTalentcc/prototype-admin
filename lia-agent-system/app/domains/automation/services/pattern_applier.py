@@ -129,7 +129,7 @@ class PatternApplier:
             async with async_session_factory() as db:
                 conditions = [
                     CompanySkill.company_id == company_id,
-                    CompanySkill.is_promoted == True,
+                    CompanySkill.is_promoted,
                 ]
 
                 query = (
@@ -191,7 +191,7 @@ class PatternApplier:
                     conditions.append(
                         or_(
                             SuccessProfile.seniority == seniority.lower(),
-                            SuccessProfile.seniority == None,
+                            SuccessProfile.seniority is None,
                         )
                     )
 
@@ -199,7 +199,7 @@ class PatternApplier:
                     conditions.append(
                         or_(
                             SuccessProfile.role_family.ilike(f"%{role}%"),
-                            SuccessProfile.role_family == None,
+                            SuccessProfile.role_family is None,
                         )
                     )
 

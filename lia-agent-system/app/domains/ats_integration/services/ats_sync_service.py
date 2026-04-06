@@ -19,7 +19,7 @@ import logging
 import os
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
@@ -31,7 +31,7 @@ from .ats_clients.pandape import PandapeClient
 logger = logging.getLogger(__name__)
 
 
-class ATSSyncTrigger(str, Enum):
+class ATSSyncTrigger(StrEnum):
     """Events that trigger ATS synchronization."""
     STATUS_CHANGE = "status_change"
     CANDIDATE_CREATED = "candidate_created"
@@ -49,7 +49,7 @@ class ATSSyncTrigger(str, Enum):
     BULK_SYNC = "bulk_sync"
 
 
-class ATSSyncAction(str, Enum):
+class ATSSyncAction(StrEnum):
     """Types of sync actions."""
     CREATE = "create"
     UPDATE = "update"
@@ -59,7 +59,7 @@ class ATSSyncAction(str, Enum):
     BULK_PULL = "bulk_pull"
 
 
-class ATSSyncResult(str, Enum):
+class ATSSyncResult(StrEnum):
     """Result of sync attempt."""
     SUCCESS = "success"
     FIELD_NOT_MAPPED = "field_not_mapped"

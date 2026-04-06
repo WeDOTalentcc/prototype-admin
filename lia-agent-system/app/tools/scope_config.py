@@ -12,7 +12,7 @@ Hardcoded Set[str] definitions remain as fallback constants for backward compati
 
 Task #125: Replaced hardcoded Sets with YAML-driven ToolPermissionsLoader.
 """
-from enum import Enum
+from enum import Enum, StrEnum
 
 from app.tools.tool_permissions_loader import (
     get_permissions,
@@ -25,7 +25,7 @@ from app.tools.tool_permissions_loader import (
 )
 
 
-class PromptScope(str, Enum):
+class PromptScope(StrEnum):
     """Available prompt scopes in the platform."""
     TALENT_FUNNEL = "talent_funnel"
     JOB_TABLE = "job_table"

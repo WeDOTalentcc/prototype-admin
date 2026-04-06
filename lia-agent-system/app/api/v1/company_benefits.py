@@ -81,7 +81,7 @@ async def list_company_benefits(
         query = select(CompanyBenefit).where(CompanyBenefit.company_id == effective_company_id)
         
         if active_only:
-            query = query.where(CompanyBenefit.is_active == True)
+            query = query.where(CompanyBenefit.is_active)
         
         if category:
             query = query.where(CompanyBenefit.category == category)

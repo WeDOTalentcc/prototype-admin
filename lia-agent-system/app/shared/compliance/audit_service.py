@@ -356,7 +356,7 @@ class AuditService:
                 .where(
                     and_(
                         AuditLog.company_id == company_id,
-                        AuditLog.human_review_required == True,
+                        AuditLog.human_review_required,
                         AuditLog.human_reviewed_at.is_(None)
                     )
                 )

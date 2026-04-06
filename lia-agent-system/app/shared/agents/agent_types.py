@@ -10,13 +10,13 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class AgentType(str, Enum):
+class AgentType(StrEnum):
     """
     Types of specialized agents in the LIA system.
 
@@ -63,7 +63,7 @@ class AgentType(str, Enum):
     ANALYTICS = "analytics"          # Use ANALYST_FEEDBACK
 
 
-class TaskPriority(str, Enum):
+class TaskPriority(StrEnum):
     """Priority levels for agent tasks."""
     CRITICAL = "critical"
     HIGH = "high"
@@ -71,7 +71,7 @@ class TaskPriority(str, Enum):
     LOW = "low"
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     """Status of agent-generated tasks."""
     PENDING = "pending"
     IN_PROGRESS = "in_progress"

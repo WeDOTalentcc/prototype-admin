@@ -2,13 +2,13 @@
 Pydantic schemas for SOX-Compliant Audit Logs API.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class ActionCategoryEnum(str, Enum):
+class ActionCategoryEnum(StrEnum):
     """Categories of auditable actions."""
     AUTHENTICATION = "authentication"
     DATA_ACCESS = "data_access"
@@ -19,7 +19,7 @@ class ActionCategoryEnum(str, Enum):
     SYSTEM = "system"
 
 
-class AuditStatusEnum(str, Enum):
+class AuditStatusEnum(StrEnum):
     """Status of audited actions."""
     SUCCESS = "success"
     FAILED = "failed"

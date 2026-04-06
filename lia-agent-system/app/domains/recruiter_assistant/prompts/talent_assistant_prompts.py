@@ -4,12 +4,12 @@ Templates para análises inteligentes do funil de talentos (busca e análise de 
 """
 import json
 import logging
-from enum import Enum
+from enum import Enum, StrEnum
 
 logger = logging.getLogger(__name__)
 
 
-class TalentCommandType(str, Enum):
+class TalentCommandType(StrEnum):
     RANKEAR_CANDIDATOS = "rankear_candidatos"
     COMPARAR_CANDIDATOS = "comparar_candidatos"
     ANALISAR_PERFIL = "analisar_perfil"

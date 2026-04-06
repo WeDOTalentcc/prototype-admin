@@ -106,7 +106,7 @@ async def list_categories(
         query = select(
             PlatformPolicy.category,
             func.count(PlatformPolicy.id).label("count"),
-            func.count(PlatformPolicy.id).filter(PlatformPolicy.is_active == True).label("active_count")
+            func.count(PlatformPolicy.id).filter(PlatformPolicy.is_active).label("active_count")
         ).group_by(PlatformPolicy.category)
         
         result = await db.execute(query)

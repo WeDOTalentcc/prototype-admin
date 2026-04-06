@@ -72,7 +72,7 @@ class CompanyRouteService:
 
         if not profile:
             existing = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default == True)
+                select(CompanyProfile).where(CompanyProfile.is_default)
             )
             profile = existing.scalar_one_or_none()
 
@@ -403,7 +403,7 @@ REGRAS:
         deps_result = await db.execute(
             select(Department).where(
                 Department.company_id == profile_id,
-                Department.is_active == True,
+                Department.is_active,
             ).order_by(Department.order)
         )
         departments = deps_result.scalars().all()
@@ -411,7 +411,7 @@ REGRAS:
         bens_result = await db.execute(
             select(Benefit).where(
                 Benefit.company_id == profile_id,
-                Benefit.is_active == True,
+                Benefit.is_active,
             ).order_by(Benefit.category, Benefit.order)
         )
         benefits = bens_result.scalars().all()
@@ -419,7 +419,7 @@ REGRAS:
         vals_result = await db.execute(
             select(CultureValue).where(
                 CultureValue.company_id == profile_id,
-                CultureValue.is_active == True,
+                CultureValue.is_active,
             ).order_by(CultureValue.order)
         )
         culture_values = vals_result.scalars().all()
@@ -461,7 +461,7 @@ REGRAS:
         if company_id:
             query = query.where(Department.company_id == company_id)
         if not include_inactive:
-            query = query.where(Department.is_active == True)
+            query = query.where(Department.is_active)
         query = query.order_by(Department.order)
 
         result = await db.execute(query)
@@ -472,7 +472,7 @@ REGRAS:
             member_count_result = await db.execute(
                 select(func.count(DepartmentMember.id)).where(
                     DepartmentMember.department_id == dept.id,
-                    DepartmentMember.is_active == True,
+                    DepartmentMember.is_active,
                 )
             )
             member_count = member_count_result.scalar() or 0
@@ -515,13 +515,13 @@ REGRAS:
 
         if not resolved_company_id:
             result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default == True)
+                select(CompanyProfile).where(CompanyProfile.is_default)
                 .order_by(CompanyProfile.created_at.desc()).limit(1)
             )
             profile = result.scalars().first()
             if not profile:
                 result = await db.execute(
-                    select(CompanyProfile).where(CompanyProfile.is_active == True)
+                    select(CompanyProfile).where(CompanyProfile.is_active)
                     .order_by(CompanyProfile.created_at.desc()).limit(1)
                 )
                 profile = result.scalars().first()

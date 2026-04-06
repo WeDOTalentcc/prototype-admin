@@ -134,7 +134,7 @@ async def list_short_lists(
         select(CandidateList).where(
             and_(
                 CandidateList.company_id == company_id,
-                CandidateList.is_active == True,
+                CandidateList.is_active,
                 CandidateList.description.like(f"{_SHORTLIST_PREFIX}%"),
             )
         ).order_by(CandidateList.created_at.desc())

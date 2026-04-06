@@ -473,7 +473,7 @@ class TransitionDispatchService:
                     select(EmailTemplate).where(
                         EmailTemplate.situation == situation,
                         EmailTemplate.channel == channel,
-                        EmailTemplate.is_active == True,
+                        EmailTemplate.is_active,
                         EmailTemplate.company_id == company_id,
                     )
                 )
@@ -489,8 +489,8 @@ class TransitionDispatchService:
                 select(EmailTemplate).where(
                     EmailTemplate.situation == situation,
                     EmailTemplate.channel == channel,
-                    EmailTemplate.is_active == True,
-                    EmailTemplate.is_system_template == True,
+                    EmailTemplate.is_active,
+                    EmailTemplate.is_system_template,
                 )
             )
             system_template = system_result.scalars().first()
@@ -504,7 +504,7 @@ class TransitionDispatchService:
                 select(EmailTemplate).where(
                     EmailTemplate.situation == situation,
                     EmailTemplate.channel == channel,
-                    EmailTemplate.is_active == True,
+                    EmailTemplate.is_active,
                 )
             )
             fallback_template = fallback_result.scalars().first()

@@ -12,11 +12,11 @@ Flow:
 """
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
-class ReconsiderationResult(str, Enum):
+class ReconsiderationResult(StrEnum):
     PASSED = "passed"
     NEEDS_RECONSIDERATION = "needs_reconsideration"
     KEPT_INCOMPATIBLE = "kept_incompatible"

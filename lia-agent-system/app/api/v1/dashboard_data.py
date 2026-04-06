@@ -3,7 +3,7 @@
 Dashboard Data API endpoints with fictitious data for visualization.
 """
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from pydantic import BaseModel
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
-class TrendDirection(str, Enum):
+class TrendDirection(StrEnum):
     UP = "up"
     DOWN = "down"
     STABLE = "stable"

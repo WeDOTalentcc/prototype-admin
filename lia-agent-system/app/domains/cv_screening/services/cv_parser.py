@@ -500,7 +500,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                 result = await db.execute(
                     select(Candidate).where(
                         Candidate.email == parsed_cv.email,
-                        Candidate.is_active == True
+                        Candidate.is_active
                     )
                 )
                 existing = result.scalar_one_or_none()
@@ -521,7 +521,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                 result = await db.execute(
                     select(Candidate).where(
                         func.lower(Candidate.name) == name_normalized,
-                        Candidate.is_active == True
+                        Candidate.is_active
                     )
                 )
                 candidates = result.scalars().all()
@@ -547,7 +547,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                     result = await db.execute(
                         select(Candidate).where(
                             Candidate.linkedin_url.ilike(f"%{linkedin_username}%"),
-                            Candidate.is_active == True
+                            Candidate.is_active
                         )
                     )
                     existing = result.scalar_one_or_none()

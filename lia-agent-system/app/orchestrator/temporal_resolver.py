@@ -7,10 +7,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date, timedelta
-from enum import Enum
+from enum import Enum, StrEnum
 
 
-class TemporalGranularity(str, Enum):
+class TemporalGranularity(StrEnum):
     DAY = "day"
     WEEK = "week"
     MONTH = "month"

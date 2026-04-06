@@ -136,7 +136,7 @@ class FeedbackService:
                     and_(
                         LearningPattern.company_id == company_id,
                         LearningPattern.pattern_key == pattern_key,
-                        LearningPattern.is_active == True
+                        LearningPattern.is_active
                     )
                 )
             )
@@ -219,7 +219,7 @@ class FeedbackService:
         try:
             result = await db.execute(
                 select(InteractionFeedback).where(
-                    InteractionFeedback.processed == False
+                    not InteractionFeedback.processed
                 ).limit(100)
             )
             unprocessed = result.scalars().all()
@@ -291,7 +291,7 @@ class FeedbackService:
                 select(LearningPattern).where(
                     and_(
                         LearningPattern.company_id == company_uuid,
-                        LearningPattern.is_active == True,
+                        LearningPattern.is_active,
                         LearningPattern.confidence >= 0.5
                     )
                 ).order_by(LearningPattern.success_rate.desc())
@@ -467,7 +467,7 @@ class FeedbackService:
                 select(func.count(LearningPattern.id)).where(
                     and_(
                         LearningPattern.company_id == company_uuid,
-                        LearningPattern.is_active == True
+                        LearningPattern.is_active
                     )
                 )
             )
@@ -477,7 +477,7 @@ class FeedbackService:
                 select(func.count(LearningPattern.id)).where(
                     and_(
                         LearningPattern.company_id == company_uuid,
-                        LearningPattern.is_active == True,
+                        LearningPattern.is_active,
                         LearningPattern.confidence >= 0.7
                     )
                 )

@@ -804,7 +804,7 @@ async def get_client_payment_methods(
         query = select(PaymentMethod).where(
             and_(
                 PaymentMethod.client_id == client_uuid,
-                PaymentMethod.is_active == True
+                PaymentMethod.is_active
             )
         ).order_by(PaymentMethod.is_default.desc(), PaymentMethod.created_at.desc())
         
@@ -1133,7 +1133,7 @@ async def get_client_by_id(client_id: str, db: AsyncSession) -> ClientAccount:
     query = select(ClientAccount).where(
         and_(
             ClientAccount.id == client_uuid,
-            ClientAccount.is_deleted == False
+            not ClientAccount.is_deleted
         )
     )
     result = await db.execute(query)

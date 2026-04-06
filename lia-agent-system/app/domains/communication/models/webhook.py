@@ -10,7 +10,7 @@ Supports outbound webhooks to notify external systems about events:
 """
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
@@ -18,7 +18,7 @@ from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
 from app.core.database import Base
 
 
-class WebhookEvent(str, Enum):
+class WebhookEvent(StrEnum):
     """Supported webhook events."""
     CANDIDATE_CREATED = "candidate.created"
     CANDIDATE_STAGE_CHANGED = "candidate.stage_changed"
@@ -32,7 +32,7 @@ class WebhookEvent(str, Enum):
     TASK_COMPLETED = "task.completed"
 
 
-class WebhookStatus(str, Enum):
+class WebhookStatus(StrEnum):
     """Webhook delivery status."""
     PENDING = "pending"
     SUCCESS = "success"

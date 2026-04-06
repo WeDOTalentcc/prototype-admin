@@ -1705,7 +1705,7 @@ async def seed_default_templates(db: AsyncSession) -> dict[str, Any]:
             select(EmailTemplate).where(
                 EmailTemplate.situation == template_data["situation"],
                 EmailTemplate.channel == template_data["channel"],
-                EmailTemplate.is_system_template == True,
+                EmailTemplate.is_system_template,
                 EmailTemplate.company_id.is_(None)
             )
         )
@@ -1773,9 +1773,9 @@ async def clone_templates_for_client(db: AsyncSession, client_id: str, auto_comm
     """
     result = await db.execute(
         select(EmailTemplate).where(
-            EmailTemplate.is_system_template == True,
+            EmailTemplate.is_system_template,
             EmailTemplate.company_id.is_(None),
-            EmailTemplate.is_active == True
+            EmailTemplate.is_active
         )
     )
     system_templates = result.scalars().all()
