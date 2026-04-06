@@ -384,52 +384,27 @@ class JobVacancyService:
         return frame
 
 
-    _BEHAVIOR_FORMAT_MAP = {
-        "screening": "Triagem",
-        "scheduling": "Comportamental",
-        "evaluation": "Técnica",
-        "intake": "Sistema",
-        "passive": "Informativa",
-        "offer": "Proposta",
-    }
-
-    _BEHAVIOR_DURATION_MAP = {
-        "screening": 15,
-        "scheduling": 45,
-        "evaluation": 60,
-        "intake": 10,
-        "passive": 30,
-        "offer": 30,
-    }
-
     @staticmethod
     async def _populate_default_interview_stages(
         state: JobVacancyState,
         company_id: str,
         db,
     ) -> JobVacancyState:
-        """Populate interview stages from company pipeline if not set by user."""
+        """Populate interview stages from company pipeline if not set by user.
+
+        Falls back to canonical defaults derived from DEFAULT_RECRUITMENT_STAGES.
+        """
+        from app.domains.job_management.services.interview_stage_defaults import (
+            get_default_vacancy_interview_stages,
+            map_pipeline_to_vacancy_stages,
+        )
+
         try:
             from app.domains.recruiter_assistant.services.pipeline_stage_service import pipeline_stage_service
 
             stages = await pipeline_stage_service._get_company_stages(db, company_id)
             if stages:
-                interview_stages = []
-                for stage in stages:
-                    behavior = getattr(stage, "action_behavior", "passive") or "passive"
-                    if behavior == "terminal":
-                        continue
-                    if getattr(stage, "is_rejection", False) or getattr(stage, "is_hired", False) or getattr(stage, "is_final", False):
-                        continue
-
-                    interview_stages.append(InterviewStage(
-                        stage_name=stage.display_name,
-                        interviewers=[],
-                        format=JobVacancyService._BEHAVIOR_FORMAT_MAP.get(behavior, "Informativa"),
-                        duration=JobVacancyService._BEHAVIOR_DURATION_MAP.get(behavior, 30),
-                        scheduling_window="A definir",
-                    ))
-
+                interview_stages = map_pipeline_to_vacancy_stages(stages)
                 if interview_stages:
                     state.interview_stages = interview_stages
                     logger.info(
@@ -439,14 +414,8 @@ class JobVacancyService:
         except Exception as e:
             logger.warning(f"Failed to load company pipeline for interview stages: {e}", exc_info=True)
 
-        state.interview_stages = [
-            InterviewStage(stage_name="Triagem LIA", interviewers=[], format="Triagem", duration=10, scheduling_window="A definir"),
-            InterviewStage(stage_name="Entrevista RH", interviewers=[], format="Comportamental", duration=30, scheduling_window="A definir"),
-            InterviewStage(stage_name="Entrevista Técnica", interviewers=[], format="Técnica", duration=60, scheduling_window="A definir"),
-            InterviewStage(stage_name="Entrevista Gestor", interviewers=[], format="Comportamental", duration=45, scheduling_window="A definir"),
-            InterviewStage(stage_name="Proposta", interviewers=[], format="Proposta", duration=30, scheduling_window="A definir"),
-        ]
-        logger.info("Populated interview stages from canonical defaults")
+        state.interview_stages = get_default_vacancy_interview_stages()
+        logger.info("Populated interview stages from canonical DEFAULT_RECRUITMENT_STAGES")
 
         return state
 
