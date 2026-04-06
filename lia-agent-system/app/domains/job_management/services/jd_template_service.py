@@ -11,6 +11,8 @@ Todos os textos em Português (Brasil).
 import logging
 from datetime import datetime
 
+from app.core.database import async_session_factory
+from app.domains.recruitment.repositories.recruitment_stage_repository import RecruitmentStageRepository
 from app.schemas.job_description import (
     CompanyInfo,
     CompensationData,
@@ -220,7 +222,7 @@ class JDTemplateService:
             
             company = await self._get_company_info(request.company_id)
             
-            interview_process = request.interview_stages or self._get_default_interview_stages()
+            interview_process = request.interview_stages or await self._get_company_interview_stages(request.company_id)
             total_timeline = self._calculate_timeline(interview_process)
             
             metadata = None
@@ -567,8 +569,65 @@ class JDTemplateService:
             self.logger.warning(f"Erro ao obter info da empresa: {e}")
             return None
     
-    def _get_default_interview_stages(self) -> list[InterviewStage]:
-        """Retorna etapas padrão do processo seletivo."""
+    _ACTION_BEHAVIOR_FORMAT_MAP = {
+        "screening": "WhatsApp/Online",
+        "scheduling": "Vídeo",
+        "evaluation": "Online/Presencial",
+        "intake": "Sistema",
+        "passive": "-",
+        "offer": "-",
+        "terminal": "-",
+    }
+
+    _ACTION_BEHAVIOR_DURATION_MAP = {
+        "screening": "~15 min",
+        "scheduling": "45 min",
+        "evaluation": "60 min",
+        "intake": "-",
+        "passive": "-",
+        "offer": "5-7 dias úteis",
+        "terminal": "-",
+    }
+
+    async def _get_company_interview_stages(self, company_id: str | None) -> list[InterviewStage]:
+        """Load interview stages from the company pipeline; fall back to hardcoded defaults."""
+        if company_id:
+            try:
+                async with async_session_factory() as db:
+                    repo = RecruitmentStageRepository(db)
+                    stages = await repo.list_for_company(company_id)
+
+                if stages:
+                    excluded_behaviors = {"terminal"}
+                    interview_stages = []
+                    for stage in stages:
+                        behavior = getattr(stage, "action_behavior", "passive") or "passive"
+                        if behavior in excluded_behaviors:
+                            continue
+                        if getattr(stage, "is_rejection", False) or getattr(stage, "is_hired", False):
+                            continue
+
+                        interview_stages.append(InterviewStage(
+                            order=stage.stage_order,
+                            name=stage.display_name,
+                            format=self._ACTION_BEHAVIOR_FORMAT_MAP.get(behavior, "-"),
+                            duration=self._ACTION_BEHAVIOR_DURATION_MAP.get(behavior, "-"),
+                            description=stage.description or stage.display_name,
+                        ))
+
+                    if interview_stages:
+                        self.logger.info(
+                            f"Loaded {len(interview_stages)} pipeline stages for company {company_id}"
+                        )
+                        return interview_stages
+            except Exception as e:
+                self.logger.warning(f"Failed to load company pipeline stages: {e}", exc_info=True)
+
+        return self._get_hardcoded_default_stages()
+
+    @staticmethod
+    def _get_hardcoded_default_stages() -> list[InterviewStage]:
+        """Fallback: hardcoded default interview stages."""
         return [
             InterviewStage(
                 order=1,
