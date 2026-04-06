@@ -550,7 +550,7 @@ export function LegacyChatPage() {
                 )}
 
                 {/* Input com botões */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 rounded-2xl border border-lia-border-subtle bg-white px-4 py-2">
                   <div className="flex-1 relative">
                     <textarea
                       ref={inputRef}
@@ -558,7 +558,7 @@ export function LegacyChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
+                      className="w-full resize-none py-1 text-sm focus:outline-none bg-transparent text-lia-text-primary"
                       rows={1}
                     />
                   </div>
