@@ -1,18 +1,17 @@
-from datetime import datetime
-from typing import Any
-from uuid import UUID
-
-from sqlalchemy import and_, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 """
 Lifecycle routes: publish, confirm-global-search, sourcing-status,
 bulk operations (pause, resume, archive, assign-recruiter, change-status),
 close vacancy, duplicate/clone helpers.
 """
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ._shared import *
+from app.domains.job_management.dependencies import get_job_vacancy_lifecycle_repo
+from app.domains.job_management.repositories.job_vacancy_lifecycle_repository import JobVacancyLifecycleRepository
 
 router = APIRouter()
 
@@ -97,36 +96,29 @@ class SourcingStatusResponseV2(BaseModel):
 async def publish_job_vacancy_simple(
     job_id: UUID,
     request: JobPublishRequest = JobPublishRequest(),
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Publish a job vacancy and trigger automated sourcing (simple version)."""
     company_id = get_user_company_id(current_user)
 
-    result = await db.execute(
-        select(JobVacancy).where(
-            and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-        )
-    )
-    job = result.scalar_one_or_none()
+    job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
     old_status = job.status
-    job.status = "Ativa"
-    job.open_date = datetime.utcnow()
+    await repo.publish_vacancy(job)
 
     from app.domains.job_management.services.job_audit_service import job_audit_service
-    changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
     await job_audit_service.log_publication(
         job_id=str(job_id),
         platform="internal",
         changed_by=changed_by,
         company_id=company_id,
-        db=db,
+        db=repo.db,
         extra_data={"old_status": old_status, "trigger_sourcing": request.trigger_sourcing},
     )
-
 
     try:
         from app.services.event_dispatcher import event_dispatcher
@@ -144,7 +136,7 @@ async def publish_job_vacancy_simple(
     sourcing_result = None
     if request.trigger_sourcing:
         sourcing_result = await sourcing_pipeline_service.run_post_publish_sourcing(
-            db=db,
+            db=repo.db,
             job_id=str(job_id),
             user_credits=100,
             expand_to_global=False
@@ -152,7 +144,7 @@ async def publish_job_vacancy_simple(
 
         if sourcing_result.get("local_candidates_added", 0) > 0:
             await notification_service.create_notification(
-                db=db,
+                db=repo.db,
                 user_id=str(current_user.id),
                 title="Candidatos Encontrados",
                 message=f"LIA encontrou {sourcing_result['local_candidates_added']} candidatos para {job.title}",
@@ -176,23 +168,18 @@ async def publish_job_vacancy_simple(
 async def confirm_global_search_simple(
     job_id: UUID,
     request: ConfirmGlobalSearchRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Confirm global search expansion using Pearch AI."""
     company_id = get_user_company_id(current_user)
 
-    result = await db.execute(
-        select(JobVacancy).where(
-            and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-        )
-    )
-    job = result.scalar_one_or_none()
+    job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
     search_result = await sourcing_pipeline_service.confirm_global_search(
-        db=db,
+        db=repo.db,
         job_id=str(job_id),
         user_id=str(current_user.id),
         credits_to_use=request.credits_to_use
@@ -213,23 +200,18 @@ async def confirm_global_search_simple(
 @router.get("/job-vacancies/{job_id}/sourcing-status", response_model=SourcingStatusResponseSimple)
 async def get_sourcing_status_simple(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Get current sourcing status for a job (simple version)."""
     company_id = get_user_company_id(current_user)
 
-    result = await db.execute(
-        select(JobVacancy).where(
-            and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-        )
-    )
-    job = result.scalar_one_or_none()
+    job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
     status = await sourcing_pipeline_service.get_job_pipeline_status(
-        db=db,
+        db=repo.db,
         job_id=str(job_id)
     )
 
@@ -248,7 +230,7 @@ async def get_sourcing_status_simple(
 # ─── Publish (jobs prefix — full version) ─────────────────────────────────────
 
 async def _send_candidates_added_notification(
-    db: AsyncSession,
+    db,
     user_id: str,
     job_id: str,
     job_title: str,
@@ -304,7 +286,7 @@ async def _send_candidates_added_notification(
 async def publish_job_vacancy_v2(
     job_id: UUID,
     request: JobPublishRequestV2 = JobPublishRequestV2(),
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Publish a job vacancy and trigger initial sourcing pipeline (full version)."""
@@ -313,24 +295,13 @@ async def publish_job_vacancy_v2(
 
         user_company = get_user_company_id(current_user)
 
-        query = select(JobVacancy).where(
-            JobVacancy.id == job_id,
-            JobVacancy.company_id == user_company
-        )
-
-        result = await db.execute(query)
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
         old_status = job_vacancy.status
-        job_vacancy.status = "Ativa"
-        job_vacancy.open_date = datetime.utcnow()
-        job_vacancy.updated_at = datetime.utcnow()
-
-        await db.flush()
-        await db.refresh(job_vacancy)
+        await repo.publish_vacancy_v2(job_vacancy)
 
         logger.info(f"Job vacancy status changed: {job_id} ({old_status} -> Ativa)")
 
@@ -340,15 +311,15 @@ async def publish_job_vacancy_v2(
                 old_status=old_status,
                 new_status="Ativa",
                 company_id=user_company,
-                db=db,
-                changed_by=str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id),
+                db=repo.db,
+                changed_by=str(current_user.email) if hasattr(current_user, "email") else str(current_user.id),
                 job_title=job_vacancy.title
             )
         except Exception as webhook_error:
             logger.warning(f"Webhook dispatch failed (non-blocking): {webhook_error}")
 
         sourcing_results = await sourcing_pipeline_service.run_post_publish_sourcing(
-            db=db,
+            db=repo.db,
             job_id=str(job_id),
             user_credits=request.user_credits,
             expand_to_global=request.expand_to_global
@@ -357,7 +328,7 @@ async def publish_job_vacancy_v2(
         total_added = sourcing_results.get("total_candidates_added", 0)
         if total_added > 0:
             await _send_candidates_added_notification(
-                db=db,
+                db=repo.db,
                 user_id=str(current_user.id),
                 job_id=str(job_id),
                 job_title=job_vacancy.title,
@@ -392,7 +363,7 @@ async def publish_job_vacancy_v2(
 async def confirm_global_search_v2(
     job_id: UUID,
     request: ConfirmGlobalSearchRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Confirm global search expansion for a job vacancy (full version)."""
@@ -401,13 +372,7 @@ async def confirm_global_search_v2(
 
         user_company = get_user_company_id(current_user)
 
-        query = select(JobVacancy).where(
-            JobVacancy.id == job_id,
-            JobVacancy.company_id == user_company
-        )
-
-        result = await db.execute(query)
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -416,7 +381,7 @@ async def confirm_global_search_v2(
             raise HTTPException(status_code=400, detail="Job vacancy must be published (status 'Ativa') before global search")
 
         search_result = await sourcing_pipeline_service.confirm_global_search(
-            db=db,
+            db=repo.db,
             job_id=str(job_id),
             user_id=str(current_user.id),
             credits_to_use=request.credits_to_use
@@ -424,7 +389,7 @@ async def confirm_global_search_v2(
 
         if search_result.get("success") and search_result.get("candidates_added", 0) > 0:
             await _send_candidates_added_notification(
-                db=db,
+                db=repo.db,
                 user_id=str(current_user.id),
                 job_id=str(job_id),
                 job_title=job_vacancy.title,
@@ -458,7 +423,7 @@ async def confirm_global_search_v2(
 @router.get("/jobs/{job_id}/sourcing-status", response_model=SourcingStatusResponseV2)
 async def get_sourcing_status_v2(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get current sourcing progress and candidates found for a job (full version)."""
@@ -467,19 +432,13 @@ async def get_sourcing_status_v2(
 
         user_company = get_user_company_id(current_user)
 
-        query = select(JobVacancy).where(
-            JobVacancy.id == job_id,
-            JobVacancy.company_id == user_company
-        )
-
-        result = await db.execute(query)
-        job_vacancy = result.scalar_one_or_none()
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
         status = await sourcing_pipeline_service.get_sourcing_status(
-            db=db,
+            db=repo.db,
             job_id=str(job_id)
         )
 
@@ -516,7 +475,7 @@ async def get_sourcing_status_v2(
 async def close_vacancy(
     vacancy_id: str,
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> dict[str, Any]:
     """Close a vacancy after hiring a candidate."""
@@ -531,10 +490,7 @@ async def close_vacancy(
         if not hired_candidate_id:
             raise HTTPException(status_code=400, detail="hired_candidate_id is required")
 
-        vacancy_result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == uuid_lib.UUID(vacancy_id))
-        )
-        vacancy = vacancy_result.scalar_one_or_none()
+        vacancy = await repo.get_vacancy_by_uuid_str(vacancy_id)
 
         if not vacancy:
             raise HTTPException(status_code=404, detail="Vacancy not found")
@@ -564,7 +520,7 @@ async def close_vacancy(
                     body=hired_notification["message"],
                     job_id=vacancy_id,
                     skip_policy_checks=True,
-                    db=db
+                    db=repo.db
                 )
                 notifications_sent["hired"] = {
                     "candidate_id": hired_candidate_id,
@@ -593,7 +549,7 @@ async def close_vacancy(
                         body=other_notifications["message"],
                         job_id=vacancy_id,
                         skip_policy_checks=True,
-                        db=db
+                        db=repo.db
                     )
                     notifications_sent["others"].append({
                         "candidate_id": cand_id,
@@ -607,9 +563,7 @@ async def close_vacancy(
                         "error": str(e)
                     })
 
-        vacancy.status = "Concluída"
-        vacancy.closed_at = datetime.utcnow()
-
+        await repo.close_vacancy(vacancy)
 
         try:
             from app.services.event_dispatcher import event_dispatcher
@@ -660,7 +614,7 @@ async def close_vacancy(
         raise
     except Exception as e:
         logger.error(f"Error closing vacancy: {e}")
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -669,14 +623,14 @@ async def close_vacancy(
 @router.post("/job-vacancies/bulk/pause", response_model=BulkActionResponse)
 async def bulk_pause_job_vacancies(
     request: BulkActionRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Pause multiple job vacancies."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
-    changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
 
     successful = 0
     failed = 0
@@ -684,12 +638,7 @@ async def bulk_pause_job_vacancies(
 
     for job_id in request.job_ids:
         try:
-            result = await db.execute(
-                select(JobVacancy).where(
-                    and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-                )
-            )
-            job = result.scalar_one_or_none()
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
 
             if not job:
                 errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga não encontrada"))
@@ -705,8 +654,7 @@ async def bulk_pause_job_vacancies(
                 continue
 
             old_status = job.status
-            job.status = "Pausada"
-            job.updated_at = datetime.utcnow()
+            await repo.update_vacancy_status(job, "Pausada")
 
             await job_audit_service.log_status_change(
                 job_id=str(job_id),
@@ -714,7 +662,7 @@ async def bulk_pause_job_vacancies(
                 new_status="Pausada",
                 changed_by=changed_by,
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 extra_data={"action": "bulk_pause"}
             )
 
@@ -723,7 +671,7 @@ async def bulk_pause_job_vacancies(
                 old_status=old_status,
                 new_status="Pausada",
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 changed_by=changed_by,
                 job_title=job.title
             )
@@ -748,7 +696,6 @@ async def bulk_pause_job_vacancies(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
-
     logger.info(f"Bulk pause: {successful} succeeded, {failed} failed for company {company_id}")
 
     return BulkActionResponse(
@@ -762,14 +709,14 @@ async def bulk_pause_job_vacancies(
 @router.post("/job-vacancies/bulk/resume", response_model=BulkActionResponse)
 async def bulk_resume_job_vacancies(
     request: BulkActionRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Resume multiple paused job vacancies."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
-    changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
 
     successful = 0
     failed = 0
@@ -777,12 +724,7 @@ async def bulk_resume_job_vacancies(
 
     for job_id in request.job_ids:
         try:
-            result = await db.execute(
-                select(JobVacancy).where(
-                    and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-                )
-            )
-            job = result.scalar_one_or_none()
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
 
             if not job:
                 errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga não encontrada"))
@@ -798,8 +740,7 @@ async def bulk_resume_job_vacancies(
                 continue
 
             old_status = job.status
-            job.status = "Ativa"
-            job.updated_at = datetime.utcnow()
+            await repo.update_vacancy_status(job, "Ativa")
 
             await job_audit_service.log_status_change(
                 job_id=str(job_id),
@@ -807,7 +748,7 @@ async def bulk_resume_job_vacancies(
                 new_status="Ativa",
                 changed_by=changed_by,
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 extra_data={"action": "bulk_resume"}
             )
 
@@ -816,7 +757,7 @@ async def bulk_resume_job_vacancies(
                 old_status=old_status,
                 new_status="Ativa",
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 changed_by=changed_by,
                 job_title=job.title
             )
@@ -827,7 +768,6 @@ async def bulk_resume_job_vacancies(
             logger.error(f"Error resuming job {job_id}: {e}")
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
-
 
     logger.info(f"Bulk resume: {successful} succeeded, {failed} failed for company {company_id}")
 
@@ -842,14 +782,14 @@ async def bulk_resume_job_vacancies(
 @router.post("/job-vacancies/bulk/archive", response_model=BulkActionResponse)
 async def bulk_archive_job_vacancies(
     request: BulkActionRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Archive multiple job vacancies (soft delete)."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
-    changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
 
     successful = 0
     failed = 0
@@ -857,12 +797,7 @@ async def bulk_archive_job_vacancies(
 
     for job_id in request.job_ids:
         try:
-            result = await db.execute(
-                select(JobVacancy).where(
-                    and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-                )
-            )
-            job = result.scalar_one_or_none()
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
 
             if not job:
                 errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga não encontrada"))
@@ -875,14 +810,13 @@ async def bulk_archive_job_vacancies(
                 continue
 
             old_status = job.status
-            job.status = "Arquivada"
-            job.updated_at = datetime.utcnow()
+            await repo.update_vacancy_status(job, "Arquivada")
 
             await job_audit_service.log_archive(
                 job_id=str(job_id),
                 changed_by=changed_by,
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 reason="Arquivamento em lote"
             )
 
@@ -891,7 +825,7 @@ async def bulk_archive_job_vacancies(
                 old_status=old_status,
                 new_status="Arquivada",
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 changed_by=changed_by,
                 job_title=job.title
             )
@@ -902,7 +836,6 @@ async def bulk_archive_job_vacancies(
             logger.error(f"Error archiving job {job_id}: {e}")
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
-
 
     logger.info(f"Bulk archive: {successful} succeeded, {failed} failed for company {company_id}")
 
@@ -917,14 +850,14 @@ async def bulk_archive_job_vacancies(
 @router.post("/job-vacancies/bulk/assign-recruiter", response_model=BulkActionResponse)
 async def bulk_assign_recruiter(
     request: BulkAssignRecruiterRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Assign a recruiter to multiple job vacancies."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
-    changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
 
     successful = 0
     failed = 0
@@ -932,12 +865,7 @@ async def bulk_assign_recruiter(
 
     for job_id in request.job_ids:
         try:
-            result = await db.execute(
-                select(JobVacancy).where(
-                    and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-                )
-            )
-            job = result.scalar_one_or_none()
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
 
             if not job:
                 errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga não encontrada"))
@@ -947,9 +875,7 @@ async def bulk_assign_recruiter(
             old_recruiter = job.recruiter
             old_recruiter_email = job.recruiter_email
 
-            job.recruiter = request.recruiter_name
-            job.recruiter_email = request.recruiter_email
-            job.updated_at = datetime.utcnow()
+            await repo.update_vacancy_recruiter(job, request.recruiter_name, request.recruiter_email)
 
             changes = {}
             if old_recruiter != request.recruiter_name:
@@ -963,7 +889,7 @@ async def bulk_assign_recruiter(
                     changes=changes,
                     changed_by=changed_by,
                     company_id=company_id,
-                    db=db
+                    db=repo.db
                 )
 
             successful += 1
@@ -972,7 +898,6 @@ async def bulk_assign_recruiter(
             logger.error(f"Error assigning recruiter to job {job_id}: {e}")
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
-
 
     logger.info(f"Bulk assign recruiter ({request.recruiter_email}): {successful} succeeded, {failed} failed")
 
@@ -987,14 +912,14 @@ async def bulk_assign_recruiter(
 @router.post("/job-vacancies/bulk/change-status", response_model=BulkActionResponse)
 async def bulk_change_status(
     request: BulkChangeStatusRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
     """Change status for multiple job vacancies with transition validation."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
-    changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
 
     if request.new_status not in VALID_JOB_STATUSES:
         raise HTTPException(
@@ -1008,12 +933,7 @@ async def bulk_change_status(
 
     for job_id in request.job_ids:
         try:
-            result = await db.execute(
-                select(JobVacancy).where(
-                    and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-                )
-            )
-            job = result.scalar_one_or_none()
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
 
             if not job:
                 errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga não encontrada"))
@@ -1039,13 +959,7 @@ async def bulk_change_status(
                 failed += 1
                 continue
 
-            job.status = request.new_status
-            job.updated_at = datetime.utcnow()
-
-            if request.new_status == "Ativa" and not job.open_date:
-                job.open_date = datetime.utcnow()
-            elif request.new_status in ["Concluída", "Cancelada", "Arquivada"] and not job.closed_at:
-                job.closed_at = datetime.utcnow()
+            await repo.update_vacancy_status(job, request.new_status)
 
             await job_audit_service.log_status_change(
                 job_id=str(job_id),
@@ -1053,7 +967,7 @@ async def bulk_change_status(
                 new_status=request.new_status,
                 changed_by=changed_by,
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 extra_data={"action": "bulk_change_status"}
             )
 
@@ -1062,7 +976,7 @@ async def bulk_change_status(
                 old_status=old_status,
                 new_status=request.new_status,
                 company_id=company_id,
-                db=db,
+                db=repo.db,
                 changed_by=changed_by,
                 job_title=job.title
             )
@@ -1073,7 +987,6 @@ async def bulk_change_status(
             logger.error(f"Error changing status for job {job_id}: {e}")
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
-
 
     logger.info(f"Bulk change status to '{request.new_status}': {successful} succeeded, {failed} failed")
 
