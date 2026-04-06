@@ -16,6 +16,7 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  Shield,
   Home,
   LogOut,
   Building2,

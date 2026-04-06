@@ -12,7 +12,7 @@ from fastapi import UploadFile, HTTPException
 from sqlalchemy import select, or_, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from docx import Document
 
 from app.schemas.cv_parser import (
