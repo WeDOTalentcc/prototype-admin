@@ -11,13 +11,11 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
-from sqlalchemy import desc, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
-from app.models.conversation import Conversation, Message
+from app.domains.chat.dependencies import get_chat_repo
+from app.domains.chat.repositories.chat_repository import ChatRepository
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
     ActionResult,
@@ -194,64 +192,6 @@ async def _try_extract_params_with_llm(
     return None
 
 
-async def resolve_job_id_by_title(db: AsyncSession, job_title: str, company_id: str | None = None) -> dict[str, Any] | None:
-    try:
-        query = text("""
-            SELECT id, title, status FROM job_vacancies
-            WHERE LOWER(title) LIKE :pattern
-            AND company_id = :company_id
-            ORDER BY updated_at DESC LIMIT 1
-        """)
-        result = await db.execute(query, {"pattern": f"%{job_title.lower()}%", "company_id": company_id})
-        row = result.fetchone()
-        if row:
-            return {"id": str(row.id), "title": row.title, "status": row.status}
-    except Exception as e:
-        logger.warning(f"Failed to resolve job by title '{job_title}': {e}")
-    return None
-
-
-async def resolve_candidate_by_name(
-    db: AsyncSession,
-    candidate_name: str,
-    company_id: str | None = None,
-    job_id: str | None = None,
-) -> dict[str, Any] | None:
-    try:
-        conditions = ["LOWER(c.name) LIKE :pattern"]
-        bind: dict[str, Any] = {"pattern": f"%{candidate_name.lower()}%"}
-
-        if company_id:
-            conditions.append("vc.company_id = CAST(:company_id AS uuid)")
-            bind["company_id"] = str(company_id)
-
-        if job_id:
-            conditions.append("vc.vacancy_id = CAST(:job_id AS uuid)")
-            bind["job_id"] = str(job_id)
-
-        where_clause = " AND ".join(conditions)
-        query = text(f"""
-            SELECT vc.id, vc.candidate_id, c.name, vc.stage, vc.status
-            FROM vacancy_candidates vc
-            JOIN candidates c ON c.id = vc.candidate_id
-            WHERE {where_clause}
-            ORDER BY vc.updated_at DESC LIMIT 1
-        """)
-        result = await db.execute(query, bind)
-        row = result.fetchone()
-        if row:
-            return {
-                "id": str(row.id),
-                "candidate_id": str(row.candidate_id),
-                "name": row.name,
-                "stage": row.stage,
-                "status": row.status,
-            }
-    except Exception as e:
-        logger.warning(f"Failed to resolve candidate by name '{candidate_name}': {e}")
-    return None
-
-
 async def handle_action_flow(
     conversation_id: str,
     user_message_text: str,
@@ -259,7 +199,7 @@ async def handle_action_flow(
     entities: dict[str, Any],
     user_id: str,
     current_user: User,
-    db: AsyncSession,
+    repo: ChatRepository,
 ) -> dict[str, Any] | None:
     pending = pending_action_store.get(conversation_id)
 
@@ -268,8 +208,8 @@ async def handle_action_flow(
         next_param = pending.next_missing_param()
         answer = user_message_text.strip()
         if next_param == "candidate_id":
-            cand_info = await resolve_candidate_by_name(
-                db, answer,
+            cand_info = await repo.resolve_candidate_by_name(
+                answer,
                 company_id=str(current_user.company_id) if current_user.company_id else None,
                 job_id=pending.collected_params.get("job_id"),
             )
@@ -279,7 +219,7 @@ async def handle_action_flow(
             else:
                 pending.add_param("candidate_name", answer)
         elif next_param == "job_id":
-            job_info = await resolve_job_id_by_title(db, answer, current_user.company_id)
+            job_info = await repo.resolve_job_id_by_title(answer, current_user.company_id)
             if job_info:
                 pending.add_param("job_id", job_info["id"])
                 pending.add_param("job_title", job_info["title"])
@@ -346,9 +286,9 @@ async def handle_action_flow(
                 if pending.intent in destructive_actions:
                     is_demo_user = current_user.email == "demo@wedotalent.com"
                     if is_demo_user:
-                        logger.warning(f"Demo user {current_user.id} executing destructive action: {actionable_intent}")
+                        logger.warning(f"Demo user {current_user.id} executing destructive action: {pending.intent}")
                     # For demo mode, we allow execution with warning. For production, add additional checks as needed.
-                
+
                 context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id}
                 result = await action_executor._execute_action(
                     pending.intent, config, pending.collected_params, context
@@ -392,7 +332,7 @@ async def handle_action_flow(
     cargo = flat.get("cargo") or flat.get("titulo_vaga") or flat.get("job_title") or flat.get("vaga") or flat.get("titulo") or flat.get("title")
     if cargo:
         company_id = current_user.company_id
-        job_info = await resolve_job_id_by_title(db, cargo, company_id)
+        job_info = await repo.resolve_job_id_by_title(cargo, company_id)
         if job_info:
             collected_params["job_id"] = job_info["id"]
             collected_params["job_title"] = job_info["title"]
@@ -401,8 +341,8 @@ async def handle_action_flow(
 
     candidato = flat.get("candidato") or flat.get("candidate_name") or flat.get("nome_candidato")
     if candidato:
-        cand_info = await resolve_candidate_by_name(
-            db, candidato,
+        cand_info = await repo.resolve_candidate_by_name(
+            candidato,
             company_id=str(current_user.company_id) if current_user.company_id else None,
             job_id=collected_params.get("job_id"),
         )
@@ -484,7 +424,7 @@ async def handle_action_flow(
             if is_demo_user:
                 logger.warning(f"Demo user {current_user.id} executing destructive action: {actionable_intent}")
             # For demo mode, we allow execution with warning. For production, add additional checks as needed.
-        
+
         context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id}
         result = await action_executor._execute_action(
             actionable_intent, config, collected_params, context
@@ -702,43 +642,28 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 async def send_message(
     message_data: MessageCreate,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
+    repo: ChatRepository = Depends(get_chat_repo),
 ):
     """
     Send a message to LIA and get response.
-    
+
     This is the REST alternative to WebSocket for simpler integrations.
     """
     user_id = str(current_user.id)
     conversation_id = message_data.conversation_id
-    
+
     # Create or get conversation
     if not conversation_id:
-        conversation = Conversation(
-            user_id=user_id,
-            user_role="recruiter",
-            status="active"
-        )
-        db.add(conversation)
-        await db.flush()
+        conversation = await repo.create_conversation(user_id)
         conversation_id = str(conversation.id)
     else:
-        result = await db.execute(
-            select(Conversation).where(Conversation.id == uuid.UUID(conversation_id))
-        )
-        conversation = result.scalar_one_or_none()
+        conversation = await repo.get_conversation_by_id(conversation_id)
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
-    
+
     # Save user message
-    user_message = Message(
-        conversation_id=conversation.id,
-        role="human",
-        content=message_data.content
-    )
-    db.add(user_message)
-    await db.flush()
-    
+    await repo.add_user_message(conversation.id, message_data.content)
+
     page_context = message_data.context or {}
 
     orch_result = await _invoke_orchestrator(
@@ -765,7 +690,7 @@ async def send_message(
                 entities=detected_entities,
                 user_id=user_id,
                 current_user=current_user,
-                db=db,
+                repo=repo,
             )
         except Exception as e:
             logger.error(f"Action flow error: {e}", exc_info=True)
@@ -774,7 +699,7 @@ async def send_message(
         action_response = _build_response_from_action(action_metadata) if action_metadata else None
         final_response = action_response if action_response else lia_response
 
-        msg_metadata = {
+        msg_metadata: dict[str, Any] = {
             "intent": detected_intent,
             "entities": detected_entities,
         }
@@ -782,32 +707,25 @@ async def send_message(
         if action_metadata:
             msg_metadata.update(action_metadata)
 
-        ai_message = Message(
-            conversation_id=conversation.id,
-            role="ai",
-            content=final_response,
-            message_metadata=msg_metadata
+        ai_message = await repo.add_ai_message(
+            conversation.id,
+            final_response,
+            msg_metadata,
         )
-        db.add(ai_message)
 
-        conversation.intent = detected_intent
-        conversation.workflow_data = orch_result["workflow_data"]
+        await repo.update_conversation_intent(conversation, detected_intent, orch_result["workflow_data"])
+        await repo.set_conversation_title(conversation, message_data.content[:100])
 
-        if not conversation.title:
-            conversation.title = message_data.content[:100]
-
-        await db.commit()
-        await db.refresh(ai_message)
-        await db.refresh(conversation)
+        await repo.commit_and_refresh(ai_message, conversation)
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
-        
+
         if "search_results" in workflow_data:
             search_results = workflow_data["search_results"]
             candidates = search_results.get("candidates", [])
             total_found = search_results.get("total_found", 0)
-            
+
             if total_found > 0 and len(candidates) > 0:
                 context_data = {
                     "type": "candidates",
@@ -819,10 +737,10 @@ async def send_message(
                         "source": search_results.get("source"),
                         "local_count": search_results.get("local_count", 0),
                         "global_count": search_results.get("global_count", 0),
-                        "credits_consumed": search_results.get("credits_consumed", 0)
-                    }
+                        "credits_consumed": search_results.get("credits_consumed", 0),
+                    },
                 }
-        
+
         elif "response_plan" in workflow_data:
             response_plan = workflow_data.get("response_plan", {})
             if response_plan.get("render_frame"):
@@ -831,13 +749,13 @@ async def send_message(
                     "type": frame.get("type", "job-creation-progress"),
                     "title": frame.get("title", "Criação de Vaga"),
                     "shouldDisplay": True,
-                    "data": frame.get("data", {})
+                    "data": frame.get("data", {}),
                 }
-        
+
         if context_data:
             ai_message.message_metadata = ai_message.message_metadata or {}
             ai_message.message_metadata["context_data"] = context_data
-        
+
         return ChatResponse(
             message=MessageResponse(
                 id=str(ai_message.id),
@@ -845,7 +763,7 @@ async def send_message(
                 role=ai_message.role,
                 content=ai_message.content,
                 message_metadata=ai_message.message_metadata or {},
-                created_at=ai_message.created_at
+                created_at=ai_message.created_at,
             ),
             conversation=ConversationResponse(
                 id=str(conversation.id),
@@ -858,10 +776,10 @@ async def send_message(
                 workflow_data=conversation.workflow_data or {},
                 status=conversation.status,
                 created_at=conversation.created_at,
-                updated_at=conversation.updated_at
-            )
+                updated_at=conversation.updated_at,
+            ),
         )
-    
+
     raise HTTPException(status_code=500, detail="Failed to generate response")
 
 
@@ -872,7 +790,7 @@ async def send_message_with_attachments(
     attachments: list[UploadFile] = File(default=[]),
     audio: UploadFile | None = File(default=None),
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
+    repo: ChatRepository = Depends(get_chat_repo),
 ):
     """
     Send a message to LIA with file attachments and/or audio.
@@ -880,22 +798,22 @@ async def send_message_with_attachments(
     """
     attachment_info = []
     audio_info = None
-    
+
     if attachments:
         for file in attachments:
             file_path = UPLOAD_DIR / f"{uuid.uuid4()}_{file.filename}"
             file_content = await file.read()
             with open(file_path, "wb") as f:
                 f.write(file_content)
-            
+
             file_size_kb = len(file_content) / 1024
             attachment_info.append({
                 "filename": file.filename,
                 "content_type": file.content_type,
                 "size_kb": round(file_size_kb, 1),
-                "path": str(file_path)
+                "path": str(file_path),
             })
-    
+
     if audio:
         audio_path = UPLOAD_DIR / f"{uuid.uuid4()}_audio.webm"
         audio_content = await audio.read()
@@ -903,47 +821,32 @@ async def send_message_with_attachments(
             f.write(audio_content)
         audio_info = {
             "path": str(audio_path),
-            "size_kb": round(len(audio_content) / 1024, 1)
+            "size_kb": round(len(audio_content) / 1024, 1),
         }
-    
+
     augmented_content = content
     if attachment_info:
         files_summary = ", ".join([f"{a['filename']} ({a['size_kb']}KB)" for a in attachment_info])
         augmented_content = f"[Arquivos anexados: {files_summary}]\n\n{content}"
-    
+
     if audio_info:
         augmented_content = f"[Áudio gravado para análise]\n\n{augmented_content}"
-    
+
     user_id = str(current_user.id)
     if not conversation_id:
-        conversation = Conversation(
-            user_id=user_id,
-            user_role="recruiter",
-            status="active"
-        )
-        db.add(conversation)
-        await db.flush()
+        conversation = await repo.create_conversation(user_id)
         conversation_id = str(conversation.id)
     else:
-        result = await db.execute(
-            select(Conversation).where(Conversation.id == uuid.UUID(conversation_id))
-        )
-        conversation = result.scalar_one_or_none()
+        conversation = await repo.get_conversation_by_id(conversation_id)
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
-    
-    user_message = Message(
-        conversation_id=conversation.id,
-        role="human",
-        content=augmented_content,
-        message_metadata={
-            "attachments": attachment_info,
-            "audio": audio_info
-        }
+
+    await repo.add_user_message(
+        conversation.id,
+        augmented_content,
+        {"attachments": attachment_info, "audio": audio_info},
     )
-    db.add(user_message)
-    await db.flush()
-    
+
     # Augmented content includes attachment/audio context for the orchestrator
     orch_result = await _invoke_orchestrator(
         user_message=augmented_content,
@@ -954,21 +857,18 @@ async def send_message_with_attachments(
     lia_response = orch_result["response"]
 
     if lia_response:
-        ai_message = Message(
-            conversation_id=conversation.id,
-            role="ai",
-            content=lia_response,
-            message_metadata={
+        ai_message = await repo.add_ai_message(
+            conversation.id,
+            lia_response,
+            {
                 "intent": orch_result["intent"],
                 "entities": orch_result["entities"],
                 "processed_attachments": attachment_info,
                 "processed_audio": audio_info,
-            }
+            },
         )
-        db.add(ai_message)
 
-        conversation.intent = orch_result["intent"]
-        conversation.workflow_data = orch_result["workflow_data"]
+        await repo.update_conversation_intent(conversation, orch_result["intent"], orch_result["workflow_data"])
 
         if not conversation.title:
             if attachment_info:
@@ -978,18 +878,16 @@ async def send_message_with_attachments(
             else:
                 conversation.title = content[:100]
 
-        await db.commit()
-        await db.refresh(ai_message)
-        await db.refresh(conversation)
+        await repo.commit_and_refresh(ai_message, conversation)
 
         workflow_data = orch_result["workflow_data"]
         context_data = None
-        
+
         if "search_results" in workflow_data:
             search_results = workflow_data["search_results"]
             candidates = search_results.get("candidates", [])
             total_found = search_results.get("total_found", 0)
-            
+
             if total_found > 0 and len(candidates) > 0:
                 context_data = {
                     "type": "candidates",
@@ -1001,10 +899,10 @@ async def send_message_with_attachments(
                         "source": search_results.get("source"),
                         "local_count": search_results.get("local_count", 0),
                         "global_count": search_results.get("global_count", 0),
-                        "credits_consumed": search_results.get("credits_consumed", 0)
-                    }
+                        "credits_consumed": search_results.get("credits_consumed", 0),
+                    },
                 }
-        
+
         elif "response_plan" in workflow_data:
             response_plan = workflow_data.get("response_plan", {})
             if response_plan.get("render_frame"):
@@ -1013,13 +911,13 @@ async def send_message_with_attachments(
                     "type": frame.get("type", "job-creation-progress"),
                     "title": frame.get("title", "Criação de Vaga"),
                     "shouldDisplay": True,
-                    "data": frame.get("data", {})
+                    "data": frame.get("data", {}),
                 }
-        
+
         if context_data:
             ai_message.message_metadata = ai_message.message_metadata or {}
             ai_message.message_metadata["context_data"] = context_data
-        
+
         return ChatResponse(
             message=MessageResponse(
                 id=str(ai_message.id),
@@ -1027,7 +925,7 @@ async def send_message_with_attachments(
                 role=ai_message.role,
                 content=ai_message.content,
                 message_metadata=ai_message.message_metadata or {},
-                created_at=ai_message.created_at
+                created_at=ai_message.created_at,
             ),
             conversation=ConversationResponse(
                 id=str(conversation.id),
@@ -1040,10 +938,10 @@ async def send_message_with_attachments(
                 workflow_data=conversation.workflow_data or {},
                 status=conversation.status,
                 created_at=conversation.created_at,
-                updated_at=conversation.updated_at
-            )
+                updated_at=conversation.updated_at,
+            ),
         )
-    
+
     raise HTTPException(status_code=500, detail="Failed to generate response")
 
 
@@ -1052,38 +950,19 @@ async def list_conversations(
     current_user: User = Depends(get_current_user_or_demo),
     page: int = 1,
     page_size: int = 20,
-    db: AsyncSession = Depends(get_db)
+    repo: ChatRepository = Depends(get_chat_repo),
 ):
     """
     List user's conversations.
     """
     user_id = str(current_user.id)
-    offset = (page - 1) * page_size
-    
-    # Get conversations
-    result = await db.execute(
-        select(Conversation)
-        .where(Conversation.user_id == user_id)
-        .where(not Conversation.is_archived)
-        .order_by(desc(Conversation.updated_at))
-        .limit(page_size)
-        .offset(offset)
-    )
-    conversations = result.scalars().all()
-    
-    # Get total count
-    count_result = await db.execute(
-        select(Conversation)
-        .where(Conversation.user_id == user_id)
-        .where(not Conversation.is_archived)
-    )
-    total = len(count_result.scalars().all())
-    
+    conversations, total = await repo.list_conversations(user_id, page, page_size)
+
     return ConversationListResponse(
         conversations=conversations,
         total=total,
         page=page,
-        page_size=page_size
+        page_size=page_size,
     )
 
 
@@ -1093,18 +972,18 @@ async def list_conversations(
 
 class ConnectionManager:
     """Manage WebSocket connections."""
-    
+
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
-    
+
     async def connect(self, user_id: str, websocket: WebSocket):
         await websocket.accept()
         self.active_connections[user_id] = websocket
-    
+
     def disconnect(self, user_id: str):
         if user_id in self.active_connections:
             del self.active_connections[user_id]
-    
+
     async def send_message(self, user_id: str, message: dict):
         if user_id in self.active_connections:
             await self.active_connections[user_id].send_json(message)
@@ -1117,18 +996,18 @@ manager = ConnectionManager()
 async def websocket_endpoint(
     websocket: WebSocket,
     user_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: ChatRepository = Depends(get_chat_repo),
 ):
     """
     WebSocket endpoint for real-time chat with LIA.
-    
+
     Message format:
     {
         "type": "message",
         "content": "text",
         "conversation_id": "uuid" (optional)
     }
-    
+
     Response format:
     {
         "type": "message",
@@ -1139,40 +1018,25 @@ async def websocket_endpoint(
     """
     await manager.connect(user_id, websocket)
     company_id = None
-    
+
     try:
         while True:
             data = await websocket.receive_json()
-            
+
             if data["type"] == "message":
                 conversation_id = data.get("conversation_id")
                 user_content = data["content"]
-                
+
                 # Create or get conversation
                 if not conversation_id:
-                    conversation = Conversation(
-                        user_id=user_id,
-                        user_role="recruiter",
-                        status="active"
-                    )
-                    db.add(conversation)
-                    await db.flush()
+                    conversation = await repo.create_conversation(user_id)
                     conversation_id = str(conversation.id)
                 else:
-                    result = await db.execute(
-                        select(Conversation).where(Conversation.id == uuid.UUID(conversation_id))
-                    )
-                    conversation = result.scalar_one_or_none()
-                
+                    conversation = await repo.get_conversation_by_id(conversation_id)
+
                 # Save user message
-                user_message = Message(
-                    conversation_id=conversation.id,
-                    role="human",
-                    content=user_content
-                )
-                db.add(user_message)
-                await db.flush()
-                
+                await repo.add_user_message(conversation.id, user_content)
+
                 # Run LIA via Orchestrator + ReAct agents
                 ws_orch = await _invoke_orchestrator(
                     user_message=user_content,
@@ -1197,7 +1061,7 @@ async def websocket_endpoint(
                             entities=ws_orch["entities"],
                             user_id=user_id,
                             current_user=_ws_user,
-                            db=db,
+                            repo=repo,
                         )
                     except Exception as _e:
                         logger.error(f"WS action flow error: {_e}", exc_info=True)
@@ -1212,16 +1076,14 @@ async def websocket_endpoint(
                     if ws_action_metadata:
                         ws_msg_metadata.update(ws_action_metadata)
 
-                    ai_message = Message(
-                        conversation_id=conversation.id,
-                        role="ai",
-                        content=ws_final_response,
-                        message_metadata=ws_msg_metadata,
+                    await repo.add_ai_message(
+                        conversation.id,
+                        ws_final_response,
+                        ws_msg_metadata,
                     )
-                    db.add(ai_message)
                     conversation.intent = ws_orch["intent"]
 
-                    await db.commit()
+                    await repo.commit()
 
                     await manager.send_message(user_id, {
                         "type": "message",
@@ -1229,7 +1091,7 @@ async def websocket_endpoint(
                         "conversation_id": conversation_id,
                         "metadata": ws_msg_metadata,
                     })
-    
+
     except WebSocketDisconnect:
         manager.disconnect(user_id)
 
@@ -1248,7 +1110,7 @@ async def _sse_event_generator(
     conversation_id: str,
     user_message: str,
     history: list[dict[str, str]],
-    db: AsyncSession,
+    repo: ChatRepository,
     conversation_obj,
 ) -> AsyncGenerator[str, None]:
     """Streams Claude tokens as SSE events and persists the full response."""
@@ -1280,14 +1142,12 @@ async def _sse_event_generator(
         yield "data: [DONE]\n\n"
 
         # Persist AI response to DB after streaming completes
-        ai_message = Message(
-            conversation_id=conversation_obj.id,
-            role="ai",
-            content=full_response,
-            message_metadata={"stream": True},
+        await repo.add_ai_message(
+            conversation_obj.id,
+            full_response,
+            {"stream": True},
         )
-        db.add(ai_message)
-        await db.commit()
+        await repo.commit()
 
     except Exception as exc:
         logger.error(f"SSE stream error: {exc}", exc_info=True)
@@ -1298,7 +1158,7 @@ async def _sse_event_generator(
 async def stream_message(
     request: Request,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    repo: ChatRepository = Depends(get_chat_repo),
 ):
     """
     Stream LIA response as SSE (Server-Sent Events).
@@ -1321,38 +1181,25 @@ async def stream_message(
 
     # Create or retrieve conversation
     if not conversation_id:
-        conversation = Conversation(user_id=user_id, user_role="recruiter", status="active")
-        db.add(conversation)
-        await db.flush()
+        conversation = await repo.create_conversation(user_id)
         conversation_id = str(conversation.id)
     else:
-        result = await db.execute(
-            select(Conversation).where(Conversation.id == uuid.UUID(conversation_id))
-        )
-        conversation = result.scalar_one_or_none()
+        conversation = await repo.get_conversation_by_id(conversation_id)
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
 
     # Save user message
-    user_msg = Message(conversation_id=conversation.id, role="human", content=user_content)
-    db.add(user_msg)
-    await db.flush()
+    await repo.add_user_message(conversation.id, user_content)
 
     # Build history for Claude (last 20 messages to stay within context limits)
-    hist_result = await db.execute(
-        select(Message)
-        .where(Message.conversation_id == conversation.id)
-        .order_by(Message.created_at.desc())
-        .limit(20)
-    )
-    history_msgs = list(reversed(hist_result.scalars().all()))
+    history_msgs = await repo.get_recent_messages(conversation.id, limit=20)
     history = [
         {"role": "user" if m.role == "human" else "assistant", "content": m.content}
         for m in history_msgs
     ]
 
     return StreamingResponse(
-        _sse_event_generator(conversation_id, user_content, history, db, conversation),
+        _sse_event_generator(conversation_id, user_content, history, repo, conversation),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -1366,7 +1213,7 @@ async def stream_message(
 async def direct_candidate_field_update(
     request: Request,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    repo: ChatRepository = Depends(get_chat_repo),
 ):
     """
     Structured endpoint to update one or more candidate fields directly.
@@ -1384,13 +1231,9 @@ async def direct_candidate_field_update(
     # Resolve candidate_id by name if not provided directly
     if not candidate_id and candidate_name:
         try:
-            name_result = await db.execute(
-                text("SELECT id FROM candidates WHERE LOWER(name) LIKE LOWER(:name) LIMIT 1"),
-                {"name": f"%{candidate_name}%"},
-            )
-            row = name_result.fetchone()
-            if row:
-                candidate_id = str(row[0])
+            found_id = await repo.lookup_candidate_id_by_name(candidate_name)
+            if found_id:
+                candidate_id = found_id
             else:
                 raise HTTPException(status_code=404, detail=f"Candidato '{candidate_name}' não encontrado.")
         except HTTPException:
@@ -1414,11 +1257,8 @@ async def direct_candidate_field_update(
     # If the user has no company_id (e.g. demo mode), skip the check and allow update.
     if company_id:
         try:
-            ownership_result = await db.execute(
-                text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"),
-                {"cid": candidate_id, "co": str(company_id)},
-            )
-            if ownership_result.fetchone() is None:
+            owns = await repo.check_candidate_ownership(candidate_id, str(company_id))
+            if not owns:
                 raise HTTPException(
                     status_code=403,
                     detail="Candidate does not belong to your company or does not exist.",
