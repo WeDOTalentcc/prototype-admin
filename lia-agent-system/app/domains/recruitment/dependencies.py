@@ -31,3 +31,10 @@ def get_screening_question_repo(db: AsyncSession = Depends(get_db)) -> Screening
 
 def get_stage_history_repo(db: AsyncSession = Depends(get_db)) -> StageHistoryRepository:
     return StageHistoryRepository(db)
+
+
+from .repositories.application_repository import ApplicationRepository
+
+
+def get_application_repo(db: AsyncSession = Depends(get_db)) -> ApplicationRepository:
+    return ApplicationRepository(db)

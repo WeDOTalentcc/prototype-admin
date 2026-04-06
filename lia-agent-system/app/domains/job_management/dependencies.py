@@ -6,3 +6,8 @@ from app.domains.job_management.repositories.job_vacancy_lifecycle_repository im
 
 def get_job_vacancy_lifecycle_repo(db: AsyncSession = Depends(get_db)) -> JobVacancyLifecycleRepository:
     return JobVacancyLifecycleRepository(db)
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+
+
+def get_job_vacancy_crud_repo(db: AsyncSession = Depends(get_db)) -> JobVacancyCRUDRepository:
+    return JobVacancyCRUDRepository(db)
