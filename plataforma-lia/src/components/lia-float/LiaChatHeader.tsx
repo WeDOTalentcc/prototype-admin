@@ -131,6 +131,7 @@ export function LiaChatHeader({
             className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Fechar"
             aria-label="Fechar chat"
+            data-dismiss="true"
           >
             <X className="w-3.5 h-3.5" />
           </button>

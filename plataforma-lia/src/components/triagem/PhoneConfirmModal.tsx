@@ -79,6 +79,7 @@ export function PhoneConfirmModal({
             disabled={isLoading}
             className="p-1 rounded-md text-lia-text-tertiary hover:text-lia-text-primary transition-colors"
             aria-label="Fechar"
+            data-dismiss="true"
           >
             <X className="w-5 h-5" />
           </button>

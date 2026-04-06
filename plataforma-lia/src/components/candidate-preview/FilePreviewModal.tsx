@@ -142,6 +142,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
               className="p-1 h-6 w-6"
               onClick={onClose}
               aria-label="Fechar preview"
+              data-dismiss="true"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </Button>

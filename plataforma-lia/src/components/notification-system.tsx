@@ -263,6 +263,7 @@ export function NotificationSystem({
                   onClick={toggleOpen}
                   className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary"
                   aria-label="Fechar notificações"
+                  data-dismiss="true"
                 >
                   <X className="w-3.5 h-3.5" />
                 </Button>

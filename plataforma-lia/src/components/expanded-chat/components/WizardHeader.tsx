@@ -126,6 +126,7 @@ export function WizardHeader({
             className="p-1 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default"
             title="Fechar painel"
             aria-label="Fechar painel de etapas"
+            data-dismiss="true"
           >
             <X className="w-4 h-4 text-lia-text-secondary" />
           </button>

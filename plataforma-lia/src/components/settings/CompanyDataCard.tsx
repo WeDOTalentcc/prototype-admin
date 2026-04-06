@@ -139,6 +139,7 @@ export function CompanyDataCard({
                   onClick={() => setIsPopoverOpen(false)}
                   className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan rounded-sm"
                   aria-label="Fechar instrução LIA"
+                  data-dismiss="true"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </button>

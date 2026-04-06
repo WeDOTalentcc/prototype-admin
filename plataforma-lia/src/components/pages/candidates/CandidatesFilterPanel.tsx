@@ -39,6 +39,7 @@ export function CandidatesFilterPanel({
             onClick={onClose}
             className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
             aria-label="Fechar painel de filtros"
+            data-dismiss="true"
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>

@@ -318,6 +318,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
               onClick={onClose}
               className="p-1 rounded-md hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
+              data-dismiss="true"
             >
               <X className="w-4 h-4" />
             </button>

@@ -270,6 +270,7 @@ export function TransitionChatPanel({
                     onClick={onClose}
                     title="Fechar"
                     aria-label="Fechar"
+                    data-dismiss="true"
                     className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3.5 h-3.5" />

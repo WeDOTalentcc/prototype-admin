@@ -140,6 +140,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                       className="h-6 w-6 text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary"
                       title="Fechar"
                       aria-label="Fechar diálogo"
+                      data-dismiss="true"
                     >
                       <X className="w-3.5 h-3.5" />
                     </Button>
@@ -173,6 +174,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                       onClick={onClose}
                       className="h-6 w-6 text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary"
                       aria-label="Fechar diálogo"
+                      data-dismiss="true"
                     >
                       <X className="w-3.5 h-3.5" />
                     </Button>

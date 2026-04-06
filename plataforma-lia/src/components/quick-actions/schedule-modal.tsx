@@ -342,7 +342,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar agendamento">
+          <button onClick={onClose} className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar agendamento" data-dismiss="true">
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>

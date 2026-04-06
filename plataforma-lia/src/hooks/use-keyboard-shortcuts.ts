@@ -79,18 +79,20 @@ export function useKeyboardShortcuts({
 
       // Escape - Sair de modais/overlays
       if (event.key === 'Escape' && !isInInputField) {
-        // Fechar qualquer modal ou dropdown aberto
-        const closeButtons = document.querySelectorAll('[aria-label="Close"], [title="Fechar"], button[type="button"]:has(svg)')
-        closeButtons.forEach(button => {
-          const buttonEl = button as HTMLButtonElement
-          if (buttonEl.offsetParent !== null) { // Verifica se está visível
-            const rect = buttonEl.getBoundingClientRect()
-            if (rect.width > 0 && rect.height > 0) {
-              // Este é um botão de fechar visível
-              buttonEl.click()
-            }
-          }
+        // Fechar apenas botões marcados com data-dismiss="true" (contrato de dismiss)
+        // Usa o último elemento visível no DOM como heurística de sobreposição
+        const dismissButtons = Array.from(
+          document.querySelectorAll<HTMLButtonElement>('[data-dismiss="true"]')
+        ).filter(btn => {
+          if (btn.offsetParent === null) return false
+          const rect = btn.getBoundingClientRect()
+          return rect.width > 0 && rect.height > 0
         })
+
+        if (dismissButtons.length > 0) {
+          // Clica apenas no último botão de fechar visível no DOM
+          dismissButtons[dismissButtons.length - 1].click()
+        }
       }
 
       // F1 - Mostrar ajuda de atalhos

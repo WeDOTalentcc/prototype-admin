@@ -176,6 +176,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
             onClick={handleClose}
             className="p-1 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
             aria-label="Fechar"
+            data-dismiss="true"
           >
             <X className="w-4 h-4" />
           </button>

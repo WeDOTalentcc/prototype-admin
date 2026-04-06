@@ -88,7 +88,7 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none" aria-label="Fechar">
+          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none" aria-label="Fechar" data-dismiss="true">
             <X className="w-4 h-4" />
           </button>
         </div>

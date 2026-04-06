@@ -288,6 +288,7 @@ export function LiaSuperPrompt() {
                   className="p-2 rounded-lg text-lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Fechar"
                   aria-label="Fechar"
+                  data-dismiss="true"
                 >
                   <X className="w-4 h-4" />
                 </button>

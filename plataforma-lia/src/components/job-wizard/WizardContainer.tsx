@@ -142,6 +142,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             onClick={onClose}
             className="p-1.5 text-lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
             aria-label="Fechar"
+            data-dismiss="true"
           >
             ✕
           </button>

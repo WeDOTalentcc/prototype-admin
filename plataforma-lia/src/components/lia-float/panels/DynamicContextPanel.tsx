@@ -63,6 +63,7 @@ export function DynamicContextPanel({ panel, className }: DynamicContextPanelPro
           className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
           title="Fechar painel"
           aria-label="Fechar painel contextual"
+          data-dismiss="true"
         >
           <PanelRightClose className="w-3.5 h-3.5" />
         </button>

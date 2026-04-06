@@ -100,6 +100,7 @@ export function UnifiedCommunicationModal({
             onClick={onClose}
             className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
             aria-label="Fechar modal de comunicação"
+            data-dismiss="true"
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>

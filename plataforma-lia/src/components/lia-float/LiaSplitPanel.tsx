@@ -195,6 +195,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             className="p-1.5 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Fechar painel lateral"
             aria-label="Fechar painel lateral"
+            data-dismiss="true"
           >
             <X className="w-3.5 h-3.5" />
           </button>
