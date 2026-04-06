@@ -4,7 +4,7 @@ Sourcing Query Builders - Utilities for boolean search and candidate matching.
 Extracted from the legacy SourcingAgent (Sprint 5 migration).
 Used by sourcing endpoints and the SourcingReActAgent tool registry.
 """
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class BooleanQueryBuilder:
@@ -15,23 +15,23 @@ class BooleanQueryBuilder:
 
     @staticmethod
     def build_query(
-        title: Optional[str] = None,
-        skills: Optional[List[str]] = None,
-        companies: Optional[List[str]] = None,
-        industries: Optional[List[str]] = None,
-        location: Optional[str] = None,
-        seniority: Optional[str] = None,
-        years_experience: Optional[int] = None,
-        exclude_terms: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        title: str | None = None,
+        skills: list[str] | None = None,
+        companies: list[str] | None = None,
+        industries: list[str] | None = None,
+        location: str | None = None,
+        seniority: str | None = None,
+        years_experience: int | None = None,
+        exclude_terms: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Build boolean search queries for different platforms.
 
         Returns:
             Dict with 'linkedin', 'database', 'pearch', and 'raw_parts' query variants.
         """
-        parts: List[str] = []
-        linkedin_parts: List[str] = []
+        parts: list[str] = []
+        linkedin_parts: list[str] = []
 
         if title:
             titles = title.split("/") if "/" in title else [title]
@@ -89,9 +89,9 @@ class BooleanQueryBuilder:
         }
 
     @staticmethod
-    def expand_synonyms(term: str) -> List[str]:
+    def expand_synonyms(term: str) -> list[str]:
         """Expand a term with common synonyms."""
-        synonyms_map: Dict[str, List[str]] = {
+        synonyms_map: dict[str, list[str]] = {
             "developer": ["desenvolvedor", "programador", "engineer", "engenheiro"],
             "desenvolvedor": ["developer", "programador", "engineer"],
             "frontend": ["front-end", "front end", "ui developer"],
@@ -122,10 +122,10 @@ class CandidateMatcher:
 
     @staticmethod
     def calculate_skills_match(
-        candidate_skills: List[str],
-        required_skills: List[str],
-        nice_to_have_skills: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        candidate_skills: list[str],
+        required_skills: list[str],
+        nice_to_have_skills: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Calculate skills match percentage and details.
 
@@ -168,10 +168,10 @@ class CandidateMatcher:
 
     @staticmethod
     def calculate_experience_match(
-        candidate_years: Optional[float],
-        required_min: Optional[int],
-        required_max: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        candidate_years: float | None,
+        required_min: int | None,
+        required_max: int | None = None,
+    ) -> dict[str, Any]:
         """Calculate experience match score."""
         if candidate_years is None:
             return {"match_score": 50, "meets_minimum": None, "status": "unknown"}
@@ -196,16 +196,16 @@ class CandidateMatcher:
 
     @staticmethod
     def calculate_location_match(
-        candidate_city: Optional[str],
-        candidate_state: Optional[str],
-        candidate_country: Optional[str],
-        candidate_is_remote: Optional[bool],
-        job_city: Optional[str],
-        job_state: Optional[str],
-        job_country: Optional[str],
-        job_allows_remote: Optional[bool],
-        job_work_model: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        candidate_city: str | None,
+        candidate_state: str | None,
+        candidate_country: str | None,
+        candidate_is_remote: bool | None,
+        job_city: str | None,
+        job_state: str | None,
+        job_country: str | None,
+        job_allows_remote: bool | None,
+        job_work_model: str | None = None,
+    ) -> dict[str, Any]:
         """Calculate location compatibility."""
         if job_allows_remote or job_work_model == "remote":
             return {
@@ -247,11 +247,11 @@ class CandidateMatcher:
 
     @staticmethod
     def calculate_overall_score(
-        skills_match: Dict[str, Any],
-        experience_match: Dict[str, Any],
-        location_match: Dict[str, Any],
-        weights: Optional[Dict[str, float]] = None,
-    ) -> Dict[str, Any]:
+        skills_match: dict[str, Any],
+        experience_match: dict[str, Any],
+        location_match: dict[str, Any],
+        weights: dict[str, float] | None = None,
+    ) -> dict[str, Any]:
         """
         Calculate weighted overall match score.
         Default weights: skills=50%, experience=30%, location=20%.

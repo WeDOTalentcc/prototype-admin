@@ -11,16 +11,16 @@ Usage:
     # Or use the filter directly:
     handler.addFilter(PIIMaskingFilter())
 """
-import re
 import logging
-from typing import List, Tuple, Pattern
+import re
+from re import Pattern
 
 CPF_PATTERN = re.compile(r'\b\d{3}[.\-]?\d{3}[.\-]?\d{3}[.\-/]?\d{2}\b')
 EMAIL_PATTERN = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
 PHONE_BR_PATTERN = re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?)?\d{4}[\-\s]?\d{4}\b')
 NAME_IN_LOG_PATTERN = re.compile(r'(?:name|nome|candidato|recruiter|user)\s*[=:]\s*["\']([^"\']+)["\']', re.IGNORECASE)
 
-PII_PATTERNS: List[Tuple[Pattern, str]] = [
+PII_PATTERNS: list[tuple[Pattern, str]] = [
     (CPF_PATTERN, "***CPF***"),
     (EMAIL_PATTERN, "***EMAIL***"),
     (PHONE_BR_PATTERN, "***PHONE***"),
@@ -108,7 +108,7 @@ _ADDRESS_BAIRRO_PATTERN = re.compile(
 _RG_PATTERN = re.compile(r'\b\d{1,2}[\.\-]?\d{3}[\.\-]?\d{3}[\-]?[0-9Xx]\b')
 _CNPJ_PATTERN = re.compile(r'\b\d{2}[\.\-]?\d{3}[\.\-]?\d{3}[/\\]?\d{4}[\-]?\d{2}\b')
 
-_LLM_PROMPT_PII_PATTERNS: List[Tuple[Pattern, str]] = [
+_LLM_PROMPT_PII_PATTERNS: list[tuple[Pattern, str]] = [
     # Direct identifiers
     (CPF_PATTERN, "[CPF REMOVIDO]"),
     (EMAIL_PATTERN, "[EMAIL REMOVIDO]"),

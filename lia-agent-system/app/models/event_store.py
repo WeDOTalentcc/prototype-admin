@@ -7,10 +7,13 @@ Invariants:
   - event_data is JSONB — arbitrary structure per event_type
 """
 from __future__ import annotations
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, BigInteger, UniqueConstraint, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+
 import uuid
+from datetime import datetime
+
+from sqlalchemy import BigInteger, Column, DateTime, Index, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+
 from app.core.database import Base
 
 

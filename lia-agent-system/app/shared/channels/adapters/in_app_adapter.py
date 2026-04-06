@@ -2,10 +2,14 @@ import logging
 import uuid
 from datetime import datetime
 
-from app.shared.channels.channel_adapter import (
-    ChannelAdapter, ChannelType, ChannelMessage, DeliveryResult, DeliveryStatus
-)
 from app.core.database import AsyncSessionLocal
+from app.shared.channels.channel_adapter import (
+    ChannelAdapter,
+    ChannelMessage,
+    ChannelType,
+    DeliveryResult,
+    DeliveryStatus,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +87,7 @@ class InAppChannelAdapter(ChannelAdapter):
     async def check_status(self, message_id: str) -> DeliveryStatus:
         try:
             from sqlalchemy import select
+
             from app.services.notification_service import Notification
 
             async with AsyncSessionLocal() as db:

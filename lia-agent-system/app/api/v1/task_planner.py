@@ -8,24 +8,17 @@ Provides REST endpoints for:
 - Execution plan management
 - Next tasks retrieval
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.automation.services.planned_task_service import (
-    planned_task_service,
-    CycleDetectedError
-)
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
-from app.models.planned_task import (
-    PlannedTask,
-    PlannedTaskPriority,
-    PlannedTaskStatus,
-    ExecutionPlan
-)
+from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
+from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 
@@ -33,53 +26,53 @@ router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 class DecomposeTaskRequest(BaseModel):
     """Request body for task decomposition."""
     task_description: str = Field(..., description="Description of the task to decompose")
-    parent_task_id: Optional[str] = None
-    goal_id: Optional[str] = None
-    deadline: Optional[datetime] = None
-    company_id: Optional[str] = None
+    parent_task_id: str | None = None
+    goal_id: str | None = None
+    deadline: datetime | None = None
+    company_id: str | None = None
     persist: bool = True
-    additional_context: Optional[Dict[str, Any]] = None
+    additional_context: dict[str, Any] | None = None
 
 
 class CreatePlannedTaskRequest(BaseModel):
     """Request body for creating a planned task."""
     title: str
-    description: Optional[str] = None
-    agent_type: Optional[str] = None
+    description: str | None = None
+    agent_type: str | None = None
     priority: str = "medium"
-    parent_task_id: Optional[str] = None
-    dependencies: Optional[List[str]] = None
-    estimated_duration: Optional[int] = None
-    deadline: Optional[datetime] = None
-    goal_id: Optional[str] = None
+    parent_task_id: str | None = None
+    dependencies: list[str] | None = None
+    estimated_duration: int | None = None
+    deadline: datetime | None = None
+    goal_id: str | None = None
     goal_criticality: float = 0.5
-    related_job_id: Optional[str] = None
-    related_candidate_id: Optional[str] = None
-    company_id: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    related_job_id: str | None = None
+    related_candidate_id: str | None = None
+    company_id: str | None = None
+    context: dict[str, Any] | None = None
 
 
 class CreateExecutionPlanRequest(BaseModel):
     """Request body for creating an execution plan."""
     name: str
-    task_ids: List[str]
-    description: Optional[str] = None
-    goal_id: Optional[str] = None
-    company_id: Optional[str] = None
+    task_ids: list[str]
+    description: str | None = None
+    goal_id: str | None = None
+    company_id: str | None = None
 
 
 class PrioritizeTasksRequest(BaseModel):
     """Request body for prioritizing tasks."""
-    task_ids: Optional[List[str]] = None
-    goal_id: Optional[str] = None
+    task_ids: list[str] | None = None
+    goal_id: str | None = None
     use_llm: bool = False
 
 
 class UpdateTaskStatusRequest(BaseModel):
     """Request body for updating task status."""
     status: str
-    result: Optional[Dict[str, Any]] = None
-    error_message: Optional[str] = None
+    result: dict[str, Any] | None = None
+    error_message: str | None = None
 
 
 @router.post("/decompose")
@@ -264,7 +257,7 @@ async def prioritize_tasks(
 
 @router.post("/dag/build")
 async def build_task_dag(
-    task_ids: List[str] = Body(..., embed=True),
+    task_ids: list[str] = Body(..., embed=True),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -343,10 +336,10 @@ async def get_execution_plan(
 
 @router.get("/next-tasks")
 async def get_next_tasks(
-    goal_id: Optional[str] = Query(None),
-    parent_task_id: Optional[str] = Query(None),
-    agent_type: Optional[str] = Query(None),
-    company_id: Optional[str] = Query(None),
+    goal_id: str | None = Query(None),
+    parent_task_id: str | None = Query(None),
+    agent_type: str | None = Query(None),
+    company_id: str | None = Query(None),
     limit: int = Query(5, ge=1, le=20),
     db: AsyncSession = Depends(get_db)
 ):

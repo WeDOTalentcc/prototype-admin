@@ -11,29 +11,24 @@ These tests verify that:
 Tests use real database connections and API endpoints to ensure
 security works correctly in production-like conditions.
 """
-import pytest
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
-from datetime import datetime
-import logging
-from unittest.mock import patch, MagicMock
 
 import httpx
-from sqlalchemy import select, delete
-from sqlalchemy.ext.asyncio import AsyncSession
+import pytest
 from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.models import User, UserRole
 from app.auth.dependencies import (
-    assert_resource_ownership,
     assert_admin_cross_tenant_access,
-    get_user_company_id,
+    assert_resource_ownership,
     derive_company_from_context,
+    get_user_company_id,
 )
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate import VacancyCandidate, Candidate
 from app.main import app
-from app.auth.security import create_access_token
-
+from app.models.candidate import VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 
 pytestmark = pytest.mark.asyncio
 
@@ -140,7 +135,7 @@ class TestVacancyCandidateMultiTenancy:
         test_vacancy_candidates: dict
     ):
         """VacancyCandidate queries should filter by company_id."""
-        user_a = test_users["recruiter_a"]["user"]
+        test_users["recruiter_a"]["user"]
         company_a_id = "test-company-a"
         
         result = await db_session.execute(

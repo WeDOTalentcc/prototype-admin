@@ -6,13 +6,12 @@ Handles: record_stage_feedback, get_stage_analytics,
          get_learning_dashboard, _calculate_learning_health,
          _get_health_recommendations, should_skip_stage_with_learning.
 """
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
 import logging
+from typing import Any
+from uuid import UUID
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 
 from app.models.company_learning import (
     CompanyPattern,
@@ -40,13 +39,13 @@ class LearningAnalyticsService:
         accepted_value: Any,
         was_accepted: bool = True,
         was_modified: bool = False,
-        job_id: Optional[UUID] = None,
-        stage_name: Optional[str] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        confidence_before: Optional[float] = None,
-        created_by: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        job_id: UUID | None = None,
+        stage_name: str | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        confidence_before: float | None = None,
+        created_by: str | None = None,
+    ) -> dict[str, Any]:
         try:
             from app.models.company_learning import StageFeedback
             from app.services.learning_confirmation_service import (
@@ -100,8 +99,8 @@ class LearningAnalyticsService:
         self,
         db: AsyncSession,
         company_id: str,
-        stage_number: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        stage_number: int | None = None,
+    ) -> dict[str, Any]:
         try:
             from app.models.company_learning import StageFeedback
 
@@ -122,7 +121,7 @@ class LearningAnalyticsService:
             accepted = sum(1 for f in feedbacks if f.was_accepted)
             modified = sum(1 for f in feedbacks if f.was_modified)
 
-            by_stage: Dict[int, Dict[str, Any]] = {}
+            by_stage: dict[int, dict[str, Any]] = {}
             for f in feedbacks:
                 s = f.stage_number
                 if s not in by_stage:
@@ -138,7 +137,7 @@ class LearningAnalyticsService:
                 by_stage[s]["acceptance_rate"] = by_stage[s]["accepted"] / t
                 by_stage[s]["modification_rate"] = by_stage[s]["modified"] / t
 
-            by_field: Dict[str, Dict[str, int]] = {}
+            by_field: dict[str, dict[str, int]] = {}
             for f in feedbacks:
                 field = f.field_name
                 if field not in by_field:
@@ -169,7 +168,7 @@ class LearningAnalyticsService:
 
     async def get_learning_dashboard(
         self, db: AsyncSession, company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             total_skills = (
                 await db.execute(
@@ -214,10 +213,10 @@ class LearningAnalyticsService:
                 )
             ).scalar() or 0
 
-            from app.services.learning_outcome_service import learning_outcome_service
             from app.services.learning_confirmation_service import (
                 learning_confirmation_service,
             )
+            from app.services.learning_outcome_service import learning_outcome_service
 
             stage_analytics = await self.get_stage_analytics(db, company_id)
             outcome_insights = await learning_outcome_service.get_outcome_insights(
@@ -252,7 +251,7 @@ class LearningAnalyticsService:
         promoted_skills: int,
         total_outcomes: int,
         total_patterns: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         scores = []
         if total_skills > 0:
             scores.append(min(100, (total_skills / 50) * 100))
@@ -284,7 +283,7 @@ class LearningAnalyticsService:
         promoted_skills: int,
         total_outcomes: int,
         total_patterns: int,
-    ) -> List[str]:
+    ) -> list[str]:
         recs = []
         if total_skills < 20:
             recs.append(
@@ -311,10 +310,10 @@ class LearningAnalyticsService:
         db: AsyncSession,
         company_id: str,
         stage_number: int,
-        detected_criteria: Dict[str, Any],
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-    ) -> Tuple[bool, str, Dict[str, Any]]:
+        detected_criteria: dict[str, Any],
+        role: str | None = None,
+        seniority: str | None = None,
+    ) -> tuple[bool, str, dict[str, Any]]:
         """Determine if a wizard stage can be auto-skipped using company learning data."""
         from app.services.job_stage_config import get_stage_config, should_skip_stage
         from app.services.learning_confirmation_service import (
@@ -329,7 +328,7 @@ class LearningAnalyticsService:
         if not can_skip:
             return False, base_reason, {}
 
-        auto_filled: Dict[str, Any] = {}
+        auto_filled: dict[str, Any] = {}
 
         if stage_number == 2:
             learning_context = await learning_confirmation_service.get_learning_context(
@@ -347,7 +346,7 @@ class LearningAnalyticsService:
 
         elif stage_number == 3:
             if stage_config.get("use_skills_deduplication", False):
-                already_selected: List[str] = []
+                already_selected: list[str] = []
                 for key in ("competencias_tecnicas", "skills"):
                     if detected_criteria.get(key, {}).get("value"):
                         already_selected = detected_criteria[key]["value"]

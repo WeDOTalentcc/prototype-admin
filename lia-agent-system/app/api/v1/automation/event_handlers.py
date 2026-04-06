@@ -12,36 +12,36 @@ Includes:
 - POST /handle-trigger/candidate-hired
 - POST /handle-trigger/candidate-rejected
 """
+import logging
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, Dict, Any, List, Literal, Tuple
-from datetime import datetime
-import logging
 
 from app.core.database import get_db
+
 from ._shared import (
+    WSI_PASS_THRESHOLD,
+    ATSSyncRequest,
+    CandidateHiredPayload,
+    CandidateInactiveRequest,
+    CandidateNoShowRequest,
+    CandidateRejectedPayload,
+    InterviewCompletedRequest,
+    InterviewScheduledRequest,
+    OfferSentPayload,
+    ScreeningCompletedRequest,
     audit_service,
     communication_service,
-    get_cv_scoring_service,
-    get_wsi_service,
+    get_activity_service,
+    get_ats_sync_service,
+    get_calendar_service,
     get_email_service,
     get_whatsapp_service,
-    get_activity_service,
-    get_calendar_service,
-    get_ats_sync_service,
+    get_wsi_service,
     map_lia_stage_to_ats,
     notify_unmapped_stage,
     validate_multi_tenancy,
-    WSI_PASS_THRESHOLD,
-    ScreeningCompletedRequest,
-    InterviewScheduledRequest,
-    InterviewCompletedRequest,
-    CandidateInactiveRequest,
-    CandidateNoShowRequest,
-    ATSSyncRequest,
-    OfferSentPayload,
-    CandidateHiredPayload,
-    CandidateRejectedPayload,
 )
 
 logger = logging.getLogger(__name__)
@@ -123,9 +123,10 @@ async def handle_screening_completed(
             )
         
         # Step 2: Get candidate and vacancy info for context
+        from sqlalchemy import select
+
         from app.models.candidate import Candidate
         from app.models.job_vacancy import JobVacancy
-        from sqlalchemy import select
         
         candidate_result = await db.execute(
             select(Candidate).where(Candidate.id == request.candidate_id)
@@ -225,7 +226,6 @@ async def handle_screening_completed(
         
         # Step 8: Dispatch communication to candidate via communication_service
         communication_sent = False
-        communication_result = None
         
         activity_service = get_activity_service()
         
@@ -261,7 +261,6 @@ async def handle_screening_completed(
             )
             
             communication_sent = comm_result.get("success", False)
-            communication_result = comm_result
             
             logger.info(
                 f"📧 [SCREENING_COMPLETED] Communication dispatched via communication_service: "
@@ -269,7 +268,7 @@ async def handle_screening_completed(
             )
         except Exception as e:
             logger.error(f"❌ [SCREENING_COMPLETED] Failed to send communication: {e}")
-            communication_result = {"error": str(e), "success": False}
+            {"error": str(e), "success": False}
         
         # Step 9: Create recruiter notification
         notification_created = False
@@ -302,7 +301,7 @@ async def handle_screening_completed(
                 category="screening"
             )
             notification_created = True
-            logger.info(f"🔔 [SCREENING_COMPLETED] Recruiter notification created")
+            logger.info("🔔 [SCREENING_COMPLETED] Recruiter notification created")
         except Exception as e:
             logger.error(f"❌ [SCREENING_COMPLETED] Failed to create notification: {e}")
         
@@ -339,7 +338,7 @@ async def handle_screening_completed(
             )
             db.add(automation_log)
             await db.commit()
-            logger.info(f"📝 [SCREENING_COMPLETED] Automation execution log created")
+            logger.info("📝 [SCREENING_COMPLETED] Automation execution log created")
             
             # Create centralized audit log for AI governance and explainability
             wsi_dimensions = list(weights.keys()) if weights else ["technical", "behavioral"]
@@ -369,7 +368,7 @@ async def handle_screening_completed(
                 job_vacancy_id=request.vacancy_id,
                 human_review_required=not passed
             )
-            logger.info(f"📝 [SCREENING_COMPLETED] Centralized audit log created via audit_service")
+            logger.info("📝 [SCREENING_COMPLETED] Centralized audit log created via audit_service")
         except Exception as e:
             logger.error(f"❌ [SCREENING_COMPLETED] Failed to create audit log: {e}")
         
@@ -426,7 +425,7 @@ async def _analyze_transcript_for_wsi(
     transcript: str,
     vacancy_title: str,
     wsi_service
-) -> List:
+) -> list:
     """
     Analyze a conversation transcript and extract structured response analyses.
     
@@ -443,9 +442,10 @@ async def _analyze_transcript_for_wsi(
     Returns:
         List of ResponseAnalysis objects
     """
+    import json
+
     from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
     from app.services.llm import llm_service
-    import json
     
     prompt = f"""Analise esta transcrição de triagem e extraia as respostas do candidato para avaliação WSI.
 
@@ -633,7 +633,7 @@ async def handle_interview_scheduled(
             except Exception as e:
                 logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send email: {e}")
         else:
-            logger.warning(f"⚠️ [INTERVIEW_SCHEDULED] No candidate email provided, skipping email")
+            logger.warning("⚠️ [INTERVIEW_SCHEDULED] No candidate email provided, skipping email")
         
         # Step 3: Send WhatsApp confirmation to candidate
         if candidate_phone:
@@ -664,7 +664,7 @@ async def handle_interview_scheduled(
             except Exception as e:
                 logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send WhatsApp: {e}")
         else:
-            logger.info(f"ℹ️ [INTERVIEW_SCHEDULED] No candidate phone provided, skipping WhatsApp")
+            logger.info("ℹ️ [INTERVIEW_SCHEDULED] No candidate phone provided, skipping WhatsApp")
         
         # Step 4: Create calendar event (Microsoft Graph integration)
         if request.organizer_email and request.interviewer_email:
@@ -694,8 +694,8 @@ async def handle_interview_scheduled(
                 logger.info("ℹ️ Calendar sync requires Microsoft Graph API configuration")
         else:
             logger.info(
-                f"ℹ️ [INTERVIEW_SCHEDULED] Calendar creation skipped - "
-                f"organizer_email or interviewer_email not provided"
+                "ℹ️ [INTERVIEW_SCHEDULED] Calendar creation skipped - "
+                "organizer_email or interviewer_email not provided"
             )
         
         # Step 5: Create recruiter notification
@@ -731,7 +731,7 @@ async def handle_interview_scheduled(
                 category="scheduling"
             )
             notification_created = True
-            logger.info(f"🔔 [INTERVIEW_SCHEDULED] Recruiter notification created")
+            logger.info("🔔 [INTERVIEW_SCHEDULED] Recruiter notification created")
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create notification: {e}")
         
@@ -765,7 +765,7 @@ async def handle_interview_scheduled(
             )
             db.add(audit_log)
             await db.commit()
-            logger.info(f"📝 [INTERVIEW_SCHEDULED] Audit log created")
+            logger.info("📝 [INTERVIEW_SCHEDULED] Audit log created")
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create audit log: {e}")
         
@@ -884,7 +884,7 @@ async def handle_interview_completed(
         
         if request.transcript or request.interviewer_notes:
             try:
-                wsi_service = get_wsi_service()
+                get_wsi_service()
                 from app.services.llm import llm_service
                 
                 analysis_prompt = f"""Analise os dados desta entrevista e forneça uma avaliação estruturada.
@@ -1044,7 +1044,7 @@ Responda em JSON:
                 category="interview"
             )
             notification_created = True
-            logger.info(f"🔔 [INTERVIEW_COMPLETED] Recruiter notification created")
+            logger.info("🔔 [INTERVIEW_COMPLETED] Recruiter notification created")
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_COMPLETED] Failed to create notification: {e}")
         
@@ -1079,7 +1079,7 @@ Responda em JSON:
             )
             db.add(audit_log)
             await db.commit()
-            logger.info(f"📝 [INTERVIEW_COMPLETED] Audit log created")
+            logger.info("📝 [INTERVIEW_COMPLETED] Audit log created")
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_COMPLETED] Failed to create audit log: {e}")
         
@@ -1229,7 +1229,7 @@ async def handle_candidate_inactive(
                 communication_failures.append({"channel": "email", "error": email_error})
                 logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to send email: {e}")
         else:
-            logger.warning(f"⚠️ [CANDIDATE_INACTIVE] No candidate email provided, skipping email")
+            logger.warning("⚠️ [CANDIDATE_INACTIVE] No candidate email provided, skipping email")
         
         # Step 3: Send WhatsApp follow-up to candidate
         if candidate_phone:
@@ -1266,7 +1266,7 @@ async def handle_candidate_inactive(
                 communication_failures.append({"channel": "whatsapp", "error": whatsapp_error})
                 logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to send WhatsApp: {e}")
         else:
-            logger.info(f"ℹ️ [CANDIDATE_INACTIVE] No candidate phone provided, skipping WhatsApp")
+            logger.info("ℹ️ [CANDIDATE_INACTIVE] No candidate phone provided, skipping WhatsApp")
         
         # Step 4a: Notify recruiter if communications failed (error handling)
         if communication_failures and (candidate_email or candidate_phone):
@@ -1295,7 +1295,7 @@ async def handle_candidate_inactive(
                     },
                     category="error"
                 )
-                logger.info(f"🔔 [CANDIDATE_INACTIVE] Failure notification created for recruiter")
+                logger.info("🔔 [CANDIDATE_INACTIVE] Failure notification created for recruiter")
             except Exception as e:
                 logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create failure notification: {e}")
         
@@ -1329,7 +1329,7 @@ async def handle_candidate_inactive(
                 category="follow_up"
             )
             notification_created = True
-            logger.info(f"🔔 [CANDIDATE_INACTIVE] Recruiter notification created")
+            logger.info("🔔 [CANDIDATE_INACTIVE] Recruiter notification created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create notification: {e}")
         
@@ -1363,7 +1363,7 @@ async def handle_candidate_inactive(
             )
             db.add(audit_log)
             await db.commit()
-            logger.info(f"📝 [CANDIDATE_INACTIVE] Legacy audit log created")
+            logger.info("📝 [CANDIDATE_INACTIVE] Legacy audit log created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create legacy audit log: {e}")
         
@@ -1387,7 +1387,7 @@ async def handle_candidate_inactive(
                 candidate_id=request.candidate_id,
                 job_vacancy_id=request.vacancy_id
             )
-            logger.info(f"📝 [CANDIDATE_INACTIVE] Centralized audit log created via audit_service")
+            logger.info("📝 [CANDIDATE_INACTIVE] Centralized audit log created via audit_service")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create centralized audit log: {e}")
         
@@ -1692,7 +1692,7 @@ async def handle_candidate_no_show(
                 category="no_show"
             )
             notification_created = True
-            logger.info(f"🔔 [CANDIDATE_NO_SHOW] Recruiter notification created")
+            logger.info("🔔 [CANDIDATE_NO_SHOW] Recruiter notification created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to create notification: {e}")
         
@@ -1728,7 +1728,7 @@ async def handle_candidate_no_show(
             )
             db.add(audit_log)
             await db.commit()
-            logger.info(f"📝 [CANDIDATE_NO_SHOW] Legacy audit log created")
+            logger.info("📝 [CANDIDATE_NO_SHOW] Legacy audit log created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to create legacy audit log: {e}")
         
@@ -1753,7 +1753,7 @@ async def handle_candidate_no_show(
                 candidate_id=request.candidate_id,
                 job_vacancy_id=request.vacancy_id
             )
-            logger.info(f"📝 [CANDIDATE_NO_SHOW] Centralized audit log created via audit_service")
+            logger.info("📝 [CANDIDATE_NO_SHOW] Centralized audit log created via audit_service")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to create centralized audit log: {e}")
         
@@ -1913,7 +1913,7 @@ async def handle_ats_sync(
                 if pull_result.get("success"):
                     sync_status = "completed"
                     ats_response = pull_result
-                    logger.info(f"✅ [ATS_SYNC] Inbound sync completed successfully")
+                    logger.info("✅ [ATS_SYNC] Inbound sync completed successfully")
                 else:
                     sync_status = "failed"
                     error = pull_result.get("message", "Pull failed")
@@ -1953,7 +1953,7 @@ async def handle_ats_sync(
                     category="ats_sync"
                 )
                 notification_created = True
-                logger.info(f"🔔 [ATS_SYNC] Failure notification created")
+                logger.info("🔔 [ATS_SYNC] Failure notification created")
             except Exception as notif_error:
                 logger.error(f"❌ [ATS_SYNC] Failed to create notification: {notif_error}")
         
@@ -1990,7 +1990,7 @@ async def handle_ats_sync(
             )
             db.add(audit_log)
             await db.commit()
-            logger.info(f"📝 [ATS_SYNC] Legacy audit log created")
+            logger.info("📝 [ATS_SYNC] Legacy audit log created")
         except Exception as audit_error:
             logger.error(f"❌ [ATS_SYNC] Failed to create legacy audit log: {audit_error}")
         
@@ -2020,7 +2020,7 @@ async def handle_ats_sync(
                 job_vacancy_id=request.vacancy_id,
                 human_review_required=(sync_status == "failed")
             )
-            logger.info(f"📝 [ATS_SYNC] Centralized audit log created via audit_service")
+            logger.info("📝 [ATS_SYNC] Centralized audit log created via audit_service")
         except Exception as audit_error:
             logger.error(f"❌ [ATS_SYNC] Failed to create centralized audit log: {audit_error}")
         
@@ -2119,7 +2119,7 @@ async def handle_offer_sent(
                 )
                 email_sent = True
                 actions_taken.append("offer_email_sent")
-                logger.info(f"✅ [OFFER_SENT] Offer email sent")
+                logger.info("✅ [OFFER_SENT] Offer email sent")
         except Exception as e:
             logger.error(f"❌ [OFFER_SENT] Failed to send offer email: {e}")
         
@@ -2149,7 +2149,7 @@ async def handle_offer_sent(
             )
             notification_created = True
             actions_taken.append("recruiter_notified")
-            logger.info(f"✅ [OFFER_SENT] Notification created for recruiter")
+            logger.info("✅ [OFFER_SENT] Notification created for recruiter")
         except Exception as e:
             logger.error(f"❌ [OFFER_SENT] Failed to create notification: {e}")
         
@@ -2168,7 +2168,7 @@ async def handle_offer_sent(
             if sync_result.get("success"):
                 ats_synced = True
                 actions_taken.append("ats_synced")
-                logger.info(f"✅ [OFFER_SENT] ATS synced successfully")
+                logger.info("✅ [OFFER_SENT] ATS synced successfully")
         except Exception as e:
             logger.error(f"❌ [OFFER_SENT] Failed to sync ATS: {e}")
         
@@ -2192,7 +2192,7 @@ async def handle_offer_sent(
                 job_vacancy_id=request.vacancy_id,
                 human_review_required=False
             )
-            logger.info(f"📝 [OFFER_SENT] Audit log created")
+            logger.info("📝 [OFFER_SENT] Audit log created")
         except Exception as e:
             logger.error(f"❌ [OFFER_SENT] Failed to create audit log: {e}")
         
@@ -2283,7 +2283,7 @@ async def handle_candidate_hired(
                 )
                 email_sent = True
                 actions_taken.append("welcome_email_sent")
-                logger.info(f"✅ [CANDIDATE_HIRED] Welcome email sent")
+                logger.info("✅ [CANDIDATE_HIRED] Welcome email sent")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to send welcome email: {e}")
         
@@ -2291,8 +2291,9 @@ async def handle_candidate_hired(
             from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
             pipeline_service = PipelineStageService()
             
+            from sqlalchemy import and_, select
+
             from app.models.candidate import VacancyCandidate
-            from sqlalchemy import select, and_
             
             vc_result = await db.execute(
                 select(VacancyCandidate).where(
@@ -2316,7 +2317,7 @@ async def handle_candidate_hired(
                 )
                 stage_updated = True
                 actions_taken.append("stage_updated")
-                logger.info(f"✅ [CANDIDATE_HIRED] Stage updated to Contratado")
+                logger.info("✅ [CANDIDATE_HIRED] Stage updated to Contratado")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to update stage: {e}")
         
@@ -2335,7 +2336,7 @@ async def handle_candidate_hired(
             if sync_result.get("success"):
                 ats_synced = True
                 actions_taken.append("ats_synced")
-                logger.info(f"✅ [CANDIDATE_HIRED] ATS synced successfully")
+                logger.info("✅ [CANDIDATE_HIRED] ATS synced successfully")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to sync ATS: {e}")
         
@@ -2365,7 +2366,7 @@ async def handle_candidate_hired(
             )
             notification_created = True
             actions_taken.append("stakeholders_notified")
-            logger.info(f"✅ [CANDIDATE_HIRED] Notification created")
+            logger.info("✅ [CANDIDATE_HIRED] Notification created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to create notification: {e}")
         
@@ -2389,7 +2390,7 @@ async def handle_candidate_hired(
                 job_vacancy_id=request.vacancy_id,
                 human_review_required=False
             )
-            logger.info(f"📝 [CANDIDATE_HIRED] Audit log created")
+            logger.info("📝 [CANDIDATE_HIRED] Audit log created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to create audit log: {e}")
         
@@ -2498,7 +2499,7 @@ async def handle_candidate_rejected(
                     )
                     email_sent = True
                     actions_taken.append("rejection_email_sent")
-                    logger.info(f"✅ [CANDIDATE_REJECTED] Rejection email sent")
+                    logger.info("✅ [CANDIDATE_REJECTED] Rejection email sent")
             except Exception as e:
                 logger.error(f"❌ [CANDIDATE_REJECTED] Failed to send rejection email: {e}")
         
@@ -2507,7 +2508,7 @@ async def handle_candidate_rejected(
                 activity_service = get_activity_service()
                 await activity_service.create_activity(
                     activity_type="added_to_talent_pool",
-                    title=f"Candidato adicionado ao banco de talentos",
+                    title="Candidato adicionado ao banco de talentos",
                     description=(
                         f"{request.candidate_name or 'Candidato'} adicionado ao banco de talentos. "
                         f"Origem: {request.job_title or 'vaga'}. "
@@ -2530,7 +2531,7 @@ async def handle_candidate_rejected(
                 )
                 added_to_talent_pool = True
                 actions_taken.append("added_to_talent_pool")
-                logger.info(f"✅ [CANDIDATE_REJECTED] Added to talent pool")
+                logger.info("✅ [CANDIDATE_REJECTED] Added to talent pool")
             except Exception as e:
                 logger.error(f"❌ [CANDIDATE_REJECTED] Failed to add to talent pool: {e}")
         
@@ -2538,8 +2539,9 @@ async def handle_candidate_rejected(
             from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
             pipeline_service = PipelineStageService()
             
+            from sqlalchemy import and_, select
+
             from app.models.candidate import VacancyCandidate
-            from sqlalchemy import select, and_
             
             vc_result = await db.execute(
                 select(VacancyCandidate).where(
@@ -2563,7 +2565,7 @@ async def handle_candidate_rejected(
                 )
                 stage_updated = True
                 actions_taken.append("stage_updated")
-                logger.info(f"✅ [CANDIDATE_REJECTED] Stage updated to Reprovado")
+                logger.info("✅ [CANDIDATE_REJECTED] Stage updated to Reprovado")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_REJECTED] Failed to update stage: {e}")
         
@@ -2582,7 +2584,7 @@ async def handle_candidate_rejected(
             if sync_result.get("success"):
                 ats_synced = True
                 actions_taken.append("ats_synced")
-                logger.info(f"✅ [CANDIDATE_REJECTED] ATS synced successfully")
+                logger.info("✅ [CANDIDATE_REJECTED] ATS synced successfully")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_REJECTED] Failed to sync ATS: {e}")
         
@@ -2607,7 +2609,7 @@ async def handle_candidate_rejected(
                 job_vacancy_id=request.vacancy_id,
                 human_review_required=True
             )
-            logger.info(f"📝 [CANDIDATE_REJECTED] Audit log created")
+            logger.info("📝 [CANDIDATE_REJECTED] Audit log created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_REJECTED] Failed to create audit log: {e}")
         

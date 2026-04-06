@@ -4,17 +4,17 @@ Domain Registry - Auto-discovery and management of domain implementations.
 Uses @register_domain decorator for zero-config domain registration.
 Replaces AgentRegistry's hardcoded intent mapping with dynamic discovery.
 """
-from typing import Dict, List, Type, Optional, Any
 import logging
+from typing import Optional
 
-from app.domains.base import DomainPrompt, DomainAction
+from app.domains.base import DomainAction, DomainPrompt
 
 logger = logging.getLogger(__name__)
 
-_DOMAIN_REGISTRY: Dict[str, Type[DomainPrompt]] = {}
+_DOMAIN_REGISTRY: dict[str, type[DomainPrompt]] = {}
 
 
-def register_domain(cls: Type[DomainPrompt]) -> Type[DomainPrompt]:
+def register_domain(cls: type[DomainPrompt]) -> type[DomainPrompt]:
     """
     Decorator for auto-registering domain implementations.
     
@@ -46,7 +46,7 @@ class DomainRegistry:
     Coexists with AgentRegistry during migration — both can be active.
     """
     _instance: Optional["DomainRegistry"] = None
-    _instances: Dict[str, DomainPrompt] = {}
+    _instances: dict[str, DomainPrompt] = {}
 
     def __new__(cls) -> "DomainRegistry":
         if cls._instance is None:
@@ -54,7 +54,7 @@ class DomainRegistry:
             cls._instance._instances = {}
         return cls._instance
 
-    def get_instance(self, domain_id: str) -> Optional[DomainPrompt]:
+    def get_instance(self, domain_id: str) -> DomainPrompt | None:
         """Get or create a domain instance by ID."""
         if domain_id not in self._instances:
             domain_cls = _DOMAIN_REGISTRY.get(domain_id)
@@ -69,15 +69,15 @@ class DomainRegistry:
                 return None
         return self._instances[domain_id]
 
-    def list_domains(self) -> List[str]:
+    def list_domains(self) -> list[str]:
         """List all registered domain IDs."""
         return list(_DOMAIN_REGISTRY.keys())
 
-    def list_registered_classes(self) -> Dict[str, str]:
+    def list_registered_classes(self) -> dict[str, str]:
         """List all registered domain classes with their IDs."""
         return {did: cls.__name__ for did, cls in _DOMAIN_REGISTRY.items()}
 
-    def get_all_actions(self) -> Dict[str, List[DomainAction]]:
+    def get_all_actions(self) -> dict[str, list[DomainAction]]:
         """Get all actions from all registered domains."""
         result = {}
         for domain_id in _DOMAIN_REGISTRY:
@@ -86,7 +86,7 @@ class DomainRegistry:
                 result[domain_id] = instance.get_allowed_actions()
         return result
 
-    def get_domain_for_action(self, action_id: str) -> Optional[DomainPrompt]:
+    def get_domain_for_action(self, action_id: str) -> DomainPrompt | None:
         """Find which domain handles a given action."""
         for domain_id in _DOMAIN_REGISTRY:
             instance = self.get_instance(domain_id)
@@ -136,6 +136,7 @@ async def get_domain_for_company(
     if db is not None:
         try:
             from sqlalchemy import select
+
             from libs.models.lia_models.agent_template import AgentTemplate, AgentTemplateStatus
 
             stmt = (

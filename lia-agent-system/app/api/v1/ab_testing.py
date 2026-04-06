@@ -1,7 +1,7 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -20,7 +20,7 @@ class VariantCreate(BaseModel):
 
 class TestCreate(BaseModel):
     test_name: str
-    variants: List[VariantCreate]
+    variants: list[VariantCreate]
 
 
 class MetricRecord(BaseModel):
@@ -29,7 +29,7 @@ class MetricRecord(BaseModel):
     company_id: str
     metric_name: str
     metric_value: float
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 @router.get("")

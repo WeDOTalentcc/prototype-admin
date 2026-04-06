@@ -3,9 +3,9 @@ Pydantic schemas for Shared Searches feature.
 """
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr, field_validator
 from uuid import UUID
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ShareType(str, Enum):
@@ -38,8 +38,8 @@ class FeedbackDecision(str, Enum):
 class RecipientInput(BaseModel):
     """Input schema for adding a recipient to a shared search."""
     email: EmailStr
-    name: Optional[str] = None
-    phone: Optional[str] = Field(None, description="Optional phone number for WhatsApp channel")
+    name: str | None = None
+    phone: str | None = Field(None, description="Optional phone number for WhatsApp channel")
     role: str = Field(default="hiring_manager", description="Role of the recipient")
 
 
@@ -47,14 +47,14 @@ class CreateSharedSearchRequest(BaseModel):
     """Request schema for creating a new shared search."""
     share_type: ShareType
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
-    source_query: Optional[str] = Field(None, description="Original search query if share_type=search")
-    source_list_id: Optional[str] = Field(None, description="Source list ID if share_type=list")
-    candidate_ids: List[str] = Field(..., min_length=1, description="List of candidate IDs to share")
-    recipients: List[RecipientInput] = Field(..., min_length=1, description="List of recipients")
-    expires_at: Optional[datetime] = Field(None, description="Expiration date for the shared search")
-    message: Optional[str] = Field(None, description="Optional message to include in the invitation")
-    subject: Optional[str] = Field(None, max_length=500, description="Custom email subject override")
+    description: str | None = None
+    source_query: str | None = Field(None, description="Original search query if share_type=search")
+    source_list_id: str | None = Field(None, description="Source list ID if share_type=list")
+    candidate_ids: list[str] = Field(..., min_length=1, description="List of candidate IDs to share")
+    recipients: list[RecipientInput] = Field(..., min_length=1, description="List of recipients")
+    expires_at: datetime | None = Field(None, description="Expiration date for the shared search")
+    message: str | None = Field(None, description="Optional message to include in the invitation")
+    subject: str | None = Field(None, max_length=500, description="Custom email subject override")
     channel: ShareChannel = Field(ShareChannel.email, description="Communication channel: email, whatsapp, or both")
     can_comment: bool = Field(True, description="Whether recipients can leave comments")
     can_rate: bool = Field(True, description="Whether recipients can rate/decide on candidates")
@@ -64,8 +64,8 @@ class SubmitFeedbackRequest(BaseModel):
     """Request schema for submitting feedback on a candidate."""
     candidate_id: UUID
     decision: FeedbackDecision
-    rating: Optional[int] = Field(None, ge=1, le=5, description="Rating from 1 to 5")
-    comment: Optional[str] = None
+    rating: int | None = Field(None, ge=1, le=5, description="Rating from 1 to 5")
+    comment: str | None = None
 
 
 class RequestOTPRequest(BaseModel):
@@ -90,10 +90,10 @@ class FeedbackSummary(BaseModel):
 class RecipientSummary(BaseModel):
     """Summary of a recipient's activity."""
     email: str
-    name: Optional[str] = None
+    name: str | None = None
     role: str
-    first_accessed_at: Optional[datetime] = None
-    last_accessed_at: Optional[datetime] = None
+    first_accessed_at: datetime | None = None
+    last_accessed_at: datetime | None = None
     total_views: int = 0
     feedback_count: int = 0
 
@@ -107,8 +107,8 @@ class FeedbackResponse(BaseModel):
     candidate_id: UUID
     reviewer_email: str
     decision: FeedbackDecision
-    rating: Optional[int] = None
-    comment: Optional[str] = None
+    rating: int | None = None
+    comment: str | None = None
     created_at: datetime
 
     class Config:
@@ -119,15 +119,15 @@ class CandidateSnapshot(BaseModel):
     """Snapshot of candidate data for shared searches."""
     id: UUID
     name: str
-    title: Optional[str] = None
-    company: Optional[str] = None
-    location: Optional[str] = None
-    experience_years: Optional[int] = None
-    skills: List[str] = Field(default_factory=list)
-    wsi_score: Optional[float] = None
-    linkedin_url: Optional[str] = None
-    resume_url: Optional[str] = None
-    feedback: Optional[FeedbackResponse] = None
+    title: str | None = None
+    company: str | None = None
+    location: str | None = None
+    experience_years: int | None = None
+    skills: list[str] = Field(default_factory=list)
+    wsi_score: float | None = None
+    linkedin_url: str | None = None
+    resume_url: str | None = None
+    feedback: FeedbackResponse | None = None
 
     class Config:
         from_attributes = True
@@ -139,13 +139,13 @@ class SharedSearchResponse(BaseModel):
     company_id: UUID
     share_type: ShareType
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     status: ShareStatus
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     created_at: datetime
     candidate_count: int = 0
     feedback_summary: FeedbackSummary = Field(default_factory=FeedbackSummary)
-    recipients: List[RecipientSummary] = Field(default_factory=list)
+    recipients: list[RecipientSummary] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -153,21 +153,21 @@ class SharedSearchResponse(BaseModel):
 
 class SharedSearchDetailResponse(SharedSearchResponse):
     """Detailed response schema for a shared search with candidates and feedbacks."""
-    candidates: List[CandidateSnapshot] = Field(default_factory=list)
-    feedbacks: List[FeedbackResponse] = Field(default_factory=list)
+    candidates: list[CandidateSnapshot] = Field(default_factory=list)
+    feedbacks: list[FeedbackResponse] = Field(default_factory=list)
 
 
 class PublicSharedSearchResponse(BaseModel):
     """Response schema for public shared search page (before auth)."""
     title: str
-    description: Optional[str] = None
-    expires_at: Optional[datetime] = None
-    shared_by_name: Optional[str] = None
-    shared_by_email: Optional[str] = None
-    company_name: Optional[str] = None
-    company_logo_url: Optional[str] = None
+    description: str | None = None
+    expires_at: datetime | None = None
+    shared_by_name: str | None = None
+    shared_by_email: str | None = None
+    company_name: str | None = None
+    company_logo_url: str | None = None
     candidate_count: int = 0
-    candidates: List[CandidateSnapshot] = Field(default_factory=list, description="Limited preview without auth")
+    candidates: list[CandidateSnapshot] = Field(default_factory=list, description="Limited preview without auth")
     can_comment: bool = True
     can_rate: bool = True
 

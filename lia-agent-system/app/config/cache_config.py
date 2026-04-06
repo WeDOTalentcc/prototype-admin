@@ -10,13 +10,12 @@ Environment Variables:
 """
 
 import os
-from typing import Dict, Optional
 
 
 class CacheSettings:
     """Cache configuration settings loaded from environment."""
     
-    REDIS_URL: Optional[str] = os.environ.get("REDIS_URL")
+    REDIS_URL: str | None = os.environ.get("REDIS_URL")
     CACHE_ENABLED: bool = os.environ.get("CACHE_ENABLED", "true").lower() == "true"
     CACHE_TTL_DEFAULT: int = int(os.environ.get("CACHE_TTL_DEFAULT", "300"))
     CACHE_TTL_PIPELINE_STATS: int = int(os.environ.get("CACHE_TTL_PIPELINE_STATS", "60"))
@@ -45,7 +44,7 @@ class CacheSettings:
         return intent_ttl_mapping.get(intent, cls.CACHE_TTL_DEFAULT)
     
     @classmethod
-    def to_dict(cls) -> Dict:
+    def to_dict(cls) -> dict:
         """Return settings as dictionary."""
         return {
             "redis_url": cls.REDIS_URL is not None,

@@ -2,14 +2,15 @@
 Mailgun email provider implementation.
 Uses the Mailgun HTTP API for transactional email delivery.
 """
-import os
 import asyncio
 import logging
+import os
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from .base import EmailProvider, EmailMessage, EmailResult
 from app.shared.resilience.circuit_breaker import MAILGUN_CIRCUIT, circuit_breaker_decorator
+
+from .base import EmailMessage, EmailProvider, EmailResult
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +38,11 @@ class MailgunProvider(EmailProvider):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        domain: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        api_base: Optional[str] = None,
+        api_key: str | None = None,
+        domain: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        api_base: str | None = None,
     ):
         self.api_key = api_key or os.getenv("MAILGUN_API_KEY")
         self.domain = domain or os.getenv("MAILGUN_DOMAIN")
@@ -79,14 +80,14 @@ class MailgunProvider(EmailProvider):
         to: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        text_content: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        headers: dict[str, str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> EmailResult:
         """Send a single email via Mailgun."""
         if not self._configured:
@@ -104,7 +105,7 @@ class MailgunProvider(EmailProvider):
             sender_addr = from_email or self.from_email
             sender = f"{sender_name} <{sender_addr}>" if sender_name else sender_addr
 
-            data: Dict[str, Any] = {
+            data: dict[str, Any] = {
                 "from": sender,
                 "to": to,
                 "subject": subject,
@@ -175,8 +176,8 @@ class MailgunProvider(EmailProvider):
 
     async def send_bulk(
         self,
-        messages: List[EmailMessage],
-    ) -> List[EmailResult]:
+        messages: list[EmailMessage],
+    ) -> list[EmailResult]:
         """
         Send multiple emails via Mailgun.
 
@@ -201,7 +202,7 @@ class MailgunProvider(EmailProvider):
             await asyncio.sleep(0.05)
         return results
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get Mailgun provider status."""
         return {
             "provider": self.provider_name,

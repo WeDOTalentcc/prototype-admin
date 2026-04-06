@@ -2,7 +2,7 @@
 Pydantic schemas for WorkOS SSO and SCIM integration.
 """
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
@@ -12,11 +12,11 @@ class WorkOSSyncUser(BaseModel):
     """Schema for syncing a user from WorkOS SSO callback."""
     workos_id: str = Field(..., description="WorkOS profile ID")
     email: EmailStr
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    organization_id: Optional[str] = None
-    connection_type: Optional[str] = None
-    raw_attributes: Optional[Dict[str, Any]] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    organization_id: str | None = None
+    connection_type: str | None = None
+    raw_attributes: dict[str, Any] | None = None
 
 
 class WorkOSSyncUserResponse(BaseModel):
@@ -26,7 +26,7 @@ class WorkOSSyncUserResponse(BaseModel):
     name: str
     workos_id: str
     is_new_user: bool
-    sso_provider: Optional[str] = None
+    sso_provider: str | None = None
     
     class Config:
         from_attributes = True
@@ -35,35 +35,35 @@ class WorkOSSyncUserResponse(BaseModel):
 class SCIMUserCreated(BaseModel):
     """Schema for SCIM dsync.user.created event."""
     workos_id: str
-    email: Optional[EmailStr] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    directory_id: Optional[str] = None
-    state: Optional[str] = None
-    raw_attributes: Optional[Dict[str, Any]] = None
+    email: EmailStr | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    directory_id: str | None = None
+    state: str | None = None
+    raw_attributes: dict[str, Any] | None = None
 
 
 class SCIMUserUpdated(BaseModel):
     """Schema for SCIM dsync.user.updated event."""
     workos_id: str
-    email: Optional[EmailStr] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    state: Optional[str] = None
-    raw_attributes: Optional[Dict[str, Any]] = None
+    email: EmailStr | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    state: str | None = None
+    raw_attributes: dict[str, Any] | None = None
 
 
 class SCIMUserDeleted(BaseModel):
     """Schema for SCIM dsync.user.deleted event."""
     workos_id: str
-    email: Optional[EmailStr] = None
+    email: EmailStr | None = None
 
 
 class SCIMGroupAction(BaseModel):
     """Schema for SCIM group events."""
     workos_id: str
-    name: Optional[str] = None
-    directory_id: Optional[str] = None
+    name: str | None = None
+    directory_id: str | None = None
 
 
 class SCIMGroupMembership(BaseModel):
@@ -78,16 +78,16 @@ class SCIMActionResponse(BaseModel):
     success: bool
     action: str
     workos_id: str
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class WorkOSGroupResponse(BaseModel):
     """Response schema for WorkOS SCIM Group."""
     id: UUID
     workos_id: str
-    directory_id: Optional[str] = None
+    directory_id: str | None = None
     name: str
-    raw_attributes: Dict[str, Any] = {}
+    raw_attributes: dict[str, Any] = {}
     is_active: bool = True
     created_at: datetime
     updated_at: datetime
@@ -102,7 +102,7 @@ class WorkOSGroupMembershipResponse(BaseModel):
     group_id: UUID
     user_id: UUID
     added_at: datetime
-    added_by: Optional[str] = None
+    added_by: str | None = None
     
     class Config:
         from_attributes = True
@@ -114,9 +114,9 @@ class WorkOSGroupRoleMappingResponse(BaseModel):
     company_id: str
     workos_group_id: UUID
     role: str
-    permissions: List[str] = []
+    permissions: list[str] = []
     created_at: datetime
-    created_by: Optional[str] = None
+    created_by: str | None = None
     
     class Config:
         from_attributes = True
@@ -126,14 +126,14 @@ class SSOAuditLogCreate(BaseModel):
     """Schema for creating SSO Audit Log entries."""
     company_id: str
     event_type: str = Field(..., description="Event type: sso.login, scim.user.created, scim.user.updated, scim.user.deleted, scim.group.created, scim.group.updated, scim.group.deleted, scim.group.user_added, scim.group.user_removed")
-    actor_id: Optional[str] = None
-    actor_email: Optional[str] = None
-    target_id: Optional[str] = None
-    target_email: Optional[str] = None
-    source_ip: Optional[str] = None
-    user_agent: Optional[str] = None
-    workos_event_id: Optional[str] = None
-    payload: Dict[str, Any] = {}
+    actor_id: str | None = None
+    actor_email: str | None = None
+    target_id: str | None = None
+    target_email: str | None = None
+    source_ip: str | None = None
+    user_agent: str | None = None
+    workos_event_id: str | None = None
+    payload: dict[str, Any] = {}
 
 
 class SSOAuditLogResponse(BaseModel):
@@ -141,14 +141,14 @@ class SSOAuditLogResponse(BaseModel):
     id: UUID
     company_id: str
     event_type: str
-    actor_id: Optional[str] = None
-    actor_email: Optional[str] = None
-    target_id: Optional[str] = None
-    target_email: Optional[str] = None
-    source_ip: Optional[str] = None
-    user_agent: Optional[str] = None
-    workos_event_id: Optional[str] = None
-    payload: Dict[str, Any] = {}
+    actor_id: str | None = None
+    actor_email: str | None = None
+    target_id: str | None = None
+    target_email: str | None = None
+    source_ip: str | None = None
+    user_agent: str | None = None
+    workos_event_id: str | None = None
+    payload: dict[str, Any] = {}
     created_at: datetime
     
     class Config:

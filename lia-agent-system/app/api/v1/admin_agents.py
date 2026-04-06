@@ -8,7 +8,7 @@ Acesso restrito a admins (require_admin).
 Referência: app/core/agent_registry_watcher.py
 """
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Depends, Header
 
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/admin/agents", tags=["Admin - Agents"])
 async def reload_agent_registry(
     x_company_id: str = Header(..., alias="X-Company-ID"),
     _user: Any = Depends(require_admin),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Trigger hot-reload of the agent YAML registry.
 
     Checks both ``agents_registry.yaml`` and ``tool_registry_metadata.yaml``

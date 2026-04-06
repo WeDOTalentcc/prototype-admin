@@ -3,9 +3,10 @@ Teams <-> Orchestrator bridge.
 Connects incoming Teams messages to the full LIA orchestrator (same as floating chat).
 """
 import logging
-from typing import Optional, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +60,9 @@ class TeamsOrchestratorBridge:
 
     async def process_message(
         self,
-        activity: Dict[str, Any],
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        activity: dict[str, Any],
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Process a text message from Teams through the LIA orchestrator.
         Returns orchestrator result dict.
@@ -115,16 +116,17 @@ class TeamsOrchestratorBridge:
 
     async def process_cv_attachment(
         self,
-        activity: Dict[str, Any],
-        attachment: Dict[str, Any],
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Process a file attachment (CV) from Teams.
         Downloads the file and runs cv screening.
         """
-        import httpx
         import re
+
+        import httpx
 
         teams_user_id = activity.get("from", {}).get("id", "unknown")
         tenant_id = activity.get("channelData", {}).get("tenant", {}).get("id", "")
@@ -205,7 +207,7 @@ class TeamsOrchestratorBridge:
         self,
         teams_user_id: str,
         tenant_id: str,
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
     ) -> str:
         """
         Resolve company_id from Teams user/tenant.

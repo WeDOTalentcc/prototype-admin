@@ -1,26 +1,24 @@
 """
 Interview Scheduling API endpoints.
 """
-from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from typing import List, Optional
-from datetime import datetime, timedelta
-from pydantic import BaseModel, EmailStr
+import json
 import uuid
+from datetime import datetime, timedelta
+
+from anthropic import AsyncAnthropic
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.interview import Interview, InterviewFeedback
-from app.models.activity_feed import ActivityFeed
-from app.models.candidate import Candidate
-from app.models.job_vacancy import JobVacancy
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from app.services.llm import llm_service
+from app.models.candidate import Candidate
+from app.models.interview import Interview, InterviewFeedback
+from app.models.job_vacancy import JobVacancy
 from app.services.activity_service import activity_service
-from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
-from anthropic import AsyncAnthropic
-import json
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
@@ -29,21 +27,21 @@ router = APIRouter()
 
 # Pydantic schemas for request/response
 class ScheduleInterviewRequest(BaseModel):
-    candidate_id: Optional[str] = None  # If provided, will validate contact info
+    candidate_id: str | None = None  # If provided, will validate contact info
     candidate_name: str
     candidate_email: EmailStr
     interviewer_name: str
     interviewer_email: EmailStr
-    additional_interviewers: List[dict] = []
+    additional_interviewers: list[dict] = []
     job_title: str
-    job_vacancy_id: Optional[str] = None
+    job_vacancy_id: str | None = None
     interview_type: str = "technical"  # technical, behavioral, cultural, final
     interview_mode: str = "video"  # video, in_person, phone
     start_time: datetime
     duration_minutes: int = 60
-    location: Optional[str] = None
+    location: str | None = None
     as_teams_meeting: bool = True
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class CheckAvailabilityRequest(BaseModel):
@@ -54,22 +52,22 @@ class CheckAvailabilityRequest(BaseModel):
 
 class RescheduleInterviewRequest(BaseModel):
     new_start_time: datetime
-    new_duration_minutes: Optional[int] = None
+    new_duration_minutes: int | None = None
 
 
 class InterviewFeedbackRequest(BaseModel):
     interviewer_name: str
     interviewer_email: EmailStr
-    interviewer_role: Optional[str] = None
-    technical_skills_rating: Optional[float] = None
-    communication_rating: Optional[float] = None
-    cultural_fit_rating: Optional[float] = None
-    overall_rating: Optional[float] = None
-    strengths: List[str] = []
-    weaknesses: List[str] = []
-    notes: Optional[str] = None
-    recommendation: Optional[str] = None
-    next_steps_suggested: Optional[str] = None
+    interviewer_role: str | None = None
+    technical_skills_rating: float | None = None
+    communication_rating: float | None = None
+    cultural_fit_rating: float | None = None
+    overall_rating: float | None = None
+    strengths: list[str] = []
+    weaknesses: list[str] = []
+    notes: str | None = None
+    recommendation: str | None = None
+    next_steps_suggested: str | None = None
 
 
 @router.post("/interviews/schedule", response_model=dict)
@@ -181,7 +179,7 @@ async def schedule_interview(
                         f"Type: {request.interview_type}",
                         f"Mode: {request.interview_mode}",
                         f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
-                        f"Calendar sync status: confirmed",
+                        "Calendar sync status: confirmed",
                     ],
                     criteria_used=["candidate_contact_info", "interviewer_availability", "calendar_sync", "interview_mode"],
                     candidate_id=request.candidate_id,
@@ -207,11 +205,11 @@ async def schedule_interview(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/interviews", response_model=List[dict])
+@router.get("/interviews", response_model=list[dict])
 async def list_interviews(
-    status: Optional[str] = Query(None, description="Filter by status"),
-    candidate_email: Optional[str] = Query(None, description="Filter by candidate email"),
-    interviewer_email: Optional[str] = Query(None, description="Filter by interviewer email"),
+    status: str | None = Query(None, description="Filter by status"),
+    candidate_email: str | None = Query(None, description="Filter by candidate email"),
+    interviewer_email: str | None = Query(None, description="Filter by interviewer email"),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -280,7 +278,7 @@ async def list_interviews(
 @router.post("/interviews/{interview_id}/cancel", response_model=dict)
 async def cancel_interview(
     interview_id: str,
-    cancellation_message: Optional[str] = None,
+    cancellation_message: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -322,9 +320,9 @@ async def cancel_interview(
 
 
 class CompleteInterviewRequest(BaseModel):
-    outcome: Optional[str] = None
-    feedback: Optional[dict] = None
-    company_id: Optional[str] = None
+    outcome: str | None = None
+    feedback: dict | None = None
+    company_id: str | None = None
 
 
 @router.post("/interviews/{interview_id}/complete", response_model=dict)
@@ -525,15 +523,15 @@ class GenerateEmailTemplateRequest(BaseModel):
     candidate_email: EmailStr
     job_title: str
     interview_type: str = "técnica"
-    user_name: Optional[str] = "Consultor"
+    user_name: str | None = "Consultor"
 
 
 class ScheduleFromPromptRequest(BaseModel):
     candidate_name: str
     candidate_email: EmailStr
-    candidate_id: Optional[str] = None
+    candidate_id: str | None = None
     job_title: str
-    job_vacancy_id: Optional[str] = None
+    job_vacancy_id: str | None = None
     interview_type: str = "técnica"
     natural_language_prompt: str  # "Agendar para amanhã às 14h comigo"
     user_name: str = "Consultor"
@@ -651,11 +649,11 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
         
         try:
             extracted = json.loads(extracted_text.strip())
-        except json.JSONDecodeError as je:
+        except json.JSONDecodeError:
             logger.error(f"❌ Failed to parse LLM JSON output: {extracted_text}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Não foi possível entender o prompt. Por favor, tente novamente com data e hora mais claras (ex: 'amanhã às 14h')."
+                detail="Não foi possível entender o prompt. Por favor, tente novamente com data e hora mais claras (ex: 'amanhã às 14h')."
             )
         
         # Validate required fields
@@ -677,7 +675,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
                     status_code=400,
                     detail="Não é possível agendar entrevistas no passado. Por favor, escolha uma data futura."
                 )
-        except ValueError as ve:
+        except ValueError:
             logger.error(f"❌ Invalid datetime format: date={extracted.get('date')}, time={extracted.get('time')}")
             raise HTTPException(
                 status_code=400,
@@ -794,10 +792,10 @@ def is_valid_uuid(val: str) -> bool:
 @router.get("/interviews/shortlisted/filter", response_model=dict)
 async def get_shortlisted_candidate_ids(
     scope: str = Query(..., description="Shortlist scope: shortlisted_by_you, shortlisted_org_this_project, shortlisted_org_all_projects"),
-    user_email: Optional[str] = Query(None, description="User email for 'shortlisted_by_you' scope"),
-    company_id: Optional[str] = Query(None, description="Company ID for org-level scopes"),
-    project_id: Optional[str] = Query(None, description="Project/Vacancy ID for project-specific scopes"),
-    since_date: Optional[str] = Query(None, description="Filter interviews since this date (ISO format)"),
+    user_email: str | None = Query(None, description="User email for 'shortlisted_by_you' scope"),
+    company_id: str | None = Query(None, description="Company ID for org-level scopes"),
+    project_id: str | None = Query(None, description="Project/Vacancy ID for project-specific scopes"),
+    since_date: str | None = Query(None, description="Filter interviews since this date (ISO format)"),
     db: AsyncSession = Depends(get_db)
 ):
     """

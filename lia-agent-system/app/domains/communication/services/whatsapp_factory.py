@@ -5,14 +5,14 @@ Factory for creating WhatsApp provider instances based on company configuration.
 Supports multiple providers (Meta, Twilio) with company-specific settings.
 """
 
-import os
 import logging
-from typing import Optional, Dict
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+import os
 
-from app.domains.communication.services.whatsapp_provider import WhatsAppProvider, ProviderType
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.domains.communication.services.whatsapp_meta_service import MetaWhatsAppService
+from app.domains.communication.services.whatsapp_provider import ProviderType, WhatsAppProvider
 from app.domains.communication.services.whatsapp_twilio_service import TwilioWhatsAppService
 
 logger = logging.getLogger(__name__)
@@ -32,9 +32,9 @@ class WhatsAppProviderFactory:
         await provider.send_text_message(to, text)
     """
     
-    _provider_cache: Dict[str, WhatsAppProvider] = {}
-    _meta_instance: Optional[MetaWhatsAppService] = None
-    _twilio_instance: Optional[TwilioWhatsAppService] = None
+    _provider_cache: dict[str, WhatsAppProvider] = {}
+    _meta_instance: MetaWhatsAppService | None = None
+    _twilio_instance: TwilioWhatsAppService | None = None
     
     @classmethod
     def get_meta_provider(cls) -> MetaWhatsAppService:
@@ -54,7 +54,7 @@ class WhatsAppProviderFactory:
     async def get_provider(
         cls,
         company_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> WhatsAppProvider:
         """
         Get the appropriate WhatsApp provider for a company.
@@ -98,7 +98,7 @@ class WhatsAppProviderFactory:
     async def _determine_provider_type(
         cls,
         company_id: str,
-        db: Optional[AsyncSession]
+        db: AsyncSession | None
     ) -> ProviderType:
         """Determine which provider type to use for a company."""
         env_override = os.getenv(f"WHATSAPP_PROVIDER_{company_id}")
@@ -127,7 +127,7 @@ class WhatsAppProviderFactory:
         cls,
         company_id: str,
         db: AsyncSession
-    ) -> Optional[ProviderType]:
+    ) -> ProviderType | None:
         """Query company settings for WhatsApp provider preference."""
         try:
             from app.models.company import Company

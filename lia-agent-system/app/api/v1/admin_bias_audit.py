@@ -4,8 +4,8 @@ Admin endpoint: POST /api/v1/bias-audit/job/{job_id}/run-baseline
 Executa bias audit com dataset sintético para validação de baseline.
 Equivalente ao que Greenhouse e Workday oferecem como "compliance baseline check".
 """
+
 from fastapi import APIRouter, Depends, Path
-from typing import Optional
 
 router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 
@@ -25,8 +25,8 @@ async def run_bias_audit_baseline(
     Resultado: snapshot salvo (SOX-compliant) + resultado Four-Fifths.
     """
     from tests.fixtures.golden_dataset_bias import (
-        get_balanced_baseline_candidates,
         assert_four_fifths_rule,
+        get_balanced_baseline_candidates,
     )
 
     candidates = get_balanced_baseline_candidates(job_id=job_id)

@@ -11,19 +11,18 @@ Tests:
 7. PolicySetupAgent intent classification (natural responses)
 8. Model defaults and to_dict
 """
-import pytest
 import uuid
 from datetime import datetime
-from unittest.mock import AsyncMock, patch, MagicMock
+
 
 from app.models.company_hiring_policy import (
-    CompanyHiringPolicy,
+    ALL_DEFAULTS,
+    AUTOMATION_RULES_DEFAULTS,
+    COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
-    COMMUNICATION_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
-    AUTOMATION_RULES_DEFAULTS,
-    ALL_DEFAULTS,
+    CompanyHiringPolicy,
 )
 
 
@@ -187,7 +186,7 @@ class TestProgressCalculation:
         assert progress == 0
 
     def test_some_answered_questions_gives_partial(self):
-        from app.api.v1.hiring_policy import _calculate_progress, TOTAL_QUESTIONS
+        from app.api.v1.hiring_policy import TOTAL_QUESTIONS, _calculate_progress
         policy = CompanyHiringPolicy(
             id=uuid.uuid4(),
             company_id="test_company",
@@ -198,7 +197,7 @@ class TestProgressCalculation:
         assert progress == expected
 
     def test_all_questions_answered_is_100(self):
-        from app.api.v1.hiring_policy import _calculate_progress, TOTAL_QUESTIONS
+        from app.api.v1.hiring_policy import TOTAL_QUESTIONS, _calculate_progress
         all_questions = [f"q{i}" for i in range(TOTAL_QUESTIONS)]
         policy = CompanyHiringPolicy(
             id=uuid.uuid4(),
@@ -344,12 +343,12 @@ class TestPolicySchemas:
 
     def test_import_schemas(self):
         from app.schemas.company_hiring_policy import (
+            CompanyHiringPolicyBlockUpdate,
             CompanyHiringPolicyCreate,
             CompanyHiringPolicyResponse,
-            CompanyHiringPolicyBlockUpdate,
-            PolicyProgressResponse,
             PolicyChatMessage,
             PolicyChatResponse,
+            PolicyProgressResponse,
         )
         assert CompanyHiringPolicyCreate is not None
         assert CompanyHiringPolicyResponse is not None

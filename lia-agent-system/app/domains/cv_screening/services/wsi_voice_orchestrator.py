@@ -9,25 +9,25 @@ Orchestrates the complete voice screening workflow:
 4. Calculate WSI scores
 """
 
-import re
 import json
-import uuid
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
+import re
+import uuid
+from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
 from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.domains.cv_screening.services.wsi_service import (
-    wsi_service,
     Competency,
-    WSIQuestion,
     ResponseAnalysis,
-    WSIResult
+    WSIQuestion,
+    WSIResult,
+    wsi_service,
 )
+
 logger = logging.getLogger(__name__)
 
 _event_dispatcher = None
@@ -46,11 +46,11 @@ class VoiceScreeningRequest(BaseModel):
     """Request model for starting voice screening."""
     candidate_id: str
     job_vacancy_id: str
-    competencies: List[Dict[str, Any]]
+    competencies: list[dict[str, Any]]
     candidate_phone: str
     candidate_name: str
-    job_title: Optional[str] = None
-    job_description: Optional[str] = None
+    job_title: str | None = None
+    job_description: str | None = None
     mode: str = "compact"
 
 
@@ -78,7 +78,7 @@ class WSIVoiceOrchestrator:
         self.wsi_service = wsi_service
         logger.info("✅ WSI Voice Orchestrator initialized")
     
-    def _convert_snapshot_to_wsi_questions(self, snapshot: list) -> List[WSIQuestion]:
+    def _convert_snapshot_to_wsi_questions(self, snapshot: list) -> list[WSIQuestion]:
         converted = []
         for idx, q in enumerate(snapshot):
             text = q.get("text", q.get("question", q.get("question_text", "")))
@@ -112,15 +112,15 @@ class WSIVoiceOrchestrator:
         self,
         candidate_id: str,
         job_vacancy_id: str,
-        competencies: List[Competency],
+        competencies: list[Competency],
         candidate_phone: str,
         candidate_name: str,
-        job_title: Optional[str] = None,
-        job_description: Optional[str] = None,
-        seniority: Optional[str] = None,
+        job_title: str | None = None,
+        job_description: str | None = None,
+        seniority: str | None = None,
         mode: str = "compact",
-        enriched_jd: Optional[dict] = None,
-        db: Optional[AsyncSession] = None
+        enriched_jd: dict | None = None,
+        db: AsyncSession | None = None
     ) -> VoiceScreeningResult:
         """
         Start a voice screening session with WSI methodology.
@@ -151,7 +151,9 @@ class WSIVoiceOrchestrator:
         
         async def _execute_with_db(session: AsyncSession) -> VoiceScreeningResult:
             try:
-                from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
+                from app.domains.cv_screening.services.screening_question_set_service import (
+                    screening_question_set_service,
+                )
                 active_qs = await screening_question_set_service.get_active_version(session, job_vacancy_id)
                 
                 if active_qs and active_qs.questions_snapshot:
@@ -215,7 +217,7 @@ class WSIVoiceOrchestrator:
                 logger.info(f"💾 WSI session {session_id} saved to database")
                 
                 question_texts = [q.question_text for q in questions]
-                skill_names = list(set(c.name for c in competencies))
+                list(set(c.name for c in competencies))
                 
                 from app.domains.communication.services.twilio_voice_service import twilio_voice_service
                 call = await twilio_voice_service.start_screening_call(
@@ -279,9 +281,9 @@ class WSIVoiceOrchestrator:
         self,
         call_id: str,
         transcript: str,
-        transcript_object: Optional[List[Dict[str, Any]]] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[WSIResult]:
+        transcript_object: list[dict[str, Any]] | None = None,
+        db: AsyncSession | None = None
+    ) -> WSIResult | None:
         """
         Process a completed voice call and calculate WSI scores.
         
@@ -303,7 +305,7 @@ class WSIVoiceOrchestrator:
         """
         logger.info(f"🔄 Processing completed call: {call_id}")
         
-        async def _execute_with_db(session: AsyncSession) -> Optional[WSIResult]:
+        async def _execute_with_db(session: AsyncSession) -> WSIResult | None:
             result = await session.execute(text("""
                 SELECT id, candidate_id, job_vacancy_id, mode
                 FROM wsi_sessions
@@ -537,7 +539,7 @@ class WSIVoiceOrchestrator:
             logger.warning(f"⚠️ Error fetching company_id for vacancy {job_vacancy_id}: {e}")
             return "unknown"
     
-    def _build_job_context_from_competencies(self, competencies: List[Competency]) -> str:
+    def _build_job_context_from_competencies(self, competencies: list[Competency]) -> str:
         """Build job context string from competencies for voice screening."""
         technical = [c.name for c in competencies if c.type == "technical"]
         behavioral = [c.name for c in competencies if c.type == "behavioral"]
@@ -557,9 +559,9 @@ class WSIVoiceOrchestrator:
     def _extract_qa_pairs(
         self,
         transcript: str,
-        transcript_object: Optional[List[Dict[str, Any]]],
-        questions: List[WSIQuestion]
-    ) -> List[Dict[str, Any]]:
+        transcript_object: list[dict[str, Any]] | None,
+        questions: list[WSIQuestion]
+    ) -> list[dict[str, Any]]:
         """
         Extract Question/Answer pairs from transcript.
         
@@ -583,9 +585,9 @@ class WSIVoiceOrchestrator:
     
     def _extract_from_structured_transcript(
         self,
-        transcript_object: List[Dict[str, Any]],
-        questions: List[WSIQuestion]
-    ) -> List[Dict[str, Any]]:
+        transcript_object: list[dict[str, Any]],
+        questions: list[WSIQuestion]
+    ) -> list[dict[str, Any]]:
         """Extract Q/A pairs from structured transcript with speaker labels."""
         qa_pairs = []
         
@@ -639,8 +641,8 @@ class WSIVoiceOrchestrator:
     def _extract_from_raw_transcript(
         self,
         transcript: str,
-        questions: List[WSIQuestion]
-    ) -> List[Dict[str, Any]]:
+        questions: list[WSIQuestion]
+    ) -> list[dict[str, Any]]:
         """Extract Q/A pairs from raw transcript using pattern matching."""
         qa_pairs = []
         
@@ -700,11 +702,11 @@ class WSIVoiceOrchestrator:
     async def get_session_status(
         self,
         session_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """Get current status of a voice screening session."""
         
-        async def _execute_with_db(session: AsyncSession) -> Optional[Dict[str, Any]]:
+        async def _execute_with_db(session: AsyncSession) -> dict[str, Any] | None:
             result = await session.execute(text("""
                 SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
                        s.status, s.call_id, s.agent_id, s.started_at, s.completed_at,
@@ -747,11 +749,11 @@ class WSIVoiceOrchestrator:
     async def get_session_by_call_id(
         self,
         call_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """Get session by voice call ID."""
         
-        async def _execute_with_db(session: AsyncSession) -> Optional[Dict[str, Any]]:
+        async def _execute_with_db(session: AsyncSession) -> dict[str, Any] | None:
             result = await session.execute(text("""
                 SELECT id FROM wsi_sessions WHERE call_id = :call_id
             """), {"call_id": call_id})

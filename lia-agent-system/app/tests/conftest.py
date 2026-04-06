@@ -5,24 +5,20 @@ Provides async database sessions with proper transaction isolation,
 test users, job vacancies, and candidates. All test data is automatically
 rolled back after each test - no explicit cleanup needed.
 """
-import pytest
-import asyncio
 import os
+from collections.abc import AsyncGenerator
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from uuid import uuid4
-from datetime import datetime
-from typing import AsyncGenerator, List
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import text, select, delete, event
-from sqlalchemy.orm import sessionmaker
+import pytest
+from sqlalchemy import event
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.core.database import Base
-from app.core.config import settings
 from app.auth.models import User, UserRole
-from app.auth.security import get_password_hash, create_access_token
-from app.models.job_vacancy import JobVacancy
+from app.auth.security import create_access_token, get_password_hash
+from app.core.config import settings
 from app.models.candidate import Candidate, VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 
 
 def get_test_database_url():

@@ -2,24 +2,20 @@
 Job Drafts API endpoints.
 CRUD operations for job drafts in the wizard flow.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
-from typing import Optional, List
-from uuid import UUID
-from datetime import datetime
 import logging
+from datetime import datetime
+from uuid import UUID
 
-from app.core.database import get_db
-from app.models.job_draft import JobDraft, JobDraftStatus, DraftFieldHistory, ChangeType
-from app.models.job_vacancy import JobVacancy
-from app.auth.dependencies import (
-    get_current_user_or_demo,
-    get_user_company_id,
-    assert_resource_ownership
-)
-from app.auth.models import User
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
+from app.auth.models import User
+from app.core.database import get_db
+from app.models.job_draft import DraftFieldHistory, JobDraft, JobDraftStatus
+from app.models.job_vacancy import JobVacancy
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -28,46 +24,46 @@ logger = logging.getLogger(__name__)
 class JobDraftCreate(BaseModel):
     """Schema for creating a new job draft."""
     raw_input: str = Field(..., min_length=1, description="Raw job description text")
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
 
 class JobDraftUpdate(BaseModel):
     """Schema for partial update of a job draft."""
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    hybrid_days: Optional[int] = None
-    employment_type: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    currency: Optional[str] = None
-    country: Optional[str] = None
-    pj_rate: Optional[float] = None
-    skills: Optional[List[str]] = None
-    benefits: Optional[List[str]] = None
-    languages: Optional[List[str]] = None
-    behavioral_competencies: Optional[List[dict]] = None
-    screening_questions: Optional[List[dict]] = None
-    pipeline_stages: Optional[List[dict]] = None
-    generated_jd: Optional[str] = None
-    current_step: Optional[str] = None
-    status: Optional[str] = None
+    job_title: str | None = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    hybrid_days: int | None = None
+    employment_type: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    currency: str | None = None
+    country: str | None = None
+    pj_rate: float | None = None
+    skills: list[str] | None = None
+    benefits: list[str] | None = None
+    languages: list[str] | None = None
+    behavioral_competencies: list[dict] | None = None
+    screening_questions: list[dict] | None = None
+    pipeline_stages: list[dict] | None = None
+    generated_jd: str | None = None
+    current_step: str | None = None
+    status: str | None = None
 
 
 class JobDraftFieldHistoryResponse(BaseModel):
     """Schema for field history entry."""
     id: str
     field_name: str
-    old_value: Optional[dict] = None
-    new_value: Optional[dict] = None
+    old_value: dict | None = None
+    new_value: dict | None = None
     change_type: str
-    confidence_at_change: Optional[float] = None
-    source: Optional[str] = None
-    reason: Optional[str] = None
+    confidence_at_change: float | None = None
+    source: str | None = None
+    reason: str | None = None
     created_at: str
-    created_by: Optional[str] = None
+    created_by: str | None = None
 
 
 class JobDraftResponse(BaseModel):
@@ -75,49 +71,49 @@ class JobDraftResponse(BaseModel):
     id: str
     company_id: str
     recruiter_id: str
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
     status: str
-    current_step: Optional[str] = None
-    raw_input: Optional[str] = None
-    imported_jd: Optional[str] = None
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    hybrid_days: Optional[int] = None
-    employment_type: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    currency: Optional[str] = None
-    country: Optional[str] = None
-    pj_rate: Optional[float] = None
-    skills: Optional[List[str]] = []
-    benefits: Optional[List[str]] = []
-    languages: Optional[List[str]] = []
-    behavioral_competencies: Optional[List[dict]] = []
-    screening_questions: Optional[List[dict]] = []
-    pipeline_stages: Optional[List[dict]] = []
-    generated_jd: Optional[str] = None
-    inferred_fields: Optional[dict] = {}
-    confirmed_fields: Optional[dict] = {}
-    company_defaults_used: Optional[dict] = {}
-    confidence_map: Optional[dict] = {}
-    insights: Optional[List[dict]] = []
-    warnings: Optional[List[dict]] = []
-    estimated_ttf: Optional[int] = None
-    job_complexity: Optional[str] = None
-    published_job_id: Optional[str] = None
+    current_step: str | None = None
+    raw_input: str | None = None
+    imported_jd: str | None = None
+    job_title: str | None = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    hybrid_days: int | None = None
+    employment_type: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    currency: str | None = None
+    country: str | None = None
+    pj_rate: float | None = None
+    skills: list[str] | None = []
+    benefits: list[str] | None = []
+    languages: list[str] | None = []
+    behavioral_competencies: list[dict] | None = []
+    screening_questions: list[dict] | None = []
+    pipeline_stages: list[dict] | None = []
+    generated_jd: str | None = None
+    inferred_fields: dict | None = {}
+    confirmed_fields: dict | None = {}
+    company_defaults_used: dict | None = {}
+    confidence_map: dict | None = {}
+    insights: list[dict] | None = []
+    warnings: list[dict] | None = []
+    estimated_ttf: int | None = None
+    job_complexity: str | None = None
+    published_job_id: str | None = None
     created_at: str
     updated_at: str
-    structured_at: Optional[str] = None
-    reviewed_at: Optional[str] = None
-    published_at: Optional[str] = None
+    structured_at: str | None = None
+    reviewed_at: str | None = None
+    published_at: str | None = None
 
 
 class JobDraftListResponse(BaseModel):
     """Response schema for listing job drafts."""
-    drafts: List[JobDraftResponse]
+    drafts: list[JobDraftResponse]
     total: int
     page: int
     page_size: int
@@ -186,7 +182,7 @@ def _draft_to_response(draft: JobDraft) -> JobDraftResponse:
 
 @router.get("/job-drafts", response_model=JobDraftListResponse)
 async def list_job_drafts(
-    status: Optional[str] = Query(None, description="Filter by status"),
+    status: str | None = Query(None, description="Filter by status"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     current_user: User = Depends(get_current_user_or_demo),
@@ -258,10 +254,10 @@ async def get_job_draft(
     return _draft_to_response(draft)
 
 
-@router.get("/job-drafts/{draft_id}/history", response_model=List[JobDraftFieldHistoryResponse])
+@router.get("/job-drafts/{draft_id}/history", response_model=list[JobDraftFieldHistoryResponse])
 async def get_job_draft_history(
     draft_id: UUID,
-    field_name: Optional[str] = Query(None, description="Filter by field name"),
+    field_name: str | None = Query(None, description="Filter by field name"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db)
 ):
@@ -453,7 +449,7 @@ async def delete_job_draft(
 @router.post("/job-drafts/{draft_id}/publish", response_model=PublishDraftResponse)
 async def publish_job_draft(
     draft_id: UUID,
-    data: Optional[PublishDraftRequest] = None,
+    data: PublishDraftRequest | None = None,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db)
 ):

@@ -14,7 +14,6 @@ by Celery beat tasks that call ``check_and_reload()`` every 60 seconds.
 """
 import logging
 import os
-from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ AGENTS_REGISTRY_YAML = os.path.join(_BASE_DIR, "app", "agents_registry.yaml")
 TOOLS_REGISTRY_YAML = os.path.join(_BASE_DIR, "app", "tools", "tool_registry_metadata.yaml")
 
 
-def reload_agents_registry(yaml_path: str) -> List[str]:
+def reload_agents_registry(yaml_path: str) -> list[str]:
     """Load agents from *yaml_path* into the flat registry.
 
     Delegates to ``lia_agents_core.react_agent_registry.reload_from_yaml``.
@@ -63,7 +62,7 @@ class AgentRegistryWatcher:
     """
 
     def __init__(self) -> None:
-        self._last_mtime: Dict[str, float] = {}
+        self._last_mtime: dict[str, float] = {}
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -90,7 +89,7 @@ class AgentRegistryWatcher:
     # Public API
     # ------------------------------------------------------------------
 
-    async def check_and_reload(self) -> List[str]:
+    async def check_and_reload(self) -> list[str]:
         """Check both YAML files for changes and reload if needed.
 
         Returns:
@@ -98,7 +97,7 @@ class AgentRegistryWatcher:
             Tool registry reload is best-effort (logs only); names are not
             included in the return value.
         """
-        reloaded_agents: List[str] = []
+        reloaded_agents: list[str] = []
 
         # --- agents_registry.yaml ---
         if self._has_changed(AGENTS_REGISTRY_YAML):

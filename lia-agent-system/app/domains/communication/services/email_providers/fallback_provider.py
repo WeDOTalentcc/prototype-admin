@@ -7,14 +7,15 @@ retries via the fallback provider without requiring any caller changes.
 """
 import logging
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from .base import EmailProvider, EmailMessage, EmailResult
 from app.shared.resilience.circuit_breaker import (
     MAILGUN_CIRCUIT,
     RESEND_CIRCUIT,
     CircuitState,
 )
+
+from .base import EmailMessage, EmailProvider, EmailResult
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class FallbackEmailProvider(EmailProvider):
         self._primary = primary
         self._fallback = fallback
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         return {
             "provider": self.provider_name,
             "primary": self._primary.get_status(),
@@ -61,19 +62,19 @@ class FallbackEmailProvider(EmailProvider):
         to: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        text_content: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        headers: dict[str, str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> EmailResult:
         """Send email with automatic Mailgun→Resend failover."""
 
         primary_circuit_open = MAILGUN_CIRCUIT.state == CircuitState.OPEN
-        primary_result: Optional[EmailResult] = None
+        primary_result: EmailResult | None = None
 
         if not primary_circuit_open:
             try:
@@ -168,8 +169,8 @@ class FallbackEmailProvider(EmailProvider):
 
     async def send_bulk(
         self,
-        messages: List[EmailMessage],
-    ) -> List[EmailResult]:
+        messages: list[EmailMessage],
+    ) -> list[EmailResult]:
         """Send bulk emails with per-message failover."""
         results = []
         for msg in messages:

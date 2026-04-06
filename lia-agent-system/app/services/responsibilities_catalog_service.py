@@ -12,21 +12,21 @@ Features:
 - Benchmark against similar roles
 - Dynamic company-learned responsibilities from database
 """
-from typing import Dict, List, Optional, Any
-from difflib import SequenceMatcher
 import logging
 import re
 from dataclasses import dataclass
+from difflib import SequenceMatcher
+from typing import Any
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from app.models.company_learning import CompanyResponsibility
 
+from app.models.company_learning import CompanyResponsibility
 
 logger = logging.getLogger(__name__)
 
 
-RESPONSIBILITIES_CATALOG: Dict[str, Dict[str, List[str]]] = {
+RESPONSIBILITIES_CATALOG: dict[str, dict[str, list[str]]] = {
     "engineering": {
         "development": [
             "Desenvolver e manter aplicações de alta performance",
@@ -200,7 +200,7 @@ RESPONSIBILITIES_CATALOG: Dict[str, Dict[str, List[str]]] = {
 }
 
 
-SENIORITY_RESPONSIBILITIES: Dict[str, Dict[str, Any]] = {
+SENIORITY_RESPONSIBILITIES: dict[str, dict[str, Any]] = {
     "junior": {
         "focus": ["execução", "aprendizado", "suporte"],
         "keywords": ["apoiar", "auxiliar", "aprender", "executar", "participar"],
@@ -276,7 +276,7 @@ SENIORITY_RESPONSIBILITIES: Dict[str, Dict[str, Any]] = {
 }
 
 
-ROLE_RESPONSIBILITIES_MAPPING: Dict[str, Dict[str, Any]] = {
+ROLE_RESPONSIBILITIES_MAPPING: dict[str, dict[str, Any]] = {
     "desenvolvedor backend": {"area": "engineering", "category": "development"},
     "desenvolvedor frontend": {"area": "engineering", "category": "development"},
     "desenvolvedor fullstack": {"area": "engineering", "category": "development"},
@@ -389,7 +389,7 @@ class ResponsibilitiesCatalogService:
         
         return mapping.get(seniority, seniority)
     
-    def _fuzzy_match_role(self, role: str) -> Optional[str]:
+    def _fuzzy_match_role(self, role: str) -> str | None:
         """Find the best matching role in the catalog using fuzzy matching."""
         if not role:
             return None
@@ -409,8 +409,8 @@ class ResponsibilitiesCatalogService:
         self,
         role: str,
         seniority: str,
-        detected_responsibilities: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        detected_responsibilities: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Get expected responsibilities for a role and seniority level.
         
@@ -518,7 +518,7 @@ class ResponsibilitiesCatalogService:
         role: str,
         seniority: str,
         limit: int = 5
-    ) -> List[ResponsibilitySuggestion]:
+    ) -> list[ResponsibilitySuggestion]:
         """
         Suggest responsibilities for a role and seniority level.
         
@@ -552,8 +552,8 @@ class ResponsibilitiesCatalogService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None
-    ) -> List[str]:
+        role: str | None = None
+    ) -> list[str]:
         """
         Retrieve company-learned responsibilities from the database.
         
@@ -608,7 +608,7 @@ class ResponsibilitiesCatalogService:
         role: str,
         seniority: str,
         limit: int = 5
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Suggest responsibilities merging company-learned and static catalog responsibilities.
         
@@ -693,9 +693,9 @@ class ResponsibilitiesCatalogService:
     
     def validate_responsibilities_count(
         self,
-        responsibilities: List[str],
+        responsibilities: list[str],
         seniority: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate if the number of responsibilities is appropriate for the seniority.
         

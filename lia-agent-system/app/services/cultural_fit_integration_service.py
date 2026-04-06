@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +26,10 @@ class CulturalFitResult:
     wsi_contribution: float
     interview_contribution: float
     culture_alignment: float
-    strengths: List[str] = field(default_factory=list)
-    gaps: List[str] = field(default_factory=list)
-    computed_at: Optional[datetime] = None
-    error: Optional[str] = None
+    strengths: list[str] = field(default_factory=list)
+    gaps: list[str] = field(default_factory=list)
+    computed_at: datetime | None = None
+    error: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -108,7 +107,7 @@ class CulturalFitIntegrationService:
     async def _get_wsi_score(self, candidate_id: str, job_id: str, db) -> float:
         """Busca score WSI do candidato. Fallback: 50.0."""
         try:
-            from sqlalchemy import select, text
+            from sqlalchemy import text
             result = await db.execute(
                 text(
                     "SELECT score FROM wsi_sessions "

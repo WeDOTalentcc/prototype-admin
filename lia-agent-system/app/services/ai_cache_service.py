@@ -13,13 +13,13 @@ Architecture:
 - Graceful fallback to in-memory cache when Redis unavailable
 """
 
-import os
-import json
 import hashlib
+import json
+import os
 import re
-from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime
 from difflib import SequenceMatcher
+from typing import Any
 
 try:
     import redis
@@ -54,9 +54,9 @@ class AICacheService:
     }
     
     def __init__(self):
-        self.redis_client: Optional[Any] = None
-        self._memory_cache: Dict[str, Dict[str, Any]] = {}
-        self._similarity_index: Dict[str, List[Tuple[str, str]]] = {}
+        self.redis_client: Any | None = None
+        self._memory_cache: dict[str, dict[str, Any]] = {}
+        self._similarity_index: dict[str, list[tuple[str, str]]] = {}
         self._hits = 0
         self._misses = 0
         self._similarity_hits = 0
@@ -94,7 +94,7 @@ class AICacheService:
         cache_type: str, 
         content: str, 
         company_id: str,
-        extra_params: Optional[Dict[str, Any]] = None
+        extra_params: dict[str, Any] | None = None
     ) -> str:
         """Generate a unique cache key based on content and parameters."""
         normalized = self._normalize_text(content)
@@ -115,9 +115,9 @@ class AICacheService:
         cache_type: str,
         content: str,
         company_id: str,
-        extra_params: Optional[Dict[str, Any]] = None,
+        extra_params: dict[str, Any] | None = None,
         use_similarity: bool = True
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get cached AI response if available.
         
@@ -154,7 +154,7 @@ class AICacheService:
         self._misses += 1
         return None
     
-    async def _get_from_cache(self, cache_key: str) -> Optional[Dict[str, Any]]:
+    async def _get_from_cache(self, cache_key: str) -> dict[str, Any] | None:
         """Get data from Redis or memory cache. Always returns response_data only."""
         if self.redis_client:
             try:
@@ -181,7 +181,7 @@ class AICacheService:
         content: str,
         company_id: str,
         threshold: float
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Find a similar cached entry above the similarity threshold."""
         index_key = f"{cache_type}:{company_id}"
         stale_entries = []
@@ -209,9 +209,9 @@ class AICacheService:
         cache_type: str,
         content: str,
         company_id: str,
-        response_data: Dict[str, Any],
-        extra_params: Optional[Dict[str, Any]] = None,
-        ttl_hours: Optional[int] = None
+        response_data: dict[str, Any],
+        extra_params: dict[str, Any] | None = None,
+        ttl_hours: int | None = None
     ) -> bool:
         """
         Store AI response in cache.
@@ -246,7 +246,6 @@ class AICacheService:
             "company_id": company_id
         }
         
-        success = False
         
         if self.redis_client:
             try:
@@ -255,7 +254,6 @@ class AICacheService:
                     ttl_seconds,
                     json.dumps(cache_data)
                 )
-                success = True
             except Exception as e:
                 logger.warning(f"Redis set failed: {e}")
         
@@ -279,7 +277,7 @@ class AICacheService:
         cache_type: str,
         content: str,
         company_id: str,
-        extra_params: Optional[Dict[str, Any]] = None
+        extra_params: dict[str, Any] | None = None
     ) -> bool:
         """Invalidate a specific cache entry."""
         cache_key = self._generate_cache_key(cache_type, content, company_id, extra_params)
@@ -331,7 +329,7 @@ class AICacheService:
         logger.info(f"Invalidated {deleted_count} cache entries for company {company_id}")
         return deleted_count
     
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get cache performance metrics."""
         total = self._hits + self._misses
         hit_rate = (self._hits / total * 100) if total > 0 else 0

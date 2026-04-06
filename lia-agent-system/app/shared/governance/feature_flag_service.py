@@ -7,12 +7,12 @@ Provides feature toggles for:
 - Per-company feature control
 - Global feature switches
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 import logging
 import random
+from datetime import datetime
+from typing import Any
 
-from sqlalchemy import select, and_, or_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company_learning import FeatureFlag
@@ -90,15 +90,15 @@ class FeatureFlagService:
     
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._cache: Dict[str, Dict[str, Any]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
         self._cache_ttl = 300
-        self._cache_updated: Dict[str, datetime] = {}
+        self._cache_updated: dict[str, datetime] = {}
     
     async def is_enabled(
         self,
         db: AsyncSession,
         flag_key: str,
-        company_id: Optional[str] = None
+        company_id: str | None = None
     ) -> bool:
         """
         Check if a feature flag is enabled.
@@ -160,14 +160,14 @@ class FeatureFlagService:
         db: AsyncSession,
         flag_key: str,
         is_enabled: bool,
-        company_id: Optional[str] = None,
+        company_id: str | None = None,
         rollout_percentage: int = 100,
-        description: Optional[str] = None,
-        category: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        expires_at: Optional[datetime] = None,
-        created_by: Optional[str] = None
-    ) -> Dict[str, Any]:
+        description: str | None = None,
+        category: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        expires_at: datetime | None = None,
+        created_by: str | None = None
+    ) -> dict[str, Any]:
         """Set or update a feature flag."""
         try:
             stmt = select(FeatureFlag).where(
@@ -224,9 +224,9 @@ class FeatureFlagService:
     async def get_all_flags(
         self,
         db: AsyncSession,
-        company_id: Optional[str] = None,
-        category: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        company_id: str | None = None,
+        category: str | None = None
+    ) -> list[dict[str, Any]]:
         """Get all flags for a company, merged with defaults."""
         try:
             stmt = select(FeatureFlag)
@@ -283,7 +283,7 @@ class FeatureFlagService:
             self.logger.error(f"Error getting flags: {e}")
             return []
     
-    def _flag_to_dict(self, flag: FeatureFlag, is_overridden: bool = False) -> Dict[str, Any]:
+    def _flag_to_dict(self, flag: FeatureFlag, is_overridden: bool = False) -> dict[str, Any]:
         """Convert flag model to dictionary."""
         return {
             "id": str(flag.id),
@@ -303,7 +303,7 @@ class FeatureFlagService:
         self,
         db: AsyncSession,
         flag_key: str,
-        company_id: Optional[str] = None
+        company_id: str | None = None
     ) -> bool:
         """Delete a flag override (reverts to default)."""
         try:

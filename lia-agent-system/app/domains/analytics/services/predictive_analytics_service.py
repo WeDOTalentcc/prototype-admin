@@ -9,18 +9,18 @@ This service provides intelligent predictions for:
 - Cultural fit prediction
 - Salary acceptance probability
 """
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, case, text
-from enum import Enum
 import logging
-import math
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
-from app.models.job_vacancy import JobVacancy
+from sqlalchemy import and_, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import AsyncSessionLocal
 from app.models.candidate import Candidate
 from app.models.interview import Interview
-from app.core.database import AsyncSessionLocal
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class PredictiveAnalyticsService:
     def __init__(self):
         self.weights = self._load_model_weights()
     
-    def _load_model_weights(self) -> Dict[str, float]:
+    def _load_model_weights(self) -> dict[str, float]:
         """Load prediction model weights."""
         return {
             "wsi_score": 0.30,
@@ -73,8 +73,8 @@ class PredictiveAnalyticsService:
         self,
         candidate_id: str,
         job_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Predict the probability of hiring a specific candidate for a job.
         
@@ -182,8 +182,8 @@ class PredictiveAnalyticsService:
     async def predict_time_to_fill(
         self,
         job_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Predict time to fill a job vacancy.
         
@@ -286,8 +286,8 @@ class PredictiveAnalyticsService:
         self,
         candidate_id: str,
         job_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Predict risk of candidate dropping out of the process.
         
@@ -372,8 +372,8 @@ class PredictiveAnalyticsService:
         self,
         job_id: str,
         weeks_ahead: int = 4,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Generate pipeline forecast for a job.
         
@@ -465,9 +465,9 @@ class PredictiveAnalyticsService:
     
     async def get_analytics_dashboard(
         self,
-        user_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        user_id: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get comprehensive predictive analytics dashboard.
         """
@@ -529,7 +529,7 @@ class PredictiveAnalyticsService:
             if should_close:
                 await db.close()
     
-    async def _get_candidate_data(self, db: AsyncSession, candidate_id: str) -> Dict[str, Any]:
+    async def _get_candidate_data(self, db: AsyncSession, candidate_id: str) -> dict[str, Any]:
         """Get candidate data from database."""
         try:
             result = await db.execute(
@@ -557,7 +557,7 @@ class PredictiveAnalyticsService:
             "skills": ["Python", "SQL", "Leadership"]
         }
     
-    async def _get_job_data(self, db: AsyncSession, job_id: str) -> Dict[str, Any]:
+    async def _get_job_data(self, db: AsyncSession, job_id: str) -> dict[str, Any]:
         """Get job data from database."""
         try:
             result = await db.execute(
@@ -587,7 +587,7 @@ class PredictiveAnalyticsService:
             "salary_competitive": 0.7
         }
     
-    async def _get_interview_data(self, db: AsyncSession, candidate_id: str, job_id: str) -> Dict[str, Any]:
+    async def _get_interview_data(self, db: AsyncSession, candidate_id: str, job_id: str) -> dict[str, Any]:
         """Get interview data for candidate-job pair."""
         try:
             result = await db.execute(
@@ -611,7 +611,7 @@ class PredictiveAnalyticsService:
         
         return {"count": 0, "avg_score": None, "completed": 0}
     
-    async def _get_pipeline_data(self, db: AsyncSession, job_id: str) -> Dict[str, Any]:
+    async def _get_pipeline_data(self, db: AsyncSession, job_id: str) -> dict[str, Any]:
         """Get pipeline data for a job from database."""
         try:
             stage_result = await db.execute(text("""
@@ -651,7 +651,7 @@ class PredictiveAnalyticsService:
                 "weekly_inflow": 0
             }
     
-    async def _get_candidate_pipeline_data(self, db: AsyncSession, candidate_id: str, job_id: str) -> Dict[str, Any]:
+    async def _get_candidate_pipeline_data(self, db: AsyncSession, candidate_id: str, job_id: str) -> dict[str, Any]:
         """Get candidate's pipeline status from database."""
         try:
             vc_result = await db.execute(text("""
@@ -696,7 +696,7 @@ class PredictiveAnalyticsService:
                 "total_days_in_process": 0
             }
     
-    async def _get_active_jobs(self, db: AsyncSession, user_id: Optional[str]) -> List[Any]:
+    async def _get_active_jobs(self, db: AsyncSession, user_id: str | None) -> list[Any]:
         """Get active jobs."""
         try:
             result = await db.execute(
@@ -707,7 +707,7 @@ class PredictiveAnalyticsService:
             logger.warning(f"Could not fetch active jobs: {e}")
             return []
     
-    def _calculate_skills_match(self, candidate_skills: List[str], required_skills: List[str]) -> float:
+    def _calculate_skills_match(self, candidate_skills: list[str], required_skills: list[str]) -> float:
         """Calculate skills match percentage."""
         if not required_skills:
             return 0.7
@@ -721,21 +721,21 @@ class PredictiveAnalyticsService:
         matches = len(candidate_set & required_set)
         return matches / len(required_set)
     
-    def _calculate_response_score(self, candidate_data: Dict[str, Any]) -> float:
+    def _calculate_response_score(self, candidate_data: dict[str, Any]) -> float:
         """Calculate response time score."""
         return 0.75
     
-    def _calculate_cultural_fit(self, candidate_data: Dict[str, Any], job_data: Dict[str, Any]) -> float:
+    def _calculate_cultural_fit(self, candidate_data: dict[str, Any], job_data: dict[str, Any]) -> float:
         """Calculate cultural fit score."""
         return 0.70
     
-    def _calculate_confidence(self, factors: Dict[str, Any], interview_data: Dict[str, Any]) -> float:
+    def _calculate_confidence(self, factors: dict[str, Any], interview_data: dict[str, Any]) -> float:
         """Calculate prediction confidence."""
         data_completeness = sum(1 for f in factors.values() if f.get("normalized", 0) > 0) / len(factors)
         interview_factor = 0.9 if interview_data.get("completed", 0) > 0 else 0.6
         return min((data_completeness * 0.6 + interview_factor * 0.4) * 100, 95)
     
-    def _calculate_skills_rarity(self, skills: List[str]) -> float:
+    def _calculate_skills_rarity(self, skills: list[str]) -> float:
         """Calculate rarity of required skills."""
         rare_skills = {"rust", "haskell", "scala", "kubernetes", "terraform", "mlops"}
         if not skills:
@@ -744,16 +744,16 @@ class PredictiveAnalyticsService:
         rare_count = len(skill_set & rare_skills)
         return min(0.3 + (rare_count * 0.15), 0.95)
     
-    def _calculate_ttf_confidence(self, pipeline_data: Dict[str, Any], job_data: Dict[str, Any]) -> float:
+    def _calculate_ttf_confidence(self, pipeline_data: dict[str, Any], job_data: dict[str, Any]) -> float:
         """Calculate time-to-fill prediction confidence."""
         pipeline_factor = min(pipeline_data.get("total_candidates", 0) / 20, 1.0)
         return 60 + (pipeline_factor * 30)
     
-    def _analyze_response_pattern(self, candidate_data: Dict[str, Any]) -> float:
+    def _analyze_response_pattern(self, candidate_data: dict[str, Any]) -> float:
         """Analyze candidate response patterns."""
         return 0.7
     
-    def _detect_competing_offers(self, candidate_data: Dict[str, Any], pipeline_data: Dict[str, Any]) -> float:
+    def _detect_competing_offers(self, candidate_data: dict[str, Any], pipeline_data: dict[str, Any]) -> float:
         """Detect signals of competing offers."""
         days_in_process = pipeline_data.get("total_days_in_process", 0)
         if days_in_process > 30:
@@ -802,7 +802,7 @@ class PredictiveAnalyticsService:
             return RiskLevel.MEDIUM
         return RiskLevel.LOW
     
-    def _get_top_factors(self, factors: Dict[str, Any], top: int = 3) -> List[Dict[str, Any]]:
+    def _get_top_factors(self, factors: dict[str, Any], top: int = 3) -> list[dict[str, Any]]:
         """Get top contributing factors."""
         sorted_factors = sorted(
             factors.items(),
@@ -811,7 +811,7 @@ class PredictiveAnalyticsService:
         )
         return [{"factor": k, **v} for k, v in sorted_factors[:top]]
     
-    def _get_bottom_factors(self, factors: Dict[str, Any], bottom: int = 2) -> List[Dict[str, Any]]:
+    def _get_bottom_factors(self, factors: dict[str, Any], bottom: int = 2) -> list[dict[str, Any]]:
         """Get lowest contributing factors (areas of concern)."""
         sorted_factors = sorted(
             factors.items(),
@@ -819,7 +819,7 @@ class PredictiveAnalyticsService:
         )
         return [{"factor": k, **v} for k, v in sorted_factors[:bottom]]
     
-    def _get_next_stage(self, stage: str) -> Optional[str]:
+    def _get_next_stage(self, stage: str) -> str | None:
         """Get next stage in pipeline."""
         stages = ["applied", "screening", "interview_1", "interview_2", "technical", "final", "offer", "hired"]
         try:
@@ -830,7 +830,7 @@ class PredictiveAnalyticsService:
             pass
         return None
     
-    def _identify_bottlenecks(self, pipeline: Dict[str, int], conversion_rates: Dict[str, float]) -> List[Dict[str, Any]]:
+    def _identify_bottlenecks(self, pipeline: dict[str, int], conversion_rates: dict[str, float]) -> list[dict[str, Any]]:
         """Identify pipeline bottlenecks."""
         bottlenecks = []
         for stage, count in pipeline.items():
@@ -853,7 +853,7 @@ class PredictiveAnalyticsService:
             return "Candidato com potencial limitado - Avaliar alternativas antes de prosseguir"
         return "Baixa aderência ao perfil - Considerar outros candidatos"
     
-    def _generate_ttf_recommendations(self, adjustments: Dict[str, Any], predicted_days: float) -> List[str]:
+    def _generate_ttf_recommendations(self, adjustments: dict[str, Any], predicted_days: float) -> list[str]:
         """Generate recommendations to reduce time to fill."""
         recommendations = []
         
@@ -871,7 +871,7 @@ class PredictiveAnalyticsService:
         
         return recommendations or ["Pipeline saudável - manter ritmo atual"]
     
-    def _generate_dropout_prevention_actions(self, risk_factors: Dict[str, Any], risk_level: RiskLevel) -> List[str]:
+    def _generate_dropout_prevention_actions(self, risk_factors: dict[str, Any], risk_level: RiskLevel) -> list[str]:
         """Generate actions to prevent candidate dropout."""
         actions = []
         
@@ -888,7 +888,7 @@ class PredictiveAnalyticsService:
         
         return actions or ["Manter acompanhamento regular"]
     
-    def _generate_pipeline_recommendations(self, bottlenecks: List[Dict[str, Any]], fill_probability: float) -> List[str]:
+    def _generate_pipeline_recommendations(self, bottlenecks: list[dict[str, Any]], fill_probability: float) -> list[str]:
         """Generate pipeline improvement recommendations."""
         recommendations = []
         
@@ -900,7 +900,7 @@ class PredictiveAnalyticsService:
         
         return recommendations or ["Pipeline saudável - manter monitoramento"]
     
-    def _generate_dashboard_insights(self, summary: Dict[str, Any], predictions: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _generate_dashboard_insights(self, summary: dict[str, Any], predictions: dict[str, Any]) -> list[dict[str, Any]]:
         """Generate insights for dashboard."""
         insights = []
         

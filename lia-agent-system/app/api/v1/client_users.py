@@ -4,27 +4,34 @@ Client Users API Endpoints.
 Provides CRUD operations for managing users within a client company.
 Multi-tenant user management with roles and permissions.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 import logging
 import os
+from datetime import datetime
+from typing import Any
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.client_user import (
-    ClientUser, ClientUserRole, ClientUserStatus,
-    CLIENT_USER_ROLE_OPTIONS, CLIENT_USER_STATUS_OPTIONS
-)
-from app.models.client_account import ClientAccount
-from app.models.audit_log import AuditLog
-from app.schemas.client_user import (
-    ClientUserCreate, ClientUserUpdate, ClientUserRoleUpdate, ClientUserResponse,
-    AcceptInvitationRequest, AcceptInvitationResponse
-)
 from app.domains.communication.services.email_service import email_service
+from app.models.audit_log import AuditLog
+from app.models.client_account import ClientAccount
+from app.models.client_user import (
+    CLIENT_USER_ROLE_OPTIONS,
+    CLIENT_USER_STATUS_OPTIONS,
+    ClientUser,
+    ClientUserRole,
+    ClientUserStatus,
+)
+from app.schemas.client_user import (
+    AcceptInvitationRequest,
+    AcceptInvitationResponse,
+    ClientUserCreate,
+    ClientUserRoleUpdate,
+    ClientUserUpdate,
+)
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.wedotalent.com")
 
@@ -37,7 +44,7 @@ async def log_user_audit(
     action: str,
     user_email: str,
     performed_by: str,
-    details: Dict[str, Any] = None
+    details: dict[str, Any] = None
 ) -> None:
     """
     Log an audit entry for user management actions.
@@ -219,10 +226,10 @@ async def validate_invitation(
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """
     Get user context from request headers.
     """
@@ -240,7 +247,7 @@ def get_user_from_headers(
     }
 
 
-def validate_client_access(client_id: str, current_user: Dict[str, Any]) -> None:
+def validate_client_access(client_id: str, current_user: dict[str, Any]) -> None:
     """
     Validate that the user has access to the specified client.
     Admin users can access any client, others only their own company.
@@ -300,12 +307,12 @@ async def list_options():
 @router.get("", summary="List users for a client")
 async def list_client_users(
     client_id: str,
-    status: Optional[str] = Query(None, description="Filter by status"),
-    role: Optional[str] = Query(None, description="Filter by role"),
-    search: Optional[str] = Query(None, description="Search by name or email"),
+    status: str | None = Query(None, description="Filter by status"),
+    role: str | None = Query(None, description="Filter by role"),
+    search: str | None = Query(None, description="Search by name or email"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -374,7 +381,7 @@ async def list_client_users(
 async def get_client_user(
     client_id: str,
     user_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -428,7 +435,7 @@ async def get_client_user(
 async def create_client_user(
     client_id: str,
     data: ClientUserCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -549,7 +556,7 @@ async def update_client_user(
     client_id: str,
     user_id: str,
     data: ClientUserUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -634,7 +641,7 @@ async def update_client_user(
 async def delete_client_user(
     client_id: str,
     user_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -707,7 +714,7 @@ async def delete_client_user(
 async def resend_invite(
     client_id: str,
     user_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -807,7 +814,7 @@ async def update_user_role(
     client_id: str,
     user_id: str,
     data: ClientUserRoleUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

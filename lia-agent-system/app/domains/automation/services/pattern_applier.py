@@ -10,14 +10,13 @@ Gracefully degrades when no patterns exist (returns None/empty).
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from sqlalchemy import select, and_, or_
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, or_, select
 
 from app.core.database import async_session_factory
-from app.models.intelligence_layer import PatternCache, CorrectionPattern, SuccessProfile
 from app.models.company_learning import CompanySkill
+from app.models.intelligence_layer import PatternCache, SuccessProfile
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +38,8 @@ class PatternApplier:
         self,
         company_id: str,
         field_name: str,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get adjusted value for a field based on cached correction patterns.
         
@@ -53,9 +52,9 @@ class PatternApplier:
             Dictionary with adjustment info or None if no patterns exist
         """
         ctx = context or {}
-        role = ctx.get("role")
+        ctx.get("role")
         seniority = ctx.get("seniority")
-        department = ctx.get("department")
+        ctx.get("department")
 
         try:
             async with async_session_factory() as db:
@@ -117,9 +116,9 @@ class PatternApplier:
     async def get_promoted_skills(
         self,
         company_id: str,
-        job_title: Optional[str] = None,
-        department: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        job_title: str | None = None,
+        department: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get promoted skills for a company, optionally filtered by context.
         
@@ -173,9 +172,9 @@ class PatternApplier:
     async def get_success_profile_hints(
         self,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+        role: str | None = None,
+        seniority: str | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get hints from success profiles for a given context.
         

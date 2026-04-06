@@ -11,26 +11,26 @@ Includes:
 - POST /screen-candidate
 - POST /trigger-event
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
 import logging
 import uuid
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
+
 from ._shared import (
-    automation_trigger_service,
-    automation_service,
-    get_cv_scoring_service,
-    get_email_service,
-    get_whatsapp_service,
-    get_activity_service,
-    get_scheduling_service,
-    UpdateTriggerRequest,
     ExecuteActionRequest,
     ScreenCandidateRequest,
     TriggerEventRequest,
+    UpdateTriggerRequest,
+    automation_service,
+    automation_trigger_service,
+    get_activity_service,
+    get_cv_scoring_service,
+    get_email_service,
+    get_scheduling_service,
+    get_whatsapp_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -124,10 +124,10 @@ async def get_automation_status():
 
 @router.get("/stage-suggestions")
 async def get_stage_suggestions(
-    from_stage: Optional[str] = Query(None, description="Previous stage name"),
+    from_stage: str | None = Query(None, description="Previous stage name"),
     to_stage: str = Query(..., description="Target stage name"),
-    candidate_id: Optional[str] = Query(None, description="Candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Vacancy ID"),
+    candidate_id: str | None = Query(None, description="Candidate ID"),
+    vacancy_id: str | None = Query(None, description="Vacancy ID"),
     company_id: str = Query(..., description="Company ID for multi-tenancy")
 ):
     """
@@ -278,7 +278,7 @@ async def execute_action(
             await activity_service.create_activity(
                 activity_type="wsi_screening_invite",
                 title="Convite para Triagem WSI Enviado",
-                description=f"Convite para triagem WSI enviado para candidato",
+                description="Convite para triagem WSI enviado para candidato",
                 actor_id="system",
                 actor_name="LIA Automation",
                 actor_type="system",

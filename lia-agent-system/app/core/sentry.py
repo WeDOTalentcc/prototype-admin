@@ -13,9 +13,8 @@ O módulo é gracefully degradável:
 - Sem sentry-sdk instalado → log WARNING + retorna False
 - Qualquer outra falha → log WARNING + retorna False
 """
-import re
 import logging
-from typing import Any, Optional
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ def _scrub_pii(text: str) -> str:
     return text
 
 
-def _before_send(event: dict, hint: dict) -> Optional[dict]:
+def _before_send(event: dict, hint: dict) -> dict | None:
     """
     Hook Sentry before_send: remove PII de exception messages e breadcrumbs.
 
@@ -63,7 +62,7 @@ def _before_send(event: dict, hint: dict) -> Optional[dict]:
     return event
 
 
-def init_sentry(dsn: Optional[str] = None) -> bool:
+def init_sentry(dsn: str | None = None) -> bool:
     """
     Inicializa Sentry se DSN disponível.
 

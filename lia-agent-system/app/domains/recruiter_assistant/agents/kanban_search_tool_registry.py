@@ -4,12 +4,12 @@ Kanban Search Tool Registry — Tools for candidate and pipeline data queries.
 Subset of kanban_tool_registry for KanbanSearchAgent (6 tools).
 Focus: read-only queries on candidates and pipeline state.
 """
-from typing import List
 
 from lia_agents_core.react_loop import ToolDefinition
+
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
 
-_SEARCH_TOOL_NAMES: List[str] = [
+_SEARCH_TOOL_NAMES: list[str] = [
     "view_candidate_full_profile",
     "list_stage_candidates",
     "get_pipeline_summary",
@@ -19,6 +19,6 @@ _SEARCH_TOOL_NAMES: List[str] = [
 ]
 
 
-def get_kanban_search_tools() -> List[ToolDefinition]:
+def get_kanban_search_tools() -> list[ToolDefinition]:
     """Return the 6 read-only search/query tools for KanbanSearchAgent."""
     return [_TOOL_MAP[name] for name in _SEARCH_TOOL_NAMES if name in _TOOL_MAP]

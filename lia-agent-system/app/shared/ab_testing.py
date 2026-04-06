@@ -23,9 +23,9 @@ Usage:
 import hashlib
 import logging
 import time
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class PromptVariant:
     prompt: str
     weight: float = 0.5
     impressions: int = 0
-    outcomes: List[Dict[str, Any]] = field(default_factory=list)
+    outcomes: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def avg_satisfaction(self) -> float:
@@ -49,8 +49,8 @@ class PromptVariant:
 @dataclass
 class PromptExperiment:
     name: str
-    variants: Dict[str, PromptVariant]
-    traffic_split: Dict[str, float]
+    variants: dict[str, PromptVariant]
+    traffic_split: dict[str, float]
     is_active: bool = True
     created_at: float = field(default_factory=time.time)
     description: str = ""
@@ -62,14 +62,14 @@ class ExperimentManager:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._experiments: Dict[str, PromptExperiment] = {}
+            cls._instance._experiments: dict[str, PromptExperiment] = {}
         return cls._instance
 
     def create_experiment(
         self,
         name: str,
-        variants: Dict[str, str],
-        traffic_split: Optional[Dict[str, float]] = None,
+        variants: dict[str, str],
+        traffic_split: dict[str, float] | None = None,
         description: str = "",
     ) -> PromptExperiment:
         if not traffic_split:
@@ -101,7 +101,7 @@ class ExperimentManager:
         logger.info(f"[A/B] Created experiment '{name}' with {len(variants)} variants")
         return experiment
 
-    def get_variant(self, experiment_name: str, user_id: str) -> Optional[PromptVariant]:
+    def get_variant(self, experiment_name: str, user_id: str) -> PromptVariant | None:
         experiment = self._experiments.get(experiment_name)
         if not experiment or not experiment.is_active:
             return None
@@ -130,7 +130,7 @@ class ExperimentManager:
         self,
         experiment_name: str,
         user_id: str,
-        metrics: Dict[str, Any],
+        metrics: dict[str, Any],
     ) -> None:
         experiment = self._experiments.get(experiment_name)
         if not experiment:
@@ -144,7 +144,7 @@ class ExperimentManager:
                 **metrics,
             })
 
-    def get_experiment_results(self, experiment_name: str) -> Optional[Dict[str, Any]]:
+    def get_experiment_results(self, experiment_name: str) -> dict[str, Any] | None:
         experiment = self._experiments.get(experiment_name)
         if not experiment:
             return None
@@ -171,7 +171,7 @@ class ExperimentManager:
             experiment.is_active = False
             logger.info(f"[A/B] Deactivated experiment '{experiment_name}'")
 
-    def list_experiments(self) -> List[Dict[str, Any]]:
+    def list_experiments(self) -> list[dict[str, Any]]:
         return [
             {
                 "name": e.name,

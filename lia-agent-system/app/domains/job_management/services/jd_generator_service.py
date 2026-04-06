@@ -11,13 +11,12 @@ collected criteria, with support for:
 """
 import json
 import logging
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
-from app.services.llm import llm_service, LLMProvider
 from app.services.ai_cache_service import ai_cache_service
-
+from app.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -33,20 +32,20 @@ class JobDescriptionSection(str, Enum):
 @dataclass
 class JobDescriptionInput:
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    work_model: Optional[str] = None
-    location: Optional[str] = None
-    skills: Optional[List[str]] = None
-    behavioral_competencies: Optional[List[str]] = None
-    salary_range: Optional[Dict[str, float]] = None
-    benefits: Optional[List[str]] = None
-    company_name: Optional[str] = None
-    company_culture: Optional[str] = None
-    additional_info: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    work_model: str | None = None
+    location: str | None = None
+    skills: list[str] | None = None
+    behavioral_competencies: list[str] | None = None
+    salary_range: dict[str, float] | None = None
+    benefits: list[str] | None = None
+    company_name: str | None = None
+    company_culture: str | None = None
+    additional_info: str | None = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "JobDescriptionInput":
+    def from_dict(cls, data: dict[str, Any]) -> "JobDescriptionInput":
         return cls(
             title=data.get("title", ""),
             department=data.get("department"),
@@ -66,12 +65,12 @@ class JobDescriptionInput:
 @dataclass
 class JobDescriptionOutput:
     full_description: str
-    sections: Dict[str, str]
+    sections: dict[str, str]
     summary: str
     seo_title: str
-    tags: List[str]
+    tags: list[str]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "full_description": self.full_description,
             "sections": self.sections,
@@ -98,7 +97,7 @@ class JobDescriptionGeneratorService:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
     
-    def _build_job_context(self, job_data: Dict[str, Any]) -> str:
+    def _build_job_context(self, job_data: dict[str, Any]) -> str:
         """Build a context string from job data for prompts."""
         parts = []
         
@@ -160,7 +159,7 @@ class JobDescriptionGeneratorService:
         
         return "\n".join(parts)
     
-    def _parse_json_response(self, response: str) -> Dict[str, Any]:
+    def _parse_json_response(self, response: str) -> dict[str, Any]:
         """Parse JSON from LLM response, handling markdown code blocks."""
         cleaned = response.strip()
         
@@ -182,11 +181,11 @@ class JobDescriptionGeneratorService:
     
     async def generate_full_description(
         self,
-        job_data: Dict[str, Any],
+        job_data: dict[str, Any],
         company_id: str,
-        provider: Optional[LLMProvider] = None,
+        provider: LLMProvider | None = None,
         use_cache: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a complete, professional job description.
         
@@ -321,10 +320,10 @@ Responda APENAS com o JSON, sem explicações adicionais."""
     
     async def generate_section(
         self,
-        job_data: Dict[str, Any],
+        job_data: dict[str, Any],
         section: str,
-        provider: Optional[LLMProvider] = None
-    ) -> Dict[str, Any]:
+        provider: LLMProvider | None = None
+    ) -> dict[str, Any]:
         """
         Generate a specific section of the job description.
         
@@ -419,8 +418,8 @@ Responda APENAS com o JSON."""
         self,
         current_text: str,
         feedback: str,
-        provider: Optional[LLMProvider] = None
-    ) -> Dict[str, Any]:
+        provider: LLMProvider | None = None
+    ) -> dict[str, Any]:
         """
         Improve an existing job description based on feedback.
         
@@ -490,8 +489,8 @@ Responda APENAS com o JSON."""
         self,
         text: str,
         target_language: str,
-        provider: Optional[LLMProvider] = None
-    ) -> Dict[str, Any]:
+        provider: LLMProvider | None = None
+    ) -> dict[str, Any]:
         """
         Translate a job description to another language.
         
@@ -568,7 +567,7 @@ Respond ONLY with the JSON."""
                 "error": str(e)
             }
     
-    def generate_description(self, job_data: Dict[str, Any], company_context: Optional[Dict[str, Any]] = None) -> str:
+    def generate_description(self, job_data: dict[str, Any], company_context: dict[str, Any] | None = None) -> str:
         """
         Generate a professional job description based on job criteria (synchronous, no LLM).
         
@@ -585,7 +584,7 @@ Respond ONLY with the JSON."""
         """
         title = job_data.get('job_title') or job_data.get('cargo') or job_data.get('title') or 'Vaga'
         seniority = job_data.get('seniority') or job_data.get('senioridadeIdiomas') or ''
-        department = job_data.get('department') or job_data.get('gestorArea') or ''
+        job_data.get('department') or job_data.get('gestorArea') or ''
         location = job_data.get('location') or job_data.get('localizacao') or ''
         work_model = job_data.get('work_model') or job_data.get('modeloTrabalho') or ''
         company_name = job_data.get('company_name') or (company_context.get('name') if company_context else None) or "[Nome da Empresa]"
@@ -659,7 +658,7 @@ Respond ONLY with the JSON."""
         
         return "".join(sections)
 
-    def _create_fallback_response(self, job_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_fallback_response(self, job_data: dict[str, Any]) -> dict[str, Any]:
         """Create a basic fallback response when LLM generation fails. Uses ONLY provided data."""
         title = job_data.get("title", "Vaga")
         company_name = job_data.get("company_name") or "[Nome da Empresa]"
@@ -675,7 +674,7 @@ Respond ONLY with the JSON."""
         sections_md = []
         sections_md.append(f"# {title}\n")
         
-        about_parts = [f"## Sobre a Empresa\n"]
+        about_parts = ["## Sobre a Empresa\n"]
         if company_description:
             about_parts.append(f"{company_name} — {company_description}")
         else:
@@ -694,20 +693,18 @@ Respond ONLY with the JSON."""
             sections_md.append(resp_text + "\n")
         
         req_parts = ["## Requisitos\n"]
-        req_tech = ""
         if tech_skills:
             req_parts.append("### Requisitos Técnicos\n")
             for s in tech_skills:
                 skill_name = s.get("name", s) if isinstance(s, dict) else s
                 req_parts.append(f"- {skill_name}")
-            req_tech = "\n".join(req_parts[1:])
-        req_behav = ""
+            "\n".join(req_parts[1:])
         if behavioral:
             req_parts.append("\n### Requisitos Comportamentais\n")
             for c in behavioral:
                 comp_name = c.get("name", c) if isinstance(c, dict) else c
                 req_parts.append(f"- {comp_name}")
-            req_behav = "\n".join([l for l in req_parts if "Comportamentais" in l or (req_parts.index(l) > len(req_parts)//2)]) if behavioral else ""
+            "\n".join([l for l in req_parts if "Comportamentais" in l or (req_parts.index(l) > len(req_parts)//2)]) if behavioral else ""
         req_text = "\n".join(req_parts)
         sections_md.append(req_text + "\n")
         

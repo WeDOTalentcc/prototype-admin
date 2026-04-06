@@ -2,10 +2,11 @@
 Sourcing & Engagement State schema for workflow steps 14-27.
 Tracks candidate pipeline, outreach, screening, and feedback workflow.
 """
-from typing import Optional, List, Dict, Any, Literal
-from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 
 class CandidateMatchScore(BaseModel):
@@ -44,31 +45,31 @@ class PipelineCandidate(BaseModel):
     """Candidate in the sourcing/engagement pipeline."""
     candidate_id: str
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    whatsapp: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    current_role: Optional[str] = None
-    current_company: Optional[str] = None
+    email: str | None = None
+    phone: str | None = None
+    whatsapp: str | None = None
+    linkedin_url: str | None = None
+    current_role: str | None = None
+    current_company: str | None = None
     source: Literal["local", "pearch", "referral", "application"] = "local"
-    match_score: Optional[CandidateMatchScore] = None
+    match_score: CandidateMatchScore | None = None
     status: CandidateStatus = CandidateStatus.IDENTIFIED
-    calibration_result: Optional[Literal["approved", "rejected"]] = None
-    calibration_feedback: Optional[str] = None
+    calibration_result: Literal["approved", "rejected"] | None = None
+    calibration_feedback: str | None = None
     outreach_attempts: int = 0
-    last_outreach_at: Optional[datetime] = None
-    outreach_channel: Optional[Literal["email", "whatsapp", "linkedin"]] = None
-    screening_started_at: Optional[datetime] = None
-    screening_completed_at: Optional[datetime] = None
-    screening_deadline: Optional[datetime] = None
-    wsi_score: Optional[float] = None
-    wsi_report: Optional[Dict[str, Any]] = None
+    last_outreach_at: datetime | None = None
+    outreach_channel: Literal["email", "whatsapp", "linkedin"] | None = None
+    screening_started_at: datetime | None = None
+    screening_completed_at: datetime | None = None
+    screening_deadline: datetime | None = None
+    wsi_score: float | None = None
+    wsi_report: dict[str, Any] | None = None
     feedback_sent: bool = False
-    feedback_content: Optional[str] = None
-    feedback_sent_at: Optional[datetime] = None
-    interview_scheduled_at: Optional[datetime] = None
-    interview_link: Optional[str] = None
-    notes: List[str] = Field(default_factory=list)
+    feedback_content: str | None = None
+    feedback_sent_at: datetime | None = None
+    interview_scheduled_at: datetime | None = None
+    interview_link: str | None = None
+    notes: list[str] = Field(default_factory=list)
     added_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -76,11 +77,11 @@ class PipelineCandidate(BaseModel):
 class CalibrationSession(BaseModel):
     """Calibration session with recruiter."""
     session_id: str
-    candidates_presented: List[str] = Field(default_factory=list)
-    approvals: List[str] = Field(default_factory=list)
-    rejections: List[str] = Field(default_factory=list)
-    feedback_notes: Dict[str, str] = Field(default_factory=dict)
-    learned_preferences: Dict[str, Any] = Field(default_factory=dict)
+    candidates_presented: list[str] = Field(default_factory=list)
+    approvals: list[str] = Field(default_factory=list)
+    rejections: list[str] = Field(default_factory=list)
+    feedback_notes: dict[str, str] = Field(default_factory=dict)
+    learned_preferences: dict[str, Any] = Field(default_factory=dict)
     completed: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -94,7 +95,7 @@ class VolumeAssessment(BaseModel):
     medium_match_count: int = 0
     low_match_count: int = 0
     is_satisfactory: bool = False
-    recommendation: Optional[str] = None
+    recommendation: str | None = None
     suggested_action: Literal["proceed", "expand_local", "expand_global", "adjust_criteria"] = "proceed"
 
 
@@ -106,25 +107,25 @@ class GlobalSearchRequest(BaseModel):
     estimated_candidates: int = 0
     actual_credits_used: float = 0
     actual_candidates_found: int = 0
-    search_params: Dict[str, Any] = Field(default_factory=dict)
-    thread_id: Optional[str] = None
-    requested_at: Optional[datetime] = None
-    approved_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    search_params: dict[str, Any] = Field(default_factory=dict)
+    thread_id: str | None = None
+    requested_at: datetime | None = None
+    approved_at: datetime | None = None
+    completed_at: datetime | None = None
 
 
 class OutreachCampaign(BaseModel):
     """Email/WhatsApp outreach campaign."""
     campaign_id: str
-    candidates_targeted: List[str] = Field(default_factory=list)
-    candidates_contacted: List[str] = Field(default_factory=list)
-    candidates_responded: List[str] = Field(default_factory=list)
+    candidates_targeted: list[str] = Field(default_factory=list)
+    candidates_contacted: list[str] = Field(default_factory=list)
+    candidates_responded: list[str] = Field(default_factory=list)
     template_used: str = "default"
     channel: Literal["email", "whatsapp"] = "email"
     status: Literal["pending", "in_progress", "completed", "paused"] = "pending"
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
 
 class ScreeningSession(BaseModel):
@@ -133,18 +134,18 @@ class ScreeningSession(BaseModel):
     candidate_id: str
     channel: Literal["web_chat", "whatsapp", "voice"] = "web_chat"
     status: Literal["invited", "in_progress", "completed", "expired", "cancelled"] = "invited"
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     deadline: datetime
-    messages: List[Dict[str, Any]] = Field(default_factory=list)
-    transcript: Optional[str] = None
-    wsi_evaluation: Optional[Dict[str, Any]] = None
-    strengths: List[str] = Field(default_factory=list)
-    development_areas: List[str] = Field(default_factory=list)
-    overall_score: Optional[float] = None
-    passed: Optional[bool] = None
+    messages: list[dict[str, Any]] = Field(default_factory=list)
+    transcript: str | None = None
+    wsi_evaluation: dict[str, Any] | None = None
+    strengths: list[str] = Field(default_factory=list)
+    development_areas: list[str] = Field(default_factory=list)
+    overall_score: float | None = None
+    passed: bool | None = None
     reminder_sent: bool = False
-    reminder_sent_at: Optional[datetime] = None
+    reminder_sent_at: datetime | None = None
 
 
 class CandidateFeedback(BaseModel):
@@ -152,12 +153,12 @@ class CandidateFeedback(BaseModel):
     feedback_id: str
     candidate_id: str
     type: Literal["screening_passed", "screening_failed", "rejected", "process_closed"] = "screening_passed"
-    strengths: List[str] = Field(default_factory=list)
-    development_areas: List[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    development_areas: list[str] = Field(default_factory=list)
     message: str
     channel: Literal["email", "whatsapp"] = "email"
     sent: bool = False
-    sent_at: Optional[datetime] = None
+    sent_at: datetime | None = None
     customized_by_recruiter: bool = False
 
 
@@ -167,15 +168,15 @@ class RecruiterNotification(BaseModel):
     type: Literal["screening_completed", "approval_needed", "interview_reminder", "daily_briefing", "end_of_day", "alert"]
     title: str
     message: str
-    data: Dict[str, Any] = Field(default_factory=dict)
+    data: dict[str, Any] = Field(default_factory=dict)
     action_required: bool = False
-    action_type: Optional[Literal["approve", "reject", "schedule", "confirm", "review"]] = None
-    candidate_ids: List[str] = Field(default_factory=list)
+    action_type: Literal["approve", "reject", "schedule", "confirm", "review"] | None = None
+    candidate_ids: list[str] = Field(default_factory=list)
     sent: bool = False
-    sent_at: Optional[datetime] = None
+    sent_at: datetime | None = None
     acknowledged: bool = False
-    acknowledged_at: Optional[datetime] = None
-    response: Optional[str] = None
+    acknowledged_at: datetime | None = None
+    response: str | None = None
 
 
 class SourcingEngagementState(BaseModel):
@@ -184,45 +185,45 @@ class SourcingEngagementState(BaseModel):
     """
     job_id: str
     job_title: str
-    company_name: Optional[str] = None
+    company_name: str | None = None
     is_confidential: bool = False
     current_phase: Literal["sourcing", "calibration", "engagement", "screening", "decision", "closing"] = "sourcing"
     current_step: int = 14
-    candidates: List[PipelineCandidate] = Field(default_factory=list)
-    calibration_sessions: List[CalibrationSession] = Field(default_factory=list)
-    volume_assessment: Optional[VolumeAssessment] = None
-    global_search: Optional[GlobalSearchRequest] = None
-    outreach_campaigns: List[OutreachCampaign] = Field(default_factory=list)
-    screening_sessions: List[ScreeningSession] = Field(default_factory=list)
-    candidate_feedbacks: List[CandidateFeedback] = Field(default_factory=list)
-    recruiter_notifications: List[RecruiterNotification] = Field(default_factory=list)
+    candidates: list[PipelineCandidate] = Field(default_factory=list)
+    calibration_sessions: list[CalibrationSession] = Field(default_factory=list)
+    volume_assessment: VolumeAssessment | None = None
+    global_search: GlobalSearchRequest | None = None
+    outreach_campaigns: list[OutreachCampaign] = Field(default_factory=list)
+    screening_sessions: list[ScreeningSession] = Field(default_factory=list)
+    candidate_feedbacks: list[CandidateFeedback] = Field(default_factory=list)
+    recruiter_notifications: list[RecruiterNotification] = Field(default_factory=list)
     governance_auto_schedule: bool = False
     governance_auto_feedback: bool = False
     governance_requires_approval: bool = True
     score_threshold_high: float = 80.0
     score_threshold_medium: float = 60.0
     screening_window_hours: int = 24
-    hired_candidate_id: Optional[str] = None
-    closed_at: Optional[datetime] = None
-    close_reason: Optional[Literal["hired", "cancelled", "on_hold"]] = None
+    hired_candidate_id: str | None = None
+    closed_at: datetime | None = None
+    close_reason: Literal["hired", "cancelled", "on_hold"] | None = None
     mass_feedback_sent: bool = False
-    mass_feedback_sent_at: Optional[datetime] = None
+    mass_feedback_sent_at: datetime | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    def get_candidates_by_status(self, status: CandidateStatus) -> List[PipelineCandidate]:
+    def get_candidates_by_status(self, status: CandidateStatus) -> list[PipelineCandidate]:
         """Get all candidates with a specific status."""
         return [c for c in self.candidates if c.status == status]
 
-    def get_high_match_candidates(self) -> List[PipelineCandidate]:
+    def get_high_match_candidates(self) -> list[PipelineCandidate]:
         """Get candidates with high match score (>=80%)."""
         return [c for c in self.candidates if c.match_score and c.match_score.overall_score >= self.score_threshold_high]
 
-    def get_pending_approval_candidates(self) -> List[PipelineCandidate]:
+    def get_pending_approval_candidates(self) -> list[PipelineCandidate]:
         """Get candidates pending recruiter decision."""
         return [c for c in self.candidates if c.status == CandidateStatus.PENDING_RECRUITER_DECISION]
 
-    def get_pending_feedback_candidates(self) -> List[PipelineCandidate]:
+    def get_pending_feedback_candidates(self) -> list[PipelineCandidate]:
         """Get candidates who haven't received feedback yet."""
         return [c for c in self.candidates if not c.feedback_sent and c.status in [
             CandidateStatus.REJECTED,
@@ -230,12 +231,12 @@ class SourcingEngagementState(BaseModel):
             CandidateStatus.SCREENING_EXPIRED
         ]]
 
-    def get_expired_screenings(self) -> List[ScreeningSession]:
+    def get_expired_screenings(self) -> list[ScreeningSession]:
         """Get screening sessions that have expired."""
         now = datetime.utcnow()
         return [s for s in self.screening_sessions if s.status == "in_progress" and s.deadline < now]
 
-    def calculate_pipeline_stats(self) -> Dict[str, int]:
+    def calculate_pipeline_stats(self) -> dict[str, int]:
         """Calculate pipeline statistics."""
         stats = {
             "total": len(self.candidates),
@@ -278,7 +279,7 @@ class SourcingEngagementState(BaseModel):
         candidate_id: str,
         name: str,
         source: Literal["local", "pearch", "referral", "application"],
-        match_score: Optional[CandidateMatchScore] = None,
+        match_score: CandidateMatchScore | None = None,
         **kwargs
     ) -> PipelineCandidate:
         """Add a candidate to the pipeline."""
@@ -336,10 +337,10 @@ class SourcingEngagementState(BaseModel):
         notification_type: Literal["screening_completed", "approval_needed", "interview_reminder", "daily_briefing", "end_of_day", "alert"],
         title: str,
         message: str,
-        data: Optional[Dict[str, Any]] = None,
+        data: dict[str, Any] | None = None,
         action_required: bool = False,
-        action_type: Optional[Literal["approve", "reject", "schedule", "confirm", "review"]] = None,
-        candidate_ids: Optional[List[str]] = None
+        action_type: Literal["approve", "reject", "schedule", "confirm", "review"] | None = None,
+        candidate_ids: list[str] | None = None
     ) -> RecruiterNotification:
         """Create a notification for the recruiter."""
         import uuid
@@ -363,9 +364,9 @@ class FeedbackTemplate(BaseModel):
     name: str
     type: Literal["screening_passed", "screening_failed", "rejected", "process_closed"]
     channel: Literal["email", "whatsapp"]
-    subject: Optional[str] = None
+    subject: str | None = None
     body: str
-    variables: List[str] = Field(default_factory=list)
+    variables: list[str] = Field(default_factory=list)
     is_default: bool = False
 
 
@@ -376,7 +377,7 @@ class EmailOutreachTemplate(BaseModel):
     type: Literal["initial_contact", "follow_up", "screening_invite"]
     subject: str
     body: str
-    variables: List[str] = Field(default_factory=list)
+    variables: list[str] = Field(default_factory=list)
     is_confidential_version: bool = False
 
 
@@ -386,5 +387,5 @@ class WhatsAppTemplate(BaseModel):
     name: str
     type: Literal["initial_contact", "screening_invite", "reminder", "feedback", "scheduling"]
     body: str
-    variables: List[str] = Field(default_factory=list)
+    variables: list[str] = Field(default_factory=list)
     is_confidential_version: bool = False

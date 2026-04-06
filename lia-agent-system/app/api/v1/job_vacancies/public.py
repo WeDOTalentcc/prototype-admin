@@ -3,6 +3,7 @@ Public routes (no authentication required) and share-link routes.
 Also includes router_public for candidate application flow.
 """
 from fastapi import APIRouter
+
 from ._shared import *
 
 router = APIRouter()

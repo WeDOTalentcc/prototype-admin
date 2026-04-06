@@ -6,10 +6,10 @@ Includes schemas for:
 - Policy audit trail
 - Category listings
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Any
 from datetime import datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class PolicyCategoryEnum(str, Enum):
@@ -32,18 +32,18 @@ class PolicyResponse(BaseModel):
     """Response schema for a global policy."""
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     category: str
     value_type: str
     current_value: str
-    unit: Optional[str] = None
-    min_value: Optional[float] = None
-    max_value: Optional[float] = None
-    options: Optional[List[str]] = None
+    unit: str | None = None
+    min_value: float | None = None
+    max_value: float | None = None
+    options: list[str] | None = None
     is_active: bool = True
-    updated_at: Optional[datetime] = None
-    updated_by: Optional[str] = None
-    created_at: Optional[datetime] = None
+    updated_at: datetime | None = None
+    updated_by: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -51,12 +51,12 @@ class PolicyResponse(BaseModel):
 
 class PolicyWithHistoryResponse(PolicyResponse):
     """Response schema for a policy with its audit history."""
-    audit_history: List["PolicyAuditLogResponse"] = []
+    audit_history: list["PolicyAuditLogResponse"] = []
 
 
 class PolicyListResponse(BaseModel):
     """Paginated list of policies."""
-    policies: List[PolicyResponse]
+    policies: list[PolicyResponse]
     total: int
     limit: int
     offset: int
@@ -65,18 +65,18 @@ class PolicyListResponse(BaseModel):
 class PolicyUpdate(BaseModel):
     """Schema for updating a policy value."""
     current_value: str = Field(..., description="New value for the policy")
-    change_reason: Optional[str] = Field(None, description="Reason for the change")
+    change_reason: str | None = Field(None, description="Reason for the change")
 
 
 class PolicyAuditLogResponse(BaseModel):
     """Response schema for policy audit log entry."""
     id: str
     policy_id: str
-    previous_value: Optional[str] = None
+    previous_value: str | None = None
     new_value: str
-    changed_by: Optional[str] = None
-    changed_at: Optional[datetime] = None
-    change_reason: Optional[str] = None
+    changed_by: str | None = None
+    changed_at: datetime | None = None
+    change_reason: str | None = None
 
     class Config:
         from_attributes = True
@@ -84,7 +84,7 @@ class PolicyAuditLogResponse(BaseModel):
 
 class PolicyAuditLogListResponse(BaseModel):
     """Paginated list of audit log entries."""
-    logs: List[PolicyAuditLogResponse]
+    logs: list[PolicyAuditLogResponse]
     total: int
     limit: int
     offset: int
@@ -99,7 +99,7 @@ class CategoryCount(BaseModel):
 
 class CategoryListResponse(BaseModel):
     """Response schema for category listing with counts."""
-    categories: List[CategoryCount]
+    categories: list[CategoryCount]
     total_policies: int
 
 

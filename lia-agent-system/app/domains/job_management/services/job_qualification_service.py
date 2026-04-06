@@ -3,11 +3,10 @@ Job Qualification Classification Service (WDT-009)
 Uses Gemini LLM to classify job vacancies into Alta/Média/Baixa qualification levels.
 This classification drives search precision parameters in the Talent Funnel.
 """
-import os
 import json
 import logging
-from typing import Optional, Dict, Any, Tuple
-from datetime import datetime
+import os
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,7 @@ class JobQualificationService:
                 return None
         return self._model
 
-    def _heuristic_classify(self, title: str, seniority: Optional[str] = None, salary_min: Optional[float] = None) -> Dict[str, Any]:
+    def _heuristic_classify(self, title: str, seniority: str | None = None, salary_min: float | None = None) -> dict[str, Any]:
         """Fallback heuristic classification when LLM is unavailable."""
         title_lower = (title or "").lower()
         seniority_lower = (seniority or "").lower()
@@ -98,10 +97,10 @@ class JobQualificationService:
         
         return {"level": "media", "confidence": 0.6, "reasoning": f"Classificação heurística: cargo '{title}' classificado como qualificação média por padrão"}
 
-    async def classify(self, title: str, department: Optional[str] = None, seniority_level: Optional[str] = None,
-                       description: Optional[str] = None, requirements: Optional[list] = None,
-                       salary_range: Optional[dict] = None, work_model: Optional[str] = None,
-                       employment_type: Optional[str] = None) -> Dict[str, Any]:
+    async def classify(self, title: str, department: str | None = None, seniority_level: str | None = None,
+                       description: str | None = None, requirements: list | None = None,
+                       salary_range: dict | None = None, work_model: str | None = None,
+                       employment_type: str | None = None) -> dict[str, Any]:
         """Classify a job vacancy qualification level using Gemini LLM with heuristic fallback."""
         salary_info = "Não informado"
         salary_min = None

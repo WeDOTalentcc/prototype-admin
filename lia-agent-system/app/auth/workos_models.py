@@ -4,8 +4,8 @@ SQLAlchemy ORM models for WorkOS SCIM Groups and SSO Audit Logs.
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSON
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY, JSON, UUID
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base

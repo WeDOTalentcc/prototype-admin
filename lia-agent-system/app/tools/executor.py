@@ -11,10 +11,9 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ValidationError, create_model
-from pydantic.fields import FieldInfo
 
 from app.tools.registry import ToolRegistry, tool_registry
 
@@ -31,8 +30,8 @@ class ToolExecutionContext(BaseModel):
     """
     user_id: str
     company_id: str
-    permissions: List[str] = []
-    session_id: Optional[str] = None
+    permissions: list[str] = []
+    session_id: str | None = None
     
     def has_permission(self, permission: str) -> bool:
         """Check if context has a specific permission."""
@@ -47,12 +46,12 @@ class ToolExecutionContext(BaseModel):
 class ToolResult:
     """Result from tool execution."""
     success: bool
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    result: dict[str, Any] | None = None
+    error: str | None = None
     tool_name: str = ""
     execution_time_ms: float = 0.0
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for LLM response."""
         return {
             "success": self.success,
@@ -75,18 +74,18 @@ class ToolCall:
     """Represents a tool call from the LLM."""
     id: str
     name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
 
 
 @dataclass
 class ToolCallLog:
     """Log entry for tool execution."""
     tool_name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     result: ToolResult
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    agent_type: Optional[str] = None
-    conversation_id: Optional[str] = None
+    agent_type: str | None = None
+    conversation_id: str | None = None
 
 
 class ToolExecutor:
@@ -103,16 +102,16 @@ class ToolExecutor:
     DEFAULT_TIMEOUT = 30.0
     MAX_TOOL_CALLS_PER_REQUEST = 3
     
-    def __init__(self, registry: Optional[ToolRegistry] = None):
+    def __init__(self, registry: ToolRegistry | None = None):
         self.registry = registry or tool_registry
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._execution_logs: List[ToolCallLog] = []
+        self._execution_logs: list[ToolCallLog] = []
     
     def _validate_parameters(
         self, 
-        parameters: Dict[str, Any], 
-        schema: Dict[str, Any]
-    ) -> Optional[str]:
+        parameters: dict[str, Any], 
+        schema: dict[str, Any]
+    ) -> str | None:
         """
         Validate parameters against JSON Schema.
         
@@ -148,7 +147,7 @@ class ToolExecutor:
             self.logger.warning(f"Validation error: {e}")
             return None
     
-    def _json_schema_to_python_type(self, schema: Dict[str, Any]) -> type:
+    def _json_schema_to_python_type(self, schema: dict[str, Any]) -> type:
         """Convert JSON Schema type to Python type."""
         schema_type = schema.get("type", "string")
         
@@ -166,11 +165,11 @@ class ToolExecutor:
     async def execute(
         self,
         tool_name: str,
-        parameters: Dict[str, Any],
-        timeout: Optional[float] = None,
-        agent_type: Optional[str] = None,
-        conversation_id: Optional[str] = None,
-        context: Optional[ToolExecutionContext] = None
+        parameters: dict[str, Any],
+        timeout: float | None = None,
+        agent_type: str | None = None,
+        conversation_id: str | None = None,
+        context: ToolExecutionContext | None = None
     ) -> ToolResult:
         """
         Execute a tool by name with given parameters.
@@ -239,7 +238,7 @@ class ToolExecutor:
                 execution_time_ms=execution_time
             )
             
-        except asyncio.TimeoutError:
+        except TimeoutError:
             result = ToolResult(
                 success=False,
                 error=f"Tool execution timed out after {timeout}s",
@@ -259,11 +258,11 @@ class ToolExecutor:
     
     async def execute_batch(
         self,
-        tool_calls: List[ToolCall],
-        timeout: Optional[float] = None,
-        agent_type: Optional[str] = None,
-        conversation_id: Optional[str] = None
-    ) -> Dict[str, ToolResult]:
+        tool_calls: list[ToolCall],
+        timeout: float | None = None,
+        agent_type: str | None = None,
+        conversation_id: str | None = None
+    ) -> dict[str, ToolResult]:
         """
         Execute multiple tool calls.
         
@@ -299,10 +298,10 @@ class ToolExecutor:
     def _log_execution(
         self,
         tool_name: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         result: ToolResult,
-        agent_type: Optional[str],
-        conversation_id: Optional[str]
+        agent_type: str | None,
+        conversation_id: str | None
     ) -> None:
         """Log tool execution for observability."""
         log_entry = ToolCallLog(
@@ -323,7 +322,7 @@ class ToolExecutor:
             f"(agent={agent_type}, time={result.execution_time_ms:.1f}ms)"
         )
     
-    def get_recent_logs(self, limit: int = 100) -> List[ToolCallLog]:
+    def get_recent_logs(self, limit: int = 100) -> list[ToolCallLog]:
         """Get recent execution logs."""
         return self._execution_logs[-limit:]
     

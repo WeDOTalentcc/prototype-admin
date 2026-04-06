@@ -8,31 +8,27 @@ Gera duas versões de Job Description:
 Todos os textos em Português (Brasil).
 """
 import logging
-from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 from app.schemas.job_description import (
-    JobDescriptionPreview,
-    JobDescriptionFinal,
+    CompanyInfo,
+    CompensationData,
+    Competency,
+    ContractType,
+    HiringManager,
+    InterviewStage,
+    JDFinalResponse,
     JDGenerationRequest,
     JDPreviewResponse,
-    JDFinalResponse,
-    Competency,
-    Responsibility,
-    Benefit,
-    CompensationData,
-    InterviewStage,
-    CompanyInfo,
-    HiringManager,
+    JobDescriptionFinal,
+    JobDescriptionPreview,
     JobMetadata,
-    SuggestionSource,
     RequirementLevel,
+    Responsibility,
+    SuggestionSource,
     WorkModel,
-    ContractType,
-    Priority,
 )
 from app.services.skills_catalog_service import skills_catalog_service
-
 
 logger = logging.getLogger(__name__)
 
@@ -195,10 +191,10 @@ class JDTemplateService:
     async def generate_final(
         self,
         request: JDGenerationRequest,
-        confirmed_responsibilities: Optional[List[str]] = None,
-        confirmed_technical: Optional[List[str]] = None,
-        confirmed_behavioral: Optional[List[str]] = None,
-        confirmed_nice_to_have: Optional[List[str]] = None,
+        confirmed_responsibilities: list[str] | None = None,
+        confirmed_technical: list[str] | None = None,
+        confirmed_behavioral: list[str] | None = None,
+        confirmed_nice_to_have: list[str] | None = None,
     ) -> JDFinalResponse:
         """
         Gera JD Final (v2) para publicação.
@@ -296,11 +292,11 @@ class JDTemplateService:
     
     def _build_responsibilities(
         self,
-        detected: List[str],
+        detected: list[str],
         role: str,
-        seniority: Optional[str],
+        seniority: str | None,
         include_suggestions: bool = True
-    ) -> List[Responsibility]:
+    ) -> list[Responsibility]:
         """Constrói lista de responsabilidades com sugestões."""
         responsibilities = []
         
@@ -326,8 +322,8 @@ class JDTemplateService:
     def _get_suggested_responsibilities(
         self,
         role: str,
-        seniority: Optional[str]
-    ) -> List[str]:
+        seniority: str | None
+    ) -> list[str]:
         """Retorna responsabilidades sugeridas baseadas no cargo."""
         seniority_lower = (seniority or "").lower()
         role_lower = role.lower()
@@ -414,12 +410,12 @@ class JDTemplateService:
     
     def _build_competencies(
         self,
-        detected_technical: List[str],
-        detected_behavioral: List[str],
+        detected_technical: list[str],
+        detected_behavioral: list[str],
         role: str,
-        seniority: Optional[str],
+        seniority: str | None,
         include_suggestions: bool = True
-    ) -> tuple[List[Competency], List[Competency]]:
+    ) -> tuple[list[Competency], list[Competency]]:
         """Constrói listas de competências técnicas e comportamentais."""
         technical = []
         behavioral = []
@@ -470,12 +466,12 @@ class JDTemplateService:
     
     def _build_compensation(
         self,
-        salary_min: Optional[float],
-        salary_max: Optional[float],
-        bonus_percentage: Optional[float],
+        salary_min: float | None,
+        salary_max: float | None,
+        bonus_percentage: float | None,
         company_id: str,
         role: str,
-        seniority: Optional[str],
+        seniority: str | None,
     ) -> CompensationData:
         """Constrói dados de compensação com análise de mercado."""
         has_alert = False
@@ -518,8 +514,8 @@ class JDTemplateService:
     def _estimate_market_salary(
         self,
         role: str,
-        seniority: Optional[str]
-    ) -> Optional[tuple[float, float]]:
+        seniority: str | None
+    ) -> tuple[float, float] | None:
         """Estimativa rápida de faixa salarial de mercado."""
         base_ranges = {
             "junior": (4000, 7000),
@@ -544,7 +540,7 @@ class JDTemplateService:
         
         return base
     
-    async def _get_company_info(self, company_id: str) -> Optional[CompanyInfo]:
+    async def _get_company_info(self, company_id: str) -> CompanyInfo | None:
         """Obtém informações da empresa do serviço de configuração."""
         try:
             return CompanyInfo(
@@ -570,7 +566,7 @@ class JDTemplateService:
             self.logger.warning(f"Erro ao obter info da empresa: {e}")
             return None
     
-    def _get_default_interview_stages(self) -> List[InterviewStage]:
+    def _get_default_interview_stages(self) -> list[InterviewStage]:
         """Retorna etapas padrão do processo seletivo."""
         return [
             InterviewStage(
@@ -610,7 +606,7 @@ class JDTemplateService:
             ),
         ]
     
-    def _calculate_timeline(self, stages: List[InterviewStage]) -> str:
+    def _calculate_timeline(self, stages: list[InterviewStage]) -> str:
         """Calcula timeline total do processo."""
         num_stages = len(stages)
         if num_stages <= 3:

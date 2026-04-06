@@ -17,9 +17,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 _TOON_CACHE_TTL = 3600
 
 
-def _toon_cache_key(candidate_id: str, job_id: Optional[str], company_id: str) -> str:
+def _toon_cache_key(candidate_id: str, job_id: str | None, company_id: str) -> str:
     """Redis key for TOON card. Scoped by tenant (company_id)."""
     job_part = job_id or "no-job"
     return f"toon:{company_id}:{candidate_id}:{job_part}"
@@ -57,14 +56,14 @@ class TOONCard:
     """
 
     candidate_id: str
-    job_id: Optional[str]
+    job_id: str | None
     # Metadata
     generated_at: str  # ISO datetime
     # Professional summary
     headline: str
     highlights: list[str]
     # Scored dimensions (0-100)
-    match_score: Optional[int]
+    match_score: int | None
     skills_match: list[str]
     # LGPD-safe fields
     name_display: str
@@ -143,7 +142,7 @@ def _compute_skills_match(candidate_skills: list[str], job_skills: list[str]) ->
     return [s for s in candidate_skills if s.lower() in job_lower]
 
 
-def _compute_match_score(candidate, job_skills: list[str]) -> Optional[int]:  # type: ignore[no-untyped-def]
+def _compute_match_score(candidate, job_skills: list[str]) -> int | None:  # type: ignore[no-untyped-def]
     """
     Compute a 0–100 match score between candidate and job.
 
@@ -162,7 +161,7 @@ def _compute_match_score(candidate, job_skills: list[str]) -> Optional[int]:  # 
     return score
 
 
-async def _get_redis(redis_url: Optional[str] = None):  # type: ignore[return]
+async def _get_redis(redis_url: str | None = None):  # type: ignore[return]
     """Return an aioredis client or None on failure (graceful degradation)."""
     try:
         import aioredis  # type: ignore[import]
@@ -182,7 +181,7 @@ class TOONService:
         card = await service.get_or_generate(candidate_id, job_id, db, company_id)
     """
 
-    def __init__(self, redis_url: Optional[str] = None) -> None:
+    def __init__(self, redis_url: str | None = None) -> None:
         self._redis_url = redis_url
 
     # ------------------------------------------------------------------
@@ -192,7 +191,7 @@ class TOONService:
     async def generate(
         self,
         candidate_id: str,
-        job_id: Optional[str],
+        job_id: str | None,
         db: AsyncSession,
         company_id: str,
         anonymize: bool = False,
@@ -255,7 +254,7 @@ class TOONService:
         card = TOONCard(
             candidate_id=str(candidate_id),
             job_id=str(job_id) if job_id else None,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             headline=headline,
             highlights=highlights,
             match_score=match_score,
@@ -271,7 +270,7 @@ class TOONService:
     async def get_or_generate(
         self,
         candidate_id: str,
-        job_id: Optional[str],
+        job_id: str | None,
         db: AsyncSession,
         company_id: str,
         anonymize: bool = False,
@@ -321,7 +320,7 @@ class TOONService:
     async def invalidate_cache(
         self,
         candidate_id: str,
-        job_id: Optional[str],
+        job_id: str | None,
         company_id: str,
     ) -> None:
         """Remove a specific TOON card from Redis cache."""

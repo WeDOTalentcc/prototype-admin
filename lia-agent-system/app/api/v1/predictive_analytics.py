@@ -8,11 +8,11 @@ Provides endpoints for:
 - Pipeline forecasting
 - Analytics dashboard
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
-from pydantic import BaseModel
 import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.predictive_analytics_service import predictive_analytics_service
@@ -46,7 +46,7 @@ class PipelineForecastRequest(BaseModel):
 
 @router.get("/dashboard")
 async def get_predictions_dashboard(
-    user_id: Optional[str] = Query(None, description="Filter by user/recruiter"),
+    user_id: str | None = Query(None, description="Filter by user/recruiter"),
     db: AsyncSession = Depends(get_db)
 ):
     """

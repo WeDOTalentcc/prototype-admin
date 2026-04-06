@@ -5,10 +5,11 @@ Supports LGPD Art. 18 rights including:
 - Access, Correction, Deletion, Portability, Objection, Restriction, Explanation
 """
 
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class RequestTypeEnum(str, Enum):
@@ -47,12 +48,12 @@ class DataSubjectRequestCreate(BaseModel):
     company_id: str = Field(..., description="Company ID (tenant) receiving the request")
     subject_name: str = Field(..., min_length=2, max_length=255, description="Full name of the data subject")
     subject_email: str = Field(..., description="Email of the data subject")
-    subject_phone: Optional[str] = Field(None, max_length=50, description="Phone number of the data subject")
+    subject_phone: str | None = Field(None, max_length=50, description="Phone number of the data subject")
     subject_identifier: str = Field(..., min_length=5, max_length=50, description="CPF or other identifier of the data subject")
     request_type: RequestTypeEnum = Field(..., description="Type of LGPD request")
     description: str = Field(..., min_length=10, description="Detailed description of the request")
     source_channel: SourceChannelEnum = Field(default=SourceChannelEnum.PORTAL, description="Channel through which request was submitted")
-    data_categories: Optional[List[str]] = Field(default=[], description="Specific data categories affected")
+    data_categories: list[str] | None = Field(default=[], description="Specific data categories affected")
 
     class Config:
         json_schema_extra = {
@@ -78,27 +79,27 @@ class DataSubjectRequestResponse(BaseModel):
     status: str
     subject_name: str
     subject_email: str
-    subject_phone: Optional[str] = None
+    subject_phone: str | None = None
     subject_identifier: str
     identity_verified: bool = False
-    identity_verification_method: Optional[str] = None
-    identity_verified_at: Optional[datetime] = None
+    identity_verification_method: str | None = None
+    identity_verified_at: datetime | None = None
     description: str
-    response: Optional[str] = None
-    data_categories: List[str] = []
-    legal_basis: Optional[str] = None
-    assigned_to: Optional[str] = None
-    sla_deadline: Optional[datetime] = None
-    sla_met: Optional[bool] = None
-    completed_at: Optional[datetime] = None
-    rejection_reason: Optional[str] = None
-    evidence_files: List[Dict[str, Any]] = []
-    audit_trail: List[Dict[str, Any]] = []
+    response: str | None = None
+    data_categories: list[str] = []
+    legal_basis: str | None = None
+    assigned_to: str | None = None
+    sla_deadline: datetime | None = None
+    sla_met: bool | None = None
+    completed_at: datetime | None = None
+    rejection_reason: str | None = None
+    evidence_files: list[dict[str, Any]] = []
+    audit_trail: list[dict[str, Any]] = []
     source_channel: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    days_remaining: Optional[int] = None
-    is_overdue: Optional[bool] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    days_remaining: int | None = None
+    is_overdue: bool | None = None
 
     class Config:
         from_attributes = True
@@ -106,7 +107,7 @@ class DataSubjectRequestResponse(BaseModel):
 
 class DataSubjectRequestListResponse(BaseModel):
     """Paginated list of data subject requests."""
-    requests: List[DataSubjectRequestResponse]
+    requests: list[DataSubjectRequestResponse]
     total: int
     skip: int
     limit: int
@@ -117,8 +118,8 @@ class DataSubjectRequestPublicCreate(BaseModel):
     id: str
     status: str
     request_type: str
-    sla_deadline: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    sla_deadline: datetime | None = None
+    created_at: datetime | None = None
     message: str = "Sua solicitação foi registrada com sucesso. Use o ID fornecido para acompanhar o status."
 
 
@@ -127,12 +128,12 @@ class DataSubjectRequestPublicTrack(BaseModel):
     id: str
     status: str
     request_type: str
-    created_at: Optional[datetime] = None
-    sla_deadline: Optional[datetime] = None
-    days_remaining: Optional[int] = None
-    is_overdue: Optional[bool] = None
-    response: Optional[str] = None
-    completed_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    sla_deadline: datetime | None = None
+    days_remaining: int | None = None
+    is_overdue: bool | None = None
+    response: str | None = None
+    completed_at: datetime | None = None
 
 
 class DataSubjectRequestAssign(BaseModel):
@@ -164,7 +165,7 @@ class DataSubjectRequestVerifyIdentity(BaseModel):
 class DataSubjectRequestComplete(BaseModel):
     """Schema for completing a request."""
     response: str = Field(..., min_length=10, description="Response text to the data subject")
-    evidence_files: Optional[List[Dict[str, Any]]] = Field(default=[], description="Evidence files attached to the response")
+    evidence_files: list[dict[str, Any]] | None = Field(default=[], description="Evidence files attached to the response")
 
     class Config:
         json_schema_extra = {
@@ -200,6 +201,6 @@ class DataSubjectRequestStats(BaseModel):
     cancelled_requests: int = 0
     overdue_requests: int = 0
     sla_compliance_rate: float = 0.0
-    avg_resolution_days: Optional[float] = None
-    requests_by_type: Dict[str, int] = {}
-    requests_by_channel: Dict[str, int] = {}
+    avg_resolution_days: float | None = None
+    requests_by_type: dict[str, int] = {}
+    requests_by_channel: dict[str, int] = {}

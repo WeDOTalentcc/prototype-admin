@@ -4,11 +4,10 @@ SerializableMixin - Standardized serialization for SQLAlchemy models.
 Adds to_dict() and from_dict() to any SQLAlchemy model, making data
 portable across frameworks (SQLAlchemy → ActiveRecord, Prisma, etc).
 """
-from datetime import datetime, date
-from typing import Dict, Any, Optional, List, Set
-from uuid import UUID
-import json
 import logging
+from datetime import date, datetime
+from typing import Any
+from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +29,16 @@ class SerializableMixin:
         instance = MyModel.from_dict(data)
     """
     
-    _serialize_exclude: Set[str] = set()
+    _serialize_exclude: set[str] = set()
     
-    _serialize_include: Optional[Set[str]] = None
+    _serialize_include: set[str] | None = None
     
     def to_dict(
         self,
-        include: Optional[Set[str]] = None,
-        exclude: Optional[Set[str]] = None,
+        include: set[str] | None = None,
+        exclude: set[str] | None = None,
         include_relationships: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Convert model instance to dictionary.
         
         Args:
@@ -89,7 +88,7 @@ class SerializableMixin:
         return result
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], **kwargs) -> "SerializableMixin":
+    def from_dict(cls, data: dict[str, Any], **kwargs) -> "SerializableMixin":
         """Create model instance from dictionary.
         
         Args:
@@ -109,7 +108,7 @@ class SerializableMixin:
         
         return cls(**filtered_data)
     
-    def update_from_dict(self, data: Dict[str, Any], exclude: Optional[Set[str]] = None) -> "SerializableMixin":
+    def update_from_dict(self, data: dict[str, Any], exclude: set[str] | None = None) -> "SerializableMixin":
         """Update model instance from dictionary.
         
         Args:

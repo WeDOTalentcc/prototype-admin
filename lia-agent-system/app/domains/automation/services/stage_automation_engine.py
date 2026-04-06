@@ -3,12 +3,14 @@ Stage Automation Engine
 Central engine that processes automation triggers based on stage transitions and events.
 """
 import logging
-from typing import Dict, Any, List, Optional, Callable
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from dataclasses import dataclass, field
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ class AutomationEvent:
     candidate_id: str
     vacancy_id: str
     company_id: str
-    payload: Dict[str, Any] = field(default_factory=dict)
+    payload: dict[str, Any] = field(default_factory=dict)
     source: str = "system"
     timestamp: datetime = None
     
@@ -65,7 +67,7 @@ class StageAutomationEngine:
     """
     
     def __init__(self):
-        self._handlers: Dict[TriggerType, Callable] = {}
+        self._handlers: dict[TriggerType, Callable] = {}
         self._initialized = False
     
     def register_handler(self, trigger_type: TriggerType, handler: Callable):
@@ -79,7 +81,7 @@ class StageAutomationEngine:
             del self._handlers[trigger_type]
             logger.info(f"[ENGINE] Unregistered handler for {trigger_type.value}")
     
-    def get_registered_handlers(self) -> List[str]:
+    def get_registered_handlers(self) -> list[str]:
         """Get list of registered trigger types."""
         return [t.value for t in self._handlers.keys()]
     
@@ -88,7 +90,7 @@ class StageAutomationEngine:
         event: AutomationEvent,
         db: AsyncSession,
         auto_execute: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a single automation event.
         
@@ -132,10 +134,10 @@ class StageAutomationEngine:
     
     async def process_batch(
         self,
-        events: List[AutomationEvent],
+        events: list[AutomationEvent],
         db: AsyncSession,
         auto_execute: bool = False
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Process multiple events in batch."""
         results = []
         for event in events:
@@ -169,7 +171,7 @@ class StageAutomationEngine:
         db: AsyncSession, 
         company_id: str, 
         trigger_type: TriggerType
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get company-specific automation rules for a trigger type."""
         from app.models.automation import CommunicationAutomation
         
@@ -227,7 +229,7 @@ class StageAutomationEngine:
     async def _evaluate_conditions(
         self, 
         event: AutomationEvent, 
-        rules: Dict[str, Any]
+        rules: dict[str, Any]
     ) -> bool:
         """Evaluate if conditions are met for automation."""
         conditions = rules.get("conditions", {})
@@ -321,7 +323,7 @@ class StageAutomationEngine:
         handler: Callable, 
         event: AutomationEvent,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute the handler for the event."""
         try:
             result = await handler(
@@ -340,8 +342,8 @@ class StageAutomationEngine:
         self,
         event: AutomationEvent,
         db: AsyncSession,
-        rules: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        rules: dict[str, Any]
+    ) -> dict[str, Any]:
         """Create an AI suggestion for recruiter approval."""
         from app.models.automation import AISuggestion
         
@@ -416,7 +418,7 @@ class StageAutomationEngine:
         }
         return titles.get(trigger_type, "Ação automatizada")
     
-    def _get_action_description(self, trigger_type: TriggerType, payload: Dict[str, Any]) -> str:
+    def _get_action_description(self, trigger_type: TriggerType, payload: dict[str, Any]) -> str:
         """Get a description for the suggested action."""
         descriptions = {
             TriggerType.SCREENING_COMPLETED: "O candidato completou a triagem e pode ser movido para a próxima etapa.",
@@ -435,7 +437,7 @@ class StageAutomationEngine:
     async def _log_audit(
         self, 
         event: AutomationEvent, 
-        result: Dict[str, Any]
+        result: dict[str, Any]
     ):
         """Log automation event to audit trail."""
         try:

@@ -4,10 +4,11 @@ Schemas para Job Description Enrichment.
 Define estruturas para sugestões enriquecidas com justificativas,
 métricas de impacto e contexto para tomada de decisão do recrutador.
 """
-from typing import Dict, List, Optional, Any, Literal
-from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 
 class SuggestionSource(str, Enum):
@@ -30,42 +31,42 @@ class EnrichedSuggestion(BaseModel):
     value: str
     source: SuggestionSource
     justification: str = Field(description="Explicação de por que esta sugestão é relevante")
-    metrics: Optional[Dict[str, Any]] = Field(
+    metrics: dict[str, Any] | None = Field(
         default=None,
         description="Métricas que suportam a sugestão (ex: {'market_percentage': 85, 'history_count': 12})"
     )
-    impact_description: Optional[str] = Field(
+    impact_description: str | None = Field(
         default=None,
         description="Descrição do impacto esperado (ex: 'Aumenta chances de fechamento em 23%')"
     )
     impact_level: SuggestionImpactLevel = SuggestionImpactLevel.MEDIUM
-    wsi_quality_note: Optional[str] = Field(
+    wsi_quality_note: str | None = Field(
         default=None,
         description="Nota sobre impacto na qualidade das perguntas WSI"
     )
     is_new: bool = True
-    accepted: Optional[bool] = None
-    category: Optional[str] = None
+    accepted: bool | None = None
+    category: str | None = None
 
 
 class ResponsibilitySuggestion(EnrichedSuggestion):
     """Sugestão de responsabilidade com contexto específico."""
-    related_skills: List[str] = Field(default_factory=list)
-    seniority_fit: Optional[str] = None
+    related_skills: list[str] = Field(default_factory=list)
+    seniority_fit: str | None = None
 
 
 class TechnicalSkillSuggestion(EnrichedSuggestion):
     """Sugestão de competência técnica com dados de mercado."""
-    proficiency_level: Optional[str] = None
-    years_experience: Optional[int] = None
-    market_demand_trend: Optional[Literal["rising", "stable", "declining"]] = None
-    related_skills: List[str] = Field(default_factory=list)
+    proficiency_level: str | None = None
+    years_experience: int | None = None
+    market_demand_trend: Literal["rising", "stable", "declining"] | None = None
+    related_skills: list[str] = Field(default_factory=list)
 
 
 class BehavioralCompetencySuggestion(EnrichedSuggestion):
     """Sugestão de competência comportamental com impacto em WSI."""
-    big_five_mapping: Optional[str] = None
-    assessment_methods: List[str] = Field(default_factory=list)
+    big_five_mapping: str | None = None
+    assessment_methods: list[str] = Field(default_factory=list)
 
 
 class SalarySuggestion(BaseModel):
@@ -73,68 +74,68 @@ class SalarySuggestion(BaseModel):
     id: str
     suggested_min: float
     suggested_max: float
-    current_min: Optional[float] = None
-    current_max: Optional[float] = None
+    current_min: float | None = None
+    current_max: float | None = None
     source: SuggestionSource = SuggestionSource.MARKET_BENCHMARK
     justification: str
-    market_percentile: Optional[int] = None
-    market_comparison: Optional[str] = Field(
+    market_percentile: int | None = None
+    market_comparison: str | None = Field(
         default=None,
         description="Ex: '12% abaixo do mercado para SP'"
     )
-    impact_description: Optional[str] = Field(
+    impact_description: str | None = Field(
         default=None,
         description="Ex: 'Ajustar pode aumentar aplicações qualificadas em 40%'"
     )
-    sources_consulted: List[str] = Field(default_factory=list)
-    sample_size: Optional[int] = None
-    accepted: Optional[bool] = None
+    sources_consulted: list[str] = Field(default_factory=list)
+    sample_size: int | None = None
+    accepted: bool | None = None
 
 
 class BonusSuggestion(BaseModel):
     """Sugestão de bônus com práticas do setor."""
     id: str
-    suggested_percentage_min: Optional[float] = None
-    suggested_percentage_max: Optional[float] = None
-    suggested_salary_months: Optional[str] = Field(
+    suggested_percentage_min: float | None = None
+    suggested_percentage_max: float | None = None
+    suggested_salary_months: str | None = Field(
         default=None,
         description="Ex: '2-4 salários'"
     )
     source: SuggestionSource = SuggestionSource.MARKET_BENCHMARK
     justification: str
-    sector_practice: Optional[str] = None
-    accepted: Optional[bool] = None
+    sector_practice: str | None = None
+    accepted: bool | None = None
 
 
 class SectionSuggestions(BaseModel):
     """Sugestões para uma seção específica do JD."""
     section_name: str
     section_title: str
-    detected_items: List[str] = Field(default_factory=list)
-    suggestions: List[EnrichedSuggestion] = Field(default_factory=list)
+    detected_items: list[str] = Field(default_factory=list)
+    suggestions: list[EnrichedSuggestion] = Field(default_factory=list)
     missing_count: int = 0
-    recommended_count: Optional[int] = None
-    quality_note: Optional[str] = None
+    recommended_count: int | None = None
+    quality_note: str | None = None
 
 
 class CompensationSuggestions(BaseModel):
     """Sugestões consolidadas de remuneração."""
-    salary: Optional[SalarySuggestion] = None
-    bonus: Optional[BonusSuggestion] = None
-    benefits_suggestions: List[EnrichedSuggestion] = Field(default_factory=list)
-    total_compensation_note: Optional[str] = None
+    salary: SalarySuggestion | None = None
+    bonus: BonusSuggestion | None = None
+    benefits_suggestions: list[EnrichedSuggestion] = Field(default_factory=list)
+    total_compensation_note: str | None = None
 
 
 class EnrichedJobDescription(BaseModel):
     """Job Description completo com sugestões enriquecidas por seção."""
-    job_id: Optional[str] = None
+    job_id: str | None = None
     company_id: str
     
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
     
     responsibilities: SectionSuggestions = Field(
         default_factory=lambda: SectionSuggestions(
@@ -159,11 +160,11 @@ class EnrichedJobDescription(BaseModel):
     )
     
     total_suggestions_count: int = 0
-    wsi_quality_score: Optional[float] = None
-    wsi_quality_warnings: List[str] = Field(default_factory=list)
+    wsi_quality_score: float | None = None
+    wsi_quality_warnings: list[str] = Field(default_factory=list)
     completeness_score: float = 0.0
     
-    analysis_context: Dict[str, Any] = Field(
+    analysis_context: dict[str, Any] = Field(
         default_factory=dict,
         description="Contexto da análise feita (fontes consultadas, métricas agregadas)"
     )
@@ -249,40 +250,40 @@ class EnrichedJobDescription(BaseModel):
 class EnrichmentRequest(BaseModel):
     """Request para enriquecimento de Job Description."""
     company_id: str
-    job_draft_id: Optional[str] = None
+    job_draft_id: str | None = None
     
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
     
-    detected_responsibilities: List[str] = Field(default_factory=list)
-    detected_technical_skills: List[str] = Field(default_factory=list)
-    detected_behavioral_competencies: List[str] = Field(default_factory=list)
+    detected_responsibilities: list[str] = Field(default_factory=list)
+    detected_technical_skills: list[str] = Field(default_factory=list)
+    detected_behavioral_competencies: list[str] = Field(default_factory=list)
     
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
+    salary_min: float | None = None
+    salary_max: float | None = None
     
     is_affirmative: bool = False
-    affirmative_type: Optional[str] = None
+    affirmative_type: str | None = None
     
-    raw_input: Optional[str] = None
+    raw_input: str | None = None
 
 
 class EnrichmentResponse(BaseModel):
     """Response do enriquecimento de Job Description."""
     success: bool
-    enriched_jd: Optional[EnrichedJobDescription] = None
+    enriched_jd: EnrichedJobDescription | None = None
     summary_message: str = ""
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class SuggestionAcceptanceRequest(BaseModel):
     """Request para aceitar/rejeitar sugestões."""
     job_draft_id: str
-    accepted_suggestion_ids: List[str] = Field(default_factory=list)
-    rejected_suggestion_ids: List[str] = Field(default_factory=list)
+    accepted_suggestion_ids: list[str] = Field(default_factory=list)
+    rejected_suggestion_ids: list[str] = Field(default_factory=list)
     accept_all: bool = False
     reject_all: bool = False
 
@@ -292,6 +293,6 @@ class SuggestionAcceptanceResponse(BaseModel):
     success: bool
     accepted_count: int = 0
     rejected_count: int = 0
-    updated_job_draft: Optional[Dict[str, Any]] = None
+    updated_job_draft: dict[str, Any] | None = None
     next_stage_ready: bool = False
-    error: Optional[str] = None
+    error: str | None = None

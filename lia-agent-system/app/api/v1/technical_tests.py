@@ -4,25 +4,29 @@ Technical Tests API Endpoints.
 Provides CRUD operations for technical tests management,
 client-specific configurations, and test statistics.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, case
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import and_, case, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.technical_tests import (
-    TechnicalTest, ClientTestConfig, TestResult,
-    TestCategory, TestSubcategory, TestDifficulty,
-    TEST_CATEGORY_OPTIONS, TEST_DIFFICULTY_OPTIONS, DEFAULT_TESTS
+    DEFAULT_TESTS,
+    TEST_CATEGORY_OPTIONS,
+    TEST_DIFFICULTY_OPTIONS,
+    ClientTestConfig,
+    TechnicalTest,
+    TestResult,
+    TestSubcategory,
 )
 from app.schemas.technical_tests import (
-    TechnicalTestCreate, TechnicalTestUpdate, TechnicalTestResponse, TechnicalTestListResponse,
-    ClientTestConfigCreate, ClientTestConfigResponse, ClientTestConfigListResponse,
-    TestResultCreate, TestResultUpdate, TestResultResponse, TestResultListResponse,
-    TestStatsResponse, ClientTestStatsResponse, TestOptionsResponse
+    ClientTestConfigCreate,
+    TechnicalTestCreate,
+    TechnicalTestUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,10 +35,10 @@ router = APIRouter(tags=["technical-tests"])
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """Get user context from request headers."""
     if not x_company_id:
         raise HTTPException(
@@ -70,15 +74,15 @@ async def get_test_options():
 
 @router.get("/technical-tests", summary="List all available tests")
 async def list_technical_tests(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    subcategory: Optional[str] = Query(None, description="Filter by subcategory"),
-    difficulty: Optional[str] = Query(None, description="Filter by difficulty"),
-    is_global: Optional[bool] = Query(None, description="Filter by global status"),
-    is_active: Optional[bool] = Query(True, description="Filter by active status"),
-    search: Optional[str] = Query(None, description="Search by name or description"),
+    category: str | None = Query(None, description="Filter by category"),
+    subcategory: str | None = Query(None, description="Filter by subcategory"),
+    difficulty: str | None = Query(None, description="Filter by difficulty"),
+    is_global: bool | None = Query(None, description="Filter by global status"),
+    is_active: bool | None = Query(True, description="Filter by active status"),
+    search: str | None = Query(None, description="Search by name or description"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """List all available tests from the global library."""
@@ -147,7 +151,7 @@ async def list_technical_tests(
 @router.get("/technical-tests/{test_id}", summary="Get test details")
 async def get_technical_test(
     test_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Get details of a specific test."""
@@ -188,7 +192,7 @@ async def get_technical_test(
 @router.post("/technical-tests", status_code=status.HTTP_201_CREATED, summary="Create new test")
 async def create_technical_test(
     data: TechnicalTestCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new technical test (admin only)."""
@@ -244,7 +248,7 @@ async def create_technical_test(
 async def update_technical_test(
     test_id: str,
     data: TechnicalTestUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing technical test."""
@@ -309,7 +313,7 @@ async def update_technical_test(
 @router.delete("/technical-tests/{test_id}", summary="Delete test")
 async def delete_technical_test(
     test_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a technical test (soft delete by deactivating)."""
@@ -366,11 +370,11 @@ async def delete_technical_test(
 @router.get("/clients/{client_id}/tests", summary="Get tests configured for a client")
 async def get_client_tests(
     client_id: str,
-    is_enabled: Optional[bool] = Query(None, description="Filter by enabled status"),
-    category: Optional[str] = Query(None, description="Filter by category"),
+    is_enabled: bool | None = Query(None, description="Filter by enabled status"),
+    category: str | None = Query(None, description="Filter by category"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Get tests configured for a specific client."""
@@ -445,7 +449,7 @@ async def configure_client_test(
     client_id: str,
     test_id: str,
     data: ClientTestConfigCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Configure a test for a specific client (enable/disable, custom settings)."""
@@ -541,7 +545,7 @@ async def configure_client_test(
 async def remove_client_test(
     client_id: str,
     test_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Remove a test configuration from a client."""
@@ -576,7 +580,7 @@ async def remove_client_test(
         if not config:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Test configuration not found"
+                detail="Test configuration not found"
             )
         
         await db.delete(config)
@@ -603,7 +607,7 @@ async def remove_client_test(
 @router.get("/clients/{client_id}/tests/stats", summary="Get test statistics for client")
 async def get_client_test_stats(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Get test statistics for a specific client."""
@@ -731,7 +735,7 @@ async def get_client_test_stats(
 
 @router.post("/technical-tests/seed", summary="Seed default tests")
 async def seed_default_tests(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Seed the database with default tests (admin only)."""

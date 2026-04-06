@@ -8,12 +8,13 @@ Tests:
 - Both circuits open returns failure without sending
 - get_status reflects both providers
 """
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.email_providers.base import EmailResult
+import pytest
+
 from app.domains.communication.services.email_providers.fallback_provider import FallbackEmailProvider
+from app.services.email_providers.base import EmailResult
 
 
 def _make_provider(name: str, success: bool, error: str = None) -> MagicMock:

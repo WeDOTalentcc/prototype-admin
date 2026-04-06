@@ -8,14 +8,12 @@ Tests cover:
 - Session management with retry logic
 - Tool calls (mocked)
 """
-import pytest
 import json
-import uuid
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any, Optional
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
+import pytest
 
 from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient, MCPSession
 
@@ -266,9 +264,9 @@ class TestApifyMCPClientIntegration:
         """Create a mock HTTP response factory."""
         def create_response(
             status_code: int = 200,
-            json_data: Optional[Dict] = None,
+            json_data: dict | None = None,
             content_type: str = "application/json",
-            text: Optional[str] = None
+            text: str | None = None
         ):
             response = MagicMock(spec=httpx.Response)
             response.status_code = status_code
@@ -468,7 +466,7 @@ class TestApifyMCPClientIntegration:
         
         client._http_client = mock_http_client
         
-        response = await client._send_mcp_request("tools/list")
+        await client._send_mcp_request("tools/list")
         
         assert ApifyMCPClient._shared_session is not old_session
         

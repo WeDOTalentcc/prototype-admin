@@ -8,29 +8,40 @@ to prevent direct unauthorized access.
 The /webhooks/scim endpoint is the exception - it receives direct calls from WorkOS
 and validates the WorkOS-Signature header directly.
 """
+import hashlib
+import hmac
 import logging
 import os
-import hmac
-import hashlib
 import time
 import uuid as uuid_module
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.models import User, UserRole
-from app.auth.workos_models import WorkOSGroup, WorkOSGroupMembership, SSOAuditLog, WorkOSGroupRoleMapping, CompanyWorkOSConfig
-from app.auth.workos_schemas import (
-    WorkOSSyncUser, WorkOSSyncUserResponse,
-    SCIMUserCreated, SCIMUserUpdated, SCIMUserDeleted,
-    SCIMGroupAction, SCIMGroupMembership as SCIMGroupMembershipSchema, SCIMActionResponse
+from app.auth.workos_models import (
+    CompanyWorkOSConfig,
+    SSOAuditLog,
+    WorkOSGroup,
+    WorkOSGroupMembership,
+    WorkOSGroupRoleMapping,
 )
+from app.auth.workos_schemas import (
+    SCIMActionResponse,
+    SCIMGroupAction,
+    SCIMUserCreated,
+    SCIMUserDeleted,
+    SCIMUserUpdated,
+    WorkOSSyncUser,
+    WorkOSSyncUserResponse,
+)
+from app.auth.workos_schemas import SCIMGroupMembership as SCIMGroupMembershipSchema
+from app.core.database import get_db
 from app.models.client_account import ClientAccount
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
 
@@ -39,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 class RoleMappingRequest(BaseModel):
     role: str
-    permissions: Optional[List[str]] = []
+    permissions: list[str] | None = []
 
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", os.getenv("WORKOS_WEBHOOK_SECRET", ""))
 WORKOS_WEBHOOK_SECRET = os.getenv("WORKOS_WEBHOOK_SECRET", "")
@@ -180,8 +191,8 @@ public_auth_router = APIRouter(prefix="/auth", tags=["auth-public"])
 
 class CheckSSODomainResponse(BaseModel):
     sso_available: bool
-    organization_id: Optional[str] = None
-    company_name: Optional[str] = None
+    organization_id: str | None = None
+    company_name: str | None = None
 
 
 @public_auth_router.get("/check-sso-domain", response_model=CheckSSODomainResponse)
@@ -868,7 +879,7 @@ async def get_sso_status(
 
 
 @circuit_breaker_decorator(WORKOS_CIRCUIT)
-async def _fetch_workos_metrics(workos_api_key: str, organization_id: str, local_data: Dict[str, Any]) -> Dict[str, Any]:
+async def _fetch_workos_metrics(workos_api_key: str, organization_id: str, local_data: dict[str, Any]) -> dict[str, Any]:
     """Fetch real-time metrics from WorkOS API, protected by circuit breaker."""
     import httpx
     async with httpx.AsyncClient(timeout=5.0) as client:
@@ -908,7 +919,6 @@ async def get_realtime_metrics(
     Fetch real-time metrics directly from WorkOS API.
     Falls back to local database if WorkOS API is unavailable.
     """
-    import httpx
     
     workos_api_key = os.getenv("WORKOS_API_KEY")
     
@@ -1102,7 +1112,7 @@ async def get_audit_logs(
     company_id: str = Query(...),
     limit: int = Query(default=50, le=200),
     offset: int = Query(default=0),
-    event_type: Optional[str] = Query(default=None),
+    event_type: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1182,7 +1192,7 @@ async def get_sso_users(
     ]
 
 
-async def get_company_id_from_directory(directory_id: str, db: AsyncSession) -> Optional[str]:
+async def get_company_id_from_directory(directory_id: str, db: AsyncSession) -> str | None:
     """
     Lookup company_id from directory_id via company_workos_config table.
     Returns None if not found.
@@ -1200,12 +1210,12 @@ async def get_company_id_from_directory(directory_id: str, db: AsyncSession) -> 
 
 
 async def handle_dsync_user_created(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.user.created event."""
     workos_id = data.get("id")
     email = data.get("emails", [{}])[0].get("value") if data.get("emails") else None
@@ -1265,12 +1275,12 @@ async def handle_dsync_user_created(
 
 
 async def handle_dsync_user_updated(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.user.updated event."""
     workos_id = data.get("id")
     email = data.get("emails", [{}])[0].get("value") if data.get("emails") else None
@@ -1306,12 +1316,12 @@ async def handle_dsync_user_updated(
 
 
 async def handle_dsync_user_deleted(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.user.deleted event - soft delete (deactivate)."""
     workos_id = data.get("id")
     
@@ -1333,12 +1343,12 @@ async def handle_dsync_user_deleted(
 
 
 async def handle_dsync_group_created(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.group.created event."""
     workos_id = data.get("id")
     name = data.get("name") or "Unknown Group"
@@ -1375,12 +1385,12 @@ async def handle_dsync_group_created(
 
 
 async def handle_dsync_group_updated(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.group.updated event."""
     workos_id = data.get("id")
     name = data.get("name")
@@ -1409,12 +1419,12 @@ async def handle_dsync_group_updated(
 
 
 async def handle_dsync_group_deleted(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.group.deleted event - mark as inactive."""
     workos_id = data.get("id")
     
@@ -1436,12 +1446,12 @@ async def handle_dsync_group_deleted(
 
 
 async def handle_dsync_group_user_added(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.group.user_added event - add membership."""
     group_data = data.get("group", {})
     user_data = data.get("user", {})
@@ -1491,12 +1501,12 @@ async def handle_dsync_group_user_added(
 
 
 async def handle_dsync_group_user_removed(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     directory_id: str,
     company_id: str,
     event_id: str,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle dsync.group.user_removed event - remove membership."""
     group_data = data.get("group", {})
     user_data = data.get("user", {})

@@ -9,11 +9,11 @@ Aggregates data from:
 
 Delivers via Teams (Adaptive Card), Chat (proactive message), and Bell notification.
 """
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
+from typing import Any
+
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
-import logging
 
 from app.shared.pii_masking import get_masked_logger
 
@@ -27,7 +27,7 @@ class WeeklyDigestService:
         recruiter_id: str,
         recruiter_name: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         pipeline = await self._gather_pipeline_health(recruiter_id, db)
         at_risk = await self._gather_vagas_em_risco(recruiter_id, db)
         compliance = await self._gather_compliance_summary(recruiter_id, db)
@@ -60,7 +60,7 @@ class WeeklyDigestService:
 
     async def _gather_pipeline_health(
         self, recruiter_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             from app.domains.analytics.services.predictive_analytics_service import (
                 PredictiveAnalyticsService,
@@ -90,12 +90,12 @@ class WeeklyDigestService:
 
     async def _gather_vagas_em_risco(
         self, recruiter_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
-            from app.models.job_vacancy import JobVacancy
             from app.domains.analytics.services.predictive_analytics_service import (
                 PredictiveAnalyticsService,
             )
+            from app.models.job_vacancy import JobVacancy
 
             svc = PredictiveAnalyticsService()
 
@@ -109,7 +109,7 @@ class WeeklyDigestService:
             )
             active_jobs = result.scalars().all()
 
-            at_risk_jobs: List[Dict[str, Any]] = []
+            at_risk_jobs: list[dict[str, Any]] = []
             for job in active_jobs:
                 try:
                     prediction = await svc.predict_time_to_fill(str(job.id), db)
@@ -134,7 +134,7 @@ class WeeklyDigestService:
             logger.warning("[WeeklyDigest] At-risk vacancies fallback: %s", exc)
             return {"count": 0, "jobs": []}
 
-    async def _gather_compliance_summary(self, recruiter_id: str, db: AsyncSession) -> Dict[str, Any]:
+    async def _gather_compliance_summary(self, recruiter_id: str, db: AsyncSession) -> dict[str, Any]:
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
 
@@ -176,14 +176,14 @@ class WeeklyDigestService:
                 "message": "Dados de compliance indisponíveis no momento.",
             }
 
-    async def _gather_optimization_insights(self, db: AsyncSession) -> Dict[str, Any]:
+    async def _gather_optimization_insights(self, db: AsyncSession) -> dict[str, Any]:
         try:
             from app.shared.learning.ab_testing_service import ABTestingService
 
             ab_svc = ABTestingService()
             active_tests = await ab_svc.list_active_tests(db)
 
-            test_summaries: List[Dict[str, Any]] = []
+            test_summaries: list[dict[str, Any]] = []
             for test in active_tests:
                 test_name = test.get("test_name", "")
                 try:
@@ -212,7 +212,7 @@ class WeeklyDigestService:
             logger.warning("[WeeklyDigest] Optimization insights fallback: %s", exc)
             return {"active_tests_count": 0, "tests": []}
 
-    async def _gather_patterns_learned(self, db: AsyncSession) -> Dict[str, Any]:
+    async def _gather_patterns_learned(self, db: AsyncSession) -> dict[str, Any]:
         try:
             from app.shared.learning.learning_loop_service import LearningLoopService
 
@@ -241,15 +241,15 @@ class WeeklyDigestService:
 
     async def deliver_digest(
         self,
-        digest: Dict[str, Any],
+        digest: dict[str, Any],
         recruiter_id: str,
         recruiter_name: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         from app.domains.analytics.services.digest_formatter import (
-            TeamsDigestFormatter,
-            ChatDigestFormatter,
             BellDigestFormatter,
+            ChatDigestFormatter,
+            TeamsDigestFormatter,
         )
 
         results = {"teams": None, "chat": None, "bell": None}
@@ -259,6 +259,8 @@ class WeeklyDigestService:
             bell_data = bell_fmt.format(digest)
             from lia_messaging.notification_service import (
                 NotificationService,
+            )
+            from lia_messaging.notification_service import (
                 NotificationType as NSNotificationType,
             )
 
@@ -285,8 +287,8 @@ class WeeklyDigestService:
             chat_fmt = ChatDigestFormatter()
             chat_data = chat_fmt.format(digest)
             from lia_messaging.notification_service import (
-                NotificationService,
                 NotificationChannel,
+                NotificationService,
                 ProactiveNotificationType,
             )
 
@@ -334,7 +336,7 @@ class WeeklyDigestService:
         recruiter_id: str,
         recruiter_name: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         digest = await self.generate_digest(recruiter_id, recruiter_name, db)
         delivery = await self.deliver_digest(digest, recruiter_id, recruiter_name, db)
 
@@ -355,7 +357,7 @@ class WeeklyDigestService:
 
         return {"digest": digest, "delivery": delivery}
 
-    async def send_to_all_recruiters(self, db: AsyncSession) -> Dict[str, Any]:
+    async def send_to_all_recruiters(self, db: AsyncSession) -> dict[str, Any]:
         try:
             from app.auth.models import User
 

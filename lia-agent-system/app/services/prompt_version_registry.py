@@ -23,8 +23,7 @@ Uso:
 """
 import hashlib
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +65,7 @@ class PromptVersionRegistry:
             "template": template,
             "hash_sha256": full_hash,
             "hash_prefix": hash_prefix,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         if name not in self._store:
@@ -94,7 +93,7 @@ class PromptVersionRegistry:
     # Leitura
     # ------------------------------------------------------------------
 
-    def get(self, name: str, version: str = "latest") -> Optional[dict]:
+    def get(self, name: str, version: str = "latest") -> dict | None:
         """
         Retorna o dict de um prompt específico ou None se não encontrado.
 
@@ -112,7 +111,7 @@ class PromptVersionRegistry:
 
         return versions.get(version)
 
-    def get_by_hash(self, hash_prefix: str) -> Optional[dict]:
+    def get_by_hash(self, hash_prefix: str) -> dict | None:
         """
         Lookup por prefixo SHA-256 (12 chars).
         Retorna None se não encontrado.
@@ -129,7 +128,7 @@ class PromptVersionRegistry:
         entries.sort(key=lambda e: e.get("created_at", ""))
         return entries
 
-    def get_current_hash(self, name: str) -> Optional[str]:
+    def get_current_hash(self, name: str) -> str | None:
         """
         Retorna o hash_prefix da versão mais recente de um nome.
         Retorna None se o nome não existir.

@@ -8,11 +8,11 @@ Enables continuous learning by:
 - Providing feedback metrics for analysis
 """
 import logging
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, func, and_, update
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
@@ -47,7 +47,7 @@ class FeedbackService:
         feedback_type: str,
         feedback_value: Any,
         message_context: dict,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> InteractionFeedback:
         """
         Record user feedback on a LIA interaction.
@@ -204,7 +204,7 @@ class FeedbackService:
     
     async def process_feedback_batch(
         self,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> dict:
         """
         Process unprocessed feedback to extract and update learning patterns.
@@ -263,8 +263,8 @@ class FeedbackService:
         intent: str,
         user_message: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[LearningPattern]:
+        db: AsyncSession | None = None
+    ) -> list[LearningPattern]:
         """
         Get learning patterns relevant to the current context.
         
@@ -328,7 +328,7 @@ class FeedbackService:
         self,
         pattern_id: str,
         feedback: InteractionFeedback,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> None:
         """
         Update a specific pattern based on feedback.
@@ -387,7 +387,7 @@ class FeedbackService:
         self,
         company_id: str,
         days: int = 30,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> dict:
         """
         Get aggregated feedback metrics for a company.
@@ -513,7 +513,7 @@ class FeedbackService:
         intent: str,
         user_message: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> dict:
         """
         Get pattern context to include in response generation prompts.

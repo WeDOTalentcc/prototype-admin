@@ -2,9 +2,9 @@
 Pydantic schemas for Attachment API.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class AttachmentCreate(BaseModel):
@@ -14,14 +14,14 @@ class AttachmentCreate(BaseModel):
     file_name: str = Field(..., description="Original file name")
     file_type: str = Field(..., description="Type: cv, document, certificate, video, transcript, other")
     file_url: str = Field(..., description="URL where file is stored")
-    file_size: Optional[int] = Field(None, description="File size in bytes")
-    mime_type: Optional[str] = Field(None, description="MIME type of file")
+    file_size: int | None = Field(None, description="File size in bytes")
+    mime_type: str | None = Field(None, description="MIME type of file")
     upload_source: str = Field(..., description="Source: candidate, recruiter, lia, ats")
-    related_entity_type: Optional[str] = Field(None, description="Type of related entity")
-    related_entity_id: Optional[str] = Field(None, description="ID of related entity")
-    description: Optional[str] = Field(None, description="Description of the attachment")
+    related_entity_type: str | None = Field(None, description="Type of related entity")
+    related_entity_id: str | None = Field(None, description="ID of related entity")
+    description: str | None = Field(None, description="Description of the attachment")
     uploaded_by: str = Field(..., description="ID of uploader")
-    uploaded_by_name: Optional[str] = Field(None, description="Display name of uploader")
+    uploaded_by_name: str | None = Field(None, description="Display name of uploader")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
 
     class Config:
@@ -50,18 +50,18 @@ class AttachmentResponse(BaseModel):
     file_name: str
     file_type: str
     file_url: str
-    file_size: Optional[int] = None
-    mime_type: Optional[str] = None
+    file_size: int | None = None
+    mime_type: str | None = None
     upload_source: str
-    related_entity_type: Optional[str] = None
-    related_entity_id: Optional[str] = None
-    description: Optional[str] = None
+    related_entity_type: str | None = None
+    related_entity_id: str | None = None
+    description: str | None = None
     is_active: bool
     uploaded_by: str
-    uploaded_by_name: Optional[str] = None
+    uploaded_by_name: str | None = None
     company_id: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -69,7 +69,7 @@ class AttachmentResponse(BaseModel):
 
 class AttachmentListResponse(BaseModel):
     """Schema for paginated attachments list response."""
-    attachments: List[AttachmentResponse]
+    attachments: list[AttachmentResponse]
     total: int
     limit: int
     offset: int
@@ -79,8 +79,8 @@ class FileUploadResponse(BaseModel):
     """Schema for file upload response."""
     success: bool
     message: str
-    attachment: Optional[AttachmentResponse] = None
-    error: Optional[str] = None
+    attachment: AttachmentResponse | None = None
+    error: str | None = None
 
 
 class CategoryCount(BaseModel):
@@ -93,6 +93,6 @@ class CategoryCount(BaseModel):
 
 class CandidateFilesResponse(BaseModel):
     """Schema for candidate files with categories."""
-    attachments: List[AttachmentResponse]
+    attachments: list[AttachmentResponse]
     total: int
-    categories: List[CategoryCount]
+    categories: list[CategoryCount]

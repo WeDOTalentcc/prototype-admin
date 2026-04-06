@@ -3,9 +3,8 @@ Stage context for PolicySetupAgent — questions, blocks, and session state.
 
 Moved from app/agents/policy_setup_agent.py (I3c cleanup).
 """
-from typing import Dict, Any, Optional
 from datetime import datetime
-
+from typing import Any
 
 QUESTIONS = [
     {
@@ -240,16 +239,16 @@ BLOCK_FIELD_MAP = {
 class PolicySetupSession:
     """Tracks the state of a policy setup conversation."""
 
-    def __init__(self, company_id: str, current_policy: Dict[str, Any]):
+    def __init__(self, company_id: str, current_policy: dict[str, Any]):
         self.company_id = company_id
         self.current_question_index = 0
-        self.answered_questions: Dict[int, Any] = {}
+        self.answered_questions: dict[int, Any] = {}
         self.current_policy = current_policy
         self.started_at = datetime.utcnow()
         self.waiting_for_block_confirmation = False
         self.completed = False
 
-    def get_current_question(self) -> Optional[Dict[str, Any]]:
+    def get_current_question(self) -> dict[str, Any] | None:
         if self.current_question_index >= len(QUESTIONS):
             return None
         return QUESTIONS[self.current_question_index]
@@ -285,13 +284,13 @@ class PolicySetupSession:
         return "\n".join(items) if items else "Nenhuma configuracao neste bloco"
 
 
-_sessions: Dict[str, PolicySetupSession] = {}
+_sessions: dict[str, PolicySetupSession] = {}
 
 
 def get_or_create_session(
     company_id: str,
     session_id: str,
-    current_policy: Dict[str, Any]
+    current_policy: dict[str, Any]
 ) -> PolicySetupSession:
     key = f"{company_id}:{session_id}"
     if key not in _sessions:
@@ -301,6 +300,6 @@ def get_or_create_session(
     return _sessions[key]
 
 
-def _determine_start_position(session: PolicySetupSession, policy: Dict[str, Any]):
+def _determine_start_position(session: PolicySetupSession, policy: dict[str, Any]):
     """Skip questions that already have non-default answers."""
     pass

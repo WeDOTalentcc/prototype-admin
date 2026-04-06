@@ -1,11 +1,11 @@
 """
 Microsoft Teams models for bot interactions.
 """
-from datetime import datetime
-from typing import Optional
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Integer
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

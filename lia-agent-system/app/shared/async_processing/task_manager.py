@@ -1,11 +1,9 @@
-import uuid
 import logging
-import time
-from typing import Dict, Any, Optional, List, Callable, Awaitable
+import uuid
+from collections.abc import Awaitable, Callable
+from typing import Any, Optional
 
-from app.shared.async_processing.task_queue import (
-    AsyncTask, TaskPriority, TaskState, DomainTaskQueue
-)
+from app.shared.async_processing.task_queue import AsyncTask, DomainTaskQueue, TaskPriority, TaskState
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +61,8 @@ class DomainTaskManager:
         logger.info("DomainTaskManager shutdown complete")
 
     def __init__(self, max_concurrent_per_domain: int = 3, max_queue_size: int = 100):
-        self._queues: Dict[str, DomainTaskQueue] = {}
-        self._task_index: Dict[str, str] = {}
+        self._queues: dict[str, DomainTaskQueue] = {}
+        self._task_index: dict[str, str] = {}
         self._max_concurrent = max_concurrent_per_domain
         self._max_queue_size = max_queue_size
         self._started = False
@@ -102,13 +100,13 @@ class DomainTaskManager:
         self,
         domain_id: str,
         action_id: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         user_id: str = "",
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
         priority: TaskPriority = TaskPriority.NORMAL,
         max_retries: int = 2,
-        callback: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        callback: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         task = AsyncTask(
             task_id=str(uuid.uuid4())[:12],
@@ -136,7 +134,7 @@ class DomainTaskManager:
         )
         return task.task_id
 
-    def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
+    def get_task_status(self, task_id: str) -> dict[str, Any] | None:
         domain_id = self._task_index.get(task_id)
         if not domain_id:
             return None
@@ -163,10 +161,10 @@ class DomainTaskManager:
 
     def list_tasks(
         self,
-        domain_id: Optional[str] = None,
-        state: Optional[TaskState] = None,
-        user_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        domain_id: str | None = None,
+        state: TaskState | None = None,
+        user_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         tasks = []
         queues = [self._queues[domain_id]] if domain_id and domain_id in self._queues else self._queues.values()
 
@@ -180,13 +178,13 @@ class DomainTaskManager:
 
         return sorted(tasks, key=lambda t: t.get("created_at", 0), reverse=True)
 
-    def get_all_queue_info(self) -> Dict[str, Any]:
+    def get_all_queue_info(self) -> dict[str, Any]:
         return {
             domain_id: queue.get_queue_info()
             for domain_id, queue in self._queues.items()
         }
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         total_processed = sum(q._total_processed for q in self._queues.values())
         total_failed = sum(q._total_failed for q in self._queues.values())
         total_queued = sum(q._queue.qsize() for q in self._queues.values())

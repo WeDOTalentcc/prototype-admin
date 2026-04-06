@@ -20,7 +20,7 @@ Multi-tenant: todas as queries são escopadas por company_id.
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,7 +34,7 @@ _DEFAULT_SEMANTIC_THRESHOLD = 0.75
 # Domínios RAG — aliases e normalização
 # ---------------------------------------------------------------------------
 
-DOMAIN_ALIASES: Dict[str, str] = {
+DOMAIN_ALIASES: dict[str, str] = {
     "candidates": "talent",
     "talent": "talent",
     "job_vacancies": "jobs",
@@ -68,13 +68,13 @@ _FAIRNESS_MAX_SINGLE_GENDER_RATIO = 0.70
 class RAGSearchResult:
     """Resultado de uma busca RAG híbrida de candidatos."""
 
-    results: List[Dict[str, Any]]
+    results: list[dict[str, Any]]
     query: str
     total: int
     source: str  # "semantic" | "bm25" | "hybrid"
     fairness_ok: bool
     search_time_ms: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -82,7 +82,7 @@ class RAGSearchResult:
 # ---------------------------------------------------------------------------
 
 
-async def generate_embedding(text: str) -> Optional[List[float]]:
+async def generate_embedding(text: str) -> list[float] | None:
     """
     Gera embedding para o texto fornecido.
 
@@ -135,7 +135,7 @@ async def generate_embedding(text: str) -> Optional[List[float]]:
 # ---------------------------------------------------------------------------
 
 
-def _normalize(values: List[float]) -> List[float]:
+def _normalize(values: list[float]) -> list[float]:
     """Normaliza uma lista de scores para [0, 1]."""
     if not values:
         return values
@@ -148,10 +148,10 @@ def _normalize(values: List[float]) -> List[float]:
 
 
 def _merge_candidate_results(
-    bm25_results: List[Dict[str, Any]],
-    semantic_results: List[Dict[str, Any]],
+    bm25_results: list[dict[str, Any]],
+    semantic_results: list[dict[str, Any]],
     alpha: float,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Combina resultados BM25 + semânticos com score híbrido.
     alpha * semantic_score + (1 - alpha) * bm25_score
@@ -160,7 +160,7 @@ def _merge_candidate_results(
     bm25_scores = _normalize([r.get("bm25_score", 0.0) for r in bm25_results])
     sem_scores = _normalize([r.get("semantic_score", 0.0) for r in semantic_results])
 
-    merged: Dict[str, Dict[str, Any]] = {}
+    merged: dict[str, dict[str, Any]] = {}
 
     for i, r in enumerate(bm25_results):
         cid = str(r["id"])
@@ -201,7 +201,7 @@ def _merge_candidate_results(
 # ---------------------------------------------------------------------------
 
 
-def _check_fairness(results: List[Dict[str, Any]], top_n: int = 10) -> bool:
+def _check_fairness(results: list[dict[str, Any]], top_n: int = 10) -> bool:
     """
     Verifica diversidade de gênero no top-N (stub FairnessGuard).
 
@@ -277,7 +277,7 @@ class RAGPipelineService:
         db: AsyncSession,
         limit: int = 20,
         alpha: float = 0.5,
-        domain: Optional[str] = None,
+        domain: str | None = None,
         **kwargs,
     ) -> RAGSearchResult:
         """
@@ -339,15 +339,15 @@ class RAGPipelineService:
             logger.debug("[RAGPipeline] FairnessGuard check skipped: %s", _fg_exc)
 
         # Normalizar domínio se fornecido
-        normalized_domain: Optional[str] = normalize_domain(domain) if domain else None
+        normalized_domain: str | None = normalize_domain(domain) if domain else None
 
         # Se alpha não foi explicitamente personalizado (valor default 0.5),
         # detecta automaticamente o tipo de query para alpha ideal
         if alpha == 0.5:
             alpha = self._detect_query_type(query)
 
-        bm25_results: List[Dict[str, Any]] = []
-        semantic_results: List[Dict[str, Any]] = []
+        bm25_results: list[dict[str, Any]] = []
+        semantic_results: list[dict[str, Any]] = []
         source = "bm25"
 
         # --- Caminho BM25 (sempre executado a menos que alpha=1.0) ---
@@ -355,7 +355,7 @@ class RAGPipelineService:
             bm25_results = await self._bm25_search(query, company_id, db, limit, domain=normalized_domain)
 
         # --- Caminho semântico (executado quando alpha > 0) ---
-        embedding: Optional[List[float]] = None
+        embedding: list[float] | None = None
         if alpha > 0.0:
             embedding = await generate_embedding(query)
             if embedding is not None:
@@ -467,7 +467,7 @@ class RAGPipelineService:
             logger.warning("[RAGPipeline] FairnessGuard sector check error: %s", _fg_s_exc)
 
         # FAR-5: Auditoria de disparate impact em tempo real nos resultados
-        ranking_audit: Dict[str, Any] = {}
+        ranking_audit: dict[str, Any] = {}
         try:
             from app.services.bias_audit_service import bias_audit_service
             ranking_audit = bias_audit_service.audit_ranking_results(
@@ -512,8 +512,8 @@ class RAGPipelineService:
         company_id: str,
         db: AsyncSession,
         limit: int,
-        domain: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        domain: str | None = None,
+    ) -> list[dict[str, Any]]:
         """Busca candidatos via PostgreSQL Full-Text Search (tsvector/tsquery)."""
         try:
             domain_filter = "AND domain = :domain" if domain else ""
@@ -543,7 +543,7 @@ class RAGPipelineService:
                 ORDER BY bm25_score DESC
                 LIMIT :limit
             """)
-            params: Dict[str, Any] = {"query": query, "company_id": company_id, "limit": limit}
+            params: dict[str, Any] = {"query": query, "company_id": company_id, "limit": limit}
             if domain:
                 params["domain"] = domain
             result = await db.execute(sql, params)
@@ -569,12 +569,12 @@ class RAGPipelineService:
 
     async def _semantic_search(
         self,
-        embedding: List[float],
+        embedding: list[float],
         company_id: str,
         db: AsyncSession,
         limit: int,
-        domain: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        domain: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Busca semântica via pgvector na tabela candidates.
         Filtra por cosine similarity >= semantic_threshold.
@@ -598,7 +598,7 @@ class RAGPipelineService:
                 ORDER BY semantic_score DESC
                 LIMIT :limit
             """)
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "embedding": embedding_str,
                 "company_id": company_id,
                 "threshold": self.semantic_threshold,

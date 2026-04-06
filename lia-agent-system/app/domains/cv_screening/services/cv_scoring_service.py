@@ -15,20 +15,20 @@ Architecture:
 - System (Deterministic): Score formulas, recommendations, pipeline status
 """
 import logging
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
-from app.services.activity_service import activity_service
 from app.models.candidate import Candidate, VacancyCandidate
 from app.models.job_vacancy import JobVacancy
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
+from app.services.activity_service import activity_service
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +61,8 @@ class CVScoringService:
         candidate_id: str,
         vacancy_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Execute full CV screening for a candidate against a vacancy.
         
@@ -204,7 +204,7 @@ class CVScoringService:
             if should_close:
                 await db.close()
     
-    def _get_cv_fit_indicator(self, rubric_score: float) -> Dict[str, Any]:
+    def _get_cv_fit_indicator(self, rubric_score: float) -> dict[str, Any]:
         """
         Calculate CV fit indicator (NOT full WSI).
         
@@ -264,7 +264,7 @@ class CVScoringService:
         else:
             return "cv_rejected"
     
-    async def _get_candidate_data(self, candidate_id: str, db: AsyncSession) -> Optional[Dict[str, Any]]:
+    async def _get_candidate_data(self, candidate_id: str, db: AsyncSession) -> dict[str, Any] | None:
         """Fetch candidate data from database."""
         try:
             result = await db.execute(
@@ -300,7 +300,7 @@ class CVScoringService:
             logger.error(f"Error fetching candidate data: {e}")
             return None
     
-    async def _get_job_requirements(self, job_id: str, db: AsyncSession) -> List[JobRequirementCreate]:
+    async def _get_job_requirements(self, job_id: str, db: AsyncSession) -> list[JobRequirementCreate]:
         """Fetch job requirements from database."""
         try:
             result = await db.execute(
@@ -338,7 +338,7 @@ class CVScoringService:
                 return RequirementPriorityEnum.IMPORTANT
         return RequirementPriorityEnum.IMPORTANT
     
-    async def _get_job_info(self, job_id: str, db: AsyncSession) -> Optional[Dict[str, Any]]:
+    async def _get_job_info(self, job_id: str, db: AsyncSession) -> dict[str, Any] | None:
         """Fetch job vacancy info from database."""
         try:
             result = await db.execute(

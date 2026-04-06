@@ -3,21 +3,21 @@ Route service facade for job vacancy management.
 Encapsulates business logic from API routes (app/api/v1/job_vacancies.py) for portability.
 """
 import logging
-from typing import Dict, Any, List, Optional
-from uuid import UUID
 from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID
 
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
 
-from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 from app.models.recruitment_stages import CandidateStageHistory
 
 logger = logging.getLogger(__name__)
 
 
-def _calculate_days_between(start_date: Optional[datetime], end_date: Optional[datetime]) -> int:
+def _calculate_days_between(start_date: datetime | None, end_date: datetime | None) -> int:
     if not start_date or not end_date:
         return 0
     delta = end_date - start_date
@@ -43,13 +43,13 @@ def _is_job_at_risk(job: Any, now: datetime) -> bool:
 
 
 def _generate_insights(
-    my_jobs_list: List[Any],
-    active_jobs_list: List[Any],
-    completed_jobs_90d: List[Any],
-    stats: Dict[str, Any],
+    my_jobs_list: list[Any],
+    active_jobs_list: list[Any],
+    completed_jobs_90d: list[Any],
+    stats: dict[str, Any],
     now: datetime
-) -> List[Dict[str, Any]]:
-    insights: List[Dict[str, Any]] = []
+) -> list[dict[str, Any]]:
+    insights: list[dict[str, Any]] = []
 
     stalled_jobs = [
         job for job in active_jobs_list
@@ -135,7 +135,7 @@ class JobVacancyRouteService:
 
     async def get_job_vacancy_metrics(
         self, db: AsyncSession, job_vacancy_id: UUID, company_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate comprehensive job vacancy metrics.
 
         Extracted from GET /job-vacancies/{job_vacancy_id}/metrics (lines 682-839).
@@ -267,7 +267,7 @@ class JobVacancyRouteService:
 
     async def get_job_analytics(
         self, db: AsyncSession, job_id: UUID, company_id: UUID
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Calculate detailed analytics for a job vacancy.
 
         Extracted from GET /job-vacancies/{job_id}/analytics (lines 896-1157).
@@ -292,12 +292,12 @@ class JobVacancyRouteService:
         vacancy_candidates = candidates_result.scalars().all()
         total_candidates = len(vacancy_candidates)
 
-        stage_counts: Dict[str, int] = {}
-        source_counts: Dict[str, int] = {}
-        source_hired_counts: Dict[str, int] = {}
+        stage_counts: dict[str, int] = {}
+        source_counts: dict[str, int] = {}
+        source_hired_counts: dict[str, int] = {}
         hired_count = 0
-        lia_scores: List[float] = []
-        match_percentages: List[float] = []
+        lia_scores: list[float] = []
+        match_percentages: list[float] = []
 
         for vc in vacancy_candidates:
             stage = vc.stage or "initial"
@@ -319,7 +319,7 @@ class JobVacancyRouteService:
             "interview", "entrevista", "offer", "proposta",
             "hired", "contratado", "rejected", "reprovado",
         ]
-        funnel_items: List[Dict[str, Any]] = []
+        funnel_items: list[dict[str, Any]] = []
         cumulative_count = total_candidates
 
         for stage_name in stage_order:
@@ -350,10 +350,10 @@ class JobVacancyRouteService:
         )
         stage_history = history_result.scalars().all()
 
-        time_in_stage: Dict[str, List[float]] = {}
-        rejection_reasons: List[str] = []
-        first_response_times: List[float] = []
-        hire_times: List[float] = []
+        time_in_stage: dict[str, list[float]] = {}
+        rejection_reasons: list[str] = []
+        first_response_times: list[float] = []
+        hire_times: list[float] = []
 
         for history_entry in stage_history:
             if history_entry.time_in_previous_stage_hours is not None and history_entry.from_stage_name:
@@ -380,7 +380,7 @@ class JobVacancyRouteService:
                 total_time = sum(h.time_in_previous_stage_hours or 0 for h in candidate_history)
                 hire_times.append(total_time / 24.0)
 
-        avg_time_in_stage: Dict[str, float] = {}
+        avg_time_in_stage: dict[str, float] = {}
         for sn, times in time_in_stage.items():
             avg_time_in_stage[sn] = round(sum(times) / len(times), 1) if times else 0.0
 
@@ -391,7 +391,7 @@ class JobVacancyRouteService:
         avg_time_to_hire = round(sum(hire_times) / len(hire_times), 1) if hire_times else 0.0
         avg_time_to_first_response = round(sum(first_response_times) / len(first_response_times), 1) if first_response_times else 0.0
 
-        sources_list: List[Dict[str, Any]] = []
+        sources_list: list[dict[str, Any]] = []
         for source, count in sorted(source_counts.items(), key=lambda x: x[1], reverse=True):
             hired_from_source = source_hired_counts.get(source, 0)
             conversion = (hired_from_source / count * 100) if count > 0 else 0.0
@@ -450,7 +450,7 @@ class JobVacancyRouteService:
         avg_lia_score = round(sum(lia_scores) / len(lia_scores), 1) if lia_scores else 0.0
         avg_skills_match = round(sum(match_percentages) / len(match_percentages), 1) if match_percentages else 0.0
 
-        reason_counts: Dict[str, int] = {}
+        reason_counts: dict[str, int] = {}
         for reason in rejection_reasons:
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
         top_rejection_reasons = sorted(reason_counts.keys(), key=lambda x: reason_counts[x], reverse=True)[:5]
@@ -465,8 +465,8 @@ class JobVacancyRouteService:
         )
         company_jobs = company_jobs_result.scalars().all()
 
-        company_hire_times: List[float] = []
-        company_conversion_rates: List[float] = []
+        company_hire_times: list[float] = []
+        company_conversion_rates: list[float] = []
         for cj in company_jobs:
             if cj.open_date and cj.closed_at:
                 company_hire_times.append((cj.closed_at - cj.open_date).days)
@@ -509,8 +509,8 @@ class JobVacancyRouteService:
         }
 
     async def get_stats_overview(
-        self, db: AsyncSession, company_id: UUID, recruiter_email: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, db: AsyncSession, company_id: UUID, recruiter_email: str | None = None
+    ) -> dict[str, Any]:
         """Calculate aggregated dashboard metrics for job vacancies.
 
         Extracted from GET /job-vacancies/stats/overview (lines 1533-1759).
@@ -642,12 +642,12 @@ class JobVacancyRouteService:
                     within_sla_count += 1
         within_sla_pct = (within_sla_count / len(completed_jobs_90d) * 100) if completed_jobs_90d else 0.0
 
-        by_department: Dict[str, int] = {}
+        by_department: dict[str, int] = {}
         for job in active_jobs_list:
             dept = job.department or "Não definido"
             by_department[dept] = by_department.get(dept, 0) + 1
 
-        trend_weeks: List[Dict[str, Any]] = []
+        trend_weeks: list[dict[str, Any]] = []
         for weeks_ago in range(7, -1, -1):
             week_start = now - timedelta(weeks=weeks_ago + 1)
             week_end = now - timedelta(weeks=weeks_ago)
@@ -693,7 +693,7 @@ class JobVacancyRouteService:
         company_id: UUID,
         page: int = 1,
         page_size: int = 50,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get audit history for a job vacancy.
 
         Extracted from GET /job-vacancies/{job_id}/history (lines 1189-1255).
@@ -755,7 +755,7 @@ class JobVacancyRouteService:
         query: str = "",
         page: int = 1,
         page_size: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Search job vacancies by title or job_id.
 
         Extracted from GET /job-vacancies/search (lines 367-443).
@@ -799,7 +799,7 @@ class JobVacancyRouteService:
         result = await db.execute(stmt)
         rows = result.all()
 
-        items: List[Dict[str, Any]] = []
+        items: list[dict[str, Any]] = []
         for row in rows:
             description_preview = None
             if row.description:
@@ -827,8 +827,8 @@ class JobVacancyRouteService:
         created_by: str,
         company_id: UUID,
         current_user: Any,
-        pipeline_template_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        pipeline_template_id: str | None = None,
+    ) -> dict[str, Any]:
         """Finalize job vacancy creation and persist to database.
 
         Extracted from POST /job-vacancies/finalize (lines 286-343).
@@ -838,8 +838,8 @@ class JobVacancyRouteService:
         Returns:
             Dict with keys: success, job_vacancy_id, title, status, message
         """
-        from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
         from app.domains.job_management.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 
         if not job_vacancy_state.is_ready_for_publication():
             return {

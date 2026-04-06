@@ -28,12 +28,11 @@ Versão: 1.0
 import asyncio
 import logging
 from collections import Counter
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 from app.domains.cv_screening.services.calibration_profiles import SALARY_REFERENCE_RANGES_BRL
 from app.domains.cv_screening.services.seniority_utils import (
-    WSI_SENIORITY_LEVELS,
     infer_seniority_from_title,
     is_valid_seniority_level,
     normalize_seniority,
@@ -97,10 +96,10 @@ class SenioritySignal:
         evidence: Texto ou dados que originaram a inferência.
     """
     source: str
-    level: Optional[str]
+    level: str | None
     confidence: float
     weight: float
-    evidence: Optional[str]
+    evidence: str | None
 
 
 @dataclass
@@ -126,17 +125,17 @@ class SeniorityResolution:
     source: str
     confidence: float
     agreement: str
-    signals: List[SenioritySignal]
-    validation_warnings: List[str]
+    signals: list[SenioritySignal]
+    validation_warnings: list[str]
     requires_confirmation: bool
-    confirmation_message: Optional[str]
-    metadata: Dict[str, Any]
+    confirmation_message: str | None
+    metadata: dict[str, Any]
 
 
 def _infer_seniority_from_salary(
-    salary_min: Optional[float],
-    salary_max: Optional[float],
-) -> Optional[str]:
+    salary_min: float | None,
+    salary_max: float | None,
+) -> str | None:
     """Infere o nível de senioridade a partir da faixa salarial.
 
     Calcula o ponto médio salarial e determina em qual faixa de referência
@@ -178,8 +177,8 @@ def _infer_seniority_from_salary(
 
 
 def _infer_seniority_from_skills(
-    technical_skills: Optional[List[str]],
-) -> Optional[str]:
+    technical_skills: list[str] | None,
+) -> str | None:
     """Infere o nível de senioridade a partir da complexidade das skills técnicas.
 
     Realiza matching determinístico das skills fornecidas contra listas de
@@ -244,13 +243,13 @@ def _infer_seniority_from_skills(
 
 
 def _collect_signals(
-    explicit_seniority: Optional[str],
-    job_title: Optional[str],
-    job_description: Optional[str],
-    salary_min: Optional[float],
-    salary_max: Optional[float],
-    technical_skills: Optional[List[str]],
-) -> List[SenioritySignal]:
+    explicit_seniority: str | None,
+    job_title: str | None,
+    job_description: str | None,
+    salary_min: float | None,
+    salary_max: float | None,
+    technical_skills: list[str] | None,
+) -> list[SenioritySignal]:
     """Coleta todos os sinais de senioridade disponíveis.
 
     Executa a coleta de sinais de todas as fontes disponíveis: entrada explícita,
@@ -267,7 +266,7 @@ def _collect_signals(
     Returns:
         Lista de SenioritySignal com todos os sinais coletados.
     """
-    signals: List[SenioritySignal] = []
+    signals: list[SenioritySignal] = []
 
     if explicit_seniority:
         normalized = normalize_seniority(explicit_seniority)
@@ -361,7 +360,7 @@ def _collect_signals(
     return signals
 
 
-def _redistribute_weights(signals: List[SenioritySignal]) -> None:
+def _redistribute_weights(signals: list[SenioritySignal]) -> None:
     """Redistribui os pesos proporcionalmente quando há menos sinais ativos.
 
     Sinais ativos são aqueles com level não-None. Os pesos são redistribuídos
@@ -389,11 +388,11 @@ def _redistribute_weights(signals: List[SenioritySignal]) -> None:
 
 
 def _detect_conflicts(
-    signals: List[SenioritySignal],
-    explicit_seniority: Optional[str],
-    salary_min: Optional[float],
-    salary_max: Optional[float],
-) -> List[str]:
+    signals: list[SenioritySignal],
+    explicit_seniority: str | None,
+    salary_min: float | None,
+    salary_max: float | None,
+) -> list[str]:
     """Detecta conflitos e inconsistências entre os sinais coletados.
 
     Gera mensagens de aviso em português quando sinais divergem significativamente,
@@ -408,7 +407,7 @@ def _detect_conflicts(
     Returns:
         Lista de mensagens de aviso em português.
     """
-    warnings: List[str] = []
+    warnings: list[str] = []
     active_signals = [s for s in signals if s.level is not None]
 
     if len(active_signals) < 2:
@@ -462,10 +461,10 @@ def _detect_conflicts(
 
 
 def _combine_signals(
-    signals: List[SenioritySignal],
-    warnings: List[str],
-    explicit_seniority: Optional[str],
-    job_title: Optional[str],
+    signals: list[SenioritySignal],
+    warnings: list[str],
+    explicit_seniority: str | None,
+    job_title: str | None,
 ) -> SeniorityResolution:
     """Combina os sinais coletados usando o Motor de Combinação determinístico.
 
@@ -486,7 +485,7 @@ def _combine_signals(
     source_parts = [s.source for s in active_signals]
     source_str = "+".join(source_parts) if source_parts else "none"
 
-    metadata: Dict[str, Any] = {
+    metadata: dict[str, Any] = {
         "total_signals_collected": len(signals),
         "active_signals": len(active_signals),
         "signal_sources": [s.source for s in signals],
@@ -641,7 +640,7 @@ def _combine_signals(
     if explicit_signal:
         resolved_level = explicit_signal.level
     else:
-        weighted_levels: Dict[str, float] = {}
+        weighted_levels: dict[str, float] = {}
         for s in active_signals:
             weighted_levels[s.level or ""] = weighted_levels.get(s.level or "", 0) + s.weight
         resolved_level = max(weighted_levels, key=lambda k: weighted_levels.get(k, 0.0))
@@ -665,14 +664,14 @@ def _combine_signals(
 
 
 async def resolve_seniority(
-    explicit_seniority: Optional[str] = None,
-    job_title: Optional[str] = None,
-    job_description: Optional[str] = None,
-    department: Optional[str] = None,
-    salary_min: Optional[float] = None,
-    salary_max: Optional[float] = None,
-    technical_skills: Optional[List[str]] = None,
-    company_id: Optional[str] = None,
+    explicit_seniority: str | None = None,
+    job_title: str | None = None,
+    job_description: str | None = None,
+    department: str | None = None,
+    salary_min: float | None = None,
+    salary_max: float | None = None,
+    technical_skills: list[str] | None = None,
+    company_id: str | None = None,
 ) -> SeniorityResolution:
     """Resolve o nível de senioridade combinando múltiplos sinais de forma determinística.
 
@@ -784,12 +783,12 @@ async def resolve_seniority(
 
 
 def _run_resolve_sync(
-    explicit_seniority: Optional[str] = None,
-    job_title: Optional[str] = None,
-    job_description: Optional[str] = None,
-    salary_min: Optional[float] = None,
-    salary_max: Optional[float] = None,
-    technical_skills: Optional[List[str]] = None,
+    explicit_seniority: str | None = None,
+    job_title: str | None = None,
+    job_description: str | None = None,
+    salary_min: float | None = None,
+    salary_max: float | None = None,
+    technical_skills: list[str] | None = None,
 ) -> "SeniorityResolution":
     """Executa resolve_seniority de forma síncrona."""
     coro = resolve_seniority(
@@ -813,12 +812,12 @@ def _run_resolve_sync(
 
 
 def resolve_seniority_full(
-    explicit_seniority: Optional[str] = None,
-    job_title: Optional[str] = None,
-    job_description: Optional[str] = None,
-    salary_min: Optional[float] = None,
-    salary_max: Optional[float] = None,
-    technical_skills: Optional[List[str]] = None,
+    explicit_seniority: str | None = None,
+    job_title: str | None = None,
+    job_description: str | None = None,
+    salary_min: float | None = None,
+    salary_max: float | None = None,
+    technical_skills: list[str] | None = None,
 ) -> "SeniorityResolution":
     """Wrapper síncrono que retorna a resolução completa com todos os metadados.
 
@@ -848,9 +847,9 @@ def resolve_seniority_full(
 
 
 def resolve_seniority_simple(
-    explicit_seniority: Optional[str] = None,
-    job_title: Optional[str] = None,
-    job_description: Optional[str] = None,
+    explicit_seniority: str | None = None,
+    job_title: str | None = None,
+    job_description: str | None = None,
 ) -> str:
     """Wrapper síncrono simplificado que retorna apenas o nível como string.
 

@@ -6,16 +6,16 @@ Dual-provider: seleciona Google Calendar ou Microsoft Graph por empresa,
 via tabela company_calendar_credentials. Fallback: Microsoft Graph.
 """
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.graph_client import graph_client
 from app.core.config import settings
-from app.utils.datetime_helpers import parse_graph_datetime
+from app.services.graph_client import graph_client
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
+from app.utils.datetime_helpers import parse_graph_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class CalendarService:
     def __init__(self):
         self.graph = graph_client
 
-    async def _get_client(self, company_id: Optional[str], db: Optional[AsyncSession] = None):
+    async def _get_client(self, company_id: str | None, db: AsyncSession | None = None):
         """
         Return the appropriate calendar client for the company.
 
@@ -56,8 +56,8 @@ class CalendarService:
             creds = await _get_company_calendar_credentials(company_id, db)
             if creds and creds.provider == "google":
                 try:
-                    from app.shared.encryption import decrypt_value
                     from app.services.google_calendar_client import GoogleCalendarClient
+                    from app.shared.encryption import decrypt_value
                     raw_json = decrypt_value(creds.encrypted_credentials)
                     return GoogleCalendarClient(
                         credentials_json=raw_json,
@@ -75,10 +75,10 @@ class CalendarService:
         self,
         interviewer_email: str,
         date: datetime,
-        duration_minutes: Optional[int] = None,
-        company_id: Optional[str] = None,
+        duration_minutes: int | None = None,
+        company_id: str | None = None,
         db=None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Check interviewer's availability for a specific date.
         Returns list of available time slots.
@@ -117,9 +117,8 @@ class CalendarService:
         if effective_duration is None:
             effective_duration = 60
 
-        from datetime import timezone as tz
-        start_of_day = date.replace(hour=start_hour, minute=0, second=0, microsecond=0, tzinfo=tz.utc)
-        end_of_day = date.replace(hour=end_hour, minute=0, second=0, microsecond=0, tzinfo=tz.utc)
+        start_of_day = date.replace(hour=start_hour, minute=0, second=0, microsecond=0, tzinfo=UTC)
+        end_of_day = date.replace(hour=end_hour, minute=0, second=0, microsecond=0, tzinfo=UTC)
         
         # Get existing events
         events = await self.graph.get_user_calendar_view(
@@ -170,13 +169,13 @@ class CalendarService:
     async def find_best_interview_time(
         self,
         organizer_email: str,
-        interviewer_emails: List[str],
+        interviewer_emails: list[str],
         candidate_email: str,
-        duration_minutes: Optional[int] = None,
-        preferred_days: Optional[List[str]] = None,
-        company_id: Optional[str] = None,
+        duration_minutes: int | None = None,
+        preferred_days: list[str] | None = None,
+        company_id: str | None = None,
         db=None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Find best interview times using Graph findMeetingTimes API.
         
@@ -246,16 +245,16 @@ class CalendarService:
         organizer_email: str,
         candidate_name: str,
         candidate_email: str,
-        interviewer_emails: List[str],
+        interviewer_emails: list[str],
         position: str,
         start_time: datetime,
-        duration_minutes: Optional[int] = None,
-        location: Optional[str] = None,
+        duration_minutes: int | None = None,
+        location: str | None = None,
         as_teams_meeting: bool = True,
-        notes: Optional[str] = None,
-        company_id: Optional[str] = None,
+        notes: str | None = None,
+        company_id: str | None = None,
         db=None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Schedule an interview appointment.
         
@@ -296,7 +295,7 @@ class CalendarService:
         
         # Build email body
         body_parts = [
-            f"<h2>Entrevista de Seleção</h2>",
+            "<h2>Entrevista de Seleção</h2>",
             f"<p><strong>Candidato:</strong> {candidate_name}</p>",
             f"<p><strong>Posição:</strong> {position}</p>",
             f"<p><strong>Duração:</strong> {effective_duration} minutos</p>",
@@ -335,7 +334,7 @@ class CalendarService:
         self,
         organizer_email: str,
         event_id: str,
-        cancellation_message: Optional[str] = None
+        cancellation_message: str | None = None
     ) -> bool:
         """
         Cancel a scheduled interview.
@@ -369,8 +368,8 @@ class CalendarService:
         organizer_email: str,
         event_id: str,
         new_start_time: datetime,
-        new_duration_minutes: Optional[int] = None
-    ) -> Dict[str, Any]:
+        new_duration_minutes: int | None = None
+    ) -> dict[str, Any]:
         """
         Reschedule an existing interview.
         
@@ -427,14 +426,16 @@ class CalendarService:
         description: str = "",
         location: str = "",
         duration_minutes: int = 60,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Persist a generic calendar commitment (non-interview) to calendar_events table.
         Returns the created event data or raises on failure.
         """
         import uuid as uuid_mod
         from datetime import datetime
+
         from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
 
         event_id = str(uuid_mod.uuid4())

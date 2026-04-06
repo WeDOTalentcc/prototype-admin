@@ -12,14 +12,15 @@ Features:
   - get_stats(notification_id, company_id) → dict
 """
 import hashlib
+import logging
 import os
 import secrets
-import logging
 import urllib.parse
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 _TRACKING_BASE_URL = os.getenv("API_BASE_URL", "https://api.wedotalent.com")
 
@@ -33,12 +34,12 @@ def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def _hash_ip(ip: Optional[str]) -> Optional[str]:
+def _hash_ip(ip: str | None) -> str | None:
     """Hash SHA256 do IP do cliente."""
     return _sha256(ip) if ip else None
 
 
-def _hash_email(email: Optional[str]) -> Optional[str]:
+def _hash_email(email: str | None) -> str | None:
     """Hash SHA256 do email do destinatário."""
     return _sha256(email.lower().strip()) if email else None
 
@@ -50,7 +51,7 @@ class EmailTrackingService:
         self,
         notification_id: str,
         company_id: str,
-        recipient_email: Optional[str] = None,
+        recipient_email: str | None = None,
     ) -> str:
         """
         Gera token único para tracking de abertura.
@@ -65,7 +66,7 @@ class EmailTrackingService:
         db: AsyncSession,
         notification_id: str,
         company_id: str,
-        recipient_email: Optional[str] = None,
+        recipient_email: str | None = None,
     ) -> str:
         """
         Persiste token de tracking e retorna token string.
@@ -86,8 +87,8 @@ class EmailTrackingService:
         self,
         db: AsyncSession,
         token: str,
-        ip: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        ip: str | None = None,
+        user_agent: str | None = None,
     ) -> bool:
         """
         Registra abertura de email (pixel 1x1).
@@ -126,9 +127,9 @@ class EmailTrackingService:
         db: AsyncSession,
         token: str,
         link_url: str,
-        ip: Optional[str] = None,
-        user_agent: Optional[str] = None,
-    ) -> Optional[str]:
+        ip: str | None = None,
+        user_agent: str | None = None,
+    ) -> str | None:
         """
         Registra clique em link e retorna URL de destino para redirect.
 
@@ -165,7 +166,7 @@ class EmailTrackingService:
         db: AsyncSession,
         notification_id: str,
         company_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Retorna estatísticas de tracking para uma notificação.
 
@@ -211,12 +212,12 @@ class EmailTrackingService:
         db: AsyncSession,
         sg_message_id: str,
         event_type: str,
-        email: Optional[str] = None,
-        ip: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        url: Optional[str] = None,
-        timestamp: Optional[int] = None,
-        raw_event: Optional[Dict[str, Any]] = None,
+        email: str | None = None,
+        ip: str | None = None,
+        user_agent: str | None = None,
+        url: str | None = None,
+        timestamp: int | None = None,
+        raw_event: dict[str, Any] | None = None,
     ) -> None:
         """
         Record an event received from Mailgun Event Webhook.
@@ -240,10 +241,9 @@ class EmailTrackingService:
         except Exception:
             pass
 
-        event_time = None
         if timestamp:
             try:
-                event_time = datetime.fromtimestamp(int(timestamp), tz=timezone.utc)
+                datetime.fromtimestamp(int(timestamp), tz=UTC)
             except (ValueError, OSError):
                 pass
 
@@ -270,14 +270,15 @@ class EmailTrackingService:
         }
         if notification_id != sg_message_id and event_type in _STATUS_MAP:
             try:
-                from app.models.message_queue import MessageQueue
                 from sqlalchemy import update as sql_update
+
+                from app.models.message_queue import MessageQueue
                 await db.execute(
                     sql_update(MessageQueue)
                     .where(MessageQueue.id == notification_id)
                     .values(
                         status=_STATUS_MAP[event_type],
-                        updated_at=datetime.now(timezone.utc),
+                        updated_at=datetime.now(UTC),
                     )
                 )
             except Exception as status_exc:
@@ -316,7 +317,7 @@ class EmailTrackingService:
         self,
         db: AsyncSession,
         sg_message_id: str,
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Resolve A/B test data from CommunicationLog.extra_data via provider_message_id."""
         try:
             from app.domains.communication.services.communication_service import CommunicationLog
@@ -344,7 +345,7 @@ class EmailTrackingService:
         self,
         html_body: str,
         token: str,
-        action_url: Optional[str] = None,
+        action_url: str | None = None,
         base_url: str = _TRACKING_BASE_URL,
     ) -> str:
         """

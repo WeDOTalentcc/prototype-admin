@@ -2,10 +2,11 @@
 Pydantic schemas for Intelligence Layer.
 """
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from uuid import UUID
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class InsightType(str, Enum):
@@ -30,14 +31,14 @@ class PatternType(str, Enum):
 class CorrectionPatternBase(BaseModel):
     """Base schema for correction patterns."""
     field: str
-    role_pattern: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    role_pattern: str | None = None
+    seniority: str | None = None
+    department: str | None = None
     direction: str
     avg_adjustment: float
-    min_adjustment: Optional[float] = None
-    max_adjustment: Optional[float] = None
-    std_deviation: Optional[float] = None
+    min_adjustment: float | None = None
+    max_adjustment: float | None = None
+    std_deviation: float | None = None
     sample_size: int = 0
     confidence: float = 0.0
 
@@ -56,19 +57,19 @@ class CorrectionPatternResponse(CorrectionPatternBase):
 
 class SuccessProfileBase(BaseModel):
     """Base schema for success profiles."""
-    role_pattern: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    optimal_salary_percentile: Optional[int] = None
-    avg_salary: Optional[float] = None
-    avg_time_to_fill: Optional[int] = None
-    median_time_to_fill: Optional[int] = None
-    must_have_skills: List[str] = Field(default_factory=list)
-    common_skills: List[Dict[str, Any]] = Field(default_factory=list)
-    avg_pipeline_length: Optional[int] = None
-    avg_screening_questions: Optional[int] = None
-    satisfaction_avg: Optional[float] = None
-    success_rate: Optional[float] = None
+    role_pattern: str | None = None
+    seniority: str | None = None
+    department: str | None = None
+    optimal_salary_percentile: int | None = None
+    avg_salary: float | None = None
+    avg_time_to_fill: int | None = None
+    median_time_to_fill: int | None = None
+    must_have_skills: list[str] = Field(default_factory=list)
+    common_skills: list[dict[str, Any]] = Field(default_factory=list)
+    avg_pipeline_length: int | None = None
+    avg_screening_questions: int | None = None
+    satisfaction_avg: float | None = None
+    success_rate: float | None = None
     sample_size: int = 0
     confidence: float = 0.0
 
@@ -77,7 +78,7 @@ class SuccessProfileResponse(SuccessProfileBase):
     """Response schema for success profiles."""
     id: UUID
     company_id: str
-    characteristics: Dict[str, Any] = Field(default_factory=dict)
+    characteristics: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
 
@@ -89,12 +90,12 @@ class OutcomeCorrelationBase(BaseModel):
     """Base schema for outcome correlations."""
     factor: str
     outcome_metric: str
-    role_pattern: Optional[str] = None
-    seniority: Optional[str] = None
+    role_pattern: str | None = None
+    seniority: str | None = None
     correlation: float
-    significance: Optional[float] = None
-    direction: Optional[str] = None
-    recommendation: Optional[str] = None
+    significance: float | None = None
+    direction: str | None = None
+    recommendation: str | None = None
     sample_size: int = 0
 
 
@@ -102,8 +103,8 @@ class OutcomeCorrelationResponse(OutcomeCorrelationBase):
     """Response schema for outcome correlations."""
     id: UUID
     company_id: str
-    factor_values: Dict[str, Any] = Field(default_factory=dict)
-    outcome_values: Dict[str, Any] = Field(default_factory=dict)
+    factor_values: dict[str, Any] = Field(default_factory=dict)
+    outcome_values: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
 
@@ -114,24 +115,24 @@ class OutcomeCorrelationResponse(OutcomeCorrelationBase):
 class IntelligenceInsightCreate(BaseModel):
     """Schema for creating an intelligence insight."""
     company_id: str
-    job_id: Optional[UUID] = None
-    recruiter_id: Optional[str] = None
+    job_id: UUID | None = None
+    recruiter_id: str | None = None
     insight_type: str
-    field: Optional[str] = None
-    original_value: Optional[Any] = None
-    suggested_value: Optional[Any] = None
+    field: str | None = None
+    original_value: Any | None = None
+    suggested_value: Any | None = None
     confidence: float = 0.0
-    source: Optional[str] = None
-    reasoning: Optional[str] = None
-    insight_metadata: Dict[str, Any] = Field(default_factory=dict)
+    source: str | None = None
+    reasoning: str | None = None
+    insight_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class IntelligenceInsightResponse(IntelligenceInsightCreate):
     """Response schema for intelligence insights."""
     id: UUID
-    was_applied: Optional[bool] = None
-    was_accepted: Optional[bool] = None
-    final_value: Optional[Any] = None
+    was_applied: bool | None = None
+    was_accepted: bool | None = None
+    final_value: Any | None = None
     created_at: datetime
 
     class Config:
@@ -140,9 +141,9 @@ class IntelligenceInsightResponse(IntelligenceInsightCreate):
 
 class IntelligenceInsightUpdate(BaseModel):
     """Schema for updating an intelligence insight."""
-    was_applied: Optional[bool] = None
-    was_accepted: Optional[bool] = None
-    final_value: Optional[Any] = None
+    was_applied: bool | None = None
+    was_accepted: bool | None = None
+    final_value: Any | None = None
 
 
 class PatternCacheResponse(BaseModel):
@@ -151,11 +152,11 @@ class PatternCacheResponse(BaseModel):
     company_id: str
     pattern_type: str
     pattern_key: str
-    pattern_data: Dict[str, Any]
+    pattern_data: dict[str, Any]
     sample_size: int
     confidence: float
     calculated_at: datetime
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -171,33 +172,33 @@ class FieldSuggestion(BaseModel):
     source: str
     action: str
     should_auto_apply: bool = False
-    insights: List[str] = Field(default_factory=list)
-    reasoning: Optional[str] = None
+    insights: list[str] = Field(default_factory=list)
+    reasoning: str | None = None
 
 
 class OutcomePrediction(BaseModel):
     """Prediction of job outcomes."""
-    predicted_time_to_fill: Optional[int] = None
+    predicted_time_to_fill: int | None = None
     confidence: str
-    risk_factors: List[str] = Field(default_factory=list)
-    improvement_suggestions: List[str] = Field(default_factory=list)
+    risk_factors: list[str] = Field(default_factory=list)
+    improvement_suggestions: list[str] = Field(default_factory=list)
     similar_jobs_count: int = 0
 
 
 class IntelligenceReport(BaseModel):
     """Full intelligence report for a job context."""
     company_id: str
-    role: Optional[str] = None
-    seniority: Optional[str] = None
+    role: str | None = None
+    seniority: str | None = None
     
-    correction_patterns: List[CorrectionPatternResponse] = Field(default_factory=list)
-    success_profile: Optional[SuccessProfileResponse] = None
-    correlations: List[OutcomeCorrelationResponse] = Field(default_factory=list)
-    outcome_prediction: Optional[OutcomePrediction] = None
+    correction_patterns: list[CorrectionPatternResponse] = Field(default_factory=list)
+    success_profile: SuccessProfileResponse | None = None
+    correlations: list[OutcomeCorrelationResponse] = Field(default_factory=list)
+    outcome_prediction: OutcomePrediction | None = None
     
-    suggestions: Dict[str, FieldSuggestion] = Field(default_factory=dict)
+    suggestions: dict[str, FieldSuggestion] = Field(default_factory=dict)
     
-    confidence_summary: Dict[str, float] = Field(default_factory=dict)
+    confidence_summary: dict[str, float] = Field(default_factory=dict)
     data_quality: str = "low"
     
     generated_at: datetime = Field(default_factory=datetime.utcnow)

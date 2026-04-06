@@ -3,23 +3,24 @@ Webhooks API endpoints.
 
 Provides CRUD operations for external webhook management.
 """
-from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, HttpUrl
 import logging
+from typing import Any
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.communication.services.webhook_service import webhook_service, WEBHOOK_EVENTS
+from app.domains.communication.services.webhook_service import webhook_service
 
 logger = logging.getLogger(__name__)
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """
     Get user context from request headers.
     Used for development and internal API calls.
@@ -43,34 +44,34 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 class WebhookCreate(BaseModel):
     """Request model for creating a webhook."""
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     url: str
-    events: List[str]
-    secret_key: Optional[str] = None
-    headers: Optional[Dict[str, str]] = None
+    events: list[str]
+    secret_key: str | None = None
+    headers: dict[str, str] | None = None
     retry_count: int = 3
     timeout_seconds: int = 30
 
 
 class WebhookUpdate(BaseModel):
     """Request model for updating a webhook."""
-    name: Optional[str] = None
-    description: Optional[str] = None
-    url: Optional[str] = None
-    events: Optional[List[str]] = None
-    headers: Optional[Dict[str, str]] = None
-    is_active: Optional[bool] = None
-    retry_count: Optional[int] = None
-    timeout_seconds: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    url: str | None = None
+    events: list[str] | None = None
+    headers: dict[str, str] | None = None
+    is_active: bool | None = None
+    retry_count: int | None = None
+    timeout_seconds: int | None = None
 
 
 @router.get("")
 async def list_webhooks(
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    event: Optional[str] = Query(None, description="Filter by subscribed event"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    event: str | None = Query(None, description="Filter by subscribed event"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -110,7 +111,7 @@ async def list_available_events():
 @router.get("/{webhook_id}")
 async def get_webhook(
     webhook_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -135,7 +136,7 @@ async def get_webhook(
 @router.post("")
 async def create_webhook(
     webhook_data: WebhookCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -173,7 +174,7 @@ async def create_webhook(
 async def update_webhook(
     webhook_id: str,
     webhook_data: WebhookUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -201,7 +202,7 @@ async def update_webhook(
 @router.delete("/{webhook_id}")
 async def delete_webhook(
     webhook_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -226,7 +227,7 @@ async def delete_webhook(
 @router.post("/{webhook_id}/test")
 async def test_webhook(
     webhook_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -252,10 +253,10 @@ async def test_webhook(
 @router.get("/{webhook_id}/logs")
 async def get_webhook_logs(
     webhook_id: str,
-    status: Optional[str] = Query(None, description="Filter by status (success, failed, pending)"),
+    status: str | None = Query(None, description="Filter by status (success, failed, pending)"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

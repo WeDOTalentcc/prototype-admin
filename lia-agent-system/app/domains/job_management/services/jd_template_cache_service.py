@@ -12,11 +12,12 @@ Architecture:
 - Graceful fallback when Redis unavailable
 """
 
-import os
-import json
 import hashlib
-from typing import Optional, Dict, Any
+import json
+import os
 from datetime import datetime
+from typing import Any
+
 try:
     import redis
     REDIS_AVAILABLE = True
@@ -37,7 +38,7 @@ class JDTemplateCacheService:
     """
     
     def __init__(self):
-        self.redis_client: Optional[redis.Redis] = None
+        self.redis_client: redis.Redis | None = None
         self.default_ttl_hours = 24
         self._hits = 0
         self._misses = 0
@@ -47,7 +48,7 @@ class JDTemplateCacheService:
         """Initialize Redis connection following semantic_search_service pattern."""
         if not REDIS_AVAILABLE:
             logger.info("redis not installed, JD cache using in-memory fallback")
-            self._memory_cache: Dict[str, Dict[str, Any]] = {}
+            self._memory_cache: dict[str, dict[str, Any]] = {}
             return
             
         redis_url = os.environ.get("REDIS_URL")
@@ -59,10 +60,10 @@ class JDTemplateCacheService:
             except Exception as e:
                 logger.warning(f"Redis connection failed: {e}, using in-memory cache")
                 self.redis_client = None
-                self._memory_cache: Dict[str, Dict[str, Any]] = {}
+                self._memory_cache: dict[str, dict[str, Any]] = {}
         else:
             logger.info("No Redis URL, JD cache using in-memory fallback")
-            self._memory_cache: Dict[str, Dict[str, Any]] = {}
+            self._memory_cache: dict[str, dict[str, Any]] = {}
     
     def _normalize_jd_text(self, jd_text: str) -> str:
         """
@@ -94,7 +95,7 @@ class JDTemplateCacheService:
         self, 
         jd_text: str, 
         company_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get cached JD extraction if available.
         
@@ -148,7 +149,7 @@ class JDTemplateCacheService:
         self, 
         jd_text: str, 
         company_id: str, 
-        extraction: Dict[str, Any],
+        extraction: dict[str, Any],
         ttl_hours: int = 24
     ) -> bool:
         """
@@ -263,7 +264,7 @@ class JDTemplateCacheService:
             logger.warning(f"Cache key invalidation error: {e}")
             return False
     
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get cache performance metrics.
         

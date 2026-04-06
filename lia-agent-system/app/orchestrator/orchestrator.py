@@ -1,28 +1,32 @@
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 from app.core.config import settings
-from .task_planner import TaskPlanner
-from .policy_engine import PolicyEngine
-from .state_manager import StateManager
-from .cascaded_router import CascadedRouter
-from app.shared.robustness import sanitize_text, CancellationHandler, create_user_friendly_error, AgentErrorCode
+from app.domains.base import DomainContext, DomainResponse
 from app.domains.registry import DomainRegistry
 from app.domains.workflow import DomainWorkflow
-from app.domains.base import DomainContext, DomainResponse
 from app.shared.execution import PlanDetector, PlanExecutor
+from app.shared.robustness import CancellationHandler, sanitize_text
+
+from .cascaded_router import CascadedRouter
+from .policy_engine import PolicyEngine
+from .state_manager import StateManager
+from .task_planner import TaskPlanner
+
 try:
     from app.api.v1.ws_manager import ws_manager as _ws_manager
 except Exception:
     _ws_manager = None  # WS not available in test context
-from app.shared.memory.conversation_state import ConversationState
-from app.services import job_analytics_prompt_service, COMMAND_TEMPLATES
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
+from app.services import COMMAND_TEMPLATES, job_analytics_prompt_service
 from app.services.response_cache_service import response_cache_service
-from app.tools import (
-    tool_registry, initialize_tools, get_all_tool_schemas
-)
+from app.shared.memory.conversation_state import ConversationState
+from app.tools import get_all_tool_schemas, initialize_tools, tool_registry
 from app.tools.scope_config import (
-    PromptScope, filter_tools_by_scope, get_scope_system_prompt_addition, is_tool_allowed_in_scope
+    PromptScope,
+    filter_tools_by_scope,
+    get_scope_system_prompt_addition,
+    is_tool_allowed_in_scope,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,7 +94,7 @@ class Orchestrator:
         except Exception as e:
             logger.warning(f"Tool initialization warning: {e}")
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         return self._response_cache.get_stats()
 
     async def invalidate_cache_for_entity(self, entity_type: str, entity_id: str) -> int:
@@ -103,8 +107,8 @@ class Orchestrator:
         return await self._response_cache.invalidate_by_pattern(f"*{entity_type}*{entity_id}*")
 
     async def process_request(self, user_id: str, message: str,
-                              conversation_id: Optional[str] = None,
-                              context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                              conversation_id: str | None = None,
+                              context: dict[str, Any] | None = None) -> dict[str, Any]:
         try:
             sanitized = sanitize_text(message)
             if CancellationHandler.is_cancellation_request(sanitized):
@@ -251,10 +255,10 @@ class Orchestrator:
                     "message": "Desculpe, ocorreu um erro ao processar sua requisição. Por favor, tente novamente."}
 
     async def process_request_with_memory(self, db, user_id: str, message: str,
-                                          conversation_id: Optional[str] = None,
+                                          conversation_id: str | None = None,
                                           context_type: str = "general",
-                                          context_id: Optional[str] = None,
-                                          context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                                          context_id: str | None = None,
+                                          context: dict[str, Any] | None = None) -> dict[str, Any]:
         try:
             if conversation_id:
                 conv = await self.conversation_memory.get_conversation(db=db, conversation_id=conversation_id, include_messages=True)
@@ -344,9 +348,9 @@ class Orchestrator:
         self,
         intent: str,
         message: str,
-        entities: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        entities: dict[str, Any],
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         # Opção B: cv_screening → invoke BARS rubric tool (real methodology)
         # Also check message content directly to handle misclassified intents
         if intent == "cv_screening" or self._is_cv_matching_request(message):
@@ -376,8 +380,8 @@ class Orchestrator:
     async def _handle_cv_screening_with_rubric(
         self,
         message: str,
-        context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Opção B: Extract candidate/vacancy from message and invoke the BARS rubric tool.
 
@@ -386,8 +390,10 @@ class Orchestrator:
         Falls back gracefully so _handle_directly can use the LLM addendum instead.
         """
         try:
-            import json, re
-            from app.tools.executor import tool_executor, ToolExecutionContext
+            import json
+            import re
+
+            from app.tools.executor import ToolExecutionContext, tool_executor
 
             # ── Entity extraction ─────────────────────────────────────────────
             extraction_prompt = (
@@ -460,10 +466,10 @@ class Orchestrator:
             logger.warning("[cv_screening rubric] Tool invocation failed (%s), falling back to LLM", exc)
             return {"success": False}
 
-    def get_available_tools(self, agent_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_available_tools(self, agent_type: str | None = None) -> list[dict[str, Any]]:
         return get_all_tool_schemas(agent_type=agent_type, format="claude")
 
-    def get_tools_for_context(self, prompt_context: str) -> List[Dict[str, Any]]:
+    def get_tools_for_context(self, prompt_context: str) -> list[dict[str, Any]]:
         scope = SCOPE_MAPPING.get(prompt_context.lower(), PromptScope.GLOBAL)
         return filter_tools_by_scope(get_all_tool_schemas(format="claude"), scope)
 
@@ -473,8 +479,8 @@ class Orchestrator:
     def is_tool_allowed(self, tool_name: str, prompt_context: str) -> bool:
         return is_tool_allowed_in_scope(tool_name, SCOPE_MAPPING.get(prompt_context.lower(), PromptScope.GLOBAL))
 
-    async def execute_plan(self, conversation_id: str, plan: Dict[str, Any]) -> Dict[str, Any]:
-        from app.shared.execution import ExecutionPlan, AgentTask
+    async def execute_plan(self, conversation_id: str, plan: dict[str, Any]) -> dict[str, Any]:
+        from app.shared.execution import AgentTask, ExecutionPlan
         exec_plan = ExecutionPlan()
         for i, step in enumerate(plan.get("plan", [])):
             task = AgentTask(
@@ -504,10 +510,10 @@ class Orchestrator:
                 "steps_total": len(results), "results": results,
                 "plan_summary": executed.get_summary()}
 
-    def get_conversation_state(self, conversation_id: str) -> Optional[Dict[str, Any]]:
+    def get_conversation_state(self, conversation_id: str) -> dict[str, Any] | None:
         return self.state_manager.get_state(conversation_id)
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         return {"registered_domains": self._domain_registry.list_domains(),
                 "domain_classes": self._domain_registry.list_registered_classes(),
                 "active_conversations": len(self.state_manager.state_store),
@@ -518,8 +524,8 @@ class Orchestrator:
                 "plan_detector_stats": self._plan_detector.get_stats()}
 
     async def process_analytics_request(self, user_id: str, command: str,
-                                        context: Dict[str, Any],
-                                        conversation_id: Optional[str] = None) -> Dict[str, Any]:
+                                        context: dict[str, Any],
+                                        conversation_id: str | None = None) -> dict[str, Any]:
         try:
             if command in COMMAND_TEMPLATES:
                 result = await job_analytics_prompt_service.execute_command(command, context)

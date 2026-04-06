@@ -2,10 +2,9 @@
 File Analysis API - Endpoints for analyzing uploaded documents.
 """
 import logging
-from fastapi import APIRouter, File, UploadFile, HTTPException
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
-from typing import Optional, List
-import io
 
 from app.domains.cv_screening.services.cv_parser import cv_parser_service
 
@@ -18,12 +17,12 @@ class FileAnalysisResponse(BaseModel):
     """Response from file analysis."""
     success: bool
     filename: str
-    extractedText: Optional[str] = None
-    keywords: List[str] = []
-    summary: Optional[str] = None
-    entities: Optional[dict] = None
-    candidate_id: Optional[str] = None
-    error: Optional[str] = None
+    extractedText: str | None = None
+    keywords: list[str] = []
+    summary: str | None = None
+    entities: dict | None = None
+    candidate_id: str | None = None
+    error: str | None = None
 
 
 @router.post("/file", response_model=FileAnalysisResponse)
@@ -168,7 +167,7 @@ async def analyze_file(file: UploadFile = File(...)):
         )
 
 
-def extract_keywords_from_text(text: str) -> List[str]:
+def extract_keywords_from_text(text: str) -> list[str]:
     """Extract keywords from plain text using simple heuristics."""
     # Common tech keywords to look for
     tech_keywords = [

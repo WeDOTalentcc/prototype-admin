@@ -5,7 +5,7 @@ Uses adaptive thresholds based on job qualification level.
 """
 import logging
 import statistics
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class EsScoreDropAnalyzer:
     def __init__(self):
         self.thresholds = DROP_THRESHOLDS.copy()
 
-    def analyze(self, candidates: List[Dict[str, Any]], qualification_level: Optional[str] = None) -> Dict[str, Any]:
+    def analyze(self, candidates: list[dict[str, Any]], qualification_level: str | None = None) -> dict[str, Any]:
         if not candidates:
             return {
                 "filtered_candidates": [],

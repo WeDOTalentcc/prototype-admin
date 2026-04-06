@@ -4,10 +4,11 @@ PromptLoader — centralized YAML-based prompt loading.
 Moved from app/prompts/__init__.py (I3b cleanup).
 YAML files remain in app/prompts/domains/ and app/prompts/shared/.
 """
-import yaml
 import logging
-from typing import Dict, Any, Optional
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 _logger = logging.getLogger(__name__)
 
@@ -18,10 +19,10 @@ PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
 class PromptLoader:
     """Loads and caches prompts from YAML files."""
 
-    _cache: Dict[str, Any] = {}
+    _cache: dict[str, Any] = {}
 
     @classmethod
-    def load(cls, path: str) -> Dict[str, Any]:
+    def load(cls, path: str) -> dict[str, Any]:
         """Load a YAML prompt file. Path relative to prompts/ dir.
         Example: PromptLoader.load("domains/sourcing")
         """
@@ -32,7 +33,7 @@ class PromptLoader:
         if not file_path.exists():
             raise FileNotFoundError(f"Prompt file not found: {file_path}")
 
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             data = yaml.safe_load(f)
 
         cls._cache[path] = data
@@ -46,7 +47,7 @@ class PromptLoader:
         return data.get("system_prompt", "")
 
     @classmethod
-    def get_shared_prompt(cls, name: str, key: Optional[str] = None) -> str:
+    def get_shared_prompt(cls, name: str, key: str | None = None) -> str:
         """Get a shared prompt by name, optionally a specific key."""
         data = cls.load(f"shared/{name}")
         if key:

@@ -15,7 +15,7 @@ Fallback: in-memory dict quando Redis indisponível (dev local / testes).
 """
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +43,11 @@ class CandidateListStore:
     """
 
     def __init__(self) -> None:
-        self._memory: Dict[str, List[Dict[str, Any]]] = {}
-        self._redis: Optional[Any] = None
+        self._memory: dict[str, list[dict[str, Any]]] = {}
+        self._redis: Any | None = None
         self._redis_available = False
 
-    async def _get_redis(self) -> Optional[Any]:
+    async def _get_redis(self) -> Any | None:
         if not _AIOREDIS_AVAILABLE:
             return None
         if self._redis is not None:
@@ -66,7 +66,7 @@ class CandidateListStore:
             self._redis_available = False
         return self._redis
 
-    async def set(self, conv_id: str, candidates: List[Dict[str, Any]]) -> None:
+    async def set(self, conv_id: str, candidates: list[dict[str, Any]]) -> None:
         """Salva a lista completa de candidatos para a conversa com TTL 30min."""
         if not candidates:
             return
@@ -84,7 +84,7 @@ class CandidateListStore:
         # Fallback: guarda no dict in-memory (sem TTL, expira com o processo)
         self._memory[conv_id] = candidates
 
-    async def get(self, conv_id: str) -> Optional[List[Dict[str, Any]]]:
+    async def get(self, conv_id: str) -> list[dict[str, Any]] | None:
         """Recupera a lista completa de candidatos. Retorna None se não encontrada/expirada."""
         key = KEY_PREFIX + conv_id
         redis = await self._get_redis()
@@ -100,7 +100,7 @@ class CandidateListStore:
 
     async def get_by_position(
         self, conv_id: str, position: int
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Retorna o candidato na posição `position` (0-based) da última lista.
         Retorna None se a lista não existir ou a posição estiver fora do range.
@@ -128,7 +128,7 @@ class CandidateListStore:
                 logger.warning("[CandidateListStore] Redis delete failed (%s)", exc)
         self._memory.pop(conv_id, None)
 
-    async def get_ttl(self, conv_id: str) -> Optional[int]:
+    async def get_ttl(self, conv_id: str) -> int | None:
         """Retorna o TTL restante em segundos (-1 se não existe, -2 se sem TTL)."""
         redis = await self._get_redis()
         if redis and self._redis_available:

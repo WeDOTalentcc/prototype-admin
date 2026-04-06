@@ -3,7 +3,8 @@ CandidateContextAggregator - Aggregates candidate data for AI predictions.
 Collects WSI scores, interview notes, stage history, and feedback into a standardized format.
 """
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,12 +23,12 @@ class CandidateContextAggregator:
         include_wsi: bool = True,
         include_interview_notes: bool = True,
         include_job_context: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Aggregate all available context for a candidate in a pipeline.
         Returns standardized dict compatible with SubStatusPredictor.
         """
-        context: Dict[str, Any] = {
+        context: dict[str, Any] = {
             "vacancy_candidate_id": vacancy_candidate_id,
             "name": "",
             "current_title": "",
@@ -39,7 +40,7 @@ class CandidateContextAggregator:
         }
         
         try:
-            from app.models.candidate import VacancyCandidate, Candidate
+            from app.models.candidate import Candidate, VacancyCandidate
             from app.models.job_vacancy import JobVacancy
             
             vc_result = await self.db.execute(
@@ -94,7 +95,7 @@ class CandidateContextAggregator:
         
         return context
     
-    def _extract_wsi_score(self, vc) -> Dict[str, Any]:
+    def _extract_wsi_score(self, vc) -> dict[str, Any]:
         """Extract WSI scores from VacancyCandidate metadata."""
         try:
             metadata = getattr(vc, 'metadata', None) or {}
@@ -129,7 +130,7 @@ class CandidateContextAggregator:
             logger.debug(f"[CONTEXT] Could not extract interview notes: {e}")
         return []
     
-    def _extract_lia_parecer(self, vc) -> Dict[str, Any]:
+    def _extract_lia_parecer(self, vc) -> dict[str, Any]:
         """Extract LIA parecer/assessment from VacancyCandidate."""
         try:
             metadata = getattr(vc, 'metadata', None) or {}
@@ -196,11 +197,11 @@ class CandidateContextAggregator:
     
     async def aggregate_bulk(
         self,
-        vacancy_candidate_ids: List[str],
+        vacancy_candidate_ids: list[str],
         include_wsi: bool = True,
         include_interview_notes: bool = True,
         include_job_context: bool = True,
-    ) -> Dict[str, Dict[str, Any]]:
+    ) -> dict[str, dict[str, Any]]:
         """Aggregate context for multiple candidates. Returns {vc_id: context}."""
         results = {}
         for vc_id in vacancy_candidate_ids:

@@ -8,6 +8,7 @@ Tools (3): search_candidates, filter_results, view_candidate
 Modelo: Haiku (busca estruturada, sem raciocínio complexo)
 """
 import logging
+
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 from app.domains.sourcing.agents.sourcing_search_tool_registry import get_search_tools
 

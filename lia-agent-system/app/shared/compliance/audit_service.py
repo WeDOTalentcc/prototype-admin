@@ -5,14 +5,14 @@ This service provides comprehensive audit logging for all AI decisions
 made by LIA agents, ensuring transparency, accountability, and LGPD compliance.
 """
 import logging
-from typing import List, Dict, Any, Optional
+import uuid
 from datetime import datetime, timedelta
-from sqlalchemy import select, desc, and_
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+from sqlalchemy import and_, desc, select
 
 from app.core.database import AsyncSessionLocal
 from app.models.audit_log import AuditLog, DecisionType
-import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -69,14 +69,14 @@ class AuditService:
         decision_type: str,
         action: str,
         decision: str,
-        reasoning: List[str],
-        criteria_used: List[str],
-        candidate_id: Optional[str] = None,
-        job_vacancy_id: Optional[str] = None,
-        score: Optional[float] = None,
-        confidence: Optional[float] = None,
+        reasoning: list[str],
+        criteria_used: list[str],
+        candidate_id: str | None = None,
+        job_vacancy_id: str | None = None,
+        score: float | None = None,
+        confidence: float | None = None,
         human_review_required: bool = False,
-        criteria_ignored: Optional[List[str]] = None
+        criteria_ignored: list[str] | None = None
     ) -> AuditLog:
         """
         Log an AI decision with full context for auditability.
@@ -147,10 +147,10 @@ class AuditService:
         self,
         company_id: str,
         candidate_id: str,
-        job_vacancy_id: Optional[str] = None,
+        job_vacancy_id: str | None = None,
         limit: int = 50,
         offset: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get all decisions made about a candidate (for explainability).
         
@@ -203,10 +203,10 @@ class AuditService:
         self,
         company_id: str,
         agent_name: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100
-    ) -> List[AuditLog]:
+    ) -> list[AuditLog]:
         """
         Get decisions made by a specific agent.
         
@@ -300,8 +300,8 @@ class AuditService:
         self,
         audit_log_id: str,
         reviewed_by: str,
-        override: Optional[str] = None,
-    ) -> Optional[AuditLog]:
+        override: str | None = None,
+    ) -> AuditLog | None:
         """
         Record when a human reviews/overrides an AI decision.
         
@@ -339,7 +339,7 @@ class AuditService:
         self,
         company_id: str,
         limit: int = 50
-    ) -> List[AuditLog]:
+    ) -> list[AuditLog]:
         """
         Get decisions that require human review but haven't been reviewed yet.
         
@@ -373,9 +373,9 @@ class AuditService:
     async def get_decision_statistics(
         self,
         company_id: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None
+    ) -> dict[str, Any]:
         """
         Get statistics about AI decisions for governance reporting.
         

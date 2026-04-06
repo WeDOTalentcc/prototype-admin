@@ -8,15 +8,15 @@ Endpoints:
 - GET  /digest/weekly/preferences  — Get weekly digest preference for current user
 - PUT  /digest/weekly/preferences  — Toggle weekly digest opt-in/opt-out
 """
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
-import logging
 
-from app.core.database import get_db
-from app.auth.models import User, UserRole
 from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User, UserRole
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class WeeklyDigestPreferenceRequest(BaseModel):
 
 @router.get("/weekly/preview")
 async def preview_weekly_digest(
-    recruiter_id: Optional[str] = None,
+    recruiter_id: str | None = None,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
@@ -57,9 +57,9 @@ async def preview_weekly_digest(
     digest = await svc.generate_digest(uid, name, db)
 
     from app.domains.analytics.services.digest_formatter import (
-        TeamsDigestFormatter,
-        ChatDigestFormatter,
         BellDigestFormatter,
+        ChatDigestFormatter,
+        TeamsDigestFormatter,
     )
 
     return {
@@ -81,8 +81,9 @@ async def send_weekly_digest(
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
     from sqlalchemy import select
+
+    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
 
@@ -195,8 +196,9 @@ async def send_daily_digest_to_user(
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
     from sqlalchemy import select
+
+    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
     result = await db.execute(select(User).where(User.id == recruiter_id))

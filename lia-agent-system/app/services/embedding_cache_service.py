@@ -14,11 +14,10 @@ O warm-up registra os títulos das vagas ativas no cache para que a primeira
 chamada de matching não precise ir ao LLM para vagas conhecidas.
 TTL padrão: SEMANTIC_CACHE_TTL (86400s = 24h).
 """
-import json
 import hashlib
+import json
 import logging
 import sys
-from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class EmbeddingCacheService:
     """
 
     def __init__(self):
-        self._local: Dict[str, List[float]] = {}   # fallback in-memory
+        self._local: dict[str, list[float]] = {}   # fallback in-memory
         self._redis = None
         self._redis_ok: bool = False
         self._warmed_up = False
@@ -50,6 +49,7 @@ class EmbeddingCacheService:
             return self._redis
         try:
             import redis.asyncio as aioredis
+
             from app.core.config import settings
             client = aioredis.from_url(
                 settings.REDIS_URL, encoding="utf-8", decode_responses=True
@@ -67,7 +67,7 @@ class EmbeddingCacheService:
     # Operações públicas
     # ------------------------------------------------------------------
 
-    async def get_embedding(self, text: str, model: str = "text-embedding-3-small") -> Optional[List[float]]:
+    async def get_embedding(self, text: str, model: str = "text-embedding-3-small") -> list[float] | None:
         """Retorna embedding cacheado ou None se não encontrado."""
         key = self._make_key(text, model)
         redis = await self._get_redis()
@@ -83,7 +83,7 @@ class EmbeddingCacheService:
     async def cache_embedding(
         self,
         text: str,
-        embedding: List[float],
+        embedding: list[float],
         model: str = "text-embedding-3-small",
         ttl: int = _REDIS_TTL_DEFAULT,
     ) -> None:
@@ -111,6 +111,7 @@ class EmbeddingCacheService:
             return
         try:
             from sqlalchemy import select
+
             from app.models.job_vacancy import JobVacancy
 
             stmt = (
@@ -138,7 +139,7 @@ class EmbeddingCacheService:
         digest = hashlib.sha256(f"{model}:{text}".encode()).hexdigest()[:32]
         return f"{_REDIS_PREFIX}{digest}"
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Estatísticas para observabilidade."""
         local_bytes = sys.getsizeof(self._local)
         for k, v in self._local.items():

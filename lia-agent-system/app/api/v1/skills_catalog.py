@@ -11,21 +11,19 @@ Endpoints:
 - POST /wizard/suggest-skills - Get intelligent skill suggestions
 - POST /wizard/record-skill-usage - Record skill usage for learning loop
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, validator
-from uuid import UUID
 import logging
+from typing import Any
 
-from app.core.database import get_db
-from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field, validator
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.services.skills_catalog_service import (
-    get_skills_catalog_service,
     get_skills_catalog_db_service,
-    SkillsCatalogService,
-    SkillsCatalogDBService,
+    get_skills_catalog_service,
 )
 
 router = APIRouter(prefix="/skills-catalog", tags=["skills-catalog"])
@@ -39,11 +37,11 @@ logger = logging.getLogger(__name__)
 class SkillDetailResponse(BaseModel):
     """Response model for a single skill."""
     name: str
-    subcategory: Optional[str] = None
+    subcategory: str | None = None
     default_weight: int
     default_level: str
     is_required_default: bool = False
-    description: Optional[str] = None
+    description: str | None = None
     usage_count: int = 0
     acceptance_rate: float = 0.0
     source: str
@@ -52,22 +50,22 @@ class SkillDetailResponse(BaseModel):
 class CompetencyDetailResponse(BaseModel):
     """Response model for a behavioral competency."""
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     default_weight: int
-    category: Optional[str] = None
+    category: str | None = None
     usage_count: int = 0
     acceptance_rate: float = 0.0
-    wsi_questions: List[Dict[str, Any]] = Field(default_factory=list)
+    wsi_questions: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class CompanyCatalogResponse(BaseModel):
     """Response model for company's full skills catalog."""
     company_id: str
-    skills_by_category: Dict[str, List[SkillDetailResponse]]
-    competencies: List[CompetencyDetailResponse]
+    skills_by_category: dict[str, list[SkillDetailResponse]]
+    competencies: list[CompetencyDetailResponse]
     total_skills: int
     total_competencies: int
-    static_areas: List[str]
+    static_areas: list[str]
 
 
 class AddSkillRequest(BaseModel):
@@ -77,8 +75,8 @@ class AddSkillRequest(BaseModel):
     category: str
     default_weight: int = Field(default=3, ge=1, le=5)
     default_level: str = Field(default="Intermediário")
-    description: Optional[str] = None
-    subcategory: Optional[str] = None
+    description: str | None = None
+    subcategory: str | None = None
     is_required_default: bool = False
     
     @validator("skill_name")
@@ -98,7 +96,7 @@ class AddSkillResponse(BaseModel):
     """Response model when adding a skill."""
     skill_name: str
     category: str
-    subcategory: Optional[str] = None
+    subcategory: str | None = None
     default_weight: int
     default_level: str
     is_required_default: bool
@@ -109,7 +107,7 @@ class AddSkillResponse(BaseModel):
 class SyncTechStackRequest(BaseModel):
     """Request model for syncing tech stack."""
     company_id: str
-    tech_stack: List[str] = Field(..., min_items=1)
+    tech_stack: list[str] = Field(..., min_items=1)
     
     @validator("tech_stack")
     def validate_tech_stack(cls, v):
@@ -128,8 +126,8 @@ class SuggestSkillsRequest(BaseModel):
     """Request model for skill suggestions."""
     company_id: str
     job_title: str
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    seniority: str | None = None
+    department: str | None = None
     include_company_catalog: bool = True
     limit: int = Field(default=10, ge=1, le=20)
 
@@ -137,12 +135,12 @@ class SuggestSkillsRequest(BaseModel):
 class SkillSuggestionResponse(BaseModel):
     """Response model for a single skill suggestion."""
     skill: str
-    category: Optional[str] = None
-    subcategory: Optional[str] = None
+    category: str | None = None
+    subcategory: str | None = None
     source: str
     confidence: float = Field(ge=0.0, le=1.0)
-    suggested_weight: Optional[int] = None
-    suggested_level: Optional[str] = None
+    suggested_weight: int | None = None
+    suggested_level: str | None = None
     is_typically_required: bool = False
     usage_count: int = 0
 
@@ -151,7 +149,7 @@ class CompetencySuggestionResponse(BaseModel):
     """Response model for a competency suggestion."""
     key: str
     name: str
-    subcategories: List[str]
+    subcategories: list[str]
     relevance: str
     source: str
 
@@ -159,10 +157,10 @@ class CompetencySuggestionResponse(BaseModel):
 class SuggestSkillsResponse(BaseModel):
     """Response model for skill suggestions."""
     job_title: str
-    seniority: Optional[str] = None
-    technical_skills: List[SkillSuggestionResponse]
-    behavioral_competencies: List[CompetencySuggestionResponse]
-    sources_included: Dict[str, int]
+    seniority: str | None = None
+    technical_skills: list[SkillSuggestionResponse]
+    behavioral_competencies: list[CompetencySuggestionResponse]
+    sources_included: dict[str, int]
     total_suggestions: int
 
 
@@ -172,19 +170,19 @@ class RecordSkillUsageRequest(BaseModel):
     skill_name: str
     outcome: str = Field(..., description="'accepted', 'modified', or 'rejected'")
     skill_type: str = Field(default="technical", description="'technical' or 'behavioral'")
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    category: Optional[str] = None
-    job_vacancy_id: Optional[str] = None
-    job_draft_id: Optional[str] = None
-    original_weight: Optional[int] = None
-    final_weight: Optional[int] = None
-    original_level: Optional[str] = None
-    final_level: Optional[str] = None
-    was_required: Optional[bool] = None
-    suggestion_confidence: Optional[float] = None
-    suggestion_reasoning: Optional[str] = None
+    job_title: str | None = None
+    department: str | None = None
+    seniority: str | None = None
+    category: str | None = None
+    job_vacancy_id: str | None = None
+    job_draft_id: str | None = None
+    original_weight: int | None = None
+    final_weight: int | None = None
+    original_level: str | None = None
+    final_level: str | None = None
+    was_required: bool | None = None
+    suggestion_confidence: float | None = None
+    suggestion_reasoning: str | None = None
     
     @validator("outcome")
     def validate_outcome(cls, v):
@@ -218,7 +216,7 @@ class RecordSkillUsageResponse(BaseModel):
 async def get_company_catalog(
     company_id: str = Query(..., description="Company identifier"),
     include_inactive: bool = Query(False, description="Include inactive skills"),
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ) -> CompanyCatalogResponse:
@@ -359,7 +357,7 @@ async def suggest_skills_for_wizard(
     """
     try:
         db_service = get_skills_catalog_db_service(db)
-        static_service = get_skills_catalog_service()
+        get_skills_catalog_service()
         
         # Get merged suggestions from database
         merged = await db_service.get_merged_suggestions(
@@ -504,9 +502,9 @@ async def record_skill_usage(
 @router.get("/static/suggest")
 async def get_static_skill_suggestions(
     job_title: str = Query(..., description="Job title for suggestions"),
-    seniority: Optional[str] = Query(None, description="Seniority level"),
+    seniority: str | None = Query(None, description="Seniority level"),
     limit: int = Query(10, ge=1, le=20, description="Maximum number of skills"),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get skill suggestions from the static catalog only.
     
@@ -542,8 +540,8 @@ async def get_static_skill_suggestions(
 @router.get("/search")
 async def search_skills(
     q: str = Query(..., min_length=2, description="Search query"),
-    area: Optional[str] = Query(None, description="Filter by area"),
-) -> Dict[str, Any]:
+    area: str | None = Query(None, description="Filter by area"),
+) -> dict[str, Any]:
     """
     Search for skills in the static catalog.
     

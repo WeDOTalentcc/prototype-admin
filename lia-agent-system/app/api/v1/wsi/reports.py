@@ -6,25 +6,31 @@ Routes:
   GET /ranking/{job_vacancy_id}
   GET /candidate/{candidate_id}/ranking/{job_vacancy_id}
 """
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
 import hashlib
 import json
 import logging
 from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-
-from ._shared import (
-    BLOOM_LEVELS, DREYFUS_LEVELS, WSI_CLASSIFICATION_MAP,
-    AI_INTEGRATIONS_ANTHROPIC_API_KEY, AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
+from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+    GATE_G3_THRESHOLD as _GATE_G3_THRESHOLD_CANONICAL,
 )
 from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     SENIORITY_WEIGHTS,
-    GATE_G3_THRESHOLD as _GATE_G3_THRESHOLD_CANONICAL,
+)
+
+from ._shared import (
+    AI_INTEGRATIONS_ANTHROPIC_API_KEY,
+    AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
+    BLOOM_LEVELS,
+    DREYFUS_LEVELS,
+    WSI_CLASSIFICATION_MAP,
 )
 
 logger = logging.getLogger(__name__)
@@ -70,22 +76,22 @@ class GateStatus(BaseModel):
     g6_inflacao: bool
     g6_detail: str
     all_passed: bool
-    failed_gates: List[str]
+    failed_gates: list[str]
 
 
 class F11ReportResponse(BaseModel):
     session_id: str
-    result_id: Optional[str]
+    result_id: str | None
     candidate_name: str
     candidate_id: str
     job_title: str
-    job_vacancy_id: Optional[str]
-    seniority: Optional[str]
+    job_vacancy_id: str | None
+    seniority: str | None
     mode: str
     screening_type: str
-    duration_minutes: Optional[float]
-    started_at: Optional[str]
-    completed_at: Optional[str]
+    duration_minutes: float | None
+    started_at: str | None
+    completed_at: str | None
     overall_wsi: float
     technical_wsi: float
     behavioral_wsi: float
@@ -94,29 +100,29 @@ class F11ReportResponse(BaseModel):
     gates: GateStatus
     decision_result: str
     decision_confidence: str
-    decision_reason: Optional[str]
+    decision_reason: str | None
     human_review_required: bool = False
     already_generated: bool = False
     responses_hash: str
-    response_analyses: List[Dict[str, Any]]
-    interview_questions: List[CBIQuestion]
-    strengths: List[str]
-    gaps: List[Dict[str, Any]]
+    response_analyses: list[dict[str, Any]]
+    interview_questions: list[CBIQuestion]
+    strengths: list[str]
+    gaps: list[dict[str, Any]]
     question_count: int = 0
-    seniority_weights: Optional[Dict[str, float]] = None
-    attention_flags: List[str] = []
+    seniority_weights: dict[str, float] | None = None
+    attention_flags: list[str] = []
     generated_at: str
     methodology_version: str = "WSI v2.0"
 
 
-def _get_seniority_weights(seniority: Optional[str]) -> Optional[Dict[str, float]]:
+def _get_seniority_weights(seniority: str | None) -> dict[str, float] | None:
     if not seniority:
         return None
     key = seniority.lower().strip().replace(" ", "_")
     return _SENIORITY_WEIGHTS.get(key)
 
 
-def _build_attention_flags(analyses: List[Dict], gates: GateStatus) -> List[str]:
+def _build_attention_flags(analyses: list[dict], gates: GateStatus) -> list[str]:
     flags = []
     if gates.g1_elegibilidade is False:
         flags.append("Questão eliminatória reprovada (G1)")
@@ -136,7 +142,7 @@ def _build_attention_flags(analyses: List[Dict], gates: GateStatus) -> List[str]
 
 def _compute_decision_confidence(
     overall_wsi: float,
-    failed_gates: List[str],
+    failed_gates: list[str],
     llm_fallback_count: int,
     score_variance: float,
 ) -> tuple:
@@ -168,7 +174,7 @@ def _compute_decision_confidence(
     return "media", overall_wsi < 3.75
 
 
-def _f11_fallback_questions(gaps: List[Dict[str, Any]]) -> List[CBIQuestion]:
+def _f11_fallback_questions(gaps: list[dict[str, Any]]) -> list[CBIQuestion]:
     """Fallback determinístico quando LLM falha 3x. Spec 11.5 edge case."""
     result = []
     used_types: set = set()
@@ -212,12 +218,12 @@ def _f11_fallback_questions(gaps: List[Dict[str, Any]]) -> List[CBIQuestion]:
 
 
 async def _generate_cbi_questions_llm(
-    gaps: List[Dict[str, Any]],
-    strengths: List[str],
-    previous_questions: List[str],
+    gaps: list[dict[str, Any]],
+    strengths: list[str],
+    previous_questions: list[str],
     seniority: str,
     job_title: str,
-) -> List[CBIQuestion]:
+) -> list[CBIQuestion]:
     """Gera 2 perguntas CBI via LLM (temp=0.6, max_tokens=600, retry≤3). Spec 11.5."""
     import anthropic as _anthropic
 

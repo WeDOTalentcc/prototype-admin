@@ -2,20 +2,21 @@
 LIA Jobs Management Assistant Service - AI-powered analysis for job portfolio management.
 Uses Replit AI Integrations for Anthropic access.
 """
-import os
 import json
 import logging
+import os
 import re
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.domains.recruiter_assistant.prompts.jobs_management_prompts import (
-    get_jobs_management_system_prompt,
-    detect_jobs_command_type,
-    build_jobs_management_prompt,
-    resolve_jobs_ui_action,
     JobsManagementCommandType,
+    build_jobs_management_prompt,
+    detect_jobs_command_type,
+    get_jobs_management_system_prompt,
+    resolve_jobs_ui_action,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class JobsManagementAssistantService:
     """Service for AI-powered job portfolio analysis using Claude."""
 
     def __init__(self):
-        self._client: Optional[Anthropic] = None
+        self._client: Anthropic | None = None
 
     @property
     def client(self) -> Anthropic:
@@ -51,12 +52,12 @@ class JobsManagementAssistantService:
     async def process_command(
         self,
         command: str,
-        command_type: Optional[str],
-        jobs_context: Dict[str, Any],
-        selected_jobs: Optional[List[Dict[str, Any]]] = None,
-        top_jobs: Optional[List[Dict[str, Any]]] = None,
-        conversation_history: Optional[List[Dict[str, str]]] = None,
-    ) -> Dict[str, Any]:
+        command_type: str | None,
+        jobs_context: dict[str, Any],
+        selected_jobs: list[dict[str, Any]] | None = None,
+        top_jobs: list[dict[str, Any]] | None = None,
+        conversation_history: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
         detected_type, confidence = detect_jobs_command_type(command)
         final_type = (
             command_type
@@ -108,7 +109,7 @@ class JobsManagementAssistantService:
             logger.error(f"Jobs Management LLM error: {e}")
             return self._build_fallback(command, final_type, jobs_context, confidence)
 
-    def _parse_json_response(self, text: str) -> Optional[Dict[str, Any]]:
+    def _parse_json_response(self, text: str) -> dict[str, Any] | None:
         try:
             return json.loads(text)
         except json.JSONDecodeError:
@@ -128,7 +129,7 @@ class JobsManagementAssistantService:
                     continue
         return None
 
-    def _extract_content(self, raw_text: str, structured: Optional[Dict]) -> str:
+    def _extract_content(self, raw_text: str, structured: dict | None) -> str:
         if structured:
             for field in ("resposta", "response", "content", "message", "texto", "answer"):
                 value = structured.get(field)
@@ -146,7 +147,7 @@ class JobsManagementAssistantService:
 
         return cleaned
 
-    def _extract_suggestions(self, structured: Optional[Dict], cmd_type: str) -> List[str]:
+    def _extract_suggestions(self, structured: dict | None, cmd_type: str) -> list[str]:
         if structured and structured.get("sugestoes"):
             return structured["sugestoes"][:6]
 
@@ -174,8 +175,8 @@ class JobsManagementAssistantService:
         ])
 
     def _build_fallback(
-        self, command: str, cmd_type: str, jobs_context: Dict, confidence: float
-    ) -> Dict[str, Any]:
+        self, command: str, cmd_type: str, jobs_context: dict, confidence: float
+    ) -> dict[str, Any]:
         total = jobs_context.get("total", 0)
         active = jobs_context.get("active", 0)
         urgent = jobs_context.get("urgent", 0)

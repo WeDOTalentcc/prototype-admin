@@ -5,9 +5,9 @@ This is the core instruction set that shapes how LIA behaves when managing
 the job portfolio at a macro level. It must be in Portuguese and follow
 the conversational philosophy of the platform.
 """
-from typing import Any, Dict
-from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, NEGATION_DETECTION_BLOCK
+from typing import Any
 
+from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, NEGATION_DETECTION_BLOCK
 
 JOBS_MGMT_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a gerenciar o portfolio de vagas com visao macro.
@@ -258,7 +258,7 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-def get_jobs_mgmt_system_prompt(stage: str, context: Dict[str, Any]) -> str:
+def get_jobs_mgmt_system_prompt(stage: str, context: dict[str, Any]) -> str:
     """Build the complete system prompt for the jobs management agent.
 
     Combines the base system prompt with dynamic stage context and

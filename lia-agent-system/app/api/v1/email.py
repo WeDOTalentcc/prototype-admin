@@ -7,18 +7,19 @@ This endpoint provides a simpler interface for email operations:
 - Email history by candidate
 - Ready for Mailgun/Resend integration
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr
-from datetime import datetime
 import logging
 import uuid
+from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.email_template import EmailLog
 from app.models.candidate import Candidate
+from app.models.email_template import EmailLog
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +29,13 @@ router = APIRouter(prefix="/email", tags=["email"])
 class DirectEmailRequest(BaseModel):
     """Request for sending a direct email (without template)."""
     recipient_email: EmailStr
-    recipient_name: Optional[str] = None
+    recipient_name: str | None = None
     subject: str
     body_html: str
-    body_text: Optional[str] = None
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    body_text: str | None = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class DirectEmailResponse(BaseModel):
@@ -55,18 +56,18 @@ class EmailHistoryItem(BaseModel):
     recipient_email: str
     subject: str
     status: str
-    body_preview: Optional[str] = None
-    template_id: Optional[str] = None
-    sent_at: Optional[datetime] = None
+    body_preview: str | None = None
+    template_id: str | None = None
+    sent_at: datetime | None = None
     created_at: datetime
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 class EmailHistoryResponse(BaseModel):
     """Response for email history."""
     total: int
-    candidate_id: Optional[str] = None
-    items: List[EmailHistoryItem]
+    candidate_id: str | None = None
+    items: list[EmailHistoryItem]
 
 
 @router.post("/send", response_model=DirectEmailResponse)
@@ -117,7 +118,7 @@ async def send_direct_email(
         
         logger.info(f"📧 Email queued: {email_log.id} (recipient omitted — LGPD)")
         logger.info(f"   Subject: {request.subject}")
-        logger.info(f"   Status: QUEUED (SMTP not configured - Funcional - Aguardando Configuração SMTP)")
+        logger.info("   Status: QUEUED (SMTP not configured - Funcional - Aguardando Configuração SMTP)")
         
         return DirectEmailResponse(
             success=True,
@@ -197,8 +198,8 @@ async def get_email_history_by_candidate(
 
 @router.get("/history", response_model=EmailHistoryResponse)
 async def get_all_email_history(
-    recipient_email: Optional[str] = Query(None, description="Filter by recipient email"),
-    status: Optional[str] = Query(None, description="Filter by status: queued, sent, failed"),
+    recipient_email: str | None = Query(None, description="Filter by recipient email"),
+    status: str | None = Query(None, description="Filter by status: queued, sent, failed"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)

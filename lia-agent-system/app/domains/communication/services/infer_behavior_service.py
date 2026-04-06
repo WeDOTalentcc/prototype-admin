@@ -5,14 +5,14 @@ Phase 6.5: Smart behavior inference for custom columns.
 import json
 import logging
 import re
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Any
 
-from app.shared.providers.llm_client import llm_complete, is_llm_available
 from app.core.config import settings
+from app.shared.providers.llm_client import is_llm_available, llm_complete
 
 logger = logging.getLogger(__name__)
 
-BEHAVIOR_KEYWORDS: Dict[str, List[Tuple[str, float]]] = {
+BEHAVIOR_KEYWORDS: dict[str, list[tuple[str, float]]] = {
     "screening": [
         ("triagem", 0.95), ("screening", 0.95), ("pré-seleção", 0.90),
         ("pre-selecao", 0.90), ("filtro", 0.80), ("qualificação", 0.75),
@@ -55,7 +55,7 @@ BEHAVIOR_KEYWORDS: Dict[str, List[Tuple[str, float]]] = {
     ],
 }
 
-def infer_behavior(stage_name: str) -> Dict[str, Any]:
+def infer_behavior(stage_name: str) -> dict[str, Any]:
     """
     Infer the most likely action_behavior for a given stage name.
 
@@ -76,7 +76,7 @@ def infer_behavior(stage_name: str) -> Dict[str, Any]:
         }
 
     name_lower = stage_name.lower().strip()
-    matches: List[Dict[str, Any]] = []
+    matches: list[dict[str, Any]] = []
 
     for behavior, keywords in BEHAVIOR_KEYWORDS.items():
         best_score = 0.0
@@ -119,7 +119,7 @@ VALID_BEHAVIORS = [
     "conclusion_declined", "passive"
 ]
 
-async def infer_behavior_llm(stage_name: str, description: Optional[str] = None) -> Dict[str, Any]:
+async def infer_behavior_llm(stage_name: str, description: str | None = None) -> dict[str, Any]:
     """
     Infer action_behavior using LLM for stage names that keywords can't classify well.
     Returns same structure as infer_behavior but with method='llm'.
@@ -196,14 +196,14 @@ Responda APENAS com JSON:
         return _keyword_fallback(stage_name)
 
 
-def _keyword_fallback(stage_name: str) -> Dict[str, Any]:
+def _keyword_fallback(stage_name: str) -> dict[str, Any]:
     """Fall back to keyword-based inference."""
     result = infer_behavior(stage_name)
     result["method"] = "keyword_fallback"
     return result
 
 
-async def infer_behavior_auto(stage_name: str, description: Optional[str] = None) -> Dict[str, Any]:
+async def infer_behavior_auto(stage_name: str, description: str | None = None) -> dict[str, Any]:
     """
     Auto mode: try keywords first, escalate to LLM if confidence is low.
     """

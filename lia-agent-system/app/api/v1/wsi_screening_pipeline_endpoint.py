@@ -8,24 +8,22 @@ Orchestrates all WSI blocks:
 - Block 4: Behavioral/Situational (Big Five/CBI)
 """
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.schemas.screening import (
-    WSIScreeningPipelineRequest,
-    WSIScreeningPipelineResponse,
-)
-from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
 from app.auth.dependencies import (
-    get_current_active_user,
     get_current_user_or_demo,
     get_user_company_id,
 )
 from app.auth.models import User
+from app.core.database import get_db
+from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
+from app.schemas.screening import (
+    WSIScreeningPipelineRequest,
+    WSIScreeningPipelineResponse,
+)
 
 logger = logging.getLogger(__name__)
 

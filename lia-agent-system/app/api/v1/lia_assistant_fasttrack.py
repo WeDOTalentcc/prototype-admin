@@ -4,22 +4,22 @@ LIA Assistant — Fast Track wizard endpoint.
 Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/fast-track/* URLs.
 """
-from typing import Dict, Any, List, Optional
-from enum import Enum
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from uuid import UUID, uuid4
-import re
 import logging
+import re
+from enum import Enum
+from typing import Any
+from uuid import UUID, uuid4
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.models import JobVacancy
-from app.services.intent_classifier import IntentClassifierService, IntentType, intent_classifier_service
+from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
+from app.models import JobVacancy
+from app.services.intent_classifier import IntentType, intent_classifier_service
 
 logger = logging.getLogger(__name__)
 
@@ -41,23 +41,23 @@ class FastTrackState(str, Enum):
 
 class FastTrackWizardRequest(BaseModel):
     company_id: str
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
     state: FastTrackState = FastTrackState.PRE_WIZARD
     user_input: str
-    selected_vacancy_id: Optional[UUID] = None
-    context: Optional[Dict[str, Any]] = None
+    selected_vacancy_id: UUID | None = None
+    context: dict[str, Any] | None = None
 
 
 class FastTrackWizardResponse(BaseModel):
     conversation_id: str
     state: str
-    next_state: Optional[str] = None
+    next_state: str | None = None
     lia_message: str
-    vacancies: Optional[List[Dict[str, Any]]] = None
-    selected_vacancy: Optional[Dict[str, Any]] = None
-    adjustments_applied: Optional[Dict[str, Any]] = None
+    vacancies: list[dict[str, Any]] | None = None
+    selected_vacancy: dict[str, Any] | None = None
+    adjustments_applied: dict[str, Any] | None = None
     is_complete: bool = False
-    created_job: Optional[Dict[str, Any]] = None
+    created_job: dict[str, Any] | None = None
 
 
 # ---------------------------------------------------------------------------

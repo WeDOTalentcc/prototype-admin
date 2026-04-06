@@ -4,16 +4,17 @@ Big Five Personality Profile API Endpoints.
 Manages Big Five personality profiles for ideal candidate matching.
 Profiles are stored in client.settings["big_five_profiles"].
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm.attributes import flag_modified
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
-from datetime import datetime
 import logging
-from uuid import UUID
 import uuid
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
 from app.models.client_account import ClientAccount
@@ -24,10 +25,10 @@ router = APIRouter(prefix="/big-five", tags=["big-five"])
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """Get user context from request headers."""
     if not x_company_id:
         raise HTTPException(
@@ -64,29 +65,29 @@ class BigFiveWeights(BaseModel):
 class BigFiveProfileCreate(BaseModel):
     """Request model for creating a Big Five profile."""
     name: str = Field(..., min_length=1, max_length=255, description="Profile name")
-    job_id: Optional[str] = Field(None, description="Associated job vacancy ID")
-    traits: Dict[str, int] = Field(..., description="Big Five traits (1-100)")
-    weights: Optional[Dict[str, float]] = Field(None, description="Trait weights for matching")
-    description: Optional[str] = Field(None, max_length=1000, description="Profile description")
+    job_id: str | None = Field(None, description="Associated job vacancy ID")
+    traits: dict[str, int] = Field(..., description="Big Five traits (1-100)")
+    weights: dict[str, float] | None = Field(None, description="Trait weights for matching")
+    description: str | None = Field(None, max_length=1000, description="Profile description")
 
 
 class BigFiveProfileUpdate(BaseModel):
     """Request model for updating a Big Five profile."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    job_id: Optional[str] = None
-    traits: Optional[Dict[str, int]] = None
-    weights: Optional[Dict[str, float]] = None
-    description: Optional[str] = Field(None, max_length=1000)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    job_id: str | None = None
+    traits: dict[str, int] | None = None
+    weights: dict[str, float] | None = None
+    description: str | None = Field(None, max_length=1000)
 
 
 class BigFiveProfileResponse(BaseModel):
     """Response model for Big Five profile."""
     id: str
     name: str
-    job_id: Optional[str] = None
-    traits: Dict[str, int]
-    weights: Optional[Dict[str, float]] = None
-    description: Optional[str] = None
+    job_id: str | None = None
+    traits: dict[str, int]
+    weights: dict[str, float] | None = None
+    description: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -120,7 +121,7 @@ class AnalyzeResponse(BaseModel):
     """Response model for candidate analysis."""
     fit_score: float = Field(..., description="Overall fit score (0-100)")
     profile_name: str
-    trait_analysis: List[TraitAnalysis]
+    trait_analysis: list[TraitAnalysis]
     recommendation: str
 
 
@@ -152,13 +153,13 @@ async def get_client(company_id: str, db: AsyncSession) -> ClientAccount:
     return client
 
 
-def get_big_five_profiles(client: ClientAccount) -> List[Dict[str, Any]]:
+def get_big_five_profiles(client: ClientAccount) -> list[dict[str, Any]]:
     """Get Big Five profiles from client settings."""
     settings = client.settings or {}
     return settings.get("big_five_profiles", [])
 
 
-def save_big_five_profiles(client: ClientAccount, profiles: List[Dict[str, Any]]):
+def save_big_five_profiles(client: ClientAccount, profiles: list[dict[str, Any]]):
     """Save Big Five profiles to client settings."""
     if client.settings is None:
         client.settings = {}
@@ -166,7 +167,7 @@ def save_big_five_profiles(client: ClientAccount, profiles: List[Dict[str, Any]]
     flag_modified(client, "settings")
 
 
-def validate_traits(traits: Dict[str, int]) -> bool:
+def validate_traits(traits: dict[str, int]) -> bool:
     """Validate that traits dict contains all required Big Five traits."""
     required_traits = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"]
     for trait in required_traits:
@@ -186,8 +187,8 @@ def validate_traits(traits: Dict[str, int]) -> bool:
 
 @router.get("/profiles", summary="List Big Five profiles")
 async def list_profiles(
-    job_id: Optional[str] = Query(None, description="Filter by job ID"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    job_id: str | None = Query(None, description="Filter by job ID"),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """List all Big Five profiles for the company."""
@@ -223,7 +224,7 @@ async def list_profiles(
 @router.post("/profiles", summary="Create Big Five profile")
 async def create_profile(
     data: BigFiveProfileCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new Big Five profile for the company."""
@@ -276,7 +277,7 @@ async def create_profile(
 @router.get("/profiles/{profile_id}", summary="Get Big Five profile")
 async def get_profile(
     profile_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific Big Five profile by ID."""
@@ -311,7 +312,7 @@ async def get_profile(
 async def update_profile(
     profile_id: str,
     data: BigFiveProfileUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing Big Five profile."""
@@ -370,7 +371,7 @@ async def update_profile(
 @router.delete("/profiles/{profile_id}", summary="Delete Big Five profile")
 async def delete_profile(
     profile_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a Big Five profile."""
@@ -411,7 +412,7 @@ async def delete_profile(
 @router.post("/analyze", summary="Analyze candidate against Big Five profile")
 async def analyze_candidate(
     data: AnalyzeRequest,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

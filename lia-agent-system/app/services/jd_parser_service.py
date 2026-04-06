@@ -7,11 +7,11 @@ Callers should use this service directly instead of going through the deprecated
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from app.shared.robustness.input_validation import detect_language
-from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
+from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
+from app.shared.robustness.input_validation import detect_language
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class JDParserService:
         self,
         jd_text: str,
         company_id: str = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Extract structured requirements from raw JD text.
 
@@ -88,7 +88,7 @@ class JDParserService:
         if not match:
             raise RuntimeError("Could not parse JSON from LLM response")
 
-        extracted_data: Dict[str, Any] = json.loads(match.group())
+        extracted_data: dict[str, Any] = json.loads(match.group())
 
         await jd_template_cache_service.cache_extraction(
             jd_text, company_id, extracted_data
@@ -97,8 +97,8 @@ class JDParserService:
         return extracted_data
 
     def to_requirement_creates(
-        self, extracted_data: Dict[str, Any]
-    ) -> List[JobRequirementCreate]:
+        self, extracted_data: dict[str, Any]
+    ) -> list[JobRequirementCreate]:
         """Convert raw extraction dict into typed JobRequirementCreate objects."""
         result = []
         for req in extracted_data.get("requirements", []):

@@ -2,12 +2,12 @@
 Credits API endpoints.
 Manages user credit balance for paid features (e.g., Pearch AI global search).
 """
-from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from pydantic import BaseModel
-from typing import Optional
 import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.candidate import CandidateSearch
@@ -22,7 +22,7 @@ class CreditBalanceResponse(BaseModel):
     available_credits: int
     total_consumed: int
     total_searches: int
-    last_updated: Optional[str] = None
+    last_updated: str | None = None
 
 
 @router.get("/balance", response_model=CreditBalanceResponse)

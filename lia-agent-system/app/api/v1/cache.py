@@ -4,9 +4,9 @@ Cache management endpoints for manual cache invalidation.
 Provides endpoints for administrators to manually invalidate cached data
 when needed for testing, debugging, or emergency cache clearing.
 """
-from fastapi import APIRouter, HTTPException
-from typing import Optional
 import logging
+
+from fastapi import APIRouter, HTTPException
 
 from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
 from app.services.embedding_cache_service import embedding_cache

@@ -11,10 +11,8 @@ Usage:
 """
 import json
 import logging
-import time
-import os
-from typing import Optional, Dict, Any
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any
 
 
 class JSONFormatter(logging.Formatter):
@@ -24,7 +22,7 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         log_entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -52,7 +50,7 @@ class JSONFormatter(logging.Formatter):
 
 
 class ContextLogger:
-    def __init__(self, logger: logging.Logger, context: Optional[Dict[str, Any]] = None):
+    def __init__(self, logger: logging.Logger, context: dict[str, Any] | None = None):
         self._logger = logger
         self._context = context or {}
 

@@ -8,10 +8,10 @@ Fornece:
 - Fallback inteligente com sugestões
 """
 import logging
-from typing import Optional, Dict, Any, List, Tuple
+import re
 from dataclasses import dataclass, field
 from enum import Enum
-import re
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,22 +34,22 @@ class KnowledgeEntry:
     """Entrada na base de conhecimento."""
     id: str
     category: KnowledgeCategory
-    keywords: List[str]
-    question_patterns: List[str]
+    keywords: list[str]
+    question_patterns: list[str]
     answer: str
-    follow_up_suggestions: List[str] = field(default_factory=list)
-    related_entries: List[str] = field(default_factory=list)
+    follow_up_suggestions: list[str] = field(default_factory=list)
+    related_entries: list[str] = field(default_factory=list)
 
 
 @dataclass
 class KnowledgeResponse:
     """Resposta da base de conhecimento."""
     found: bool
-    answer: Optional[str] = None
-    category: Optional[KnowledgeCategory] = None
+    answer: str | None = None
+    category: KnowledgeCategory | None = None
     confidence: float = 0.0
-    suggestions: List[str] = field(default_factory=list)
-    related_topics: List[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
+    related_topics: list[str] = field(default_factory=list)
 
 
 class KnowledgeBaseService:
@@ -57,7 +57,7 @@ class KnowledgeBaseService:
     Base de conhecimento para respostas contextuais da LIA.
     """
     
-    _knowledge_base: Dict[str, KnowledgeEntry] = {}
+    _knowledge_base: dict[str, KnowledgeEntry] = {}
     
     def __init__(self):
         self._initialize_knowledge_base()
@@ -665,7 +665,7 @@ A plataforma segue rigorosamente a LGPD:
         for entry in entries:
             self._knowledge_base[entry.id] = entry
 
-    def search(self, query: str, category: Optional[KnowledgeCategory] = None) -> KnowledgeResponse:
+    def search(self, query: str, category: KnowledgeCategory | None = None) -> KnowledgeResponse:
         """
         Busca na base de conhecimento.
         
@@ -677,7 +677,7 @@ A plataforma segue rigorosamente a LGPD:
             KnowledgeResponse com a resposta encontrada
         """
         query_lower = query.lower()
-        best_match: Optional[KnowledgeEntry] = None
+        best_match: KnowledgeEntry | None = None
         best_score = 0.0
         
         for entry in self._knowledge_base.values():
@@ -726,7 +726,7 @@ A plataforma segue rigorosamente a LGPD:
         
         return min(1.0, score)
 
-    def _get_fallback_suggestions(self, query: str) -> List[str]:
+    def _get_fallback_suggestions(self, query: str) -> list[str]:
         """Retorna sugestões quando não encontra resposta."""
         suggestions = [
             "Como criar uma nova vaga?",
@@ -744,7 +744,7 @@ A plataforma segue rigorosamente a LGPD:
         
         return suggestions[:5]
 
-    def get_contextual_help(self, stage: int, field: Optional[str] = None) -> str:
+    def get_contextual_help(self, stage: int, field: str | None = None) -> str:
         """Retorna ajuda contextual baseada no estágio do wizard."""
         stage_help = {
             1: "📋 **Etapa 1 - Informações Básicas**\nDefina o cargo, área, gestor e modelo de trabalho. Você pode descrever tudo em linguagem natural!",
@@ -756,7 +756,7 @@ A plataforma segue rigorosamente a LGPD:
         
         return stage_help.get(stage, "💡 Como posso ajudar?")
 
-    def get_all_categories(self) -> List[Dict[str, Any]]:
+    def get_all_categories(self) -> list[dict[str, Any]]:
         """Retorna todas as categorias disponíveis."""
         return [
             {"id": cat.value, "name": cat.name}

@@ -4,7 +4,8 @@ Message Schemas — Pydantic schemas para mensagens trafegadas via RabbitMQ.
 AgentChatMessage  : mensagem do usuário → despachada para fila do agente.
 AgentResponseMessage: resposta do agente → enviada de volta ao WS Gateway.
 """
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -16,11 +17,11 @@ class AgentChatMessage(BaseModel):
     company_id: str = Field(..., description="ID da empresa (multi-tenant)")
     domain: str = Field(..., description="Domínio alvo (wizard, sourcing, etc.)")
     message: str = Field(..., description="Conteúdo da mensagem do usuário")
-    context: Dict[str, Any] = Field(
+    context: dict[str, Any] = Field(
         default_factory=dict,
         description="Contexto do domínio (current_stage, collected_data, etc.)",
     )
-    conversation_history: List[Dict[str, Any]] = Field(
+    conversation_history: list[dict[str, Any]] = Field(
         default_factory=list,
         description="Histórico recente da conversa (máx últimas 10 mensagens)",
     )
@@ -51,20 +52,20 @@ class AgentResponseMessage(BaseModel):
         le=1.0,
         description="Confiança da resposta (0.0–1.0)",
     )
-    actions: List[Dict[str, Any]] = Field(
+    actions: list[dict[str, Any]] = Field(
         default_factory=list,
         description="Ações sugeridas pelo agente",
     )
-    navigation: Optional[Dict[str, Any]] = Field(
+    navigation: dict[str, Any] | None = Field(
         default=None,
         description="Comando de navegação (stage transition, etc.)",
     )
-    state_updates: Dict[str, Any] = Field(
+    state_updates: dict[str, Any] = Field(
         default_factory=dict,
         description="Atualizações de estado para o frontend",
     )
     domain: str = Field(default="", description="Domínio que gerou a resposta")
-    error: Optional[str] = Field(default=None, description="Mensagem de erro, se houver")
+    error: str | None = Field(default=None, description="Mensagem de erro, se houver")
     done: bool = Field(
         default=True,
         description="True = resposta final. False = chunk de streaming (futuro).",

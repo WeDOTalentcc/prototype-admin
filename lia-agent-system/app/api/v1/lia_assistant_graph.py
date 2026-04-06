@@ -11,25 +11,25 @@ Endpoints:
   GET  /lia-assistant/job-wizard/sessions
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
+from lia_agents_core.state_machine import WizardStage
 from pydantic import BaseModel
 
-from app.services.graph_runner import graph_runner_service
-from lia_agents_core.state_machine import WizardStage
-from app.domains.recruiter_assistant.services.wizard_analytics_service import (
-    wizard_analytics,
-    detect_wizard_analytics_command,
-)
 from app.domains.recruiter_assistant.services.wizard_action_executor import (
-    wizard_action_executor,
-    detect_wizard_action,
     WIZARD_ACTIONABLE_INTENTS,
+    detect_wizard_action,
+    wizard_action_executor,
 )
-from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from app.domains.recruiter_assistant.services.wizard_analytics_service import (
+    detect_wizard_analytics_command,
+    wizard_analytics,
+)
 from app.orchestrator.action_executor import is_confirmation, is_rejection
+from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from app.services.graph_runner import graph_runner_service
 from app.shared.tenant_session import create_session_id
 
 logger = logging.getLogger(__name__)
@@ -42,49 +42,49 @@ router = APIRouter()
 # ------------------------------------------------------------------ #
 
 class GraphOrchestratorRequest(BaseModel):
-    session_id: Optional[str] = None
+    session_id: str | None = None
     message: str
     company_id: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     user_id: str = "default_user"
-    current_stage: Optional[str] = None
-    existing_draft: Optional[Dict[str, Any]] = None
+    current_stage: str | None = None
+    existing_draft: dict[str, Any] | None = None
 
 
 class GraphOrchestratorResponse(BaseModel):
     execution_id: str
     session_id: str
     response_text: str
-    job_draft: Dict[str, Any]
+    job_draft: dict[str, Any]
     current_stage: str
-    confidence_scores: Dict[str, float] = {}
-    reasoning_steps: List[str] = []
-    extracted_fields: Dict[str, Any] = {}
-    intent: Optional[str] = None
+    confidence_scores: dict[str, float] = {}
+    reasoning_steps: list[str] = []
+    extracted_fields: dict[str, Any] = {}
+    intent: str | None = None
     is_complete: bool = False
-    error: Optional[str] = None
+    error: str | None = None
     action_executed: bool = False
-    action_type: Optional[str] = None
-    action_result: Optional[Dict[str, Any]] = None
+    action_type: str | None = None
+    action_result: dict[str, Any] | None = None
     needs_confirmation: bool = False
     needs_params: bool = False
-    pending_action_id: Optional[str] = None
-    draft_updates: Optional[Dict[str, Any]] = None
+    pending_action_id: str | None = None
+    draft_updates: dict[str, Any] | None = None
 
 
 class SessionStateResponse(BaseModel):
     session_id: str
-    current_stage: Optional[str] = None
-    job_draft: Dict[str, Any] = {}
-    confidence_scores: Dict[str, float] = {}
-    messages: List[Dict[str, str]] = []
-    last_response: Optional[str] = None
+    current_stage: str | None = None
+    job_draft: dict[str, Any] = {}
+    confidence_scores: dict[str, float] = {}
+    messages: list[dict[str, str]] = []
+    last_response: str | None = None
     is_complete: bool = False
 
 
 class GraphInfoResponse(BaseModel):
-    nodes: List[str]
-    edges: Dict[str, List[str]]
-    conditional_edges: Dict[str, List[Dict[str, Any]]]
+    nodes: list[str]
+    edges: dict[str, list[str]]
+    conditional_edges: dict[str, list[dict[str, Any]]]
     start_node: str
     end_node: str
     max_iterations: int

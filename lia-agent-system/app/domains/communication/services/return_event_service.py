@@ -2,17 +2,18 @@
 Return Event Service - Processes candidate return events for pipeline transitions.
 Phase 5: Automatic Candidate Return.
 """
+import enum
 import logging
 import uuid
-import enum
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Any
 
-from sqlalchemy import select, update as sa_update
+from sqlalchemy import select
+from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import VacancyCandidate, Candidate
 from app.models.activity_feed import ActivityFeed
+from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import notification_service
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ class ReturnEventType(str, enum.Enum):
     OFFER_DECLINED = "offer_declined"
 
 
-RETURN_EVENT_CONFIG: Dict[str, Dict[str, Any]] = {
+RETURN_EVENT_CONFIG: dict[str, dict[str, Any]] = {
     "screening_complete": {
         "sub_status": "triagem_completa",
         "stage": None,
@@ -154,9 +155,9 @@ class ReturnEventService:
         self,
         vacancy_candidate_id: str,
         event_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
-        triggered_by: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        metadata: dict[str, Any] | None = None,
+        triggered_by: str | None = None,
+    ) -> dict[str, Any]:
         """
         Process a candidate return event.
 
@@ -263,7 +264,7 @@ class ReturnEventService:
 
     async def _load_candidate_data(
         self, vacancy_candidate_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Load VacancyCandidate and associated Candidate data."""
         try:
             vc_result = await self.db.execute(
@@ -304,11 +305,11 @@ class ReturnEventService:
         self,
         vacancy_candidate_id: str,
         sub_status: str,
-        stage: Optional[str] = None,
+        stage: str | None = None,
     ) -> bool:
         """Update VacancyCandidate status and optionally stage."""
         try:
-            values: Dict[str, Any] = {
+            values: dict[str, Any] = {
                 "status": sub_status,
                 "updated_at": datetime.utcnow(),
             }
@@ -347,13 +348,13 @@ class ReturnEventService:
 
     async def _create_activity(
         self,
-        event_config: Dict[str, Any],
-        candidate_data: Dict[str, Any],
+        event_config: dict[str, Any],
+        candidate_data: dict[str, Any],
         vacancy_candidate_id: str,
         event_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
-        triggered_by: Optional[str] = None,
-    ) -> Optional[str]:
+        metadata: dict[str, Any] | None = None,
+        triggered_by: str | None = None,
+    ) -> str | None:
         """Create ActivityFeed entry and return its ID."""
         try:
             candidate_name = candidate_data.get("candidate_name", "")
@@ -418,11 +419,11 @@ class ReturnEventService:
 
     async def _notify_recruiter(
         self,
-        event_config: Dict[str, Any],
-        candidate_data: Dict[str, Any],
+        event_config: dict[str, Any],
+        candidate_data: dict[str, Any],
         vacancy_candidate_id: str,
         event_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> bool:
         """Send notification to recruiter about the event."""
         try:

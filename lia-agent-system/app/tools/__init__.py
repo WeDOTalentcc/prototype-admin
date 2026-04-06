@@ -10,14 +10,15 @@ This module implements a complete function-calling system where:
 3. Results are returned to the user with appropriate messaging
 """
 from enum import Enum
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
 
+from app.tools.executor import ToolCall, ToolExecutionContext, ToolExecutor, ToolResult, tool_executor
 from app.tools.registry import ToolDefinition, ToolRegistry, tool_registry
-from app.tools.executor import ToolExecutor, ToolResult, ToolCall, tool_executor, ToolExecutionContext
 from app.tools.tool_registry_loader import (
-    load_tool_metadata,
     export_registry_to_yaml,
+    load_tool_metadata,
     validate_registry_against_yaml,
 )
 
@@ -35,11 +36,11 @@ class EnhancedToolResult(BaseModel):
     """Enhanced result from tool execution with user-friendly messaging."""
     status: ToolStatus
     message: str
-    data: Optional[Dict[str, Any]] = None
+    data: dict[str, Any] | None = None
     requires_confirmation: bool = False
-    confirmation_message: Optional[str] = None
-    action_taken: Optional[str] = None
-    affected_entities: List[str] = []
+    confirmation_message: str | None = None
+    action_taken: str | None = None
+    affected_entities: list[str] = []
     
     class Config:
         use_enum_values = True
@@ -48,10 +49,10 @@ class EnhancedToolResult(BaseModel):
 class ToolCallRecord(BaseModel):
     """Record of a tool call for response tracking."""
     tool_name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     status: ToolStatus
-    result: Optional[str] = None
-    execution_time_ms: Optional[float] = None
+    result: str | None = None
+    execution_time_ms: float | None = None
     
     class Config:
         use_enum_values = True
@@ -59,10 +60,10 @@ class ToolCallRecord(BaseModel):
 
 class ToolCallResponse(BaseModel):
     """Response containing tool execution information."""
-    tool_calls: List[ToolCallRecord] = []
-    pending_confirmations: List[ToolCallRecord] = []
+    tool_calls: list[ToolCallRecord] = []
+    pending_confirmations: list[ToolCallRecord] = []
     all_successful: bool = True
-    summary: Optional[str] = None
+    summary: str | None = None
 
 
 __all__ = [
@@ -90,15 +91,15 @@ __all__ = [
 
 def initialize_tools() -> None:
     """Initialize and register all tools."""
-    from app.domains.job_management.tools.job_wizard_tools import register_job_wizard_tools
-    from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
-    from app.domains.communication.tools.communication_tools import register_communication_tools
-    from app.domains.job_management.tools.job_tools import register_job_tools
-    from app.shared.tools.export_tools import register_export_tools
     from app.domains.analytics.tools.query_tools import register_query_tools
-    from app.domains.recruiter_assistant.tools.pipeline_tools import register_pipeline_tools
+    from app.domains.communication.tools.communication_tools import register_communication_tools
+    from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
     from app.domains.cv_screening.tools.cv_match_tool import register_cv_match_tool
     from app.domains.cv_screening.tools.cv_upload_tool import register_cv_upload_tools
+    from app.domains.job_management.tools.job_tools import register_job_tools
+    from app.domains.job_management.tools.job_wizard_tools import register_job_wizard_tools
+    from app.domains.recruiter_assistant.tools.pipeline_tools import register_pipeline_tools
+    from app.shared.tools.export_tools import register_export_tools
     
     register_job_wizard_tools()
     register_candidate_tools()
@@ -115,7 +116,7 @@ def initialize_tools() -> None:
     logger.info(f"✅ Initialized {len(tool_registry.list_tools())} tools")
 
 
-def get_all_tool_schemas(agent_type: Optional[str] = None, format: str = "claude") -> List[Dict[str, Any]]:
+def get_all_tool_schemas(agent_type: str | None = None, format: str = "claude") -> list[dict[str, Any]]:
     """
     Get all tool schemas for LLM function calling.
     
@@ -133,10 +134,10 @@ def get_all_tool_schemas(agent_type: Optional[str] = None, format: str = "claude
 
 async def execute_tool(
     tool_name: str,
-    parameters: Dict[str, Any],
-    agent_type: Optional[str] = None,
-    conversation_id: Optional[str] = None,
-    context: Optional[ToolExecutionContext] = None
+    parameters: dict[str, Any],
+    agent_type: str | None = None,
+    conversation_id: str | None = None,
+    context: ToolExecutionContext | None = None
 ) -> EnhancedToolResult:
     """
     Execute a tool and return an enhanced result.

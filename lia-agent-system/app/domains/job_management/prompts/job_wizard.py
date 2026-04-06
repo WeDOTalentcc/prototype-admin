@@ -8,11 +8,10 @@ Contains pre-configured templates for:
 - Competency suggestions
 - Responsibility generation
 """
-from typing import Dict, Any, List, Optional
-from app.prompts.templates import PromptTemplate, PromptLibrary
-from app.prompts.examples import FewShotExamples
-from app.prompts.cot import ChainOfThoughtBuilder
+from typing import Any
 
+from app.prompts.examples import FewShotExamples
+from app.prompts.templates import PromptLibrary, PromptTemplate
 
 ORCHESTRATOR_TEMPLATE = PromptTemplate(
     name="job_wizard_orchestrator",
@@ -322,7 +321,7 @@ def register_job_wizard_templates() -> None:
 
 def get_orchestrator_prompt(
     current_stage: int,
-    job_draft: Dict[str, Any]
+    job_draft: dict[str, Any]
 ) -> str:
     """Get a rendered orchestrator prompt."""
     draft_summary = _summarize_draft(job_draft)
@@ -361,7 +360,7 @@ def get_competency_prompt(
     job_title: str,
     seniority: str,
     department: str = "",
-    existing_skills: Optional[List[str]] = None
+    existing_skills: list[str] | None = None
 ) -> str:
     """Get a rendered competency suggestion prompt."""
     return COMPETENCY_SUGGESTION_TEMPLATE.render({
@@ -379,7 +378,7 @@ def get_intent_prompt(conversation_context: str = "") -> str:
     })
 
 
-def _summarize_draft(job_draft: Dict[str, Any]) -> str:
+def _summarize_draft(job_draft: dict[str, Any]) -> str:
     """Create a summary of the job draft for the orchestrator."""
     if not job_draft:
         return "Rascunho vazio - nenhum campo preenchido ainda."

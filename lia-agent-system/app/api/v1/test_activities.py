@@ -3,13 +3,14 @@ Test endpoint to populate activity feed with sample data.
 Only for development/testing purposes.
 """
 from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.activity_service import activity_service
 from app.models.activity_feed import ActivityFeed
+from app.services.activity_service import activity_service
 
 router = APIRouter(prefix="/test", tags=["Testing"])
 

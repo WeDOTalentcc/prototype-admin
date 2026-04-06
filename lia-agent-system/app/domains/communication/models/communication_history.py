@@ -4,9 +4,10 @@ Communication History Model - Tracking all candidate communications.
 This model stores records of all communications sent to/from candidates,
 including emails, WhatsApp messages, screening invites, and feedback.
 """
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Index
 import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Column, DateTime, Index, String, Text
 
 from app.core.database import Base
 

@@ -1,10 +1,10 @@
 """
 Task Lifecycle API - Endpoints for task confirmation, reminders, and escalation.
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.automation.services.task_service import task_service
@@ -45,13 +45,13 @@ class TaskConfirmRequest(BaseModel):
 class TaskRejectRequest(BaseModel):
     """Request model for rejecting a task."""
     rejected_by: str = Field(..., description="User ID who rejected the task")
-    reason: Optional[str] = Field(None, description="Reason for rejection")
+    reason: str | None = Field(None, description="Reason for rejection")
 
 
 class TaskEscalateRequest(BaseModel):
     """Request model for escalating a task."""
     escalate_to: str = Field(..., description="User/role to escalate to")
-    reason: Optional[str] = Field(None, description="Reason for escalation")
+    reason: str | None = Field(None, description="Reason for escalation")
 
 
 class CheckRemindersRequest(BaseModel):
@@ -68,16 +68,16 @@ class TaskLifecycleResponse(BaseModel):
     """Response model for a task lifecycle operation."""
     id: str
     title: str
-    status: Optional[str]
-    priority: Optional[str]
-    confirmed_by: Optional[str] = None
-    confirmed_at: Optional[str] = None
-    rejected_by: Optional[str] = None
-    rejected_at: Optional[str] = None
-    rejection_reason: Optional[str] = None
-    escalated_to: Optional[str] = None
-    escalated_at: Optional[str] = None
-    escalation_reason: Optional[str] = None
+    status: str | None
+    priority: str | None
+    confirmed_by: str | None = None
+    confirmed_at: str | None = None
+    rejected_by: str | None = None
+    rejected_at: str | None = None
+    rejection_reason: str | None = None
+    escalated_to: str | None = None
+    escalated_at: str | None = None
+    escalation_reason: str | None = None
     escalation_level: int = 0
     reminder_sent: bool = False
     reminder_count: int = 0
@@ -89,7 +89,7 @@ class TaskLifecycleResponse(BaseModel):
 class BulkOperationResponse(BaseModel):
     """Response model for bulk operations."""
     processed_count: int
-    tasks: List[TaskLifecycleResponse]
+    tasks: list[TaskLifecycleResponse]
 
 
 @router.post("/{task_id}/confirm", response_model=TaskLifecycleResponse)
@@ -215,9 +215,9 @@ async def check_and_escalate_overdue(
     )
 
 
-@router.get("/pending-confirmation", response_model=List[TaskLifecycleResponse])
+@router.get("/pending-confirmation", response_model=list[TaskLifecycleResponse])
 async def get_tasks_pending_confirmation(
-    user_id: Optional[str] = None,
+    user_id: str | None = None,
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -234,7 +234,7 @@ async def get_tasks_pending_confirmation(
     return [_task_to_lifecycle_response(task) for task in tasks]
 
 
-@router.get("/needing-reminder", response_model=List[TaskLifecycleResponse])
+@router.get("/needing-reminder", response_model=list[TaskLifecycleResponse])
 async def get_tasks_needing_reminder(
     hours_before_due: int = Query(default=24, ge=1, le=168),
     db: AsyncSession = Depends(get_db)
@@ -249,7 +249,7 @@ async def get_tasks_needing_reminder(
     return [_task_to_lifecycle_response(task) for task in tasks]
 
 
-@router.get("/escalatable", response_model=List[TaskLifecycleResponse])
+@router.get("/escalatable", response_model=list[TaskLifecycleResponse])
 async def get_escalatable_tasks(
     overdue_hours: int = Query(default=48, ge=1, le=720),
     db: AsyncSession = Depends(get_db)

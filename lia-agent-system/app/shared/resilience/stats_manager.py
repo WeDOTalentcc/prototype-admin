@@ -1,9 +1,9 @@
-import threading
 import logging
+import threading
 import time
-from typing import Dict, Any, Optional, Callable, Awaitable, TypeVar, Union
-from dataclasses import dataclass, field
-from datetime import datetime
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from typing import Any, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ T = TypeVar("T")
 
 @dataclass
 class CachedStats:
-    data: Dict[str, Any]
+    data: dict[str, Any]
     created_at: float
     expires_at: float
     hit_count: int = 0
@@ -70,7 +70,7 @@ class StatsManager:
             cls._instance = None
 
     def __init__(self, max_entries: int = 500, default_ttl: int = 300):
-        self._cache: Dict[str, CachedStats] = {}
+        self._cache: dict[str, CachedStats] = {}
         self._lock = threading.RLock()
         self._max_entries = max_entries
         self._default_ttl = default_ttl
@@ -82,7 +82,7 @@ class StatsManager:
     def _make_key(self, namespace: str, key: str) -> str:
         return f"{namespace}:{key}"
 
-    def get_stats(self, namespace: str, key: str) -> Optional[Dict[str, Any]]:
+    def get_stats(self, namespace: str, key: str) -> dict[str, Any] | None:
         with self._lock:
             cache_key = self._make_key(namespace, key)
             entry = self._cache.get(cache_key)
@@ -98,7 +98,7 @@ class StatsManager:
             return dict(entry.data)
 
     def set_stats(
-        self, namespace: str, key: str, data: Dict[str, Any], ttl_seconds: Optional[int] = None
+        self, namespace: str, key: str, data: dict[str, Any], ttl_seconds: int | None = None
     ) -> None:
         with self._lock:
             if len(self._cache) >= self._max_entries:
@@ -118,7 +118,7 @@ class StatsManager:
                 key=key,
             )
 
-    def invalidate(self, namespace: str, key: Optional[str] = None) -> int:
+    def invalidate(self, namespace: str, key: str | None = None) -> int:
         with self._lock:
             count = 0
             if key is not None:
@@ -140,9 +140,9 @@ class StatsManager:
         self,
         namespace: str,
         key: str,
-        compute_fn: Callable[[], Awaitable[Dict[str, Any]]],
-        ttl_seconds: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        compute_fn: Callable[[], Awaitable[dict[str, Any]]],
+        ttl_seconds: int | None = None,
+    ) -> dict[str, Any]:
         cached = self.get_stats(namespace, key)
         if cached is not None:
             return cached
@@ -155,9 +155,9 @@ class StatsManager:
         self,
         namespace: str,
         key: str,
-        compute_fn: Callable[[], Dict[str, Any]],
-        ttl_seconds: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        compute_fn: Callable[[], dict[str, Any]],
+        ttl_seconds: int | None = None,
+    ) -> dict[str, Any]:
         cached = self.get_stats(namespace, key)
         if cached is not None:
             return cached
@@ -188,7 +188,7 @@ class StatsManager:
         del self._cache[lru_key]
         self._total_evictions += 1
 
-    def get_cache_info(self) -> Dict[str, Any]:
+    def get_cache_info(self) -> dict[str, Any]:
         with self._lock:
             total_requests = self._total_hits + self._total_misses
             return {
@@ -202,8 +202,8 @@ class StatsManager:
                 "namespaces": self._get_namespace_counts(),
             }
 
-    def _get_namespace_counts(self) -> Dict[str, int]:
-        counts: Dict[str, int] = {}
+    def _get_namespace_counts(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
         for entry in self._cache.values():
             ns = entry.namespace
             counts[ns] = counts.get(ns, 0) + 1

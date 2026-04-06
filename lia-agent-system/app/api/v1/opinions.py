@@ -1,25 +1,25 @@
 """
 API endpoints for LIA Opinions (Pareceres).
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc, update, func
-from typing import List, Optional
-from uuid import UUID
 import logging
+from uuid import UUID
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import and_, desc, func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.models.lia_opinion import LiaOpinion
+from app.core.database import get_db
 from app.models.job_vacancy import JobVacancy
+from app.models.lia_opinion import LiaOpinion
 from app.schemas.lia_opinion import (
-    LiaOpinionCreate,
-    LiaOpinionUpdate,
-    LiaOpinionCompact,
-    LiaOpinionFull,
     CandidateOpinionsSummary,
-    LiaOpinionListResponse
+    LiaOpinionCompact,
+    LiaOpinionCreate,
+    LiaOpinionFull,
+    LiaOpinionListResponse,
+    LiaOpinionUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ async def get_candidate_opinions_summary(
     )
 
 
-@router.get("/candidate/{candidate_id}/history", response_model=List[LiaOpinionFull])
+@router.get("/candidate/{candidate_id}/history", response_model=list[LiaOpinionFull])
 async def get_candidate_opinions_history(
     candidate_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -161,8 +161,8 @@ async def get_candidate_opinions_history(
 @router.get("/candidate/{candidate_id}", response_model=LiaOpinionListResponse)
 async def list_candidate_opinions(
     candidate_id: UUID,
-    opinion_type: Optional[str] = Query(None, description="Filter by type: general or wsi"),
-    job_vacancy_id: Optional[UUID] = Query(None, description="Filter by vacancy"),
+    opinion_type: str | None = Query(None, description="Filter by type: general or wsi"),
+    job_vacancy_id: UUID | None = Query(None, description="Filter by vacancy"),
     include_history: bool = Query(False, description="Include non-current versions"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),

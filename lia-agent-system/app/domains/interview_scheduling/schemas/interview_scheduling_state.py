@@ -1,16 +1,17 @@
 """
 Interview Scheduling State Schema for conversational workflow.
 """
-from typing import Optional, List, Literal, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import Any, Literal
+
 from pydantic import BaseModel, Field
 
 
 class InterviewParticipant(BaseModel):
     """Single interview participant."""
-    name: Optional[str] = None
-    email: Optional[str] = None
-    role: Optional[str] = None  # "interviewer", "additional_interviewer", "candidate"
+    name: str | None = None
+    email: str | None = None
+    role: str | None = None  # "interviewer", "additional_interviewer", "candidate"
 
 
 class InterviewSchedulingState(BaseModel):
@@ -22,63 +23,63 @@ class InterviewSchedulingState(BaseModel):
     # =============================================
     # CANDIDATE INFORMATION
     # =============================================
-    candidate_name: Optional[str] = None
-    candidate_email: Optional[str] = None
-    candidate_phone: Optional[str] = None
+    candidate_name: str | None = None
+    candidate_email: str | None = None
+    candidate_phone: str | None = None
     
     # =============================================
     # JOB & POSITION
     # =============================================
-    job_title: Optional[str] = None
-    job_id: Optional[str] = None  # Reference to job_vacancies table
+    job_title: str | None = None
+    job_id: str | None = None  # Reference to job_vacancies table
     
     # =============================================
     # INTERVIEW DETAILS
     # =============================================
-    interview_type: Optional[Literal["tecnica", "comportamental", "cultural", "rh", "gerencial"]] = None
-    interview_mode: Optional[Literal["presencial", "remoto", "hibrido"]] = None
+    interview_type: Literal["tecnica", "comportamental", "cultural", "rh", "gerencial"] | None = None
+    interview_mode: Literal["presencial", "remoto", "hibrido"] | None = None
     
     # =============================================
     # SCHEDULING
     # =============================================
-    preferred_date: Optional[date] = None
-    preferred_time: Optional[str] = None  # "14:00", "manhã", "tarde"
-    start_time: Optional[datetime] = None  # Final computed datetime
-    duration_minutes: Optional[int] = 60  # Default 1 hour
+    preferred_date: date | None = None
+    preferred_time: str | None = None  # "14:00", "manhã", "tarde"
+    start_time: datetime | None = None  # Final computed datetime
+    duration_minutes: int | None = 60  # Default 1 hour
     
     # =============================================
     # LOCATION & MEETING
     # =============================================
-    location: Optional[str] = None  # Physical address or "Online"
+    location: str | None = None  # Physical address or "Online"
     as_teams_meeting: bool = True  # Default to Teams meeting
-    meeting_url: Optional[str] = None  # Generated after creation
+    meeting_url: str | None = None  # Generated after creation
     
     # =============================================
     # PARTICIPANTS
     # =============================================
-    interviewer_name: Optional[str] = None
-    interviewer_email: Optional[str] = None
-    additional_interviewers: List[InterviewParticipant] = Field(default_factory=list)
+    interviewer_name: str | None = None
+    interviewer_email: str | None = None
+    additional_interviewers: list[InterviewParticipant] = Field(default_factory=list)
     
     # =============================================
     # NOTES & CONTEXT
     # =============================================
-    notes: Optional[str] = None
-    preparation_materials: List[str] = Field(default_factory=list)
+    notes: str | None = None
+    preparation_materials: list[str] = Field(default_factory=list)
     
     # =============================================
     # WORKFLOW METADATA
     # =============================================
-    collected_fields: List[str] = Field(default_factory=list)
-    pending_fields: List[str] = Field(default_factory=list)
-    conversation_id: Optional[str] = None
-    created_interview_id: Optional[str] = None  # Set after scheduling
+    collected_fields: list[str] = Field(default_factory=list)
+    pending_fields: list[str] = Field(default_factory=list)
+    conversation_id: str | None = None
+    created_interview_id: str | None = None  # Set after scheduling
     
     # =============================================
     # VALIDATION STATE
     # =============================================
     is_complete: bool = False
-    validation_errors: List[str] = Field(default_factory=list)
+    validation_errors: list[str] = Field(default_factory=list)
     
     def mark_field_collected(self, field_name: str):
         """Mark a field as collected."""
@@ -87,7 +88,7 @@ class InterviewSchedulingState(BaseModel):
         if field_name in self.pending_fields:
             self.pending_fields.remove(field_name)
     
-    def get_next_pending_field(self) -> Optional[str]:
+    def get_next_pending_field(self) -> str | None:
         """
         Get next field that needs to be collected.
         Priority order for interview scheduling.
@@ -132,7 +133,7 @@ class InterviewSchedulingState(BaseModel):
         self.is_complete = len(self.validation_errors) == 0
         return self.is_complete
     
-    def get_collection_progress(self) -> Dict[str, Any]:
+    def get_collection_progress(self) -> dict[str, Any]:
         """
         Get progress of field collection for UI display.
         """
@@ -150,7 +151,7 @@ class InterviewSchedulingState(BaseModel):
             "is_complete": self.is_complete
         }
     
-    def to_interview_request(self) -> Dict[str, Any]:
+    def to_interview_request(self) -> dict[str, Any]:
         """
         Convert state to API request format for /api/v1/interviews/schedule.
         """

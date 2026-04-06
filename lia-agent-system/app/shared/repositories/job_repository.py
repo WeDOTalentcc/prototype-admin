@@ -1,14 +1,14 @@
 """
 Job Repository - Database access for JobVacancy model.
 """
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 import logging
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, func, or_
+from sqlalchemy import or_, select
 
-from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 from app.models.job_vacancy import JobVacancy
+from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,8 @@ class JobRepository(SQLAlchemyRepository[JobVacancy]):
     model_class = JobVacancy
     
     async def find_by_company(self, db, company_id: str,
-                              status: Optional[str] = None,
-                              limit: int = 50, offset: int = 0) -> List[JobVacancy]:
+                              status: str | None = None,
+                              limit: int = 50, offset: int = 0) -> list[JobVacancy]:
         """Find job vacancies by company, optionally filtered by status."""
         query = select(self.model_class).where(
             self.model_class.company_id == company_id
@@ -36,7 +36,7 @@ class JobRepository(SQLAlchemyRepository[JobVacancy]):
             self.model_class.company_id == company_id
         ).limit(limit).offset(offset).all()
     
-    async def get_active_jobs(self, db, company_id: str) -> List[JobVacancy]:
+    async def get_active_jobs(self, db, company_id: str) -> list[JobVacancy]:
         """Get all active job vacancies for a company."""
         query = select(self.model_class).where(
             self.model_class.company_id == company_id,
@@ -50,8 +50,8 @@ class JobRepository(SQLAlchemyRepository[JobVacancy]):
             self.model_class.status == "Ativa",
         ).all()
     
-    async def search(self, db, query: str, filters: Optional[Dict[str, Any]] = None,
-                     limit: int = 50, offset: int = 0) -> List[JobVacancy]:
+    async def search(self, db, query: str, filters: dict[str, Any] | None = None,
+                     limit: int = 50, offset: int = 0) -> list[JobVacancy]:
         """Search job vacancies by title, department, or description."""
         search_pattern = f"%{query}%"
         stmt = select(self.model_class).where(
@@ -74,6 +74,6 @@ class JobRepository(SQLAlchemyRepository[JobVacancy]):
             self.model_class.title.ilike(search_pattern)
         ).limit(limit).offset(offset).all()
     
-    async def update_status(self, db, id: UUID, status: str) -> Optional[JobVacancy]:
+    async def update_status(self, db, id: UUID, status: str) -> JobVacancy | None:
         """Update the status of a job vacancy."""
         return await self.update(db, id, {"status": status})

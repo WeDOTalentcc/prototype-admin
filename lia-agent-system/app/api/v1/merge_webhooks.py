@@ -2,22 +2,23 @@
 Merge.dev Webhook Endpoints
 Receives events from Merge when data changes in linked ATS platforms.
 """
-from fastapi import APIRouter, Request, HTTPException, Header, BackgroundTasks
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
-import hmac
 import hashlib
-import os
+import hmac
 import logging
+import os
+from typing import Any
+
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/webhooks/merge", tags=["merge-webhooks"])
 logger = logging.getLogger(__name__)
 
 
 class MergeWebhookEvent(BaseModel):
-    hook: Dict[str, Any]
-    linked_account: Dict[str, Any]
-    data: List[Dict[str, Any]]
+    hook: dict[str, Any]
+    linked_account: dict[str, Any]
+    data: list[dict[str, Any]]
 
 
 def verify_merge_signature(payload: bytes, signature: str) -> bool:
@@ -41,7 +42,7 @@ def verify_merge_signature(payload: bytes, signature: str) -> bool:
 async def handle_merge_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
-    x_merge_signature: Optional[str] = Header(None, alias="X-Merge-Signature")
+    x_merge_signature: str | None = Header(None, alias="X-Merge-Signature")
 ):
     """
     Receive webhooks from Merge.dev when data changes.
@@ -63,7 +64,7 @@ async def handle_merge_webhook(
     return {"status": "received", "event": event_type}
 
 
-async def process_merge_event(data: Dict[str, Any]):
+async def process_merge_event(data: dict[str, Any]):
     """Process Merge webhook event."""
     hook = data.get("hook", {})
     event_type = hook.get("event", "")
@@ -100,7 +101,7 @@ async def process_merge_event(data: Dict[str, Any]):
             logger.error(f"[MERGE] Error processing {event_type}: {e}", exc_info=True)
 
 
-async def handle_candidate_created(record: Dict, company_id: str, account_token: str):
+async def handle_candidate_created(record: dict, company_id: str, account_token: str):
     """Handle new candidate from external ATS."""
     candidate_id = record.get("id")
     first_name = record.get("first_name", "")
@@ -125,7 +126,7 @@ async def handle_candidate_created(record: Dict, company_id: str, account_token:
         logger.error(f"[MERGE] Failed to log candidate created activity: {e}")
 
 
-async def handle_candidate_updated(record: Dict, company_id: str, account_token: str):
+async def handle_candidate_updated(record: dict, company_id: str, account_token: str):
     """Handle candidate update from external ATS."""
     candidate_id = record.get("id")
     modified_at = record.get("modified_at")
@@ -133,7 +134,7 @@ async def handle_candidate_updated(record: Dict, company_id: str, account_token:
     logger.info(f"[MERGE] Updated candidate: {candidate_id} at {modified_at}")
 
 
-async def handle_application_created(record: Dict, company_id: str, account_token: str):
+async def handle_application_created(record: dict, company_id: str, account_token: str):
     """Handle new application from external ATS."""
     application_id = record.get("id")
     candidate_id = record.get("candidate")
@@ -142,7 +143,7 @@ async def handle_application_created(record: Dict, company_id: str, account_toke
     logger.info(f"[MERGE] New application: {application_id} (candidate: {candidate_id}, job: {job_id})")
 
 
-async def handle_stage_changed(record: Dict, company_id: str, account_token: str):
+async def handle_stage_changed(record: dict, company_id: str, account_token: str):
     """Handle stage change from external ATS (inbound sync)."""
     application_id = record.get("id")
     current_stage = record.get("current_stage", {})
@@ -174,7 +175,7 @@ async def handle_stage_changed(record: Dict, company_id: str, account_token: str
         logger.error(f"[MERGE] Failed to log stage change activity: {e}")
 
 
-async def handle_interview_created(record: Dict, company_id: str, account_token: str):
+async def handle_interview_created(record: dict, company_id: str, account_token: str):
     """Handle new interview scheduled in external ATS."""
     interview_id = record.get("id")
     application_id = record.get("application")
@@ -183,7 +184,7 @@ async def handle_interview_created(record: Dict, company_id: str, account_token:
     logger.info(f"[MERGE] New interview: {interview_id} for application {application_id} at {scheduled_at}")
 
 
-async def handle_interview_updated(record: Dict, company_id: str, account_token: str):
+async def handle_interview_updated(record: dict, company_id: str, account_token: str):
     """Handle interview update from external ATS."""
     interview_id = record.get("id")
     status = record.get("status")
@@ -191,7 +192,7 @@ async def handle_interview_updated(record: Dict, company_id: str, account_token:
     logger.info(f"[MERGE] Updated interview: {interview_id} - status: {status}")
 
 
-async def handle_job_created(record: Dict, company_id: str, account_token: str):
+async def handle_job_created(record: dict, company_id: str, account_token: str):
     """Handle new job from external ATS."""
     job_id = record.get("id")
     job_name = record.get("name", "")
@@ -199,7 +200,7 @@ async def handle_job_created(record: Dict, company_id: str, account_token: str):
     logger.info(f"[MERGE] New job: {job_id} - {job_name}")
 
 
-async def handle_job_updated(record: Dict, company_id: str, account_token: str):
+async def handle_job_updated(record: dict, company_id: str, account_token: str):
     """Handle job update from external ATS."""
     job_id = record.get("id")
     status = record.get("status")

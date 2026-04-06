@@ -10,23 +10,28 @@ Integrates with CVParserService for AI-powered CV parsing.
 
 import io
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from app.models.whatsapp_conversation import WhatsAppConversation, WhatsAppMessage, ConversationState
-from app.models.job_vacancy import JobVacancy
-from app.domains.communication.services.whatsapp_provider import WhatsAppProvider, SendResult
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
-from app.domains.cv_screening.services.pre_qualification_service import pre_qualification_service, PreQualificationResult, PreQualificationDecision
+from app.domains.communication.services.whatsapp_provider import WhatsAppProvider
 from app.domains.cv_screening.services.eligibility_verification_service import (
-    eligibility_service,
     EligibilityQuestion,
     ReconsiderationContext,
     ReconsiderationResult,
+    eligibility_service,
 )
+from app.domains.cv_screening.services.pre_qualification_service import (
+    PreQualificationDecision,
+    PreQualificationResult,
+    pre_qualification_service,
+)
+from app.models.job_vacancy import JobVacancy
+from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation, WhatsAppMessage
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +233,7 @@ class ConversationManager:
     
     CONVERSATION_TIMEOUT_HOURS = 72
     
-    def __init__(self, db: AsyncSession, provider: Optional[WhatsAppProvider] = None):
+    def __init__(self, db: AsyncSession, provider: WhatsAppProvider | None = None):
         """
         Initialize ConversationManager.
         
@@ -249,7 +254,7 @@ class ConversationManager:
         self,
         phone_number: str,
         company_id: str,
-        job_vacancy_id: Optional[UUID] = None
+        job_vacancy_id: UUID | None = None
     ) -> WhatsAppConversation:
         """Get existing active conversation or create a new one."""
         
@@ -292,8 +297,8 @@ class ConversationManager:
         message_content: str,
         company_id: str,
         message_type: str = "text",
-        media_data: Optional[Dict[str, Any]] = None
-    ) -> Optional[str]:
+        media_data: dict[str, Any] | None = None
+    ) -> str | None:
         """
         Process an incoming WhatsApp message and return the response.
         
@@ -351,8 +356,8 @@ class ConversationManager:
         conversation: WhatsAppConversation,
         message_content: str,
         message_type: str,
-        media_data: Optional[Dict[str, Any]]
-    ) -> Optional[str]:
+        media_data: dict[str, Any] | None
+    ) -> str | None:
         """Handle message based on current conversation state."""
         
         state = conversation.state
@@ -436,7 +441,7 @@ class ConversationManager:
         self,
         conversation: WhatsAppConversation,
         message_type: str,
-        media_data: Optional[Dict[str, Any]]
+        media_data: dict[str, Any] | None
     ) -> str:
         """Handle CV document submission."""
         if message_type not in ["document", "image"] or not media_data:
@@ -611,8 +616,9 @@ class ConversationManager:
             governance_rules = job.governance_rules or {}
             threshold_web = governance_rules.get("threshold_web", threshold_web)
             
+            from sqlalchemy import and_, func, not_
+
             from app.models.candidate import VacancyCandidate
-            from sqlalchemy import func, and_, not_
             
             excluded = ('rejected', 'declined', 'withdrawn')
             organic_count_result = await self.db.execute(
@@ -644,8 +650,8 @@ class ConversationManager:
     async def _run_pre_qualification(
         self,
         conversation: WhatsAppConversation,
-        job: Optional[JobVacancy]
-    ) -> Optional[Any]:
+        job: JobVacancy | None
+    ) -> Any | None:
         """Run pre-qualification evaluation using rubric service."""
         if not job or not conversation.cv_parsed_data:
             return None
@@ -758,10 +764,10 @@ class ConversationManager:
             await self._create_candidate_from_conversation(conversation)
             
             return (
-                f"Perfeito! Adicionei seu perfil ao nosso banco de talentos. ✅\n\n"
-                f"Quando surgirem vagas compatíveis com sua experiência, "
-                f"você será um dos primeiros a saber!\n\n"
-                f"Obrigada pelo interesse e boa sorte! 🍀"
+                "Perfeito! Adicionei seu perfil ao nosso banco de talentos. ✅\n\n"
+                "Quando surgirem vagas compatíveis com sua experiência, "
+                "você será um dos primeiros a saber!\n\n"
+                "Obrigada pelo interesse e boa sorte! 🍀"
             )
         
         elif any(word in normalized for word in decline_keywords):
@@ -861,7 +867,7 @@ class ConversationManager:
         # Continue to next question
         return await self._advance_to_next_question(conversation, questions_data)
     
-    async def _advance_to_next_question(self, conversation: WhatsAppConversation, questions_data: List[Dict]) -> str:
+    async def _advance_to_next_question(self, conversation: WhatsAppConversation, questions_data: list[dict]) -> str:
         """Advance to next screening question or complete screening."""
         current_index = conversation.current_question_index or 0
         next_index = current_index + 1
@@ -1026,7 +1032,7 @@ class ConversationManager:
         self,
         conversation_id: UUID,
         approved: bool,
-        recruiter_name: Optional[str] = None
+        recruiter_name: str | None = None
     ) -> bool:
         """Send feedback message to candidate after recruiter decision."""
         try:
@@ -1070,21 +1076,21 @@ class ConversationManager:
             logger.error(f"Error sending feedback: {e}", exc_info=True)
             return False
     
-    async def _get_job_by_slug(self, slug: str) -> Optional[JobVacancy]:
+    async def _get_job_by_slug(self, slug: str) -> JobVacancy | None:
         """Get job vacancy by public slug."""
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.public_slug == slug)
         )
         return result.scalar_one_or_none()
     
-    async def _get_job(self, job_id: UUID) -> Optional[JobVacancy]:
+    async def _get_job(self, job_id: UUID) -> JobVacancy | None:
         """Get job vacancy by ID."""
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.id == job_id)
         )
         return result.scalar_one_or_none()
     
-    async def _get_screening_questions(self, job_vacancy_id: Optional[UUID]) -> List[str]:
+    async def _get_screening_questions(self, job_vacancy_id: UUID | None) -> list[str]:
         """
         Get screening questions for a job vacancy.
         
@@ -1126,7 +1132,7 @@ class ConversationManager:
         logger.info(f"[SCREENING] No screening questions configured for job {job_vacancy_id}, using defaults")
         return default_questions
     
-    async def _get_screening_questions_with_metadata(self, job_vacancy_id: Optional[UUID]) -> List[Dict[str, Any]]:
+    async def _get_screening_questions_with_metadata(self, job_vacancy_id: UUID | None) -> list[dict[str, Any]]:
         """
         Get screening questions with full metadata including eligibility info.
         
@@ -1179,7 +1185,7 @@ class ConversationManager:
         logger.info(f"[SCREENING_META] No screening questions configured for job {job_vacancy_id}, using defaults")
         return default_questions
     
-    async def _parse_cv(self, media_data: Dict[str, Any], company_id: Optional[str] = None) -> Dict[str, Any]:
+    async def _parse_cv(self, media_data: dict[str, Any], company_id: str | None = None) -> dict[str, Any]:
         """
         Parse CV using CVParserService with real AI parsing.
         
@@ -1196,8 +1202,9 @@ class ConversationManager:
             Dict with success status and parsed data or error
         """
         try:
-            from app.domains.cv_screening.services.cv_parser import CVParserService
             from fastapi import UploadFile
+
+            from app.domains.cv_screening.services.cv_parser import CVParserService
             
             media_id = media_data.get("id")
             media_url = media_data.get("url")
@@ -1318,7 +1325,7 @@ class ConversationManager:
                 "user_message": "Tive dificuldade em analisar seu currículo. Por favor, tente enviar novamente em formato PDF ou Word."
             }
     
-    def _format_cv_summary(self, cv_data: Dict[str, Any]) -> str:
+    def _format_cv_summary(self, cv_data: dict[str, Any]) -> str:
         """Format CV data as summary text."""
         lines = []
         
@@ -1356,9 +1363,13 @@ class ConversationManager:
             status: VacancyCandidate status (cv_received, awaiting_screening, rejected)
         """
         try:
+            from app.domains.automation.services.stage_automation_engine import (
+                AutomationEvent,
+                StageAutomationEngine,
+                TriggerType,
+            )
             from app.models.candidate import Candidate, VacancyCandidate
             from app.models.candidate_job import CandidateJob
-            from app.domains.automation.services.stage_automation_engine import StageAutomationEngine, AutomationEvent, TriggerType
             
             cv_data = conversation.cv_parsed_data or {}
             
@@ -1467,7 +1478,7 @@ class ConversationManager:
         direction: str,
         message_type: str,
         content: str,
-        media_data: Optional[Dict[str, Any]] = None
+        media_data: dict[str, Any] | None = None
     ) -> None:
         """Log a message to the conversation history."""
         try:

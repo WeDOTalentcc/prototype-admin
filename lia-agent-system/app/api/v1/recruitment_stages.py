@@ -6,44 +6,47 @@ Admin > Jornada de Recrutamento
 SECURITY: All endpoints require authentication via JWT token.
 Company scoping is enforced server-side based on authenticated user context.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Body
-from starlette.responses import StreamingResponse
-from typing import Any, Dict, Optional, List
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, delete, update as sa_update
-from pydantic import BaseModel, Field
-from datetime import datetime
 import asyncio
 import json
 import logging
 import uuid
+from datetime import datetime
+from typing import Any
 
-from app.models.recruitment_stages import (
-    RecruitmentStage,
-    RecruitmentSubStatus,
-    ATSStageMapping,
-    CandidateStageHistory,
-    ScreeningQuestion,
-    DEFAULT_RECRUITMENT_STAGES,
-    DEFAULT_SUB_STATUSES,
-    CANONICAL_SUB_STATUSES,
-    GUPY_STAGE_MAPPINGS,
-    PANDAPE_STAGE_MAPPINGS,
-    STANDARD_STAGE_CATALOG
-)
-from app.domains.recruiter_assistant.services.pipeline_stage_service import pipeline_stage_service, TransitionError
-from app.domains.communication.services.return_event_service import ReturnEventService, ReturnEventType, RETURN_EVENT_CONFIG
-from app.core.database import get_db
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, delete, select
+from sqlalchemy import update as sa_update
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import StreamingResponse
+
 from app.auth.dependencies import (
-    get_current_active_user, 
+    assert_resource_ownership,
+    get_current_active_user,
     get_current_user_or_demo,
-    require_admin_or_recruiter,
-    validate_company_access,
     get_user_company_id,
-    assert_resource_ownership
+    require_admin_or_recruiter,
 )
 from app.auth.models import User
 from app.core.config import settings
+from app.core.database import get_db
+from app.domains.communication.services.return_event_service import (
+    RETURN_EVENT_CONFIG,
+    ReturnEventService,
+)
+from app.domains.recruiter_assistant.services.pipeline_stage_service import TransitionError, pipeline_stage_service
+from app.models.recruitment_stages import (
+    CANONICAL_SUB_STATUSES,
+    DEFAULT_RECRUITMENT_STAGES,
+    DEFAULT_SUB_STATUSES,
+    GUPY_STAGE_MAPPINGS,
+    PANDAPE_STAGE_MAPPINGS,
+    STANDARD_STAGE_CATALOG,
+    ATSStageMapping,
+    RecruitmentStage,
+    RecruitmentSubStatus,
+    ScreeningQuestion,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,82 +61,82 @@ router = APIRouter()
 class StageCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     display_name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = None
+    description: str | None = None
     stage_order: int = Field(default=0, ge=0)
-    color: Optional[str] = Field(default="#6B7280", max_length=20)
-    icon: Optional[str] = Field(default="circle", max_length=50)
+    color: str | None = Field(default="#6B7280", max_length=20)
+    icon: str | None = Field(default="circle", max_length=50)
     stage_type: str = Field(default="active")
     is_initial: bool = False
     is_final: bool = False
     is_rejection: bool = False
     is_hired: bool = False
-    allowed_transitions: List[str] = Field(default_factory=list)
-    sla_hours: Optional[int] = None
+    allowed_transitions: list[str] = Field(default_factory=list)
+    sla_hours: int | None = None
     action_behavior: str = Field(default="passive", description="Action behavior type for this stage")
 
 
 class StageConfigUpdate(BaseModel):
-    action_behavior: Optional[str] = Field(None, description="Tipo de ação (screening, scheduling, evaluation, verification, offer, passive, etc.)")
-    default_channel: Optional[str] = Field(None, description="Canal padrão (email, whatsapp, email_whatsapp)")
-    sla_hours: Optional[int] = Field(None, description="SLA em horas")
+    action_behavior: str | None = Field(None, description="Tipo de ação (screening, scheduling, evaluation, verification, offer, passive, etc.)")
+    default_channel: str | None = Field(None, description="Canal padrão (email, whatsapp, email_whatsapp)")
+    sla_hours: int | None = Field(None, description="SLA em horas")
 
 
 class StageUpdate(BaseModel):
-    display_name: Optional[str] = None
-    description: Optional[str] = None
-    stage_order: Optional[int] = None
-    color: Optional[str] = None
-    icon: Optional[str] = None
-    allowed_transitions: Optional[List[str]] = None
-    sla_hours: Optional[int] = None
-    is_active: Optional[bool] = None
-    action_behavior: Optional[str] = None
+    display_name: str | None = None
+    description: str | None = None
+    stage_order: int | None = None
+    color: str | None = None
+    icon: str | None = None
+    allowed_transitions: list[str] | None = None
+    sla_hours: int | None = None
+    is_active: bool | None = None
+    action_behavior: str | None = None
 
 
 class SubStatusCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     display_name: str = Field(..., min_length=1, max_length=150)
-    description: Optional[str] = None
+    description: str | None = None
     sub_status_order: int = Field(default=0, ge=0)
-    color: Optional[str] = None
-    icon: Optional[str] = None
+    color: str | None = None
+    icon: str | None = None
     is_default: bool = False
     is_waiting: bool = False
-    waiting_for: Optional[str] = None
-    sla_hours: Optional[int] = None
-    is_active: Optional[bool] = None
+    waiting_for: str | None = None
+    sla_hours: int | None = None
+    is_active: bool | None = None
 
 
 class ATSMappingCreate(BaseModel):
     ats_type: str = Field(..., description="gupy, pandape, merge")
-    ats_stage_id: Optional[str] = None
+    ats_stage_id: str | None = None
     ats_stage_name: str = Field(..., min_length=1, max_length=255)
-    ats_stage_order: Optional[int] = None
+    ats_stage_order: int | None = None
     wedotalent_stage_id: str
-    wedotalent_sub_status_id: Optional[str] = None
+    wedotalent_sub_status_id: str | None = None
     mapping_direction: str = Field(default="both", description="import, export, both")
     is_default_for_sync: bool = False
     priority: int = Field(default=0, ge=0)
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class TransitionRequest(BaseModel):
     vacancy_candidate_id: str
     to_stage: str
-    to_sub_status: Optional[str] = None
+    to_sub_status: str | None = None
     triggered_by: str = "user"
-    triggered_by_user_id: Optional[str] = None
-    source_agent: Optional[str] = None
-    reason: Optional[str] = None
-    notes: Optional[str] = None
+    triggered_by_user_id: str | None = None
+    source_agent: str | None = None
+    reason: str | None = None
+    notes: str | None = None
     force: bool = False
 
 
 class InlineStageEdit(BaseModel):
-    display_name: Optional[str] = Field(None, min_length=1, max_length=100)
-    is_active: Optional[bool] = None
-    sla_hours: Optional[int] = Field(None, ge=0)
-    stage_order: Optional[int] = Field(None, ge=0)
+    display_name: str | None = Field(None, min_length=1, max_length=100)
+    is_active: bool | None = None
+    sla_hours: int | None = Field(None, ge=0)
+    stage_order: int | None = Field(None, ge=0)
 
 
 class StageReorderItem(BaseModel):
@@ -142,33 +145,33 @@ class StageReorderItem(BaseModel):
 
 
 class StageReorderRequest(BaseModel):
-    stages: List[StageReorderItem]
+    stages: list[StageReorderItem]
 
 
 class ChatMessageItem(BaseModel):
     role: str = "user"
     content: str = ""
-    timestamp: Optional[float] = None
+    timestamp: float | None = None
 
 
 class InterpretContextRequest(BaseModel):
     candidate_id: str
-    candidate_name: Optional[str] = None
-    job_title: Optional[str] = None
-    job_id: Optional[str] = None
+    candidate_name: str | None = None
+    job_title: str | None = None
+    job_id: str | None = None
     from_stage: str
     to_stage: str
     action_behavior: str
-    prompt: Optional[str] = None
-    company_id: Optional[str] = None
-    message_history: Optional[List[ChatMessageItem]] = None
-    conversation_id: Optional[str] = Field(None, description="Conversation ID for multi-turn context persistence")
+    prompt: str | None = None
+    company_id: str | None = None
+    message_history: list[ChatMessageItem] | None = None
+    conversation_id: str | None = Field(None, description="Conversation ID for multi-turn context persistence")
 
 
 class TaskItem(BaseModel):
     type: str = ""
     description: str = ""
-    data_type: Optional[str] = None
+    data_type: str | None = None
     status: str = "scheduled"
 
 
@@ -184,17 +187,17 @@ class InterpretContextResponse(BaseModel):
     suggested_action: str
     action_label: str
     urgency: str
-    lia_message: Optional[str] = None
-    extracted_preferences: Optional[dict] = None
+    lia_message: str | None = None
+    extracted_preferences: dict | None = None
     ai_powered: bool = False
-    confidence: Optional[float] = None
-    tasks: Optional[List[TaskItem]] = None
+    confidence: float | None = None
+    tasks: list[TaskItem] | None = None
     out_of_scope: bool = False
-    candidate_info: Optional[dict] = None
-    learned_suggestions: Optional[List[LearnedSuggestion]] = None
-    fairness_result: Optional[dict] = None
+    candidate_info: dict | None = None
+    learned_suggestions: list[LearnedSuggestion] | None = None
+    fairness_result: dict | None = None
     layer: int = 1
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
 
 @router.get("/stages")
@@ -697,7 +700,7 @@ async def delete_sub_status(
 
 @router.get("/ats-mappings")
 async def list_ats_mappings(
-    ats_type: Optional[str] = Query(default=None, description="Filter by ATS type"),
+    ats_type: str | None = Query(default=None, description="Filter by ATS type"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -788,7 +791,7 @@ async def delete_ats_mapping(
 
 @router.post("/initialize")
 async def initialize_company_stages(
-    ats_type: Optional[str] = Query(default=None, description="Also initialize ATS mappings"),
+    ats_type: str | None = Query(default=None, description="Also initialize ATS mappings"),
     current_user: User = Depends(require_admin_or_recruiter),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1057,21 +1060,21 @@ async def get_standard_stage_catalog():
 
 
 class CompanyPipelineStageItem(BaseModel):
-    id: Optional[str] = None
-    catalog_id: Optional[str] = None
-    name: Optional[str] = None
-    display_name: Optional[str] = None
+    id: str | None = None
+    catalog_id: str | None = None
+    name: str | None = None
+    display_name: str | None = None
     stage_order: int
-    color: Optional[str] = None
-    icon: Optional[str] = None
-    sla_hours: Optional[int] = None
+    color: str | None = None
+    icon: str | None = None
+    sla_hours: int | None = None
     is_active: bool = True
-    action_behavior: Optional[str] = None
-    default_channel: Optional[str] = None
+    action_behavior: str | None = None
+    default_channel: str | None = None
 
 
 class CompanyPipelineUpdate(BaseModel):
-    stages: List[CompanyPipelineStageItem]
+    stages: list[CompanyPipelineStageItem]
 
 
 async def _get_company_pipeline(company_id: str, db: AsyncSession):
@@ -1228,14 +1231,14 @@ class JobPipelineStageItem(BaseModel):
     stage_name: str
     stage_order: int
     is_active: bool = True
-    sla_hours: Optional[int] = None
-    display_name: Optional[str] = None
-    color: Optional[str] = None
-    icon: Optional[str] = None
+    sla_hours: int | None = None
+    display_name: str | None = None
+    color: str | None = None
+    icon: str | None = None
 
 
 class JobPipelineUpdate(BaseModel):
-    stages: List[JobPipelineStageItem]
+    stages: list[JobPipelineStageItem]
 
 
 @router.get("/jobs/{job_id}/pipeline")
@@ -1385,6 +1388,7 @@ ACTION_BEHAVIOR_LABELS = {
 
 import re
 
+
 def _extract_scheduling_preferences(text: str) -> dict:
     preferences = {}
     days = re.findall(
@@ -1399,7 +1403,7 @@ def _extract_scheduling_preferences(text: str) -> dict:
     return preferences
 
 
-def _determine_suggested_action(action_behavior: str, prompt: Optional[str]) -> str:
+def _determine_suggested_action(action_behavior: str, prompt: str | None) -> str:
     if prompt:
         prompt_lower = prompt.lower()
         auto_keywords = ["automático", "automatico", "lia", "auto", "agendar", "enviar"]
@@ -1434,7 +1438,7 @@ def _determine_urgency(action_behavior: str) -> str:
 def _build_lia_message(
     to_stage: str,
     action_behavior: str,
-    candidate_name: Optional[str],
+    candidate_name: str | None,
     preferences: dict,
     suggested_action: str,
 ) -> str:
@@ -1494,8 +1498,9 @@ async def interpret_transition_context(
         if request.prompt and request.prompt.strip():
             # --- Layer 3: ReAct Agent ---
             try:
-                from app.domains.pipeline.agents.pipeline_transition_agent import get_pipeline_transition_agent
                 from lia_agents_core.agent_interface import AgentInput
+
+                from app.domains.pipeline.agents.pipeline_transition_agent import get_pipeline_transition_agent
 
                 conversation_history = []
                 if request.message_history:
@@ -1561,7 +1566,7 @@ async def interpret_transition_context(
                         conversation_id=conv_id,
                     )
 
-                logger.warning(f"[INTERPRET] Layer 3 returned empty/error response")
+                logger.warning("[INTERPRET] Layer 3 returned empty/error response")
                 # Graceful fallback: return default sub_status + friendly message (no HTTP 500)
                 return InterpretContextResponse(
                     suggested_sub_status=_get_default_sub_status(request.to_stage),
@@ -1618,17 +1623,17 @@ class ScreeningQuestionCreate(BaseModel):
     is_required: bool = True
     order: int = Field(default=0, ge=0)
     is_default: bool = False
-    options: List[str] = Field(default_factory=list)
+    options: list[str] = Field(default_factory=list)
 
 
 class ScreeningQuestionUpdate(BaseModel):
-    id: Optional[str] = None
-    question: Optional[str] = None
-    question_type: Optional[str] = None
-    is_required: Optional[bool] = None
-    order: Optional[int] = None
-    is_default: Optional[bool] = None
-    options: Optional[List[str]] = None
+    id: str | None = None
+    question: str | None = None
+    question_type: str | None = None
+    is_required: bool | None = None
+    order: int | None = None
+    is_default: bool | None = None
+    options: list[str] | None = None
 
 
 screening_questions_router = APIRouter(prefix="/screening-questions", tags=["screening-questions"])
@@ -1744,7 +1749,7 @@ async def create_screening_question(
 
 @screening_questions_router.put("")
 async def update_screening_questions(
-    questions: List[dict] = Body(...),
+    questions: list[dict] = Body(...),
     current_user: User = Depends(require_admin_or_recruiter),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1918,26 +1923,26 @@ async def delete_screening_question(
 
 class DispatchResult(BaseModel):
     success: bool
-    channel: Optional[str] = None
-    message_id: Optional[str] = None
-    template_name: Optional[str] = None
-    recipient: Optional[str] = None
+    channel: str | None = None
+    message_id: str | None = None
+    template_name: str | None = None
+    recipient: str | None = None
     mock: bool = False
-    error: Optional[str] = None
+    error: str | None = None
     ai_personalized: bool = False
 
 
 class TransitionExecuteRequest(BaseModel):
     vacancy_candidate_id: str
     to_stage: str
-    from_stage: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    sub_status: Optional[str] = None
-    action: Optional[str] = "just_move"
-    prompt: Optional[str] = None
-    channel: Optional[str] = "email"
-    action_behavior: Optional[str] = None
-    extracted_preferences: Optional[Dict[str, Any]] = None
+    from_stage: str | None = None
+    vacancy_id: str | None = None
+    sub_status: str | None = None
+    action: str | None = "just_move"
+    prompt: str | None = None
+    channel: str | None = "email"
+    action_behavior: str | None = None
+    extracted_preferences: dict[str, Any] | None = None
 
 
 class TransitionExecuteResponse(BaseModel):
@@ -1945,10 +1950,10 @@ class TransitionExecuteResponse(BaseModel):
     message: str
     candidate_id: str
     new_stage: str
-    new_sub_status: Optional[str] = None
-    dispatch_results: Optional[List[DispatchResult]] = None
-    predicted_sub_status: Optional[str] = None
-    prediction_confidence: Optional[float] = None
+    new_sub_status: str | None = None
+    dispatch_results: list[DispatchResult] | None = None
+    predicted_sub_status: str | None = None
+    prediction_confidence: float | None = None
 
 
 @router.post("/transition/execute", response_model=TransitionExecuteResponse)
@@ -1959,8 +1964,9 @@ async def execute_transition(
 ):
     """Execute a candidate stage transition with optional auto-dispatch."""
     try:
-        from app.models.candidate import VacancyCandidate
         from sqlalchemy import update as sa_update
+
+        from app.models.candidate import VacancyCandidate
 
         values = {"stage": request.to_stage}
         if request.sub_status:
@@ -2002,10 +2008,13 @@ async def execute_transition(
         await db.commit()
 
         try:
-            from app.domains.automation.services.stage_automation_engine import (
-                StageAutomationEngine, AutomationEvent, TriggerType
-            )
             import asyncio
+
+            from app.domains.automation.services.stage_automation_engine import (
+                AutomationEvent,
+                StageAutomationEngine,
+                TriggerType,
+            )
 
             automation_payload = {
                     "from_stage": request.from_stage or "",
@@ -2058,8 +2067,10 @@ async def execute_transition(
                 personalized_content = None
                 if request.prompt and settings.ENABLE_LLM_DISPATCH_PERSONALIZATION:
                     try:
+                        from app.domains.automation.services.candidate_context_aggregator import (
+                            CandidateContextAggregator,
+                        )
                         from app.domains.automation.services.stage_transition_automation import MessageGenerator
-                        from app.domains.automation.services.candidate_context_aggregator import CandidateContextAggregator
 
                         aggregator = CandidateContextAggregator(db)
                         candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
@@ -2082,7 +2093,7 @@ async def execute_transition(
                     except Exception as msg_err:
                         logger.warning(f"[PIPELINE] AI message generation failed, using template: {msg_err}")
 
-                extra_vars: Dict[str, Any] = {}
+                extra_vars: dict[str, Any] = {}
                 if request.prompt:
                     extra_vars["prompt"] = request.prompt
                 if request.extracted_preferences and request.action in ("lia_auto", None):
@@ -2142,33 +2153,33 @@ async def execute_transition(
 class ReturnEventRequest(BaseModel):
     vacancy_candidate_id: str = Field(..., description="ID do VacancyCandidate")
     event_type: str = Field(..., description="Tipo do evento de retorno (screening_complete, interview_confirmed, etc.)")
-    metadata: Optional[dict] = Field(default=None, description="Dados adicionais do evento (score, notas, etc.)")
-    triggered_by: Optional[str] = Field(default=None, description="Quem disparou o evento (system, webhook, candidate)")
+    metadata: dict | None = Field(default=None, description="Dados adicionais do evento (score, notas, etc.)")
+    triggered_by: str | None = Field(default=None, description="Quem disparou o evento (system, webhook, candidate)")
 
 
 class ReturnEventResponse(BaseModel):
     success: bool
     event_type: str
-    new_sub_status: Optional[str] = None
-    new_stage: Optional[str] = None
-    activity_id: Optional[str] = None
+    new_sub_status: str | None = None
+    new_stage: str | None = None
+    activity_id: str | None = None
     notification_sent: bool = False
     auto_moved: bool = False
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class BulkReturnEventRequest(BaseModel):
-    events: List[ReturnEventRequest] = Field(..., description="Lista de eventos de retorno para processar em lote")
+    events: list[ReturnEventRequest] = Field(..., description="Lista de eventos de retorno para processar em lote")
 
 
 @router.get("/transition/return-event/stream")
 async def stream_return_events(
-    job_id: Optional[str] = None,
-    company_id: Optional[str] = None,
+    job_id: str | None = None,
+    company_id: str | None = None,
     current_user: User = Depends(get_current_active_user),
 ):
-    from app.models.activity_feed import ActivityFeed
     from app.core.database import async_session_factory
+    from app.models.activity_feed import ActivityFeed
 
     effective_company_id = company_id or get_user_company_id(current_user)
 
@@ -2222,10 +2233,10 @@ async def stream_return_events(
                             }
                             yield f"data: {json.dumps(event)}\n\n"
                     else:
-                        yield f": keepalive\n\n"
+                        yield ": keepalive\n\n"
             except Exception as e:
                 logger.error(f"SSE error: {e}")
-                yield f": error\n\n"
+                yield ": error\n\n"
             await asyncio.sleep(5)
 
     return StreamingResponse(
@@ -2345,9 +2356,9 @@ async def process_bulk_return_events(
 
 @router.get("/transition/return-event/recent")
 async def get_recent_return_events(
-    since: Optional[str] = Query(None, description="ISO timestamp to fetch events since"),
-    job_id: Optional[str] = Query(None),
-    company_id: Optional[str] = Query(None, description="Company ID for scoping"),
+    since: str | None = Query(None, description="ISO timestamp to fetch events since"),
+    job_id: str | None = Query(None),
+    company_id: str | None = Query(None, description="Company ID for scoping"),
     limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -2570,12 +2581,12 @@ async def mark_pipeline_customized(
 
 class InferBehaviorRequest(BaseModel):
     stage_name: str = Field(..., min_length=1, max_length=200, description="Nome da etapa customizada")
-    description: Optional[str] = None
+    description: str | None = None
 
 class InferBehaviorResponse(BaseModel):
     suggested_behavior: str
     confidence: float
-    alternatives: List[dict] = []
+    alternatives: list[dict] = []
     method: str = "keyword"
 
 @router.post("/stages/infer-behavior")

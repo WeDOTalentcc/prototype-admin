@@ -1,9 +1,8 @@
 """Gemini LLM Provider implementation."""
-import os
 import logging
-from typing import Dict, Any, List, Optional
+import os
 
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result
+from tenacity import retry, retry_if_result, stop_after_attempt, wait_exponential
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import GEMINI_CIRCUIT, circuit_breaker_decorator
@@ -110,8 +109,9 @@ class GeminiLLMProvider(LLMProviderABC):
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
-        from google.genai import types
         import json
+
+        from google.genai import types
         client = self._get_client()
         contents = []
         for msg in messages:

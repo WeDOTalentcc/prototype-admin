@@ -4,15 +4,14 @@ Market Benchmark Service - Fetches public salary data via web search.
 Uses web search to query salary data from public sources when internal data is insufficient.
 Parses results using LLM to extract salary ranges and includes source attribution.
 """
-import asyncio
 import hashlib
 import json
 import logging
 import os
 import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
-from dataclasses import dataclass, field
+from typing import Any
 
 import httpx
 
@@ -26,7 +25,7 @@ SERP_API_URL = "https://serpapi.com/search"
 
 @dataclass
 class CacheEntry:
-    data: Dict[str, Any]
+    data: dict[str, Any]
     created_at: datetime
     ttl_seconds: int = 86400
     
@@ -36,10 +35,10 @@ class CacheEntry:
 
 class TTLCache:
     def __init__(self, default_ttl: int = 86400):
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry] = {}
         self.default_ttl = default_ttl
     
-    def get(self, key: str) -> Optional[Dict[str, Any]]:
+    def get(self, key: str) -> dict[str, Any] | None:
         entry = self._cache.get(key)
         if entry is None:
             return None
@@ -48,7 +47,7 @@ class TTLCache:
             return None
         return entry.data
     
-    def set(self, key: str, data: Dict[str, Any], ttl: Optional[int] = None) -> None:
+    def set(self, key: str, data: dict[str, Any], ttl: int | None = None) -> None:
         self._cache[key] = CacheEntry(
             data=data,
             created_at=datetime.utcnow(),
@@ -108,7 +107,7 @@ class MarketBenchmarkService:
         key_string = "|".join(key_parts)
         return hashlib.md5(key_string.encode()).hexdigest()
     
-    async def _do_web_search(self, query: str) -> Dict[str, Any]:
+    async def _do_web_search(self, query: str) -> dict[str, Any]:
         """
         Execute web search using available search API.
         
@@ -121,7 +120,7 @@ class MarketBenchmarkService:
         self.logger.info("No search API configured, using LLM estimation")
         return await self._estimate_with_llm(query)
     
-    async def _search_with_serp_api(self, query: str) -> Dict[str, Any]:
+    async def _search_with_serp_api(self, query: str) -> dict[str, Any]:
         """Execute search using SerpAPI."""
         try:
             params = {
@@ -160,7 +159,7 @@ class MarketBenchmarkService:
             self.logger.error(f"SerpAPI error: {e}")
             return {"success": False, "error": str(e), "results": []}
     
-    async def _estimate_with_llm(self, query: str) -> Dict[str, Any]:
+    async def _estimate_with_llm(self, query: str) -> dict[str, Any]:
         """
         Use LLM to estimate salary data when no search API is available.
         This is a fallback that uses the LLM's knowledge.
@@ -186,15 +185,15 @@ class MarketBenchmarkService:
     
     async def _parse_salary_from_results(
         self,
-        search_results: Dict[str, Any],
+        search_results: dict[str, Any],
         role: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        location: str | None = None
+    ) -> dict[str, Any]:
         """
         Use LLM to parse search results and extract salary information.
         """
-        query = search_results.get("query", "")
+        search_results.get("query", "")
         results = search_results.get("results", [])
         is_llm_fallback = search_results.get("llm_fallback", False)
         
@@ -259,8 +258,8 @@ Regras:
     def _get_default_salary_estimate(
         self,
         role: str,
-        seniority: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None
+    ) -> dict[str, Any]:
         """Return default salary estimate when parsing fails."""
         base_salaries = {
             "júnior": (4000, 7000),
@@ -302,9 +301,9 @@ Regras:
     async def search_salary_benchmark(
         self,
         role: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        location: str | None = None
+    ) -> dict[str, Any]:
         """
         Search for salary benchmark data from public sources.
         
@@ -393,10 +392,10 @@ Regras:
     def _create_error_response(
         self,
         role: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
-        error: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        location: str | None = None,
+        error: str | None = None
+    ) -> dict[str, Any]:
         """Create error response with graceful fallback."""
         default = self._get_default_salary_estimate(role, seniority)
         data = default.get("data", {})
@@ -418,8 +417,8 @@ Regras:
     async def search_market_trends(
         self,
         role: str,
-        industry: Optional[str] = None
-    ) -> Dict[str, Any]:
+        industry: str | None = None
+    ) -> dict[str, Any]:
         """
         Search for market trends and demand for a role.
         
@@ -498,10 +497,10 @@ Regras:
     
     async def _parse_trends_from_results(
         self,
-        search_results: Dict[str, Any],
+        search_results: dict[str, Any],
         role: str,
-        industry: Optional[str] = None
-    ) -> Dict[str, Any]:
+        industry: str | None = None
+    ) -> dict[str, Any]:
         """Use LLM to parse market trends from search results."""
         results = search_results.get("results", [])
         
@@ -559,7 +558,7 @@ Regras:
             self.logger.error(f"LLM trends parsing error: {e}")
             return self._get_default_trends(role)
     
-    def _get_default_trends(self, role: str) -> Dict[str, Any]:
+    def _get_default_trends(self, role: str) -> dict[str, Any]:
         """Return default trends when parsing fails."""
         tech_roles = ["desenvolvedor", "developer", "engenheiro", "engineer",
                      "data", "devops", "cloud", "arquiteto", "product"]
@@ -580,9 +579,9 @@ Regras:
     def _create_default_trends_response(
         self,
         role: str,
-        industry: Optional[str] = None,
-        error: Optional[str] = None
-    ) -> Dict[str, Any]:
+        industry: str | None = None,
+        error: str | None = None
+    ) -> dict[str, Any]:
         """Create default trends response."""
         defaults = self._get_default_trends(role)
         
@@ -597,9 +596,9 @@ Regras:
     
     def combine_with_internal(
         self,
-        internal_data: Optional[Dict[str, Any]],
-        market_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        internal_data: dict[str, Any] | None,
+        market_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Combine internal salary data with market data.
         

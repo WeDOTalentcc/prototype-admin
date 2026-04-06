@@ -11,20 +11,21 @@ for hiring managers, including:
 - Strengths and areas of attention
 - Final recommendation
 """
-from typing import Dict, Any, List, Optional, Literal
+import logging
 from datetime import datetime
 from enum import Enum
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-import logging
+from typing import Any
 
-from app.services.llm import llm_service
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.cv_screening.constants.wsi_constants import WSI_DIMENSION_LABELS
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
-from app.models.voice_screening import VoiceScreeningCall, VoiceScreeningAnalysis
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from app.domains.cv_screening.constants.wsi_constants import WSI_DIMENSION_LABELS
+from app.models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
+from app.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
@@ -58,8 +59,8 @@ class CandidateReportService:
         self,
         db: AsyncSession,
         candidate_id: str,
-        job_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        job_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Generate the 7-section Parecer Automático for a candidate.
         
@@ -158,7 +159,7 @@ class CandidateReportService:
         db: AsyncSession, 
         candidate_id: str,
         candidate: Candidate
-    ) -> Dict[str, bool]:
+    ) -> dict[str, bool]:
         """
         Detect which data sources are available for the candidate.
         
@@ -213,7 +214,7 @@ class CandidateReportService:
             "has_technical_test": has_technical_test,
         }
     
-    def _calculate_completeness_score(self, available_data: Dict[str, bool]) -> float:
+    def _calculate_completeness_score(self, available_data: dict[str, bool]) -> float:
         """
         Calculate completeness score (0-1) based on available data.
         
@@ -245,7 +246,7 @@ class CandidateReportService:
         
         return round(min(score, 1.0), 2)
     
-    def _get_data_sources_list(self, available_data: Dict[str, bool]) -> List[str]:
+    def _get_data_sources_list(self, available_data: dict[str, bool]) -> list[str]:
         """Get list of available data sources."""
         sources = []
         
@@ -266,7 +267,7 @@ class CandidateReportService:
         
         return sources
     
-    def _get_data_profile(self, available_data: Dict[str, bool]) -> str:
+    def _get_data_profile(self, available_data: dict[str, bool]) -> str:
         """
         Determine the data profile based on available sources.
         
@@ -294,10 +295,10 @@ class CandidateReportService:
     
     def _determine_recommendation_level(
         self,
-        sections: Dict[str, Any],
+        sections: dict[str, Any],
         completeness_score: float,
-        screening_data: Optional[Dict]
-    ) -> Dict[str, Any]:
+        screening_data: dict | None
+    ) -> dict[str, Any]:
         """
         Determine the recommendation level based on all available data.
         
@@ -346,13 +347,13 @@ class CandidateReportService:
     async def _generate_parecer_sections(
         self,
         candidate: Candidate,
-        job: Optional[JobVacancy],
-        screening_data: Optional[Dict],
-        wsi_data: Optional[Dict],
-        big_five_data: Optional[Dict],
-        interview_data: Optional[Dict],
-        available_data: Dict[str, bool]
-    ) -> Dict[str, Any]:
+        job: JobVacancy | None,
+        screening_data: dict | None,
+        wsi_data: dict | None,
+        big_five_data: dict | None,
+        interview_data: dict | None,
+        available_data: dict[str, bool]
+    ) -> dict[str, Any]:
         """Generate all 7 sections of the parecer using AI."""
         
         prompt = ChatPromptTemplate.from_messages([
@@ -573,8 +574,8 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
     def _generate_fallback_sections(
         self, 
         candidate: Candidate,
-        available_data: Dict[str, bool]
-    ) -> Dict[str, Any]:
+        available_data: dict[str, bool]
+    ) -> dict[str, Any]:
         """Generate fallback sections when AI fails."""
         return {
             "resumo_executivo": {
@@ -611,21 +612,21 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
             }
         }
     
-    async def _get_wsi_data(self, db: AsyncSession, candidate_id: str) -> Optional[Dict]:
+    async def _get_wsi_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
         """Get WSI data for candidate."""
         candidate = await self._get_candidate(db, candidate_id)
         if candidate and candidate.lia_insights:
             return candidate.lia_insights.get("wsi_score")
         return None
     
-    async def _get_big_five_data(self, db: AsyncSession, candidate_id: str) -> Optional[Dict]:
+    async def _get_big_five_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
         """Get Big Five data for candidate."""
         candidate = await self._get_candidate(db, candidate_id)
         if candidate and candidate.lia_insights:
             return candidate.lia_insights.get("big_five_profile")
         return None
     
-    async def _get_interview_data(self, db: AsyncSession, candidate_id: str) -> Optional[Dict]:
+    async def _get_interview_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
         """Get interview data for candidate."""
         candidate = await self._get_candidate(db, candidate_id)
         if candidate and candidate.lia_insights:
@@ -636,11 +637,11 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
         self,
         db: AsyncSession,
         candidate_id: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         include_screening: bool = True,
         include_tests: bool = True,
         format: str = "detailed"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a comprehensive candidate report (legacy method).
         
@@ -706,21 +707,21 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
         
         return report
     
-    async def _get_candidate(self, db: AsyncSession, candidate_id: str) -> Optional[Candidate]:
+    async def _get_candidate(self, db: AsyncSession, candidate_id: str) -> Candidate | None:
         """Get candidate by ID."""
         result = await db.execute(
             select(Candidate).where(Candidate.id == candidate_id)
         )
         return result.scalar_one_or_none()
     
-    async def _get_job(self, db: AsyncSession, job_id: str) -> Optional[JobVacancy]:
+    async def _get_job(self, db: AsyncSession, job_id: str) -> JobVacancy | None:
         """Get job vacancy by ID."""
         result = await db.execute(
             select(JobVacancy).where(JobVacancy.id == job_id)
         )
         return result.scalar_one_or_none()
     
-    async def _get_screening_data(self, db: AsyncSession, candidate_id: str) -> Optional[Dict]:
+    async def _get_screening_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
         """Get voice screening data for candidate."""
         result = await db.execute(
             select(VoiceScreeningCall, VoiceScreeningAnalysis)
@@ -752,10 +753,10 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
     async def _generate_ai_analysis(
         self,
         candidate: Candidate,
-        job: Optional[JobVacancy],
-        screening_data: Optional[Dict],
+        job: JobVacancy | None,
+        screening_data: dict | None,
         format: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate AI-powered analysis of the candidate."""
         
         prompt = ChatPromptTemplate.from_messages([
@@ -837,9 +838,9 @@ Pontos de Atenção: {', '.join(screening_data.get('concerns', []))}"""
     async def _calculate_lia_score(
         self,
         candidate: Candidate,
-        job: Optional[JobVacancy],
-        screening_data: Optional[Dict]
-    ) -> Dict[str, Any]:
+        job: JobVacancy | None,
+        screening_data: dict | None
+    ) -> dict[str, Any]:
         """Calculate the LIA score (overall AI assessment)."""
         scores = {
             "profile_completeness": self._calculate_profile_completeness(candidate),
@@ -900,9 +901,9 @@ Pontos de Atenção: {', '.join(screening_data.get('concerns', []))}"""
     async def generate_comparison_report(
         self,
         db: AsyncSession,
-        candidate_ids: List[str],
+        candidate_ids: list[str],
         job_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a comparison report for multiple candidates.
         
@@ -952,7 +953,7 @@ Pontos de Atenção: {', '.join(screening_data.get('concerns', []))}"""
         
         return comparison
     
-    async def _generate_comparison_summary(self, candidates_data: List[Dict]) -> str:
+    async def _generate_comparison_summary(self, candidates_data: list[dict]) -> str:
         """Generate a summary comparing the candidates."""
         if not candidates_data:
             return "Nenhum candidato para comparar."

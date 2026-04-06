@@ -6,35 +6,45 @@ Provides endpoints for:
 - Breach Notifications (48h LGPD requirement)
 - Automated Decision Explanations (Article 20 compliance)
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc
-from typing import Optional
-from datetime import datetime
 import logging
+from datetime import datetime
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.core.database import get_db
-from app.shared.tenant_guard import get_verified_company_id
-from app.models.observability import (
-    DPORegistry, BreachNotification, AutomatedDecisionExplanation
+from app.models.observability import AutomatedDecisionExplanation, BreachNotification, DPORegistry
+from app.schemas.lgpd_compliance import (
+    ANPDNotification,
+    AutomatedDecisionCreate,
+    AutomatedDecisionListResponse,
+    AutomatedDecisionResponse,
+    BreachNotificationCreate,
+    BreachNotificationListResponse,
+    BreachNotificationResponse,
+    BreachNotificationUpdate,
+    BreachResolution,
+    DPORegistryCreate,
+    DPORegistryListResponse,
+    DPORegistryResponse,
+    DPORegistryUpdate,
+    HumanReviewComplete,
+    HumanReviewRequest,
+    LGPDComplianceStats,
+    SubjectsNotification,
 )
 from app.services.lgpd_cleanup_service import (
-    schedule_deletion_for_candidate,
-    run_cleanup,
-    get_pending_deletions_count,
     RETENTION_DAYS,
+    get_pending_deletions_count,
+    run_cleanup,
+    schedule_deletion_for_candidate,
 )
-from app.schemas.lgpd_compliance import (
-    DPORegistryResponse, DPORegistryListResponse, DPORegistryCreate, DPORegistryUpdate,
-    BreachNotificationResponse, BreachNotificationListResponse, BreachNotificationCreate,
-    BreachNotificationUpdate, ANPDNotification, SubjectsNotification, BreachResolution,
-    AutomatedDecisionResponse, AutomatedDecisionListResponse, AutomatedDecisionCreate,
-    HumanReviewRequest, HumanReviewComplete, LGPDComplianceStats
-)
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +134,7 @@ async def get_lgpd_stats(
 
 @router.get("/dpo", response_model=DPORegistryListResponse, summary="List DPO registry entries")
 async def list_dpo_entries(
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
@@ -285,9 +295,9 @@ async def update_dpo_registry(
 
 @router.get("/breaches", response_model=BreachNotificationListResponse, summary="List breach notifications")
 async def list_breach_notifications(
-    severity: Optional[str] = Query(None, description="Filter by severity"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    pending_anpd: Optional[bool] = Query(None, description="Filter breaches pending ANPD notification"),
+    severity: str | None = Query(None, description="Filter by severity"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    pending_anpd: bool | None = Query(None, description="Filter breaches pending ANPD notification"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
@@ -590,10 +600,10 @@ async def resolve_breach(
 
 @router.get("/decisions", response_model=AutomatedDecisionListResponse, summary="List automated decisions")
 async def list_automated_decisions(
-    decision_type: Optional[str] = Query(None, description="Filter by decision type"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Filter by vacancy ID"),
-    pending_review: Optional[bool] = Query(None, description="Filter decisions pending human review"),
+    decision_type: str | None = Query(None, description="Filter by decision type"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    vacancy_id: str | None = Query(None, description="Filter by vacancy ID"),
+    pending_review: bool | None = Query(None, description="Filter decisions pending human review"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
@@ -816,7 +826,7 @@ class ScheduleDeletionRequest(BaseModel):
         "rejected",
         description="Retention category: rejected | withdrawn | interview_notes | screening_logs",
     )
-    retention_days: Optional[int] = Field(
+    retention_days: int | None = Field(
         None,
         description="Override default retention window in days. Defaults to policy per reason.",
     )

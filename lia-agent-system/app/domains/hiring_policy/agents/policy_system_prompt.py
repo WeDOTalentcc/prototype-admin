@@ -9,9 +9,9 @@ Unlike the old PolicySetupAgent (linear 19-question questionnaire), this prompt
 enables a true ReAct agent that reasons about compliance, explains trade-offs,
 and proactively validates policies against ethical and legal standards.
 """
-from typing import Any, Dict
-from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, NEGATION_DETECTION_BLOCK
+from typing import Any
 
+from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, NEGATION_DETECTION_BLOCK
 
 POLICY_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a configurar as politicas de contratacao da empresa.
@@ -353,7 +353,7 @@ Responda APENAS com um objeto JSON valido no formato:
 
 def get_policy_system_prompt(
     stage: str = "onboarding",
-    context: Dict[str, Any] = None,
+    context: dict[str, Any] = None,
 ) -> str:
     ctx = context or {}
     memory_summary = ctx.get("memory_summary", "Nenhuma memoria carregada ainda.")

@@ -10,10 +10,9 @@ Contains domain-specific examples for:
 
 Moved from app/prompts/examples.py (I3b cleanup).
 """
-from typing import Dict, List, Any
+from typing import Any
 
-
-JOB_EXTRACTION_EXAMPLES: List[Dict[str, Any]] = [
+JOB_EXTRACTION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "Preciso de um desenvolvedor Python sênior para São Paulo, remoto, salário entre 15 e 20 mil",
         "output": {
@@ -79,7 +78,7 @@ JOB_EXTRACTION_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-INTENT_CLASSIFICATION_EXAMPLES: List[Dict[str, Any]] = [
+INTENT_CLASSIFICATION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "Quero criar uma vaga de desenvolvedor",
         "output": {
@@ -137,7 +136,7 @@ INTENT_CLASSIFICATION_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-SALARY_ANALYSIS_EXAMPLES: List[Dict[str, Any]] = [
+SALARY_ANALYSIS_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": {
             "job_title": "Desenvolvedor Python",
@@ -189,7 +188,7 @@ SALARY_ANALYSIS_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-COMPETENCY_EXTRACTION_EXAMPLES: List[Dict[str, Any]] = [
+COMPETENCY_EXTRACTION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "Preciso de alguém que manje de Python, Django e PostgreSQL",
         "output": {
@@ -230,7 +229,7 @@ COMPETENCY_EXTRACTION_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-ORCHESTRATION_DECISION_EXAMPLES: List[Dict[str, Any]] = [
+ORCHESTRATION_DECISION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": {
             "user_message": "O salário está muito baixo, aumenta para 20k",
@@ -289,7 +288,7 @@ ORCHESTRATION_DECISION_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-RESPONSIBILITY_GENERATION_EXAMPLES: List[Dict[str, Any]] = [
+RESPONSIBILITY_GENERATION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": {
             "title": "Desenvolvedor Backend Python",
@@ -327,40 +326,40 @@ class FewShotExamples:
     """
 
     @staticmethod
-    def get_job_extraction_examples(max_examples: int = 3) -> List[Dict[str, Any]]:
+    def get_job_extraction_examples(max_examples: int = 3) -> list[dict[str, Any]]:
         """Get job extraction examples, limited to max_examples."""
         return JOB_EXTRACTION_EXAMPLES[:max_examples]
 
     @staticmethod
-    def get_intent_examples(max_examples: int = 4) -> List[Dict[str, Any]]:
+    def get_intent_examples(max_examples: int = 4) -> list[dict[str, Any]]:
         """Get intent classification examples."""
         return INTENT_CLASSIFICATION_EXAMPLES[:max_examples]
 
     @staticmethod
-    def get_salary_examples(max_examples: int = 2) -> List[Dict[str, Any]]:
+    def get_salary_examples(max_examples: int = 2) -> list[dict[str, Any]]:
         """Get salary analysis examples."""
         return SALARY_ANALYSIS_EXAMPLES[:max_examples]
 
     @staticmethod
-    def get_competency_examples(max_examples: int = 3) -> List[Dict[str, Any]]:
+    def get_competency_examples(max_examples: int = 3) -> list[dict[str, Any]]:
         """Get competency extraction examples."""
         return COMPETENCY_EXTRACTION_EXAMPLES[:max_examples]
 
     @staticmethod
-    def get_orchestration_examples(max_examples: int = 3) -> List[Dict[str, Any]]:
+    def get_orchestration_examples(max_examples: int = 3) -> list[dict[str, Any]]:
         """Get orchestration decision examples."""
         return ORCHESTRATION_DECISION_EXAMPLES[:max_examples]
 
     @staticmethod
-    def get_responsibility_examples(max_examples: int = 2) -> List[Dict[str, Any]]:
+    def get_responsibility_examples(max_examples: int = 2) -> list[dict[str, Any]]:
         """Get responsibility generation examples."""
         return RESPONSIBILITY_GENERATION_EXAMPLES[:max_examples]
 
     @staticmethod
     def filter_by_seniority(
-        examples: List[Dict[str, Any]],
+        examples: list[dict[str, Any]],
         seniority: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Filter examples that match a specific seniority level."""
         filtered = []
         for ex in examples:
@@ -376,7 +375,7 @@ class FewShotExamples:
         return filtered if filtered else examples[:2]
 
     @staticmethod
-    def format_for_prompt(examples: List[Dict[str, Any]]) -> str:
+    def format_for_prompt(examples: list[dict[str, Any]]) -> str:
         """Format examples as a string for inclusion in prompts."""
         formatted_parts = []
         for i, ex in enumerate(examples, 1):
@@ -393,7 +392,7 @@ class FewShotExamples:
 # LIA-P05 — Categorias adicionais de few-shot examples
 # ---------------------------------------------------------------------------
 
-CANDIDATE_EVALUATION_EXAMPLES: List[Dict[str, Any]] = [
+CANDIDATE_EVALUATION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "avalia o Joao para a vaga de Dev Senior",
         "domain": "cv_screening",
@@ -432,7 +431,7 @@ CANDIDATE_EVALUATION_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-SCHEDULING_NEGOTIATION_EXAMPLES: List[Dict[str, Any]] = [
+SCHEDULING_NEGOTIATION_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "deixa pra amanha",
         "domain": "interview_scheduling",
@@ -471,7 +470,7 @@ SCHEDULING_NEGOTIATION_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-COMMUNICATION_TONE_EXAMPLES: List[Dict[str, Any]] = [
+COMMUNICATION_TONE_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "manda um zap pro candidato",
         "domain": "communication",
@@ -503,7 +502,7 @@ COMMUNICATION_TONE_EXAMPLES: List[Dict[str, Any]] = [
 ]
 
 
-ANALYTICS_QUERY_EXAMPLES: List[Dict[str, Any]] = [
+ANALYTICS_QUERY_EXAMPLES: list[dict[str, Any]] = [
     {
         "input": "como ta o funil esse mes?",
         "domain": "analytics",

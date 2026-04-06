@@ -1,15 +1,15 @@
 """
 Candidate Repository - Database access for Candidate model.
 """
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 import logging
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, func, or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import selectinload
 
+from app.models.candidate import Candidate
 from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
-from app.models.candidate import Candidate, CandidateExperience, CandidateEducation
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class CandidateRepository(SQLAlchemyRepository[Candidate]):
     
     model_class = Candidate
     
-    async def find_by_email(self, db, email: str) -> Optional[Candidate]:
+    async def find_by_email(self, db, email: str) -> Candidate | None:
         """Find a candidate by email address."""
         query = select(self.model_class).where(self.model_class.email == email)
         if hasattr(db, 'execute'):
@@ -27,8 +27,8 @@ class CandidateRepository(SQLAlchemyRepository[Candidate]):
             return result.scalar_one_or_none()
         return db.query(self.model_class).filter(self.model_class.email == email).first()
     
-    async def search(self, db, query: str, filters: Optional[Dict[str, Any]] = None,
-                     limit: int = 50, offset: int = 0) -> List[Candidate]:
+    async def search(self, db, query: str, filters: dict[str, Any] | None = None,
+                     limit: int = 50, offset: int = 0) -> list[Candidate]:
         """Search candidates by name, email, current_title, or skills."""
         search_pattern = f"%{query}%"
         stmt = select(self.model_class).where(
@@ -56,7 +56,7 @@ class CandidateRepository(SQLAlchemyRepository[Candidate]):
         ).limit(limit).offset(offset).all()
     
     async def get_by_company(self, db, company_id: str,
-                             limit: int = 50, offset: int = 0) -> List[Candidate]:
+                             limit: int = 50, offset: int = 0) -> list[Candidate]:
         """Get candidates filtered by source or additional_data company reference."""
         query = select(self.model_class).where(
             self.model_class.source == company_id
@@ -68,7 +68,7 @@ class CandidateRepository(SQLAlchemyRepository[Candidate]):
             self.model_class.source == company_id
         ).limit(limit).offset(offset).all()
     
-    async def get_with_experiences(self, db, id: UUID) -> Optional[Candidate]:
+    async def get_with_experiences(self, db, id: UUID) -> Candidate | None:
         """Get candidate with eagerly loaded experiences and education."""
         query = (
             select(self.model_class)

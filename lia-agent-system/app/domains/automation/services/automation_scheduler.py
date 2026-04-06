@@ -2,18 +2,17 @@
 Automation Scheduler Service
 Runs periodic jobs to check for conditions and trigger automation handlers.
 """
-import asyncio
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from sqlalchemy import and_, select
 
 from app.core.database import async_session_factory
-from app.models.candidate import VacancyCandidate, Candidate
+from app.models.candidate import Candidate, VacancyCandidate
 from app.models.interview import Interview
 from app.models.job_vacancy import JobVacancy
 
@@ -60,6 +59,7 @@ class AutomationScheduler:
         """Constrói scheduler com Redis jobstore (se disponível) ou in-memory."""
         try:
             import os
+
             from apscheduler.jobstores.redis import RedisJobStore
             redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
             # Parseia host/port/db do URL
@@ -275,7 +275,7 @@ class AutomationScheduler:
         """Check if scheduler is currently running."""
         return self._is_running
     
-    def get_jobs_status(self) -> List[Dict[str, Any]]:
+    def get_jobs_status(self) -> list[dict[str, Any]]:
         """Get status of all scheduled jobs."""
         jobs = []
         for job in self.scheduler.get_jobs():
@@ -326,8 +326,8 @@ class AutomationScheduler:
                 
                 logger.info(f"📋 [Scheduler] Found {len(inactive_candidates)} inactive candidates")
                 
-                activity_service = self._get_activity_service()
-                notification_service = self._get_notification_service()
+                self._get_activity_service()
+                self._get_notification_service()
                 
                 dispatcher = get_event_dispatcher()
                 
@@ -584,7 +584,7 @@ Equipe de Recrutamento
                 body=body
             )
             
-            logger.info(f"✉️ Reminder email sent")
+            logger.info("✉️ Reminder email sent")
             
         except Exception as e:
             logger.error(f"Failed to send reminder email: {e}")
@@ -745,12 +745,12 @@ Equipe de Recrutamento
                                 end_date_str_clean = scheduled_end_date.replace('Z', '+00:00')
                                 end_date = datetime.fromisoformat(end_date_str_clean)
                                 if end_date.tzinfo is None:
-                                    end_date = end_date.replace(tzinfo=timezone.utc)
+                                    end_date = end_date.replace(tzinfo=UTC)
                             else:
                                 end_date = scheduled_end_date
                                 if hasattr(end_date, 'tzinfo') and end_date.tzinfo is None:
-                                    end_date = end_date.replace(tzinfo=timezone.utc)
-                            now_tz = datetime.now(timezone.utc)
+                                    end_date = end_date.replace(tzinfo=UTC)
+                            now_tz = datetime.now(UTC)
                         except (ValueError, TypeError):
                             logger.warning(f"Invalid scheduled_end_date for job {job.id}: {scheduled_end_date}")
                             continue
@@ -823,7 +823,7 @@ Equipe de Recrutamento
         except Exception as e:
             logger.error(f"❌ [Scheduler] Error in learning_automation: {e}")
     
-    async def run_job_now(self, job_id: str) -> Dict[str, Any]:
+    async def run_job_now(self, job_id: str) -> dict[str, Any]:
         """
         Manually trigger a specific job to run immediately.
         Useful for testing or forcing an immediate check.
@@ -858,9 +858,11 @@ Equipe de Recrutamento
         """
         try:
             from datetime import datetime as _dt
+
             from sqlalchemy import update
-            from app.models.billing import Subscription, SubscriptionStatus
+
             from app.core.database import async_session_factory
+            from app.models.billing import Subscription, SubscriptionStatus
 
             async with async_session_factory() as db:
                 now = _dt.utcnow()

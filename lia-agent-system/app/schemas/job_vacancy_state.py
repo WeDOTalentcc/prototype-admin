@@ -2,9 +2,10 @@
 Job Vacancy State schema for conversational job creation.
 Tracks all fields, collection status, and workflow metadata.
 """
-from typing import Optional, List, Dict, Any, Literal
-from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 
 class TechnicalRequirement(BaseModel):
@@ -31,7 +32,7 @@ class BehavioralCompetency(BaseModel):
 class InterviewStage(BaseModel):
     """Interview stage details."""
     stage_name: str
-    interviewers: List[str]
+    interviewers: list[str]
     format: str  # "Comportamental", "Técnica", "Cultural"
     duration: int  # minutes
     scheduling_window: str  # "Terças e Quintas à tarde"
@@ -43,19 +44,19 @@ class ScreeningQuestion(BaseModel):
     id: str
     question: str
     type: Literal["text", "multiple_choice", "rating"]
-    expected_answer: Optional[str] = None
-    weight: Optional[int] = None
+    expected_answer: str | None = None
+    weight: int | None = None
 
 
 class ScreeningQuestionsConfig(BaseModel):
     """Configuration for quick screening questions per job vacancy."""
     use_standard_screening: bool = True  # Use the 6 default questions
-    custom_questions: List[str] = Field(default_factory=list)  # Custom questions to add
-    questions_to_skip: List[str] = Field(default_factory=list)  # Default questions to skip
+    custom_questions: list[str] = Field(default_factory=list)  # Custom questions to add
+    questions_to_skip: list[str] = Field(default_factory=list)  # Default questions to skip
     use_wsi_after_screening: bool = True  # Continue with WSI after screening
     
     # The 6 standard screening questions (can be customized)
-    standard_questions: List[Dict[str, Any]] = Field(default_factory=lambda: [
+    standard_questions: list[dict[str, Any]] = Field(default_factory=lambda: [
         {"id": "interesse", "question": "O que te interessou nesta vaga?", "required": True},
         {"id": "disponibilidade", "question": "Qual sua disponibilidade para início?", "required": True},
         {"id": "pretensao_salarial", "question": "Qual sua pretensão salarial?", "required": True},
@@ -70,9 +71,9 @@ class SalaryRange(BaseModel):
     min: float
     max: float
     currency: str = "BRL"
-    bonus_min: Optional[float] = None
-    bonus_max: Optional[float] = None
-    bonus_criteria: Optional[str] = None
+    bonus_min: float | None = None
+    bonus_max: float | None = None
+    bonus_criteria: str | None = None
 
 
 class TeamComposition(BaseModel):
@@ -86,7 +87,7 @@ class OrganizationalStructure(BaseModel):
     """Organizational structure."""
     direct_manager: str
     team_size: int
-    team_composition: List[TeamComposition]
+    team_composition: list[TeamComposition]
 
 
 class WeeklyBreakdown(BaseModel):
@@ -99,9 +100,9 @@ class WeeklyBreakdown(BaseModel):
 
 class Timeline(BaseModel):
     """Job vacancy timeline."""
-    shortlist_deadline: Optional[str] = None
+    shortlist_deadline: str | None = None
     total_weeks: int
-    weekly_breakdown: List[WeeklyBreakdown]
+    weekly_breakdown: list[WeeklyBreakdown]
 
 
 class GovernanceRules(BaseModel):
@@ -113,14 +114,14 @@ class GovernanceRules(BaseModel):
 
 class SourcingStrategy(BaseModel):
     """Sourcing strategy for candidate search."""
-    target_sectors: List[str] = Field(default_factory=list)
-    target_segments: List[str] = Field(default_factory=list)
-    target_companies: List[str] = Field(default_factory=list)
-    excluded_companies: List[str] = Field(default_factory=list)
-    geography_preference: Optional[str] = None
+    target_sectors: list[str] = Field(default_factory=list)
+    target_segments: list[str] = Field(default_factory=list)
+    target_companies: list[str] = Field(default_factory=list)
+    excluded_companies: list[str] = Field(default_factory=list)
+    geography_preference: str | None = None
     remote_acceptable: bool = True
-    experience_range_min: Optional[int] = None
-    experience_range_max: Optional[int] = None
+    experience_range_min: int | None = None
+    experience_range_max: int | None = None
 
 
 class TalentPoolEstimate(BaseModel):
@@ -128,7 +129,7 @@ class TalentPoolEstimate(BaseModel):
     total_estimated: int
     local_database: int
     pearch_available: int
-    breakdown_by_source: Dict[str, int] = Field(default_factory=dict)
+    breakdown_by_source: dict[str, int] = Field(default_factory=dict)
     confidence_score: float = 0.8
 
 
@@ -142,7 +143,7 @@ class MarketBenchmark(BaseModel):
     sample_size: int
     data_source: str = "market_analysis"
     is_competitive: bool = True
-    recommendation: Optional[str] = None
+    recommendation: str | None = None
 
 
 class WSICompetencySuggestion(BaseModel):
@@ -150,18 +151,18 @@ class WSICompetencySuggestion(BaseModel):
     name: str
     type: Literal["technical", "behavioral", "cultural"]
     weight: float
-    framework: Optional[str] = None
-    big_five_mapping: Optional[str] = None
+    framework: str | None = None
+    big_five_mapping: str | None = None
     is_critical: bool = False
 
 
 class BiasAnalysis(BaseModel):
     """Inclusive bias analysis for job description."""
     overall_score: float
-    issues_found: List[Dict[str, str]] = Field(default_factory=list)
-    suggestions: List[str] = Field(default_factory=list)
-    gendered_terms: List[str] = Field(default_factory=list)
-    inclusive_alternatives: Dict[str, str] = Field(default_factory=dict)
+    issues_found: list[dict[str, str]] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
+    gendered_terms: list[str] = Field(default_factory=list)
+    inclusive_alternatives: dict[str, str] = Field(default_factory=dict)
     is_inclusive: bool = True
 
 
@@ -169,8 +170,8 @@ class FieldStatus(BaseModel):
     """Track collection status per field."""
     field_name: str
     status: Literal["collected", "pending", "invalid"] = "pending"
-    collected_at: Optional[datetime] = None
-    collected_from_message: Optional[str] = None  # Message ID that provided this field
+    collected_at: datetime | None = None
+    collected_from_message: str | None = None  # Message ID that provided this field
 
 
 class JobVacancyState(BaseModel):
@@ -182,26 +183,26 @@ class JobVacancyState(BaseModel):
     # =============================================
     # BASIC INFORMATION
     # =============================================
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[Literal["presencial", "híbrido", "remoto"]] = None
-    seniority: Optional[Literal["Júnior", "Pleno", "Sênior", "Especialista"]] = None
-    employment_type: Optional[Literal["CLT", "PJ", "Temporário"]] = None
-    is_confidential: Optional[bool] = None  # Legacy - use visibility instead
+    job_title: str | None = None
+    department: str | None = None
+    location: str | None = None
+    work_model: Literal["presencial", "híbrido", "remoto"] | None = None
+    seniority: Literal["Júnior", "Pleno", "Sênior", "Especialista"] | None = None
+    employment_type: Literal["CLT", "PJ", "Temporário"] | None = None
+    is_confidential: bool | None = None  # Legacy - use visibility instead
     
     # NEW: Visibility Control
     # public: todos recrutadores da empresa veem
     # internal: só equipe interna, não publica em job boards  
     # confidential: só owner + access_list + admin veem
     # hidden: só admin vê
-    visibility: Optional[Literal["public", "internal", "confidential", "hidden"]] = "public"
+    visibility: Literal["public", "internal", "confidential", "hidden"] | None = "public"
     
     # Lista de acesso para vagas confidenciais (emails que podem ver)
-    access_list: List[str] = Field(default_factory=list)
+    access_list: list[str] = Field(default_factory=list)
     
     # Nome mascarado para publicação anônima
-    masked_company_name: Optional[str] = None
+    masked_company_name: str | None = None
     
     # Exclusão de sincronização com ATS externos
     exclude_from_sync: bool = False
@@ -209,72 +210,72 @@ class JobVacancyState(BaseModel):
     # =============================================
     # REMUNERATION
     # =============================================
-    salary_range: Optional[SalaryRange] = None
-    benefits: List[str] = Field(default_factory=list)
+    salary_range: SalaryRange | None = None
+    benefits: list[str] = Field(default_factory=list)
     
     # =============================================
     # ORGANIZATIONAL STRUCTURE
     # =============================================
-    organizational_structure: Optional[OrganizationalStructure] = None
+    organizational_structure: OrganizationalStructure | None = None
     
     # =============================================
     # TECHNICAL REQUIREMENTS
     # =============================================
-    technical_requirements: List[TechnicalRequirement] = Field(default_factory=list)
-    required_skills: List[str] = Field(default_factory=list)  # Legacy simple list
-    preferred_skills: List[str] = Field(default_factory=list)
+    technical_requirements: list[TechnicalRequirement] = Field(default_factory=list)
+    required_skills: list[str] = Field(default_factory=list)  # Legacy simple list
+    preferred_skills: list[str] = Field(default_factory=list)
     
     # =============================================
     # LANGUAGES & COMPETENCIES
     # =============================================
-    languages: List[Language] = Field(default_factory=list)
-    behavioral_competencies: List[BehavioralCompetency] = Field(default_factory=list)
+    languages: list[Language] = Field(default_factory=list)
+    behavioral_competencies: list[BehavioralCompetency] = Field(default_factory=list)
     
     # =============================================
     # INTERVIEW PROCESS
     # =============================================
-    interview_stages: List[InterviewStage] = Field(default_factory=list)
-    screening_questions: List[ScreeningQuestion] = Field(default_factory=list)
-    screening_config: Optional[ScreeningQuestionsConfig] = None  # Job-specific screening configuration
+    interview_stages: list[InterviewStage] = Field(default_factory=list)
+    screening_questions: list[ScreeningQuestion] = Field(default_factory=list)
+    screening_config: ScreeningQuestionsConfig | None = None  # Job-specific screening configuration
     
     # =============================================
     # TIMELINE & GOVERNANCE
     # =============================================
-    timeline: Optional[Timeline] = None
-    governance_rules: Optional[GovernanceRules] = None
+    timeline: Timeline | None = None
+    governance_rules: GovernanceRules | None = None
     
     # =============================================
     # TARGETING (for sourcing)
     # =============================================
-    target_sector: Optional[str] = None  # "Fintechs", "Bancos Digitais"
-    target_segment: Optional[str] = None  # "Meios de Pagamento"
-    target_audience: Optional[str] = None
-    sourcing_strategy: Optional[SourcingStrategy] = None
-    talent_pool_estimate: Optional[TalentPoolEstimate] = None
+    target_sector: str | None = None  # "Fintechs", "Bancos Digitais"
+    target_segment: str | None = None  # "Meios de Pagamento"
+    target_audience: str | None = None
+    sourcing_strategy: SourcingStrategy | None = None
+    talent_pool_estimate: TalentPoolEstimate | None = None
     
     # =============================================
     # MARKET ANALYSIS
     # =============================================
-    market_benchmark: Optional[MarketBenchmark] = None
+    market_benchmark: MarketBenchmark | None = None
     
     # =============================================
     # WSI COMPETENCIES (Auto-suggested)
     # =============================================
-    wsi_competencies: List[WSICompetencySuggestion] = Field(default_factory=list)
+    wsi_competencies: list[WSICompetencySuggestion] = Field(default_factory=list)
     wsi_competencies_confirmed: bool = False
     
     # =============================================
     # JOB DESCRIPTION
     # =============================================
-    job_description_generated: Optional[str] = None
-    bias_analysis: Optional[BiasAnalysis] = None
+    job_description_generated: str | None = None
+    bias_analysis: BiasAnalysis | None = None
     job_description_approved: bool = False
     
     # =============================================
     # WHATSAPP TEMPLATE
     # =============================================
-    whatsapp_template_type: Optional[Literal["cold", "reengagement", "confidential"]] = None
-    selected_communication_templates: List[str] = Field(default_factory=list)
+    whatsapp_template_type: Literal["cold", "reengagement", "confidential"] | None = None
+    selected_communication_templates: list[str] = Field(default_factory=list)
     
     # =============================================
     # ONBOARDING & WORKFLOW TRACKING
@@ -286,37 +287,37 @@ class JobVacancyState(BaseModel):
     # =============================================
     # ADDITIONAL DATA
     # =============================================
-    description: Optional[str] = None
-    years_experience: Optional[int] = None
-    manager_name: Optional[str] = None
-    manager_email: Optional[str] = None
-    recruiter_name: Optional[str] = None
-    recruiter_email: Optional[str] = None
+    description: str | None = None
+    years_experience: int | None = None
+    manager_name: str | None = None
+    manager_email: str | None = None
+    recruiter_name: str | None = None
+    recruiter_email: str | None = None
     
     # =============================================
     # WORKFLOW METADATA
     # =============================================
-    fields_collected: List[str] = Field(default_factory=list)  # List of field names collected
-    fields_pending: List[str] = Field(default_factory=list)  # List of field names still needed
-    field_statuses: List[FieldStatus] = Field(default_factory=list)  # Detailed status tracking
+    fields_collected: list[str] = Field(default_factory=list)  # List of field names collected
+    fields_pending: list[str] = Field(default_factory=list)  # List of field names still needed
+    field_statuses: list[FieldStatus] = Field(default_factory=list)  # Detailed status tracking
     
-    current_panel: Optional[str] = None  # "remuneracao", "requisitos_tecnicos", etc
-    current_frame: Optional[str] = None  # "matriz_tecnica", "cronograma", etc
+    current_panel: str | None = None  # "remuneracao", "requisitos_tecnicos", etc
+    current_frame: str | None = None  # "matriz_tecnica", "cronograma", etc
     
-    change_requests: List[Dict[str, Any]] = Field(default_factory=list)  # History of changes
+    change_requests: list[dict[str, Any]] = Field(default_factory=list)  # History of changes
     
     needs_confirmation: bool = False
     ready_to_publish: bool = False
-    published_at: Optional[datetime] = None
+    published_at: datetime | None = None
     
     # Next question to ask (for routing)
-    next_question: Optional[str] = None
+    next_question: str | None = None
     
     # Audit
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
-    def mark_field_collected(self, field_name: str, message_id: Optional[str] = None):
+    def mark_field_collected(self, field_name: str, message_id: str | None = None):
         """Mark a field as collected."""
         if field_name not in self.fields_collected:
             self.fields_collected.append(field_name)
@@ -340,7 +341,7 @@ class JobVacancyState(BaseModel):
         
         self.updated_at = datetime.utcnow()
     
-    def get_next_pending_field(self) -> Optional[str]:
+    def get_next_pending_field(self) -> str | None:
         """Get next field to collect based on 13-step priority."""
         priority_fields = [
             "onboarding",
@@ -407,7 +408,7 @@ class JobVacancyState(BaseModel):
         ]
         return all(f in self.fields_collected for f in required_fields)
     
-    def get_workflow_summary(self) -> Dict[str, Any]:
+    def get_workflow_summary(self) -> dict[str, Any]:
         """Get summary of workflow progress for dashboard."""
         completed_steps = len([f for f in self.fields_collected if self.get_step_for_field(f) > 0])
         return {

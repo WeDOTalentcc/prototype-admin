@@ -4,18 +4,18 @@ LIA Assistant — Learning Hub endpoints.
 Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/learning/* URLs.
 """
-from typing import Dict, Any, List, Optional, Any
-from enum import Enum
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from uuid import UUID
 import logging
+from enum import Enum
+from typing import Any
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.services.learning_hub_service import learning_hub_service
 
 logger = logging.getLogger(__name__)
@@ -31,14 +31,14 @@ class SkillConfirmationRequest(BaseModel):
     company_id: str
     skill_name: str
     skill_type: str = "technical"
-    role: Optional[str] = None
-    seniority: Optional[str] = None
+    role: str | None = None
+    seniority: str | None = None
     accepted: bool
 
 
 class SkillConfirmationResponse(BaseModel):
     success: bool
-    item_id: Optional[str] = None
+    item_id: str | None = None
     is_new: bool
     times_confirmed: int
     is_promoted: bool
@@ -48,15 +48,15 @@ class SkillConfirmationResponse(BaseModel):
 class ResponsibilityConfirmationRequest(BaseModel):
     company_id: str
     description: str
-    category: Optional[str] = None
-    role: Optional[str] = None
-    seniority: Optional[str] = None
+    category: str | None = None
+    role: str | None = None
+    seniority: str | None = None
     accepted: bool
 
 
 class ResponsibilityConfirmationResponse(BaseModel):
     success: bool
-    item_id: Optional[str] = None
+    item_id: str | None = None
     is_new: bool
     times_confirmed: int
     is_promoted: bool
@@ -65,15 +65,15 @@ class ResponsibilityConfirmationResponse(BaseModel):
 
 class LearningContextRequest(BaseModel):
     company_id: str
-    role: Optional[str] = None
-    seniority: Optional[str] = None
+    role: str | None = None
+    seniority: str | None = None
 
 
 class LearningContextResponse(BaseModel):
-    company_skills: List[Dict[str, Any]]
-    company_responsibilities: List[Dict[str, Any]]
-    patterns: Dict[str, Any]
-    success_rate: Dict[str, float]
+    company_skills: list[dict[str, Any]]
+    company_responsibilities: list[dict[str, Any]]
+    patterns: dict[str, Any]
+    success_rate: dict[str, float]
 
 
 class JobOutcomeType(str, Enum):
@@ -87,76 +87,76 @@ class JobOutcomeRequest(BaseModel):
     company_id: str
     job_id: UUID
     outcome: JobOutcomeType
-    time_to_fill_days: Optional[int] = None
-    salary_initial_min: Optional[float] = None
-    salary_initial_max: Optional[float] = None
-    salary_final: Optional[float] = None
-    candidate_count_total: Optional[int] = None
-    candidate_count_screened: Optional[int] = None
-    candidate_count_interviewed: Optional[int] = None
-    candidate_count_offered: Optional[int] = None
-    satisfaction_score: Optional[float] = None
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    skills_used: Optional[List[str]] = None
-    notes: Optional[str] = None
-    created_by: Optional[str] = None
+    time_to_fill_days: int | None = None
+    salary_initial_min: float | None = None
+    salary_initial_max: float | None = None
+    salary_final: float | None = None
+    candidate_count_total: int | None = None
+    candidate_count_screened: int | None = None
+    candidate_count_interviewed: int | None = None
+    candidate_count_offered: int | None = None
+    satisfaction_score: float | None = None
+    role: str | None = None
+    seniority: str | None = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    skills_used: list[str] | None = None
+    notes: str | None = None
+    created_by: str | None = None
 
 
 class JobOutcomeResponse(BaseModel):
     success: bool
-    outcome_id: Optional[str] = None
-    outcome: Optional[str] = None
-    patterns_updated: Optional[Dict[str, Any]] = None
+    outcome_id: str | None = None
+    outcome: str | None = None
+    patterns_updated: dict[str, Any] | None = None
     message: str
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class OutcomeInsightsRequest(BaseModel):
     company_id: str
-    role: Optional[str] = None
-    seniority: Optional[str] = None
+    role: str | None = None
+    seniority: str | None = None
 
 
 class OutcomeInsightsResponse(BaseModel):
     has_data: bool
-    total_jobs: Optional[int] = None
-    filled_jobs: Optional[int] = None
-    fill_rate: Optional[float] = None
-    avg_time_to_fill_days: Optional[float] = None
-    salary_range: Optional[Dict[str, float]] = None
-    top_skills: Optional[List[Dict[str, Any]]] = None
-    filters_applied: Optional[Dict[str, Any]] = None
-    message: Optional[str] = None
-    error: Optional[str] = None
+    total_jobs: int | None = None
+    filled_jobs: int | None = None
+    fill_rate: float | None = None
+    avg_time_to_fill_days: float | None = None
+    salary_range: dict[str, float] | None = None
+    top_skills: list[dict[str, Any]] | None = None
+    filters_applied: dict[str, Any] | None = None
+    message: str | None = None
+    error: str | None = None
 
 
 class StageFeedbackRequest(BaseModel):
     company_id: str
     stage_number: int
     field_name: str
-    suggested_value: Optional[Any] = None
-    accepted_value: Optional[Any] = None
+    suggested_value: Any | None = None
+    accepted_value: Any | None = None
     was_accepted: bool = True
     was_modified: bool = False
-    job_id: Optional[str] = None
-    stage_name: Optional[str] = None
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    confidence_before: Optional[float] = None
-    created_by: Optional[str] = None
+    job_id: str | None = None
+    stage_name: str | None = None
+    role: str | None = None
+    seniority: str | None = None
+    confidence_before: float | None = None
+    created_by: str | None = None
 
 
 class StageFeedbackResponse(BaseModel):
     success: bool
-    feedback_id: Optional[str] = None
-    stage: Optional[int] = None
-    was_accepted: Optional[bool] = None
-    was_modified: Optional[bool] = None
-    error: Optional[str] = None
+    feedback_id: str | None = None
+    stage: int | None = None
+    was_accepted: bool | None = None
+    was_modified: bool | None = None
+    error: str | None = None
 
 
 class LearningDashboardRequest(BaseModel):
@@ -164,22 +164,22 @@ class LearningDashboardRequest(BaseModel):
 
 
 class LearningDashboardResponse(BaseModel):
-    summary: Optional[Dict[str, Any]] = None
-    stage_analytics: Optional[Dict[str, Any]] = None
-    outcome_insights: Optional[Dict[str, Any]] = None
-    success_rates: Optional[Dict[str, Any]] = None
-    learning_health: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    summary: dict[str, Any] | None = None
+    stage_analytics: dict[str, Any] | None = None
+    outcome_insights: dict[str, Any] | None = None
+    success_rates: dict[str, Any] | None = None
+    learning_health: dict[str, Any] | None = None
+    error: str | None = None
 
 
 class SkillsDeduplicatedRequest(BaseModel):
     company_id: str
-    role: Optional[str] = None
-    exclude_already_selected: Optional[List[str]] = None
+    role: str | None = None
+    exclude_already_selected: list[str] | None = None
 
 
 class SkillsDeduplicatedResponse(BaseModel):
-    skills: List[Dict[str, Any]]
+    skills: list[dict[str, Any]]
     total: int
 
 

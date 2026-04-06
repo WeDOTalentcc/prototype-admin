@@ -8,17 +8,17 @@ Tools connect to PostgreSQL for real data operations.
 import logging
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
 
-async def _wrap_view_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] view_candidate_profile called for candidate={candidate_id}")
     try:
@@ -67,7 +67,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao carregar perfil: {str(e)}"}
 
 
-async def _wrap_move_candidate(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
@@ -107,7 +107,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao mover candidato: {str(e)}"}
 
 
-async def _wrap_analyze_cv(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] analyze_cv called for candidate={candidate_id}")
     try:
@@ -157,7 +157,7 @@ async def _wrap_analyze_cv(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao analisar CV: {str(e)}"}
 
 
-async def _wrap_run_wsi_screening(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     vacancy_id = kwargs.get("vacancy_id", "unknown")
     logger.info(f"[pipeline_tools] run_wsi_screening called: candidate={candidate_id} vacancy={vacancy_id}")
@@ -218,7 +218,7 @@ async def _wrap_run_wsi_screening(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro no screening WSI: {str(e)}"}
 
 
-async def _wrap_schedule_interview(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     interview_datetime = kwargs.get("datetime", "")
     interview_type = kwargs.get("type", "video")
@@ -289,7 +289,7 @@ async def _wrap_schedule_interview(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao agendar entrevista: {str(e)}"}
 
 
-async def _wrap_send_communication(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     channel = kwargs.get("channel", "email")
     message_text = kwargs.get("message", "")
@@ -349,7 +349,7 @@ async def _wrap_send_communication(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao enviar comunicação: {str(e)}"}
 
 
-async def _wrap_add_notes(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_add_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     note_text = kwargs.get("note_text", "")
     logger.info(f"[pipeline_tools] add_notes called for candidate={candidate_id}")
@@ -386,7 +386,7 @@ async def _wrap_add_notes(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao adicionar nota: {str(e)}"}
 
 
-async def _wrap_batch_move(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
@@ -419,7 +419,7 @@ async def _wrap_batch_move(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro na movimentação em massa: {str(e)}"}
 
 
-async def _wrap_add_to_shortlist(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] add_to_shortlist called for candidate={candidate_id}")
     try:
@@ -451,7 +451,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao adicionar à pré-seleção: {str(e)}"}
 
 
-async def _wrap_view_screening_results(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] view_screening_results called for candidate={candidate_id}")
     try:
@@ -507,7 +507,7 @@ async def _wrap_view_screening_results(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao carregar resultados: {str(e)}"}
 
 
-async def _wrap_view_interview_notes(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] view_interview_notes called for candidate={candidate_id}")
     try:
@@ -553,7 +553,7 @@ async def _wrap_view_interview_notes(**kwargs: Any) -> Dict[str, Any]:
                         "notes": [{"source": "pipeline", "content": pipeline_notes}] if pipeline_notes else [],
                         "interview_count": 0,
                     },
-                    "message": f"Nenhuma entrevista encontrada. Notas do pipeline retornadas.",
+                    "message": "Nenhuma entrevista encontrada. Notas do pipeline retornadas.",
                 }
 
             return {
@@ -570,7 +570,7 @@ async def _wrap_view_interview_notes(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao carregar notas: {str(e)}"}
 
 
-async def _wrap_generate_offer(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] generate_offer called for candidate={candidate_id}")
     try:
@@ -626,7 +626,7 @@ async def _wrap_generate_offer(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao gerar proposta: {str(e)}"}
 
 
-async def _wrap_finalize_hiring(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     logger.info(f"[pipeline_tools] finalize_hiring called for candidate={candidate_id}")
     try:
@@ -672,7 +672,7 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao finalizar contratação: {str(e)}"}
 
 
-async def _wrap_update_status(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     status = kwargs.get("status", "unknown")
     logger.info(f"[pipeline_tools] update_status called: candidate={candidate_id} status={status}")
@@ -711,7 +711,7 @@ async def _wrap_update_status(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao atualizar status: {str(e)}"}
 
 
-TOOL_DEFINITIONS: List[ToolDefinition] = [
+TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="view_candidate_profile",
         description="Visualiza o perfil completo do candidato incluindo dados pessoais, experiencia, formacao e historico no pipeline.",
@@ -894,14 +894,14 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
 ]
 
 
-async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[pipeline_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {}
+    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(text("""
@@ -954,9 +954,9 @@ TOOL_DEFINITIONS.append(
     )
 )
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
-STAGE_TOOLS: Dict[str, List[str]] = {
+STAGE_TOOLS: dict[str, list[str]] = {
     "triage": ["view_candidate_profile", "analyze_cv", "add_notes", "move_candidate"],
     "screening": ["run_wsi_screening", "view_screening_results", "add_notes", "move_candidate"],
     "shortlist": ["move_candidate", "add_to_shortlist", "view_candidate_profile", "add_notes", "batch_move"],
@@ -966,7 +966,7 @@ STAGE_TOOLS: Dict[str, List[str]] = {
 }
 
 
-def get_pipeline_tools(stage: str = "") -> List[ToolDefinition]:
+def get_pipeline_tools(stage: str = "") -> list[ToolDefinition]:
     """Return pipeline tools, optionally filtered by stage.
 
     Args:

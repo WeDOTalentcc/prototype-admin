@@ -1,9 +1,9 @@
 """
 Pydantic schemas for calendar/scheduling operations.
 """
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
 from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class AvailabilityRequest(BaseModel):
@@ -23,10 +23,10 @@ class TimeSlot(BaseModel):
 class FindMeetingTimeRequest(BaseModel):
     """Request to find best meeting times."""
     organizer_email: EmailStr
-    interviewer_emails: List[EmailStr]
+    interviewer_emails: list[EmailStr]
     candidate_email: EmailStr
     duration_minutes: int = Field(default=60, ge=15, le=480)
-    preferred_days: Optional[List[str]] = Field(
+    preferred_days: list[str] | None = Field(
         default=None,
         description="List of preferred days: Mon, Tue, Wed, Thu, Fri"
     )
@@ -37,20 +37,20 @@ class ScheduleInterviewRequest(BaseModel):
     organizer_email: EmailStr
     candidate_name: str = Field(min_length=1, max_length=200)
     candidate_email: EmailStr
-    interviewer_emails: List[EmailStr]
+    interviewer_emails: list[EmailStr]
     position: str = Field(min_length=1, max_length=200)
     start_time: datetime
     duration_minutes: int = Field(default=60, ge=15, le=480)
-    location: Optional[str] = Field(default=None, max_length=200)
+    location: str | None = Field(default=None, max_length=200)
     as_teams_meeting: bool = True
-    notes: Optional[str] = Field(default=None, max_length=2000)
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class CancelInterviewRequest(BaseModel):
     """Request to cancel an interview."""
     organizer_email: EmailStr
     event_id: str
-    cancellation_message: Optional[str] = Field(default=None, max_length=500)
+    cancellation_message: str | None = Field(default=None, max_length=500)
 
 
 class RescheduleInterviewRequest(BaseModel):
@@ -58,7 +58,7 @@ class RescheduleInterviewRequest(BaseModel):
     organizer_email: EmailStr
     event_id: str
     new_start_time: datetime
-    new_duration_minutes: Optional[int] = Field(default=None, ge=15, le=480)
+    new_duration_minutes: int | None = Field(default=None, ge=15, le=480)
 
 
 class CalendarEventResponse(BaseModel):
@@ -67,10 +67,10 @@ class CalendarEventResponse(BaseModel):
     subject: str
     start: datetime
     end: datetime
-    location: Optional[str] = None
+    location: str | None = None
     is_online_meeting: bool = False
     organizer_email: str
-    attendees: List[str]
+    attendees: list[str]
 
 
 class MeetingSuggestion(BaseModel):
@@ -78,5 +78,5 @@ class MeetingSuggestion(BaseModel):
     confidence: float
     start_time: datetime
     end_time: datetime
-    locations: Optional[List[str]] = None
-    suggestion_reason: Optional[str] = None
+    locations: list[str] | None = None
+    suggestion_reason: str | None = None

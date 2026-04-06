@@ -19,8 +19,8 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ async def _db_save_pending(
                 agent_input=agent_input,
                 ws_session_id=ws_session_id,
                 status="pending",
-                expires_at=datetime.now(timezone.utc) + timedelta(seconds=_HITL_TTL_SECONDS),
+                expires_at=datetime.now(UTC) + timedelta(seconds=_HITL_TTL_SECONDS),
             )
             db.add(record)
             await db.commit()
@@ -84,16 +84,17 @@ async def _db_resolve(
     domain: str,
     action: str,
     approved: bool,
-    comment: Optional[str],
+    comment: str | None,
     resolved_by: str = "",
     company_id: str = "",
 ) -> None:
     """Atualiza o registro pendente e insere no audit trail (best-effort)."""
     try:
         from sqlalchemy import select
+
         from app.core.database import AsyncSessionLocal
-        from app.models.hitl import HITLPendingAction, HITLAuditTrail
-        now = datetime.now(timezone.utc)
+        from app.models.hitl import HITLAuditTrail, HITLPendingAction
+        now = datetime.now(UTC)
         async with AsyncSessionLocal() as db:
             result = await db.execute(
                 select(HITLPendingAction).where(HITLPendingAction.pending_id == pending_id)
@@ -123,13 +124,14 @@ async def _db_resolve(
         logger.warning("[HITL] DB resolve falhou (best-effort): %s", exc)
 
 
-async def _db_get_pending(thread_id: str) -> Optional[dict]:
+async def _db_get_pending(thread_id: str) -> dict | None:
     """Busca aprovação pendente no DB como fallback do Redis."""
     try:
         from sqlalchemy import select
+
         from app.core.database import AsyncSessionLocal
         from app.models.hitl import HITLPendingAction
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         async with AsyncSessionLocal() as db:
             result = await db.execute(
                 select(HITLPendingAction)
@@ -168,7 +170,7 @@ class HITLService:
 
     def __init__(self):
         # fallback in-memory quando Redis indisponível
-        self._memory: Dict[str, Any] = {}
+        self._memory: dict[str, Any] = {}
 
     # ------------------------------------------------------------------
     # Métodos principais
@@ -183,7 +185,7 @@ class HITLService:
         ws_session_id: str,
         domain: str = "",
         company_id: str = "",
-        agent_input: Optional[dict] = None,
+        agent_input: dict | None = None,
         user_id: str = "",
     ) -> str:
         """
@@ -215,11 +217,11 @@ class HITLService:
                     "description": description,
                     "data": data,
                     "ws_session_id": ws_session_id,
-                    "requested_at": datetime.now(timezone.utc).isoformat(),
+                    "requested_at": datetime.now(UTC).isoformat(),
                     "approved": True,
                     "comment": "auto_confirm",
                     "resolved_by": user_id,
-                    "resolved_at": datetime.now(timezone.utc).isoformat(),
+                    "resolved_at": datetime.now(UTC).isoformat(),
                 }
                 key = f"hitl:{thread_id}:{pending_id}"
                 self._store(key, payload)
@@ -245,7 +247,7 @@ class HITLService:
             "description": description,
             "data": data,
             "ws_session_id": ws_session_id,
-            "requested_at": datetime.now(timezone.utc).isoformat(),
+            "requested_at": datetime.now(UTC).isoformat(),
             "approved": None,  # None = pendente
             "comment": None,
         }
@@ -295,7 +297,7 @@ class HITLService:
         thread_id: str,
         pending_id: str,
         approved: bool,
-        comment: Optional[str] = None,
+        comment: str | None = None,
         resolved_by: str = "",
         domain: str = "",
         action: str = "",
@@ -316,12 +318,12 @@ class HITLService:
                 "description": "",
                 "data": {},
                 "ws_session_id": "",
-                "requested_at": datetime.now(timezone.utc).isoformat(),
+                "requested_at": datetime.now(UTC).isoformat(),
             }
 
         existing["approved"] = approved
         existing["comment"] = comment
-        existing["resolved_at"] = datetime.now(timezone.utc).isoformat()
+        existing["resolved_at"] = datetime.now(UTC).isoformat()
         existing["resolved_by"] = resolved_by
 
         self._store(key, existing)
@@ -347,7 +349,7 @@ class HITLService:
         )
         return existing
 
-    async def get_pending(self, thread_id: str) -> Optional[dict]:
+    async def get_pending(self, thread_id: str) -> dict | None:
         """
         Busca aprovação pendente. Redis first → fallback DB.
         """
@@ -400,17 +402,17 @@ class HITLService:
             "session_id": session_id,
             "agent_input": agent_input_dict,
             "hitl_context": hitl_context,
-            "stored_at": datetime.now(timezone.utc).isoformat(),
+            "stored_at": datetime.now(UTC).isoformat(),
         }
         self._store(key, payload)
         logger.debug("[HITL] Resume info salva thread=%s domain=%s", thread_id, domain)
 
-    async def get_resume_info(self, thread_id: str) -> Optional[dict]:
+    async def get_resume_info(self, thread_id: str) -> dict | None:
         """Recupera informações de resume para o thread_id."""
         key = f"hitl:resume:{thread_id}"
         return self._load(key)
 
-    async def is_approved(self, pending_id: str) -> Optional[bool]:
+    async def is_approved(self, pending_id: str) -> bool | None:
         """
         Verifica se aprovação foi dada.
         Retorna None quando ainda pendente, True/False quando resolvida.
@@ -476,7 +478,7 @@ class HITLService:
             logger.warning("[HITL] _store Redis falhou: %s", exc)
         self._memory[key] = payload
 
-    def _load(self, key: str) -> Optional[dict]:
+    def _load(self, key: str) -> dict | None:
         """Carrega payload do Redis ou in-memory."""
         try:
             redis_client = _get_redis()

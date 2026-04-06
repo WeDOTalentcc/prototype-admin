@@ -8,17 +8,17 @@ Phase 6 migration complete: SourcingAgent and AvaliadorWSIAgent replaced by
 SourcingReActAgent (stages 8 + 10) and TalentReActAgent (stage 9). Feedback
 endpoints now call learning_hub_service directly without any legacy agent.
 """
-from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from uuid import uuid4
 import logging
+from typing import Any
+from uuid import uuid4
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.services.learning_hub_service import learning_hub_service
 
 logger = logging.getLogger(__name__)
@@ -31,36 +31,36 @@ router = APIRouter(prefix="/lia", tags=["lia-wizard-stages"])
 # ---------------------------------------------------------------------------
 
 class Stage8SearchCriteria(BaseModel):
-    skills: Optional[List[str]] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    experience_years: Optional[int] = None
+    skills: list[str] | None = None
+    seniority: str | None = None
+    location: str | None = None
+    experience_years: int | None = None
 
 
 class Stage8CandidateSearchRequest(BaseModel):
-    job_id: Optional[str] = None
-    draft_id: Optional[str] = None
+    job_id: str | None = None
+    draft_id: str | None = None
     company_id: str
     search_criteria: Stage8SearchCriteria
     limit: int = 20
 
 
 class Stage8CandidateSearchResponse(BaseModel):
-    candidates: List[Dict[str, Any]]
+    candidates: list[dict[str, Any]]
     total_found: int
     search_id: str
-    sources_used: List[str]
+    sources_used: list[str]
     learning_enhanced: bool
-    search_criteria_enhanced: Optional[Dict[str, Any]] = None
+    search_criteria_enhanced: dict[str, Any] | None = None
 
 
 class Stage8SearchFeedbackRequest(BaseModel):
     search_id: str
     company_id: str
-    suggested_candidates: List[str]
-    selected_candidates: List[str]
-    job_id: Optional[str] = None
-    feedback_reason: Optional[str] = None
+    suggested_candidates: list[str]
+    selected_candidates: list[str]
+    job_id: str | None = None
+    feedback_reason: str | None = None
 
 
 class Stage8SearchFeedbackResponse(BaseModel):
@@ -72,8 +72,8 @@ class Stage8SearchFeedbackResponse(BaseModel):
 class Stage9CalibrationRequest(BaseModel):
     job_id: str
     company_id: str
-    candidates: List[str]
-    calibration_mode: Optional[str] = "auto"
+    candidates: list[str]
+    calibration_mode: str | None = "auto"
 
 
 class Stage9CandidateEvaluation(BaseModel):
@@ -82,27 +82,27 @@ class Stage9CandidateEvaluation(BaseModel):
     technical_score: float
     behavioral_score: float
     recommendation: str
-    strengths: List[str]
-    gaps: List[str]
+    strengths: list[str]
+    gaps: list[str]
 
 
 class Stage9CalibrationResponse(BaseModel):
-    evaluations: List[Stage9CandidateEvaluation]
-    cutoffs_used: Dict[str, float]
+    evaluations: list[Stage9CandidateEvaluation]
+    cutoffs_used: dict[str, float]
     learning_enhanced: bool
 
 
 class Stage9CalibrationItem(BaseModel):
     candidate_id: str
     original_score: float
-    adjusted_score: Optional[float] = None
+    adjusted_score: float | None = None
     decision: str
 
 
 class Stage9CalibrateFeedbackRequest(BaseModel):
     job_id: str
     company_id: str
-    calibrations: List[Stage9CalibrationItem]
+    calibrations: list[Stage9CalibrationItem]
 
 
 class Stage9CalibrateFeedbackResponse(BaseModel):
@@ -113,13 +113,13 @@ class Stage9CalibrateFeedbackResponse(BaseModel):
 
 
 class Stage10SearchCriteria(BaseModel):
-    skills: Optional[List[str]] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    experience_years: Optional[int] = None
-    industries: Optional[List[str]] = None
-    companies: Optional[List[str]] = None
-    exclude_companies: Optional[List[str]] = None
+    skills: list[str] | None = None
+    seniority: str | None = None
+    location: str | None = None
+    experience_years: int | None = None
+    industries: list[str] | None = None
+    companies: list[str] | None = None
+    exclude_companies: list[str] | None = None
 
 
 class Stage10ActiveSourcingRequest(BaseModel):
@@ -139,19 +139,19 @@ class Stage10SourcingCandidate(BaseModel):
 
 
 class Stage10ActiveSourcingResponse(BaseModel):
-    candidates: List[Stage10SourcingCandidate]
+    candidates: list[Stage10SourcingCandidate]
     pipeline_created: bool
     outreach_scheduled: int
     learning_enhanced: bool
-    search_id: Optional[str] = None
-    sources_used: Optional[List[str]] = None
+    search_id: str | None = None
+    sources_used: list[str] | None = None
 
 
 class Stage10OutreachRequest(BaseModel):
     job_id: str
     company_id: str
-    candidates: List[str]
-    message_template: Optional[str] = None
+    candidates: list[str]
+    message_template: str | None = None
 
 
 class Stage10OutreachResponse(BaseModel):
@@ -159,15 +159,15 @@ class Stage10OutreachResponse(BaseModel):
     scheduled_count: int
     failed_count: int
     message: str
-    outreach_ids: Optional[List[str]] = None
+    outreach_ids: list[str] | None = None
 
 
 class Stage10FeedbackRequest(BaseModel):
     job_id: str
     company_id: str
-    sourced_candidates: List[str]
-    engaged_candidates: List[str]
-    search_id: Optional[str] = None
+    sourced_candidates: list[str]
+    engaged_candidates: list[str]
+    search_id: str | None = None
 
 
 class Stage10FeedbackResponse(BaseModel):
@@ -188,8 +188,9 @@ async def wizard_stage8_search(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage8CandidateSearchResponse:
     try:
-        from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
         from lia_agents_core.agent_interface import AgentInput
+
+        from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 
         search_id = str(uuid4())
 
@@ -249,7 +250,7 @@ async def wizard_stage8_search(
         sourcing_agent = SourcingReActAgent()
         agent_output = await sourcing_agent.process(agent_input)
 
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         total_found = 0
         sources_used = ["local_database"]
 
@@ -348,12 +349,13 @@ async def wizard_stage9_evaluate(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage9CalibrationResponse:
     try:
-        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
         from lia_agents_core.agent_interface import AgentInput
+
+        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
 
         # Resolve calibration cutoffs via learning_hub_service (replaces _get_calibration_context)
         learning_enhanced = False
-        cutoffs_used: Dict[str, float] = {
+        cutoffs_used: dict[str, float] = {
             "approved_auto": 4.2,
             "review_min": 3.8,
             "waiting_min": 3.0,
@@ -378,7 +380,7 @@ async def wizard_stage9_evaluate(
             logger.warning(f"Stage 9: could not get learning context: {lc_err}")
 
         talent_agent = TalentReActAgent()
-        evaluations: List[Stage9CandidateEvaluation] = []
+        evaluations: list[Stage9CandidateEvaluation] = []
 
         for candidate_id in request.candidates:
             eval_message = (
@@ -405,8 +407,8 @@ async def wizard_stage9_evaluate(
             wsi_score = 0.0
             technical_score = 0.0
             behavioral_score = 0.0
-            strengths: List[str] = []
-            gaps: List[str] = []
+            strengths: list[str] = []
+            gaps: list[str] = []
 
             for tool_result in agent_output.tool_results:
                 if tool_result.get("tool_name") == "analyze_skills":
@@ -566,13 +568,14 @@ async def wizard_stage10_start_sourcing(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage10ActiveSourcingResponse:
     try:
-        from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
         from lia_agents_core.agent_interface import AgentInput
+
+        from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 
         search_id = str(uuid4())
 
         learning_enhanced = False
-        learning_skills: List[str] = []
+        learning_skills: list[str] = []
         try:
             lc = await learning_hub_service.get_learning_context(
                 db=db,
@@ -624,8 +627,8 @@ async def wizard_stage10_start_sourcing(
         sourcing_agent = SourcingReActAgent()
         agent_output = await sourcing_agent.process(agent_input)
 
-        raw_candidates: List[Dict[str, Any]] = []
-        sources_used: List[str] = ["internal_db"]
+        raw_candidates: list[dict[str, Any]] = []
+        sources_used: list[str] = ["internal_db"]
         pipeline_created = False
 
         for tool_result in agent_output.tool_results:
@@ -636,7 +639,7 @@ async def wizard_stage10_start_sourcing(
                 pipeline_created = data.get("pipeline_created", False)
                 break
 
-        candidates: List[Stage10SourcingCandidate] = []
+        candidates: list[Stage10SourcingCandidate] = []
         outreach_scheduled = 0
         for idx, candidate in enumerate(raw_candidates[:request.target_count]):
             cid = (
@@ -682,7 +685,7 @@ async def wizard_stage10_outreach(
     try:
         scheduled_count = 0
         failed_count = 0
-        outreach_ids: List[str] = []
+        outreach_ids: list[str] = []
 
         for candidate_id in request.candidates:
             try:

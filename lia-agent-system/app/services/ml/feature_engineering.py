@@ -4,13 +4,12 @@ Feature Engineering for Outcome Learning ML models.
 Extracts and transforms features from job and candidate data
 for use in predictive models.
 """
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime, timedelta
-from dataclasses import dataclass
 import logging
-import hashlib
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class JobFeatures:
     """Engineered features for a job vacancy."""
     role_category: str
     seniority_level: int
-    department_id: Optional[str]
+    department_id: str | None
     location_type: str
     salary_min: float
     salary_max: float
@@ -39,7 +38,7 @@ class JobFeatures:
     skill_rarity_score: float
     market_demand_score: float
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "role_category": self.role_category,
             "seniority_level": self.seniority_level,
@@ -72,8 +71,8 @@ class OutcomeFeatures:
     avg_candidates_per_hire: float
     avg_salary_vs_market: float
     skill_match_rate: float
-    sourcing_channel_effectiveness: Dict[str, float]
-    stage_conversion_rates: Dict[str, float]
+    sourcing_channel_effectiveness: dict[str, float]
+    stage_conversion_rates: dict[str, float]
     is_cold_start: bool = False
 
 
@@ -113,9 +112,9 @@ class OutcomeFeatureEngineer:
     
     def extract_job_features(
         self,
-        job_data: Dict[str, Any],
-        company_data: Optional[Dict[str, Any]] = None,
-        market_data: Optional[Dict[str, Any]] = None
+        job_data: dict[str, Any],
+        company_data: dict[str, Any] | None = None,
+        market_data: dict[str, Any] | None = None
     ) -> JobFeatures:
         """
         Extract features from job vacancy data.
@@ -188,8 +187,8 @@ class OutcomeFeatureEngineer:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         lookback_days: int = 365
     ) -> OutcomeFeatures:
         """
@@ -246,8 +245,8 @@ class OutcomeFeatureEngineer:
                     salary_ratios.append(o.final_salary / o.market_salary_benchmark)
             avg_salary_ratio = sum(salary_ratios) / len(salary_ratios) if salary_ratios else 1.0
             
-            sourcing_effectiveness: Dict[str, float] = {}
-            stage_conversions: Dict[str, float] = {}
+            sourcing_effectiveness: dict[str, float] = {}
+            stage_conversions: dict[str, float] = {}
             
             return OutcomeFeatures(
                 avg_time_to_fill=avg_ttf,
@@ -300,8 +299,8 @@ class OutcomeFeatureEngineer:
     
     def _calculate_skill_rarity(
         self,
-        skills: List[str],
-        market_data: Optional[Dict[str, Any]]
+        skills: list[str],
+        market_data: dict[str, Any] | None
     ) -> float:
         """
         Calculate rarity score for skill set.
@@ -330,7 +329,7 @@ class OutcomeFeatureEngineer:
         self,
         role: str,
         seniority: str,
-        market_data: Optional[Dict[str, Any]]
+        market_data: dict[str, Any] | None
     ) -> float:
         """
         Calculate market demand score.
@@ -372,8 +371,8 @@ class OutcomeFeatureEngineer:
     def create_feature_vector(
         self,
         job_features: JobFeatures,
-        outcome_features: Optional[OutcomeFeatures] = None
-    ) -> List[float]:
+        outcome_features: OutcomeFeatures | None = None
+    ) -> list[float]:
         """
         Create numerical feature vector for ML model.
         

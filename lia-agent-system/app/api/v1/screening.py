@@ -1,22 +1,22 @@
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.responses import JSONResponse
-from typing import Optional, List
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import logging
 import uuid as uuid_mod
 
-from app.schemas.screening import (
-    ScreeningQuestionRequest,
-    ScreeningQuestionResponse,
-    ScreeningQuestion,
-    RegenerateQuestionsRequest
-)
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.models.screening import ScreeningTask
+from app.schemas.screening import (
+    RegenerateQuestionsRequest,
+    ScreeningQuestion,
+    ScreeningQuestionRequest,
+    ScreeningQuestionResponse,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ class AutoScreeningRequest(BaseModel):
     candidate_id: str
     job_id: str
     source: str
-    resume_text: Optional[str] = None
-    resume_url: Optional[str] = None
+    resume_text: str | None = None
+    resume_url: str | None = None
     company_id: str
 
 
@@ -37,8 +37,8 @@ def _wsi_questions_to_screening_response(wsi_questions, request) -> ScreeningQue
     from app.domains.cv_screening.constants.wsi_constants import (
         BLOOM_LEVEL_LABELS,
         DREYFUS_STAGE_LABELS,
-        SENIORITY_TO_DREYFUS,
         SENIORITY_TO_BLOOM,
+        SENIORITY_TO_DREYFUS,
     )
     all_questions = []
     behavioral_questions = []
@@ -139,11 +139,11 @@ async def generate_screening_questions(
         )
 
 
-@router.post("/questions/regenerate", response_model=List[ScreeningQuestion])
+@router.post("/questions/regenerate", response_model=list[ScreeningQuestion])
 async def regenerate_questions(
     request: RegenerateQuestionsRequest,
     current_user: User = Depends(get_current_active_user)
-) -> List[ScreeningQuestion]:
+) -> list[ScreeningQuestion]:
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
@@ -182,13 +182,14 @@ async def regenerate_questions(
 async def get_screening_frameworks(
     current_user: User = Depends(get_current_active_user)
 ):
+    from app.api.v1.wsi._shared import BLOOM_LEVELS as BLOOM_RICH
+    from app.api.v1.wsi._shared import DREYFUS_LEVELS as DREYFUS_RICH
     from app.domains.cv_screening.constants.wsi_constants import (
         BLOOM_LEVEL_LABELS,
         DREYFUS_STAGE_LABELS,
-        SENIORITY_TO_DREYFUS,
         SENIORITY_TO_BLOOM,
+        SENIORITY_TO_DREYFUS,
     )
-    from app.api.v1.wsi._shared import BLOOM_LEVELS as BLOOM_RICH, DREYFUS_LEVELS as DREYFUS_RICH
 
     return {
         "bloom_levels": {

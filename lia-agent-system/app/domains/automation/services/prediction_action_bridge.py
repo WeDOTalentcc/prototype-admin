@@ -8,8 +8,7 @@ Maps OutcomePredictor results into ProactiveActions:
 - Salary mismatch → suggest adjustment
 """
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +52,9 @@ class PredictionActionBridge:
         self,
         db,
         company_id: str,
-        job_data: Dict[str, Any],
-        candidate_data: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
+        job_data: dict[str, Any],
+        candidate_data: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Run predictions and generate actionable suggestions.
         Returns list of suggestion dicts (not yet persisted).
@@ -137,10 +136,10 @@ class PredictionActionBridge:
     async def create_proactive_actions(
         self,
         company_id: str,
-        suggestions: List[Dict[str, Any]],
-        vacancy_id: Optional[str] = None,
-        candidate_id: Optional[str] = None,
-    ) -> List[str]:
+        suggestions: list[dict[str, Any]],
+        vacancy_id: str | None = None,
+        candidate_id: str | None = None,
+    ) -> list[str]:
         """
         Persist suggestions as ProactiveActions via AutonomousAgentService.
         Returns list of created action IDs.

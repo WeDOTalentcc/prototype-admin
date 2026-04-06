@@ -5,14 +5,15 @@ This module provides models for:
 - Health check items for various compliance frameworks (SOX, SOC2, ISO27001, LGPD, BCB498, EUAI, NYC144)
 - History tracking for status changes
 """
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Text, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from app.core.database import Base
 import enum
 import uuid
+
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from app.core.database import Base
 
 
 class ComplianceFrameworkType(str, enum.Enum):

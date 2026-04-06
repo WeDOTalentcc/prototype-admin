@@ -5,16 +5,16 @@ Cada validador verifica claims específicos do seu domínio.
 Registrados automaticamente quando o módulo do domínio é importado.
 Parte do LIA-C06 — Domain-Specific Fact Validation.
 """
-import re
 import logging
-from typing import Optional, Dict, Any
+import re
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 async def validate_cv_score_claim(
-    claim_text: str, context_data: Dict[str, Any]
-) -> Optional[str]:
+    claim_text: str, context_data: dict[str, Any]
+) -> str | None:
     """
     Valida claims de score em cv_screening.
     Ex: LIA diz "score 85" mas real é 72 → retorna discrepância.
@@ -52,8 +52,8 @@ async def validate_cv_score_claim(
 
 
 async def validate_analytics_metric_claim(
-    claim_text: str, context_data: Dict[str, Any]
-) -> Optional[str]:
+    claim_text: str, context_data: dict[str, Any]
+) -> str | None:
     """
     Valida claims de métricas em analytics.
     Ex: "tempo médio 15d" mas real é 23d → retorna discrepância.
@@ -90,8 +90,8 @@ async def validate_analytics_metric_claim(
 
 
 async def validate_sourcing_count_claim(
-    claim_text: str, context_data: Dict[str, Any]
-) -> Optional[str]:
+    claim_text: str, context_data: dict[str, Any]
+) -> str | None:
     """
     Valida claims de contagem em sourcing.
     Ex: "encontrei 150 candidatos" mas real é 23 → retorna discrepância.
@@ -133,8 +133,8 @@ async def validate_sourcing_count_claim(
 
 
 async def validate_evaluation_score_claim(
-    claim_text: str, context_data: Dict[str, Any]
-) -> Optional[str]:
+    claim_text: str, context_data: dict[str, Any]
+) -> str | None:
     """
     Valida scores de avaliação em evaluation/interview domains.
     Delega à mesma lógica de cv_score_claim.

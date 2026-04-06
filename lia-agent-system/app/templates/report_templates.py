@@ -2,8 +2,8 @@
 Report Templates for LIA Platform.
 HTML templates for daily briefings, weekly reports, and monthly manager reports.
 """
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any
 
 
 def _format_number(value: float, decimals: int = 1) -> str:
@@ -46,7 +46,7 @@ class ReportTemplates:
     """HTML templates for reports."""
 
     @staticmethod
-    def daily_briefing_html(data: Dict[str, Any]) -> str:
+    def daily_briefing_html(data: dict[str, Any]) -> str:
         """
         Generate HTML template for daily briefing email.
         
@@ -258,7 +258,7 @@ class ReportTemplates:
 """
 
     @staticmethod
-    def weekly_report_html(data: Dict[str, Any]) -> str:
+    def weekly_report_html(data: dict[str, Any]) -> str:
         """
         Generate HTML template for weekly performance report.
         
@@ -280,7 +280,7 @@ class ReportTemplates:
         funnel = data.get("funnel", {})
         recruiter_ranking = data.get("recruiter_ranking", [])
         channel_performance = data.get("channel_performance", [])
-        weekly_summary = data.get("weekly_summary", {})
+        data.get("weekly_summary", {})
         recommendations = data.get("recommendations", [])
         company_name = data.get("company_name", "Sua Empresa")
         
@@ -462,7 +462,7 @@ class ReportTemplates:
 """
 
     @staticmethod
-    def monthly_report_html(data: Dict[str, Any]) -> str:
+    def monthly_report_html(data: dict[str, Any]) -> str:
         """
         Generate HTML template for monthly manager report.
         
@@ -483,9 +483,9 @@ class ReportTemplates:
         generated_at = data.get("generated_at", datetime.now().strftime("%d/%m/%Y"))
         executive_summary = data.get("executive_summary", {})
         kpis = data.get("kpis", [])
-        monthly_comparison = data.get("monthly_comparison", {})
+        data.get("monthly_comparison", {})
         department_breakdown = data.get("department_breakdown", [])
-        cost_analysis = data.get("cost_analysis", {})
+        data.get("cost_analysis", {})
         predictions = data.get("predictions", [])
         strategic_recommendations = data.get("strategic_recommendations", [])
         company_name = data.get("company_name", "Sua Empresa")

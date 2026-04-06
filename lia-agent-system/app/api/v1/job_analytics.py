@@ -3,13 +3,12 @@ Job Analytics API - Connects LIA prompt frontend to JobAnalyticsPromptService.
 
 Provides endpoints for job analysis, metrics, comparisons, and AI-powered insights.
 """
-from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
-from datetime import datetime
-import logging
 import asyncio
+import logging
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -24,17 +23,17 @@ class CommandInfo(BaseModel):
     id: str
     name: str
     description: str
-    required_context: List[str]
-    agent: Optional[str] = None
+    required_context: list[str]
+    agent: str | None = None
 
 
 class CommandsResponse(BaseModel):
-    commands: List[CommandInfo]
+    commands: list[CommandInfo]
 
 
 class ExecuteCommandContext(BaseModel):
-    job_id: Optional[str] = None
-    job_ids: Optional[List[str]] = None
+    job_id: str | None = None
+    job_ids: list[str] | None = None
 
 
 class ExecuteCommandRequest(BaseModel):
@@ -43,9 +42,9 @@ class ExecuteCommandRequest(BaseModel):
 
 
 class NaturalQueryContext(BaseModel):
-    job_id: Optional[str] = None
-    job_ids: Optional[List[str]] = None
-    page: Optional[str] = None
+    job_id: str | None = None
+    job_ids: list[str] | None = None
+    page: str | None = None
 
 
 class NaturalQueryRequest(BaseModel):
@@ -64,17 +63,17 @@ class AnalyticsResultResponse(BaseModel):
     command: str
     agent_used: str
     response: str
-    data: Dict[str, Any] = Field(default_factory=dict)
-    charts: List[ChartData] = Field(default_factory=list)
-    suggestions: List[str] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    error: Optional[str] = None
+    data: dict[str, Any] = Field(default_factory=dict)
+    charts: list[ChartData] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
 
 
 class FunnelMetrics(BaseModel):
     total_candidates: int
-    candidates_by_stage: Dict[str, int]
-    conversion_rate: Optional[float] = None
+    candidates_by_stage: dict[str, int]
+    conversion_rate: float | None = None
 
 
 class TimeMetrics(BaseModel):
@@ -89,32 +88,32 @@ class QuickInsightsResponse(BaseModel):
     funnel: FunnelMetrics
     time_in_pipeline: TimeMetrics
     priority: str
-    charts: List[ChartData] = Field(default_factory=list)
-    suggestions: List[str] = Field(default_factory=list)
+    charts: list[ChartData] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
 
 
 class CompareJobsRequest(BaseModel):
-    job_ids: List[str] = Field(..., min_length=2, description="List of job IDs to compare")
+    job_ids: list[str] = Field(..., min_length=2, description="List of job IDs to compare")
 
 
 class SuggestionItem(BaseModel):
     action: str
     reason: str
     priority: str
-    agent: Optional[str] = None
-    command: Optional[str] = None
+    agent: str | None = None
+    command: str | None = None
 
 
 class SuggestionsResponse(BaseModel):
     job_id: str
-    job_title: Optional[str] = None
-    suggestions: List[SuggestionItem]
-    additional_suggestions: List[str] = Field(default_factory=list)
+    job_title: str | None = None
+    suggestions: list[SuggestionItem]
+    additional_suggestions: list[str] = Field(default_factory=list)
 
 
 class BatchAnalyzeRequest(BaseModel):
-    job_ids: List[str] = Field(..., min_length=1, description="List of job IDs to analyze")
-    analysis_types: List[str] = Field(..., min_length=1, description="Types of analysis to run")
+    job_ids: list[str] = Field(..., min_length=1, description="List of job IDs to analyze")
+    analysis_types: list[str] = Field(..., min_length=1, description="Types of analysis to run")
 
 
 class BatchAnalysisResult(BaseModel):
@@ -122,8 +121,8 @@ class BatchAnalysisResult(BaseModel):
     analysis_type: str
     success: bool
     response: str
-    data: Dict[str, Any] = Field(default_factory=dict)
-    error: Optional[str] = None
+    data: dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
 
 
 class BatchAnalyzeResponse(BaseModel):
@@ -131,7 +130,7 @@ class BatchAnalyzeResponse(BaseModel):
     total_analyses: int
     successful: int
     failed: int
-    results: List[BatchAnalysisResult]
+    results: list[BatchAnalysisResult]
 
 
 @router.get("/commands", response_model=CommandsResponse)
@@ -367,7 +366,7 @@ async def batch_analyze(
             detail=f"Invalid analysis types: {invalid_types}. Valid types: {list(valid_commands)}"
         )
     
-    results: List[BatchAnalysisResult] = []
+    results: list[BatchAnalysisResult] = []
     successful = 0
     failed = 0
     

@@ -10,20 +10,18 @@ has been removed — handlers always succeed for known action_ids.
 """
 import logging
 import uuid
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from typing import Any
 
 from app.orchestrator.action_executor.action_types import ActionResult
 from app.orchestrator.action_executor.intents_config import (
     ACTIONABLE_INTENTS,
-    VALID_PIPELINE_STAGES,
-    STAGE_ALIASES,
 )
 from app.orchestrator.action_executor.utils import (
-    resolve_candidate_from_context,
-    resolve_stage,
     _detect_intent_from_message,
     _extract_entities_from_message,
+    resolve_candidate_from_context,
+    resolve_stage,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,15 +35,15 @@ class ActionExecutorService:
     def is_actionable(self, intent: str) -> bool:
         return intent in ACTIONABLE_INTENTS
 
-    def get_action_config(self, intent: str) -> Optional[Dict[str, Any]]:
+    def get_action_config(self, intent: str) -> dict[str, Any] | None:
         return ACTIONABLE_INTENTS.get(intent)
 
     async def try_execute(
         self,
         intent: str = "",
-        entities: Optional[Dict[str, Any]] = None,
-        candidates_data: Optional[List[Dict[str, Any]]] = None,
-        context: Optional[Dict[str, Any]] = None,
+        entities: dict[str, Any] | None = None,
+        candidates_data: list[dict[str, Any]] | None = None,
+        context: dict[str, Any] | None = None,
         *,
         message: str = "",
     ) -> ActionResult:
@@ -170,8 +168,8 @@ class ActionExecutorService:
         return result
 
     def _build_confirmation_summary(
-        self, intent: str, config: Dict[str, Any], params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, intent: str, config: dict[str, Any], params: dict[str, Any]
+    ) -> dict[str, Any]:
         action_id = config["action_id"]
         candidate_name = params.get("candidate_name", "o candidato")
 
@@ -223,17 +221,17 @@ class ActionExecutorService:
     async def _execute_action(
         self,
         intent: str,
-        config: Dict[str, Any],
-        params: Dict[str, Any],
-        context: Dict[str, Any],
+        config: dict[str, Any],
+        params: dict[str, Any],
+        context: dict[str, Any],
     ) -> ActionResult:
         domain_id = config["domain_id"]
         action_id = config["action_id"]
 
         # Delegate to specialized action handler modules
         try:
-            from app.orchestrator.action_handlers.communication_actions import execute_communication_action
             from app.orchestrator.action_handlers.candidate_actions import execute_candidate_action
+            from app.orchestrator.action_handlers.communication_actions import execute_communication_action
             from app.orchestrator.action_handlers.job_actions import execute_job_action
             from app.orchestrator.action_handlers.pipeline_actions import execute_pipeline_action
 
@@ -310,8 +308,8 @@ class ActionExecutorService:
     async def _simulate_execution(
         self,
         action_id: str,
-        params: Dict[str, Any],
-        context: Dict[str, Any],
+        params: dict[str, Any],
+        context: dict[str, Any],
     ) -> ActionResult:
         candidate_name = params.get("candidate_name", "o candidato")
         self.execution_count += 1
@@ -502,7 +500,7 @@ class ActionExecutorService:
             action_type=action_id,
         )
 
-    def _success_message(self, action_id: str, params: Dict[str, Any]) -> str:
+    def _success_message(self, action_id: str, params: dict[str, Any]) -> str:
         candidate_name = params.get("candidate_name", "o candidato")
         if action_id == "move_candidate":
             return f"**{candidate_name}** foi movido(a) para **{params.get('to_stage', 'próxima etapa')}**."

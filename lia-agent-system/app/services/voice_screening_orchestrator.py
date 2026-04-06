@@ -28,25 +28,26 @@ Session persistence:
 - Session survives server restarts; loaded from DB on first request
 """
 
-import asyncio
 import json
 import logging
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from uuid import uuid4
 
-from app.shared.pii_masking import mask_pii
 from app.domains.communication.services.twilio_voice_service import (
-    mulaw_to_wav,
-    mp3_to_mulaw,
     TwilioVoiceUnconfiguredError,
+    mp3_to_mulaw,
+    mulaw_to_wav,
+)
+from app.domains.communication.services.twilio_voice_service import (
     twilio_voice_service as _twilio_voice_service,
 )
 from app.services.voice_service import VoiceService
-from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.shared.pii_masking import mask_pii
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
+from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
 
 try:
     from app.services.gemini_voice_service import get_voice_service as _get_voice_service
@@ -80,18 +81,18 @@ class VoiceScreeningSession:
     job_title: str
     company_id: str
     phone_number: str
-    job_id: Optional[str] = None
-    call_sid: Optional[str] = None
+    job_id: str | None = None
+    call_sid: str | None = None
     status: str = "pending"
     language: str = "pt-BR"
-    transcript_segments: List[Dict[str, Any]] = field(default_factory=list)
-    questions_asked: List[str] = field(default_factory=list)
-    started_at: Optional[datetime] = None
-    ended_at: Optional[datetime] = None
-    wsi_result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    transcript_segments: list[dict[str, Any]] = field(default_factory=list)
+    questions_asked: list[str] = field(default_factory=list)
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    wsi_result: dict[str, Any] | None = None
+    error: str | None = None
     consent_verified: bool = False
-    job_context: Optional[Dict[str, Any]] = None
+    job_context: dict[str, Any] | None = None
     presentation_done: bool = False
     voice_provider: str = "twilio"
 
@@ -132,12 +133,12 @@ class VoiceScreeningOrchestrator:
     ]
 
     def __init__(self):
-        self._sessions: Dict[str, VoiceScreeningSession] = {}
+        self._sessions: dict[str, VoiceScreeningSession] = {}
         self._tts_service = VoiceService()
 
     # ── Session persistence helpers ──────────────────────────────────────────
 
-    def _session_to_state(self, session: "VoiceScreeningSession") -> Dict[str, Any]:
+    def _session_to_state(self, session: "VoiceScreeningSession") -> dict[str, Any]:
         """Serialize VoiceScreeningSession to JSON-serializable dict for DB storage."""
         return {
             "session_id": session.session_id,
@@ -162,7 +163,7 @@ class VoiceScreeningOrchestrator:
             "voice_provider": session.voice_provider,
         }
 
-    def _state_to_session(self, state: Dict[str, Any]) -> "VoiceScreeningSession":
+    def _state_to_session(self, state: dict[str, Any]) -> "VoiceScreeningSession":
         """Deserialize DB state dict back to VoiceScreeningSession."""
         return VoiceScreeningSession(
             session_id=state["session_id"],
@@ -255,7 +256,7 @@ class VoiceScreeningOrchestrator:
 
     async def _load_wsi_questions_for_session(
         self, session_id: str, db
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Load WSI question texts from wsi_questions table for the given session.
 
@@ -296,7 +297,7 @@ class VoiceScreeningOrchestrator:
         job_id: str,
         db,
         company_id: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Fetch job vacancy context from the database by job_id.
 
@@ -358,7 +359,7 @@ class VoiceScreeningOrchestrator:
                 behavioral_competencies,
             ) = row
 
-            context: Dict[str, Any] = {
+            context: dict[str, Any] = {
                 "title": title or "",
                 "description": description or "",
                 "requirements": requirements if isinstance(requirements, list) else [],
@@ -388,7 +389,7 @@ class VoiceScreeningOrchestrator:
             return None
 
     @staticmethod
-    def _build_job_context_summary(job_context: Dict[str, Any]) -> str:
+    def _build_job_context_summary(job_context: dict[str, Any]) -> str:
         """
         Build a concise, voice-friendly summary of the job context for the system prompt.
 
@@ -550,7 +551,7 @@ class VoiceScreeningOrchestrator:
         phone_number: str,
         job_title: str,
         company_id: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         language: str = "pt-BR",
         db=None,
     ) -> VoiceScreeningSession:
@@ -666,7 +667,7 @@ class VoiceScreeningOrchestrator:
         candidate_name: str,
         job_title: str,
         company_id: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         language: str = "pt-BR",
         db=None,
     ) -> VoiceScreeningSession:
@@ -784,7 +785,7 @@ class VoiceScreeningOrchestrator:
         session_id: str,
         audio_data: bytes,
         mime_type: str = "audio/mulaw",
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Process an incoming audio chunk from Twilio's bidirectional Media Stream.
 
@@ -907,6 +908,7 @@ class VoiceScreeningOrchestrator:
 
         try:
             import os
+
             from google import genai
             from google.genai import types
 
@@ -1190,7 +1192,7 @@ class VoiceScreeningOrchestrator:
     def _get_next_scripted_question(
         self,
         session: VoiceScreeningSession,
-        questions: Optional[List[str]] = None,
+        questions: list[str] | None = None,
     ) -> str:
         """
         Fallback: return next question when Gemini is unavailable or FairnessGuard blocks.
@@ -1251,7 +1253,7 @@ class VoiceScreeningOrchestrator:
         text: str,
         voice: str = "nova",
         for_twilio_stream: bool = True,
-    ) -> Optional[bytes]:
+    ) -> bytes | None:
         """
         Convert LIA's response text to audio for Twilio Media Stream playback.
 
@@ -1299,7 +1301,7 @@ class VoiceScreeningOrchestrator:
         self,
         session_id: str,
         db=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Finalize screening session: run WSI analysis on full transcript.
 
@@ -1435,13 +1437,13 @@ class VoiceScreeningOrchestrator:
                 "transcript_length": len(full_transcript),
             }
 
-    def get_session(self, session_id: str) -> Optional[VoiceScreeningSession]:
+    def get_session(self, session_id: str) -> VoiceScreeningSession | None:
         """Get an active screening session by ID (in-memory only)."""
         return self._sessions.get(session_id)
 
     async def get_or_restore_session(
         self, session_id: str, db=None
-    ) -> Optional[VoiceScreeningSession]:
+    ) -> VoiceScreeningSession | None:
         """
         Get session from memory or restore from PostgreSQL if not found.
 
@@ -1468,7 +1470,7 @@ class VoiceScreeningOrchestrator:
         session = self._sessions.get(session_id)
         return session.language if session else "pt-BR"
 
-    def list_active_sessions(self) -> List[Dict[str, Any]]:
+    def list_active_sessions(self) -> list[dict[str, Any]]:
         """List all active (non-completed) screening sessions."""
         return [
             {
@@ -1549,8 +1551,9 @@ class VoiceScreeningOrchestrator:
         2. Generate questions dynamically via WSI service using job title as context
         """
         try:
-            from sqlalchemy import text
             from uuid import uuid4
+
+            from sqlalchemy import text
 
             existing = await self._load_wsi_questions_for_session(session.session_id, db)
             if existing:
@@ -1562,7 +1565,9 @@ class VoiceScreeningOrchestrator:
 
             question_texts = []
             try:
-                from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
+                from app.domains.cv_screening.services.screening_question_set_service import (
+                    screening_question_set_service,
+                )
                 job_vacancy_id = session.job_id or session.session_id
                 active_qs = await screening_question_set_service.get_active_version(db, job_vacancy_id)
                 if active_qs and active_qs.questions_snapshot:
@@ -1650,7 +1655,7 @@ class VoiceScreeningOrchestrator:
             )
 
     @staticmethod
-    def _mask_transcript_segments(segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _mask_transcript_segments(segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Return a copy of transcript_segments with PII masked in text fields.
 

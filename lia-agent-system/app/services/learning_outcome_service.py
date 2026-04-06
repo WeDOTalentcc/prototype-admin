@@ -6,13 +6,13 @@ Handles: record_job_outcome, get_outcome_insights,
          _update_outcome_patterns_no_commit, _update_pattern_no_commit,
          _update_outcome_patterns.
 """
-from datetime import datetime
-from typing import Any, Dict, List, Optional
 import logging
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 
 from app.models.company_learning import CompanyPattern, CompanySkill, LearningSource
 from app.models.feedback_learning import JobOutcome
@@ -37,24 +37,24 @@ class LearningOutcomeService:
         company_id: str,
         job_id: UUID,
         outcome: str,
-        time_to_fill_days: Optional[int] = None,
-        salary_initial_min: Optional[float] = None,
-        salary_initial_max: Optional[float] = None,
-        salary_final: Optional[float] = None,
-        candidate_count_total: Optional[int] = None,
-        candidate_count_screened: Optional[int] = None,
-        candidate_count_interviewed: Optional[int] = None,
-        candidate_count_offered: Optional[int] = None,
-        satisfaction_score: Optional[float] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        location: Optional[str] = None,
-        work_model: Optional[str] = None,
-        skills_used: Optional[List[str]] = None,
-        notes: Optional[str] = None,
-        created_by: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        time_to_fill_days: int | None = None,
+        salary_initial_min: float | None = None,
+        salary_initial_max: float | None = None,
+        salary_final: float | None = None,
+        candidate_count_total: int | None = None,
+        candidate_count_screened: int | None = None,
+        candidate_count_interviewed: int | None = None,
+        candidate_count_offered: int | None = None,
+        satisfaction_score: float | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        work_model: str | None = None,
+        skills_used: list[str] | None = None,
+        notes: str | None = None,
+        created_by: str | None = None,
+    ) -> dict[str, Any]:
         """Record a job outcome and trigger learning pattern updates."""
         try:
             from app.models.feedback_learning import JobOutcomeType
@@ -135,14 +135,14 @@ class LearningOutcomeService:
         db: AsyncSession,
         company_id: str,
         outcome: Any,
-        role: Optional[str],
-        seniority: Optional[str],
-        time_to_fill: Optional[int],
-        salary_final: Optional[float],
-        skills_used: List[str],
-    ) -> Dict[str, Any]:
+        role: str | None,
+        seniority: str | None,
+        time_to_fill: int | None,
+        salary_final: float | None,
+        skills_used: list[str],
+    ) -> dict[str, Any]:
         """Update patterns from outcome — does not commit."""
-        patterns_updated: Dict[str, Any] = {}
+        patterns_updated: dict[str, Any] = {}
 
         if outcome.value == "filled":
             if role and time_to_fill:
@@ -224,9 +224,9 @@ class LearningOutcomeService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        role: str | None = None,
+        seniority: str | None = None,
+    ) -> dict[str, Any]:
         try:
             from app.models.feedback_learning import JobOutcomeType
 
@@ -265,7 +265,7 @@ class LearningOutcomeService:
                         "avg": sum(salaries) / len(salaries),
                     }
 
-            skill_frequency: Dict[str, int] = {}
+            skill_frequency: dict[str, int] = {}
             for o in filled:
                 for skill in o.skills_used or []:
                     skill_frequency[skill] = skill_frequency.get(skill, 0) + 1

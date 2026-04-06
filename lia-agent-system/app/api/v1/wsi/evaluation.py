@@ -6,24 +6,35 @@ Routes:
   POST /analyze-response
   POST /complete-screening
 """
-from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-import uuid
 import json
 import logging
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 
 from ._shared import (
-    JDEvaluateRequest, JDEvaluateResponse,
-    AnalyzeResponseRequest, AnalyzeResponseOutput,
-    CompleteScreeningRequest, CompleteScreeningResponse,
-    BigFiveIndicators, ArchetypeIndicator,
-    BLOOM_LEVELS, DREYFUS_LEVELS, WSI_CLASSIFICATION_MAP,
+    _BIAS_TERMS,
+    _JD_SENIORITY_KEYWORDS,
+    BLOOM_LEVELS,
+    DREYFUS_LEVELS,
+    WSI_CLASSIFICATION_MAP,
+    AnalyzeResponseOutput,
+    AnalyzeResponseRequest,
+    ArchetypeIndicator,
+    BigFiveIndicators,
+    CompleteScreeningRequest,
+    CompleteScreeningResponse,
+    JDEvaluateRequest,
+    JDEvaluateResponse,
+    _jd_get_band,
+    _run_anthropic_sync,
     classify_wsi_score,
-    _JD_SENIORITY_KEYWORDS, _BIAS_TERMS, _JD_BANDS, _jd_get_band,
-    get_anthropic_client, _run_anthropic_sync, parse_json_response,
+    get_anthropic_client,
+    parse_json_response,
 )
 
 logger = logging.getLogger(__name__)
@@ -213,7 +224,7 @@ async def evaluate_jd(request: JDEvaluateRequest):
     if score >= 85:
         suggestion = f"JD excelente para {request.job_title}. Perguntas WSI serão altamente calibradas com {tech_count} competências técnicas e {behav_count} comportamentais."
     elif score >= 70:
-        suggestion = f"JD bem estruturado. Perguntas WSI geradas com boa qualidade. Recomenda-se enriquecer contexto organizacional para maximizar precisão."
+        suggestion = "JD bem estruturado. Perguntas WSI geradas com boa qualidade. Recomenda-se enriquecer contexto organizacional para maximizar precisão."
     elif score >= 50:
         missing = []
         if resp_count < 5: missing.append(f"responsabilidades (tem {resp_count}, ideal ≥5)")
@@ -469,7 +480,7 @@ async def complete_screening(
     classification = classify_wsi_score(avg_score)
 
     archetypes = []
-    o, c, e, a, n = (
+    o, c, e, a, _n = (
         avg_big_five.openness, avg_big_five.conscientiousness,
         avg_big_five.extraversion, avg_big_five.agreeableness, 100 - avg_big_five.neuroticism
     )

@@ -1,24 +1,22 @@
 """
 Integration Hub API endpoints for centralized integration management.
 """
-from fastapi import APIRouter, HTTPException, Depends, Query, Body
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc, func
-from typing import List, Optional
-from datetime import datetime
-from pydantic import BaseModel, Field
-from uuid import UUID
 import logging
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.integration_hub import (
-    IntegrationProvider,
-    IntegrationConnection,
-    IntegrationSyncLog,
-    IntegrationWebhook,
+    DEFAULT_INTEGRATION_PROVIDERS,
     IntegrationCategory,
+    IntegrationConnection,
+    IntegrationProvider,
     IntegrationStatus,
-    DEFAULT_INTEGRATION_PROVIDERS
+    IntegrationSyncLog,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,12 +37,12 @@ class ProviderResponse(BaseModel):
     name: str
     category: str
     slug: str
-    description: Optional[str] = None
-    logo_url: Optional[str] = None
+    description: str | None = None
+    logo_url: str | None = None
     supports_oauth: bool = False
     supports_api_key: bool = False
     supports_webhook: bool = False
-    features: List[str] = []
+    features: list[str] = []
     is_active: bool = True
     is_premium: bool = False
 
@@ -61,26 +59,26 @@ class ConnectionCreate(BaseModel):
 
 
 class ConnectionUpdate(BaseModel):
-    sync_enabled: Optional[bool] = None
-    sync_direction: Optional[str] = None
-    sync_frequency: Optional[str] = None
-    field_mappings: Optional[dict] = None
-    credentials: Optional[dict] = None
+    sync_enabled: bool | None = None
+    sync_direction: str | None = None
+    sync_frequency: str | None = None
+    field_mappings: dict | None = None
+    credentials: dict | None = None
 
 
 class ConnectionResponse(BaseModel):
     id: str
     company_id: str
     provider_id: str
-    provider_name: Optional[str] = None
-    provider_category: Optional[str] = None
+    provider_name: str | None = None
+    provider_category: str | None = None
     status: str
-    auth_type: Optional[str] = None
+    auth_type: str | None = None
     sync_enabled: bool
     sync_direction: str
     sync_frequency: str
-    last_sync_at: Optional[datetime] = None
-    last_sync_status: Optional[str] = None
+    last_sync_at: datetime | None = None
+    last_sync_status: str | None = None
     health_score: float
     error_count: int
     created_at: datetime
@@ -91,16 +89,16 @@ class SyncLogResponse(BaseModel):
     id: str
     connection_id: str
     sync_type: str
-    direction: Optional[str] = None
+    direction: str | None = None
     status: str
     records_processed: int
     records_created: int
     records_updated: int
     records_failed: int
-    error_message: Optional[str] = None
+    error_message: str | None = None
     started_at: datetime
-    completed_at: Optional[datetime] = None
-    duration_seconds: Optional[float] = None
+    completed_at: datetime | None = None
+    duration_seconds: float | None = None
 
 
 class HealthResponse(BaseModel):
@@ -115,20 +113,20 @@ class HealthResponse(BaseModel):
 class AIRecommendationRequest(BaseModel):
     company_size: str = Field(..., description="small, medium, large, enterprise")
     industry: str
-    current_tools: List[str] = []
-    priorities: List[str] = []
+    current_tools: list[str] = []
+    priorities: list[str] = []
 
 
 class AIRecommendationResponse(BaseModel):
-    recommended_integrations: List[dict]
-    setup_order: List[str]
+    recommended_integrations: list[dict]
+    setup_order: list[str]
     estimated_setup_time: str
-    tips: List[str]
+    tips: list[str]
 
 
-@router.get("/providers", response_model=List[ProviderResponse])
+@router.get("/providers", response_model=list[ProviderResponse])
 async def list_providers(
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     active_only: bool = Query(True),
     db: AsyncSession = Depends(get_db)
 ):
@@ -176,7 +174,7 @@ async def list_providers(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/providers/{category}", response_model=List[ProviderResponse])
+@router.get("/providers/{category}", response_model=list[ProviderResponse])
 async def list_providers_by_category(
     category: str,
     db: AsyncSession = Depends(get_db)
@@ -192,11 +190,11 @@ async def list_providers_by_category(
     return await list_providers(category=category, db=db)
 
 
-@router.get("/connections", response_model=List[ConnectionResponse])
+@router.get("/connections", response_model=list[ConnectionResponse])
 async def list_connections(
     company_id: str = Query(..., description="Company ID"),
-    status: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
+    status: str | None = Query(None),
+    category: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Get company's integration connections."""
@@ -496,7 +494,7 @@ async def trigger_sync(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/connections/{connection_id}/logs", response_model=List[SyncLogResponse])
+@router.get("/connections/{connection_id}/logs", response_model=list[SyncLogResponse])
 async def get_sync_logs(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
@@ -656,7 +654,7 @@ async def get_ai_recommendations(
             tips.append("Consider Merge.dev for unified API access across multiple systems")
         
         time_per_integration = {"small": "15min", "medium": "30min", "large": "1hr", "enterprise": "2hr"}
-        base_time = time_per_integration.get(request.company_size, "30min")
+        time_per_integration.get(request.company_size, "30min")
         estimated_time = f"{len(recommendations) * 30} minutes" if recommendations else "No setup needed"
         
         return AIRecommendationResponse(
@@ -686,9 +684,8 @@ async def seed_providers(db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def seed_default_providers(db: AsyncSession) -> List[ProviderResponse]:
+async def seed_default_providers(db: AsyncSession) -> list[ProviderResponse]:
     """Seed default providers if they don't exist."""
-    providers_response = []
     
     for provider_data in DEFAULT_INTEGRATION_PROVIDERS:
         existing = await db.execute(

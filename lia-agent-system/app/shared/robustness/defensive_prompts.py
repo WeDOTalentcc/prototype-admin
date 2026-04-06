@@ -9,7 +9,7 @@ This module provides:
 
 Prompts now loaded from YAML files via PromptLoader.
 """
-from typing import Dict, List, Optional
+
 from app.shared.prompts.loader import PromptLoader
 
 _defensive = PromptLoader.load("shared/defensive")
@@ -37,8 +37,8 @@ def get_defensive_prompt_section(agent_type: str) -> str:
 
 
 def get_clarification_message(
-    missing_items: List[str],
-    context: Dict[str, str] = None
+    missing_items: list[str],
+    context: dict[str, str] = None
 ) -> str:
     """
     Generate a clarification message based on missing items.
@@ -84,7 +84,7 @@ def get_out_of_scope_response(category: str = "general") -> str:
     return response
 
 
-def format_confirmation_message(action: str, details: Dict[str, str]) -> str:
+def format_confirmation_message(action: str, details: dict[str, str]) -> str:
     """
     Format a confirmation message for a pending action.
     
@@ -95,7 +95,7 @@ def format_confirmation_message(action: str, details: Dict[str, str]) -> str:
     Returns:
         Formatted confirmation message
     """
-    message = f"📝 **Confirme a ação:**\n\n"
+    message = "📝 **Confirme a ação:**\n\n"
     message += f"**{action}**\n\n"
     
     if details:

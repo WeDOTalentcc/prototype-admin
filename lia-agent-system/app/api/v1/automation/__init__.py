@@ -12,9 +12,9 @@ Sub-modules:
 """
 from fastapi import APIRouter
 
-from .triggers import router as triggers_router
 from .event_handlers import router as event_handlers_router
 from .suggestions import router as suggestions_router
+from .triggers import router as triggers_router
 
 # Main router with the /automation prefix — same as original automation.py
 router = APIRouter(prefix="/automation", tags=["automation"])

@@ -4,6 +4,7 @@ WSI Observability API - Read-Only Endpoints for WSI Screening Metrics.
 CRITICAL: All endpoints are READ-ONLY. No modifications to WSI configuration.
 """
 import logging
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 

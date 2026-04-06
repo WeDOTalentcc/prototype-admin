@@ -5,19 +5,20 @@ Core session management (engine, Base, AsyncSessionLocal, get_db) moved to
 libs/config (lia_config.database). Migration helpers remain here.
 """
 import logging
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 import sqlalchemy as sa
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # Core session management — real implementation in libs/config
 from lia_config.database import (  # noqa: F401
-    engine,
     AsyncSessionLocal,
     Base,
-    get_db,
     async_session_factory,
+    engine,
+    get_db,
 )
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,6 @@ async def get_tenant_db(request: "Request") -> AsyncGenerator[AsyncSession, None
             # All queries are automatically scoped to the user's tenant
             ...
     """
-    from starlette.requests import Request
     async with AsyncSessionLocal() as session:
         try:
             company_id = getattr(request.state, "company_id", None)

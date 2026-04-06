@@ -5,30 +5,30 @@ Conversational AI, job-draft management, and context-suggestions routes:
   DELETE /lia/job-draft/{conversation_id}
   GET  /lia/context-suggestions
 """
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any
 
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.services.llm import LLMService
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.dependencies.token_budget import require_token_budget
+from app.services.llm import LLMService
 
 from ._shared import (
-    logger,
-    _job_drafts,
-    # models
-    ConversationalRequest,
-    ConversationalResponse,
-    ContextBadge,
-    ContextSuggestion,
-    ContextSuggestionsResponse,
     # data tables
     _CONTEXT_SUGGESTIONS,
     _PAGE_BADGES,
+    ContextBadge,
+    ContextSuggestion,
+    ContextSuggestionsResponse,
+    # models
+    ConversationalRequest,
+    ConversationalResponse,
+    _job_drafts,
+    logger,
 )
 
 router = APIRouter()
@@ -139,9 +139,8 @@ Solicitação: {request.message}"""
 async def get_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get the current job draft for a conversation."""
-    company_id = current_user.company_id
     if conversation_id in _job_drafts:
         return {
             "success": True,
@@ -158,9 +157,8 @@ async def get_job_draft(
 async def clear_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Clear a job draft from memory."""
-    company_id = current_user.company_id
     if conversation_id in _job_drafts:
         del _job_drafts[conversation_id]
         return {"success": True, "message": "Job draft cleared"}
@@ -170,8 +168,8 @@ async def clear_job_draft(
 @router.get("/context-suggestions", response_model=ContextSuggestionsResponse)
 async def get_context_suggestions(
     page: str = Query(..., description="Page context: home|vaga|candidato|pipeline|triagem|relatorios|configuracoes"),
-    entity_id: Optional[str] = Query(None, description="ID of the current entity (job or candidate)"),
-    entity_name: Optional[str] = Query(None, description="Display name of the current entity"),
+    entity_id: str | None = Query(None, description="ID of the current entity (job or candidate)"),
+    entity_name: str | None = Query(None, description="Display name of the current entity"),
     limit: int = Query(default=5, ge=1, le=8),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
@@ -196,7 +194,7 @@ async def get_context_suggestions(
 
     raw_suggestions = _CONTEXT_SUGGESTIONS.get(page_key, _CONTEXT_SUGGESTIONS["home"])
 
-    personalized: List[ContextSuggestion] = []
+    personalized: list[ContextSuggestion] = []
     for s in raw_suggestions[:limit]:
         prompt = s["prompt"]
         if entity_name and page_key in ("vaga", "candidato"):

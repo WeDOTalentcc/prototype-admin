@@ -6,16 +6,15 @@ Endpoints:
 - GET /fairness/reports/trend     — série temporal de bloqueios
 - GET /fairness/audit/logs        — audit trail paginado (FAR-2/B)
 """
-from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -24,15 +23,15 @@ class FairnessCategorySummary(BaseModel):
     category: str
     total_blocks: int
     total_warnings: int
-    last_occurrence: Optional[datetime]
+    last_occurrence: datetime | None
 
 
 class FairnessSummaryResponse(BaseModel):
     period_days: int
-    company_id: Optional[str]
+    company_id: str | None
     total_blocks: int
     total_events: int
-    by_category: List[FairnessCategorySummary]
+    by_category: list[FairnessCategorySummary]
 
 
 class FairnessTrendPoint(BaseModel):
@@ -43,13 +42,13 @@ class FairnessTrendPoint(BaseModel):
 
 class FairnessTrendResponse(BaseModel):
     period_days: int
-    company_id: Optional[str]
-    trend: List[FairnessTrendPoint]
+    company_id: str | None
+    trend: list[FairnessTrendPoint]
 
 
 @router.get("/reports/summary", response_model=FairnessSummaryResponse)
 async def get_fairness_summary(
-    company_id: Optional[str] = Query(None, description="Filter by company UUID"),
+    company_id: str | None = Query(None, description="Filter by company UUID"),
     days: int = Query(30, ge=1, le=365, description="Look-back period in days"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -62,7 +61,7 @@ async def get_fairness_summary(
     """
     from app.models.fairness_audit import FairnessAuditLog
 
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(UTC) - timedelta(days=days)
 
     stmt = select(
         FairnessAuditLog.category,
@@ -107,7 +106,7 @@ async def get_fairness_summary(
 
 @router.get("/reports/trend", response_model=FairnessTrendResponse)
 async def get_fairness_trend(
-    company_id: Optional[str] = Query(None, description="Filter by company UUID"),
+    company_id: str | None = Query(None, description="Filter by company UUID"),
     days: int = Query(90, ge=7, le=365, description="Look-back period in days"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -118,10 +117,11 @@ async def get_fairness_trend(
     Returns a time-series suitable for charting bias detection trends.
     Useful for identifying if training/coaching is reducing discrimination attempts.
     """
-    from app.models.fairness_audit import FairnessAuditLog
-    from sqlalchemy import cast, Date
+    from sqlalchemy import Date, cast
 
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    from app.models.fairness_audit import FairnessAuditLog
+
+    since = datetime.now(UTC) - timedelta(days=days)
 
     stmt = select(
         cast(FairnessAuditLog.created_at, Date).label("day"),
@@ -158,28 +158,28 @@ async def get_fairness_trend(
 
 class FairnessAuditLogEntry(BaseModel):
     id: str
-    category: Optional[str]
+    category: str | None
     is_blocked: bool
-    blocked_terms: Optional[List[str]]
-    soft_warnings: Optional[List[str]]
-    context: Optional[str]
-    recruiter_id: Optional[str]
-    job_id: Optional[str]
+    blocked_terms: list[str] | None
+    soft_warnings: list[str] | None
+    context: str | None
+    recruiter_id: str | None
+    job_id: str | None
     created_at: datetime
 
 
 class FairnessAuditLogsResponse(BaseModel):
-    company_id: Optional[str]
+    company_id: str | None
     total: int
     limit: int
     offset: int
-    items: List[FairnessAuditLogEntry]
+    items: list[FairnessAuditLogEntry]
 
 
 @router.get("/audit/logs", response_model=FairnessAuditLogsResponse)
 async def get_fairness_audit_logs(
-    company_id: Optional[str] = Query(None, description="Filter by company UUID"),
-    category: Optional[str] = Query(None, description="Filter by bias category"),
+    company_id: str | None = Query(None, description="Filter by company UUID"),
+    category: str | None = Query(None, description="Filter by bias category"),
     blocked_only: bool = Query(False, description="Return only blocked events"),
     days: int = Query(30, ge=1, le=365, description="Look-back period in days"),
     limit: int = Query(50, ge=1, le=200),
@@ -193,10 +193,11 @@ async def get_fairness_audit_logs(
     Retorna eventos de bloqueio e soft-warning com metadados de contexto.
     Queries originais NÃO são expostas (apenas query_hash SHA-256).
     """
-    from app.models.fairness_audit import FairnessAuditLog
     import uuid as _uuid
 
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    from app.models.fairness_audit import FairnessAuditLog
+
+    since = datetime.now(UTC) - timedelta(days=days)
 
     stmt = select(FairnessAuditLog).where(FairnessAuditLog.created_at >= since)
 
@@ -245,7 +246,7 @@ async def get_fairness_audit_logs(
 
 @router.get("/reports/export")
 async def export_fairness_report(
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     days: int = Query(30, ge=1, le=365),
     format: str = Query("csv", regex="^(csv|json)$"),
     db: AsyncSession = Depends(get_db),
@@ -257,13 +258,14 @@ async def export_fairness_report(
     CSV format: category,total_blocks,total_warnings,last_occurrence
     JSON format: FairnessSummaryResponse schema
     """
-    from fastapi.responses import StreamingResponse, JSONResponse
     import csv
     import io
 
+    from fastapi.responses import JSONResponse, StreamingResponse
+
     # Reuse summary logic
     from app.models.fairness_audit import FairnessAuditLog
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now(UTC) - timedelta(days=days)
 
     stmt = select(
         FairnessAuditLog.category,
@@ -285,7 +287,7 @@ async def export_fairness_report(
         data = {
             "period_days": days,
             "company_id": company_id,
-            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "exported_at": datetime.now(UTC).isoformat(),
             "total_blocks": sum(r.blocks for r in rows),
             "total_events": sum(r.blocks + r.warnings for r in rows),
             "by_category": [
@@ -312,7 +314,7 @@ async def export_fairness_report(
             r.last_occurrence.isoformat() if r.last_occurrence else "",
         ])
     output.seek(0)
-    filename = f"fairness_report_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"
+    filename = f"fairness_report_{datetime.now(UTC).strftime('%Y%m%d')}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",

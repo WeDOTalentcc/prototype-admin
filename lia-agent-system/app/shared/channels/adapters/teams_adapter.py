@@ -2,7 +2,11 @@ import logging
 import uuid
 
 from app.shared.channels.channel_adapter import (
-    ChannelAdapter, ChannelType, ChannelMessage, DeliveryResult, DeliveryStatus
+    ChannelAdapter,
+    ChannelMessage,
+    ChannelType,
+    DeliveryResult,
+    DeliveryStatus,
 )
 
 logger = logging.getLogger(__name__)

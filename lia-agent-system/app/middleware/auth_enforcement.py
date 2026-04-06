@@ -20,7 +20,6 @@ _current_company_id: ContextVar[str] = ContextVar("_current_company_id", default
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp
 
 logger = logging.getLogger(__name__)
 

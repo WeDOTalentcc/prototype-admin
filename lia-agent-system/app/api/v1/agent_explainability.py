@@ -1,10 +1,9 @@
 import logging
-from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
+from lia_agents_core.execution_log_store import ExecutionLogStore
 from pydantic import BaseModel
 
-from lia_agents_core.execution_log_store import ExecutionLogStore
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 
@@ -18,21 +17,21 @@ store = ExecutionLogStore()
 class TimelineStepResponse(BaseModel):
     iteration: int
     phase: str
-    reasoning_summary: Optional[str] = None
-    tool_used: Optional[str] = None
-    tool_result_summary: Optional[str] = None
-    decision: Optional[str] = None
+    reasoning_summary: str | None = None
+    tool_used: str | None = None
+    tool_result_summary: str | None = None
+    decision: str | None = None
     duration_ms: float = 0
-    timestamp: Optional[str] = None
+    timestamp: str | None = None
 
 
 class SessionSummaryResponse(BaseModel):
     total_steps: int
-    tools_used: List[str]
+    tools_used: list[str]
     reasoning_summary: str
     confidence: float
     duration_ms: float
-    stage_progression: Optional[str] = None
+    stage_progression: str | None = None
 
 
 class ExecutionSummaryResponse(BaseModel):
@@ -47,7 +46,7 @@ class ExecutionSummaryResponse(BaseModel):
     final_confidence: float
     stage_transitioned: bool
     model_provider: str
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
 
 class ToolUsageResponse(BaseModel):
@@ -62,10 +61,10 @@ class StatsResponse(BaseModel):
     total_executions: int
     total_tools_succeeded: int
     total_tools_failed: int
-    most_used_tools: List[ToolUsageResponse]
+    most_used_tools: list[ToolUsageResponse]
 
 
-@router.get("/timeline/{session_id}", response_model=List[TimelineStepResponse])
+@router.get("/timeline/{session_id}", response_model=list[TimelineStepResponse])
 async def get_timeline(session_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         timeline = await store.get_timeline(session_id)
@@ -115,10 +114,10 @@ async def get_session_summary(session_id: str, current_user: User = Depends(get_
         raise HTTPException(status_code=500, detail="Failed to fetch session summary")
 
 
-@router.get("/company/{company_id}/recent", response_model=List[ExecutionSummaryResponse])
+@router.get("/company/{company_id}/recent", response_model=list[ExecutionSummaryResponse])
 async def get_recent_executions(
     company_id: str,
-    domain: Optional[str] = Query(None, description="Filter by domain"),
+    domain: str | None = Query(None, description="Filter by domain"),
     limit: int = Query(20, le=100, ge=1),
     current_user: User = Depends(get_current_user_or_demo),
 ):

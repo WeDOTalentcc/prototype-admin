@@ -7,13 +7,12 @@ Endpoints:
   GET /api/v1/recruiter-metrics/{recruiter_id}/benchmark  — comparação com mediana da empresa
 """
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.core.auth import get_current_user_or_demo
+from app.core.database import get_db
 from app.services.recruiter_metrics_service import recruiter_metrics_service
 
 logger = logging.getLogger(__name__)

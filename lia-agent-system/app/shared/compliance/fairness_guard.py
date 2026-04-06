@@ -8,11 +8,11 @@ instead of proceeding with the query.
 Part of the 3-pillar compliance architecture (LGPD, SOX, EU AI Act).
 """
 import hashlib
-import re
 import logging
+import re
 import unicodedata
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ def _normalize_text(text: str) -> str:
     return unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('ascii')
 
 
-IMPLICIT_BIAS_TERMS: Dict[str, str] = {
+IMPLICIT_BIAS_TERMS: dict[str, str] = {
     # Chaves sem acentuação — _normalize_text() normaliza antes da busca
     "boa aparencia": "O termo 'boa aparência' pode configurar discriminação estética (Lei 12.984/14). Use critérios objetivos de apresentação profissional.",
     "bairros nobres": "Filtrar por 'bairros nobres' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade ou mobilidade.",
@@ -99,12 +99,12 @@ IMPLICIT_BIAS_TERMS_EN: dict = {
 @dataclass
 class FairnessCheckResult:
     is_blocked: bool
-    blocked_terms: List[str] = field(default_factory=list)
-    category: Optional[str] = None
-    educational_message: Optional[str] = None
+    blocked_terms: list[str] = field(default_factory=list)
+    category: str | None = None
+    educational_message: str | None = None
     original_query: str = ""
     confidence: float = 0.0
-    soft_warnings: List[str] = field(default_factory=list)
+    soft_warnings: list[str] = field(default_factory=list)
 
     @property
     def is_biased(self) -> bool:
@@ -398,7 +398,7 @@ DISCRIMINATORY_CATEGORIES = {
     },
 }
 
-_COMPILED_PATTERNS: Dict[str, List[re.Pattern]] = {}
+_COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
 # v3: FAR-1 — 5 novas categorias (antecedentes_criminais, saude_doenca, filiacao_sindical,
 #              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
@@ -463,8 +463,8 @@ _LEARNING_PROTECTED_FIELDS: frozenset = frozenset({
 class LearningBatchValidationResult:
     """Resultado da validação de fairness de um batch de padrões aprendidos (F1-02)."""
     is_clean: bool
-    blocked_patterns: List[str]
-    warnings: List[str] = field(default_factory=list)
+    blocked_patterns: list[str]
+    warnings: list[str] = field(default_factory=list)
 
 
 class FairnessGuard:
@@ -523,7 +523,7 @@ class FairnessGuard:
         """Alias semântico para check() — verifica Camada 1 (padrões explícitos de viés)."""
         return self.check(text)
 
-    def check_implicit_bias(self, text: str) -> List[str]:
+    def check_implicit_bias(self, text: str) -> list[str]:
         if not text or not text.strip():
             return []
 
@@ -548,7 +548,7 @@ class FairnessGuard:
 
         return warnings
 
-    async def check_semantic(self, text: str, context: str = "", model: Optional[str] = None) -> FairnessCheckResult:
+    async def check_semantic(self, text: str, context: str = "", model: str | None = None) -> FairnessCheckResult:
         result = self.check(text)
 
         try:
@@ -586,7 +586,7 @@ class FairnessGuard:
                     semantic_prompt += f"Contexto: {context}\n"
                 no_bias_marker = "NENHUM_VIES_DETECTADO"
 
-            generate_kwargs: Dict[str, Any] = {}
+            generate_kwargs: dict[str, Any] = {}
             if model:
                 generate_kwargs["model"] = model
 
@@ -608,7 +608,7 @@ class FairnessGuard:
         self,
         text: str,
         action_type: str = "general",
-        context: Optional[str] = None,
+        context: str | None = None,
     ) -> FairnessCheckResult:
         """
         Verificação com Layer 3 (LLM semântico) ativada seletivamente.
@@ -639,6 +639,7 @@ class FairnessGuard:
         _redis = None
         try:
             import json
+
             import redis.asyncio as _aioredis
             from lia_config.config import settings
             _redis = _aioredis.from_url(settings.REDIS_URL)
@@ -720,7 +721,7 @@ class FairnessGuard:
         text: str,
         sector: str,
         action_type: str = "general",
-        context: Optional[str] = None,
+        context: str | None = None,
     ) -> FairnessCheckResult:
         """
         Sector-dependent FairnessGuard check (Fase 5 / G4).
@@ -781,7 +782,7 @@ class FairnessGuard:
 
     def validate_learning_batch(
         self,
-        patterns_to_update: Dict[str, Any],
+        patterns_to_update: dict[str, Any],
     ) -> "LearningBatchValidationResult":
         """
         Valida um batch de padrões aprendidos antes de persistir no DB (F1-02).
@@ -797,8 +798,8 @@ class FairnessGuard:
         Returns:
             LearningBatchValidationResult. is_clean=True quando nenhum padrão bloqueado.
         """
-        blocked: List[str] = []
-        warnings: List[str] = []
+        blocked: list[str] = []
+        warnings: list[str] = []
 
         for pattern_key, data in patterns_to_update.items():
             # pattern_key format: "field_name:role:seniority"
@@ -852,7 +853,7 @@ class FairnessGuard:
             warnings=warnings,
         )
 
-    def get_categories(self) -> List[str]:
+    def get_categories(self) -> list[str]:
         return list(DISCRIMINATORY_CATEGORIES.keys())
 
     async def log_check(
@@ -860,12 +861,12 @@ class FairnessGuard:
         result: "FairnessCheckResult",
         db: Optional["AsyncSession"] = None,
         context: Any = "unknown",
-        company_id: Optional[str] = None,
-        recruiter_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        candidate_id: Optional[str] = None,
+        company_id: str | None = None,
+        recruiter_id: str | None = None,
+        job_id: str | None = None,
+        candidate_id: str | None = None,
         # Parâmetro ignorado (compatibilidade com chamadas antigas que passavam input_text)
-        input_text: Optional[str] = None,
+        input_text: str | None = None,
     ) -> None:
         """
         Persist a FairnessGuard check result to the audit log (EU AI Act compliance).
@@ -894,8 +895,9 @@ class FairnessGuard:
             context_str = str(context) if context else "unknown"
 
         async def _persist(session: "AsyncSession") -> None:
-            from app.models.fairness_audit import FairnessAuditLog
             import uuid as _uuid
+
+            from app.models.fairness_audit import FairnessAuditLog
             query_hash = hashlib.sha256(result.original_query.encode("utf-8")).hexdigest()
             record = FairnessAuditLog(
                 company_id=_uuid.UUID(company_id) if company_id else None,

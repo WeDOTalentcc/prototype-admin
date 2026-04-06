@@ -4,12 +4,12 @@ Gemini Voice-to-Text Service
 Transcrição de áudio usando Gemini Flash 2.5 via Replit AI Integrations.
 Suporta múltiplos formatos de áudio e vídeo.
 """
-import os
 import logging
-from typing import Optional
+import os
+
 from google import genai
 from google.genai import types
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class GeminiVoiceService:
         self,
         audio_data: bytes,
         mime_type: str,
-        prompt: Optional[str] = None,
+        prompt: str | None = None,
         language: str = "pt-BR"
     ) -> dict:
         """
@@ -260,8 +260,8 @@ Parágrafo 3: Próximos passos ou recomendações (se mencionado)"""
         self,
         audio_data: bytes,
         mime_type: str,
-        job_title: Optional[str] = None,
-        questions: Optional[list[str]] = None
+        job_title: str | None = None,
+        questions: list[str] | None = None
     ) -> dict:
         """
         Transcreve e analisa entrevista de candidato.
@@ -279,7 +279,7 @@ Parágrafo 3: Próximos passos ou recomendações (se mencionado)"""
         
         questions_context = ""
         if questions:
-            questions_context = f"\n\nPerguntas esperadas:\n" + "\n".join(f"- {q}" for q in questions)
+            questions_context = "\n\nPerguntas esperadas:\n" + "\n".join(f"- {q}" for q in questions)
         
         job_context = f" para a vaga de {job_title}" if job_title else ""
         
@@ -339,7 +339,7 @@ Sugestões para follow-up ou próximas etapas."""
 
 
 # Singleton instance
-_voice_service: Optional[GeminiVoiceService] = None
+_voice_service: GeminiVoiceService | None = None
 
 
 def get_voice_service() -> GeminiVoiceService:

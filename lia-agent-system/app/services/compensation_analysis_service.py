@@ -8,35 +8,33 @@ This service compares proposed compensation (salary, bonus, benefits) against:
 
 Provides recommendations and identifies misalignments.
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from uuid import UUID as UUID_type
 import logging
-import re
+from datetime import datetime
+from typing import Any
+from uuid import UUID as UUID_type
 
-from sqlalchemy import select, and_, or_, func
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.compensation_policy import CompensationPolicy
-from app.models.company import Benefit
-from app.schemas.compensation_analysis import (
-    CompensationAnalysisResult,
-    SalaryAnalysis,
-    BonusAnalysis,
-    BenefitAnalysis,
-    TotalCompAnalysis,
-    CompensationAlignmentStatus,
-    DataSource,
-)
-from app.services.market_benchmark_service import MarketBenchmarkService
-from app.services.company_configuration_service import CompanyConfigurationService
 from app.domains.analytics.services.job_insights_service import JobInsightsService
+from app.models.compensation_policy import CompensationPolicy
+from app.schemas.compensation_analysis import (
+    BenefitAnalysis,
+    BonusAnalysis,
+    CompensationAlignmentStatus,
+    CompensationAnalysisResult,
+    DataSource,
+    SalaryAnalysis,
+    TotalCompAnalysis,
+)
+from app.services.company_configuration_service import CompanyConfigurationService
+from app.services.market_benchmark_service import MarketBenchmarkService
 
 logger = logging.getLogger(__name__)
 
 
-def _to_uuid(value: str) -> Optional[UUID_type]:
+def _to_uuid(value: str) -> UUID_type | None:
     """Convert string to UUID, returns None if invalid."""
     try:
         return UUID_type(value)
@@ -87,13 +85,13 @@ class CompensationAnalysisService:
         company_id: str,
         job_title: str,
         seniority: str,
-        department: Optional[str] = None,
-        location: Optional[str] = None,
-        proposed_salary_min: Optional[float] = None,
-        proposed_salary_max: Optional[float] = None,
-        proposed_bonus_pct: Optional[float] = None,
-        proposed_benefits: Optional[List[str]] = None,
-        db: Optional[AsyncSession] = None
+        department: str | None = None,
+        location: str | None = None,
+        proposed_salary_min: float | None = None,
+        proposed_salary_max: float | None = None,
+        proposed_bonus_pct: float | None = None,
+        proposed_benefits: list[str] | None = None,
+        db: AsyncSession | None = None
     ) -> CompensationAnalysisResult:
         """
         Analyze proposed compensation against company policy and market data.
@@ -115,9 +113,9 @@ class CompensationAnalysisService:
         """
         self.logger.info(f"Analyzing compensation for {job_title} ({seniority}) at company {company_id}")
         
-        data_sources_used: List[DataSource] = []
-        alerts: List[str] = []
-        recommendations: List[str] = []
+        data_sources_used: list[DataSource] = []
+        alerts: list[str] = []
+        recommendations: list[str] = []
         
         if db:
             return await self._perform_analysis(
@@ -159,15 +157,15 @@ class CompensationAnalysisService:
         company_id: str,
         job_title: str,
         seniority: str,
-        department: Optional[str],
-        location: Optional[str],
-        proposed_salary_min: Optional[float],
-        proposed_salary_max: Optional[float],
-        proposed_bonus_pct: Optional[float],
-        proposed_benefits: List[str],
-        data_sources_used: List[DataSource],
-        alerts: List[str],
-        recommendations: List[str]
+        department: str | None,
+        location: str | None,
+        proposed_salary_min: float | None,
+        proposed_salary_max: float | None,
+        proposed_bonus_pct: float | None,
+        proposed_benefits: list[str],
+        data_sources_used: list[DataSource],
+        alerts: list[str],
+        recommendations: list[str]
     ) -> CompensationAnalysisResult:
         """Execute the complete compensation analysis."""
         
@@ -253,8 +251,8 @@ class CompensationAnalysisService:
         company_id: str,
         job_title: str,
         seniority: str,
-        department: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+        department: str | None = None
+    ) -> dict[str, Any] | None:
         """
         Find matching compensation policy for role/seniority/department.
         
@@ -295,7 +293,7 @@ class CompensationAnalysisService:
             result = await db.execute(query)
             policies = result.scalars().all()
             
-            best_match: Optional[CompensationPolicy] = None
+            best_match: CompensationPolicy | None = None
             best_score = 0
             
             for policy in policies:
@@ -384,8 +382,8 @@ class CompensationAnalysisService:
         company_id: str,
         job_title: str,
         seniority: str,
-        location: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+        location: str | None = None
+    ) -> dict[str, Any] | None:
         """Fetch market benchmark data for the role."""
         try:
             result = await self.market_benchmark_service.search_salary_benchmark(
@@ -405,13 +403,13 @@ class CompensationAnalysisService:
     
     def _analyze_salary(
         self,
-        proposed_min: Optional[float],
-        proposed_max: Optional[float],
-        policy: Optional[Dict[str, Any]],
-        market_data: Optional[Dict[str, Any]],
-        alerts: List[str],
-        recommendations: List[str],
-        data_sources: List[DataSource]
+        proposed_min: float | None,
+        proposed_max: float | None,
+        policy: dict[str, Any] | None,
+        market_data: dict[str, Any] | None,
+        alerts: list[str],
+        recommendations: list[str],
+        data_sources: list[DataSource]
     ) -> SalaryAnalysis:
         """Analyze salary against policy and market."""
         analysis = SalaryAnalysis(
@@ -419,7 +417,7 @@ class CompensationAnalysisService:
             proposed_max=proposed_max,
         )
         
-        sources: List[DataSource] = []
+        sources: list[DataSource] = []
         confidence = 0.0
         
         if market_data:
@@ -497,10 +495,10 @@ class CompensationAnalysisService:
     
     def _analyze_bonus(
         self,
-        proposed_pct: Optional[float],
-        policy: Optional[Dict[str, Any]],
-        alerts: List[str],
-        recommendations: List[str]
+        proposed_pct: float | None,
+        policy: dict[str, Any] | None,
+        alerts: list[str],
+        recommendations: list[str]
     ) -> BonusAnalysis:
         """Analyze bonus against company policy."""
         analysis = BonusAnalysis(
@@ -540,11 +538,11 @@ class CompensationAnalysisService:
     
     def _analyze_benefits(
         self,
-        proposed_benefits: List[str],
-        company_benefits: List[Dict[str, Any]],
+        proposed_benefits: list[str],
+        company_benefits: list[dict[str, Any]],
         seniority: str,
-        alerts: List[str],
-        recommendations: List[str]
+        alerts: list[str],
+        recommendations: list[str]
     ) -> BenefitAnalysis:
         """Analyze benefits against company standard package."""
         
@@ -586,12 +584,12 @@ class CompensationAnalysisService:
     
     def _calculate_monetizable_benefits(
         self,
-        proposed_benefits: List[str],
-        company_benefits: List[Dict[str, Any]]
+        proposed_benefits: list[str],
+        company_benefits: list[dict[str, Any]]
     ) -> tuple:
         """Calculate annual value of monetizable benefits."""
         total_value = 0.0
-        breakdown: Dict[str, float] = {}
+        breakdown: dict[str, float] = {}
         
         company_benefit_values = {}
         for benefit in company_benefits:
@@ -625,8 +623,8 @@ class CompensationAnalysisService:
         salary_analysis: SalaryAnalysis,
         bonus_analysis: BonusAnalysis,
         benefits_analysis: BenefitAnalysis,
-        policy: Optional[Dict[str, Any]],
-        market_data: Optional[Dict[str, Any]]
+        policy: dict[str, Any] | None,
+        market_data: dict[str, Any] | None
     ) -> TotalCompAnalysis:
         """Calculate total compensation breakdown."""
         analysis = TotalCompAnalysis()
@@ -711,9 +709,9 @@ class CompensationAnalysisService:
         bonus_analysis: BonusAnalysis,
         benefits_analysis: BenefitAnalysis,
         total_comp: TotalCompAnalysis,
-        data_sources_used: List[DataSource],
-        alerts: List[str],
-        recommendations: List[str],
+        data_sources_used: list[DataSource],
+        alerts: list[str],
+        recommendations: list[str],
         job_title: str,
         seniority: str
     ) -> CompensationAnalysisResult:
@@ -747,7 +745,7 @@ class CompensationAnalysisService:
         else:
             summary = f"Dados insuficientes para análise completa de compensação para {job_title} ({seniority})."
         
-        suggested_values: Dict[str, Any] = {}
+        suggested_values: dict[str, Any] = {}
         
         if salary_analysis.suggested_min is not None:
             suggested_values["salary_min"] = salary_analysis.suggested_min

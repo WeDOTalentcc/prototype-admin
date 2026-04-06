@@ -14,11 +14,10 @@ Uso:
   # WS envia { "type": "thinking", "job_id": job_id } ao cliente
 """
 import logging
-from typing import Optional
 from uuid import uuid4
 
-from app.shared.messaging.message_schemas import AgentChatMessage, AgentResponseMessage
 from app.shared.messaging.celery_config import get_domain_config
+from app.shared.messaging.message_schemas import AgentChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class DomainDispatcher:
     """
 
     def __init__(self):
-        self._available: Optional[bool] = None  # None = não testado ainda
+        self._available: bool | None = None  # None = não testado ainda
 
     async def is_available(self) -> bool:
         """Retorna True se RabbitMQ está configurado e acessível."""
@@ -86,8 +85,8 @@ class DomainDispatcher:
         if not await self.is_available():
             raise RuntimeError("RabbitMQ não configurado — use execução síncrona")
 
-        from app.shared.messaging.rabbitmq_producer import rabbitmq_producer
         from app.shared.messaging.rabbitmq_consumer import rabbitmq_consumer
+        from app.shared.messaging.rabbitmq_producer import rabbitmq_producer
 
         # Garante fila de resposta para a sessão
         reply_to = await rabbitmq_consumer.subscribe_session(message.session_id)
@@ -134,7 +133,6 @@ class DomainDispatcher:
         Returns:
             task_id do Celery.
         """
-        from lia_agents_core.agent_interface import AgentInput
 
         agent_input_dict = {
             "message": message.message,

@@ -8,9 +8,9 @@ Modules:
 - communication_actions: send_email, schedule_interview, create_generic_event
 """
 from .candidate_actions import execute_candidate_action
+from .communication_actions import execute_communication_action
 from .job_actions import execute_job_action
 from .pipeline_actions import execute_pipeline_action
-from .communication_actions import execute_communication_action
 
 __all__ = [
     "execute_candidate_action",

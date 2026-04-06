@@ -10,9 +10,10 @@ Allows each client to:
 """
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON
-from sqlalchemy.dialects.postgresql import UUID
+
 from lia_config.database import Base
+from sqlalchemy import JSON, Boolean, Column, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class TenantLLMConfig(Base):

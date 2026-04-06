@@ -7,17 +7,18 @@ Provides proactive notifications for key recruitment events:
 - Candidate timeout alerts
 """
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime
+from typing import Any
+
 import httpx
 from botbuilder.core import (
     BotFrameworkAdapter,
     BotFrameworkAdapterSettings,
-    TurnContext,
     ConversationReference,
-    MessageFactory
+    MessageFactory,
+    TurnContext,
 )
-from botbuilder.schema import Activity, ActivityTypes, ChannelAccount
+from botbuilder.schema import Activity, ActivityTypes
 
 from app.core.config import settings
 
@@ -31,7 +32,7 @@ class TeamsBot:
     """
 
     def __init__(self):
-        self._adapter: Optional[BotFrameworkAdapter] = None
+        self._adapter: BotFrameworkAdapter | None = None
         self._initialised = False
 
     def _ensure_adapter(self) -> bool:
@@ -62,7 +63,7 @@ class TeamsBot:
             return False
 
     @property
-    def adapter(self) -> Optional[BotFrameworkAdapter]:
+    def adapter(self) -> BotFrameworkAdapter | None:
         self._ensure_adapter()
         return self._adapter
 
@@ -70,7 +71,7 @@ class TeamsBot:
     def is_available(self) -> bool:
         return self._ensure_adapter()
 
-    async def process_activity(self, activity: Dict[str, Any], auth_header: str) -> Dict[str, Any]:
+    async def process_activity(self, activity: dict[str, Any], auth_header: str) -> dict[str, Any]:
         if not self._ensure_adapter():
             return {"status": "disabled", "reason": "Teams not configured"}
         activity_obj = Activity().deserialize(activity)
@@ -89,7 +90,7 @@ class TeamsBot:
     async def _handle_message(self, turn_context: TurnContext):
         user_message = turn_context.activity.text
         logger.info(f"Received message from {turn_context.activity.from_property.name}: {user_message}")
-        conversation_ref = TurnContext.get_conversation_reference(turn_context.activity)
+        TurnContext.get_conversation_reference(turn_context.activity)
         await turn_context.send_activity(
             f"Recebi sua mensagem: '{user_message}'. Em breve responderei com inteligência!"
         )
@@ -114,7 +115,7 @@ class TeamsBot:
         logger.info(f"Received invoke action: {action_data}")
         await turn_context.send_activity("Ação recebida! Processando...")
 
-    async def _send_via_webhook(self, card_payload: Dict[str, Any]) -> bool:
+    async def _send_via_webhook(self, card_payload: dict[str, Any]) -> bool:
         """Send an Adaptive Card via incoming webhook URL (no conversation reference needed)."""
         webhook_url = getattr(settings, "TEAMS_WEBHOOK_URL", None)
         if not webhook_url:
@@ -141,8 +142,8 @@ class TeamsBot:
 
     async def _deliver_card(
         self,
-        card_payload: Dict[str, Any],
-        conversation_reference: Optional[ConversationReference] = None,
+        card_payload: dict[str, Any],
+        conversation_reference: ConversationReference | None = None,
     ) -> bool:
         """
         Deliver an Adaptive Card via proactive message (if conversation_reference
@@ -174,7 +175,7 @@ class TeamsBot:
         self,
         conversation_reference: ConversationReference,
         message: str,
-        card_payload: Optional[Dict[str, Any]] = None
+        card_payload: dict[str, Any] | None = None
     ) -> bool:
         if card_payload:
             return await self._deliver_card(card_payload, conversation_reference)
@@ -199,8 +200,8 @@ class TeamsBot:
     async def send_notification(
         self,
         notification_type: str,
-        data: Dict[str, Any],
-        conversation_reference: Optional[ConversationReference] = None,
+        data: dict[str, Any],
+        conversation_reference: ConversationReference | None = None,
     ) -> bool:
         card = self._create_adaptive_card(notification_type, data)
         return await self._deliver_card(card, conversation_reference)
@@ -209,10 +210,10 @@ class TeamsBot:
         self,
         candidate_name: str,
         job_title: str,
-        score: Optional[float] = None,
-        classification: Optional[str] = None,
-        details_url: Optional[str] = None,
-        conversation_reference: Optional[ConversationReference] = None,
+        score: float | None = None,
+        classification: str | None = None,
+        details_url: str | None = None,
+        conversation_reference: ConversationReference | None = None,
     ) -> bool:
         """
         Notify recruiter that a candidate has completed triagem.
@@ -239,8 +240,8 @@ class TeamsBot:
         job_title: str,
         scheduled_time: str,
         interview_type: str = "Entrevista",
-        details_url: Optional[str] = None,
-        conversation_reference: Optional[ConversationReference] = None,
+        details_url: str | None = None,
+        conversation_reference: ConversationReference | None = None,
     ) -> bool:
         """
         Notify recruiter that an interview scheduling has been confirmed.
@@ -263,9 +264,9 @@ class TeamsBot:
         candidate_name: str,
         job_title: str,
         timeout_type: str = "triagem",
-        hours_elapsed: Optional[float] = None,
-        details_url: Optional[str] = None,
-        conversation_reference: Optional[ConversationReference] = None,
+        hours_elapsed: float | None = None,
+        details_url: str | None = None,
+        conversation_reference: ConversationReference | None = None,
     ) -> bool:
         """
         Notify recruiter that a candidate has timed out.
@@ -284,7 +285,7 @@ class TeamsBot:
         card = self._card_candidate_timeout(data)
         return await self._deliver_card(card, conversation_reference)
 
-    def _card_triagem_completed(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _card_triagem_completed(self, data: dict[str, Any]) -> dict[str, Any]:
         facts = [
             {"title": "Candidato:", "value": data.get("candidate_name", "")},
             {"title": "Vaga:", "value": data.get("job_title", "")},
@@ -295,7 +296,7 @@ class TeamsBot:
         if data.get("classification"):
             facts.append({"title": "Classificação:", "value": data["classification"]})
 
-        card: Dict[str, Any] = {
+        card: dict[str, Any] = {
             "type": "AdaptiveCard",
             "version": "1.4",
             "body": [
@@ -318,8 +319,8 @@ class TeamsBot:
             ]
         return card
 
-    def _card_scheduling_confirmed(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        card: Dict[str, Any] = {
+    def _card_scheduling_confirmed(self, data: dict[str, Any]) -> dict[str, Any]:
+        card: dict[str, Any] = {
             "type": "AdaptiveCard",
             "version": "1.4",
             "body": [
@@ -347,7 +348,7 @@ class TeamsBot:
             ]
         return card
 
-    def _card_candidate_timeout(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _card_candidate_timeout(self, data: dict[str, Any]) -> dict[str, Any]:
         facts = [
             {"title": "Candidato:", "value": data.get("candidate_name", "")},
             {"title": "Vaga:", "value": data.get("job_title", "")},
@@ -356,7 +357,7 @@ class TeamsBot:
         if data.get("hours_elapsed"):
             facts.append({"title": "Horas sem resposta:", "value": data["hours_elapsed"]})
 
-        card: Dict[str, Any] = {
+        card: dict[str, Any] = {
             "type": "AdaptiveCard",
             "version": "1.4",
             "body": [
@@ -384,7 +385,7 @@ class TeamsBot:
             ]
         return card
 
-    def _create_adaptive_card(self, notification_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_adaptive_card(self, notification_type: str, data: dict[str, Any]) -> dict[str, Any]:
         if notification_type == "triagem_completed":
             return self._card_triagem_completed(data)
         if notification_type == "scheduling_confirmed":

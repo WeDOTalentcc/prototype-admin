@@ -17,11 +17,9 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
-import math
 from dataclasses import dataclass, field
-from datetime import datetime, date
+from datetime import date, datetime
 from statistics import mean, quantiles
-from typing import Optional
 
 try:
     import redis.asyncio as aioredis  # type: ignore
@@ -40,10 +38,10 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Module-level experiment registry (P03)
 # ---------------------------------------------------------------------------
-_experiments: dict[str, "PromptExperiment"] = {}
+_experiments: dict[str, PromptExperiment] = {}
 
 
-def get_experiment(experiment_id: str) -> Optional["PromptExperiment"]:
+def get_experiment(experiment_id: str) -> PromptExperiment | None:
     """Return a registered PromptExperiment by its ID, or None if not found.
 
     Args:
@@ -55,7 +53,7 @@ def get_experiment(experiment_id: str) -> Optional["PromptExperiment"]:
     return _experiments.get(experiment_id)
 
 
-def register_experiment(experiment: "PromptExperiment") -> None:
+def register_experiment(experiment: PromptExperiment) -> None:
     """Register a PromptExperiment in the module-level registry.
 
     Args:
@@ -104,7 +102,7 @@ class ExperimentResult:
     response_text: str
     latency_ms: float
     tokens_used: int
-    quality_score: Optional[float] = None
+    quality_score: float | None = None
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -159,7 +157,7 @@ class PromptExperiment:
         self._memory_store: dict[str, list[dict]] = {}
 
         # Optional Redis client (lazy-initialised)
-        self._redis: Optional[object] = None
+        self._redis: object | None = None
         self._redis_checked = False
 
         logger.info(
@@ -207,7 +205,7 @@ class PromptExperiment:
     # Redis helpers
     # ------------------------------------------------------------------
 
-    async def _get_redis(self) -> Optional[object]:
+    async def _get_redis(self) -> object | None:
         """Return a Redis client if available, else None."""
         if self._redis_checked:
             return self._redis
@@ -332,7 +330,7 @@ class PromptExperiment:
             n = len(latencies)
             avg_latency = mean(latencies) if n > 0 else None
             avg_quality = mean(qualities) if qualities else None
-            p95_latency: Optional[float] = None
+            p95_latency: float | None = None
             if n >= 2:
                 # quantiles() needs at least 2 data points; n=1 → use the value itself
                 p95_latency = quantiles(latencies, n=20)[18]  # 95th percentile
@@ -355,7 +353,7 @@ class PromptExperiment:
     @classmethod
     async def from_yaml(
         cls, experiment_id: str, yaml_path: str
-    ) -> "PromptExperiment":
+    ) -> PromptExperiment:
         """Load a PromptExperiment from a YAML configuration file.
 
         Expected YAML structure::
@@ -419,5 +417,5 @@ class PromptExperiment:
 
 def _read_file(path: str) -> str:
     """Synchronous helper to read a file (run in executor)."""
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return fh.read()

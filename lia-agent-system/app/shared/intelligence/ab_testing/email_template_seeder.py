@@ -10,7 +10,7 @@ Each test has a control + treatment variant with 50/50 traffic split.
 Uses the persistent ABTestingService (PromptVariant model).
 """
 import logging
-from typing import List, Dict, Any
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,7 +18,7 @@ from app.shared.learning.ab_testing_service import ABTestingService
 
 logger = logging.getLogger(__name__)
 
-EMAIL_AB_TESTS: List[Dict[str, Any]] = [
+EMAIL_AB_TESTS: list[dict[str, Any]] = [
     {
         "test_name": "email_screening_invite",
         "variants": [
@@ -109,7 +109,7 @@ EMAIL_AB_TESTS: List[Dict[str, Any]] = [
 ]
 
 
-async def seed_email_ab_tests(db: AsyncSession) -> Dict[str, Any]:
+async def seed_email_ab_tests(db: AsyncSession) -> dict[str, Any]:
     """Seed A/B test variants for email templates if not already present."""
     service = ABTestingService()
     results = {"created": [], "skipped": [], "errors": []}

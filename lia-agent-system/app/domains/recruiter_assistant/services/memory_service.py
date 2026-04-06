@@ -3,16 +3,16 @@ Memory service for managing conversation memory and knowledge base.
 Provides storage and semantic search capabilities using pgvector.
 """
 import logging
-from typing import List, Optional, Dict, Any
-from uuid import UUID, uuid4
 from datetime import datetime
+from typing import Any
+from uuid import UUID, uuid4
 
-from sqlalchemy import select, and_, delete, text
+from sqlalchemy import and_, delete, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.memory import ConversationMemory, KnowledgeBase, DOCUMENT_TYPES
-from app.services.embedding_service import embedding_service, EMBEDDING_DIMENSION
 from app.core.database import AsyncSessionLocal
+from app.models.memory import DOCUMENT_TYPES, ConversationMemory, KnowledgeBase
+from app.services.embedding_service import embedding_service
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,8 @@ class MemoryService:
         content: str,
         company_id: UUID,
         user_id: str,
-        metadata: Optional[Dict[str, Any]] = None,
-        db: Optional[AsyncSession] = None
+        metadata: dict[str, Any] | None = None,
+        db: AsyncSession | None = None
     ) -> ConversationMemory:
         """
         Store a message with its embedding.
@@ -87,11 +87,11 @@ class MemoryService:
         query: str,
         company_id: UUID,
         limit: int = 5,
-        session_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        session_id: str | None = None,
+        user_id: str | None = None,
         min_similarity: float = 0.7,
-        db: Optional[AsyncSession] = None
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> list[dict[str, Any]]:
         """
         Search for similar previous messages using vector similarity.
         
@@ -121,7 +121,7 @@ class MemoryService:
                 filters.append(ConversationMemory.user_id == user_id)
             
             similarity_expr = text(
-                f"1 - (embedding <=> :query_embedding::vector)"
+                "1 - (embedding <=> :query_embedding::vector)"
             )
             
             stmt = (
@@ -163,8 +163,8 @@ class MemoryService:
         session_id: str,
         company_id: UUID,
         limit: int = 10,
-        db: Optional[AsyncSession] = None
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get recent conversation history for a session.
         
@@ -213,11 +213,11 @@ class MemoryService:
         title: str,
         content: str,
         company_id: UUID,
-        source: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        source: str | None = None,
+        metadata: dict[str, Any] | None = None,
         chunk_size: int = 1000,
-        db: Optional[AsyncSession] = None
-    ) -> List[KnowledgeBase]:
+        db: AsyncSession | None = None
+    ) -> list[KnowledgeBase]:
         """
         Add a document to the knowledge base with chunking for long documents.
         
@@ -287,11 +287,11 @@ class MemoryService:
         self,
         query: str,
         company_id: UUID,
-        document_types: Optional[List[str]] = None,
+        document_types: list[str] | None = None,
         limit: int = 5,
         min_similarity: float = 0.7,
-        db: Optional[AsyncSession] = None
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> list[dict[str, Any]]:
         """
         Search the knowledge base for relevant documents.
         
@@ -318,7 +318,7 @@ class MemoryService:
                 filters.append(KnowledgeBase.document_type.in_(document_types))
             
             similarity_expr = text(
-                f"1 - (embedding <=> :query_embedding::vector)"
+                "1 - (embedding <=> :query_embedding::vector)"
             )
             
             stmt = (
@@ -359,7 +359,7 @@ class MemoryService:
         self,
         session_id: str,
         company_id: UUID,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> int:
         """
         Delete all messages for a session.
@@ -395,7 +395,7 @@ class MemoryService:
         self,
         document_id: UUID,
         company_id: UUID,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> int:
         """
         Delete a document and all its chunks from the knowledge base.

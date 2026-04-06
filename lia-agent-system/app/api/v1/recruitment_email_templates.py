@@ -2,28 +2,25 @@
 Recruitment Email Templates API endpoints.
 Provides CRUD operations for pipeline stage email templates.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, and_, or_
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, Field
-from datetime import datetime
 import logging
 import uuid as uuid_module
+from datetime import datetime
 
-from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
 from app.domains.job_management.services.recruitment_email_templates import (
-    seed_default_templates,
+    SAMPLE_DATA,
+    clone_templates_for_company,
     get_template_for_stage,
     list_templates,
     render_template,
-    preview_template,
-    clone_templates_for_company,
-    SAMPLE_DATA,
+    seed_default_templates,
 )
-from app.core.database import get_db
-from app.auth.dependencies import get_current_user
-from app.auth.models import User
+from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 
 logger = logging.getLogger(__name__)
 
@@ -32,54 +29,54 @@ router = APIRouter(prefix="/recruitment-email-templates", tags=["recruitment-ema
 
 class TemplateResponse(BaseModel):
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     stage_name: str
     template_type: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     subject: str
     body_html: str
-    body_text: Optional[str] = None
-    variables: List[str] = []
+    body_text: str | None = None
+    variables: list[str] = []
     is_active: bool
     is_default: bool
     is_system: bool
     version: int
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_by: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class TemplateListResponse(BaseModel):
     total: int
-    items: List[TemplateResponse]
+    items: list[TemplateResponse]
 
 
 class TemplateUpdateRequest(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    subject: Optional[str] = None
-    body_html: Optional[str] = None
-    body_text: Optional[str] = None
-    variables: Optional[List[str]] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    subject: str | None = None
+    body_html: str | None = None
+    body_text: str | None = None
+    variables: list[str] | None = None
+    is_active: bool | None = None
 
 
 class TemplatePreviewRequest(BaseModel):
-    variables: Optional[Dict[str, str]] = Field(default_factory=dict)
+    variables: dict[str, str] | None = Field(default_factory=dict)
 
 
 class TemplatePreviewResponse(BaseModel):
     subject: str
     body_html: str
     body_text: str
-    variables_used: Dict[str, str]
+    variables_used: dict[str, str]
 
 
 class SeedResponse(BaseModel):
     message: str
     created_count: int
-    templates: List[TemplateResponse]
+    templates: list[TemplateResponse]
 
 
 class StageInfo(BaseModel):
@@ -118,10 +115,10 @@ def template_to_response(template: RecruitmentEmailTemplate) -> TemplateResponse
 
 @router.get("", response_model=TemplateListResponse)
 async def list_recruitment_email_templates(
-    stage_name: Optional[str] = Query(None, description="Filter by stage name"),
-    template_type: Optional[str] = Query(None, description="Filter by template type: candidate, recruiter, manager"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    company_id: Optional[str] = Query(None, description="Filter by company ID"),
+    stage_name: str | None = Query(None, description="Filter by stage name"),
+    template_type: str | None = Query(None, description="Filter by template type: candidate, recruiter, manager"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    company_id: str | None = Query(None, description="Filter by company ID"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -146,7 +143,7 @@ async def list_recruitment_email_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stages", response_model=List[StageInfo])
+@router.get("/stages", response_model=list[StageInfo])
 async def list_available_stages():
     """
     List all available recruitment stages for templates.
@@ -166,7 +163,7 @@ async def list_available_stages():
     return stages
 
 
-@router.get("/types", response_model=List[TemplateTypeInfo])
+@router.get("/types", response_model=list[TemplateTypeInfo])
 async def list_template_types():
     """
     List all available template types.
@@ -194,7 +191,7 @@ async def list_available_variables():
 async def get_template_by_stage(
     stage_name: str,
     template_type: str = Query("candidate", description="Template type: candidate, recruiter, manager"),
-    company_id: Optional[str] = Query(None, description="Company ID for company-specific templates"),
+    company_id: str | None = Query(None, description="Company ID for company-specific templates"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -297,7 +294,7 @@ async def update_template(
 
 @router.post("/seed", response_model=SeedResponse)
 async def seed_templates(
-    company_id: Optional[str] = Query(None, description="Company ID to seed templates for"),
+    company_id: str | None = Query(None, description="Company ID to seed templates for"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -384,7 +381,7 @@ async def preview_stage_template(
     stage_name: str,
     preview_request: TemplatePreviewRequest,
     template_type: str = Query("candidate"),
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """

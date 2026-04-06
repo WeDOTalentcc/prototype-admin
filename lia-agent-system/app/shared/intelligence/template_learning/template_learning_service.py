@@ -9,7 +9,7 @@ Uses MessageQueue + CommunicationLog + EmailTrackingEvent for persistent data:
 - Queries UNION both sources and join with tracking events for rates
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,7 +30,7 @@ class TemplateLearningService:
         self,
         company_id: str,
         template_id: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> None:
         logger.info(
             "[TemplateLearning] send company=%s template=%s",
@@ -53,7 +53,7 @@ class TemplateLearningService:
         self,
         db: AsyncSession,
         company_id: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         fallback_template_id: str = "default",
         min_sends: int = 5,
     ) -> str:
@@ -115,11 +115,11 @@ class TemplateLearningService:
         self,
         db: AsyncSession,
         company_id: str,
-        template_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        template_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         """Get performance metrics per template from persistent data."""
         try:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             template_filter = ""
             if template_id:
                 template_filter = "AND mq.extra_data->>'template_id' = :template_id"

@@ -1,11 +1,11 @@
 import logging
 import time
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional
 
 from app.shared.async_processing.task_manager import DomainTaskManager
-from app.shared.async_processing.task_queue import AsyncTask, TaskPriority, TaskState, DomainTaskQueue
 from app.shared.async_processing.task_persistence import TaskPersistenceService
+from app.shared.async_processing.task_queue import AsyncTask, DomainTaskQueue, TaskPriority, TaskState
 
 logger = logging.getLogger(__name__)
 
@@ -121,14 +121,14 @@ class EnhancedTaskManager(DomainTaskManager):
         self,
         domain_id: str,
         action_id: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         user_id: str = "",
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
         priority: TaskPriority = TaskPriority.NORMAL,
         max_retries: int = 2,
-        callback: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        scheduled_at: Optional[datetime] = None,
+        callback: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        scheduled_at: datetime | None = None,
     ) -> str:
         task_id = await super().submit_task(
             domain_id=domain_id,
@@ -188,10 +188,10 @@ class EnhancedTaskManager(DomainTaskManager):
         max_retries: int,
         domain_id: str = "",
         action_id: str = "",
-        params: Optional[Dict[str, Any]] = None,
-        tenant_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        created_at: Optional[float] = None,
+        params: dict[str, Any] | None = None,
+        tenant_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        created_at: float | None = None,
     ) -> None:
         if retry_count >= max_retries:
             try:
@@ -266,13 +266,13 @@ class EnhancedTaskManager(DomainTaskManager):
 
     async def get_task_history(
         self,
-        domain_id: Optional[str] = None,
-        state: Optional[str] = None,
-        user_id: Optional[str] = None,
-        tenant_id: Optional[str] = None,
+        domain_id: str | None = None,
+        state: str | None = None,
+        user_id: str | None = None,
+        tenant_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         return await self._persistence.get_task_history(
             domain_id=domain_id,
             state=state,
@@ -282,12 +282,12 @@ class EnhancedTaskManager(DomainTaskManager):
             offset=offset,
         )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         base_stats = super().get_stats()
         base_stats["persistence_enabled"] = True
         return base_stats
 
-    async def get_enhanced_stats(self) -> Dict[str, Any]:
+    async def get_enhanced_stats(self) -> dict[str, Any]:
         base_stats = self.get_stats()
         try:
             db_stats = await self._persistence.get_db_stats()
@@ -297,7 +297,7 @@ class EnhancedTaskManager(DomainTaskManager):
             base_stats["database"] = {"error": str(e)}
         return base_stats
 
-    async def get_task_status_enhanced(self, task_id: str) -> Optional[Dict[str, Any]]:
+    async def get_task_status_enhanced(self, task_id: str) -> dict[str, Any] | None:
         status = self.get_task_status(task_id)
         if status:
             return status

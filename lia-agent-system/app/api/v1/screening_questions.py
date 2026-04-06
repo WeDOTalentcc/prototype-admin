@@ -2,30 +2,29 @@
 Company Screening Questions API endpoints.
 Manages company-level default screening questions that can be imported into job vacancies.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete, func
-from typing import Optional, List
-from uuid import UUID
-from datetime import datetime
 import logging
 import uuid as uuid_lib
+from datetime import datetime
+from uuid import UUID
 
-from app.core.database import get_db
-from app.models.screening_question import (
-    CompanyScreeningQuestion, 
-    DEFAULT_SCREENING_QUESTIONS,
-    QUESTION_CATEGORIES,
-    QUESTION_TYPES
-)
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import (
-    get_current_user,
     get_current_active_user,
     get_current_user_or_demo,
-    get_user_company_id
+    get_user_company_id,
 )
 from app.auth.models import User
-from pydantic import BaseModel, Field
+from app.core.database import get_db
+from app.models.screening_question import (
+    DEFAULT_SCREENING_QUESTIONS,
+    QUESTION_CATEGORIES,
+    QUESTION_TYPES,
+    CompanyScreeningQuestion,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -35,25 +34,25 @@ class ScreeningQuestionCreate(BaseModel):
     """Schema for creating a screening question."""
     question_text: str = Field(..., min_length=1, max_length=1000)
     question_type: str = "text"  # text, single_choice, multiple_choice, yes_no, scale
-    options: Optional[List[str]] = None
+    options: list[str] | None = None
     is_required: bool = True
     is_eliminatory: bool = False
-    expected_answer: Optional[str] = None
-    category: Optional[str] = None
-    order: Optional[int] = None
+    expected_answer: str | None = None
+    category: str | None = None
+    order: int | None = None
 
 
 class ScreeningQuestionUpdate(BaseModel):
     """Schema for updating a screening question."""
-    question_text: Optional[str] = None
-    question_type: Optional[str] = None
-    options: Optional[List[str]] = None
-    is_required: Optional[bool] = None
-    is_eliminatory: Optional[bool] = None
-    expected_answer: Optional[str] = None
-    category: Optional[str] = None
-    order: Optional[int] = None
-    is_active: Optional[bool] = None
+    question_text: str | None = None
+    question_type: str | None = None
+    options: list[str] | None = None
+    is_required: bool | None = None
+    is_eliminatory: bool | None = None
+    expected_answer: str | None = None
+    category: str | None = None
+    order: int | None = None
+    is_active: bool | None = None
 
 
 class ScreeningQuestionResponse(BaseModel):
@@ -62,15 +61,15 @@ class ScreeningQuestionResponse(BaseModel):
     company_id: str
     question_text: str
     question_type: str
-    options: Optional[List[str]] = None
+    options: list[str] | None = None
     is_required: bool = True
     is_eliminatory: bool = False
-    expected_answer: Optional[str] = None
-    category: Optional[str] = None
+    expected_answer: str | None = None
+    category: str | None = None
     order: int = 0
     is_active: bool = True
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -78,13 +77,13 @@ class ScreeningQuestionResponse(BaseModel):
 
 class ScreeningQuestionsListResponse(BaseModel):
     """Response for list of screening questions."""
-    items: List[ScreeningQuestionResponse]
+    items: list[ScreeningQuestionResponse]
     total_count: int
 
 
 class ReorderRequest(BaseModel):
     """Request to reorder questions."""
-    question_ids: List[str]  # Ordered list of question IDs
+    question_ids: list[str]  # Ordered list of question IDs
 
 
 class CategoriesResponse(BaseModel):
@@ -95,8 +94,8 @@ class CategoriesResponse(BaseModel):
 
 @router.get("/company/screening-questions", response_model=ScreeningQuestionsListResponse)
 async def list_company_screening_questions(
-    category: Optional[str] = None,
-    is_active: Optional[bool] = True,
+    category: str | None = None,
+    is_active: bool | None = True,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):

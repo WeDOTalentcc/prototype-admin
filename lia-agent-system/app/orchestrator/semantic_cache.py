@@ -13,7 +13,7 @@ TTL configurável via ROUTER_CACHE_TTL (padrão: 3600s).
 import hashlib
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from app.core.config import settings
 
@@ -54,7 +54,7 @@ class SemanticCache:
     def __init__(self, ttl: int = settings.ROUTER_CACHE_TTL):
         self.ttl = ttl
 
-    async def get(self, message: str) -> Optional[Dict[str, Any]]:
+    async def get(self, message: str) -> dict[str, Any] | None:
         """Retorna resultado cacheado ou None se ausente."""
         key = _cache_key(message)
         try:
@@ -69,7 +69,7 @@ class SemanticCache:
             logger.debug("[SemanticCache] get falhou: %s", exc)
         return None
 
-    async def set(self, message: str, result: Dict[str, Any]) -> None:
+    async def set(self, message: str, result: dict[str, Any]) -> None:
         """Armazena resultado com TTL configurado."""
         key = _cache_key(message)
         try:

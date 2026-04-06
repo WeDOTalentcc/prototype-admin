@@ -7,32 +7,22 @@ Migração completa concluída — path legado ReActLoop removido.
 Domain: automation
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
-from app.services.confidence_policy_service import confidence_policy_service
 
-from app.domains.automation.agents.automation_stage_context import (
-    STAGE_DEFINITIONS,
-    get_stage_context,
-    get_transition_prompt,
-)
 from app.domains.automation.agents.automation_system_prompt import get_automation_system_prompt
 from app.domains.automation.agents.automation_tool_registry import (
     get_automation_tools,
-    get_stage_tools,
 )
+from app.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +42,7 @@ class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "automation"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:
@@ -105,14 +95,14 @@ class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     async def decompose_task(
         self,
         task_description: str,
-        company_id: Optional[str] = None,
-        goal_id: Optional[str] = None,
-        parent_task_id: Optional[str] = None,
+        company_id: str | None = None,
+        goal_id: str | None = None,
+        parent_task_id: str | None = None,
         deadline: Any = None,
         persist: bool = True,
-        additional_context: Optional[Dict[str, Any]] = None,
-        user_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        additional_context: dict[str, Any] | None = None,
+        user_id: str | None = None,
+    ) -> dict[str, Any]:
         """Direct call for API endpoints — bypasses ReAct loop for deterministic results."""
         from app.domains.automation.agents.automation_tool_registry import _wrap_decompose_task
         return await _wrap_decompose_task(
@@ -127,9 +117,9 @@ class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     async def prioritize_tasks(
         self,
-        task_ids: Optional[List[str]] = None,
-        goal_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        task_ids: list[str] | None = None,
+        goal_id: str | None = None,
+    ) -> dict[str, Any]:
         """Direct call for API endpoints — bypasses ReAct loop for deterministic results."""
         from app.domains.automation.agents.automation_tool_registry import _wrap_prioritize_tasks
         return await _wrap_prioritize_tasks(task_ids=task_ids or [], goal_id=goal_id)

@@ -9,14 +9,14 @@ This service discovers relationships like:
 Uses statistical analysis to identify actionable correlations
 that can improve future job creation decisions.
 """
-from typing import Optional, Dict, Any, List, Tuple
-from datetime import datetime, timedelta
-from dataclasses import dataclass
 import logging
-import statistics
 import math
+import statistics
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.feedback_learning import JobOutcome, JobOutcomeType
@@ -38,10 +38,10 @@ class CorrelationResult:
     correlation: float
     significance: float
     direction: str
-    recommendation: Optional[str]
+    recommendation: str | None
     sample_size: int
-    factor_stats: Dict[str, Any]
-    outcome_stats: Dict[str, Any]
+    factor_stats: dict[str, Any]
+    outcome_stats: dict[str, Any]
 
 
 class OutcomeCorrelatorService:
@@ -75,9 +75,9 @@ class OutcomeCorrelatorService:
     
     def _pearson_correlation(
         self,
-        x: List[float],
-        y: List[float]
-    ) -> Tuple[float, float]:
+        x: list[float],
+        y: list[float]
+    ) -> tuple[float, float]:
         """Calculate Pearson correlation coefficient and p-value approximation."""
         n = len(x)
         if n < 3:
@@ -109,7 +109,7 @@ class OutcomeCorrelatorService:
         db: AsyncSession,
         company_id: str,
         months_back: int = 12
-    ) -> List[CorrelationResult]:
+    ) -> list[CorrelationResult]:
         """
         Analyze all correlations for a company.
         
@@ -160,8 +160,8 @@ class OutcomeCorrelatorService:
     
     async def _analyze_salary_time_to_fill(
         self,
-        outcomes: List[JobOutcome]
-    ) -> Optional[CorrelationResult]:
+        outcomes: list[JobOutcome]
+    ) -> CorrelationResult | None:
         """Analyze correlation between salary and time to fill."""
         salary_values = []
         ttf_values = []
@@ -212,12 +212,12 @@ class OutcomeCorrelatorService:
     
     async def _analyze_work_model_outcomes(
         self,
-        outcomes: List[JobOutcome]
-    ) -> List[CorrelationResult]:
+        outcomes: list[JobOutcome]
+    ) -> list[CorrelationResult]:
         """Analyze how work model affects outcomes."""
         correlations = []
         
-        by_work_model: Dict[str, List[JobOutcome]] = {}
+        by_work_model: dict[str, list[JobOutcome]] = {}
         for o in outcomes:
             model = str(o.work_model).lower() if o.work_model else "unknown"
             if model not in by_work_model:
@@ -228,7 +228,7 @@ class OutcomeCorrelatorService:
             return []
         
         for metric in ["time_to_fill_days", "satisfaction_score"]:
-            model_averages: Dict[str, float] = {}
+            model_averages: dict[str, float] = {}
             
             for model, model_outcomes in by_work_model.items():
                 values = [getattr(o, metric) for o in model_outcomes if getattr(o, metric)]
@@ -265,12 +265,12 @@ class OutcomeCorrelatorService:
     
     async def _analyze_seniority_outcomes(
         self,
-        outcomes: List[JobOutcome]
-    ) -> List[CorrelationResult]:
+        outcomes: list[JobOutcome]
+    ) -> list[CorrelationResult]:
         """Analyze how seniority affects outcomes."""
         correlations = []
         
-        by_seniority: Dict[str, List[JobOutcome]] = {}
+        by_seniority: dict[str, list[JobOutcome]] = {}
         for o in outcomes:
             sen = str(o.seniority).lower() if o.seniority else "unknown"
             if sen not in by_seniority:
@@ -283,7 +283,7 @@ class OutcomeCorrelatorService:
         seniority_order = ["estagiario", "junior", "pleno", "senior", "specialist", "lead", "manager", "director"]
         
         for metric in ["time_to_fill_days", "satisfaction_score"]:
-            seniority_averages: Dict[str, Tuple[float, int]] = {}
+            seniority_averages: dict[str, tuple[float, int]] = {}
             
             for sen, sen_outcomes in by_seniority.items():
                 values = [getattr(o, metric) for o in sen_outcomes if getattr(o, metric)]
@@ -332,8 +332,8 @@ class OutcomeCorrelatorService:
         self,
         db: AsyncSession,
         company_id: str,
-        correlations: List[CorrelationResult]
-    ) -> List[OutcomeCorrelation]:
+        correlations: list[CorrelationResult]
+    ) -> list[OutcomeCorrelation]:
         """Save discovered correlations to database."""
         saved = []
         try:
@@ -386,9 +386,9 @@ class OutcomeCorrelatorService:
         self,
         db: AsyncSession,
         company_id: str,
-        factor: Optional[str] = None,
-        outcome_metric: Optional[str] = None
-    ) -> List[OutcomeCorrelation]:
+        factor: str | None = None,
+        outcome_metric: str | None = None
+    ) -> list[OutcomeCorrelation]:
         """Retrieve stored correlations."""
         try:
             conditions = [OutcomeCorrelation.company_id == company_id]
@@ -410,10 +410,10 @@ class OutcomeCorrelatorService:
         self,
         db: AsyncSession,
         company_id: str,
-        seniority: Optional[str] = None,
-        work_model: Optional[str] = None,
-        salary: Optional[float] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        work_model: str | None = None,
+        salary: float | None = None
+    ) -> dict[str, Any]:
         """
         Predict time to fill based on job characteristics.
         

@@ -7,16 +7,16 @@ This service monitors job vacancies and generates alerts for:
 - Candidate waiting feedback
 - Deadlines approaching
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 
-from app.models.alert import Alert, AlertRule, AlertType, AlertSeverity, AlertStatus
-from app.models.job_vacancy import JobVacancy
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.alert import Alert, AlertSeverity, AlertStatus, AlertType
 from app.models.candidate import Candidate
-from app.models.task import Task, TaskType, TaskPriority, TaskStatus
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class JobAlertService:
     MIN_CANDIDATES_THRESHOLD = 5
     FEEDBACK_OVERDUE_DAYS = 3
     
-    async def check_all_alerts(self, db: AsyncSession) -> List[Alert]:
+    async def check_all_alerts(self, db: AsyncSession) -> list[Alert]:
         """
         Run all alert checks and create alerts as needed.
         
@@ -52,7 +52,7 @@ class JobAlertService:
         
         return alerts
     
-    async def check_critical_jobs(self, db: AsyncSession) -> List[Alert]:
+    async def check_critical_jobs(self, db: AsyncSession) -> list[Alert]:
         """Check for jobs in critical state."""
         alerts = []
         
@@ -105,7 +105,7 @@ class JobAlertService:
         
         return alerts
     
-    async def check_stale_jobs(self, db: AsyncSession) -> List[Alert]:
+    async def check_stale_jobs(self, db: AsyncSession) -> list[Alert]:
         """Check for jobs with no recent activity."""
         alerts = []
         
@@ -155,7 +155,7 @@ class JobAlertService:
         
         return alerts
     
-    async def check_low_volume_jobs(self, db: AsyncSession) -> List[Alert]:
+    async def check_low_volume_jobs(self, db: AsyncSession) -> list[Alert]:
         """Check for jobs with low candidate volume."""
         alerts = []
         
@@ -214,7 +214,7 @@ class JobAlertService:
         
         return alerts
     
-    async def check_pending_feedback(self, db: AsyncSession) -> List[Alert]:
+    async def check_pending_feedback(self, db: AsyncSession) -> list[Alert]:
         """Check for candidates waiting feedback too long."""
         alerts = []
         
@@ -270,9 +270,9 @@ class JobAlertService:
         self,
         db: AsyncSession,
         alert_type: AlertType,
-        job_id: Optional[str] = None,
-        candidate_id: Optional[str] = None
-    ) -> Optional[Alert]:
+        job_id: str | None = None,
+        candidate_id: str | None = None
+    ) -> Alert | None:
         """Check if an active alert already exists."""
         query = select(Alert).where(
             and_(
@@ -292,10 +292,10 @@ class JobAlertService:
     async def get_active_alerts(
         self,
         db: AsyncSession,
-        user_id: Optional[str] = None,
-        severity: Optional[AlertSeverity] = None,
+        user_id: str | None = None,
+        severity: AlertSeverity | None = None,
         limit: int = 50
-    ) -> List[Alert]:
+    ) -> list[Alert]:
         """Get active alerts."""
         query = select(Alert).where(Alert.status == AlertStatus.ACTIVE)
         
@@ -317,7 +317,7 @@ class JobAlertService:
         db: AsyncSession,
         alert_id: str,
         user_id: str
-    ) -> Optional[Alert]:
+    ) -> Alert | None:
         """Acknowledge an alert."""
         result = await db.execute(
             select(Alert).where(Alert.id == alert_id)
@@ -342,8 +342,8 @@ class JobAlertService:
         db: AsyncSession,
         alert_id: str,
         user_id: str,
-        resolution_note: Optional[str] = None
-    ) -> Optional[Alert]:
+        resolution_note: str | None = None
+    ) -> Alert | None:
         """Resolve an alert."""
         result = await db.execute(
             select(Alert).where(Alert.id == alert_id)
@@ -366,7 +366,7 @@ class JobAlertService:
         
         return alert
     
-    async def get_alert_summary(self, db: AsyncSession) -> Dict[str, Any]:
+    async def get_alert_summary(self, db: AsyncSession) -> dict[str, Any]:
         """Get summary of active alerts."""
         result = await db.execute(
             select(

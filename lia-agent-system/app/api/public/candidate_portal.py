@@ -10,27 +10,30 @@ Security:
 - Rate limiting for OTP requests
 - Input sanitization
 """
-from fastapi import APIRouter, HTTPException, Depends, Request, UploadFile, File, Form
-from pydantic import BaseModel, Field, EmailStr, validator
-from typing import Dict, Any, List, Optional
-from uuid import UUID
-from datetime import datetime, timedelta
 import logging
-import re
 import os
+import re
 import secrets
+from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from pydantic import BaseModel, Field, validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.models.candidate import Candidate
 from app.models.data_request import (
+    DataFieldType,
     DataRequest,
-    DataRequestResponse as DataRequestResponseModel,
     DataRequestConfig,
     DataRequestStatus,
-    DataFieldType,
 )
-from app.models.candidate import Candidate
+from app.models.data_request import (
+    DataRequestResponse as DataRequestResponseModel,
+)
 from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
@@ -56,12 +59,12 @@ class PortalDataRequestResponse(BaseModel):
     is_expired: bool
     otp_verified: bool
     otp_required: bool
-    fields: List[Dict[str, Any]]
-    fields_completed: List[Dict[str, Any]]
+    fields: list[dict[str, Any]]
+    fields_completed: list[dict[str, Any]]
     completion_percentage: float
-    branding: Dict[str, Any]
-    candidate_info: Dict[str, Any]
-    vacancy_info: Optional[Dict[str, Any]] = None
+    branding: dict[str, Any]
+    candidate_info: dict[str, Any]
+    vacancy_info: dict[str, Any] | None = None
 
 
 class RequestOTPRequest(BaseModel):
@@ -86,13 +89,13 @@ class VerifyOTPResponse(BaseModel):
     """Response for OTP verification."""
     verified: bool
     message: str
-    attempts_remaining: Optional[int] = None
+    attempts_remaining: int | None = None
 
 
 class FieldSubmission(BaseModel):
     """A single field submission."""
     name: str
-    value: Optional[str] = None
+    value: str | None = None
     
     @validator('name')
     def sanitize_name(cls, v):
@@ -101,7 +104,7 @@ class FieldSubmission(BaseModel):
 
 class SubmitDataRequest(BaseModel):
     """Request to submit data."""
-    fields: List[FieldSubmission]
+    fields: list[FieldSubmission]
     is_final: bool = False
 
 
@@ -110,7 +113,7 @@ class SubmitDataResponse(BaseModel):
     success: bool
     status: str
     fields_saved: int
-    fields_with_errors: List[Dict[str, Any]]
+    fields_with_errors: list[dict[str, Any]]
     completion_percentage: float
     message: str
 
@@ -174,7 +177,7 @@ async def get_data_request_by_token(
 async def get_company_config(
     db: AsyncSession,
     company_id: UUID,
-) -> Optional[DataRequestConfig]:
+) -> DataRequestConfig | None:
     """Get company configuration for data requests."""
     result = await db.execute(
         select(DataRequestConfig).where(DataRequestConfig.company_id == company_id)
@@ -185,8 +188,8 @@ async def get_company_config(
 def validate_field_value(
     field_type: str,
     value: str,
-    validation_rules: Optional[Dict[str, Any]] = None,
-) -> tuple[bool, Optional[str]]:
+    validation_rules: dict[str, Any] | None = None,
+) -> tuple[bool, str | None]:
     """
     Validate a field value based on its type.
     

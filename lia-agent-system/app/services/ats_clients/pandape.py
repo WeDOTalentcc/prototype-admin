@@ -5,13 +5,15 @@ Pandapé is a Brazilian ATS platform commonly used in Latin America.
 API Docs: https://api-ats.pandape.com/index.html
 """
 import logging
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any
+
 import httpx
 
-from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
+from app.services.ats_clients.ats_pii_filter import filter_inbound_text, filter_outbound
 from app.shared.resilience.circuit_breaker import PANDAPE_CIRCUIT, circuit_breaker_decorator
-from app.services.ats_clients.ats_pii_filter import filter_outbound, filter_inbound_text
+
+from .base import ATSCandidate, ATSClient, ATSJob
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ class PandapeClient(ATSClient):
         if not self.config.base_url:
             self.config.base_url = self.DEFAULT_BASE_URL
     
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         headers = {
             "Authorization": f"Bearer {self.config.api_key}",
             "Content-Type": "application/json",
@@ -62,7 +64,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Pandapé connection test failed: {e}")
             return False
     
-    def _parse_datetime(self, value: Any) -> Optional[datetime]:
+    def _parse_datetime(self, value: Any) -> datetime | None:
         """Safely parse datetime from various formats."""
         if not value:
             return None
@@ -75,7 +77,7 @@ class PandapeClient(ATSClient):
         except (ValueError, TypeError):
             return None
     
-    def _parse_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
+    def _parse_candidate(self, data: dict[str, Any]) -> ATSCandidate:
         """Parse Pandapé candidate response to normalized format."""
         # Sanitizar campos de texto livre antes de armazenar (LGPD Art. 46)
         data = filter_inbound_text(data, "pandape")
@@ -100,7 +102,7 @@ class PandapeClient(ATSClient):
         )
     
     @circuit_breaker_decorator(PANDAPE_CIRCUIT)
-    async def get_candidate(self, candidate_id: str) -> Optional[ATSCandidate]:
+    async def get_candidate(self, candidate_id: str) -> ATSCandidate | None:
         """Get candidate from Pandapé."""
         try:
             async with httpx.AsyncClient() as client:
@@ -126,13 +128,13 @@ class PandapeClient(ATSClient):
     @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def list_candidates(
         self,
-        job_id: Optional[str] = None,
-        status: Optional[str] = None,
+        job_id: str | None = None,
+        status: str | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[ATSCandidate]:
+    ) -> list[ATSCandidate]:
         """List candidates from Pandapé."""
-        params: Dict[str, Any] = {"limit": limit, "offset": offset}
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
         if job_id:
             params["vaga_id"] = job_id
         if status:
@@ -158,7 +160,7 @@ class PandapeClient(ATSClient):
             raise
     
     @circuit_breaker_decorator(PANDAPE_CIRCUIT)
-    async def create_candidate(self, data: Dict[str, Any], has_consent: bool = True) -> ATSCandidate:
+    async def create_candidate(self, data: dict[str, Any], has_consent: bool = True) -> ATSCandidate:
         """Create candidate in Pandapé."""
         # Filtrar campos sensíveis se sem consentimento (LGPD Art. 6)
         data = filter_outbound(data, "pandape", has_consent=has_consent)
@@ -193,13 +195,13 @@ class PandapeClient(ATSClient):
     async def update_candidate(
         self,
         candidate_id: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         has_consent: bool = True,
     ) -> ATSCandidate:
         """Update candidate in Pandapé."""
         # Filtrar campos sensíveis se sem consentimento (LGPD Art. 6)
         data = filter_outbound(data, "pandape", has_consent=has_consent)
-        pandape_data: Dict[str, Any] = {}
+        pandape_data: dict[str, Any] = {}
         
         field_mapping = {
             "status": "situacao",
@@ -243,10 +245,10 @@ class PandapeClient(ATSClient):
         self,
         candidate_id: str,
         new_status: str,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> bool:
         """Update candidate status in Pandapé."""
-        data: Dict[str, Any] = {"status": new_status}
+        data: dict[str, Any] = {"status": new_status}
         if reason:
             data["rejection_reason"] = reason
         
@@ -263,7 +265,7 @@ class PandapeClient(ATSClient):
         self,
         candidate_id: str,
         note: str,
-        author: Optional[str] = None
+        author: str | None = None
     ) -> bool:
         """Add note to candidate in Pandapé."""
         note_data = {
@@ -287,7 +289,7 @@ class PandapeClient(ATSClient):
             logger.error(f"Failed to add note to Pandapé candidate {candidate_id}: {e}")
             return False
     
-    def _parse_job(self, data: Dict[str, Any]) -> ATSJob:
+    def _parse_job(self, data: dict[str, Any]) -> ATSJob:
         """Parse Pandapé job response."""
         return ATSJob(
             ats_id=str(data.get("id", "") or data.get("vaga_id", "")),
@@ -305,7 +307,7 @@ class PandapeClient(ATSClient):
         )
     
     @circuit_breaker_decorator(PANDAPE_CIRCUIT)
-    async def get_job(self, job_id: str) -> Optional[ATSJob]:
+    async def get_job(self, job_id: str) -> ATSJob | None:
         """Get job from Pandapé."""
         try:
             async with httpx.AsyncClient() as client:
@@ -330,11 +332,11 @@ class PandapeClient(ATSClient):
     @circuit_breaker_decorator(PANDAPE_CIRCUIT)
     async def list_jobs(
         self,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100
-    ) -> List[ATSJob]:
+    ) -> list[ATSJob]:
         """List jobs from Pandapé."""
-        params: Dict[str, Any] = {"limit": limit}
+        params: dict[str, Any] = {"limit": limit}
         if status:
             params["status"] = status
         

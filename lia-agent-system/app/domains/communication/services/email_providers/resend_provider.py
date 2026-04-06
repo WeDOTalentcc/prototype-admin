@@ -2,14 +2,15 @@
 Resend email provider implementation.
 Uses the Resend API for transactional email delivery.
 """
-import os
 import asyncio
 import logging
+import os
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from .base import EmailProvider, EmailMessage, EmailResult
 from app.shared.resilience.circuit_breaker import RESEND_CIRCUIT, circuit_breaker_decorator
+
+from .base import EmailMessage, EmailProvider, EmailResult
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,9 @@ class ResendProvider(EmailProvider):
     
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None
+        api_key: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None
     ):
         self.api_key = api_key or os.getenv("RESEND_API_KEY")
         self.from_email = from_email or os.getenv(
@@ -65,14 +66,14 @@ class ResendProvider(EmailProvider):
         to: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        text_content: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        headers: dict[str, str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EmailResult:
         """Send a single email via Resend."""
         
@@ -91,7 +92,7 @@ class ResendProvider(EmailProvider):
             sender_email = from_email or self.from_email
             sender = f"{sender_name} <{sender_email}>" if sender_name else sender_email
             
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "from": sender,
                 "to": [to],
                 "subject": subject,
@@ -149,8 +150,8 @@ class ResendProvider(EmailProvider):
     
     async def send_bulk(
         self,
-        messages: List[EmailMessage]
-    ) -> List[EmailResult]:
+        messages: list[EmailMessage]
+    ) -> list[EmailResult]:
         """Send multiple emails via Resend."""
         results = []
         
@@ -173,7 +174,7 @@ class ResendProvider(EmailProvider):
         
         return results
     
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get Resend provider status."""
         return {
             "provider": self.provider_name,

@@ -12,28 +12,28 @@ Features:
 - Seniority-based skill count adjustments
 - Dynamic company skills integration from database
 """
-from typing import Dict, List, Optional, Any, Union, cast
-from difflib import SequenceMatcher
 import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
+from difflib import SequenceMatcher
+from typing import Any
 
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, or_
+
 from app.models.company_learning import CompanySkill
 from app.models.skills_catalog import (
-    CompanySkillsCatalog,
     BehavioralCompetencyCatalog,
-    SkillUsageAnalytics,
+    CompanySkillsCatalog,
     SkillSuggestionPattern,
+    SkillUsageAnalytics,
 )
-
 
 logger = logging.getLogger(__name__)
 
 
-TECH_SKILLS_CATALOG: Dict[str, Dict[str, List[str]]] = {
+TECH_SKILLS_CATALOG: dict[str, dict[str, list[str]]] = {
     "engineering": {
         "backend": ["Python", "Java", "Node.js", "Go", "Ruby", "C#", ".NET", "PHP", "Rust", "Scala"],
         "frontend": ["React", "Vue.js", "Angular", "TypeScript", "JavaScript", "HTML/CSS", "Next.js", "Nuxt.js", "Svelte", "Tailwind CSS"],
@@ -70,7 +70,7 @@ TECH_SKILLS_CATALOG: Dict[str, Dict[str, List[str]]] = {
 }
 
 
-BEHAVIORAL_COMPETENCIES_CATALOG: Dict[str, Dict[str, Any]] = {
+BEHAVIORAL_COMPETENCIES_CATALOG: dict[str, dict[str, Any]] = {
     "leadership": {
         "name": "Liderança",
         "subcategories": ["Liderança de Equipe", "Liderança Situacional", "Desenvolvimento de Pessoas", "Delegação", "Tomada de Decisão Estratégica"]
@@ -106,7 +106,7 @@ BEHAVIORAL_COMPETENCIES_CATALOG: Dict[str, Dict[str, Any]] = {
 }
 
 
-ROLE_SKILLS_MAPPING: Dict[str, Dict[str, Any]] = {
+ROLE_SKILLS_MAPPING: dict[str, dict[str, Any]] = {
     "desenvolvedor backend": {"area": "engineering", "category": "backend", "behavioral": ["problem_solving", "collaboration"]},
     "desenvolvedor frontend": {"area": "engineering", "category": "frontend", "behavioral": ["communication", "adaptability"]},
     "desenvolvedor fullstack": {"area": "engineering", "category": ["backend", "frontend"], "behavioral": ["problem_solving", "adaptability"]},
@@ -130,7 +130,7 @@ ROLE_SKILLS_MAPPING: Dict[str, Dict[str, Any]] = {
 }
 
 
-SENIORITY_SKILL_COUNTS: Dict[str, Dict[str, int]] = {
+SENIORITY_SKILL_COUNTS: dict[str, dict[str, int]] = {
     "junior": {"min": 3, "max": 5},
     "jr": {"min": 3, "max": 5},
     "júnior": {"min": 3, "max": 5},
@@ -165,7 +165,7 @@ class CompetencySuggestion:
     """Represents a behavioral competency suggestion."""
     key: str
     name: str
-    subcategories: List[str]
+    subcategories: list[str]
     relevance_score: float = 1.0
 
 
@@ -181,7 +181,7 @@ class SkillsCatalogService:
     
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._skills_index: Dict[str, Dict[str, str]] = {}
+        self._skills_index: dict[str, dict[str, str]] = {}
         self._build_skills_index()
     
     def _build_skills_index(self) -> None:
@@ -231,7 +231,7 @@ class SkillsCatalogService:
         
         return normalized.strip()
     
-    def _fuzzy_match_role(self, role: str) -> Optional[str]:
+    def _fuzzy_match_role(self, role: str) -> str | None:
         """
         Find the best matching role in the catalog using fuzzy matching.
         
@@ -256,7 +256,7 @@ class SkillsCatalogService:
         
         return best_match
     
-    def get_seniority_adjusted_count(self, seniority: str) -> Dict[str, int]:
+    def get_seniority_adjusted_count(self, seniority: str) -> dict[str, int]:
         """
         Get the recommended skill count range based on seniority level.
         
@@ -283,8 +283,8 @@ class SkillsCatalogService:
     def get_skills_for_role(
         self,
         role: str,
-        seniority: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None
+    ) -> dict[str, Any]:
         """
         Get suggested technical skills based on role and seniority.
         
@@ -319,7 +319,7 @@ class SkillsCatalogService:
         if isinstance(categories, str):
             categories = [categories]
         
-        skills: List[str] = []
+        skills: list[str] = []
         for category in categories:
             category_skills = TECH_SKILLS_CATALOG.get(area, {}).get(category, [])
             skills.extend(category_skills)
@@ -339,7 +339,7 @@ class SkillsCatalogService:
     def get_behavioral_competencies_for_role(
         self,
         role: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get suggested behavioral competencies based on role.
         
@@ -361,7 +361,7 @@ class SkillsCatalogService:
             return self._get_default_competencies()
         
         behavioral_keys = mapping["behavioral"]
-        competencies: List[Dict[str, Any]] = []
+        competencies: list[dict[str, Any]] = []
         
         for key in behavioral_keys:
             if key in BEHAVIORAL_COMPETENCIES_CATALOG:
@@ -384,7 +384,7 @@ class SkillsCatalogService:
         
         return competencies
     
-    def _get_default_competencies(self) -> List[Dict[str, Any]]:
+    def _get_default_competencies(self) -> list[dict[str, Any]]:
         """Get default competencies when role is not found."""
         return [
             {
@@ -399,9 +399,9 @@ class SkillsCatalogService:
     def search_skills(
         self,
         query: str,
-        area: Optional[str] = None,
+        area: str | None = None,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search for skills using fuzzy matching.
         
@@ -417,7 +417,7 @@ class SkillsCatalogService:
             return []
         
         query_lower = query.lower().strip()
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
         
         areas_to_search = [area] if area and area in TECH_SKILLS_CATALOG else TECH_SKILLS_CATALOG.keys()
         
@@ -451,7 +451,7 @@ class SkillsCatalogService:
         
         return unique_results[:limit]
     
-    def get_all_skills_for_area(self, area: str) -> Dict[str, List[str]]:
+    def get_all_skills_for_area(self, area: str) -> dict[str, list[str]]:
         """
         Get all skills organized by category for a specific area.
         
@@ -467,19 +467,19 @@ class SkillsCatalogService:
         
         return TECH_SKILLS_CATALOG[area].copy()
     
-    def get_all_areas(self) -> List[str]:
+    def get_all_areas(self) -> list[str]:
         """Get all available skill areas."""
         return list(TECH_SKILLS_CATALOG.keys())
     
-    def get_all_behavioral_competencies(self) -> Dict[str, Dict[str, Any]]:
+    def get_all_behavioral_competencies(self) -> dict[str, dict[str, Any]]:
         """Get the complete behavioral competencies catalog."""
         return BEHAVIORAL_COMPETENCIES_CATALOG.copy()
     
     def combine_with_company_defaults(
         self,
-        company_competencies: List[str],
-        role_suggestions: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        company_competencies: list[str],
+        role_suggestions: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """
         Combine company default competencies with role-based suggestions.
         
@@ -493,7 +493,7 @@ class SkillsCatalogService:
         Returns:
             Combined and deduplicated list of competencies
         """
-        combined: List[Dict[str, Any]] = []
+        combined: list[dict[str, Any]] = []
         seen_keys: set = set()
         
         for comp_key in company_competencies:
@@ -519,7 +519,7 @@ class SkillsCatalogService:
         
         return combined
     
-    def validate_skills(self, skills: List[str]) -> Dict[str, Any]:
+    def validate_skills(self, skills: list[str]) -> dict[str, Any]:
         """
         Validate a list of skills against the catalog.
         
@@ -529,8 +529,8 @@ class SkillsCatalogService:
         Returns:
             Dictionary with valid and invalid skills
         """
-        valid: List[Dict[str, str]] = []
-        invalid: List[str] = []
+        valid: list[dict[str, str]] = []
+        invalid: list[str] = []
         
         for skill in skills:
             skill_lower = skill.lower()
@@ -554,9 +554,9 @@ class SkillsCatalogService:
     def suggest_skills(
         self,
         role: str,
-        seniority: Optional[str] = None,
+        seniority: str | None = None,
         limit: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Suggest skills for a given role and seniority level.
         
@@ -594,9 +594,9 @@ class SkillsCatalogService:
     
     def validate_skills_quality(
         self,
-        detected_skills: List[str],
+        detected_skills: list[str],
         seniority: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate the quality and quantity of detected skills for a given seniority.
         
@@ -613,7 +613,7 @@ class SkillsCatalogService:
         skill_counts = self.get_seniority_adjusted_count(seniority or "pleno")
         count = len(detected_skills)
         
-        feedback: Dict[str, Any] = {
+        feedback: dict[str, Any] = {
             "count": count,
             "recommended_min": skill_counts["min"],
             "recommended_max": skill_counts["max"],
@@ -646,10 +646,10 @@ class SkillsCatalogService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         only_promoted: bool = False
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Query company skills from the database.
         
@@ -685,7 +685,7 @@ class SkillsCatalogService:
             result = await db.execute(stmt)
             company_skills = result.scalars().all()
             
-            skill_names: List[str] = []
+            skill_names: list[str] = []
             for skill in company_skills:
                 roles_attr = getattr(skill, 'roles_associated', None)
                 levels_attr = getattr(skill, 'seniority_levels', None)
@@ -713,9 +713,9 @@ class SkillsCatalogService:
         db: AsyncSession,
         company_id: str,
         role: str,
-        seniority: Optional[str] = None,
+        seniority: str | None = None,
         limit: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Suggest skills combining dynamic company learning with static catalog.
         
@@ -801,8 +801,8 @@ class SkillsCatalogDBService:
         self,
         company_id: str,
         include_inactive: bool = False,
-        category: Optional[str] = None
-    ) -> Dict[str, Any]:
+        category: str | None = None
+    ) -> dict[str, Any]:
         """
         Get the complete company-specific skills catalog.
         
@@ -852,7 +852,7 @@ class SkillsCatalogDBService:
             result_comp = await self.db.execute(stmt_competencies)
             competencies = result_comp.scalars().all()
             
-            skills_by_category: Dict[str, List[Dict[str, Any]]] = {}
+            skills_by_category: dict[str, list[dict[str, Any]]] = {}
             for skill in company_skills:
                 cat = skill.category
                 if cat not in skills_by_category:
@@ -983,8 +983,8 @@ class SkillsCatalogDBService:
     async def sync_from_tech_stack(
         self,
         company_id: str,
-        tech_stack: List[str]
-    ) -> Dict[str, int]:
+        tech_stack: list[str]
+    ) -> dict[str, int]:
         """
         Sync skills from company's tech stack configuration.
         
@@ -1014,10 +1014,9 @@ class SkillsCatalogDBService:
                 if matched_results:
                     matched = matched_results[0]
                     category = matched["category"]
-                    area = matched["area"]
+                    matched["area"]
                 else:
                     category = "general"
-                    area = "other"
                 
                 stmt = select(CompanySkillsCatalog).where(
                     and_(
@@ -1149,9 +1148,9 @@ class SkillsCatalogDBService:
         self,
         company_id: str,
         job_title: str,
-        seniority: Optional[str] = None,
+        seniority: str | None = None,
         limit: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get merged skill suggestions combining multiple sources.
         
@@ -1170,7 +1169,7 @@ class SkillsCatalogDBService:
             Dictionary with merged suggestions and source information
         """
         try:
-            suggestions_dict: Dict[str, Dict[str, Any]] = {}
+            suggestions_dict: dict[str, dict[str, Any]] = {}
             
             context_key = f"{job_title.lower()}_{seniority or 'general'}"
             

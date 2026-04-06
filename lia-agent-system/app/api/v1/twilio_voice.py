@@ -24,11 +24,9 @@ import asyncio
 import base64
 import json
 import logging
-from typing import Optional, Dict, Any
 
 from fastapi import (
     APIRouter,
-    Depends,
     Form,
     HTTPException,
     Query,
@@ -38,17 +36,15 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.voice_screening_orchestrator import (
-    voice_screening_orchestrator,
-    ConsentNotGrantedError,
-    VoiceScreeningOrchestratorError,
-)
 from app.domains.communication.services.twilio_voice_service import (
-    twilio_voice_service,
     TwilioVoiceError,
     TwilioVoiceUnconfiguredError,
+    twilio_voice_service,
+)
+from app.services.voice_screening_orchestrator import (
+    ConsentNotGrantedError,
+    voice_screening_orchestrator,
 )
 from app.shared.pii_masking import mask_pii
 
@@ -66,7 +62,7 @@ class InitiateCallRequest(BaseModel):
     phone_number: str
     job_title: str
     company_id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
     language: str = "pt-BR"
 
 
@@ -74,10 +70,10 @@ class InitiateCallResponse(BaseModel):
     """Response from call initiation."""
     success: bool
     session_id: str
-    call_sid: Optional[str] = None
+    call_sid: str | None = None
     status: str
-    error: Optional[str] = None
-    fallback_channel: Optional[str] = None
+    error: str | None = None
+    fallback_channel: str | None = None
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -87,7 +83,7 @@ def _twiml_response(xml: str) -> Response:
     return Response(content=xml, media_type="application/xml")
 
 
-def _verify_twilio_signature(request: Request, params: Dict[str, str]) -> bool:
+def _verify_twilio_signature(request: Request, params: dict[str, str]) -> bool:
     """
     Validate Twilio webhook request signature.
 
@@ -239,9 +235,9 @@ async def twiml_consent_response(
     request: Request,
     session_id: str = Query(...),
     language: str = Query("pt-BR"),
-    SpeechResult: Optional[str] = Form(None),
-    Confidence: Optional[str] = Form(None),
-    CallSid: Optional[str] = Form(None),
+    SpeechResult: str | None = Form(None),
+    Confidence: str | None = Form(None),
+    CallSid: str | None = Form(None),
 ):
     """
     TwiML endpoint: handle candidate's consent response (YES/NO from Gather).
@@ -293,9 +289,9 @@ async def twiml_call_status(
     request: Request,
     CallSid: str = Form(...),
     CallStatus: str = Form(...),
-    CallDuration: Optional[str] = Form(None),
-    From: Optional[str] = Form(None),
-    To: Optional[str] = Form(None),
+    CallDuration: str | None = Form(None),
+    From: str | None = Form(None),
+    To: str | None = Form(None),
 ):
     """
     Twilio call status callback webhook.
@@ -612,7 +608,7 @@ class VoIPTokenRequest(BaseModel):
     """Request to generate a Twilio Access Token for the browser VoIP client."""
     session_id: str
     candidate_id: str
-    identity: Optional[str] = None
+    identity: str | None = None
 
 
 class VoIPTokenResponse(BaseModel):
@@ -620,7 +616,7 @@ class VoIPTokenResponse(BaseModel):
     token: str
     identity: str
     session_id: str
-    twiml_app_sid: Optional[str] = None
+    twiml_app_sid: str | None = None
     expires_in: int = 3600
     voip_available: bool
 
@@ -710,7 +706,7 @@ async def generate_voip_token(request_body: VoIPTokenRequest) -> VoIPTokenRespon
 @router.post("/twilio-voice/voip-connect")
 async def twiml_voip_connect(
     request: Request,
-    session_id: Optional[str] = Query(None),
+    session_id: str | None = Query(None),
     language: str = Query("pt-BR"),
 ):
     """

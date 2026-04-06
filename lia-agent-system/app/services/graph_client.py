@@ -3,8 +3,9 @@ Microsoft Graph API client.
 Handles authentication and API calls to Microsoft Graph.
 """
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
+from typing import Any
+
 import httpx
 from msal import ConfidentialClientApplication
 
@@ -27,9 +28,9 @@ class GraphAPIClient:
         self.authority = f"https://login.microsoftonline.com/{self.tenant_id}"
         self.scopes = ["https://graph.microsoft.com/.default"]
         
-        self._access_token: Optional[str] = None
-        self._token_expires: Optional[datetime] = None
-        self._msal_app: Optional[ConfidentialClientApplication] = None
+        self._access_token: str | None = None
+        self._token_expires: datetime | None = None
+        self._msal_app: ConfidentialClientApplication | None = None
     
     def _get_msal_app(self) -> ConfidentialClientApplication:
         """Get or create MSAL application."""
@@ -81,9 +82,9 @@ class GraphAPIClient:
         self,
         method: str,
         endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, str]] = None
-    ) -> Dict[str, Any]:
+        data: dict[str, Any] | None = None,
+        params: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         """
         Make authenticated request to Microsoft Graph API.
         
@@ -127,7 +128,7 @@ class GraphAPIClient:
         user_email: str,
         start_time: datetime,
         end_time: datetime
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get calendar events for a user within a time range.
         
@@ -157,11 +158,11 @@ class GraphAPIClient:
         subject: str,
         start_time: datetime,
         end_time: datetime,
-        attendees: List[str],
-        location: Optional[str] = None,
-        body: Optional[str] = None,
+        attendees: list[str],
+        location: str | None = None,
+        body: str | None = None,
         is_online_meeting: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a calendar event.
         
@@ -217,12 +218,12 @@ class GraphAPIClient:
     async def find_available_time_slots(
         self,
         organizer_email: str,
-        attendee_emails: List[str],
+        attendee_emails: list[str],
         duration_minutes: int,
         start_date: datetime,
         end_date: datetime,
         minimum_confidence: int = 50
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Find available meeting times for attendees using findMeetingTimes API.
         

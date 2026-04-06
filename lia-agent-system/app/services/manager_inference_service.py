@@ -7,15 +7,14 @@ Searches for managers in:
 
 Provides fallback strategies when manager info is not found.
 """
-from typing import Dict, Any, List, Optional, Tuple
-from difflib import SequenceMatcher
 import logging
+from difflib import SequenceMatcher
+from typing import Any
 
-from sqlalchemy import select, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import func, or_, select
 
 from app.core.database import AsyncSessionLocal
-from app.models.company import Department, DepartmentMember, CompanyProfile
+from app.models.company import CompanyProfile, Department, DepartmentMember
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +40,9 @@ class ManagerInferenceService:
         self, 
         manager_name: str, 
         company_id: str,
-        department: Optional[str] = None,
+        department: str | None = None,
         min_similarity: float = 0.7
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Find manager by name in company structure.
         
@@ -67,8 +66,8 @@ class ManagerInferenceService:
         if not manager_name or not company_id:
             return None
         
-        normalized_search = self._normalize_name(manager_name)
-        candidates: List[Tuple[Dict[str, Any], float]] = []
+        self._normalize_name(manager_name)
+        candidates: list[tuple[dict[str, Any], float]] = []
         
         async with AsyncSessionLocal() as db:
             company_profile = await db.execute(
@@ -180,7 +179,7 @@ class ManagerInferenceService:
         self, 
         department_name: str, 
         company_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get all managers for a specific department.
         
@@ -231,7 +230,7 @@ class ManagerInferenceService:
         
         return managers
     
-    async def get_all_managers(self, company_id: str) -> List[Dict[str, Any]]:
+    async def get_all_managers(self, company_id: str) -> list[dict[str, Any]]:
         """
         Get all managers for a company.
         
@@ -324,7 +323,7 @@ class ManagerInferenceService:
         self, 
         department_name: str, 
         company_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Infer the most likely manager for a department.
         Used when manager name is not provided but department is known.
@@ -346,9 +345,9 @@ class ManagerInferenceService:
     async def list_managers(
         self,
         company_id: str,
-        department_id: Optional[str] = None,
+        department_id: str | None = None,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         List managers for a company (for autocomplete).
         
@@ -383,7 +382,7 @@ class ManagerInferenceService:
         company_id: str,
         search_term: str,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search managers by name for autocomplete.
         

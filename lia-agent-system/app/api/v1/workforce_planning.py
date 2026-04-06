@@ -3,15 +3,15 @@ Workforce Planning API Endpoints.
 
 Manages workforce plans stored in client.settings["workforce_plans"].
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm.attributes import flag_modified
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
-from datetime import datetime
-from uuid import UUID, uuid4
 import logging
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
 from app.models.client_account import ClientAccount
@@ -34,19 +34,19 @@ class WorkforcePlanCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Plan name")
     year: int = Field(..., ge=2020, le=2100, description="Fiscal year")
     status: str = Field(default="draft", description="Plan status: draft, active, closed")
-    departments: List[DepartmentPlan] = Field(default_factory=list, description="Department plans")
+    departments: list[DepartmentPlan] = Field(default_factory=list, description="Department plans")
     total_budget: float = Field(default=0.0, ge=0, description="Total budget")
     total_planned_hires: int = Field(default=0, ge=0, description="Total planned hires")
 
 
 class WorkforcePlanUpdate(BaseModel):
     """Request model for updating a workforce plan."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    year: Optional[int] = Field(None, ge=2020, le=2100)
-    status: Optional[str] = Field(None, description="Plan status: draft, active, closed")
-    departments: Optional[List[DepartmentPlan]] = None
-    total_budget: Optional[float] = Field(None, ge=0)
-    total_planned_hires: Optional[int] = Field(None, ge=0)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    year: int | None = Field(None, ge=2020, le=2100)
+    status: str | None = Field(None, description="Plan status: draft, active, closed")
+    departments: list[DepartmentPlan] | None = None
+    total_budget: float | None = Field(None, ge=0)
+    total_planned_hires: int | None = Field(None, ge=0)
 
 
 class WorkforcePlanResponse(BaseModel):
@@ -56,21 +56,21 @@ class WorkforcePlanResponse(BaseModel):
     name: str
     year: int
     status: str
-    departments: List[Dict[str, Any]]
+    departments: list[dict[str, Any]]
     total_budget: float
     total_planned_hires: int
     created_at: str
     updated_at: str
 
 
-def get_workforce_plans(client: ClientAccount) -> List[Dict[str, Any]]:
+def get_workforce_plans(client: ClientAccount) -> list[dict[str, Any]]:
     """Get workforce plans from client settings."""
     if not client.settings:
         client.settings = {}
     return client.settings.get("workforce_plans", [])
 
 
-def save_workforce_plans(client: ClientAccount, plans: List[Dict[str, Any]]):
+def save_workforce_plans(client: ClientAccount, plans: list[dict[str, Any]]):
     """Save workforce plans to client settings."""
     if not client.settings:
         client.settings = {}
@@ -80,8 +80,8 @@ def save_workforce_plans(client: ClientAccount, plans: List[Dict[str, Any]]):
 
 @router.get("", summary="List all workforce plans")
 async def list_workforce_plans(
-    year: Optional[int] = Query(None, description="Filter by year"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    year: int | None = Query(None, description="Filter by year"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):

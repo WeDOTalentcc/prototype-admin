@@ -9,13 +9,13 @@ Melhorias sobre o IntentClassifier básico:
 """
 import json
 import logging
-from app.prompts import PromptLoader
 import re
-from enum import Enum
-from typing import Optional, Dict, Any, List, Tuple
-from pydantic import BaseModel, Field
 from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
+
+from app.prompts import PromptLoader
 from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
@@ -37,40 +37,40 @@ class EnhancedIntentType(str, Enum):
 @dataclass
 class ExtractedEntities:
     """Todas as entidades extraídas da mensagem do usuário."""
-    cargo: Optional[str] = None
-    area: Optional[str] = None
-    senioridade: Optional[str] = None
+    cargo: str | None = None
+    area: str | None = None
+    senioridade: str | None = None
     
-    salario_min: Optional[float] = None
-    salario_max: Optional[float] = None
-    bonus: Optional[str] = None
+    salario_min: float | None = None
+    salario_max: float | None = None
+    bonus: str | None = None
     
-    modelo_trabalho: Optional[str] = None
-    localizacao: Optional[str] = None
-    tipo_contrato: Optional[str] = None
+    modelo_trabalho: str | None = None
+    localizacao: str | None = None
+    tipo_contrato: str | None = None
     
-    skills_tecnicas: List[str] = field(default_factory=list)
-    skills_comportamentais: List[str] = field(default_factory=list)
-    idiomas: List[str] = field(default_factory=list)
+    skills_tecnicas: list[str] = field(default_factory=list)
+    skills_comportamentais: list[str] = field(default_factory=list)
+    idiomas: list[str] = field(default_factory=list)
     
-    beneficios: List[str] = field(default_factory=list)
+    beneficios: list[str] = field(default_factory=list)
     
     is_afirmativa: bool = False
-    criterio_afirmativo_primario: Optional[str] = None
-    criterio_afirmativo_secundario: Optional[str] = None
+    criterio_afirmativo_primario: str | None = None
+    criterio_afirmativo_secundario: str | None = None
     
-    gestor: Optional[str] = None
-    gestor_email: Optional[str] = None
-    recrutador: Optional[str] = None
+    gestor: str | None = None
+    gestor_email: str | None = None
+    recrutador: str | None = None
     
-    prazo: Optional[str] = None
-    urgencia: Optional[str] = None
+    prazo: str | None = None
+    urgencia: str | None = None
     
-    filtro_busca: Dict[str, Any] = field(default_factory=dict)
+    filtro_busca: dict[str, Any] = field(default_factory=dict)
     
-    raw_entities: Dict[str, Any] = field(default_factory=dict)
+    raw_entities: dict[str, Any] = field(default_factory=dict)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converte para dicionário, excluindo valores None e listas vazias."""
         result = {}
         for key, value in self.__dict__.items():
@@ -91,10 +91,10 @@ class EnhancedClassificationResult:
     confidence: float
     entities: ExtractedEntities
     original_text: str
-    reasoning: Optional[str] = None
-    suggested_actions: List[str] = field(default_factory=list)
+    reasoning: str | None = None
+    suggested_actions: list[str] = field(default_factory=list)
     needs_clarification: bool = False
-    clarification_question: Optional[str] = None
+    clarification_question: str | None = None
 
 
 class EnhancedIntentClassifierService:
@@ -183,7 +183,7 @@ class EnhancedIntentClassifierService:
     def __init__(self):
         self._llm_service = llm_service
 
-    def _quick_classify(self, text: str) -> Tuple[Optional[EnhancedIntentType], float]:
+    def _quick_classify(self, text: str) -> tuple[EnhancedIntentType | None, float]:
         """Classificação rápida por regras para casos óbvios."""
         text_lower = text.lower().strip()
         
@@ -315,8 +315,8 @@ class EnhancedIntentClassifierService:
         self,
         user_input: str,
         stage: int = 1,
-        filled_fields: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None
+        filled_fields: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None
     ) -> EnhancedClassificationResult:
         """
         Classifica a intenção do usuário e extrai todas as entidades.
@@ -400,7 +400,7 @@ class EnhancedIntentClassifierService:
             reasoning="Fallback regex (LLM indisponível — qualidade reduzida)"
         )
 
-    def _merge_entities(self, regex_entities: ExtractedEntities, llm_entities: Dict[str, Any]) -> ExtractedEntities:
+    def _merge_entities(self, regex_entities: ExtractedEntities, llm_entities: dict[str, Any]) -> ExtractedEntities:
         """Mescla entidades do regex com as do LLM, priorizando LLM quando disponível."""
         merged = ExtractedEntities()
         

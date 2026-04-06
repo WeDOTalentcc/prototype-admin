@@ -7,9 +7,10 @@ Endpoints:
   GET  /api/v1/admin/lgpd/retention-policy — exibe política de retenção configurada
 """
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import require_admin
 from app.core.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/admin/lgpd", tags=["Admin - LGPD"])
 
@@ -46,7 +47,7 @@ async def get_cleanup_status(
     Útil para monitoramento e auditoria pré-go-live (LGPD Art. 16).
     Não executa nenhuma deleção.
     """
-    from app.services.lgpd_cleanup_service import get_pending_deletions_count, RETENTION_DAYS
+    from app.services.lgpd_cleanup_service import RETENTION_DAYS, get_pending_deletions_count
     counts = await get_pending_deletions_count(db)
     return {
         **counts,

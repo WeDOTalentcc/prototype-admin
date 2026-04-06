@@ -3,10 +3,10 @@ Recruitment Email Templates Service.
 Provides default templates for all recruitment pipeline stages.
 """
 import logging
-from typing import List, Dict, Any, Optional
-from sqlalchemy import select, and_, or_
+from typing import Any
+
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
 
 from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 
@@ -21,7 +21,7 @@ COMMON_VARIABLES = [
     "recruiter_email",
 ]
 
-DEFAULT_TEMPLATES: List[Dict[str, Any]] = [
+DEFAULT_TEMPLATES: list[dict[str, Any]] = [
     {
         "stage_name": RecruitmentStageName.CANDIDATE_APPLIED.value,
         "template_type": TemplateType.CANDIDATE.value,
@@ -708,7 +708,7 @@ Atenciosamente,
     },
 ]
 
-SAMPLE_DATA: Dict[str, str] = {
+SAMPLE_DATA: dict[str, str] = {
     "candidate_name": "João Silva",
     "candidate_email": "joao.silva@email.com",
     "job_title": "Desenvolvedor Full Stack Senior",
@@ -748,7 +748,7 @@ SAMPLE_DATA: Dict[str, str] = {
 }
 
 
-async def seed_default_templates(db: AsyncSession, company_id: Optional[str] = None) -> List[RecruitmentEmailTemplate]:
+async def seed_default_templates(db: AsyncSession, company_id: str | None = None) -> list[RecruitmentEmailTemplate]:
     """
     Seed default recruitment email templates.
     If company_id is provided, creates templates for that company.
@@ -799,9 +799,9 @@ async def seed_default_templates(db: AsyncSession, company_id: Optional[str] = N
 async def get_template_for_stage(
     db: AsyncSession,
     stage_name: str,
-    company_id: Optional[str] = None,
+    company_id: str | None = None,
     template_type: str = "candidate"
-) -> Optional[RecruitmentEmailTemplate]:
+) -> RecruitmentEmailTemplate | None:
     """
     Get the active template for a specific stage.
     First looks for company-specific template, then falls back to system template.
@@ -836,11 +836,11 @@ async def get_template_for_stage(
 
 async def list_templates(
     db: AsyncSession,
-    company_id: Optional[str] = None,
-    stage_name: Optional[str] = None,
-    template_type: Optional[str] = None,
-    is_active: Optional[bool] = None
-) -> List[RecruitmentEmailTemplate]:
+    company_id: str | None = None,
+    stage_name: str | None = None,
+    template_type: str | None = None,
+    is_active: bool | None = None
+) -> list[RecruitmentEmailTemplate]:
     """
     List recruitment email templates with optional filtering.
     Returns company templates plus system templates.
@@ -870,7 +870,7 @@ async def list_templates(
     return list(result.scalars().all())
 
 
-def render_template(template: RecruitmentEmailTemplate, variables: Dict[str, str]) -> Dict[str, str]:
+def render_template(template: RecruitmentEmailTemplate, variables: dict[str, str]) -> dict[str, str]:
     """
     Render a template with the provided variables.
     Returns both HTML and text versions.
@@ -892,7 +892,7 @@ def render_template(template: RecruitmentEmailTemplate, variables: Dict[str, str
     }
 
 
-def preview_template(template: RecruitmentEmailTemplate) -> Dict[str, str]:
+def preview_template(template: RecruitmentEmailTemplate) -> dict[str, str]:
     """
     Preview a template with sample data.
     """
@@ -902,8 +902,8 @@ def preview_template(template: RecruitmentEmailTemplate) -> Dict[str, str]:
 async def clone_templates_for_company(
     db: AsyncSession,
     company_id: str,
-    created_by: Optional[str] = None
-) -> List[RecruitmentEmailTemplate]:
+    created_by: str | None = None
+) -> list[RecruitmentEmailTemplate]:
     """
     Clone system templates for a specific company.
     """

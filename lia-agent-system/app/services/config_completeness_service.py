@@ -4,13 +4,13 @@ Config Completeness Service for Job Creation Wizard.
 Manages field completeness checking, hybrid suggestions, and
 publication readiness validation.
 """
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field
-from enum import Enum
 import logging
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +41,13 @@ class FieldSuggestion:
 @dataclass
 class CompletenessResult:
     """Result of completeness check."""
-    filled_fields: List[str]
-    missing_critical: List[str]
-    missing_important: List[str]
-    toggled_off: List[str]
+    filled_fields: list[str]
+    missing_critical: list[str]
+    missing_important: list[str]
+    toggled_off: list[str]
     can_publish: bool
     completeness_score: int
-    field_details: Dict[str, Dict[str, Any]]
+    field_details: dict[str, dict[str, Any]]
 
 
 class ConfigCompletenessService:
@@ -56,7 +56,7 @@ class ConfigCompletenessService:
     hybrid suggestions for missing fields.
     """
     
-    TOGGLE_TO_COMPLETENESS_MAP: Dict[str, str] = {
+    TOGGLE_TO_COMPLETENESS_MAP: dict[str, str] = {
         "seniority_levels": "seniority",
         "salary_ranges": "salary_range",
         "employment_types": "employment_type",
@@ -69,9 +69,9 @@ class ConfigCompletenessService:
         "default_languages": "languages",
     }
     
-    COMPLETENESS_TO_TOGGLE_MAP: Dict[str, str] = {v: k for k, v in TOGGLE_TO_COMPLETENESS_MAP.items()}
+    COMPLETENESS_TO_TOGGLE_MAP: dict[str, str] = {v: k for k, v in TOGGLE_TO_COMPLETENESS_MAP.items()}
     
-    FIELD_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+    FIELD_DEFINITIONS: dict[str, dict[str, Any]] = {
         "critical": {
             "job_title": {"label": "Título da Vaga", "db_field": "title", "toggle_key": None},
             "seniority": {"label": "Senioridade", "db_field": "seniority_level", "toggle_key": "seniority_levels"},
@@ -95,7 +95,7 @@ class ConfigCompletenessService:
         }
     }
     
-    MARKET_BENCHMARKS: Dict[str, Dict[str, Any]] = {
+    MARKET_BENCHMARKS: dict[str, dict[str, Any]] = {
         "salary_range": {
             "Júnior": {"min": 3000, "max": 5000, "currency": "BRL"},
             "Pleno": {"min": 6000, "max": 10000, "currency": "BRL"},
@@ -128,9 +128,9 @@ class ConfigCompletenessService:
     
     def check_completeness(
         self,
-        job_data: Dict[str, Any],
-        company_config: Optional[Dict[str, Any]] = None,
-        toggles: Optional[Dict[str, bool]] = None
+        job_data: dict[str, Any],
+        company_config: dict[str, Any] | None = None,
+        toggles: dict[str, bool] | None = None
     ) -> CompletenessResult:
         """
         Check completeness of job data.
@@ -146,11 +146,11 @@ class ConfigCompletenessService:
         toggles = toggles or {}
         company_config = company_config or {}
         
-        filled_fields: List[str] = []
-        missing_critical: List[str] = []
-        missing_important: List[str] = []
-        toggled_off: List[str] = []
-        field_details: Dict[str, Dict[str, Any]] = {}
+        filled_fields: list[str] = []
+        missing_critical: list[str] = []
+        missing_important: list[str] = []
+        toggled_off: list[str] = []
+        field_details: dict[str, dict[str, Any]] = {}
         
         def is_field_filled(field_key: str, db_field: str) -> bool:
             value = job_data.get(db_field)
@@ -221,10 +221,10 @@ class ConfigCompletenessService:
     def get_field_suggestion(
         self,
         field_key: str,
-        job_data: Dict[str, Any],
-        company_config: Optional[Dict[str, Any]] = None,
-        previous_jobs: Optional[List[Dict[str, Any]]] = None
-    ) -> Optional[FieldSuggestion]:
+        job_data: dict[str, Any],
+        company_config: dict[str, Any] | None = None,
+        previous_jobs: list[dict[str, Any]] | None = None
+    ) -> FieldSuggestion | None:
         """
         Get hybrid suggestion for a field.
         
@@ -261,11 +261,11 @@ class ConfigCompletenessService:
     
     def get_all_suggestions(
         self,
-        missing_fields: List[str],
-        job_data: Dict[str, Any],
-        company_config: Optional[Dict[str, Any]] = None,
-        previous_jobs: Optional[List[Dict[str, Any]]] = None
-    ) -> Dict[str, FieldSuggestion]:
+        missing_fields: list[str],
+        job_data: dict[str, Any],
+        company_config: dict[str, Any] | None = None,
+        previous_jobs: list[dict[str, Any]] | None = None
+    ) -> dict[str, FieldSuggestion]:
         """
         Get suggestions for all missing fields.
         
@@ -290,9 +290,9 @@ class ConfigCompletenessService:
     def _try_company_history(
         self,
         field_key: str,
-        job_data: Dict[str, Any],
-        previous_jobs: List[Dict[str, Any]]
-    ) -> Optional[FieldSuggestion]:
+        job_data: dict[str, Any],
+        previous_jobs: list[dict[str, Any]]
+    ) -> FieldSuggestion | None:
         """Try to get suggestion from company's previous jobs."""
         if not previous_jobs:
             return None
@@ -349,8 +349,8 @@ class ConfigCompletenessService:
     def _try_company_defaults(
         self,
         field_key: str,
-        company_config: Dict[str, Any]
-    ) -> Optional[FieldSuggestion]:
+        company_config: dict[str, Any]
+    ) -> FieldSuggestion | None:
         """Try to get suggestion from company defaults."""
         config_mapping = {
             "work_model": "work_model",
@@ -388,8 +388,8 @@ class ConfigCompletenessService:
     def _try_market_benchmark(
         self,
         field_key: str,
-        job_data: Dict[str, Any]
-    ) -> Optional[FieldSuggestion]:
+        job_data: dict[str, Any]
+    ) -> FieldSuggestion | None:
         """Try to get suggestion from market benchmarks."""
         if field_key == "salary_range":
             seniority = job_data.get("seniority_level", "Pleno")
@@ -432,7 +432,7 @@ class ConfigCompletenessService:
                 return fields[field_key].get("label", field_key)
         return field_key
     
-    def get_field_category(self, field_key: str) -> Optional[str]:
+    def get_field_category(self, field_key: str) -> str | None:
         """Get the category for a field."""
         for category, fields in self.FIELD_DEFINITIONS.items():
             if field_key in fields:
@@ -443,9 +443,9 @@ class ConfigCompletenessService:
         self,
         db: AsyncSession,
         company_id: str,
-        missing_fields: List[str],
-        context: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        missing_fields: list[str],
+        context: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """
         Get suggestions for missing fields based on company history and benchmarks.
         
@@ -459,7 +459,6 @@ class ConfigCompletenessService:
             Dict with suggestions for each missing field
         """
         from app.models.company import Department
-        from app.models import JobVacancy
         
         suggestions = {}
         context = context or {}

@@ -11,30 +11,30 @@ Tests:
 - Pipeline templates resolution
 - Default fallback behavior (no policy)
 """
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
+from unittest.mock import AsyncMock, patch
 
+import pytest
+
+from app.models.company_hiring_policy import (
+    AUTOMATION_RULES_DEFAULTS,
+    COMMUNICATION_RULES_DEFAULTS,
+    PIPELINE_RULES_DEFAULTS,
+    SCHEDULING_RULES_DEFAULTS,
+    SCREENING_RULES_DEFAULTS,
+)
+from app.shared.policy_helper import (
+    _get_defaults_dict,
+    get_policy_rule,
+)
 from app.shared.policy_middleware import (
     get_policy_for_company,
     resolve_policy_value,
 )
 from app.shared.policy_sync_service import (
-    sync_policy_to_models,
-    AUTONOMY_LEVEL_PRESETS,
     AUTOMATION_FLAG_MAP,
-)
-from app.shared.policy_helper import (
-    get_policy_rule,
-    _get_defaults_dict,
-)
-from app.models.company_hiring_policy import (
-    ALL_DEFAULTS,
-    PIPELINE_RULES_DEFAULTS,
-    SCHEDULING_RULES_DEFAULTS,
-    COMMUNICATION_RULES_DEFAULTS,
-    SCREENING_RULES_DEFAULTS,
-    AUTOMATION_RULES_DEFAULTS,
+    AUTONOMY_LEVEL_PRESETS,
+    sync_policy_to_models,
 )
 
 
@@ -158,7 +158,7 @@ class TestPolicySyncService:
         
         with patch('app.shared.governance.feature_flag_service.feature_flag_service') as mock_ff:
             mock_ff.set_flag = AsyncMock(return_value={"success": True})
-            result = await sync_policy_to_models("company-1", policy, mock_db)
+            await sync_policy_to_models("company-1", policy, mock_db)
             calls = {c.kwargs["flag_key"]: c.kwargs["is_enabled"] for c in mock_ff.set_flag.call_args_list}
             screening_key = [k for k in calls if "SCREENING" in k][0]
             assert calls[screening_key] is True
@@ -427,7 +427,7 @@ class TestCalendarServicePolicyIntegration:
         svc.graph = AsyncMock()
         svc.graph.get_user_calendar_view = AsyncMock(return_value=[])
 
-        slots = await svc.check_interviewer_availability(
+        await svc.check_interviewer_availability(
             interviewer_email="test@example.com",
             date=datetime(2026, 3, 2, 12, 0, 0),
         )
@@ -519,7 +519,7 @@ class TestCalendarServicePolicyIntegration:
             "app.domains.interview_scheduling.services.calendar_service.get_policy_for_company",
             return_value=mock_policy,
         ):
-            result = await svc.schedule_interview(
+            await svc.schedule_interview(
                 organizer_email="hr@example.com",
                 candidate_name="Test",
                 candidate_email="cand@example.com",

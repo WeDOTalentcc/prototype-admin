@@ -1,12 +1,12 @@
 """
 Reports API - Endpoints for generating candidate reports and automated briefings.
 """
+from enum import Enum
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
 from pydantic import BaseModel
-from enum import Enum
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.candidate_report_service import candidate_report_service
@@ -31,14 +31,14 @@ class DailyBriefingSendRequest(BaseModel):
 
 class WeeklyReportSendRequest(BaseModel):
     """Request model for sending weekly report."""
-    recipient_emails: List[str]
+    recipient_emails: list[str]
     recipient_name: str = "Equipe"
     company_name: str = "Sua Empresa"
 
 
 class MonthlyReportSendRequest(BaseModel):
     """Request model for sending monthly manager report."""
-    recipient_emails: List[str]
+    recipient_emails: list[str]
     recipient_name: str = "Gestão"
     company_name: str = "Sua Empresa"
 
@@ -52,7 +52,7 @@ class ReportPreviewRequest(BaseModel):
 class CandidateReportRequest(BaseModel):
     """Request model for generating a candidate report."""
     candidate_id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
     include_screening: bool = True
     include_tests: bool = True
     format: str = "detailed"
@@ -60,7 +60,7 @@ class CandidateReportRequest(BaseModel):
 
 class ComparisonReportRequest(BaseModel):
     """Request model for generating a comparison report."""
-    candidate_ids: List[str]
+    candidate_ids: list[str]
     job_id: str
 
 
@@ -108,7 +108,7 @@ async def generate_comparison_report(
 @router.get("/candidate/{candidate_id}")
 async def get_candidate_report(
     candidate_id: str,
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     format: str = Query(default="detailed", enum=["detailed", "executive", "comparison"]),
     db: AsyncSession = Depends(get_db)
 ):

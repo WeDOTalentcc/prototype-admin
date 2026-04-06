@@ -15,7 +15,6 @@ Configuração:
 import asyncio
 import json
 import logging
-from typing import Dict, Optional
 
 from app.core.config import settings
 
@@ -38,7 +37,7 @@ class RabbitMQConsumer:
     def __init__(self):
         self._connection = None
         self._channel = None
-        self._subscriptions: Dict[str, asyncio.Task] = {}
+        self._subscriptions: dict[str, asyncio.Task] = {}
         self._running = False
 
     async def start(self) -> None:
@@ -76,7 +75,6 @@ class RabbitMQConsumer:
             return queue_name
 
         try:
-            import aio_pika
             queue = await self._channel.declare_queue(
                 queue_name,
                 auto_delete=True,

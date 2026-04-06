@@ -7,10 +7,10 @@ Provides:
 - Document/PDF analysis with structure extraction
 - Resume visual analysis with layout scoring
 """
-import os
 import base64
 import logging
-from typing import Optional, Dict, Any, List
+import os
+from typing import Any
 
 import httpx
 
@@ -117,7 +117,7 @@ class MultimodalService:
         self.anthropic_base_url = os.getenv("AI_INTEGRATIONS_ANTHROPIC_BASE_URL") or "https://api.anthropic.com"
         self.google_key = os.getenv("AI_INTEGRATIONS_GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.gemini_base_url = os.getenv("AI_INTEGRATIONS_GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com"
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client with connection pooling."""
@@ -131,7 +131,7 @@ class MultimodalService:
             await self._client.aclose()
             self._client = None
     
-    def _detect_image_format(self, image_data: bytes, filename: Optional[str] = None) -> str:
+    def _detect_image_format(self, image_data: bytes, filename: str | None = None) -> str:
         """Detect image format from file header or filename."""
         if filename:
             ext = filename.lower().split(".")[-1]
@@ -167,9 +167,9 @@ class MultimodalService:
         self,
         image_data: bytes,
         analysis_type: str = "general",
-        prompt: Optional[str] = None,
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        prompt: str | None = None,
+        filename: str | None = None
+    ) -> dict[str, Any]:
         """
         Analyze an image using Claude Vision.
         
@@ -299,7 +299,7 @@ class MultimodalService:
         video_url: str,
         analysis_type: str = "interview",
         extract_audio: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze a video for interview insights using Gemini.
         
@@ -404,7 +404,7 @@ class MultimodalService:
         self,
         video_url: str,
         analysis_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate a placeholder response when video analysis fails."""
         return {
             "duration_seconds": None,
@@ -424,7 +424,7 @@ class MultimodalService:
             "error": "Video could not be analyzed. For best results, use a publicly accessible video URL."
         }
     
-    def _parse_video_analysis(self, analysis_text: str, analysis_type: str) -> Dict[str, Any]:
+    def _parse_video_analysis(self, analysis_text: str, analysis_type: str) -> dict[str, Any]:
         """Parse video analysis text into structured format."""
         return {
             "duration_seconds": None,
@@ -446,7 +446,7 @@ class MultimodalService:
             }
         }
     
-    def _extract_section(self, text: str, keywords: List[str]) -> str:
+    def _extract_section(self, text: str, keywords: list[str]) -> str:
         """Extract relevant section from analysis text based on keywords."""
         lines = text.split("\n")
         relevant_lines = []
@@ -471,8 +471,8 @@ class MultimodalService:
         document_data: bytes,
         document_type: str = "pdf",
         extract_structure: bool = True,
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        filename: str | None = None
+    ) -> dict[str, Any]:
         """
         Analyze document layout and content.
         
@@ -530,7 +530,7 @@ class MultimodalService:
         self,
         pdf_data: bytes,
         extract_structure: bool
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Analyze PDF document by treating it as an image for Claude Vision."""
         if not self.anthropic_key:
             raise DocumentAnalysisError(
@@ -613,7 +613,7 @@ Provide a structured analysis."""
             logger.error(f"Request error during PDF analysis: {e}")
             raise DocumentAnalysisError(f"PDF analysis request failed: {e}")
     
-    def _parse_document_analysis(self, analysis_text: str) -> Dict[str, Any]:
+    def _parse_document_analysis(self, analysis_text: str) -> dict[str, Any]:
         """Parse document analysis into structured format."""
         import re
         
@@ -644,8 +644,8 @@ Provide a structured analysis."""
         self,
         resume_data: bytes,
         file_type: str = "pdf",
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        filename: str | None = None
+    ) -> dict[str, Any]:
         """
         Specialized resume analysis including visual presentation.
         
@@ -780,7 +780,7 @@ Provide your analysis in a structured format with clear sections."""
             logger.error(f"Request error during resume analysis: {e}")
             raise DocumentAnalysisError(f"Resume analysis request failed: {e}")
     
-    def _parse_resume_analysis(self, analysis_text: str) -> Dict[str, Any]:
+    def _parse_resume_analysis(self, analysis_text: str) -> dict[str, Any]:
         """Parse resume analysis into structured format."""
         import re
         
@@ -841,7 +841,7 @@ Provide your analysis in a structured format with clear sections."""
             }
         }
     
-    def is_available(self) -> Dict[str, bool]:
+    def is_available(self) -> dict[str, bool]:
         """Check which multimodal services are available."""
         return {
             "image_analysis_anthropic": bool(self.anthropic_key),

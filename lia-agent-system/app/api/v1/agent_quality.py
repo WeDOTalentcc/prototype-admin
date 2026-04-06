@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -37,7 +37,7 @@ class AgentQualityTrend(BaseModel):
     days: int
     samples_count: int
     avg_score: float
-    avg_scores_by_metric: Dict[str, float]
+    avg_scores_by_metric: dict[str, float]
     trend: str  # "improving" | "stable" | "degrading" | "insufficient_data"
 
 
@@ -45,9 +45,9 @@ class AgentQualityDetail(BaseModel):
     id: str
     agent_id: str
     company_id: str
-    session_id: Optional[str]
+    session_id: str | None
     overall_score: float
-    scores: Dict[str, Any]
+    scores: dict[str, Any]
     evaluated_at: datetime
 
     model_config = {"from_attributes": True}
@@ -57,10 +57,10 @@ class AgentQualityDetail(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
-@router.get("", response_model=List[AgentQualityTrend])
+@router.get("", response_model=list[AgentQualityTrend])
 async def list_agent_quality_trends(
     company_id: str = Query(..., description="ID do tenant"),
-    agent_id: Optional[str] = Query(None, description="Filtrar por agente específico"),
+    agent_id: str | None = Query(None, description="Filtrar por agente específico"),
     days: int = Query(30, ge=1, le=365, description="Janela de análise em dias"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -81,14 +81,14 @@ async def list_agent_quality_trends(
     rows = result.scalars().all()
 
     # Agrupar por agent_id
-    groups: Dict[str, List[AgentQualityEvaluation]] = {}
+    groups: dict[str, list[AgentQualityEvaluation]] = {}
     for row in rows:
         groups.setdefault(row.agent_id, []).append(row)
 
     trends = []
     for aid, evaluations in groups.items():
         avg_score = sum(e.overall_score for e in evaluations) / len(evaluations)
-        metric_sums: Dict[str, float] = {}
+        metric_sums: dict[str, float] = {}
         for e in evaluations:
             for metric, score in (e.scores or {}).items():
                 metric_sums[metric] = metric_sums.get(metric, 0.0) + score
@@ -138,7 +138,7 @@ async def get_evaluation_detail(
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _classify_trend(evaluations: List[AgentQualityEvaluation]) -> str:
+def _classify_trend(evaluations: list[AgentQualityEvaluation]) -> str:
     """
     Classifica trend com base na comparação entre metade inicial e metade final.
     Requer ao menos 4 amostras para classificação (senão 'insufficient_data').

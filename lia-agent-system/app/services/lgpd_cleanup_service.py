@@ -20,15 +20,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 from uuid import UUID
 
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, and_, func
 
 from app.core.database import AsyncSessionLocal
-from app.models.candidate import Candidate, VacancyCandidate
 from app.models.ai_consumption import AiConsumption
+from app.models.candidate import Candidate, VacancyCandidate
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ async def schedule_deletion_for_candidate(
     db: AsyncSession,
     candidate_id: str,
     reason: str,
-    retention_days: Optional[int] = None,
+    retention_days: int | None = None,
 ) -> datetime:
     """
     Set scheduled_deletion_at on a candidate record.

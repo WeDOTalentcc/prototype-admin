@@ -18,7 +18,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -71,9 +71,9 @@ class DataResult:
     value: Any
     confidence: float
     confidence_level: ConfidenceLevel
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     cached: bool = False
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
@@ -82,29 +82,29 @@ class OrchestratedResult:
     primary_value: Any
     primary_source: DataSource
     primary_confidence: float
-    all_sources: List[DataResult]
+    all_sources: list[DataResult]
     consensus: bool
-    consensus_value: Optional[Any] = None
-    suggested_value: Optional[Any] = None
-    explanation: Optional[str] = None
+    consensus_value: Any | None = None
+    suggested_value: Any | None = None
+    explanation: str | None = None
 
 
 @dataclass
 class SalaryResult(OrchestratedResult):
     """Salary-specific result with range breakdown."""
-    min_salary: Optional[float] = None
-    max_salary: Optional[float] = None
-    median_salary: Optional[float] = None
+    min_salary: float | None = None
+    max_salary: float | None = None
+    median_salary: float | None = None
     currency: str = "BRL"
-    percentile_p25: Optional[float] = None
-    percentile_p75: Optional[float] = None
+    percentile_p25: float | None = None
+    percentile_p75: float | None = None
 
 
 @dataclass
 class SkillsResult(OrchestratedResult):
     """Skills-specific result with categorization."""
-    technical_skills: List[Dict[str, Any]] = field(default_factory=list)
-    behavioral_skills: List[Dict[str, Any]] = field(default_factory=list)
+    technical_skills: list[dict[str, Any]] = field(default_factory=list)
+    behavioral_skills: list[dict[str, Any]] = field(default_factory=list)
     recommended_count: int = 0
 
 
@@ -112,13 +112,13 @@ class SkillsResult(OrchestratedResult):
 class JobContext:
     """Context for job-related queries."""
     company_id: str
-    session_id: Optional[str] = None
-    role: Optional[str] = None
-    title: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
+    session_id: str | None = None
+    role: str | None = None
+    title: str | None = None
+    seniority: str | None = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
 
 
 class IntelligentDataOrchestrator:
@@ -271,7 +271,7 @@ class IntelligentDataOrchestrator:
         self,
         db: AsyncSession,
         context: JobContext
-    ) -> Optional[DataResult]:
+    ) -> DataResult | None:
         """Get salary from learning patterns."""
         try:
             learning_loop = self._get_learning_loop()
@@ -303,7 +303,7 @@ class IntelligentDataOrchestrator:
         self,
         db: AsyncSession,
         context: JobContext
-    ) -> Optional[DataResult]:
+    ) -> DataResult | None:
         """Get salary from company configuration."""
         try:
             company_config = self._get_company_config()
@@ -348,7 +348,7 @@ class IntelligentDataOrchestrator:
         
         return None
     
-    async def _get_internal_salary(self, db: AsyncSession, context: JobContext) -> Optional[DataResult]:
+    async def _get_internal_salary(self, db: AsyncSession, context: JobContext) -> DataResult | None:
         """Get salary from internal job insights."""
         try:
             job_insights = self._get_job_insights()
@@ -378,7 +378,7 @@ class IntelligentDataOrchestrator:
         
         return None
     
-    async def _get_ats_salary(self, context: JobContext) -> Optional[DataResult]:
+    async def _get_ats_salary(self, context: JobContext) -> DataResult | None:
         """Get salary from ATS history."""
         try:
             ats_history = self._get_ats_history()
@@ -409,7 +409,7 @@ class IntelligentDataOrchestrator:
         
         return None
     
-    async def _get_market_salary(self, context: JobContext) -> Optional[DataResult]:
+    async def _get_market_salary(self, context: JobContext) -> DataResult | None:
         """Get salary from market benchmark."""
         try:
             market_benchmark = self._get_market_benchmark()
@@ -443,7 +443,7 @@ class IntelligentDataOrchestrator:
     
     def _consolidate_salary_results(
         self,
-        results: List[DataResult],
+        results: list[DataResult],
         context: JobContext
     ) -> SalaryResult:
         """Consolidate salary results from multiple sources."""
@@ -493,7 +493,7 @@ class IntelligentDataOrchestrator:
             percentile_p75=val.get("p75")
         )
     
-    def _check_salary_consensus(self, results: List[DataResult]) -> bool:
+    def _check_salary_consensus(self, results: list[DataResult]) -> bool:
         """Check if salary results have consensus (within 20% range)."""
         if len(results) < 2:
             return True
@@ -519,7 +519,7 @@ class IntelligentDataOrchestrator:
     
     def _generate_salary_explanation(
         self,
-        results: List[DataResult],
+        results: list[DataResult],
         consensus: bool
     ) -> str:
         """Generate human-readable explanation for salary recommendation."""
@@ -543,7 +543,7 @@ class IntelligentDataOrchestrator:
         
         return f"Sugestão principal baseada em {source_name} (confiança: {int(primary.confidence * 100)}%)."
     
-    def _salary_to_cache(self, result: SalaryResult) -> Dict[str, Any]:
+    def _salary_to_cache(self, result: SalaryResult) -> dict[str, Any]:
         """Convert salary result to cacheable format."""
         return {
             "min_salary": result.min_salary,
@@ -556,7 +556,7 @@ class IntelligentDataOrchestrator:
             "cached_at": datetime.utcnow().isoformat()
         }
     
-    def _parse_cached_salary(self, cached: Dict[str, Any]) -> SalaryResult:
+    def _parse_cached_salary(self, cached: dict[str, Any]) -> SalaryResult:
         """Parse cached salary data back to SalaryResult."""
         return SalaryResult(
             primary_value={
@@ -654,7 +654,7 @@ class IntelligentDataOrchestrator:
         self,
         db: AsyncSession,
         context: JobContext
-    ) -> Optional[DataResult]:
+    ) -> DataResult | None:
         """Get skills from learning patterns."""
         try:
             learning_loop = self._get_learning_loop()
@@ -679,7 +679,7 @@ class IntelligentDataOrchestrator:
         self,
         db: AsyncSession,
         context: JobContext
-    ) -> Optional[DataResult]:
+    ) -> DataResult | None:
         """Get skills from company configuration."""
         try:
             company_config = self._get_company_config()
@@ -702,7 +702,7 @@ class IntelligentDataOrchestrator:
         
         return None
     
-    async def _get_ats_skills(self, context: JobContext) -> Optional[DataResult]:
+    async def _get_ats_skills(self, context: JobContext) -> DataResult | None:
         """Get skills from ATS history."""
         try:
             ats_history = self._get_ats_history()
@@ -729,7 +729,7 @@ class IntelligentDataOrchestrator:
         
         return None
     
-    async def _get_catalog_skills(self, context: JobContext) -> Optional[DataResult]:
+    async def _get_catalog_skills(self, context: JobContext) -> DataResult | None:
         """Get skills from curated catalog."""
         try:
             from app.services.skills_catalog_service import skills_catalog_service
@@ -757,7 +757,7 @@ class IntelligentDataOrchestrator:
         self,
         db: AsyncSession,
         context: JobContext
-    ) -> Optional[DataResult]:
+    ) -> DataResult | None:
         """Get skills from company's skills catalog database."""
         try:
             skills_catalog_db = self._get_skills_catalog_db(db)
@@ -791,7 +791,7 @@ class IntelligentDataOrchestrator:
     
     def _consolidate_skills_results(
         self,
-        results: List[DataResult],
+        results: list[DataResult],
         context: JobContext,
         limit: int
     ) -> SkillsResult:
@@ -811,7 +811,7 @@ class IntelligentDataOrchestrator:
         results.sort(key=lambda r: r.confidence, reverse=True)
         primary = results[0]
         
-        skill_scores: Dict[str, float] = {}
+        skill_scores: dict[str, float] = {}
         
         for result in results:
             skills = result.value or []
@@ -860,7 +860,7 @@ class IntelligentDataOrchestrator:
             recommended_count=len(consolidated_skills)
         )
     
-    def _skills_to_cache(self, result: SkillsResult) -> Dict[str, Any]:
+    def _skills_to_cache(self, result: SkillsResult) -> dict[str, Any]:
         """Convert skills result to cacheable format."""
         return {
             "skills": result.primary_value,
@@ -871,7 +871,7 @@ class IntelligentDataOrchestrator:
             "cached_at": datetime.utcnow().isoformat()
         }
     
-    def _parse_cached_skills(self, cached: Dict[str, Any]) -> SkillsResult:
+    def _parse_cached_skills(self, cached: dict[str, Any]) -> SkillsResult:
         """Parse cached skills data back to SkillsResult."""
         return SkillsResult(
             primary_value=cached.get("skills", []),
@@ -891,8 +891,8 @@ class IntelligentDataOrchestrator:
         field_name: str,
         suggested_value: Any,
         final_value: Any,
-        source: Optional[str] = None,
-        source_confidence: Optional[float] = None,
+        source: str | None = None,
+        source_confidence: float | None = None,
         explicitly_rejected: bool = False
     ) -> None:
         """

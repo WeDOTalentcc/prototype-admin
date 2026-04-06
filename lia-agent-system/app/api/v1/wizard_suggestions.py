@@ -9,21 +9,20 @@ Provides field suggestions for the Job Wizard based on the 6-tier priority syste
 5. ETL/Datalakes (75%) - External data sources
 6. Curated Templates (70%) - 662 validated templates
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
-from uuid import UUID
 import logging
+from typing import Any
+from uuid import UUID
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
 from app.domains.job_management.services.wizard_data_priority_service import (
-    WizardDataPriorityService,
     JobContext,
-    Suggestion,
-    DataSource,
+    WizardDataPriorityService,
 )
 
 router = APIRouter()
@@ -46,51 +45,51 @@ class SuggestionResponse(BaseModel):
     source: str
     confidence: float
     explanation: str
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class FieldSuggestionsResponse(BaseModel):
     field: str
-    best_suggestion: Optional[SuggestionResponse] = None
-    all_suggestions: List[SuggestionResponse] = Field(default_factory=list)
+    best_suggestion: SuggestionResponse | None = None
+    all_suggestions: list[SuggestionResponse] = Field(default_factory=list)
 
 
 class WizardContextRequest(BaseModel):
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
+    job_title: str | None = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
 
 
 class AllFieldSuggestionsResponse(BaseModel):
-    suggestions: Dict[str, SuggestionResponse] = Field(default_factory=dict)
-    data_coverage: Dict[str, Any] = Field(default_factory=dict)
-    fields_with_suggestions: List[str] = Field(default_factory=list)
-    fields_without_suggestions: List[str] = Field(default_factory=list)
+    suggestions: dict[str, SuggestionResponse] = Field(default_factory=dict)
+    data_coverage: dict[str, Any] = Field(default_factory=dict)
+    fields_with_suggestions: list[str] = Field(default_factory=list)
+    fields_without_suggestions: list[str] = Field(default_factory=list)
 
 
 class SimilarJobResponse(BaseModel):
     id: str
     source: str
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    was_successful: Optional[bool] = None
-    time_to_fill: Optional[int] = None
-    created_at: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    was_successful: bool | None = None
+    time_to_fill: int | None = None
+    created_at: str | None = None
     can_use_as_template: bool = True
 
 
 @router.get("/suggestion/{field}")
 async def get_field_suggestion(
     field: str,
-    job_title: Optional[str] = Query(None, description="Job title for context"),
-    department: Optional[str] = Query(None, description="Department"),
-    seniority: Optional[str] = Query(None, description="Seniority level"),
-    location: Optional[str] = Query(None, description="Location"),
-    work_model: Optional[str] = Query(None, description="Work model (remote, hybrid, onsite)"),
+    job_title: str | None = Query(None, description="Job title for context"),
+    department: str | None = Query(None, description="Department"),
+    seniority: str | None = Query(None, description="Seniority level"),
+    location: str | None = Query(None, description="Location"),
+    work_model: str | None = Query(None, description="Work model (remote, hybrid, onsite)"),
     include_all_sources: bool = Query(False, description="Return suggestions from all sources"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -160,7 +159,7 @@ async def get_field_suggestion(
 @router.post("/suggestions/all")
 async def get_all_field_suggestions(
     request: WizardContextRequest,
-    fields: Optional[List[str]] = Query(
+    fields: list[str] | None = Query(
         None, 
         description="Fields to get suggestions for (defaults to all)"
     ),
@@ -233,13 +232,13 @@ async def get_all_field_suggestions(
 
 @router.get("/similar-jobs")
 async def get_similar_jobs(
-    job_title: Optional[str] = Query(None, description="Job title to match"),
-    department: Optional[str] = Query(None, description="Department filter"),
-    seniority: Optional[str] = Query(None, description="Seniority filter"),
+    job_title: str | None = Query(None, description="Job title to match"),
+    department: str | None = Query(None, description="Department filter"),
+    seniority: str | None = Query(None, description="Seniority filter"),
     limit: int = Query(5, le=20, description="Max results"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> List[SimilarJobResponse]:
+) -> list[SimilarJobResponse]:
     """
     Find similar jobs for Fast Track mode.
     
@@ -272,7 +271,7 @@ async def get_similar_jobs(
 async def get_data_coverage(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get data coverage statistics for the Learning Loop.
     
@@ -323,7 +322,7 @@ async def get_data_coverage(
 
 
 @router.get("/sources-priority")
-async def get_sources_priority() -> Dict[str, Any]:
+async def get_sources_priority() -> dict[str, Any]:
     """
     Get information about the data sources priority system.
     

@@ -14,11 +14,10 @@ Features:
 - Role-to-skills mapping
 - Fuzzy search capabilities
 """
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, field, asdict
-from difflib import SequenceMatcher
 import logging
-import re
+from dataclasses import asdict, dataclass, field
+from difflib import SequenceMatcher
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +32,9 @@ class Area:
     id: str
     nome: str
     descricao: str
-    palavras_chave: List[str]
+    palavras_chave: list[str]
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -47,9 +46,9 @@ class SeniorityLevel:
     descricao: str
     ordem: int
     anos_experiencia_min: int
-    anos_experiencia_max: Optional[int]
+    anos_experiencia_max: int | None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -59,13 +58,13 @@ class Role:
     id: str
     nome: str
     area_id: str
-    niveis_aplicaveis: List[str]
+    niveis_aplicaveis: list[str]
     descricao: str
-    competencias_tecnicas: List[str]
-    competencias_comportamentais: List[str]
-    variantes_nome: List[str] = field(default_factory=list)
+    competencias_tecnicas: list[str]
+    competencias_comportamentais: list[str]
+    variantes_nome: list[str] = field(default_factory=list)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -74,13 +73,13 @@ class TechnicalSkill:
     """Technical skill/competency definition."""
     id: str
     nome: str
-    areas: List[str]
+    areas: list[str]
     nivel_minimo: str
     descricao: str
     categoria: str
-    palavras_chave: List[str] = field(default_factory=list)
+    palavras_chave: list[str] = field(default_factory=list)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -91,9 +90,9 @@ class BehavioralSkill:
     nome: str
     descricao: str
     categoria: str
-    subcategorias: List[str] = field(default_factory=list)
+    subcategorias: list[str] = field(default_factory=list)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -101,7 +100,7 @@ class BehavioralSkill:
 # AREAS CATALOG (20 areas)
 # =============================================================================
 
-AREAS_CATALOG: Dict[str, Area] = {
+AREAS_CATALOG: dict[str, Area] = {
     "tecnologia": Area(
         id="tecnologia",
         nome="Tecnologia da Informação",
@@ -229,7 +228,7 @@ AREAS_CATALOG: Dict[str, Area] = {
 # SENIORITY LEVELS (12 levels)
 # =============================================================================
 
-SENIORITY_LEVELS: Dict[str, SeniorityLevel] = {
+SENIORITY_LEVELS: dict[str, SeniorityLevel] = {
     "estagiario": SeniorityLevel(
         id="estagiario",
         nome="Estagiário",
@@ -349,7 +348,7 @@ SENIORITY_LEVELS: Dict[str, SeniorityLevel] = {
 # BEHAVIORAL COMPETENCIES (50 competencies)
 # =============================================================================
 
-BEHAVIORAL_SKILLS: Dict[str, BehavioralSkill] = {
+BEHAVIORAL_SKILLS: dict[str, BehavioralSkill] = {
     "lideranca": BehavioralSkill(
         id="lideranca",
         nome="Liderança",
@@ -707,7 +706,7 @@ BEHAVIORAL_SKILLS: Dict[str, BehavioralSkill] = {
 # TECHNICAL SKILLS BY AREA
 # =============================================================================
 
-TECHNICAL_SKILLS: Dict[str, TechnicalSkill] = {}
+TECHNICAL_SKILLS: dict[str, TechnicalSkill] = {}
 
 # ----- TECNOLOGIA (50+ skills) -----
 _tech_skills = [
@@ -1545,7 +1544,7 @@ for skill_id, nome, areas, nivel, descricao, categoria, palavras in _facilities_
 # ROLES BY AREA
 # =============================================================================
 
-ROLES_CATALOG: Dict[str, Role] = {}
+ROLES_CATALOG: dict[str, Role] = {}
 
 # ----- TECNOLOGIA ROLES -----
 _tech_roles = [
@@ -2049,16 +2048,16 @@ class OrganizationCatalogService:
     # AREAS
     # -------------------------------------------------------------------------
     
-    def get_all_areas(self) -> List[Dict[str, Any]]:
+    def get_all_areas(self) -> list[dict[str, Any]]:
         """Get all organizational areas."""
         return [area.to_dict() for area in AREAS_CATALOG.values()]
     
-    def get_area_by_id(self, area_id: str) -> Optional[Dict[str, Any]]:
+    def get_area_by_id(self, area_id: str) -> dict[str, Any] | None:
         """Get a specific area by ID."""
         area = AREAS_CATALOG.get(area_id)
         return area.to_dict() if area else None
     
-    def detect_area_from_text(self, text: str) -> Optional[Dict[str, Any]]:
+    def detect_area_from_text(self, text: str) -> dict[str, Any] | None:
         """
         Detect the most likely area from a text (job title, description, etc).
         
@@ -2093,13 +2092,13 @@ class OrganizationCatalogService:
     # SENIORITY LEVELS
     # -------------------------------------------------------------------------
     
-    def get_all_seniority_levels(self) -> List[Dict[str, Any]]:
+    def get_all_seniority_levels(self) -> list[dict[str, Any]]:
         """Get all seniority levels ordered by hierarchy."""
         levels = list(SENIORITY_LEVELS.values())
         levels.sort(key=lambda x: x.ordem)
         return [level.to_dict() for level in levels]
     
-    def get_seniority_by_id(self, seniority_id: str) -> Optional[Dict[str, Any]]:
+    def get_seniority_by_id(self, seniority_id: str) -> dict[str, Any] | None:
         """Get a specific seniority level by ID."""
         level = SENIORITY_LEVELS.get(seniority_id)
         return level.to_dict() if level else None
@@ -2108,7 +2107,7 @@ class OrganizationCatalogService:
     # ROLES
     # -------------------------------------------------------------------------
     
-    def get_roles_by_area(self, area_id: str) -> List[Dict[str, Any]]:
+    def get_roles_by_area(self, area_id: str) -> list[dict[str, Any]]:
         """Get all roles for a specific area."""
         roles = [
             role.to_dict() for role in ROLES_CATALOG.values()
@@ -2116,16 +2115,16 @@ class OrganizationCatalogService:
         ]
         return roles
     
-    def get_all_roles(self) -> List[Dict[str, Any]]:
+    def get_all_roles(self) -> list[dict[str, Any]]:
         """Get all roles."""
         return [role.to_dict() for role in ROLES_CATALOG.values()]
     
-    def get_role_by_id(self, role_id: str) -> Optional[Dict[str, Any]]:
+    def get_role_by_id(self, role_id: str) -> dict[str, Any] | None:
         """Get a specific role by ID."""
         role = ROLES_CATALOG.get(role_id)
         return role.to_dict() if role else None
     
-    def get_role_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_role_by_name(self, name: str) -> dict[str, Any] | None:
         """
         Get a role by name, checking main name and variants.
         
@@ -2166,7 +2165,7 @@ class OrganizationCatalogService:
     # TECHNICAL SKILLS
     # -------------------------------------------------------------------------
     
-    def get_technical_skills_by_area(self, area_id: str) -> List[Dict[str, Any]]:
+    def get_technical_skills_by_area(self, area_id: str) -> list[dict[str, Any]]:
         """Get all technical skills for a specific area."""
         skills = [
             skill.to_dict() for skill in TECHNICAL_SKILLS.values()
@@ -2174,11 +2173,11 @@ class OrganizationCatalogService:
         ]
         return skills
     
-    def get_all_technical_skills(self) -> List[Dict[str, Any]]:
+    def get_all_technical_skills(self) -> list[dict[str, Any]]:
         """Get all technical skills."""
         return [skill.to_dict() for skill in TECHNICAL_SKILLS.values()]
     
-    def get_technical_skill_by_id(self, skill_id: str) -> Optional[Dict[str, Any]]:
+    def get_technical_skill_by_id(self, skill_id: str) -> dict[str, Any] | None:
         """Get a specific technical skill by ID."""
         skill = TECHNICAL_SKILLS.get(skill_id)
         return skill.to_dict() if skill else None
@@ -2187,16 +2186,16 @@ class OrganizationCatalogService:
     # BEHAVIORAL SKILLS
     # -------------------------------------------------------------------------
     
-    def get_all_behavioral_skills(self) -> List[Dict[str, Any]]:
+    def get_all_behavioral_skills(self) -> list[dict[str, Any]]:
         """Get all behavioral competencies."""
         return [skill.to_dict() for skill in BEHAVIORAL_SKILLS.values()]
     
-    def get_behavioral_skill_by_id(self, skill_id: str) -> Optional[Dict[str, Any]]:
+    def get_behavioral_skill_by_id(self, skill_id: str) -> dict[str, Any] | None:
         """Get a specific behavioral skill by ID."""
         skill = BEHAVIORAL_SKILLS.get(skill_id)
         return skill.to_dict() if skill else None
     
-    def get_behavioral_skills_by_category(self, category: str) -> List[Dict[str, Any]]:
+    def get_behavioral_skills_by_category(self, category: str) -> list[dict[str, Any]]:
         """Get behavioral skills by category."""
         return [
             skill.to_dict() for skill in BEHAVIORAL_SKILLS.values()
@@ -2210,8 +2209,8 @@ class OrganizationCatalogService:
     def suggest_skills_for_role(
         self,
         role_name: str,
-        seniority_id: Optional[str] = None
-    ) -> Dict[str, List[Dict[str, Any]]]:
+        seniority_id: str | None = None
+    ) -> dict[str, list[dict[str, Any]]]:
         """
         Suggest technical and behavioral skills for a role.
         
@@ -2258,7 +2257,7 @@ class OrganizationCatalogService:
             "behavioral": behavioral_skills
         }
     
-    def search_skills(self, query: str) -> Dict[str, List[Dict[str, Any]]]:
+    def search_skills(self, query: str) -> dict[str, list[dict[str, Any]]]:
         """
         Search for skills by name or keyword.
         
@@ -2313,7 +2312,7 @@ class OrganizationCatalogService:
     # SUMMARY
     # -------------------------------------------------------------------------
     
-    def get_catalog_summary(self) -> Dict[str, Any]:
+    def get_catalog_summary(self) -> dict[str, Any]:
         """
         Get a complete summary of the catalog for review.
         

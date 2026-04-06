@@ -15,7 +15,6 @@ Endpoints:
 """
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -24,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.guardrail import Guardrail
-from app.shared.compliance.guardrail_repository import GuardrailRepository, GuardrailCreate
+from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +37,15 @@ router = APIRouter(prefix="/guardrails", tags=["guardrails"])
 class GuardrailResponse(BaseModel):
     id: str
     level: str
-    domain: Optional[str]
-    node: Optional[str]
-    tool: Optional[str]
+    domain: str | None
+    node: str | None
+    tool: str | None
     rule: str
     blocking_message: str
     is_active: bool
-    company_id: Optional[str]
+    company_id: str | None
     updated_by: str
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -68,14 +67,14 @@ class GuardrailResponse(BaseModel):
 
 
 class GuardrailUpdateRequest(BaseModel):
-    level: Optional[str] = None
-    domain: Optional[str] = None
-    node: Optional[str] = None
-    tool: Optional[str] = None
-    rule: Optional[str] = None
-    blocking_message: Optional[str] = None
-    is_active: Optional[bool] = None
-    company_id: Optional[str] = None
+    level: str | None = None
+    domain: str | None = None
+    node: str | None = None
+    tool: str | None = None
+    rule: str | None = None
+    blocking_message: str | None = None
+    is_active: bool | None = None
+    company_id: str | None = None
     updated_by: str = "admin"
 
 
@@ -83,12 +82,12 @@ class GuardrailUpdateRequest(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
-@router.get("", response_model=List[GuardrailResponse])
+@router.get("", response_model=list[GuardrailResponse])
 async def list_guardrails(
-    domain: Optional[str] = Query(None, description="Filtrar por domínio"),
-    company_id: Optional[str] = Query(None, description="Filtrar por tenant"),
-    is_active: Optional[bool] = Query(None, description="Filtrar por status ativo"),
-    level: Optional[str] = Query(None, description="Filtrar por nível: primary | secondary"),
+    domain: str | None = Query(None, description="Filtrar por domínio"),
+    company_id: str | None = Query(None, description="Filtrar por tenant"),
+    is_active: bool | None = Query(None, description="Filtrar por status ativo"),
+    level: str | None = Query(None, description="Filtrar por nível: primary | secondary"),
     db: AsyncSession = Depends(get_db),
 ):
     """Lista guardrails com filtros opcionais."""
@@ -193,7 +192,7 @@ async def delete_guardrail(
 # Seed de guardrails padrão (idempotente)
 # ---------------------------------------------------------------------------
 
-DEFAULT_PRIMARY_GUARDRAILS: List[dict] = [
+DEFAULT_PRIMARY_GUARDRAILS: list[dict] = [
     {
         "level": "primary",
         "rule": "Nunca revelar dados pessoais não compartilhados explicitamente pelo usuário.",
@@ -221,7 +220,7 @@ DEFAULT_PRIMARY_GUARDRAILS: List[dict] = [
     },
 ]
 
-DEFAULT_SECONDARY_GUARDRAILS: List[dict] = [
+DEFAULT_SECONDARY_GUARDRAILS: list[dict] = [
     {
         "level": "secondary",
         "domain": "cv_screening",
@@ -257,7 +256,7 @@ class SeedDefaultsResponse(BaseModel):
 
 @router.post("/seed-defaults", response_model=SeedDefaultsResponse, status_code=200)
 async def seed_default_guardrails(
-    company_id: Optional[str] = Query(None, description="Tenant específico. None = global"),
+    company_id: str | None = Query(None, description="Tenant específico. None = global"),
     db: AsyncSession = Depends(get_db),
 ):
     """

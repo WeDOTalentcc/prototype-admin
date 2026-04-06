@@ -1,13 +1,13 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
 import logging
+from typing import Any
 
-from app.shared.channels.channel_adapter import ChannelType, DeliveryStatus
-from app.shared.channels.multi_channel_service import multi_channel_service
-from app.shared.channels.channel_adapter import ChannelMessage
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.shared.channels.channel_adapter import ChannelMessage, ChannelType
+from app.shared.channels.multi_channel_service import multi_channel_service
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +18,15 @@ class SendMessageRequest(BaseModel):
     recipient_id: str
     recipient_name: str
     recipient_contact: str
-    subject: Optional[str] = None
+    subject: str | None = None
     body_text: str = ""
-    body_html: Optional[str] = None
-    template_id: Optional[str] = None
-    template_vars: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    body_html: str | None = None
+    template_id: str | None = None
+    template_vars: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
     company_id: str = ""
-    vacancy_id: Optional[str] = None
-    channels: List[str] = ["email"]
+    vacancy_id: str | None = None
+    channels: list[str] = ["email"]
     fallback: bool = True
 
 
@@ -35,27 +35,27 @@ class SendMessageResponse(BaseModel):
     channel: str
     message_id: str
     status: str
-    provider_id: Optional[str] = None
-    error: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    provider_id: str | None = None
+    error: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class BulkMessageItem(BaseModel):
     recipient_id: str
     recipient_name: str
     recipient_contact: str
-    subject: Optional[str] = None
+    subject: str | None = None
     body_text: str = ""
-    body_html: Optional[str] = None
-    template_id: Optional[str] = None
-    template_vars: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    body_html: str | None = None
+    template_id: str | None = None
+    template_vars: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
     company_id: str = ""
-    vacancy_id: Optional[str] = None
+    vacancy_id: str | None = None
 
 
 class BulkSendRequest(BaseModel):
-    messages: List[BulkMessageItem]
+    messages: list[BulkMessageItem]
     channel: str = "email"
 
 
@@ -63,16 +63,16 @@ class BulkSendResponse(BaseModel):
     total: int
     sent: int
     failed: int
-    results: List[SendMessageResponse]
+    results: list[SendMessageResponse]
 
 
 class ChannelStatusResponse(BaseModel):
-    channels: List[Dict[str, Any]]
+    channels: list[dict[str, Any]]
 
 
 class DeliveryStatusResponse(BaseModel):
     message_id: str
-    status: Optional[str] = None
+    status: str | None = None
     found: bool = True
 
 

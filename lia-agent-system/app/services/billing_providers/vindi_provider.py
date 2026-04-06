@@ -8,18 +8,16 @@ Vindi is a Brazilian payment gateway that supports:
 - Recurring subscriptions
 - Multi-gateway processing
 """
-import os
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime, date
+import os
+from datetime import date, datetime
+from typing import Any
 
 from app.services.billing_providers.base import (
     BillingProviderBase,
-    CustomerData,
-    SubscriptionData,
-    InvoiceData,
-    PaymentMethodData,
     BillingResult,
+    CustomerData,
+    PaymentMethodData,
 )
 from app.shared.resilience.circuit_breaker import VINDI_CIRCUIT, circuit_breaker_decorator
 
@@ -38,7 +36,7 @@ class VindiProvider(BillingProviderBase):
     
     provider_name = "vindi"
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """
         Initialize Vindi provider.
         
@@ -135,9 +133,9 @@ class VindiProvider(BillingProviderBase):
         self,
         customer_id: str,
         plan_code: str,
-        payment_method_id: Optional[str] = None,
-        trial_days: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        payment_method_id: str | None = None,
+        trial_days: int | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BillingResult:
         """Create a subscription in Vindi."""
         logger.info(f"[Vindi] Creating subscription for customer {customer_id}, plan {plan_code}")
@@ -181,9 +179,9 @@ class VindiProvider(BillingProviderBase):
     async def update_subscription(
         self,
         subscription_id: str,
-        plan_code: Optional[str] = None,
-        payment_method_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        plan_code: str | None = None,
+        payment_method_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BillingResult:
         """Update a subscription in Vindi."""
         logger.info(f"[Vindi] Updating subscription: {subscription_id}")
@@ -208,7 +206,7 @@ class VindiProvider(BillingProviderBase):
         self,
         subscription_id: str,
         at_period_end: bool = True,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> BillingResult:
         """Cancel a subscription in Vindi."""
         logger.info(f"[Vindi] Cancelling subscription: {subscription_id}")
@@ -276,7 +274,7 @@ class VindiProvider(BillingProviderBase):
     async def list_invoices(
         self,
         customer_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100
     ) -> BillingResult:
         """List invoices (bills) for a customer in Vindi."""
@@ -322,10 +320,10 @@ class VindiProvider(BillingProviderBase):
     async def create_invoice(
         self,
         customer_id: str,
-        items: List[Dict[str, Any]],
-        due_date: Optional[date] = None,
-        payment_method: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        items: list[dict[str, Any]],
+        due_date: date | None = None,
+        payment_method: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BillingResult:
         """Create an invoice (bill) in Vindi."""
         logger.info(f"[Vindi] Creating invoice for customer: {customer_id}")
@@ -358,8 +356,8 @@ class VindiProvider(BillingProviderBase):
     async def refund_invoice(
         self,
         invoice_id: str,
-        amount_cents: Optional[int] = None,
-        reason: Optional[str] = None
+        amount_cents: int | None = None,
+        reason: str | None = None
     ) -> BillingResult:
         """Refund an invoice (bill) in Vindi."""
         logger.info(f"[Vindi] Refunding invoice: {invoice_id}")
@@ -454,7 +452,7 @@ class VindiProvider(BillingProviderBase):
             data={"customer_id": customer_id, "payment_profile_id": payment_method_id}
         )
     
-    def parse_webhook(self, payload: Dict[str, Any], signature: Optional[str] = None) -> Dict[str, Any]:
+    def parse_webhook(self, payload: dict[str, Any], signature: str | None = None) -> dict[str, Any]:
         """Parse Vindi webhook payload."""
         event_data = payload.get("event", {})
         event_type = event_data.get("type", "")
@@ -480,7 +478,7 @@ class VindiProvider(BillingProviderBase):
             "timestamp": datetime.utcnow().isoformat(),
         }
     
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get Vindi provider status."""
         is_configured = bool(self.api_key)
         

@@ -10,25 +10,24 @@ Features:
 - Detect seniority levels
 - Build company-specific catalogs
 """
-import re
 import logging
-from typing import Optional, Dict, Any, List, Tuple
-from datetime import datetime
-from uuid import UUID, uuid4
+import re
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.imported_job_description import (
-    ImportedJobDescription, 
-    ImportBatch,
     ClientSkillCatalog,
-    ImportSource, 
-    ImportStatus, 
-    ProcessingStatus
+    ImportBatch,
+    ImportedJobDescription,
+    ImportSource,
+    ImportStatus,
+    ProcessingStatus,
 )
-from app.models.company_learning import CompanySkill, LearningSource
 
 logger = logging.getLogger(__name__)
 
@@ -37,17 +36,17 @@ logger = logging.getLogger(__name__)
 class ParsedJD:
     """Result of parsing a job description."""
     title_normalized: str
-    seniority: Optional[str]
+    seniority: str | None
     seniority_confidence: float
-    department: Optional[str]
-    employment_type: Optional[str]
-    work_model: Optional[str]
-    responsibilities: List[str]
-    technical_skills: List[Dict[str, Any]]
-    behavioral_competencies: List[Dict[str, Any]]
-    salary_min: Optional[float]
-    salary_max: Optional[float]
-    benefits: List[str]
+    department: str | None
+    employment_type: str | None
+    work_model: str | None
+    responsibilities: list[str]
+    technical_skills: list[dict[str, Any]]
+    behavioral_competencies: list[dict[str, Any]]
+    salary_min: float | None
+    salary_max: float | None
+    benefits: list[str]
     parsing_confidence: float
 
 
@@ -122,8 +121,8 @@ class JDImportService:
         company_id: UUID,
         source: str,
         total_records: int,
-        created_by: Optional[str] = None,
-        config: Optional[Dict] = None
+        created_by: str | None = None,
+        config: dict | None = None
     ) -> ImportBatch:
         """Create a new import batch for tracking."""
         batch = ImportBatch(
@@ -143,9 +142,9 @@ class JDImportService:
         self,
         db: AsyncSession,
         company_id: UUID,
-        jd_data: Dict[str, Any],
+        jd_data: dict[str, Any],
         source: str = ImportSource.MANUAL_UPLOAD.value,
-        batch_id: Optional[UUID] = None,
+        batch_id: UUID | None = None,
         parse_immediately: bool = True
     ) -> ImportedJobDescription:
         """
@@ -206,9 +205,9 @@ class JDImportService:
         self,
         db: AsyncSession,
         company_id: UUID,
-        jds_data: List[Dict[str, Any]],
+        jds_data: list[dict[str, Any]],
         source: str = ImportSource.MANUAL_UPLOAD.value,
-        created_by: Optional[str] = None
+        created_by: str | None = None
     ) -> ImportBatch:
         """
         Import multiple job descriptions in a batch.
@@ -324,7 +323,7 @@ class JDImportService:
         
         return normalized.title()
 
-    def _detect_seniority(self, title: str, description: str) -> Tuple[Optional[str], float]:
+    def _detect_seniority(self, title: str, description: str) -> tuple[str | None, float]:
         """Detect seniority level from title and description."""
         text = f"{title} {description}".lower()
         
@@ -340,7 +339,7 @@ class JDImportService:
         
         return None, 0.0
 
-    def _extract_technical_skills(self, text: str) -> List[Dict[str, Any]]:
+    def _extract_technical_skills(self, text: str) -> list[dict[str, Any]]:
         """Extract technical skills from text."""
         skills = []
         seen = set()
@@ -390,7 +389,7 @@ class JDImportService:
         else:
             return "intermediate"
 
-    def _extract_behavioral_competencies(self, text: str) -> List[Dict[str, Any]]:
+    def _extract_behavioral_competencies(self, text: str) -> list[dict[str, Any]]:
         """Extract behavioral competencies from text."""
         competencies = []
         seen = set()
@@ -400,13 +399,13 @@ class JDImportService:
                 name = keyword.title().replace("ção", "ção").replace("cão", "ção")
                 competencies.append({
                     "name": name,
-                    "justification": f"Identificado na descrição da vaga"
+                    "justification": "Identificado na descrição da vaga"
                 })
                 seen.add(keyword)
         
         return competencies[:10]
 
-    def _extract_responsibilities(self, text: str) -> List[str]:
+    def _extract_responsibilities(self, text: str) -> list[str]:
         """Extract responsibilities from text."""
         if not text:
             return []
@@ -422,7 +421,7 @@ class JDImportService:
         
         return responsibilities[:15]
 
-    def _extract_benefits(self, text: str) -> List[str]:
+    def _extract_benefits(self, text: str) -> list[str]:
         """Extract benefits from text."""
         benefits = []
         text_lower = text.lower()
@@ -488,7 +487,7 @@ class JDImportService:
         result = await db.execute(stmt)
         jds = result.scalars().all()
         
-        skill_freq: Dict[str, Dict] = {}
+        skill_freq: dict[str, dict] = {}
         
         for jd in jds:
             for skill_data in (jd.technical_skills or []):
@@ -558,7 +557,7 @@ class JDImportService:
         self,
         db: AsyncSession,
         company_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get import statistics for a company."""
         jd_count = await db.execute(
             select(func.count()).select_from(ImportedJobDescription).where(

@@ -7,8 +7,8 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,8 @@ class SessionContext:
     domain: str
     intent_history: list[str] = field(default_factory=list)  # last N intents
     entity_cache: dict[str, Any] = field(default_factory=dict)  # candidate_id, job_id etc
-    last_active: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_active: datetime = field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, Any] = field(default_factory=dict)
     
     def to_json(self) -> str:
@@ -33,7 +33,7 @@ class SessionContext:
         return json.dumps(data)
     
     @classmethod
-    def from_json(cls, json_str: str) -> "SessionContext":
+    def from_json(cls, json_str: str) -> SessionContext:
         data = json.loads(json_str)
         data["last_active"] = datetime.fromisoformat(data["last_active"])
         data["created_at"] = datetime.fromisoformat(data["created_at"])
@@ -87,7 +87,7 @@ class SessionBridge:
     
     async def save(self, ctx: SessionContext) -> None:
         """Persist session context."""
-        ctx.last_active = datetime.now(timezone.utc)
+        ctx.last_active = datetime.now(UTC)
         serialized = ctx.to_json()
         try:
             redis_client = await self._get_redis_client()
@@ -98,7 +98,7 @@ class SessionBridge:
         except Exception as exc:
             logger.error("[SessionBridge] Failed to save session %s: %s", ctx.session_id, exc)
     
-    async def load(self, session_id: str) -> Optional[SessionContext]:
+    async def load(self, session_id: str) -> SessionContext | None:
         """Load session context by session_id."""
         try:
             key = self._key(session_id)

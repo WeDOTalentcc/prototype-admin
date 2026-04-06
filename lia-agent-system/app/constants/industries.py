@@ -2,7 +2,6 @@
 Industry constants and normalization for bilingual (English/Portuguese) support.
 Mirrors the frontend industry-constants.ts for consistency.
 """
-from typing import List, Dict, Set, Optional, Any
 from dataclasses import dataclass, field
 
 
@@ -12,10 +11,10 @@ class Industry:
     label_pt: str
     label_en: str
     category: str
-    synonyms: List[str] = field(default_factory=list)
+    synonyms: list[str] = field(default_factory=list)
 
 
-INDUSTRY_CATEGORIES: Dict[str, Dict[str, str]] = {
+INDUSTRY_CATEGORIES: dict[str, dict[str, str]] = {
     "technology": {"label_pt": "Tecnologia", "label_en": "Technology"},
     "finance": {"label_pt": "Finanças", "label_en": "Finance"},
     "consulting": {"label_pt": "Consultoria", "label_en": "Consulting"},
@@ -34,7 +33,7 @@ INDUSTRY_CATEGORIES: Dict[str, Dict[str, str]] = {
 }
 
 
-INDUSTRIES: List[Industry] = [
+INDUSTRIES: list[Industry] = [
     # Technology
     Industry(
         key="Information Technology",
@@ -606,7 +605,7 @@ INDUSTRIES: List[Industry] = [
 ]
 
 
-_synonym_map: Dict[str, Set[str]] = {}
+_synonym_map: dict[str, set[str]] = {}
 
 
 def _build_synonym_map() -> None:
@@ -616,7 +615,7 @@ def _build_synonym_map() -> None:
         return
     
     for industry in INDUSTRIES:
-        all_terms: Set[str] = set()
+        all_terms: set[str] = set()
         all_terms.add(industry.key.lower())
         all_terms.add(industry.label_pt.lower())
         all_terms.add(industry.label_en.lower())
@@ -630,7 +629,7 @@ def _build_synonym_map() -> None:
                 _synonym_map[term].add(other_term)
 
 
-def normalize_industry(term: str) -> List[str]:
+def normalize_industry(term: str) -> list[str]:
     """
     Returns all equivalent industry terms for the given term.
     This allows bidirectional matching - "Banking" returns ["banking", "banco", "banco digital", ...]
@@ -649,7 +648,7 @@ def normalize_industry(term: str) -> List[str]:
     return [normalized]
 
 
-def get_canonical_key(term: str) -> Optional[str]:
+def get_canonical_key(term: str) -> str | None:
     """
     Get the canonical (English LinkedIn standard) key for a term.
     
@@ -671,7 +670,7 @@ def get_canonical_key(term: str) -> Optional[str]:
     return None
 
 
-def get_all_equivalent_terms(term: str) -> List[str]:
+def get_all_equivalent_terms(term: str) -> list[str]:
     """
     Get all equivalent terms including original casing from the industry definitions.
     
@@ -684,7 +683,7 @@ def get_all_equivalent_terms(term: str) -> List[str]:
     _build_synonym_map()
     normalized = term.lower().strip()
     
-    all_terms: List[str] = []
+    all_terms: list[str] = []
     for industry in INDUSTRIES:
         industry_terms_lower = {
             industry.key.lower(),
@@ -701,7 +700,7 @@ def get_all_equivalent_terms(term: str) -> List[str]:
     return list(set(all_terms)) if all_terms else [term]
 
 
-def match_industry(search_term: str, industries: List[str]) -> bool:
+def match_industry(search_term: str, industries: list[str]) -> bool:
     """
     Check if any industry in the list matches the search term (including synonyms).
     
@@ -716,7 +715,7 @@ def match_industry(search_term: str, industries: List[str]) -> bool:
     return any(ind.lower() in search_equivalents for ind in industries)
 
 
-def search_industries(query: str) -> List[Industry]:
+def search_industries(query: str) -> list[Industry]:
     """
     Search for industries matching the query in any language.
     
@@ -741,7 +740,7 @@ def search_industries(query: str) -> List[Industry]:
     ]
 
 
-def expand_industries_for_search(industries: List[str]) -> List[str]:
+def expand_industries_for_search(industries: list[str]) -> list[str]:
     """
     Expand a list of industries to include all equivalent terms.
     This is useful for search queries where we want to match any synonym.
@@ -752,14 +751,14 @@ def expand_industries_for_search(industries: List[str]) -> List[str]:
     Returns:
         Expanded list with all equivalent terms (lowercase, deduplicated)
     """
-    expanded: Set[str] = set()
+    expanded: set[str] = set()
     for industry in industries:
         equivalents = normalize_industry(industry)
         expanded.update(equivalents)
     return list(expanded)
 
 
-def get_industry_by_key(key: str) -> Optional[Industry]:
+def get_industry_by_key(key: str) -> Industry | None:
     """
     Get an Industry object by its key.
     
@@ -780,7 +779,7 @@ def get_industry_by_key(key: str) -> Optional[Industry]:
     return None
 
 
-def get_industries_by_category(category: str) -> List[Industry]:
+def get_industries_by_category(category: str) -> list[Industry]:
     """
     Get all industries in a category.
     
@@ -793,7 +792,7 @@ def get_industries_by_category(category: str) -> List[Industry]:
     return [i for i in INDUSTRIES if i.category == category]
 
 
-def get_popular_industries() -> List[Industry]:
+def get_popular_industries() -> list[Industry]:
     """Get a curated list of popular industries."""
     popular_keys = [
         "Information Technology",

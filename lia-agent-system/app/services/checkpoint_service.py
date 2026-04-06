@@ -14,11 +14,11 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.agent_checkpoint import AgentCheckpoint
 
@@ -51,7 +51,7 @@ async def save_checkpoint(
     session_id: str,
     agent_type: str,
     state: dict,
-    company_id: Optional[str] = None,
+    company_id: str | None = None,
 ) -> None:
     """Upsert the agent state for the given session.
 
@@ -89,7 +89,7 @@ async def restore_checkpoint(
     db: AsyncSession,
     session_id: str,
     agent_type: str,
-) -> Optional[dict]:
+) -> dict | None:
     """Return the persisted state dict, or None if no checkpoint exists.
 
     Used only by legacy graph paths. For the standard LangGraph path,

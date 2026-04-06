@@ -10,13 +10,13 @@ Scans all active companies for pipeline health issues including:
 - Weak funnels with few advanced candidates
 """
 import logging
-from datetime import datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import async_session_factory
 from app.shared.policy_middleware import get_policy_for_company
@@ -40,11 +40,11 @@ class PipelineEvent:
     title: str
     message: str
     severity: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     suggested_action: str
     action_label: str
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -54,8 +54,8 @@ class PipelineMonitor:
     proactive events when conditions require attention.
     """
 
-    async def scan_all_companies(self) -> List[PipelineEvent]:
-        all_events: List[PipelineEvent] = []
+    async def scan_all_companies(self) -> list[PipelineEvent]:
+        all_events: list[PipelineEvent] = []
 
         try:
             async with async_session_factory() as db:
@@ -84,8 +84,8 @@ class PipelineMonitor:
         logger.info(f"✅ [PipelineMonitor] Scan complete: {len(all_events)} events across {len(company_ids) if 'company_ids' in dir() else '?'} companies")
         return all_events
 
-    async def scan_company(self, company_id: str, db: AsyncSession) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+    async def scan_company(self, company_id: str, db: AsyncSession) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
 
         try:
             policy = await get_policy_for_company(company_id, db)
@@ -106,9 +106,9 @@ class PipelineMonitor:
         return events
 
     async def _detect_stagnant_candidates(
-        self, company_id: str, db: AsyncSession, max_days_in_stage: Optional[int]
-    ) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+        self, company_id: str, db: AsyncSession, max_days_in_stage: int | None
+    ) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
         try:
             sla = max_days_in_stage if max_days_in_stage else 10
             cutoff = datetime.utcnow() - timedelta(days=sla)
@@ -153,8 +153,8 @@ class PipelineMonitor:
 
     async def _detect_high_score_no_action(
         self, company_id: str, db: AsyncSession
-    ) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+    ) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
         try:
             cutoff = datetime.utcnow() - timedelta(hours=48)
 
@@ -202,8 +202,8 @@ class PipelineMonitor:
 
     async def _detect_deadline_approaching(
         self, company_id: str, db: AsyncSession
-    ) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+    ) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
         try:
             now = datetime.utcnow()
             deadline_limit = now + timedelta(days=5)
@@ -248,8 +248,8 @@ class PipelineMonitor:
 
     async def _detect_interview_no_feedback(
         self, company_id: str, db: AsyncSession
-    ) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+    ) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
         try:
             cutoff = datetime.utcnow() - timedelta(hours=48)
 
@@ -291,9 +291,9 @@ class PipelineMonitor:
         return events
 
     async def _detect_rejection_pending_feedback(
-        self, company_id: str, db: AsyncSession, policy: Dict[str, Any]
-    ) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+        self, company_id: str, db: AsyncSession, policy: dict[str, Any]
+    ) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
         try:
             communication_rules = policy.get("communication_rules", {})
             auto_rejection = communication_rules.get("auto_rejection_feedback", True)
@@ -346,8 +346,8 @@ class PipelineMonitor:
 
     async def _detect_funnel_weak(
         self, company_id: str, db: AsyncSession
-    ) -> List[PipelineEvent]:
-        events: List[PipelineEvent] = []
+    ) -> list[PipelineEvent]:
+        events: list[PipelineEvent] = []
         try:
             result = await db.execute(
                 text("""

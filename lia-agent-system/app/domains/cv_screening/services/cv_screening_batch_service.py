@@ -9,18 +9,18 @@ Public API:
 """
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.shared.policy_middleware import get_policy_for_company
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ def _normalize_priority(priority_value) -> RequirementPriorityEnum:
     return RequirementPriorityEnum.IMPORTANT
 
 
-def _calculate_wsi_score(rubric_score: float) -> Dict[str, Any]:
+def _calculate_wsi_score(rubric_score: float) -> dict[str, Any]:
     technical_score = rubric_score
     behavioral_score = rubric_score * 0.85
     wsi_score = (technical_score * _WSI_TECHNICAL_WEIGHT) + (behavioral_score * _WSI_BEHAVIORAL_WEIGHT)
@@ -78,7 +78,7 @@ def _determine_recommendation(score: float) -> str:
     return "rejeitar"
 
 
-async def _get_candidate_data(candidate_id: str, db: AsyncSession) -> Optional[Dict[str, Any]]:
+async def _get_candidate_data(candidate_id: str, db: AsyncSession) -> dict[str, Any] | None:
     try:
         result = await db.execute(select(Candidate).where(Candidate.id == UUID(candidate_id)))
         candidate = result.scalar_one_or_none()
@@ -113,7 +113,7 @@ async def _get_candidate_data(candidate_id: str, db: AsyncSession) -> Optional[D
         return None
 
 
-async def _get_job_requirements(job_id: str, db: AsyncSession) -> List[JobRequirementCreate]:
+async def _get_job_requirements(job_id: str, db: AsyncSession) -> list[JobRequirementCreate]:
     try:
         result = await db.execute(
             select(JobRequirement).where(JobRequirement.job_vacancy_id == UUID(job_id))
@@ -142,7 +142,7 @@ async def _get_job_title(job_id: str, db: AsyncSession) -> str:
         return "Vaga"
 
 
-async def _get_job_salary_range(job_id: str, db: AsyncSession) -> Optional[Dict[str, Any]]:
+async def _get_job_salary_range(job_id: str, db: AsyncSession) -> dict[str, Any] | None:
     try:
         result = await db.execute(select(JobVacancy).where(JobVacancy.id == UUID(job_id)))
         job = result.scalar_one_or_none()
@@ -153,8 +153,8 @@ async def _get_job_salary_range(job_id: str, db: AsyncSession) -> Optional[Dict[
 
 
 def _check_salary_compatibility(
-    candidate: Dict[str, Any],
-    salary_range: Optional[Dict[str, Any]],
+    candidate: dict[str, Any],
+    salary_range: dict[str, Any] | None,
     tolerance_percent: int,
 ) -> bool:
     """
@@ -189,11 +189,11 @@ def _check_salary_compatibility(
 
 
 async def run_batch(
-    candidate_ids: List[str],
+    candidate_ids: list[str],
     job_id: str,
     company_id: str,
     max_concurrent: int = 5,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Screen a batch of candidates against a job, in parallel.
 
@@ -221,8 +221,8 @@ async def run_batch(
         salary_tolerance: int = screening_rules.get("salary_tolerance_percent", 15)
         job_salary_range = await _get_job_salary_range(job_id, db) if salary_filter_enabled else None
 
-        candidates_data: List[Dict[str, Any]] = []
-        salary_excluded: List[str] = []
+        candidates_data: list[dict[str, Any]] = []
+        salary_excluded: list[str] = []
         for cid in candidate_ids:
             cdata = await _get_candidate_data(str(cid), db)
             if not cdata:
@@ -244,7 +244,7 @@ async def run_batch(
 
     semaphore = asyncio.Semaphore(max_concurrent)
 
-    async def _evaluate(candidate: Dict[str, Any]) -> Dict[str, Any]:
+    async def _evaluate(candidate: dict[str, Any]) -> dict[str, Any]:
         async with semaphore:
             try:
                 result = await rubric_evaluation_service.evaluate_candidate(

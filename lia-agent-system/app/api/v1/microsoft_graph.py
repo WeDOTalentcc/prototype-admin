@@ -6,17 +6,13 @@ Provides endpoints for:
 - Testing Microsoft Graph connectivity
 - Managing Microsoft Bookings
 """
+import logging
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
-from datetime import datetime
-import logging
 
-from app.services.microsoft_graph_service import (
-    microsoft_graph_service,
-    MeetingAttendee,
-    AttendeeType
-)
+from app.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +25,9 @@ class CreateTeamsMeetingRequest(BaseModel):
     subject: str
     start_time: datetime
     duration_minutes: int = 60
-    attendees: Optional[List[dict]] = None
-    body_content: Optional[str] = None
-    location: Optional[str] = None
+    attendees: list[dict] | None = None
+    body_content: str | None = None
+    location: str | None = None
     timezone: str = "America/Sao_Paulo"
     send_invites: bool = True
 
@@ -45,9 +41,9 @@ class TeamsOnlineMeetingResponse(BaseModel):
     start_time: datetime
     end_time: datetime
     organizer_email: str
-    attendees: List[str]
-    calendar_event_id: Optional[str]
-    dial_in_url: Optional[str]
+    attendees: list[str]
+    calendar_event_id: str | None
+    dial_in_url: str | None
 
 
 class ConnectionStatusResponse(BaseModel):
@@ -55,15 +51,15 @@ class ConnectionStatusResponse(BaseModel):
     status: str
     message: str
     configured: bool
-    organization: Optional[dict] = None
+    organization: dict | None = None
 
 
 class BookingsBusinessResponse(BaseModel):
     """Response for Bookings business."""
     id: str
     display_name: str
-    business_type: Optional[str]
-    public_url: Optional[str]
+    business_type: str | None
+    public_url: str | None
 
 
 class CreateBookingsAppointmentRequest(BaseModel):
@@ -74,8 +70,8 @@ class CreateBookingsAppointmentRequest(BaseModel):
     customer_name: str
     start_time: datetime
     duration_minutes: int = 60
-    staff_member_ids: Optional[List[str]] = None
-    notes: Optional[str] = None
+    staff_member_ids: list[str] | None = None
+    notes: str | None = None
     timezone: str = "America/Sao_Paulo"
 
 
@@ -158,7 +154,7 @@ async def create_standalone_teams_meeting(
     subject: str,
     start_time: datetime,
     duration_minutes: int = 60,
-    attendee_emails: Optional[List[str]] = None
+    attendee_emails: list[str] | None = None
 ):
     """
     Create a standalone Teams meeting (without calendar event).
@@ -233,7 +229,7 @@ async def get_calendar_event(
 async def cancel_calendar_event(
     event_id: str,
     user_email: EmailStr = Query(..., description="Email of the calendar owner"),
-    cancellation_message: Optional[str] = None
+    cancellation_message: str | None = None
 ):
     """
     Cancel a calendar event and notify attendees.
@@ -255,7 +251,7 @@ async def cancel_calendar_event(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/bookings/businesses", response_model=List[dict])
+@router.get("/bookings/businesses", response_model=list[dict])
 async def list_bookings_businesses():
     """
     List all Microsoft Bookings businesses.

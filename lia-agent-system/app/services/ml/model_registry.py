@@ -7,12 +7,11 @@ Provides functionality to:
 - Track model performance
 - A/B test different models
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime
-from dataclasses import dataclass, field
-import logging
 import hashlib
-import json
+import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +25,12 @@ class ModelMetadata:
     created_at: datetime
     created_by: str
     description: str
-    metrics: Dict[str, float]
-    parameters: Dict[str, Any]
+    metrics: dict[str, float]
+    parameters: dict[str, Any]
     is_active: bool = True
     is_default: bool = False
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "model_id": self.model_id,
             "model_name": self.model_name,
@@ -53,7 +52,7 @@ class ModelPerformance:
     predictions_count: int = 0
     correct_predictions: int = 0
     total_error: float = 0.0
-    last_evaluated: Optional[datetime] = None
+    last_evaluated: datetime | None = None
     
     @property
     def accuracy(self) -> float:
@@ -78,9 +77,9 @@ class ModelRegistry:
     
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._models: Dict[str, ModelMetadata] = {}
-        self._performance: Dict[str, ModelPerformance] = {}
-        self._default_models: Dict[str, str] = {}
+        self._models: dict[str, ModelMetadata] = {}
+        self._performance: dict[str, ModelPerformance] = {}
+        self._default_models: dict[str, str] = {}
         
         self._register_builtin_models()
     
@@ -121,8 +120,8 @@ class ModelRegistry:
         model_name: str,
         version: str,
         description: str,
-        metrics: Dict[str, float],
-        parameters: Dict[str, Any],
+        metrics: dict[str, float],
+        parameters: dict[str, Any],
         created_by: str = "system",
         set_as_default: bool = False
     ) -> ModelMetadata:
@@ -167,11 +166,11 @@ class ModelRegistry:
         
         return metadata
     
-    def get_model(self, model_id: str) -> Optional[ModelMetadata]:
+    def get_model(self, model_id: str) -> ModelMetadata | None:
         """Get model metadata by ID."""
         return self._models.get(model_id)
     
-    def get_default_model(self, model_name: str) -> Optional[ModelMetadata]:
+    def get_default_model(self, model_name: str) -> ModelMetadata | None:
         """Get the default model for a given model type."""
         model_id = self._default_models.get(model_name)
         if model_id:
@@ -180,9 +179,9 @@ class ModelRegistry:
     
     def list_models(
         self,
-        model_name: Optional[str] = None,
+        model_name: str | None = None,
         active_only: bool = True
-    ) -> List[ModelMetadata]:
+    ) -> list[ModelMetadata]:
         """
         List registered models.
         
@@ -207,7 +206,7 @@ class ModelRegistry:
         self,
         model_id: str,
         predicted_value: float,
-        actual_value: Optional[float] = None
+        actual_value: float | None = None
     ):
         """
         Record a prediction for performance tracking.
@@ -233,14 +232,14 @@ class ModelRegistry:
             
             perf.last_evaluated = datetime.utcnow()
     
-    def get_performance(self, model_id: str) -> Optional[ModelPerformance]:
+    def get_performance(self, model_id: str) -> ModelPerformance | None:
         """Get performance metrics for a model."""
         return self._performance.get(model_id)
     
     def compare_models(
         self,
-        model_ids: List[str]
-    ) -> Dict[str, Dict[str, Any]]:
+        model_ids: list[str]
+    ) -> dict[str, dict[str, Any]]:
         """
         Compare performance of multiple models.
         
@@ -312,7 +311,7 @@ class ModelRegistry:
         content = f"{model_name}:{version}:{timestamp}"
         return hashlib.sha256(content.encode()).hexdigest()[:16]
     
-    def export_registry(self) -> Dict[str, Any]:
+    def export_registry(self) -> dict[str, Any]:
         """Export registry state for persistence."""
         return {
             "models": {mid: m.to_dict() for mid, m in self._models.items()},
@@ -330,7 +329,7 @@ class ModelRegistry:
         }
 
 
-_registry_instance: Optional[ModelRegistry] = None
+_registry_instance: ModelRegistry | None = None
 
 
 def get_model_registry() -> ModelRegistry:

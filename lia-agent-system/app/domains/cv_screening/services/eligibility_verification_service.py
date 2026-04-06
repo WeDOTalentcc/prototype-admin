@@ -11,10 +11,9 @@ Flow:
 4. Max 2 reconsiderations per conversation to avoid loops
 """
 
-from typing import Optional, Dict, Any, List, Tuple
-from enum import Enum
 from dataclasses import dataclass
-from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class ReconsiderationResult(str, Enum):
@@ -30,9 +29,9 @@ class EligibilityQuestion:
     id: str
     question_text: str
     question_type: str
-    options: Optional[List[str]]
+    options: list[str] | None
     is_eliminatory: bool
-    expected_answer: Optional[str]
+    expected_answer: str | None
     category: str
 
 
@@ -154,7 +153,7 @@ class EligibilityVerificationService:
         question: EligibilityQuestion,
         answer: str,
         reconsideration_count: int = 0
-    ) -> Tuple[ReconsiderationResult, Optional[str]]:
+    ) -> tuple[ReconsiderationResult, str | None]:
         """
         Check if the answer matches the expected answer for eliminatory questions.
         
@@ -215,7 +214,7 @@ class EligibilityVerificationService:
         self,
         response: str,
         context: ReconsiderationContext
-    ) -> Tuple[ReconsiderationResult, Optional[str]]:
+    ) -> tuple[ReconsiderationResult, str | None]:
         """
         Process the candidate's response to a reconsideration prompt.
         
@@ -259,7 +258,7 @@ class EligibilityVerificationService:
         response: str,
         expected_answer: str,
         question_type: str
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Process the candidate's response to a confirmation question.
         
@@ -350,8 +349,8 @@ class EligibilityVerificationService:
     
     def get_eligibility_questions_from_job(
         self,
-        job_data: Dict[str, Any]
-    ) -> List[EligibilityQuestion]:
+        job_data: dict[str, Any]
+    ) -> list[EligibilityQuestion]:
         """Extract eligibility questions from job vacancy data."""
         questions = []
         

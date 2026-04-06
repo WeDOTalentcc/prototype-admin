@@ -6,7 +6,7 @@ so the ReActLoop can autonomously decide which tools to call.
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 from uuid import uuid4
 
 from lia_agents_core.react_loop import ToolDefinition
@@ -82,12 +82,12 @@ PRIORITY_ANALYSIS_PROMPT = """Você é um especialista em priorização de taref
 Responda APENAS com JSON válido."""
 
 
-async def _wrap_decompose_task(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
     """Decompose a complex task into subtasks using LLM + PlannedTaskService."""
-    from app.services.llm import LLMService
+    from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.models.planned_task import PlannedTaskPriority
-    from app.core.database import AsyncSessionLocal
+    from app.services.llm import LLMService
 
     task_description = kwargs.get("task_description") or kwargs.get("description", "")
     company_id = kwargs.get("company_id")
@@ -131,7 +131,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> Dict[str, Any]:
             }
 
         svc = PlannedTaskService()
-        temp_id_map: Dict[str, str] = {}
+        temp_id_map: dict[str, str] = {}
         created_tasks = []
 
         async with AsyncSessionLocal() as db:
@@ -183,10 +183,10 @@ async def _wrap_decompose_task(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_prioritize_tasks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_prioritize_tasks(**kwargs: Any) -> dict[str, Any]:
     """Recalculate priority scores for tasks."""
-    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
 
     task_ids = kwargs.get("task_ids", [])
     goal_id = kwargs.get("goal_id")
@@ -222,10 +222,10 @@ async def _wrap_prioritize_tasks(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_get_execution_plan(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_execution_plan(**kwargs: Any) -> dict[str, Any]:
     """Generate an execution plan with parallel levels."""
-    from app.domains.automation.services.planned_task_service import PlannedTaskService, CycleDetectedError
     from app.core.database import AsyncSessionLocal
+    from app.domains.automation.services.planned_task_service import CycleDetectedError, PlannedTaskService
 
     task_ids = kwargs.get("task_ids", [])
     goal_id = kwargs.get("goal_id")
@@ -269,10 +269,10 @@ async def _wrap_get_execution_plan(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_build_dag(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_build_dag(**kwargs: Any) -> dict[str, Any]:
     """Build and validate a DAG from task dependencies."""
-    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
 
     task_ids = kwargs.get("task_ids", [])
     if not task_ids:
@@ -288,10 +288,10 @@ async def _wrap_build_dag(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_check_dependencies(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_dependencies(**kwargs: Any) -> dict[str, Any]:
     """Check dependency status for a task."""
-    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
 
     task_id = kwargs.get("task_id")
     if not task_id:
@@ -307,10 +307,10 @@ async def _wrap_check_dependencies(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_get_next_tasks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_next_tasks(**kwargs: Any) -> dict[str, Any]:
     """Get tasks ready for execution."""
-    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
 
     try:
         svc = PlannedTaskService()
@@ -333,7 +333,7 @@ async def _wrap_get_next_tasks(**kwargs: Any) -> Dict[str, Any]:
 # Public registry
 # ---------------------------------------------------------------------------
 
-def get_automation_tools() -> List[ToolDefinition]:
+def get_automation_tools() -> list[ToolDefinition]:
     return [
         ToolDefinition(
             name="decompose_task",
@@ -368,7 +368,7 @@ def get_automation_tools() -> List[ToolDefinition]:
     ]
 
 
-def get_stage_tools(stage: str) -> List[ToolDefinition]:
+def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """Return tools available for a given stage."""
     from app.domains.automation.agents.automation_stage_context import get_stage_tools as _stage_tools
     stage_tool_names = set(_stage_tools(stage))

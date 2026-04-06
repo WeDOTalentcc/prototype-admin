@@ -2,17 +2,17 @@
 Recruiter Profiles API endpoints.
 Manages recruiter personalization profiles, preferences, and settings.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 import logging
+from typing import Any
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
 from app.services.recruiter_personalization_service import recruiter_personalization_service
-from pydantic import BaseModel, Field
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -24,20 +24,20 @@ class RecruiterProfileResponse(BaseModel):
     company_id: str
     total_jobs_created: int = 0
     total_corrections_made: int = 0
-    avg_completion_time_seconds: Optional[float] = None
-    preferred_seniorities: List[str] = Field(default_factory=list)
-    preferred_departments: List[str] = Field(default_factory=list)
+    avg_completion_time_seconds: float | None = None
+    preferred_seniorities: list[str] = Field(default_factory=list)
+    preferred_departments: list[str] = Field(default_factory=list)
     wizard_mode: str = "standard"
     experience_level: str = "beginner"
     profile_version: int = 1
 
 
 class PersonalizationSettingsUpdate(BaseModel):
-    personalization_enabled: Optional[bool] = None
-    data_collection_consent: Optional[bool] = None
-    show_personalization_indicators: Optional[bool] = None
-    allow_behavior_learning: Optional[bool] = None
-    preferred_language: Optional[str] = None
+    personalization_enabled: bool | None = None
+    data_collection_consent: bool | None = None
+    show_personalization_indicators: bool | None = None
+    allow_behavior_learning: bool | None = None
+    preferred_language: str | None = None
 
 
 class PersonalizationSettingsResponse(BaseModel):
@@ -53,26 +53,26 @@ class FieldPreferenceResponse(BaseModel):
     field_name: str
     correction_count: int = 0
     correction_rate: float = 0.0
-    typical_value: Optional[str] = None
-    avg_time_on_field_seconds: Optional[float] = None
+    typical_value: str | None = None
+    avg_time_on_field_seconds: float | None = None
     skip_rate: float = 0.0
 
 
 class PersonalizedThresholdsResponse(BaseModel):
     base_threshold: float
     adjusted_threshold: float
-    field_adjustments: Dict[str, float] = {}
+    field_adjustments: dict[str, float] = {}
     experience_adjustment: float = 0.0
 
 
 class RecordEventRequest(BaseModel):
     event_type: str
-    field_name: Optional[str] = None
-    original_value: Optional[Any] = None
-    new_value: Optional[Any] = None
-    metadata: Optional[Dict[str, Any]] = None
-    session_id: Optional[str] = None
-    job_draft_id: Optional[str] = None
+    field_name: str | None = None
+    original_value: Any | None = None
+    new_value: Any | None = None
+    metadata: dict[str, Any] | None = None
+    session_id: str | None = None
+    job_draft_id: str | None = None
 
 
 @router.get("/me", response_model=RecruiterProfileResponse)
@@ -173,7 +173,7 @@ async def update_my_settings(
         raise HTTPException(status_code=500, detail="Error updating settings")
 
 
-@router.get("/me/field-preferences", response_model=List[FieldPreferenceResponse])
+@router.get("/me/field-preferences", response_model=list[FieldPreferenceResponse])
 async def get_my_field_preferences(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),

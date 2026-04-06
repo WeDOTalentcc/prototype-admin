@@ -2,14 +2,14 @@
 Learning Patterns API - Exposes detected patterns, promoted skills, and success profiles.
 """
 import logging
-from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.intelligence_layer import CorrectionPattern, SuccessProfile, PatternCache
 from app.models.company_learning import CompanySkill
+from app.models.intelligence_layer import CorrectionPattern, SuccessProfile
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ SKILL_PROMOTION_THRESHOLD = 5
 @router.get("/{company_id}/detected")
 async def get_detected_patterns(
     company_id: str,
-    field: Optional[str] = None,
-    seniority: Optional[str] = None,
+    field: str | None = None,
+    seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """List all detected correction patterns for a company."""
@@ -74,7 +74,7 @@ async def get_detected_patterns(
 @router.get("/{company_id}/skills")
 async def get_promoted_skills(
     company_id: str,
-    job_title: Optional[str] = None,
+    job_title: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """List promoted skills for a company (times_confirmed >= threshold)."""
@@ -128,8 +128,8 @@ async def get_promoted_skills(
 @router.get("/{company_id}/success-profiles")
 async def get_success_profiles(
     company_id: str,
-    role: Optional[str] = None,
-    seniority: Optional[str] = None,
+    role: str | None = None,
+    seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """List success profiles for a company."""

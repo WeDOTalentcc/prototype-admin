@@ -18,8 +18,8 @@ Fail-safe: falha na avaliação RAGAS não afeta o funcionamento dos agentes.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
-from uuid import UUID, uuid4
+from typing import Any
+from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +33,13 @@ class RAGASEvaluationInput:
 
     question: str
     answer: str
-    contexts: List[str]
-    ground_truth: Optional[str] = None  # Resposta ideal esperada (golden dataset)
+    contexts: list[str]
+    ground_truth: str | None = None  # Resposta ideal esperada (golden dataset)
     session_id: str = ""
     company_id: str = ""
     domain: str = ""
     agent_name: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -50,13 +50,13 @@ class RAGASEvaluationResult:
     session_id: str
     domain: str
     agent_name: str
-    faithfulness: Optional[float]
-    answer_relevancy: Optional[float]
-    context_precision: Optional[float]
-    context_recall: Optional[float]
-    overall_score: Optional[float]
+    faithfulness: float | None
+    answer_relevancy: float | None
+    context_precision: float | None
+    context_recall: float | None
+    overall_score: float | None
     evaluated_at: datetime
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def passed_threshold(self) -> bool:
@@ -65,7 +65,7 @@ class RAGASEvaluationResult:
             return True  # fail-safe: não penalizar por ausência de score
         return self.overall_score >= RAGAS_QUALITY_THRESHOLD
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "evaluation_id": self.evaluation_id,
             "session_id": self.session_id,
@@ -171,16 +171,16 @@ class RAGASEvaluationService:
                 metadata={"error": str(exc)},
             )
 
-    async def _evaluate_with_ragas(self, inp: RAGASEvaluationInput) -> Dict[str, float]:
+    async def _evaluate_with_ragas(self, inp: RAGASEvaluationInput) -> dict[str, float]:
         """Avaliação usando biblioteca RAGAS (quando disponível)."""
+        from datasets import Dataset
         from ragas import evaluate
         from ragas.metrics import (
-            faithfulness,
             answer_relevancy,
             context_precision,
             context_recall,
+            faithfulness,
         )
-        from datasets import Dataset
 
         data = {
             "question": [inp.question],
@@ -201,7 +201,7 @@ class RAGASEvaluationService:
         result = evaluate(dataset, metrics=metrics)
         return dict(result)
 
-    def _evaluate_heuristic(self, inp: RAGASEvaluationInput) -> Dict[str, float]:
+    def _evaluate_heuristic(self, inp: RAGASEvaluationInput) -> dict[str, float]:
         """
         Avaliação heurística simplificada quando RAGAS não está disponível.
 
@@ -209,7 +209,7 @@ class RAGASEvaluationService:
         - answer_relevancy: score baseado em comprimento e palavras-chave da pergunta
         - faithfulness: score base 0.8 (sem verificação factual real)
         """
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
 
         # answer_relevancy: resposta curta demais = baixa relevância
         if inp.answer:
@@ -232,7 +232,7 @@ class RAGASEvaluationService:
 
         return scores
 
-    def _compute_overall(self, scores: Dict[str, float]) -> Optional[float]:
+    def _compute_overall(self, scores: dict[str, float]) -> float | None:
         """Média ponderada dos scores disponíveis."""
         if not scores:
             return None
@@ -295,7 +295,7 @@ class RAGASEvaluationService:
         company_id: str,
         db: Any,
         days: int = 7,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Retorna sumário de qualidade do agente nos últimos N dias.
 

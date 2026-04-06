@@ -8,11 +8,9 @@ Provides REST endpoints for:
 - Analytics and metrics
 """
 import logging
-from typing import List, Optional
-from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.domains.job_management.services.job_pattern_service import job_pattern_service
@@ -25,29 +23,29 @@ class WizardSuggestionsRequest(BaseModel):
     """Request for wizard suggestions."""
     company_id: str
     job_title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    existing_skills: Optional[List[str]] = Field(default_factory=list)
-    existing_behavioral: Optional[List[str]] = Field(default_factory=list)
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    existing_skills: list[str] | None = Field(default_factory=list)
+    existing_behavioral: list[str] | None = Field(default_factory=list)
 
 
 class SalarySuggestionRequest(BaseModel):
     """Request for salary suggestion."""
     company_id: str
     job_title: str
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    department: Optional[str] = None
+    seniority: str | None = None
+    location: str | None = None
+    department: str | None = None
 
 
 class SkillsRecommendationRequest(BaseModel):
     """Request for skills recommendation."""
     company_id: str
     job_title: str
-    existing_skills: Optional[List[str]] = Field(default_factory=list)
-    department: Optional[str] = None
-    seniority: Optional[str] = None
+    existing_skills: list[str] | None = Field(default_factory=list)
+    department: str | None = None
+    seniority: str | None = None
     limit: int = 10
 
 
@@ -55,9 +53,9 @@ class BehavioralRecommendationRequest(BaseModel):
     """Request for behavioral recommendation."""
     company_id: str
     job_title: str
-    existing_behavioral: Optional[List[str]] = Field(default_factory=list)
-    department: Optional[str] = None
-    seniority: Optional[str] = None
+    existing_behavioral: list[str] | None = Field(default_factory=list)
+    department: str | None = None
+    seniority: str | None = None
     limit: int = 10
 
 
@@ -65,10 +63,10 @@ class TimeFillPredictionRequest(BaseModel):
     """Request for time-to-fill prediction."""
     company_id: str
     job_title: str
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
+    seniority: str | None = None
+    location: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
 
 
 class JobOutcomeRequest(BaseModel):
@@ -76,34 +74,34 @@ class JobOutcomeRequest(BaseModel):
     company_id: str
     job_id: str
     outcome_status: str
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    final_salary: Optional[float] = None
-    skills: Optional[List[str]] = Field(default_factory=list)
-    behavioral_competencies: Optional[List[str]] = Field(default_factory=list)
-    time_to_fill_days: Optional[int] = None
-    candidates_total: Optional[int] = None
-    candidates_screened: Optional[int] = None
-    candidates_interviewed: Optional[int] = None
-    candidates_offered: Optional[int] = None
-    hire_quality_score: Optional[float] = None
-    wizard_time_seconds: Optional[int] = None
-    fields_auto_filled: Optional[int] = None
-    fields_edited: Optional[int] = None
-    extra_data: Optional[dict] = Field(default_factory=dict)
+    job_title: str | None = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    final_salary: float | None = None
+    skills: list[str] | None = Field(default_factory=list)
+    behavioral_competencies: list[str] | None = Field(default_factory=list)
+    time_to_fill_days: int | None = None
+    candidates_total: int | None = None
+    candidates_screened: int | None = None
+    candidates_interviewed: int | None = None
+    candidates_offered: int | None = None
+    hire_quality_score: float | None = None
+    wizard_time_seconds: int | None = None
+    fields_auto_filled: int | None = None
+    fields_edited: int | None = None
+    extra_data: dict | None = Field(default_factory=dict)
 
 
 class SimilarJobsRequest(BaseModel):
     """Request for similar jobs."""
     company_id: str
     job_title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
     limit: int = 5
 
 
@@ -302,7 +300,7 @@ async def record_job_outcome(request: JobOutcomeRequest):
 @router.get("/patterns/{company_id}")
 async def list_patterns(
     company_id: str,
-    pattern_type: Optional[str] = Query(None),
+    pattern_type: str | None = Query(None),
     min_samples: int = Query(3),
     limit: int = Query(20),
 ):
@@ -312,7 +310,8 @@ async def list_patterns(
     Returns patterns ordered by confidence and sample count.
     """
     try:
-        from sqlalchemy import select, and_
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
         from app.models.job_pattern import JobPattern
         

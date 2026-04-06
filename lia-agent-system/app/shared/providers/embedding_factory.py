@@ -8,13 +8,12 @@ Fallback order: tries each registered provider in sequence until one succeeds.
 """
 import logging
 import os
-from typing import Dict, List, Optional, Tuple
 
-from app.shared.providers.embedding_provider import EmbeddingProviderABC, EmbeddingResult
+from app.shared.providers.embedding_provider import EmbeddingProviderABC
 
 logger = logging.getLogger(__name__)
 
-EMBEDDING_FALLBACK_ORDER: List[str] = ["gemini", "openai"]
+EMBEDDING_FALLBACK_ORDER: list[str] = ["gemini", "openai"]
 
 
 class EmbeddingProviderFactory:
@@ -32,8 +31,8 @@ class EmbeddingProviderFactory:
         vector, provider_name, model = await factory.embed_with_fallback("some text")
     """
 
-    _providers: Dict[str, type] = {}
-    _instances: Dict[str, EmbeddingProviderABC] = {}
+    _providers: dict[str, type] = {}
+    _instances: dict[str, EmbeddingProviderABC] = {}
 
     @classmethod
     def register(cls, provider_class: type) -> type:
@@ -84,7 +83,7 @@ class EmbeddingProviderFactory:
         return cls.get(default)
 
     @classmethod
-    def available_providers(cls) -> List[str]:
+    def available_providers(cls) -> list[str]:
         """Return a list of registered provider names."""
         return list(cls._providers.keys())
 
@@ -97,8 +96,8 @@ class EmbeddingProviderFactory:
     async def embed_with_fallback(
         cls,
         text: str,
-        preferred_provider: Optional[str] = None,
-    ) -> Tuple[List[float], str, str]:
+        preferred_provider: str | None = None,
+    ) -> tuple[list[float], str, str]:
         """Generate embedding with automatic provider fallback.
 
         Tries providers in the following order:
@@ -119,7 +118,7 @@ class EmbeddingProviderFactory:
         """
         order = cls._build_fallback_order(preferred_provider)
 
-        errors: List[str] = []
+        errors: list[str] = []
         for provider_name in order:
             try:
                 provider = cls.get(provider_name)
@@ -141,8 +140,8 @@ class EmbeddingProviderFactory:
     async def generate_with_fallback(
         cls,
         text: str,
-        preferred_provider: Optional[str] = None,
-    ) -> Tuple[List[float], str, str]:
+        preferred_provider: str | None = None,
+    ) -> tuple[list[float], str, str]:
         """Alias for embed_with_fallback() — task spec API name.
 
         See :meth:`embed_with_fallback` for full documentation.
@@ -152,9 +151,9 @@ class EmbeddingProviderFactory:
     @classmethod
     async def embed_batch_with_fallback(
         cls,
-        texts: List[str],
-        preferred_provider: Optional[str] = None,
-    ) -> Tuple[List[List[float]], str, str]:
+        texts: list[str],
+        preferred_provider: str | None = None,
+    ) -> tuple[list[list[float]], str, str]:
         """Generate batch embeddings with automatic provider fallback.
 
         Args:
@@ -170,7 +169,7 @@ class EmbeddingProviderFactory:
         """
         order = cls._build_fallback_order(preferred_provider)
 
-        errors: List[str] = []
+        errors: list[str] = []
         for provider_name in order:
             try:
                 provider = cls.get(provider_name)
@@ -200,12 +199,12 @@ class EmbeddingProviderFactory:
     # ------------------------------------------------------------------
 
     @classmethod
-    def _build_fallback_order(cls, preferred_provider: Optional[str]) -> List[str]:
+    def _build_fallback_order(cls, preferred_provider: str | None) -> list[str]:
         """Build the ordered list of providers to attempt."""
         default = os.environ.get("EMBEDDING_DEFAULT_PROVIDER", "gemini")
 
         seen = set()
-        order: List[str] = []
+        order: list[str] = []
 
         for candidate in [preferred_provider, default] + list(EMBEDDING_FALLBACK_ORDER):
             if candidate and candidate not in seen and candidate in cls._providers:

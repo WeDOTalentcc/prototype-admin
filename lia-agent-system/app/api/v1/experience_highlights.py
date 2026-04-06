@@ -5,22 +5,20 @@ This module provides endpoints for generating and caching AI-powered
 experience highlights for candidates. Highlights are cached for 30+ days
 to optimize LLM costs.
 """
-import os
 import logging
+import os
 from datetime import datetime, timedelta
-from typing import Optional
-from uuid import UUID, uuid4
-import json
+from uuid import uuid4
+
 import anthropic
-
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +42,10 @@ class GenerateHighlightRequest(BaseModel):
     """Request schema for generating a new highlight."""
     candidate_id: str
     candidate_name: str
-    current_title: Optional[str] = None
-    current_company: Optional[str] = None
-    location: Optional[str] = None
-    years_of_experience: Optional[int] = None
+    current_title: str | None = None
+    current_company: str | None = None
+    location: str | None = None
+    years_of_experience: int | None = None
     technical_skills: list[str] = Field(default_factory=list)
     work_history: list[dict] = Field(default_factory=list)
     force_regenerate: bool = False
@@ -339,7 +337,6 @@ async def batch_generate_highlights(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> list[ExperienceHighlightResponse]:
-    company_id = current_user.company_id
     """
     Generate highlights for multiple candidates at once.
     Useful for pre-generating highlights for search results.

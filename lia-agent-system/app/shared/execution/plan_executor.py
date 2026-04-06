@@ -2,20 +2,18 @@ import ast
 import asyncio
 import logging
 import operator
-import re
-from typing import Dict, Any, Optional, List, Callable, Awaitable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
+from typing import Any
 
-from app.shared.execution.execution_plan import (
-    ExecutionPlan, AgentTask, TaskStatus, PlanStatus
-)
 from app.domains.base import DomainContext, DomainResponse
+from app.shared.execution.execution_plan import AgentTask, ExecutionPlan, PlanStatus, TaskStatus
 
 logger = logging.getLogger(__name__)
 
 TASK_TIMEOUT_SECONDS = 15
 
-ProgressCallback = Callable[[str, Dict[str, Any]], Awaitable[None]]
+ProgressCallback = Callable[[str, dict[str, Any]], Awaitable[None]]
 
 _SAFE_OPS = {
     ast.Gt: operator.gt,
@@ -27,7 +25,7 @@ _SAFE_OPS = {
 }
 
 
-def _resolve_name(node: ast.AST, ctx: Dict[str, Any]) -> Any:
+def _resolve_name(node: ast.AST, ctx: dict[str, Any]) -> Any:
     if isinstance(node, ast.Name):
         if node.id not in ctx:
             raise ValueError(f"Unknown variable: {node.id}")
@@ -44,7 +42,7 @@ def _resolve_name(node: ast.AST, ctx: Dict[str, Any]) -> Any:
     raise ValueError(f"Unsupported expression node: {type(node).__name__}")
 
 
-def _safe_eval_condition(expr: str, ctx: Dict[str, Any]) -> bool:
+def _safe_eval_condition(expr: str, ctx: dict[str, Any]) -> bool:
     tree = ast.parse(expr.strip(), mode="eval")
     body = tree.body
 
@@ -57,7 +55,7 @@ def _safe_eval_condition(expr: str, ctx: Dict[str, Any]) -> bool:
     return _eval_compare(body, ctx)
 
 
-def _eval_compare(node: ast.AST, ctx: Dict[str, Any]) -> bool:
+def _eval_compare(node: ast.AST, ctx: dict[str, Any]) -> bool:
     if isinstance(node, ast.Compare) and len(node.ops) == 1:
         left = _resolve_name(node.left, ctx)
         right = _resolve_name(node.comparators[0], ctx)
@@ -85,9 +83,9 @@ class PlanExecutor:
         plan: ExecutionPlan,
         user_id: str = "system",
         session_id: str = "",
-        tenant_id: Optional[str] = None,
-        base_context: Optional[Dict[str, Any]] = None,
-        progress_callback: Optional[ProgressCallback] = None,
+        tenant_id: str | None = None,
+        base_context: dict[str, Any] | None = None,
+        progress_callback: ProgressCallback | None = None,
     ) -> ExecutionPlan:
         plan.status = PlanStatus.IN_PROGRESS
         logger.info(f"Executing plan {plan.plan_id} with {len(plan.tasks)} tasks")
@@ -219,7 +217,7 @@ class PlanExecutor:
         user_id: str,
         session_id: str,
         tenant_id: str,
-        base_context: Optional[Dict[str, Any]],
+        base_context: dict[str, Any] | None,
     ) -> None:
         task.status = TaskStatus.RUNNING
         task.started_at = datetime.utcnow()
@@ -256,7 +254,7 @@ class PlanExecutor:
                             self._domain_workflow.process(domain, dc, query),
                             timeout=TASK_TIMEOUT_SECONDS,
                         )
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         logger.warning(
                             f"Task {task.task_id} timed out after {TASK_TIMEOUT_SECONDS}s"
                         )
@@ -311,7 +309,7 @@ class PlanExecutor:
                     error=str(e),
                 )
 
-    async def _emit(self, callback: Optional[ProgressCallback], event_type: str, data: Dict[str, Any]) -> None:
+    async def _emit(self, callback: ProgressCallback | None, event_type: str, data: dict[str, Any]) -> None:
         """Emit a progress event via callback if provided."""
         if callback:
             try:
@@ -336,7 +334,7 @@ class PlanExecutor:
 
         return None
 
-    def _build_task_query(self, task: AgentTask, params: Dict[str, Any]) -> str:
+    def _build_task_query(self, task: AgentTask, params: dict[str, Any]) -> str:
         parts = [task.action_id.replace("_", " ")]
         for key, value in params.items():
             if isinstance(value, (list, tuple)) and len(value) > 3:
@@ -371,7 +369,7 @@ class PlanExecutor:
 
         combined_message = f"Plano '{plan.detected_pattern}' executado:\n" + "\n".join(messages)
 
-        combined_data: Dict[str, Any] = {}
+        combined_data: dict[str, Any] = {}
         for task in plan.tasks:
             if task.result and isinstance(task.result, DomainResponse) and task.result.data:
                 combined_data[task.task_id] = task.result.data

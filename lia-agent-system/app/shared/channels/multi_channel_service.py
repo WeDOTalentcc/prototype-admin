@@ -1,15 +1,19 @@
 import logging
-from typing import Dict, List, Optional
+from typing import Optional
 
+from app.shared.channels.adapters.email_adapter import EmailChannelAdapter
+from app.shared.channels.adapters.in_app_adapter import InAppChannelAdapter
+from app.shared.channels.adapters.sms_adapter import SMSChannelAdapter
+from app.shared.channels.adapters.teams_adapter import MSTeamsChannelAdapter
+from app.shared.channels.adapters.whatsapp_adapter import WhatsAppChannelAdapter
 from app.shared.channels.channel_adapter import (
-    ChannelAdapter, ChannelType, ChannelMessage, DeliveryResult, DeliveryStatus
+    ChannelAdapter,
+    ChannelMessage,
+    ChannelType,
+    DeliveryResult,
+    DeliveryStatus,
 )
 from app.shared.channels.channel_router import ChannelRouter
-from app.shared.channels.adapters.email_adapter import EmailChannelAdapter
-from app.shared.channels.adapters.whatsapp_adapter import WhatsAppChannelAdapter
-from app.shared.channels.adapters.sms_adapter import SMSChannelAdapter
-from app.shared.channels.adapters.in_app_adapter import InAppChannelAdapter
-from app.shared.channels.adapters.teams_adapter import MSTeamsChannelAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +22,8 @@ class MultiChannelService:
     _instance: Optional["MultiChannelService"] = None
 
     def __init__(self):
-        self._adapters: Dict[ChannelType, ChannelAdapter] = {}
-        self._router: Optional[ChannelRouter] = None
+        self._adapters: dict[ChannelType, ChannelAdapter] = {}
+        self._router: ChannelRouter | None = None
         self._auto_register()
 
     @classmethod
@@ -49,7 +53,7 @@ class MultiChannelService:
     async def send_message(
         self,
         message: ChannelMessage,
-        channels: Optional[List[ChannelType]] = None,
+        channels: list[ChannelType] | None = None,
         fallback: bool = True,
     ) -> DeliveryResult:
         if channels is None:
@@ -64,9 +68,9 @@ class MultiChannelService:
 
     async def send_bulk(
         self,
-        messages: List[ChannelMessage],
+        messages: list[ChannelMessage],
         channel: ChannelType,
-    ) -> List[DeliveryResult]:
+    ) -> list[DeliveryResult]:
         logger.info(
             f"[MULTI_CHANNEL] Envio em massa: {len(messages)} mensagens via {channel.value}"
         )
@@ -97,7 +101,7 @@ class MultiChannelService:
         )
         return results
 
-    async def get_delivery_status(self, message_id: str) -> Optional[DeliveryStatus]:
+    async def get_delivery_status(self, message_id: str) -> DeliveryStatus | None:
         for adapter in self._adapters.values():
             try:
                 status = await adapter.check_status(message_id)
@@ -107,7 +111,7 @@ class MultiChannelService:
                 continue
         return None
 
-    async def get_available_channels(self) -> List[Dict]:
+    async def get_available_channels(self) -> list[dict]:
         channels = []
         for channel_type, adapter in self._adapters.items():
             try:

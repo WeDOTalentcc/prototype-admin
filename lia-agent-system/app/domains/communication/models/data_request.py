@@ -5,14 +5,15 @@ Sistema para solicitação de dados/documentos aos candidatos.
 Permite coleta de informações como CPF, documentos, dados bancários etc.
 com portal público de preenchimento e acompanhamento de status.
 """
-from datetime import datetime, timedelta
-from typing import Optional, List
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship
-import uuid
 import enum
 import secrets
+import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.orm import relationship
 
 
 class DataRequestStatus(str, enum.Enum):

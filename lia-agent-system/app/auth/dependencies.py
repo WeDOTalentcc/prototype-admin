@@ -2,18 +2,18 @@
 Authentication dependencies for FastAPI.
 """
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import InvalidTokenError as JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.models import User, UserRole
 from app.auth.security import decode_token
+from app.core.database import get_db
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -124,9 +124,9 @@ require_admin_or_recruiter = require_role([UserRole.admin, UserRole.recruiter])
 
 
 async def get_optional_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),
     db: AsyncSession = Depends(get_db)
-) -> Optional[User]:
+) -> User | None:
     """
     Dependency to get the current user if authenticated, or None if not.
     
@@ -153,7 +153,7 @@ async def get_optional_current_user(
 
 
 async def get_current_user_or_demo(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),
     db: AsyncSession = Depends(get_db)
 ) -> User:
     """
@@ -380,7 +380,7 @@ def assert_admin_cross_tenant_access(
 
 
 async def derive_company_from_context(
-    context: Optional[Dict[str, Any]],
+    context: dict[str, Any] | None,
     db: AsyncSession,
     fallback: str = "default"
 ) -> str:
@@ -435,7 +435,7 @@ async def derive_company_from_context(
 
 
 async def get_service_or_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),
     db: AsyncSession = Depends(get_db)
 ) -> User:
     """

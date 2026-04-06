@@ -6,18 +6,12 @@ Tests the complete flow of:
 2. Triggering local sourcing
 3. Sending email notification to recruiter
 """
-import pytest
-import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
-from datetime import datetime
 
-from app.services.notification_service import (
-    NotificationService, 
-    NotificationType, 
-    NotificationChannel
-)
-from app.domains.communication.services.email_service import EmailService
+import pytest
+
+from app.services.notification_service import NotificationChannel, NotificationService, NotificationType
 
 
 class TestEmailNotifications:
@@ -226,7 +220,7 @@ class TestCandidatesAddedNotification:
     @pytest.mark.asyncio
     async def test_notification_flow_after_job_publish(self):
         """Test complete notification flow after job is published."""
-        from unittest.mock import patch, AsyncMock, MagicMock
+        from unittest.mock import AsyncMock, MagicMock, patch
         
         mock_db = MagicMock()
         

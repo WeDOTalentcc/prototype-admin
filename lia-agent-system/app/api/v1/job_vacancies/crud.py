@@ -3,6 +3,7 @@ CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
 from fastapi import APIRouter
+
 from ._shared import *
 
 router = APIRouter()
@@ -685,7 +686,6 @@ async def delete_job_vacancy(
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
-        old_status = job_vacancy.status
         job_vacancy.status = "Arquivada"
         job_vacancy.updated_at = datetime.utcnow()
 

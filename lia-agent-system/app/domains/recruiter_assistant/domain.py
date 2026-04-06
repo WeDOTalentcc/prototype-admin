@@ -1,15 +1,14 @@
 """Recruiter Assistant Domain - Personal assistant for recruiters."""
-from typing import Dict, Any, Optional, List
-import re
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "briefing diário": "daily_briefing",
     "briefing do dia": "daily_briefing",
     "daily briefing": "daily_briefing",
@@ -160,7 +159,7 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
         from app.domains.recruiter_assistant.actions import RECRUITER_ASSISTANT_ACTIONS
         self._actions = RECRUITER_ASSISTANT_ACTIONS
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.recruiter_assistant.actions import RECRUITER_ASSISTANT_ACTIONS
         return RECRUITER_ASSISTANT_ACTIONS
 
@@ -190,7 +189,7 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             reasoning=f"Keyword heuristic matched action '{best_action}'",
         )
 
-    _ACTION_TOOL_MAP: Dict[str, str] = {
+    _ACTION_TOOL_MAP: dict[str, str] = {
         "pipeline_health": "assistant_pipeline_health",
         "stale_candidates": "assistant_stale_candidates",
         "move_candidate": "assistant_move_candidate",
@@ -203,7 +202,7 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
         "track_goals": "assistant_track_goals",
     }
 
-    async def execute_action(self, action_id: str, params: Dict[str, Any], context: DomainContext) -> DomainResponse:
+    async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = None
         for a in self.get_allowed_actions():
             if a.action_id == action_id:

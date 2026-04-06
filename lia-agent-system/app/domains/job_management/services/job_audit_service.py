@@ -3,13 +3,13 @@ Job Audit Service for tracking all changes to job vacancies.
 Provides complete audit trail for compliance and transparency.
 """
 import logging
-from typing import Dict, Any, Optional, List
 from datetime import datetime
-from uuid import UUID
-from sqlalchemy import select, desc, and_
+from typing import Any
+
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_vacancy_audit import JobVacancyAuditLog, AuditAction
+from app.models.job_vacancy_audit import AuditAction, JobVacancyAuditLog
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,9 @@ class JobAuditService:
         created_by: str,
         company_id: str,
         db: AsyncSession,
-        job_data: Optional[Dict[str, Any]] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        job_data: dict[str, Any] | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> JobVacancyAuditLog:
         """
         Log job vacancy creation.
@@ -62,13 +62,13 @@ class JobAuditService:
     async def log_update(
         self,
         job_id: str,
-        changes: Dict[str, Dict[str, Any]],
+        changes: dict[str, dict[str, Any]],
         changed_by: str,
         company_id: str,
         db: AsyncSession,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-    ) -> List[JobVacancyAuditLog]:
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> list[JobVacancyAuditLog]:
         """
         Log job vacancy updates. Creates one audit record per field changed.
         
@@ -125,9 +125,9 @@ class JobAuditService:
         changed_by: str,
         company_id: str,
         db: AsyncSession,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> JobVacancyAuditLog:
         """
         Log job vacancy status change.
@@ -174,9 +174,9 @@ class JobAuditService:
         changed_by: str,
         company_id: str,
         db: AsyncSession,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> JobVacancyAuditLog:
         """
         Log job vacancy publication to a platform.
@@ -221,9 +221,9 @@ class JobAuditService:
         changed_by: str,
         company_id: str,
         db: AsyncSession,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        reason: Optional[str] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        reason: str | None = None,
     ) -> JobVacancyAuditLog:
         """
         Log job vacancy archival/deletion.
@@ -268,7 +268,7 @@ class JobAuditService:
         db: AsyncSession,
         limit: int = 100,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get full audit trail for a job vacancy.
         

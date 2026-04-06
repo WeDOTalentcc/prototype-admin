@@ -5,30 +5,23 @@ Usa LangGraph nativo (create_react_agent) com PostgresSaver para persistência.
 Migração completa concluída — path legado ReActLoop removido.
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
     NavigationCommand,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
 
 from app.domains.sourcing.agents.sourcing_stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
-    get_transition_prompt,
 )
 from app.domains.sourcing.agents.sourcing_system_prompt import get_sourcing_system_prompt
 from app.domains.sourcing.agents.sourcing_tool_registry import (
-    get_stage_tools,
     get_sourcing_tools,
 )
 
@@ -57,7 +50,7 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "sourcing"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:
@@ -133,7 +126,7 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
         # SEG-5: AuditService
         try:
-            from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+            from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
             current_stage = input.context.get("current_stage", "search-criteria")
             await audit_service.log_decision(
                 company_id=str(input.company_id or ""),
@@ -205,7 +198,7 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             if any(w in _msg_lower for w in _CONFIRMATION_WORDS):
                 try:
                     from app.services.hitl_service import hitl_service
-                    from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                    from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                     thread_id = str(input.session_id)
                     candidate_ids = input.context.get("selected_candidates", [])
                     candidate_count = len(candidate_ids) if candidate_ids else 1

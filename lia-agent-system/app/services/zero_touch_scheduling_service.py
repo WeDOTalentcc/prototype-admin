@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -84,17 +84,17 @@ class ZeroTouchSchedulingService:
         candidate_email: str,
         job_vacancy_id: str,
         job_title: str,
-        available_slots: List[Dict[str, str]],
-        interviewer_emails: List[str],
-        candidate_phone: Optional[str] = None,
+        available_slots: list[dict[str, str]],
+        interviewer_emails: list[str],
+        candidate_phone: str | None = None,
         interview_type: str = "hr",
         interview_mode: str = "video",
         duration_minutes: int = 60,
         preferred_channel: str = "whatsapp",
         expires_hours: int = 72,
         created_by: str = "system",
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Create a SelfSchedulingLink and send it to the candidate.
 
@@ -169,9 +169,9 @@ class ZeroTouchSchedulingService:
     async def confirm_slot(
         self,
         token: str,
-        selected_slot: Dict[str, str],
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        selected_slot: dict[str, str],
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Called when candidate selects a slot from the scheduling page.
 
@@ -213,7 +213,7 @@ class ZeroTouchSchedulingService:
                     duration_minutes=link.duration_minutes,
                     interview_type=link.interview_type,
                     interview_mode=link.interview_mode,
-                    notes=f"Agendado pelo candidato via link de auto-agendamento.",
+                    notes="Agendado pelo candidato via link de auto-agendamento.",
                 )
                 if interview_result.get("interview_id"):
                     link.interview_id = uuid.UUID(interview_result["interview_id"])
@@ -248,8 +248,8 @@ class ZeroTouchSchedulingService:
     async def get_link_by_token(
         self,
         token: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Optional[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any] | None:
         """Return public-safe link data for the scheduling page."""
         should_close = False
         if db is None:
@@ -277,13 +277,13 @@ class ZeroTouchSchedulingService:
         candidate_id: str,
         candidate_name: str,
         candidate_email: str,
-        candidate_phone: Optional[str],
+        candidate_phone: str | None,
         job_title: str,
         scheduling_url: str,
         expires_hours: int,
         preferred_channel: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send scheduling link via WhatsApp (preferred) or email fallback."""
         from app.domains.communication.services.communication_service import (
             MessageChannel,

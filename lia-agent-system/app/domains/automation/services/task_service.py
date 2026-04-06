@@ -8,15 +8,15 @@ This service handles:
 - Querying pending tasks
 - Task automation
 """
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
-from sqlalchemy.orm import selectinload
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 
-from app.models.task import Task, TaskTemplate, TaskPriority, TaskStatus, TaskType
-from app.agents.base_agent import AgentTask, AgentType
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.agents.base_agent import AgentTask
+from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +30,16 @@ class TaskService:
         self,
         db: AsyncSession,
         title: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         task_type: TaskType = TaskType.GENERAL,
         priority: TaskPriority = TaskPriority.MEDIUM,
-        created_by_agent: Optional[str] = None,
-        assigned_to_agent: Optional[str] = None,
-        assigned_to_user_id: Optional[str] = None,
-        related_job_id: Optional[str] = None,
-        related_candidate_id: Optional[str] = None,
-        due_date: Optional[datetime] = None,
-        context: Optional[Dict[str, Any]] = None,
+        created_by_agent: str | None = None,
+        assigned_to_agent: str | None = None,
+        assigned_to_user_id: str | None = None,
+        related_job_id: str | None = None,
+        related_candidate_id: str | None = None,
+        due_date: datetime | None = None,
+        context: dict[str, Any] | None = None,
         is_automated: bool = False,
         requires_confirmation: bool = False
     ) -> Task:
@@ -93,7 +93,7 @@ class TaskService:
         self,
         db: AsyncSession,
         agent_task: AgentTask,
-        assigned_to_user_id: Optional[str] = None
+        assigned_to_user_id: str | None = None
     ) -> Task:
         """
         Create a database task from an AgentTask object.
@@ -118,7 +118,7 @@ class TaskService:
             context=agent_task.context
         )
     
-    async def get_task(self, db: AsyncSession, task_id: str) -> Optional[Task]:
+    async def get_task(self, db: AsyncSession, task_id: str) -> Task | None:
         """Get a task by ID."""
         result = await db.execute(select(Task).where(Task.id == task_id))
         return result.scalar_one_or_none()
@@ -128,9 +128,9 @@ class TaskService:
         db: AsyncSession,
         task_id: str,
         status: TaskStatus,
-        result: Optional[Dict[str, Any]] = None,
-        error_message: Optional[str] = None
-    ) -> Optional[Task]:
+        result: dict[str, Any] | None = None,
+        error_message: str | None = None
+    ) -> Task | None:
         """
         Update task status.
         
@@ -167,11 +167,11 @@ class TaskService:
     async def get_pending_tasks(
         self,
         db: AsyncSession,
-        user_id: Optional[str] = None,
-        agent_type: Optional[str] = None,
-        priority: Optional[TaskPriority] = None,
+        user_id: str | None = None,
+        agent_type: str | None = None,
+        priority: TaskPriority | None = None,
         limit: int = 50
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         Get pending tasks with optional filters.
         
@@ -208,8 +208,8 @@ class TaskService:
     async def get_overdue_tasks(
         self,
         db: AsyncSession,
-        user_id: Optional[str] = None
-    ) -> List[Task]:
+        user_id: str | None = None
+    ) -> list[Task]:
         """Get all overdue tasks."""
         query = select(Task).where(
             and_(
@@ -229,8 +229,8 @@ class TaskService:
     async def get_tasks_due_today(
         self,
         db: AsyncSession,
-        user_id: Optional[str] = None
-    ) -> List[Task]:
+        user_id: str | None = None
+    ) -> list[Task]:
         """Get tasks due today."""
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         today_end = today_start + timedelta(days=1)
@@ -254,8 +254,8 @@ class TaskService:
     async def get_task_summary(
         self,
         db: AsyncSession,
-        user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        user_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Get summary of tasks for dashboard.
         
@@ -308,9 +308,9 @@ class TaskService:
         self,
         db: AsyncSession,
         task_id: str,
-        user_id: Optional[str] = None,
-        agent_type: Optional[str] = None
-    ) -> Optional[Task]:
+        user_id: str | None = None,
+        agent_type: str | None = None
+    ) -> Task | None:
         """
         Assign a task to a user or agent.
         
@@ -343,8 +343,8 @@ class TaskService:
         self,
         db: AsyncSession,
         task_id: str,
-        reason: Optional[str] = None
-    ) -> Optional[Task]:
+        reason: str | None = None
+    ) -> Task | None:
         """Cancel a task."""
         return await self.update_task_status(
             db=db,
@@ -358,7 +358,7 @@ class TaskService:
         db: AsyncSession,
         task_id: str,
         confirmed_by: str
-    ) -> Optional[Task]:
+    ) -> Task | None:
         """
         Confirm an automated task.
         
@@ -391,8 +391,8 @@ class TaskService:
         db: AsyncSession,
         task_id: str,
         rejected_by: str,
-        reason: Optional[str] = None
-    ) -> Optional[Task]:
+        reason: str | None = None
+    ) -> Task | None:
         """
         Reject a task.
         
@@ -426,7 +426,7 @@ class TaskService:
         self,
         db: AsyncSession,
         task_id: str
-    ) -> Optional[Task]:
+    ) -> Task | None:
         """
         Mark a task as having a reminder sent and increment counter.
         
@@ -456,7 +456,7 @@ class TaskService:
         self,
         db: AsyncSession,
         hours_before_due: int = 24
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         Query tasks that are due soon and need reminders.
         
@@ -490,7 +490,7 @@ class TaskService:
         self,
         db: AsyncSession,
         hours_before_due: int = 24
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         Find tasks due soon and mark them for reminder.
         
@@ -518,8 +518,8 @@ class TaskService:
         db: AsyncSession,
         task_id: str,
         escalate_to: str,
-        reason: Optional[str] = None
-    ) -> Optional[Task]:
+        reason: str | None = None
+    ) -> Task | None:
         """
         Escalate a task to a higher level.
         
@@ -553,7 +553,7 @@ class TaskService:
         self,
         db: AsyncSession,
         overdue_hours: int = 48
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         Query tasks that are overdue and should be escalated.
         Only HIGH and CRITICAL priority tasks are considered.
@@ -584,7 +584,7 @@ class TaskService:
         self,
         db: AsyncSession,
         overdue_hours: int = 48
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         Auto-escalate critical overdue tasks.
         
@@ -621,9 +621,9 @@ class TaskService:
     async def get_tasks_pending_confirmation(
         self,
         db: AsyncSession,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         limit: int = 50
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         Get tasks that require confirmation.
         

@@ -8,15 +8,16 @@ This service provides:
 - Limit checking and enforcement
 """
 import logging
-from typing import Dict, Tuple, Optional, Any
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, Float, cast
-import redis.asyncio as aioredis
 
-from app.models.ai_consumption import AiConsumption, AiCreditsBalance, AI_LOG_RETENTION_DAYS
+import redis.asyncio as aioredis
+from sqlalchemy import Float, and_, cast, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
+from app.models.ai_consumption import AI_LOG_RETENTION_DAYS, AiConsumption, AiCreditsBalance
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +64,9 @@ class TokenTrackingService:
             db: AsyncSession for database operations
         """
         self.db = db
-        self._custom_limits: Dict[str, Dict[str, Any]] = {}
+        self._custom_limits: dict[str, dict[str, Any]] = {}
     
-    def set_custom_limits(self, company_id: str, limits: Dict[str, Any]) -> None:
+    def set_custom_limits(self, company_id: str, limits: dict[str, Any]) -> None:
         """
         Set custom limits for a specific company.
         
@@ -75,7 +76,7 @@ class TokenTrackingService:
         """
         self._custom_limits[company_id] = limits
     
-    def get_limits(self, company_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_limits(self, company_id: str | None = None) -> dict[str, Any]:
         """
         Get applicable limits for a company.
         
@@ -101,10 +102,10 @@ class TokenTrackingService:
         output_tokens: int,
         model: str,
         latency_ms: float,
-        candidate_id: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        candidate_id: str | None = None,
+        vacancy_id: str | None = None,
+        extra_data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Record token usage for an AI operation.
         
@@ -190,8 +191,8 @@ class TokenTrackingService:
         self, 
         user_id: str, 
         period: str = "day",
-        company_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        company_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Get token usage summary for a specific user.
         
@@ -267,7 +268,7 @@ class TokenTrackingService:
         self, 
         company_id: str, 
         period: str = "day"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get token usage summary for a company.
         
@@ -363,8 +364,8 @@ class TokenTrackingService:
     async def get_usage_by_agent(
         self, 
         period: str = "day",
-        company_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        company_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Get token usage grouped by agent type.
         
@@ -435,8 +436,8 @@ class TokenTrackingService:
     
     async def get_cost_estimate(
         self, 
-        usage: Dict[str, Any],
-        model: Optional[str] = None
+        usage: dict[str, Any],
+        model: str | None = None
     ) -> float:
         """
         Calculate cost estimate for given usage.
@@ -476,7 +477,7 @@ class TokenTrackingService:
         self, 
         user_id: str, 
         company_id: str
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Check if user/company is within usage limits.
         
@@ -524,7 +525,7 @@ class TokenTrackingService:
         self, 
         company_id: str,
         window_minutes: int = 5
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get real-time usage statistics for the last N minutes.
         
@@ -658,7 +659,7 @@ class TokenTrackingService:
 
             # Disparar notificação
             try:
-                from app.services.notification_service import NotificationService, NotificationType, NotificationChannel
+                from app.services.notification_service import NotificationChannel, NotificationService, NotificationType
                 notification_svc = NotificationService()
 
                 # Buscar admin da empresa
@@ -705,7 +706,7 @@ class TokenTrackingService:
                 logger.error(f"Falha ao enviar alerta de consumo de IA: {notify_err}")
 
 
-token_tracking_service: Optional[TokenTrackingService] = None
+token_tracking_service: TokenTrackingService | None = None
 
 
 def get_token_tracking_service(db: AsyncSession) -> TokenTrackingService:

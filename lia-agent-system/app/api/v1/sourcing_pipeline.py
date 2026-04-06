@@ -1,11 +1,11 @@
 """
 Sourcing Pipeline API - Endpoints for automated candidate sourcing.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
 from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.sourcing_pipeline_service import sourcing_pipeline_service
@@ -15,14 +15,14 @@ router = APIRouter(prefix="/pipeline", tags=["sourcing-pipeline"])
 
 class PipelineConfigRequest(BaseModel):
     """Request model for updating pipeline configuration."""
-    min_candidates_per_job: Optional[int] = Field(None, ge=1, le=100)
-    min_qualified_ratio: Optional[float] = Field(None, ge=0.0, le=1.0)
-    auto_expand_to_global: Optional[bool] = None
-    search_limit_local: Optional[int] = Field(None, ge=1, le=500)
-    search_limit_global: Optional[int] = Field(None, ge=1, le=100)
-    days_before_low_volume_alert: Optional[int] = Field(None, ge=1, le=30)
-    auto_create_tasks: Optional[bool] = None
-    auto_create_alerts: Optional[bool] = None
+    min_candidates_per_job: int | None = Field(None, ge=1, le=100)
+    min_qualified_ratio: float | None = Field(None, ge=0.0, le=1.0)
+    auto_expand_to_global: bool | None = None
+    search_limit_local: int | None = Field(None, ge=1, le=500)
+    search_limit_global: int | None = Field(None, ge=1, le=100)
+    days_before_low_volume_alert: int | None = Field(None, ge=1, le=30)
+    auto_create_tasks: bool | None = None
+    auto_create_alerts: bool | None = None
 
 
 class PipelineConfigResponse(BaseModel):
@@ -46,9 +46,9 @@ class JobPipelineStatusResponse(BaseModel):
     qualified_ratio: float
     needs_more_candidates: bool
     days_open: int
-    last_sourcing_run: Optional[datetime] = None
+    last_sourcing_run: datetime | None = None
     pipeline_status: str
-    recommended_action: Optional[str] = None
+    recommended_action: str | None = None
 
 
 class PipelineRunResponse(BaseModel):
@@ -58,9 +58,9 @@ class PipelineRunResponse(BaseModel):
     candidates_found_local: int
     candidates_found_global: int
     candidates_added: int
-    tasks_created: List[str]
-    alerts_created: List[str]
-    error_message: Optional[str] = None
+    tasks_created: list[str]
+    alerts_created: list[str]
+    error_message: str | None = None
     expanded_to_global: bool
     duration_seconds: float
 
@@ -75,8 +75,8 @@ class PipelineRunAllResponse(BaseModel):
     total_tasks_created: int = 0
     total_alerts_created: int = 0
     duration_seconds: float
-    message: Optional[str] = None
-    results: Optional[List[dict]] = None
+    message: str | None = None
+    results: list[dict] | None = None
 
 
 class RunPipelineRequest(BaseModel):
@@ -137,7 +137,7 @@ async def get_job_pipeline_status(
     }
 
 
-@router.get("/jobs-needing-candidates", response_model=List[JobPipelineStatusResponse])
+@router.get("/jobs-needing-candidates", response_model=list[JobPipelineStatusResponse])
 async def get_jobs_needing_candidates(
     limit: int = Query(default=50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
@@ -170,7 +170,7 @@ async def get_jobs_needing_candidates(
 @router.post("/run/{job_id}", response_model=PipelineRunResponse)
 async def run_pipeline_for_job(
     job_id: str,
-    request: Optional[RunPipelineRequest] = None,
+    request: RunPipelineRequest | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """

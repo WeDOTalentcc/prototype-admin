@@ -5,10 +5,9 @@ This is the core instruction set that shapes how LIA behaves when managing
 candidates through the recruitment pipeline (Kanban). It must be in Portuguese
 and follow the conversational philosophy of the platform.
 """
-from typing import Any, Dict
+from typing import Any
 
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
-
 
 PIPELINE_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a gerenciar candidatos no pipeline de recrutamento (Kanban).
@@ -162,7 +161,7 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-def get_pipeline_system_prompt(stage: str, context: Dict[str, Any]) -> str:
+def get_pipeline_system_prompt(stage: str, context: dict[str, Any]) -> str:
     """Build the complete system prompt for the pipeline agent.
 
     Combines the base system prompt with dynamic stage context and

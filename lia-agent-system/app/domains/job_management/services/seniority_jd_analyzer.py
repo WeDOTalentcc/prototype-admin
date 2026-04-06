@@ -26,11 +26,11 @@ Versão: 1.0
 import logging
 import re
 from collections import Counter
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-EXPERIENCE_PATTERNS: List[Tuple[re.Pattern, str]] = [
+EXPERIENCE_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r'\b(?:até|up\s+to)\s+[12]\s*(?:anos?|years?)\b', re.IGNORECASE), "junior"),
     (re.compile(r'\b[12]\s*[-a]\s*[12]\s*(?:anos?|years?)\b', re.IGNORECASE), "junior"),
     (re.compile(r'\b1\s+to\s+2\s+years?\b', re.IGNORECASE), "junior"),
@@ -62,7 +62,7 @@ GENERIC_EXPERIENCE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-COMPLEXITY_INDICATORS: Dict[str, List[str]] = {
+COMPLEXITY_INDICATORS: dict[str, list[str]] = {
     "junior": [
         "básico", "fundamental", "noções de", "conceitos básicos",
         "introdutório", "basic", "fundamentals", "noções básicas",
@@ -93,7 +93,7 @@ COMPLEXITY_INDICATORS: Dict[str, List[str]] = {
     ],
 }
 
-AUTONOMY_INDICATORS: Dict[str, List[str]] = {
+AUTONOMY_INDICATORS: dict[str, list[str]] = {
     "junior": [
         "sob supervisão", "acompanhamento", "orientação de",
         "under supervision", "guided by", "com apoio de",
@@ -123,7 +123,7 @@ AUTONOMY_INDICATORS: Dict[str, List[str]] = {
     ],
 }
 
-MENTORSHIP_INDICATORS: Dict[str, List[str]] = {
+MENTORSHIP_INDICATORS: dict[str, list[str]] = {
     "pleno": [
         "contribuir com o time", "compartilhar conhecimento",
         "share knowledge", "contribute to team",
@@ -140,7 +140,7 @@ MENTORSHIP_INDICATORS: Dict[str, List[str]] = {
     ],
 }
 
-EDUCATION_INDICATORS: Dict[str, List[str]] = {
+EDUCATION_INDICATORS: dict[str, list[str]] = {
     "junior": [
         "cursando", "formando", "recém-formado", "student",
         "graduating", "em formação", "estudante",
@@ -159,7 +159,7 @@ EDUCATION_INDICATORS: Dict[str, List[str]] = {
 }
 
 
-def _extract_experience_level(text: str) -> Tuple[Optional[str], List[str]]:
+def _extract_experience_level(text: str) -> tuple[str | None, list[str]]:
     """
     Extrai o nível de senioridade baseado em anos de experiência mencionados no texto.
 
@@ -173,8 +173,8 @@ def _extract_experience_level(text: str) -> Tuple[Optional[str], List[str]]:
     Returns:
         Tupla com (nível inferido ou None, lista de evidências textuais).
     """
-    evidence: List[str] = []
-    levels_found: List[str] = []
+    evidence: list[str] = []
+    levels_found: list[str] = []
 
     for pattern, level in EXPERIENCE_PATTERNS:
         matches = pattern.findall(text)
@@ -227,8 +227,8 @@ def _extract_experience_level(text: str) -> Tuple[Optional[str], List[str]]:
 
 def _find_keyword_indicators(
     text: str,
-    indicators_map: Dict[str, List[str]],
-) -> Dict[str, List[str]]:
+    indicators_map: dict[str, list[str]],
+) -> dict[str, list[str]]:
     """
     Busca indicadores de keywords no texto e retorna os encontrados por nível.
 
@@ -242,7 +242,7 @@ def _find_keyword_indicators(
     Returns:
         Dicionário com nível -> lista de keywords encontradas no texto.
     """
-    found: Dict[str, List[str]] = {}
+    found: dict[str, list[str]] = {}
     for level, keywords in indicators_map.items():
         matched = []
         for keyword in keywords:
@@ -280,7 +280,7 @@ def _calculate_confidence(total_indicators: int) -> float:
     return 0.90
 
 
-def analyze_jd_for_seniority(job_description: str) -> Dict[str, Any]:
+def analyze_jd_for_seniority(job_description: str) -> dict[str, Any]:
     """
     Analisa o texto de uma descrição de vaga para extrair sinais de senioridade.
 
@@ -318,8 +318,8 @@ def analyze_jd_for_seniority(job_description: str) -> Dict[str, Any]:
         }
 
     text = job_description.lower()
-    all_evidence: List[str] = []
-    all_indicators: Dict[str, List[str]] = {}
+    all_evidence: list[str] = []
+    all_indicators: dict[str, list[str]] = {}
     level_scores: Counter = Counter()
 
     experience_level, experience_evidence = _extract_experience_level(text)
@@ -345,7 +345,7 @@ def analyze_jd_for_seniority(job_description: str) -> Dict[str, Any]:
     for category_name, indicator_map in category_maps:
         found = _find_keyword_indicators(text, indicator_map)
         if found:
-            category_keywords: List[str] = []
+            category_keywords: list[str] = []
             for level, keywords in found.items():
                 level_scores[level] += len(keywords)
                 category_keywords.extend(keywords)

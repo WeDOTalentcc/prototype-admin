@@ -5,15 +5,15 @@ Handles: create_task, create_note, generate_daily_briefing
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 async def execute_pipeline_action(
     action_id: str,
-    params: Dict[str, Any],
-    context: Dict[str, Any],
+    params: dict[str, Any],
+    context: dict[str, Any],
 ):
     """Route pipeline actions to specific handler."""
     if action_id == "create_task":
@@ -25,7 +25,7 @@ async def execute_pipeline_action(
     return None
 
 
-def _resolve_ptbr_datetime(date_str: str) -> Optional[datetime]:
+def _resolve_ptbr_datetime(date_str: str) -> datetime | None:
     """Resolve Portuguese-language date/time string to datetime."""
     if not date_str:
         return None
@@ -79,12 +79,12 @@ def _resolve_ptbr_datetime(date_str: str) -> Optional[datetime]:
         return None
 
 
-async def _create_task(params: Dict[str, Any], context: Dict[str, Any]):
+async def _create_task(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from app.core.database import AsyncSessionLocal
         from app.domains.automation.services.task_service import TaskService
-        from app.models.task import TaskType, TaskPriority
+        from app.models.task import TaskPriority, TaskType
 
         title = params.get("title", "")
         description = params.get("description", "")
@@ -153,12 +153,14 @@ async def _create_task(params: Dict[str, Any], context: Dict[str, Any]):
         )
 
 
-async def _create_note(params: Dict[str, Any], context: Dict[str, Any]):
+async def _create_note(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import text
         import uuid as uuid_mod
+
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         content = params.get("content", "")
         title = params.get("title", content[:60] + ("..." if len(content) > 60 else ""))
@@ -233,11 +235,11 @@ async def _create_note(params: Dict[str, Any], context: Dict[str, Any]):
         )
 
 
-async def _generate_daily_briefing(params: Dict[str, Any], context: Dict[str, Any]):
+async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.services.briefing_service import BriefingService
         from app.core.database import AsyncSessionLocal
+        from app.services.briefing_service import BriefingService
 
         user_id = context.get("user_id") if context else None
         if not user_id:

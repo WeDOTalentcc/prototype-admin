@@ -1,25 +1,18 @@
 """
 Job description search, refine, local search, and parse-query routes.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import (
-    logger, get_db, get_current_user_or_demo, get_user_company_id, assert_resource_ownership,
-    User, ImportUser, cv_parser_service, search_analytics_service,
-    extract_tags_from_search_spec, build_archetype_from_search,
-    ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse,
-    rubric_evaluation_service, JobRequirement, JobRequirementCreate, RequirementPriorityEnum,
-    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType, CandidateProfile,
-    _normalize_priority, _normalize_name, _generate_fingerprint,
-    _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
-    _evaluate_candidates_with_rubrics, _recruiter_agent,
-    ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
-    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
-    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
-    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
+    CandidateSearchResultDTO,
+    HybridSearchRequest,
+    SearchResponseDTO,
+    SearchType,
+    get_db,
+    pearch_service,
 )
 
 router = APIRouter()
@@ -27,7 +20,7 @@ router = APIRouter()
 class JobDescriptionSearchRequest(BaseModel):
     """Request para busca por job description."""
     job_description: str = Field(..., min_length=50, description="Descrição completa da vaga")
-    location: Optional[str] = Field(None, description="Localização preferida")
+    location: str | None = Field(None, description="Localização preferida")
     limit: int = Field(20, ge=1, le=50)
     search_pearch: bool = Field(True, description="Buscar também na Pearch AI")
     pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'")
@@ -35,25 +28,25 @@ class JobDescriptionSearchRequest(BaseModel):
 
 class ExtractedCriteria(BaseModel):
     """Critérios extraídos da job description."""
-    job_title: Optional[str] = None
-    seniority: Optional[str] = None
-    skills: List[str] = Field(default_factory=list)
-    experience_years: Optional[int] = None
-    location: Optional[str] = None
-    languages: List[str] = Field(default_factory=list)
-    certifications: List[str] = Field(default_factory=list)
+    job_title: str | None = None
+    seniority: str | None = None
+    skills: list[str] = Field(default_factory=list)
+    experience_years: int | None = None
+    location: str | None = None
+    languages: list[str] = Field(default_factory=list)
+    certifications: list[str] = Field(default_factory=list)
 
 
 class JobDescriptionSearchResponse(BaseModel):
     """Response da busca por job description."""
     extracted_criteria: ExtractedCriteria
     query_generated: str
-    candidates: List[CandidateSearchResultDTO] = Field(default_factory=list)
+    candidates: list[CandidateSearchResultDTO] = Field(default_factory=list)
     local_count: int = 0
     pearch_count: int = 0
     total_count: int = 0
-    credits_remaining: Optional[int] = None
-    search_time_seconds: Optional[float] = None
+    credits_remaining: int | None = None
+    search_time_seconds: float | None = None
 
 
 @router.post("/by-job-description", response_model=JobDescriptionSearchResponse)
@@ -176,7 +169,7 @@ async def search_by_job_description(
 async def refine_search(
     thread_id: str = Query(..., description="Thread ID da busca anterior"),
     additional_query: str = Query(..., description="Critérios adicionais"),
-    limit: Optional[int] = Query(None, ge=1, le=50),
+    limit: int | None = Query(None, ge=1, le=50),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -216,7 +209,7 @@ async def refine_search(
 async def search_local_only(
     query: str = Query(..., description="Query de busca"),
     limit: int = Query(20, ge=1, le=100),
-    industries: Optional[str] = Query(None, description="Setores separados por vírgula (ex: Tecnologia,Fintech)"),
+    industries: str | None = Query(None, description="Setores separados por vírgula (ex: Tecnologia,Fintech)"),
     require_email: bool = Query(False, description="Apenas candidatos com email"),
     require_phone: bool = Query(False, description="Apenas candidatos com telefone"),
     db: AsyncSession = Depends(get_db)
@@ -265,13 +258,13 @@ class ParseQueryRequest(BaseModel):
 
 class ParsedEntities(BaseModel):
     """Entidades extraídas da query."""
-    location: Optional[str] = None
-    job_title: Optional[str] = None
-    years_experience: Optional[str] = None
-    industry: Optional[str] = None
-    skills: List[str] = Field(default_factory=list)
-    seniority: Optional[str] = None
-    company: Optional[str] = None
+    location: str | None = None
+    job_title: str | None = None
+    years_experience: str | None = None
+    industry: str | None = None
+    skills: list[str] = Field(default_factory=list)
+    seniority: str | None = None
+    company: str | None = None
 
 
 class ParseQueryResponse(BaseModel):
@@ -279,7 +272,7 @@ class ParseQueryResponse(BaseModel):
     query: str
     entities: ParsedEntities
     confidence: float = 0.0
-    suggestions: List[str] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
 
 
 @router.post("/parse-query", response_model=ParseQueryResponse)
@@ -617,7 +610,7 @@ class RevealContactRequest(BaseModel):
     candidate_id: str = Field(..., description="ID do candidato (docid do Pearch)")
     candidate_name: str = Field(..., description="Nome do candidato para busca")
     reveal_type: str = Field(..., description="Tipo: 'email' ou 'phone'", pattern="^(email|phone)$")
-    linkedin_slug: Optional[str] = Field(None, description="LinkedIn slug para busca mais precisa")
+    linkedin_slug: str | None = Field(None, description="LinkedIn slug para busca mais precisa")
 
 
 class RevealContactResponse(BaseModel):
@@ -627,14 +620,14 @@ class RevealContactResponse(BaseModel):
     reveal_type: str
     
     # Dados revelados
-    email: Optional[str] = None
-    emails: List[str] = Field(default_factory=list)
-    phone: Optional[str] = None
-    phones: List[str] = Field(default_factory=list)
+    email: str | None = None
+    emails: list[str] = Field(default_factory=list)
+    phone: str | None = None
+    phones: list[str] = Field(default_factory=list)
     
     # Custos
     credits_used: int = 0
-    credits_remaining: Optional[int] = None
+    credits_remaining: int | None = None
     
     # Mensagem
     message: str = ""

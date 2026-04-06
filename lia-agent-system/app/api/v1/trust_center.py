@@ -5,29 +5,39 @@ Provides public-facing security and compliance portal endpoints for:
 - Public endpoints (no auth): Overview, certifications, controls, bias audits, subprocessors, resources, updates
 - Admin endpoints (authenticated): Settings management, resource upload, subprocessor management
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc
-from typing import Optional, List
-from datetime import datetime
 import logging
+from datetime import datetime
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.shared.tenant_guard import get_verified_company_id
-from app.models.trust_center import (
-    TrustCenterSettings, Subprocessor, TrustCenterResource, TrustCenterUpdate
-)
-from app.models.observability import ComplianceControl, BiasAuditReport
+from app.models.observability import BiasAuditReport, ComplianceControl
+from app.models.trust_center import Subprocessor, TrustCenterResource, TrustCenterSettings, TrustCenterUpdate
 from app.schemas.trust_center import (
-    TrustCenterSettingsCreate, TrustCenterSettingsUpdate, TrustCenterSettingsResponse,
-    SubprocessorCreate, SubprocessorResponse, SubprocessorListResponse,
-    TrustCenterResourceCreate, TrustCenterResourceResponse, TrustCenterResourceListResponse,
-    TrustCenterUpdateCreate, TrustCenterUpdateResponse, TrustCenterUpdateListResponse,
-    TrustCenterOverviewResponse, TrustCenterCertificationsResponse,
-    TrustCenterControlsResponse, TrustCenterBiasAuditsResponse,
-    CertificationInfo, ControlSummary, BiasAuditSummary
+    BiasAuditSummary,
+    CertificationInfo,
+    ControlSummary,
+    SubprocessorCreate,
+    SubprocessorListResponse,
+    SubprocessorResponse,
+    TrustCenterBiasAuditsResponse,
+    TrustCenterCertificationsResponse,
+    TrustCenterControlsResponse,
+    TrustCenterOverviewResponse,
+    TrustCenterResourceCreate,
+    TrustCenterResourceListResponse,
+    TrustCenterResourceResponse,
+    TrustCenterSettingsCreate,
+    TrustCenterSettingsResponse,
+    TrustCenterSettingsUpdate,
+    TrustCenterUpdateCreate,
+    TrustCenterUpdateListResponse,
+    TrustCenterUpdateResponse,
 )
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -275,7 +285,7 @@ async def get_trust_center_bias_audits(
 @router.get("/{company_slug}/subprocessors", response_model=SubprocessorListResponse, summary="List data subprocessors")
 async def get_trust_center_subprocessors(
     company_slug: str,
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get list of data subprocessors."""
@@ -311,7 +321,7 @@ async def get_trust_center_subprocessors(
 @router.get("/{company_slug}/resources", response_model=TrustCenterResourceListResponse, summary="List downloadable resources")
 async def get_trust_center_resources(
     company_slug: str,
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get list of downloadable policies and documents."""
@@ -344,7 +354,7 @@ async def get_trust_center_resources(
 @router.get("/{company_slug}/updates", response_model=TrustCenterUpdateListResponse, summary="Get compliance updates")
 async def get_trust_center_updates(
     company_slug: str,
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     limit: int = Query(10, ge=1, le=50, description="Max results"),
     db: AsyncSession = Depends(get_db)
 ):

@@ -7,13 +7,12 @@ for multi-tenant isolation.
 """
 from __future__ import annotations
 
-import uuid
 import logging
+import uuid
 from datetime import datetime
-from typing import Optional
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
 
 from app.models.interview import InterviewNote
 
@@ -25,26 +24,26 @@ async def create_interview_note(
     company_id: str,
     created_by: str,
     candidate_id: str,
-    candidate_name: Optional[str],
-    job_id: Optional[str],
-    job_title: Optional[str],
-    scheduled_interview_id: Optional[str],
-    interviewer_id: Optional[str],
-    recruiter_name: Optional[str],
-    interview_date: Optional[datetime],
+    candidate_name: str | None,
+    job_id: str | None,
+    job_title: str | None,
+    scheduled_interview_id: str | None,
+    interviewer_id: str | None,
+    recruiter_name: str | None,
+    interview_date: datetime | None,
     interview_type: str,
     questions: list,
     blocks: list,
-    general_notes: Optional[str],
-    transcription: Optional[str],
-    transcription_source: Optional[str],
-    lia_parecer: Optional[str],
+    general_notes: str | None,
+    transcription: str | None,
+    transcription_source: str | None,
+    lia_parecer: str | None,
     lia_parecer_editado: bool,
-    wsi_score: Optional[dict],
-    recommendation: Optional[str],
-    next_stage: Optional[str],
+    wsi_score: dict | None,
+    recommendation: str | None,
+    next_stage: str | None,
     feedback_sent: bool,
-    feedback_scheduled_for: Optional[datetime],
+    feedback_scheduled_for: datetime | None,
     status: str,
 ) -> InterviewNote:
     note = InterviewNote(
@@ -85,7 +84,7 @@ async def get_interview_note(
     db: AsyncSession,
     note_id: str,
     company_id: str,
-) -> Optional[InterviewNote]:
+) -> InterviewNote | None:
     result = await db.execute(
         select(InterviewNote).where(
             and_(
@@ -101,7 +100,7 @@ async def get_notes_for_candidate(
     db: AsyncSession,
     candidate_id: str,
     company_id: str,
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
 ) -> list[InterviewNote]:
     conditions = [
         InterviewNote.candidate_id == uuid.UUID(candidate_id),
@@ -123,7 +122,7 @@ async def update_interview_note(
     note_id: str,
     company_id: str,
     **fields,
-) -> Optional[InterviewNote]:
+) -> InterviewNote | None:
     note = await get_interview_note(db, note_id, company_id)
     if not note:
         return None

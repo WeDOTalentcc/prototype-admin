@@ -1,17 +1,20 @@
 """
 Tests for WorkOS SSO/SCIM integration endpoints.
 """
-import pytest
 import uuid
 from datetime import datetime
 from unittest.mock import patch
-from httpx import AsyncClient, ASGITransport
+
+import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.main import app
+from app.auth.workos_models import (
+    CompanyWorkOSConfig,
+    WorkOSGroup,
+)
 from app.core.database import get_db
-from app.auth.models import User, UserRole
-from app.auth.workos_models import WorkOSGroup, WorkOSGroupMembership, WorkOSGroupRoleMapping, SSOAuditLog, CompanyWorkOSConfig
+from app.main import app
 
 INTERNAL_AUTH_HEADER = {"X-Internal-Auth": "test-secret"}
 
@@ -320,19 +323,19 @@ class TestCrossTenantIsolation:
         await self._create_company_config(db_session, company_a_id, dir_a_id)
         await self._create_company_config(db_session, company_b_id, dir_b_id)
         
-        group_a1 = await self._create_group(
+        await self._create_group(
             db_session, 
             f"group_a1_{uuid.uuid4().hex}", 
             "Company A Group 1", 
             dir_a_id
         )
-        group_a2 = await self._create_group(
+        await self._create_group(
             db_session, 
             f"group_a2_{uuid.uuid4().hex}", 
             "Company A Group 2", 
             dir_a_id
         )
-        group_b1 = await self._create_group(
+        await self._create_group(
             db_session, 
             f"group_b1_{uuid.uuid4().hex}", 
             "Company B Group 1", 
@@ -510,7 +513,7 @@ class TestWorkOSClientOnboardingRobustness:
         multiple insert attempts for the same company_id without failing.
         This tests the robustness of concurrent client creation attempts.
         """
-        from sqlalchemy import text, select
+        from sqlalchemy import select, text
         
         client_id = str(uuid.uuid4())
         config_id_1 = str(uuid.uuid4())
@@ -523,7 +526,7 @@ class TestWorkOSClientOnboardingRobustness:
             ON CONFLICT (company_id) DO NOTHING
         """)
         
-        first_insert = await db_session.execute(
+        await db_session.execute(
             insert_statement,
             {
                 "id": config_id_1,
@@ -543,7 +546,7 @@ class TestWorkOSClientOnboardingRobustness:
         assert config_1 is not None, "First WorkOS config creation should succeed"
         assert str(config_1.id) == config_id_1
         
-        second_insert = await db_session.execute(
+        await db_session.execute(
             insert_statement,
             {
                 "id": config_id_2,
@@ -576,8 +579,9 @@ class TestWorkOSClientOnboardingRobustness:
         1. The API returns 500 status code
         2. No orphaned client remains in the database after rollback
         """
-        from sqlalchemy import text, select
+        from sqlalchemy import select
         from sqlalchemy.exc import IntegrityError
+
         from app.models.client_account import ClientAccount
         
         original_execute = db_session.execute

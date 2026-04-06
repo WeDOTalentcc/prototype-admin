@@ -5,15 +5,14 @@ Provides endpoints for:
 - Microsoft Teams (Incoming Webhooks)
 - Other external integrations
 """
-from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 import logging
+from typing import Any
 
-from app.core.database import get_db
-from app.domains.communication.services.teams_service import teams_service, AlertSeverity
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+
 from app.auth.dependencies import get_current_user
+from app.domains.communication.services.teams_service import AlertSeverity, teams_service
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +22,9 @@ router = APIRouter(prefix="/integrations", tags=["integrations"])
 class TeamsSendMessageRequest(BaseModel):
     """Request model for sending a Teams message."""
     text: str
-    title: Optional[str] = None
-    subtitle: Optional[str] = None
-    webhook_url: Optional[str] = None
+    title: str | None = None
+    subtitle: str | None = None
+    webhook_url: str | None = None
 
 
 class TeamsSendAlertRequest(BaseModel):
@@ -33,37 +32,37 @@ class TeamsSendAlertRequest(BaseModel):
     title: str
     message: str
     severity: str = "info"
-    facts: Optional[List[Dict[str, str]]] = None
-    actions: Optional[List[Dict[str, Any]]] = None
-    source: Optional[str] = None
-    webhook_url: Optional[str] = None
+    facts: list[dict[str, str]] | None = None
+    actions: list[dict[str, Any]] | None = None
+    source: str | None = None
+    webhook_url: str | None = None
 
 
 class TeamsSendCardRequest(BaseModel):
     """Request model for sending a Teams adaptive card."""
-    card: Dict[str, Any]
-    webhook_url: Optional[str] = None
+    card: dict[str, Any]
+    webhook_url: str | None = None
 
 
 class TeamsCandidateNotificationRequest(BaseModel):
     """Request model for sending candidate notification to Teams."""
     candidate_name: str
     event: str
-    job_title: Optional[str] = None
-    details: Optional[str] = None
-    action_url: Optional[str] = None
-    webhook_url: Optional[str] = None
+    job_title: str | None = None
+    details: str | None = None
+    action_url: str | None = None
+    webhook_url: str | None = None
 
 
 class TeamsTestRequest(BaseModel):
     """Request model for testing Teams connection."""
-    webhook_url: Optional[str] = None
+    webhook_url: str | None = None
 
 
 @router.post("/teams/send")
 async def send_teams_message(
     request: TeamsSendMessageRequest,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Send a message to Microsoft Teams via Incoming Webhook.
@@ -89,7 +88,7 @@ async def send_teams_message(
 @router.post("/teams/send-alert")
 async def send_teams_alert(
     request: TeamsSendAlertRequest,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Send an alert with severity level to Microsoft Teams.
@@ -130,7 +129,7 @@ async def send_teams_alert(
 @router.post("/teams/send-card")
 async def send_teams_card(
     request: TeamsSendCardRequest,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Send a custom Adaptive Card to Microsoft Teams.
@@ -152,7 +151,7 @@ async def send_teams_card(
 @router.post("/teams/send-candidate-notification")
 async def send_teams_candidate_notification(
     request: TeamsCandidateNotificationRequest,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Send a candidate-related notification to Microsoft Teams.
@@ -177,7 +176,7 @@ async def send_teams_candidate_notification(
 @router.post("/teams/test")
 async def test_teams_connection(
     request: TeamsTestRequest,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Test Microsoft Teams webhook connection.
@@ -194,7 +193,7 @@ async def test_teams_connection(
 
 @router.get("/teams/status")
 async def get_teams_status(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Get Microsoft Teams integration status.
@@ -211,7 +210,7 @@ async def get_teams_status(
 
 @router.get("/status")
 async def get_integrations_status(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: dict[str, Any] = Depends(get_current_user)
 ):
     """
     Get status of all external integrations.

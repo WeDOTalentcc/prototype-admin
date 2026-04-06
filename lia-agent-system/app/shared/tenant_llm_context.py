@@ -15,8 +15,6 @@ Usage:
         # Use tenant's provider + API key
 """
 import logging
-from contextvars import ContextVar
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +32,7 @@ def get_current_llm_tenant() -> str:
 _tenant_configs: dict = {}
 
 
-async def get_tenant_llm_config(company_id: str) -> Optional[dict]:
+async def get_tenant_llm_config(company_id: str) -> dict | None:
     """
     Get LLM config for a tenant. Returns dict with:
     {

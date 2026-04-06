@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +27,7 @@ class WizardIntent(str, Enum):
     UNKNOWN = "unknown"
 
 
-INTENT_TO_TOOL_MAPPING: Dict[WizardIntent, Dict] = {
+INTENT_TO_TOOL_MAPPING: dict[WizardIntent, dict] = {
     WizardIntent.PUBLISH_JOB:     {"tool_name": "publish_job",     "requires_confirmation": True,  "required_params": ["job_id"]},
     WizardIntent.PAUSE_JOB:       {"tool_name": "pause_job",       "requires_confirmation": True,  "required_params": ["job_id"]},
     WizardIntent.CLOSE_JOB:       {"tool_name": "close_job",       "requires_confirmation": True,  "required_params": ["job_id", "reason"]},
@@ -42,20 +42,20 @@ INTENT_TO_TOOL_MAPPING: Dict[WizardIntent, Dict] = {
 @dataclass
 class SuggestedToolCall:
     tool_name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     requires_confirmation: bool
-    confirmation_message: Optional[str] = None
+    confirmation_message: str | None = None
 
 
 @dataclass
 class IntentDetectionResult:
     intent: WizardIntent
     confidence: float
-    entities: Dict[str, Any] = field(default_factory=dict)
-    suggested_tool_call: Optional[SuggestedToolCall] = None
+    entities: dict[str, Any] = field(default_factory=dict)
+    suggested_tool_call: SuggestedToolCall | None = None
 
 
-_INTENT_KEYWORDS: List[tuple] = [
+_INTENT_KEYWORDS: list[tuple] = [
     (WizardIntent.PUBLISH_JOB,     ["publicar", "publish", "ativar vaga", "postar"]),
     (WizardIntent.PAUSE_JOB,       ["pausar", "pause", "suspender", "ocultar"]),
     (WizardIntent.CLOSE_JOB,       ["encerrar", "fechar vaga", "close", "arquivar"]),
@@ -74,7 +74,7 @@ class WizardOrchestratorService:
     def _detect_intent(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> IntentDetectionResult:
         """Detecta intenção por keyword matching."""
         msg_lower = message.lower()
@@ -102,12 +102,12 @@ class WizardOrchestratorService:
     def process_wizard_message(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         include_response: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Processa mensagem do wizard e retorna intenção detectada com tool suggestion."""
         detection = self._detect_intent(message, context)
-        response: Dict[str, Any] = {
+        response: dict[str, Any] = {
             "intent": detection.intent.value,
             "confidence": detection.confidence,
             "entities": detection.entities,
@@ -144,7 +144,7 @@ class WizardOrchestratorService:
 
         return responses.get(intent, "Como posso ajudar?")
 
-    def get_available_intents(self) -> List[Dict[str, Any]]:
+    def get_available_intents(self) -> list[dict[str, Any]]:
         """Get list of available wizard intents and their tool mappings."""
         return [
             {
@@ -173,7 +173,7 @@ class WizardOrchestratorService:
 
     def build_context_for_prompt(
         self,
-        context_data: Dict[str, Any],
+        context_data: dict[str, Any],
         max_chars: int = MAX_CONTEXT_CHARS
     ) -> str:
         """
@@ -225,7 +225,7 @@ class WizardOrchestratorService:
         context_type = context_data.get("context_type")
         context_id = context_data.get("context_id")
         if context_type or context_id:
-            parts.append(f"\n## Contexto Atual")
+            parts.append("\n## Contexto Atual")
             if context_type:
                 parts.append(f"Tipo: {context_type}")
             if context_id:
@@ -244,11 +244,11 @@ class WizardOrchestratorService:
         self,
         db: AsyncSession,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-        conversation_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        conversation_id: str | None = None,
+        user_id: str | None = None,
         include_response: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a wizard message with conversation memory support.
 
@@ -326,7 +326,7 @@ class WizardOrchestratorService:
     def get_system_prompt_with_context(
         self,
         base_prompt: str,
-        context_string: Optional[str] = None
+        context_string: str | None = None
     ) -> str:
         """
         Combine base system prompt with conversation context.

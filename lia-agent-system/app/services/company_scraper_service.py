@@ -5,11 +5,11 @@ Supports multi-source extraction: Website + LinkedIn.
 Now with MCP (Model Context Protocol) support for simplified actor calls.
 """
 import asyncio
+import logging
 import os
 import re
-import logging
-from typing import Optional, List, Dict, Tuple
 from urllib.parse import urljoin, urlparse
+
 import httpx
 from bs4 import BeautifulSoup
 
@@ -77,7 +77,7 @@ class CompanyScraperService:
             self._mcp_client = ApifyMCPClient()
         return self._mcp_client
     
-    async def scrape_website(self, url: str, linkedin_url: Optional[str] = None) -> Dict:
+    async def scrape_website(self, url: str, linkedin_url: str | None = None) -> dict:
         """
         Main entry point: scrapes a company website for culture content using Apify.
         Optionally also scrapes LinkedIn for structured company data.
@@ -98,7 +98,7 @@ class CompanyScraperService:
         
         return await self._scrape_website_http(url, linkedin_url)
     
-    async def _scrape_with_mcp(self, url: str, linkedin_url: Optional[str] = None) -> Dict:
+    async def _scrape_with_mcp(self, url: str, linkedin_url: str | None = None) -> dict:
         """
         Scrape website using MCP client instead of direct HTTP API calls.
         
@@ -161,7 +161,7 @@ class CompanyScraperService:
             logger.error(f"MCP scrape error: {type(e).__name__}: {e}")
             return await self._scrape_with_httpx(base_url)
     
-    async def _scrape_website_http(self, url: str, linkedin_url: Optional[str] = None) -> Dict:
+    async def _scrape_website_http(self, url: str, linkedin_url: str | None = None) -> dict:
         """Original HTTP-based scraping method."""
         base_url = self._normalize_url(url)
         
@@ -196,7 +196,7 @@ class CompanyScraperService:
         
         return website_result
     
-    async def _scrape_linkedin_with_apify(self, linkedin_url: str) -> Dict:
+    async def _scrape_linkedin_with_apify(self, linkedin_url: str) -> dict:
         """
         Scrape LinkedIn company page using Apify bebity/linkedin-premium-actor.
         
@@ -321,7 +321,7 @@ class CompanyScraperService:
                 "data": {}
             }
     
-    def _parse_linkedin_data(self, raw_data: Dict) -> Dict:
+    def _parse_linkedin_data(self, raw_data: dict) -> dict:
         """
         Parse raw LinkedIn data into structured format.
         
@@ -394,7 +394,7 @@ class CompanyScraperService:
             "follower_count": raw_data.get("followerCount") or raw_data.get("followersCount"),
         }
     
-    async def _scrape_with_apify(self, base_url: str) -> Dict:
+    async def _scrape_with_apify(self, base_url: str) -> dict:
         """
         Scrape website using Apify Website Content Crawler.
         """
@@ -556,7 +556,7 @@ class CompanyScraperService:
                 "linkedin_url": None
             }
     
-    async def _scrape_with_httpx(self, base_url: str) -> Dict:
+    async def _scrape_with_httpx(self, base_url: str) -> dict:
         """
         Fallback scraper using httpx for simple websites.
         """
@@ -632,14 +632,14 @@ class CompanyScraperService:
                 "linkedin_url": None
             }
     
-    async def _fetch_page(self, client: httpx.AsyncClient, url: str, retries: int = 2) -> Optional[str]:
+    async def _fetch_page(self, client: httpx.AsyncClient, url: str, retries: int = 2) -> str | None:
         """Fetch a single page and return its HTML content."""
         for attempt in range(retries + 1):
             try:
                 response = await client.get(url)
                 response.raise_for_status()
                 return response.text
-            except httpx.TimeoutException as e:
+            except httpx.TimeoutException:
                 logger.warning(f"Timeout fetching {url} (attempt {attempt + 1}/{retries + 1})")
                 if attempt < retries:
                     await asyncio.sleep(2 ** attempt)
@@ -656,7 +656,7 @@ class CompanyScraperService:
                 return None
         return None
     
-    def _discover_pages(self, base_url: str, homepage_html: str) -> List[Tuple[str, str]]:
+    def _discover_pages(self, base_url: str, homepage_html: str) -> list[tuple[str, str]]:
         """Discover culture-related pages from the homepage."""
         discovered = []
         soup = BeautifulSoup(homepage_html, 'lxml')
@@ -733,7 +733,7 @@ class CompanyScraperService:
         
         return text
     
-    def _find_linkedin_url(self, html: str, base_url: str) -> Optional[str]:
+    def _find_linkedin_url(self, html: str, base_url: str) -> str | None:
         """Find LinkedIn company page URL from HTML content."""
         soup = BeautifulSoup(html, 'lxml')
         

@@ -3,9 +3,9 @@ RecruiterProfileService — perfil de preferências do recrutador para personali
 Aprende tom preferido, nível de detalhe e ferramentas favoritas a partir das interações.
 """
 from __future__ import annotations
+
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -29,9 +29,9 @@ class RecruiterProfile:
     company_id: str
     tone: TonePreference = TonePreference.BALANCED
     detail_level: DetailLevel = DetailLevel.MEDIUM
-    favorite_tools: List[str] = field(default_factory=list)
+    favorite_tools: list[str] = field(default_factory=list)
     interaction_count: int = 0
-    last_actions: List[str] = field(default_factory=list)
+    last_actions: list[str] = field(default_factory=list)
 
     def to_prompt_snippet(self) -> str:
         if self.interaction_count < 5:
@@ -55,7 +55,7 @@ class RecruiterProfile:
 
         return "## Preferências do Recrutador\n" + "\n".join(f"- {p}" for p in parts)
 
-    def update_from_interaction(self, action: str, tool_used: Optional[str] = None) -> None:
+    def update_from_interaction(self, action: str, tool_used: str | None = None) -> None:
         self.interaction_count += 1
         self.last_actions.append(action)
         if len(self.last_actions) > 20:
@@ -69,7 +69,7 @@ class RecruiterProfileService:
     """Gerencia perfis de recrutadores para personalização da LIA."""
 
     def __init__(self) -> None:
-        self._cache: Dict[str, RecruiterProfile] = {}
+        self._cache: dict[str, RecruiterProfile] = {}
 
     async def get_profile(self, user_id: str, company_id: str) -> RecruiterProfile:
         """Retorna perfil do recrutador. Cria um novo se não existir."""
@@ -80,6 +80,7 @@ class RecruiterProfileService:
         # Tentar buscar do Redis
         try:
             import json
+
             import redis
             from lia_config.config import settings
             _r = redis.from_url(settings.REDIS_URL)
@@ -108,6 +109,7 @@ class RecruiterProfileService:
         """Persiste o perfil no Redis."""
         try:
             import json
+
             import redis
             from lia_config.config import settings
             _r = redis.from_url(settings.REDIS_URL)

@@ -6,7 +6,7 @@ for LIA's triagem questions, enabling voice-mode interviews.
 """
 import base64
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +37,10 @@ class TriagemVoiceService:
         self,
         text: str,
         session_token: str,
-        question_index: Optional[int] = None,
+        question_index: int | None = None,
         voice: str = DEFAULT_VOICE,
         speed: float = DEFAULT_SPEED,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate TTS audio for a triagem question.
 

@@ -12,7 +12,7 @@ Services wrapped:
 - AgentMonitoringService  → get_agent_performance
 """
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 
@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-async def _wrap_get_job_insights(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_job_insights(**kwargs: Any) -> dict[str, Any]:
     """Get salary benchmark, skills frequency and time-to-fill for a job title."""
-    from app.domains.analytics.services.job_insights_service import JobInsightsService
     from app.core.database import AsyncSessionLocal
+    from app.domains.analytics.services.job_insights_service import JobInsightsService
 
     job_title = kwargs.get("job_title", "")
     company_id = kwargs.get("company_id", "")
@@ -69,10 +69,10 @@ async def _wrap_get_job_insights(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_predict_hiring_metrics(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_predict_hiring_metrics(**kwargs: Any) -> dict[str, Any]:
     """Predict hiring probability and time to fill for a job vacancy."""
-    from app.domains.analytics.services.predictive_analytics_service import PredictiveAnalyticsService
     from app.core.database import AsyncSessionLocal
+    from app.domains.analytics.services.predictive_analytics_service import PredictiveAnalyticsService
 
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
@@ -99,12 +99,13 @@ async def _wrap_predict_hiring_metrics(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_generate_job_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_job_report(**kwargs: Any) -> dict[str, Any]:
     """Generate a full analytics report for a job vacancy."""
+    from uuid import UUID
+
+    from app.core.database import AsyncSessionLocal
     from app.domains.analytics.services.job_report_service import JobReportService
     from app.domains.analytics.services.predictive_analytics_service import PredictiveAnalyticsService
-    from app.core.database import AsyncSessionLocal
-    from uuid import UUID
 
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
@@ -128,7 +129,7 @@ async def _wrap_generate_job_report(**kwargs: Any) -> Dict[str, Any]:
             source_data = await report_svc._get_source_analysis(job_uuid, db)
             time_metrics = await report_svc._get_time_metrics(job_uuid, db)
 
-            result: Dict[str, Any] = {
+            result: dict[str, Any] = {
                 "success": True,
                 "job_id": job_id,
                 "company_id": company_id,
@@ -148,12 +149,12 @@ async def _wrap_generate_job_report(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_generate_candidate_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_candidate_report(**kwargs: Any) -> dict[str, Any]:
     """Generate comparative candidate report / parecer for one or more candidates."""
-    from app.domains.analytics.services.candidate_report_service import CandidateReportService
     from app.core.database import AsyncSessionLocal
+    from app.domains.analytics.services.candidate_report_service import CandidateReportService
 
-    candidate_ids: List[int] = kwargs.get("candidate_ids", [])
+    candidate_ids: list[int] = kwargs.get("candidate_ids", [])
     job_id: str = kwargs.get("job_id", "") or ""
 
     if not candidate_ids:
@@ -188,11 +189,12 @@ async def _wrap_generate_candidate_report(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_get_search_analytics(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_search_analytics(**kwargs: Any) -> dict[str, Any]:
     """Get search performance metrics for a company over the past N days."""
-    from app.domains.analytics.services.search_analytics_service import SearchAnalyticsService
-    from app.core.database import AsyncSessionLocal
     from sqlalchemy import text
+
+    from app.core.database import AsyncSessionLocal
+    from app.domains.analytics.services.search_analytics_service import SearchAnalyticsService
 
     company_id = kwargs.get("company_id", "")
     days = int(kwargs.get("days", 30))
@@ -204,7 +206,7 @@ async def _wrap_get_search_analytics(**kwargs: Any) -> Dict[str, Any]:
         svc = SearchAnalyticsService()
         async with AsyncSessionLocal() as db:
             # Retrieve recent candidate search snapshots from the DB as proxy data
-            query = text("""
+            text("""
                 SELECT id, name, current_title, current_company, email, phone, location,
                        skills, experience_years, created_at
                 FROM candidates
@@ -258,10 +260,10 @@ async def _wrap_get_search_analytics(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_get_agent_performance(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_agent_performance(**kwargs: Any) -> dict[str, Any]:
     """Get AI agent performance and cost metrics for a company."""
-    from app.shared.governance.agent_monitoring_service import AgentMonitoringService
     from app.core.database import AsyncSessionLocal
+    from app.shared.governance.agent_monitoring_service import AgentMonitoringService
 
     company_id = kwargs.get("company_id", "")
     agent_type = kwargs.get("agent_type")
@@ -296,7 +298,7 @@ async def _wrap_get_agent_performance(**kwargs: Any) -> Dict[str, Any]:
 # Public registry
 # ---------------------------------------------------------------------------
 
-def get_analytics_tools() -> List[ToolDefinition]:
+def get_analytics_tools() -> list[ToolDefinition]:
     """Return all ToolDefinitions for the Analytics domain."""
     return [
         ToolDefinition(
@@ -354,7 +356,7 @@ def get_analytics_tools() -> List[ToolDefinition]:
     ]
 
 
-def get_stage_tools(stage: str) -> List[ToolDefinition]:
+def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """Return tools available for a given analytics stage."""
     from app.domains.analytics.agents.analytics_stage_context import get_stage_tools as _stage_tools
     stage_tool_names = set(_stage_tools(stage))

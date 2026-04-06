@@ -2,31 +2,32 @@
 Pydantic schemas for Communication API.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class CommunicationCreate(BaseModel):
     """Schema for creating a new communication record."""
     candidate_id: str = Field(..., description="Candidate ID")
     candidate_name: str = Field(..., description="Candidate name")
-    candidate_email: Optional[str] = Field(None, description="Candidate email")
-    candidate_phone: Optional[str] = Field(None, description="Candidate phone")
-    vacancy_id: Optional[str] = Field(None, description="Related vacancy ID")
-    vacancy_title: Optional[str] = Field(None, description="Related vacancy title")
+    candidate_email: str | None = Field(None, description="Candidate email")
+    candidate_phone: str | None = Field(None, description="Candidate phone")
+    vacancy_id: str | None = Field(None, description="Related vacancy ID")
+    vacancy_title: str | None = Field(None, description="Related vacancy title")
     communication_type: str = Field(..., description="Type: email, whatsapp, triagem_invite, agendamento_invite, feedback")
     channel: str = Field(..., description="Channel: email, whatsapp")
     direction: str = Field(..., description="Direction: outbound, inbound")
-    subject: Optional[str] = Field(None, description="Message subject")
+    subject: str | None = Field(None, description="Message subject")
     message_content: str = Field(..., description="Full message content")
-    template_id: Optional[str] = Field(None, description="Template ID if used")
-    template_name: Optional[str] = Field(None, description="Template name if used")
-    attachments: Optional[List[Dict[str, Any]]] = Field(default_factory=list, description="List of attachments")
+    template_id: str | None = Field(None, description="Template ID if used")
+    template_name: str | None = Field(None, description="Template name if used")
+    attachments: list[dict[str, Any]] | None = Field(default_factory=list, description="List of attachments")
     sent_by: str = Field(..., description="ID of sender")
-    sent_by_name: Optional[str] = Field(None, description="Display name of sender")
+    sent_by_name: str | None = Field(None, description="Display name of sender")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
-    extra_data: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional metadata")
+    extra_data: dict[str, Any] | None = Field(default_factory=dict, description="Additional metadata")
 
     class Config:
         json_schema_extra = {
@@ -51,30 +52,30 @@ class CommunicationResponse(BaseModel):
     id: str
     candidate_id: str
     candidate_name: str
-    candidate_email: Optional[str] = None
-    candidate_phone: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    vacancy_title: Optional[str] = None
+    candidate_email: str | None = None
+    candidate_phone: str | None = None
+    vacancy_id: str | None = None
+    vacancy_title: str | None = None
     communication_type: str
     channel: str
     direction: str
-    subject: Optional[str] = None
+    subject: str | None = None
     message_content: str
-    message_preview: Optional[str] = None
-    template_id: Optional[str] = None
-    template_name: Optional[str] = None
+    message_preview: str | None = None
+    template_id: str | None = None
+    template_name: str | None = None
     status: str
-    sent_at: Optional[datetime] = None
-    delivered_at: Optional[datetime] = None
-    read_at: Optional[datetime] = None
-    failed_at: Optional[datetime] = None
-    error_message: Optional[str] = None
-    extra_data: Dict[str, Any] = Field(default_factory=dict)
-    attachments: List[Dict[str, Any]] = Field(default_factory=list)
+    sent_at: datetime | None = None
+    delivered_at: datetime | None = None
+    read_at: datetime | None = None
+    failed_at: datetime | None = None
+    error_message: str | None = None
+    extra_data: dict[str, Any] = Field(default_factory=dict)
+    attachments: list[dict[str, Any]] = Field(default_factory=list)
     sent_by: str
-    sent_by_name: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    sent_by_name: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
     company_id: str
 
     class Config:
@@ -83,7 +84,7 @@ class CommunicationResponse(BaseModel):
 
 class CommunicationListResponse(BaseModel):
     """Schema for paginated communications list response."""
-    communications: List[CommunicationResponse]
+    communications: list[CommunicationResponse]
     total: int
     limit: int
     offset: int
@@ -92,7 +93,7 @@ class CommunicationListResponse(BaseModel):
 class CommunicationStatusUpdate(BaseModel):
     """Schema for updating communication status."""
     status: str = Field(..., description="New status: sent, delivered, read, failed")
-    error_message: Optional[str] = Field(None, description="Error message for failed status")
+    error_message: str | None = Field(None, description="Error message for failed status")
 
     class Config:
         json_schema_extra = {

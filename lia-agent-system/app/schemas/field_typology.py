@@ -4,9 +4,9 @@ Field Typology Schema for Job Wizard Enhancement.
 Defines the classification system for job vacancy fields,
 enabling intelligent field handling during wizard flow.
 """
+from dataclasses import dataclass
 from enum import Enum
-from dataclasses import dataclass, field
-from typing import Optional, Callable, Dict, Any
+from typing import Any
 
 
 class FieldTypology(str, Enum):
@@ -44,12 +44,12 @@ class FieldDefinition:
     name: str
     typology: FieldTypology
     required: bool = False
-    default_source: Optional[str] = None
-    condition: Optional[str] = None
+    default_source: str | None = None
+    condition: str | None = None
     confidence_threshold: float = 0.70
 
 
-FIELD_DEFINITIONS: Dict[str, FieldDefinition] = {
+FIELD_DEFINITIONS: dict[str, FieldDefinition] = {
     "job_title": FieldDefinition(
         name="job_title",
         typology=FieldTypology.CRITICAL,
@@ -215,7 +215,7 @@ FIELD_DEFINITIONS: Dict[str, FieldDefinition] = {
 }
 
 
-def get_fields_by_typology(typology: FieldTypology) -> Dict[str, FieldDefinition]:
+def get_fields_by_typology(typology: FieldTypology) -> dict[str, FieldDefinition]:
     """Get all field definitions for a specific typology."""
     return {
         name: defn for name, defn in FIELD_DEFINITIONS.items()
@@ -223,17 +223,17 @@ def get_fields_by_typology(typology: FieldTypology) -> Dict[str, FieldDefinition
     }
 
 
-def get_critical_fields() -> Dict[str, FieldDefinition]:
+def get_critical_fields() -> dict[str, FieldDefinition]:
     """Get all critical fields that require explicit confirmation."""
     return get_fields_by_typology(FieldTypology.CRITICAL)
 
 
-def get_conditional_fields() -> Dict[str, FieldDefinition]:
+def get_conditional_fields() -> dict[str, FieldDefinition]:
     """Get all conditional fields with their conditions."""
     return get_fields_by_typology(FieldTypology.CONDITIONAL)
 
 
-def is_field_active(field_name: str, context: Dict[str, Any]) -> bool:
+def is_field_active(field_name: str, context: dict[str, Any]) -> bool:
     """
     Check if a conditional field is active based on current context.
     

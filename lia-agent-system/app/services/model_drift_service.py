@@ -14,17 +14,15 @@ Referência:
 from __future__ import annotations
 
 import logging
-import statistics
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import List, Optional
 from uuid import UUID
 
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
 
-from app.models.observability import AIInferenceLog
 from app.models.ai_consumption import AiConsumption
+from app.models.observability import AIInferenceLog
 from app.models.rubric import RubricEvaluation
 
 logger = logging.getLogger(__name__)
@@ -66,7 +64,7 @@ class DriftStatus:
     evaluated_at: datetime
     recent_window_start: datetime
     baseline_window_start: datetime
-    triggers: List[DriftTrigger] = field(default_factory=list)
+    triggers: list[DriftTrigger] = field(default_factory=list)
     drift_detected: bool = False
     alert_level: str = "ok"          # "ok" | "warning" | "critical"
     sample_size_recent: int = 0
@@ -103,7 +101,7 @@ class ModelDriftService:
             baseline_window_start=baseline_start,
         )
 
-        triggers: List[DriftTrigger] = []
+        triggers: list[DriftTrigger] = []
 
         # --- Trigger 1: Score Drift ---
         try:
@@ -402,8 +400,9 @@ class ModelDriftService:
             trigger_type: Tipo do gatilho (ex: "learning_feedback").
         """
         try:
-            from app.core.database import AsyncSessionLocal
             import uuid as _uuid
+
+            from app.core.database import AsyncSessionLocal
 
             async with AsyncSessionLocal() as db:
                 try:

@@ -2,33 +2,29 @@
 Sourcing & Engagement Nodes for LangGraph workflow (Steps 14-27).
 Handles automated sourcing, calibration, outreach, screening, and feedback.
 """
-from typing import Dict, Any, Optional, List
-from langchain_core.messages import AIMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from datetime import datetime, timedelta
 import logging
 import uuid
+from datetime import datetime, timedelta
+from typing import Any
 
-from app.services.llm import llm_service
+
 from app.schemas.sourcing_engagement_state import (
-    SourcingEngagementState,
-    PipelineCandidate,
+    CalibrationSession,
+    CandidateFeedback,
     CandidateMatchScore,
     CandidateStatus,
-    CalibrationSession,
-    VolumeAssessment,
     GlobalSearchRequest,
     OutreachCampaign,
+    PipelineCandidate,
     ScreeningSession,
-    CandidateFeedback,
-    RecruiterNotification
+    SourcingEngagementState,
+    VolumeAssessment,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def _load_sourcing_state(workflow_data: Dict[str, Any]) -> Optional[SourcingEngagementState]:
+def _load_sourcing_state(workflow_data: dict[str, Any]) -> SourcingEngagementState | None:
     """Load SourcingEngagementState from workflow_data."""
     state_data = workflow_data.get("sourcing_state")
     if state_data:
@@ -36,13 +32,13 @@ def _load_sourcing_state(workflow_data: Dict[str, Any]) -> Optional[SourcingEnga
     return None
 
 
-def _save_sourcing_state(state: SourcingEngagementState, workflow_data: Dict[str, Any]) -> Dict[str, Any]:
+def _save_sourcing_state(state: SourcingEngagementState, workflow_data: dict[str, Any]) -> dict[str, Any]:
     """Save SourcingEngagementState to workflow_data."""
     workflow_data["sourcing_state"] = state.model_dump()
     return workflow_data
 
 
-async def sourcing_state_initializer(state: Dict[str, Any]) -> Dict[str, Any]:
+async def sourcing_state_initializer(state: dict[str, Any]) -> dict[str, Any]:
     """
     Initialize SourcingEngagementState when transitioning from job creation.
     Called after step 13 (Publication).
@@ -81,7 +77,7 @@ async def sourcing_state_initializer(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def local_search_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def local_search_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 14: Local Search Node
     - Searches local database for candidates
@@ -121,7 +117,7 @@ async def local_search_node(state: Dict[str, Any]) -> Dict[str, Any]:
             experience_score=candidate_data.get("experience_score", 50)
         )
         
-        candidate = sourcing_state.add_candidate(
+        sourcing_state.add_candidate(
             candidate_id=candidate_data["id"],
             name=candidate_data["name"],
             source="local",
@@ -152,7 +148,7 @@ async def local_search_node(state: Dict[str, Any]) -> Dict[str, Any]:
         suggested_action="proceed" if high_match_count >= 5 else "expand_local"
     )
     
-    notification = sourcing_state.send_notification_to_recruiter(
+    sourcing_state.send_notification_to_recruiter(
         notification_type="approval_needed",
         title=f"🔍 Busca Local Concluída - {sourcing_state.job_title}",
         message=f"Encontrei {len(local_candidates)} candidatos no banco local.\n"
@@ -194,7 +190,7 @@ async def local_search_node(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def calibration_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def calibration_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 15: Calibration Node
     - Presents top 5-10 candidates to recruiter
@@ -225,7 +221,7 @@ async def calibration_node(state: Dict[str, Any]) -> Dict[str, Any]:
     )
     sourcing_state.calibration_sessions.append(session)
     
-    notification = sourcing_state.send_notification_to_recruiter(
+    sourcing_state.send_notification_to_recruiter(
         notification_type="approval_needed",
         title=f"👥 Calibração de Perfil - {sourcing_state.job_title}",
         message=f"Selecionei {len(calibration_candidates)} candidatos para você avaliar.\n\n"
@@ -285,7 +281,7 @@ async def calibration_node(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def process_calibration_feedback(state: Dict[str, Any]) -> Dict[str, Any]:
+async def process_calibration_feedback(state: dict[str, Any]) -> dict[str, Any]:
     """
     Process recruiter's calibration feedback.
     Updates candidate statuses and learns preferences.
@@ -332,7 +328,7 @@ async def process_calibration_feedback(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def volume_assessment_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def volume_assessment_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 16: Volume Assessment Node
     - Evaluates if candidate volume is satisfactory
@@ -372,7 +368,7 @@ async def volume_assessment_node(state: Dict[str, Any]) -> Dict[str, Any]:
     if sourcing_state.volume_assessment and sourcing_state.volume_assessment.recommendation:
         recommendation_message = sourcing_state.volume_assessment.recommendation
     
-    notification = sourcing_state.send_notification_to_recruiter(
+    sourcing_state.send_notification_to_recruiter(
         notification_type="approval_needed" if not is_satisfactory else "alert",
         title=f"📊 Avaliação de Volume - {sourcing_state.job_title}",
         message=recommendation_message,
@@ -409,7 +405,7 @@ async def volume_assessment_node(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def global_expansion_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def global_expansion_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 17: Global Expansion Node
     - If recruiter approves, searches Pearch
@@ -483,7 +479,7 @@ async def global_expansion_node(state: Dict[str, Any]) -> Dict[str, Any]:
             requested_at=datetime.utcnow()
         )
         
-        notification = sourcing_state.send_notification_to_recruiter(
+        sourcing_state.send_notification_to_recruiter(
             notification_type="approval_needed",
             title=f"🌍 Expandir Busca Global? - {sourcing_state.job_title}",
             message=f"Posso buscar no Pearch (800M+ perfis) e estimo encontrar "
@@ -514,12 +510,12 @@ async def global_expansion_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"🌍 Global expansion node processed")
+    logger.info("🌍 Global expansion node processed")
     
     return state
 
 
-async def contact_approval_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def contact_approval_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 18: Contact Approval Node
     - Recruiter reviews shortlist
@@ -539,7 +535,7 @@ async def contact_approval_node(state: Dict[str, Any]) -> Dict[str, Any]:
     for candidate in approved_candidates:
         sourcing_state.update_candidate_status(candidate.candidate_id, CandidateStatus.PENDING_CONTACT)
     
-    notification = sourcing_state.send_notification_to_recruiter(
+    sourcing_state.send_notification_to_recruiter(
         notification_type="approval_needed",
         title=f"📧 Autorizar Contato - {sourcing_state.job_title}",
         message=f"Tenho {len(approved_candidates)} candidatos prontos para contato.\n\n"
@@ -592,7 +588,7 @@ async def contact_approval_node(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def email_outreach_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def email_outreach_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 19: Email Outreach Node
     - Sends personalized email presenting job
@@ -645,7 +641,7 @@ async def email_outreach_node(state: Dict[str, Any]) -> Dict[str, Any]:
     campaign.completed_at = datetime.utcnow()
     sourcing_state.outreach_campaigns.append(campaign)
     
-    notification = sourcing_state.send_notification_to_recruiter(
+    sourcing_state.send_notification_to_recruiter(
         notification_type="alert",
         title=f"✉️ Emails Enviados - {sourcing_state.job_title}",
         message=f"Enviei emails para {len(contacted_candidates)} candidatos.\n\n"
@@ -685,7 +681,7 @@ async def email_outreach_node(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def async_screening_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def async_screening_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 20: Async Screening Node
     - Conducts WSI screening via chat/WhatsApp
@@ -758,12 +754,12 @@ async def async_screening_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"🎯 Screening node processed")
+    logger.info("🎯 Screening node processed")
     
     return state
 
 
-async def candidate_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def candidate_feedback_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 21: Candidate Feedback Node
     - Generates structured feedback after screening
@@ -832,12 +828,12 @@ async def candidate_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"📝 Candidate feedback processed")
+    logger.info("📝 Candidate feedback processed")
     
     return state
 
 
-async def recruiter_report_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def recruiter_report_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 22: Recruiter Report Node
     - Notifies recruiter via Teams/Chat
@@ -876,7 +872,7 @@ async def recruiter_report_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "evaluation": session.wsi_evaluation
             }
             
-            notification = sourcing_state.send_notification_to_recruiter(
+            sourcing_state.send_notification_to_recruiter(
                 notification_type="screening_completed",
                 title=f"🎯 Triagem Concluída - {candidate.name}",
                 message=_format_screening_report(candidate, session, sourcing_state.job_title),
@@ -902,12 +898,12 @@ async def recruiter_report_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"📋 Recruiter report sent")
+    logger.info("📋 Recruiter report sent")
     
     return state
 
 
-async def recruiter_decision_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def recruiter_decision_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 23: Recruiter Decision Node
     - Processes recruiter's decision
@@ -948,7 +944,7 @@ async def recruiter_decision_node(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def auto_scheduling_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def auto_scheduling_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 24: Auto-Scheduling Node
     - Schedules interview automatically or suggests slots
@@ -978,7 +974,7 @@ async def auto_scheduling_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     candidate.interview_link = interview_link
                     sourcing_state.update_candidate_status(candidate_id, CandidateStatus.INTERVIEW_SCHEDULED)
                     
-                    notification = sourcing_state.send_notification_to_recruiter(
+                    sourcing_state.send_notification_to_recruiter(
                         notification_type="alert",
                         title=f"📅 Entrevista Agendada - {candidate.name}",
                         message=f"Agendei a entrevista para {scheduled_time.strftime('%d/%m às %H:%M')}.\n"
@@ -988,7 +984,7 @@ async def auto_scheduling_node(state: Dict[str, Any]) -> Dict[str, Any]:
             else:
                 available_slots = await _get_available_slots()
                 
-                notification = sourcing_state.send_notification_to_recruiter(
+                sourcing_state.send_notification_to_recruiter(
                     notification_type="approval_needed",
                     title=f"📅 Agendar Entrevista - {candidate.name}",
                     message="Escolha um horário para a entrevista:",
@@ -1004,12 +1000,12 @@ async def auto_scheduling_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"📅 Scheduling processed")
+    logger.info("📅 Scheduling processed")
     
     return state
 
 
-async def rejection_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def rejection_feedback_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 25: Rejection Feedback Node
     - Sends structured negative feedback
@@ -1059,7 +1055,7 @@ async def rejection_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 sourcing_state.candidate_feedbacks.append(feedback)
                 sourcing_state.update_candidate_status(candidate_id, CandidateStatus.FEEDBACK_SENT)
             else:
-                notification = sourcing_state.send_notification_to_recruiter(
+                sourcing_state.send_notification_to_recruiter(
                     notification_type="approval_needed",
                     title=f"📝 Feedback para {candidate.name}",
                     message="Deseja sugerir o feedback ou posso usar o padrão?",
@@ -1071,12 +1067,12 @@ async def rejection_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"😔 Rejection feedback processed")
+    logger.info("😔 Rejection feedback processed")
     
     return state
 
 
-async def placement_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def placement_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 26: Placement Node
     - Registers hire and closes job
@@ -1106,7 +1102,7 @@ async def placement_node(state: Dict[str, Any]) -> Dict[str, Any]:
         
         pending_feedback = sourcing_state.get_pending_feedback_candidates()
         
-        notification = sourcing_state.send_notification_to_recruiter(
+        sourcing_state.send_notification_to_recruiter(
             notification_type="alert",
             title=f"🎉 Vaga Fechada - {sourcing_state.job_title}",
             message=f"Parabéns! {candidate.name if candidate else 'Candidato'} foi contratado!\n\n"
@@ -1123,12 +1119,12 @@ async def placement_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"🎉 Placement registered")
+    logger.info("🎉 Placement registered")
     
     return state
 
 
-async def mass_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def mass_feedback_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 27: Mass Feedback Node
     - Sends closing feedback to all remaining candidates
@@ -1177,7 +1173,7 @@ async def mass_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
         sourcing_state.mass_feedback_sent = True
         sourcing_state.mass_feedback_sent_at = datetime.utcnow()
         
-        notification = sourcing_state.send_notification_to_recruiter(
+        sourcing_state.send_notification_to_recruiter(
             notification_type="alert",
             title=f"✅ Feedback Enviado - {sourcing_state.job_title}",
             message=f"Enviei feedback de encerramento para {feedback_count} candidatos.\n"
@@ -1190,7 +1186,7 @@ async def mass_feedback_node(state: Dict[str, Any]) -> Dict[str, Any]:
     workflow_data = _save_sourcing_state(sourcing_state, workflow_data)
     state["workflow_data"] = workflow_data
     
-    logger.info(f"📨 Mass feedback sent")
+    logger.info("📨 Mass feedback sent")
     
     return state
 
@@ -1209,17 +1205,17 @@ def _generate_volume_recommendation(high_match: int, medium_match: int) -> str:
         return "Volume baixo. Recomendo fortemente expandir para busca global (Pearch)."
 
 
-async def _search_local_database(criteria: Dict[str, Any]) -> List[Dict[str, Any]]:
+async def _search_local_database(criteria: dict[str, Any]) -> list[dict[str, Any]]:
     """Search local database for candidates. Placeholder for actual implementation."""
     return []
 
 
 async def _learn_from_calibration(
     state: SourcingEngagementState,
-    approvals: List[str],
-    rejections: List[str],
-    notes: Dict[str, str]
-) -> Dict[str, Any]:
+    approvals: list[str],
+    rejections: list[str],
+    notes: dict[str, str]
+) -> dict[str, Any]:
     """Learn preferences from calibration feedback. Placeholder for ML implementation."""
     return {"learned": True, "approvals": len(approvals), "rejections": len(rejections)}
 
@@ -1229,7 +1225,7 @@ async def _estimate_pearch_credits(state: SourcingEngagementState) -> tuple[floa
     return (50.0, 25)
 
 
-async def _search_pearch(state: SourcingEngagementState) -> List[Dict[str, Any]]:
+async def _search_pearch(state: SourcingEngagementState) -> list[dict[str, Any]]:
     """Search Pearch for candidates. Placeholder."""
     return []
 
@@ -1336,14 +1332,14 @@ Atenciosamente,
 LIA - Assistente de Recrutamento"""
 
 
-async def _auto_schedule_interview(candidate: PipelineCandidate) -> tuple[Optional[datetime], Optional[str]]:
+async def _auto_schedule_interview(candidate: PipelineCandidate) -> tuple[datetime | None, str | None]:
     """Auto-schedule interview. Placeholder."""
     scheduled_time = datetime.utcnow() + timedelta(days=3)
-    interview_link = f"https://meet.google.com/xxx-xxxx-xxx"
+    interview_link = "https://meet.google.com/xxx-xxxx-xxx"
     return (scheduled_time, interview_link)
 
 
-async def _get_available_slots() -> List[Dict[str, Any]]:
+async def _get_available_slots() -> list[dict[str, Any]]:
     """Get available interview slots. Placeholder."""
     now = datetime.utcnow()
     return [

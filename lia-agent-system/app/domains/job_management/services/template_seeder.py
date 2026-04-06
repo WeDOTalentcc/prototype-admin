@@ -3,26 +3,26 @@ Template Seeder Service for creating default system templates.
 Creates templates for all channels: email, whatsapp, bell, chat_lia, briefing, parecer, report.
 """
 import logging
-from typing import List, Dict, Any
+import uuid
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
 
-from app.models.email_template import EmailTemplate
 from app.core.template_channels import (
-    CHANNEL_EMAIL,
-    CHANNEL_WHATSAPP,
     CHANNEL_BELL,
-    CHANNEL_TEAMS,
-    CHANNEL_CHAT_LIA,
     CHANNEL_BRIEFING,
+    CHANNEL_EMAIL,
     CHANNEL_PARECER,
     CHANNEL_REPORT,
+    CHANNEL_TEAMS,
+    CHANNEL_WHATSAPP,
 )
+from app.models.email_template import EmailTemplate
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TEMPLATES: List[Dict[str, Any]] = [
+DEFAULT_TEMPLATES: list[dict[str, Any]] = [
     {
         "situation": "goal_at_risk",
         "name": "Meta em Risco",
@@ -1630,7 +1630,7 @@ Sucesso na sua jornada! 🍀
 ]
 
 
-def determine_template_visibility(template_data: Dict[str, Any]) -> str:
+def determine_template_visibility(template_data: dict[str, Any]) -> str:
     """
     Determine template visibility based on channel, category, and name.
     
@@ -1689,7 +1689,7 @@ def determine_template_visibility(template_data: Dict[str, Any]) -> str:
     return "recruiter"
 
 
-async def seed_default_templates(db: AsyncSession) -> Dict[str, Any]:
+async def seed_default_templates(db: AsyncSession) -> dict[str, Any]:
     """
     Seed default system templates.
     Creates templates with company_id=NULL and is_system_template=True.
@@ -1753,7 +1753,7 @@ async def seed_default_templates(db: AsyncSession) -> Dict[str, Any]:
     }
 
 
-async def clone_templates_for_client(db: AsyncSession, client_id: str, auto_commit: bool = True) -> Dict[str, Any]:
+async def clone_templates_for_client(db: AsyncSession, client_id: str, auto_commit: bool = True) -> dict[str, Any]:
     """
     Clone all system templates for a new client.
     

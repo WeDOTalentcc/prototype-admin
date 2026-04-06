@@ -5,12 +5,12 @@ All data is loaded from app/data/fixtures/*.json via loader.py.
 Public API is unchanged from the previous Python-dict implementation.
 """
 from app.data.loader import (
-    get_tech_templates,
-    get_vendas_templates,
-    get_rh_templates,
+    get_customer_success_templates,
     get_financas_templates,
     get_marketing_templates,
-    get_customer_success_templates,
+    get_rh_templates,
+    get_tech_templates,
+    get_vendas_templates,
 )
 
 

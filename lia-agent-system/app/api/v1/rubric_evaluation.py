@@ -3,34 +3,33 @@ Rubric Evaluation API - Structured rubrics for CV vs Job evaluation.
 
 Based on Schmidt & Hunter (1998) meta-analysis and BARS methodology.
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
-from typing import List, Optional
+from datetime import datetime
+from enum import Enum as PyEnum
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from datetime import datetime
 
 from app.core.database import get_db
-from app.models.rubric import JobRequirement, RubricEvaluation
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
+from app.models.rubric import JobRequirement, RubricEvaluation
 from app.schemas.rubric import (
-    JobRequirementCreate,
-    JobRequirementResponse,
-    EvaluateCandidateRequest,
     BatchEvaluateRequest,
     BatchEvaluateResponse,
+    EvaluateCandidateRequest,
+    JobRequirementCreate,
+    JobRequirementResponse,
+    RequirementPriorityEnum,
     RubricEvaluationResponse,
     RubricEvaluationResult,
-    RequirementPriorityEnum,
-    LegacyScoreWrapper,
 )
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.services.consent_checker_service import ConsentCheckerService
+from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger
-from app.shared.compliance.audit_service import audit_service
-from enum import Enum as PyEnum
 
 logger = get_masked_logger(__name__)
 fairness_guard = FairnessGuard()
@@ -58,7 +57,7 @@ router = APIRouter()
 async def evaluate_candidate(
     request: EvaluateCandidateRequest,
     db: AsyncSession = Depends(get_db),
-    x_company_id: Optional[str] = Header(None),
+    x_company_id: str | None = Header(None),
 ):
     """
     Evaluate a single candidate against job requirements using structured rubrics.
@@ -207,7 +206,7 @@ async def evaluate_candidate(
                 "Rubric evaluation completed via BARS methodology",
                 f"Overall score: {evaluation_result.score}/5",
                 f"Dimensions evaluated: {_n_dimensions}",
-                f"Model: claude-sonnet-4-6",
+                "Model: claude-sonnet-4-6",
                 f"Fairness guard: {'blocked' if (guard_result and guard_result.is_blocked) else 'passed'}",
             ] + dimension_summary[:3],
             criteria_used=[r.requirement for r in (requirements or [])[:10]],
@@ -360,7 +359,7 @@ async def batch_evaluate_candidates(
     )
 
 
-@router.get("/{job_id}/requirements", response_model=List[JobRequirementResponse])
+@router.get("/{job_id}/requirements", response_model=list[JobRequirementResponse])
 async def get_job_requirements(
     job_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -438,10 +437,10 @@ async def delete_job_requirement(
     return {"message": "Requirement deleted successfully"}
 
 
-@router.get("/{job_id}/evaluations", response_model=List[RubricEvaluationResponse])
+@router.get("/{job_id}/evaluations", response_model=list[RubricEvaluationResponse])
 async def get_job_evaluations(
     job_id: UUID,
-    min_score: Optional[float] = None,
+    min_score: float | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """

@@ -16,6 +16,7 @@ Tasks registradas:
   - digest.send_weekly           — envia weekly digest a todos os recrutadores ativos
 """
 import asyncio
+from datetime import UTC
 
 from app.core.celery_app import celery_app
 from app.shared.pii_masking import get_masked_logger
@@ -40,8 +41,8 @@ def run_drift_batch_task(self, notify_user_id: str | None = None) -> dict:
     Raises:
         Retry automático em caso de erro (max_retries=3).
     """
-    from app.jobs.drift_job import run_drift_check_all_companies
     from app.core.database import AsyncSessionLocal
+    from app.jobs.drift_job import run_drift_check_all_companies
 
     async def _run() -> dict:
         async with AsyncSessionLocal() as db:
@@ -198,8 +199,9 @@ def wizard_process_async_task(self, message: str, context: dict, session_id: str
         result = asyncio.run(_run())
         # Notificar via WS se sessão ainda conectada
         try:
-            from app.api.v1.ws_manager import ws_manager
             import asyncio as _asyncio
+
+            from app.api.v1.ws_manager import ws_manager
             loop = _asyncio.new_event_loop()
             loop.run_until_complete(ws_manager.send_to_session(session_id, {
                 "type": "message",
@@ -420,6 +422,7 @@ def apply_audit_lifecycle_policy(self) -> dict:
     Idempotente.
     """
     import asyncio
+
     from lia_audit.audit_storage import get_audit_storage
 
     try:
@@ -523,9 +526,9 @@ def send_daily_briefing_task(self) -> dict:
         Dict com { sent, skipped, errors }
     """
     async def _run() -> dict:
+        from app.auth.models import User
         from app.core.database import AsyncSessionLocal
         from app.services.briefing_service import BriefingService
-        from app.auth.models import User
 
         briefing_service = BriefingService()
         sent = 0
@@ -673,17 +676,18 @@ def feedback_generate_and_send_task(
     dispatch via feedback.auto_send after FairnessGuard passes.
     """
     async def _run() -> dict:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
-        from app.models.candidate import Candidate
+
+        from app.core.database import AsyncSessionLocal
         from app.domains.cv_screening.services.personalized_feedback_service import (
-            PersonalizedFeedbackRequest,
             CandidateContext,
-            JobContext,
-            WSIEvaluationContext,
             FeedbackChannel,
+            JobContext,
+            PersonalizedFeedbackRequest,
+            WSIEvaluationContext,
             personalized_feedback_service,
         )
+        from app.models.candidate import Candidate
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -756,14 +760,15 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
         Dict com { feedback_id, status, channel, success }
     """
     async def _run() -> dict:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
+        from app.domains.communication.services.email_service import MailgunEmailService
         from app.domains.cv_screening.services.personalized_feedback_service import (
             PersonalizedFeedbackRecord,
             PersonalizedFeedbackStatus,
             personalized_feedback_service,
         )
-        from app.domains.communication.services.email_service import MailgunEmailService
 
         email_service = MailgunEmailService()
 
@@ -834,8 +839,9 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
                     "message_id": sg_message_id,
                 }
                 if sg_message_id:
-                    from app.domains.communication.models.message_queue import MessageQueue as MQModel
                     from datetime import datetime as dt_util
+
+                    from app.domains.communication.models.message_queue import MessageQueue as MQModel
                     mq_entry = MQModel(
                         company_id=company_id,
                         candidate_id=record.candidate_id or "",
@@ -932,8 +938,9 @@ def feedback_process_pending_sends_task(self) -> dict:
         Dict com { dispatched, skipped, errors }
     """
     async def _run() -> dict:
+        from sqlalchemy import or_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, or_
         from app.domains.cv_screening.services.personalized_feedback_service import (
             PersonalizedFeedbackRecord,
             PersonalizedFeedbackStatus,
@@ -942,7 +949,8 @@ def feedback_process_pending_sends_task(self) -> dict:
         dispatched = 0
 
         async with AsyncSessionLocal() as db:
-            from sqlalchemy import and_, text as sa_text
+            from sqlalchemy import and_
+            from sqlalchemy import text as sa_text
             result = await db.execute(
                 select(PersonalizedFeedbackRecord.id, PersonalizedFeedbackRecord.company_id).where(
                     or_(
@@ -991,10 +999,12 @@ def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> d
         Dict com { evaluated, skipped, errors, domain }
     """
     async def _run() -> dict:
-        from app.core.database import AsyncSessionLocal
-        from app.services.ragas_evaluation_service import ragas_evaluation_service, RAGASEvaluationInput
+        from datetime import datetime, timedelta
+
         from sqlalchemy import text
-        from datetime import timedelta, datetime
+
+        from app.core.database import AsyncSessionLocal
+        from app.services.ragas_evaluation_service import RAGASEvaluationInput, ragas_evaluation_service
 
         since = datetime.utcnow() - timedelta(days=days_back)
         evaluated = 0
@@ -1065,6 +1075,7 @@ def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> d
 def rebuild_domain_index_task(domain: str, company_id: str):
     """Celery task to rebuild RAG domain embeddings."""
     import asyncio
+
     from app.services.domain_embedding_service import domain_embedding_service
 
     async def _run():
@@ -1098,6 +1109,7 @@ def recompute_routing_adjustments(company_id: str) -> dict:
     """
     async def _run():
         from lia_config.database import AsyncSessionLocal
+
         from app.services.routing_learning_service import routing_learning_service
 
         async with AsyncSessionLocal() as db:
@@ -1130,6 +1142,7 @@ def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict
 
     async def _run() -> dict:
         from lia_config.database import AsyncSessionLocal
+
         from app.services.ml_feedback_service import MLFeedbackService
 
         service = MLFeedbackService()
@@ -1162,6 +1175,7 @@ def check_agent_registry_reload():
     reloads desnecessários (fail-open — nunca bloqueia o worker).
     """
     import asyncio
+
     from app.core.agent_registry_watcher import agent_registry_watcher
 
     try:
@@ -1222,6 +1236,7 @@ def compress_old_episodes_task(self, company_id: str, domain: str = None, age_da
         Dict com { company_id, domain, compressed, purged }
     """
     import asyncio
+
     from lia_agents_core.long_term_memory import LongTermMemoryService
 
     async def _run() -> dict:
@@ -1273,8 +1288,9 @@ def recompute_active_ml_jobs_task():
     import asyncio
 
     async def _get_active_jobs():
-        from lia_config.database import AsyncSessionLocal
         from datetime import datetime, timedelta
+
+        from lia_config.database import AsyncSessionLocal
         from sqlalchemy import text
 
         cutoff = datetime.utcnow() - timedelta(hours=48)
@@ -1319,6 +1335,7 @@ def send_weekly_digest_task(self) -> dict:
 
     async def _run() -> dict:
         from lia_config.database import AsyncSessionLocal
+
         from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
         svc = WeeklyDigestService()
@@ -1364,8 +1381,9 @@ def run_retention_cleanup(self) -> dict:
 
 
 async def _run_retention_cleanup_async() -> dict:
-    from datetime import datetime, timezone, timedelta
+    from datetime import datetime, timedelta
     from uuid import uuid4
+
     from sqlalchemy import select, update
 
     try:
@@ -1406,7 +1424,7 @@ async def _run_retention_cleanup_async() -> dict:
 
         for policy in policies:
             try:
-                cutoff_date = datetime.now(timezone.utc) - timedelta(
+                cutoff_date = datetime.now(UTC) - timedelta(
                     days=policy.retention_months * 30
                 )
                 result = await session.execute(
@@ -1427,7 +1445,7 @@ async def _run_retention_cleanup_async() -> dict:
                         portfolio_url=None,
                         photo_url=None,
                         address=None,
-                        anonymized_at=datetime.now(timezone.utc),
+                        anonymized_at=datetime.now(UTC),
                         anonymized_by="data.retention.run",
                     )
                 )
@@ -1438,7 +1456,7 @@ async def _run_retention_cleanup_async() -> dict:
                     update(CompanyRetentionPolicy)
                     .where(CompanyRetentionPolicy.company_id == policy.company_id)
                     .values(
-                        last_cleanup_at=datetime.now(timezone.utc),
+                        last_cleanup_at=datetime.now(UTC),
                         last_cleanup_count=count,
                     )
                 )
@@ -1456,7 +1474,7 @@ async def _run_retention_cleanup_async() -> dict:
         "companies_processed": companies_processed,
         "total_anonymized": total_anonymized,
         "errors": errors,
-        "ran_at": datetime.now(timezone.utc).isoformat(),
+        "ran_at": datetime.now(UTC).isoformat(),
     }
     logger.info("Retention cleanup complete: %s", result_dict)
     return result_dict

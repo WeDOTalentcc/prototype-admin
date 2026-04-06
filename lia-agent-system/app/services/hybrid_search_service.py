@@ -19,7 +19,7 @@ Tabelas suportadas:
 """
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-def _normalize_scores(results: List[Dict[str, Any]], score_key: str) -> List[Dict[str, Any]]:
+def _normalize_scores(results: list[dict[str, Any]], score_key: str) -> list[dict[str, Any]]:
     """Normaliza scores para o intervalo [0, 1]."""
     if not results:
         return results
@@ -42,17 +42,17 @@ def _normalize_scores(results: List[Dict[str, Any]], score_key: str) -> List[Dic
 
 
 def _merge_results(
-    text_results: List[Dict[str, Any]],
-    vector_results: List[Dict[str, Any]],
+    text_results: list[dict[str, Any]],
+    vector_results: list[dict[str, Any]],
     alpha: float,
     id_key: str = "id",
     name_key: str = "title",
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Merge e normaliza resultados text + vector.
     Aplica score híbrido: alpha * vector_score + (1-alpha) * text_score.
     """
-    merged: Dict[str, Dict[str, Any]] = {}
+    merged: dict[str, dict[str, Any]] = {}
 
     # Normalizar scores individualmente
     text_results = _normalize_scores([dict(r) for r in text_results], "text_score")
@@ -114,8 +114,8 @@ class HybridSearchService:
         company_id: str,
         db: AsyncSession,
         limit: int = 10,
-        embedding: Optional[List[float]] = None,
-    ) -> List[dict]:
+        embedding: list[float] | None = None,
+    ) -> list[dict]:
         """
         Busca vagas combinando tsvector (título+descrição) e pgvector (embedding).
         Se embedding=None, usa apenas tsvector.
@@ -137,7 +137,7 @@ class HybridSearchService:
         company_id: str,
         db: AsyncSession,
         limit: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         try:
             sql = text("""
                 SELECT id, title,
@@ -164,8 +164,8 @@ class HybridSearchService:
         company_id: str,
         db: AsyncSession,
         limit: int,
-        embedding: List[float],
-    ) -> List[Dict[str, Any]]:
+        embedding: list[float],
+    ) -> list[dict[str, Any]]:
         try:
             embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
             sql = text("""
@@ -198,8 +198,8 @@ class HybridSearchService:
         company_id: str,
         db: AsyncSession,
         limit: int = 10,
-        embedding: Optional[List[float]] = None,
-    ) -> List[dict]:
+        embedding: list[float] | None = None,
+    ) -> list[dict]:
         """
         Busca candidatos combinando tsvector (nome+resumo) e pgvector.
         """
@@ -220,7 +220,7 @@ class HybridSearchService:
         company_id: str,
         db: AsyncSession,
         limit: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         try:
             sql = text("""
                 SELECT id, name,
@@ -247,8 +247,8 @@ class HybridSearchService:
         company_id: str,
         db: AsyncSession,
         limit: int,
-        embedding: List[float],
-    ) -> List[Dict[str, Any]]:
+        embedding: list[float],
+    ) -> list[dict[str, Any]]:
         try:
             embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
             sql = text("""
@@ -280,13 +280,13 @@ class HybridSearchService:
         query: str,
         company_id: str,
         db: AsyncSession,
-        embedding: Optional[List[float]] = None,
+        embedding: list[float] | None = None,
     ) -> dict:
         """
         Executa e compara os 3 modos: text_only, vector_only, hybrid.
         Retorna métricas de latência e contagem de resultados.
         """
-        results: Dict[str, Any] = {}
+        results: dict[str, Any] = {}
 
         # --- text_only ---
         t0 = time.perf_counter()
@@ -301,7 +301,7 @@ class HybridSearchService:
 
         # --- vector_only ---
         vector_latency = 0.0
-        vector_res: List[Dict[str, Any]] = []
+        vector_res: list[dict[str, Any]] = []
         if embedding is not None:
             t0 = time.perf_counter()
             vector_res = await self._vector_search_jobs(company_id, db, 10, embedding)

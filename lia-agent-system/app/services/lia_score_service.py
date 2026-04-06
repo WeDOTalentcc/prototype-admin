@@ -15,12 +15,12 @@ Also implements the Unified LIA Ranking formula:
 """
 import logging
 import re
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
-from app.config.industry_weights import get_weights_for_industry, ScoringWeights
+from app.config.industry_weights import ScoringWeights, get_weights_for_industry
 
 IndustryWeights = ScoringWeights
 
@@ -100,13 +100,13 @@ RECENCY_BOOST_DEFAULT = 20  # > 180 dias: 20
 class RankingScoreBreakdown:
     """Detailed breakdown of the unified ranking score calculation."""
     rubricas_score: float  # 0-100 - CV rubric evaluation score
-    wsi_score: Optional[float]  # 0-100 - WSI conversational score (None if not available)
+    wsi_score: float | None  # 0-100 - WSI conversational score (None if not available)
     prerequisites_score: float  # 0-100 - Prerequisites/filters match score
     recency_boost: float  # 0-100 - Recency boost based on last activity
     calibration_adjustment: float  # -5 to +5 - Adjustment from CalibrationService
     completeness_factor: float  # 0.0 to 1.0 - Data completeness multiplier
     
-    weights_used: Dict[str, float] = field(default_factory=dict)
+    weights_used: dict[str, float] = field(default_factory=dict)
     data_availability: str = "cv_only"
     
     weighted_rubricas: float = 0.0
@@ -130,7 +130,7 @@ class RankingScoreBreakdown:
         final = raw_score * self.completeness_factor
         return max(0.0, min(100.0, final))
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "rubricas_score": round(self.rubricas_score, 2),
             "wsi_score": round(self.wsi_score, 2) if self.wsi_score is not None else None,
@@ -156,13 +156,13 @@ class RankingScoreResult:
     """Complete ranking score result with breakdown and metadata."""
     ranking_score: float  # 0-100 final score
     breakdown: RankingScoreBreakdown
-    rank_position: Optional[int]  # Position in ranked list (if applicable)
+    rank_position: int | None  # Position in ranked list (if applicable)
     recommendation: str  # Altamente Recomendado, Recomendado, etc.
-    strengths: List[str]
-    concerns: List[str]
+    strengths: list[str]
+    concerns: list[str]
     reasoning: str
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "ranking_score": round(self.ranking_score, 2),
             "breakdown": self.breakdown.to_dict(),
@@ -220,7 +220,7 @@ class LIAScoreBreakdown:
     location_match: float  # 0-100
     title_match: float  # 0-100
     
-    def total_score(self, weights: Optional[IndustryWeights] = None) -> float:
+    def total_score(self, weights: IndustryWeights | None = None) -> float:
         """Calculate weighted total score."""
         if weights is None:
             weights = IndustryWeights()
@@ -233,7 +233,7 @@ class LIAScoreBreakdown:
             self.title_match * weights.title_match
         )
     
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "skills_match": round(self.skills_match, 1),
             "experience_match": round(self.experience_match, 1),
@@ -249,12 +249,12 @@ class LIAScoreResult:
     score: float  # 0-100
     breakdown: LIAScoreBreakdown
     reasoning: str
-    matched_skills: List[str]
-    missing_skills: List[str]
-    strengths: List[str]
-    concerns: List[str]
+    matched_skills: list[str]
+    missing_skills: list[str]
+    strengths: list[str]
+    concerns: list[str]
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "score": round(self.score, 1),
             "breakdown": self.breakdown.to_dict(),
@@ -272,7 +272,7 @@ class LIAScoreService:
     def __init__(self):
         self.skill_synonyms = self._build_skill_synonyms()
     
-    def _build_skill_synonyms(self) -> Dict[str, List[str]]:
+    def _build_skill_synonyms(self) -> dict[str, list[str]]:
         """Build a dictionary of skill synonyms for fuzzy matching."""
         return {
             "javascript": ["js", "ecmascript", "es6", "es2015"],
@@ -307,7 +307,7 @@ class LIAScoreService:
         
         return skill_lower
     
-    def _extract_skills_from_query(self, query: str) -> List[str]:
+    def _extract_skills_from_query(self, query: str) -> list[str]:
         """Extract skill keywords from a search query."""
         common_skills = [
             "python", "java", "javascript", "typescript", "react", "angular", "vue",
@@ -330,7 +330,7 @@ class LIAScoreService:
         
         return list(set(found_skills))
     
-    def _extract_experience_years_from_query(self, query: str) -> Optional[int]:
+    def _extract_experience_years_from_query(self, query: str) -> int | None:
         """Extract minimum experience years from query."""
         patterns = [
             r'(\d+)\s*\+?\s*(?:anos?|years?)',
@@ -345,7 +345,7 @@ class LIAScoreService:
         
         return None
     
-    def _extract_seniority_from_query(self, query: str) -> Optional[SeniorityLevel]:
+    def _extract_seniority_from_query(self, query: str) -> SeniorityLevel | None:
         """Extract seniority level from query."""
         query_lower = query.lower()
         
@@ -355,7 +355,7 @@ class LIAScoreService:
         
         return None
     
-    def _extract_location_from_query(self, query: str) -> Optional[str]:
+    def _extract_location_from_query(self, query: str) -> str | None:
         """Extract location preference from query."""
         locations = [
             "são paulo", "sp", "rio de janeiro", "rj", "belo horizonte", "bh",
@@ -373,9 +373,9 @@ class LIAScoreService:
     
     def _calculate_skills_match(
         self,
-        candidate_skills: List[str],
-        required_skills: List[str]
-    ) -> Tuple[float, List[str], List[str]]:
+        candidate_skills: list[str],
+        required_skills: list[str]
+    ) -> tuple[float, list[str], list[str]]:
         """
         Calculate skills match percentage.
         
@@ -408,8 +408,8 @@ class LIAScoreService:
     
     def _calculate_experience_match(
         self,
-        candidate_years: Optional[float],
-        required_years: Optional[int]
+        candidate_years: float | None,
+        required_years: int | None
     ) -> float:
         """Calculate experience match score."""
         if required_years is None:
@@ -431,9 +431,9 @@ class LIAScoreService:
     
     def _calculate_seniority_match(
         self,
-        candidate_seniority: Optional[str],
-        candidate_years: Optional[float],
-        required_seniority: Optional[SeniorityLevel]
+        candidate_seniority: str | None,
+        candidate_years: float | None,
+        required_seniority: SeniorityLevel | None
     ) -> float:
         """Calculate seniority level match score."""
         if required_seniority is None:
@@ -478,9 +478,9 @@ class LIAScoreService:
     
     def _calculate_location_match(
         self,
-        candidate_location: Optional[str],
-        candidate_remote: Optional[bool],
-        required_location: Optional[str]
+        candidate_location: str | None,
+        candidate_remote: bool | None,
+        required_location: str | None
     ) -> float:
         """Calculate location match score."""
         if required_location is None:
@@ -519,7 +519,7 @@ class LIAScoreService:
     
     def _calculate_title_match(
         self,
-        candidate_title: Optional[str],
+        candidate_title: str | None,
         query: str
     ) -> float:
         """Calculate title match score based on query terms."""
@@ -558,8 +558,8 @@ class LIAScoreService:
         self,
         score: float,
         breakdown: LIAScoreBreakdown,
-        matched_skills: List[str],
-        missing_skills: List[str]
+        matched_skills: list[str],
+        missing_skills: list[str]
     ) -> str:
         """Generate human-readable reasoning for the score."""
         parts = []
@@ -586,10 +586,10 @@ class LIAScoreService:
     def _identify_strengths_and_concerns(
         self,
         breakdown: LIAScoreBreakdown,
-        matched_skills: List[str],
-        missing_skills: List[str],
-        candidate: Dict[str, Any]
-    ) -> Tuple[List[str], List[str]]:
+        matched_skills: list[str],
+        missing_skills: list[str],
+        candidate: dict[str, Any]
+    ) -> tuple[list[str], list[str]]:
         """Identify candidate strengths and concerns."""
         strengths = []
         concerns = []
@@ -628,9 +628,9 @@ class LIAScoreService:
     
     def calculate_score(
         self,
-        candidate: Dict[str, Any],
-        criteria: Dict[str, Any],
-        industry: Optional[str] = None
+        candidate: dict[str, Any],
+        criteria: dict[str, Any],
+        industry: str | None = None
     ) -> LIAScoreResult:
         """
         Calculate LIA score for a candidate based on search criteria.
@@ -722,11 +722,11 @@ class LIAScoreService:
     
     def calculate_scores_batch(
         self,
-        candidates: List[Dict[str, Any]],
-        criteria: Dict[str, Any],
+        candidates: list[dict[str, Any]],
+        criteria: dict[str, Any],
         sort_by_score: bool = True,
-        industry: Optional[str] = None
-    ) -> List[Tuple[Dict[str, Any], LIAScoreResult]]:
+        industry: str | None = None
+    ) -> list[tuple[dict[str, Any], LIAScoreResult]]:
         """
         Calculate LIA scores for multiple candidates.
         
@@ -770,7 +770,7 @@ class LIAScoreService:
         
         return results
     
-    def _calculate_recency_boost(self, last_activity_date: Optional[datetime]) -> float:
+    def _calculate_recency_boost(self, last_activity_date: datetime | None) -> float:
         """
         Calculate recency boost based on candidate's last activity.
         
@@ -831,7 +831,7 @@ class LIAScoreService:
     
     def _calculate_completeness_factor(
         self,
-        candidate: Dict[str, Any],
+        candidate: dict[str, Any],
         has_rubricas: bool,
         has_wsi: bool,
         has_prereq: bool
@@ -884,9 +884,9 @@ class LIAScoreService:
     
     def _get_calibration_adjustment(
         self,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        calibration_data: Optional[Dict[str, Any]] = None
+        candidate_id: str | None = None,
+        job_id: str | None = None,
+        calibration_data: dict[str, Any] | None = None
     ) -> float:
         """
         Get calibration adjustment from CalibrationService.
@@ -914,9 +914,9 @@ class LIAScoreService:
 
     async def _get_calibration_adjustment_async(
         self,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        company_id: Optional[str] = None,
+        candidate_id: str | None = None,
+        job_id: str | None = None,
+        company_id: str | None = None,
         db=None,
     ) -> float:
         """
@@ -952,8 +952,8 @@ class LIAScoreService:
     
     def _calculate_prerequisites_score(
         self,
-        candidate: Dict[str, Any],
-        job_requirements: Optional[Dict[str, Any]] = None
+        candidate: dict[str, Any],
+        job_requirements: dict[str, Any] | None = None
     ) -> float:
         """
         Calculate prerequisites match score.
@@ -1117,8 +1117,8 @@ class LIAScoreService:
     def _identify_ranking_strengths_concerns(
         self,
         breakdown: RankingScoreBreakdown,
-        candidate: Dict[str, Any]
-    ) -> Tuple[List[str], List[str]]:
+        candidate: dict[str, Any]
+    ) -> tuple[list[str], list[str]]:
         """Identify strengths and concerns from ranking breakdown."""
         strengths = []
         concerns = []
@@ -1154,12 +1154,12 @@ class LIAScoreService:
     
     def calculate_ranking_score(
         self,
-        candidate: Dict[str, Any],
-        rubricas_score: Optional[float] = None,
-        wsi_score: Optional[float] = None,
-        job_requirements: Optional[Dict[str, Any]] = None,
-        calibration_data: Optional[Dict[str, Any]] = None,
-        last_activity_date: Optional[datetime] = None,
+        candidate: dict[str, Any],
+        rubricas_score: float | None = None,
+        wsi_score: float | None = None,
+        job_requirements: dict[str, Any] | None = None,
+        calibration_data: dict[str, Any] | None = None,
+        last_activity_date: datetime | None = None,
     ) -> RankingScoreResult:
         """
         Calculate unified LIA ranking score for a candidate.
@@ -1264,13 +1264,13 @@ class LIAScoreService:
     
     def rank_candidates(
         self,
-        candidates: List[Dict[str, Any]],
-        rubricas_scores: Optional[Dict[str, float]] = None,
-        wsi_scores: Optional[Dict[str, float]] = None,
-        job_requirements: Optional[Dict[str, Any]] = None,
-        calibration_data: Optional[Dict[str, Any]] = None,
-        limit: Optional[int] = None,
-    ) -> List[Tuple[Dict[str, Any], RankingScoreResult]]:
+        candidates: list[dict[str, Any]],
+        rubricas_scores: dict[str, float] | None = None,
+        wsi_scores: dict[str, float] | None = None,
+        job_requirements: dict[str, Any] | None = None,
+        calibration_data: dict[str, Any] | None = None,
+        limit: int | None = None,
+    ) -> list[tuple[dict[str, Any], RankingScoreResult]]:
         """
         Rank a list of candidates by their unified ranking score.
         
@@ -1291,7 +1291,7 @@ class LIAScoreService:
         rubricas_scores = rubricas_scores or {}
         wsi_scores = wsi_scores or {}
         
-        results: List[Tuple[Dict[str, Any], RankingScoreResult]] = []
+        results: list[tuple[dict[str, Any], RankingScoreResult]] = []
         
         for candidate in candidates:
             candidate_id = str(candidate.get("id", ""))

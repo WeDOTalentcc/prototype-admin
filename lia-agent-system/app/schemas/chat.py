@@ -1,15 +1,16 @@
 """
 Pydantic schemas for chat API.
 """
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class MessageCreate(BaseModel):
     """Request to create a new message."""
     content: str = Field(..., min_length=1, max_length=10000)
-    conversation_id: Optional[str] = None  # If None, creates new conversation
+    conversation_id: str | None = None  # If None, creates new conversation
 
 
 class MessageResponse(BaseModel):
@@ -18,7 +19,7 @@ class MessageResponse(BaseModel):
     conversation_id: str
     role: str
     content: str
-    message_metadata: Dict[str, Any] = {}
+    message_metadata: dict[str, Any] = {}
     created_at: datetime
     
     class Config:
@@ -30,11 +31,11 @@ class ConversationResponse(BaseModel):
     id: str
     user_id: str
     user_role: str
-    title: Optional[str]
-    intent: Optional[str]
-    workflow_type: Optional[str]
+    title: str | None
+    intent: str | None
+    workflow_type: str | None
     workflow_step: int
-    workflow_data: Dict[str, Any] = {}
+    workflow_data: dict[str, Any] = {}
     status: str
     created_at: datetime
     updated_at: datetime
@@ -45,7 +46,7 @@ class ConversationResponse(BaseModel):
 
 class ConversationListResponse(BaseModel):
     """List of conversations."""
-    conversations: List[ConversationResponse]
+    conversations: list[ConversationResponse]
     total: int
     page: int
     page_size: int

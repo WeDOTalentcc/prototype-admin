@@ -7,7 +7,7 @@ on historical behavior (preferred platforms, time slots, actions, etc.).
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, JSON, String, Text
+from sqlalchemy import JSON, Column, DateTime, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base

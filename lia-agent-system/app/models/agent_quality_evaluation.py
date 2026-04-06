@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
-from sqlalchemy import String, Float, DateTime, Index
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, Float, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
@@ -27,7 +27,7 @@ class AgentQualityEvaluation(Base):
     company_id: Mapped[str] = mapped_column(String(36), nullable=False)
     session_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     overall_score: Mapped[float] = mapped_column(Float, nullable=False)
-    scores: Mapped[Dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    scores: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     evaluated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow, nullable=False
     )

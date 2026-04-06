@@ -2,11 +2,12 @@
 Merge.dev ATS Service
 Unified API for 40+ ATS platforms via Merge.dev
 """
-import os
 import logging
-import httpx
-from typing import Dict, Any, List, Optional
+import os
 from datetime import datetime
+from typing import Any
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class MergeATSService:
     def __init__(self):
         self.base_url = os.getenv("MERGE_API_BASE_URL", "https://api.merge.dev/api/ats/v1")
         self.api_key = os.getenv("MERGE_API_KEY", "")
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
     
     async def get_client(self) -> httpx.AsyncClient:
         if self._client is None:
@@ -33,7 +34,7 @@ class MergeATSService:
             await self._client.aclose()
             self._client = None
     
-    def _headers(self, account_token: str) -> Dict[str, str]:
+    def _headers(self, account_token: str) -> dict[str, str]:
         """Get headers for Merge API requests."""
         return {
             "Authorization": f"Bearer {self.api_key}",
@@ -44,9 +45,9 @@ class MergeATSService:
     async def list_candidates(
         self,
         account_token: str,
-        cursor: Optional[str] = None,
+        cursor: str | None = None,
         page_size: int = 100
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List all candidates from the linked ATS."""
         client = await self.get_client()
         params = {"page_size": page_size}
@@ -61,7 +62,7 @@ class MergeATSService:
         response.raise_for_status()
         return response.json()
     
-    async def get_candidate(self, account_token: str, candidate_id: str) -> Dict[str, Any]:
+    async def get_candidate(self, account_token: str, candidate_id: str) -> dict[str, Any]:
         """Get a specific candidate by ID."""
         client = await self.get_client()
         response = await client.get(
@@ -76,12 +77,12 @@ class MergeATSService:
         account_token: str,
         first_name: str,
         last_name: str,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        company: Optional[str] = None,
-        title: Optional[str] = None,
+        email: str | None = None,
+        phone: str | None = None,
+        company: str | None = None,
+        title: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new candidate in the linked ATS."""
         client = await self.get_client()
         
@@ -113,7 +114,7 @@ class MergeATSService:
         account_token: str,
         candidate_id: str,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update an existing candidate."""
         client = await self.get_client()
         data = {"model": kwargs}
@@ -129,10 +130,10 @@ class MergeATSService:
     async def list_applications(
         self,
         account_token: str,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        cursor: Optional[str] = None
-    ) -> Dict[str, Any]:
+        candidate_id: str | None = None,
+        job_id: str | None = None,
+        cursor: str | None = None
+    ) -> dict[str, Any]:
         """List applications, optionally filtered by candidate or job."""
         client = await self.get_client()
         params = {}
@@ -151,7 +152,7 @@ class MergeATSService:
         response.raise_for_status()
         return response.json()
     
-    async def get_application(self, account_token: str, application_id: str) -> Dict[str, Any]:
+    async def get_application(self, account_token: str, application_id: str) -> dict[str, Any]:
         """Get a specific application by ID."""
         client = await self.get_client()
         response = await client.get(
@@ -167,7 +168,7 @@ class MergeATSService:
         candidate_id: str,
         job_id: str,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new application linking candidate to job."""
         client = await self.get_client()
         data = {
@@ -191,7 +192,7 @@ class MergeATSService:
         account_token: str,
         application_id: str,
         stage_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update an application's current stage."""
         client = await self.get_client()
         data = {
@@ -211,9 +212,9 @@ class MergeATSService:
     async def list_jobs(
         self,
         account_token: str,
-        status: Optional[str] = None,
-        cursor: Optional[str] = None
-    ) -> Dict[str, Any]:
+        status: str | None = None,
+        cursor: str | None = None
+    ) -> dict[str, Any]:
         """List all jobs from the linked ATS."""
         client = await self.get_client()
         params = {}
@@ -230,7 +231,7 @@ class MergeATSService:
         response.raise_for_status()
         return response.json()
     
-    async def get_job(self, account_token: str, job_id: str) -> Dict[str, Any]:
+    async def get_job(self, account_token: str, job_id: str) -> dict[str, Any]:
         """Get a specific job by ID."""
         client = await self.get_client()
         response = await client.get(
@@ -243,9 +244,9 @@ class MergeATSService:
     async def list_interviews(
         self,
         account_token: str,
-        application_id: Optional[str] = None,
-        cursor: Optional[str] = None
-    ) -> Dict[str, Any]:
+        application_id: str | None = None,
+        cursor: str | None = None
+    ) -> dict[str, Any]:
         """List scheduled interviews."""
         client = await self.get_client()
         params = {}
@@ -267,9 +268,9 @@ class MergeATSService:
         account_token: str,
         application_id: str,
         scheduled_at: datetime,
-        interviewers: List[str],
+        interviewers: list[str],
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Schedule a new interview."""
         client = await self.get_client()
         data = {
@@ -292,8 +293,8 @@ class MergeATSService:
     async def list_stages(
         self,
         account_token: str,
-        job_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        job_id: str | None = None
+    ) -> dict[str, Any]:
         """List job interview stages (pipeline stages)."""
         client = await self.get_client()
         params = {}
@@ -308,7 +309,7 @@ class MergeATSService:
         response.raise_for_status()
         return response.json()
     
-    async def get_sync_status(self, account_token: str) -> Dict[str, Any]:
+    async def get_sync_status(self, account_token: str) -> dict[str, Any]:
         """Get the sync status for a linked account."""
         client = await self.get_client()
         response = await client.get(
@@ -318,7 +319,7 @@ class MergeATSService:
         response.raise_for_status()
         return response.json()
     
-    async def force_resync(self, account_token: str) -> Dict[str, Any]:
+    async def force_resync(self, account_token: str) -> dict[str, Any]:
         """Force a resync of all data for the linked account."""
         client = await self.get_client()
         response = await client.post(
@@ -331,8 +332,8 @@ class MergeATSService:
     async def list_users(
         self,
         account_token: str,
-        cursor: Optional[str] = None
-    ) -> Dict[str, Any]:
+        cursor: str | None = None
+    ) -> dict[str, Any]:
         """List users (recruiters, hiring managers) from the linked ATS."""
         client = await self.get_client()
         params = {}
@@ -350,8 +351,8 @@ class MergeATSService:
     async def list_departments(
         self,
         account_token: str,
-        cursor: Optional[str] = None
-    ) -> Dict[str, Any]:
+        cursor: str | None = None
+    ) -> dict[str, Any]:
         """List departments from the linked ATS."""
         client = await self.get_client()
         params = {}
@@ -369,8 +370,8 @@ class MergeATSService:
     async def list_offices(
         self,
         account_token: str,
-        cursor: Optional[str] = None
-    ) -> Dict[str, Any]:
+        cursor: str | None = None
+    ) -> dict[str, Any]:
         """List offices/locations from the linked ATS."""
         client = await self.get_client()
         params = {}
@@ -390,8 +391,8 @@ class MergeATSService:
         account_token: str,
         candidate_id: str,
         note_content: str,
-        user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        user_id: str | None = None
+    ) -> dict[str, Any]:
         """Add a note to a candidate."""
         client = await self.get_client()
         data = {

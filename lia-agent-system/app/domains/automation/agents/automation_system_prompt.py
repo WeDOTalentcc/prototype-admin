@@ -1,6 +1,10 @@
 """Automation ReAct Agent — System Prompt."""
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
-from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, CHAIN_OF_THOUGHT_BLOCK, NEGATION_DETECTION_BLOCK
+from app.shared.prompts.interaction_patterns import (
+    ANTI_SYCOPHANCY_BLOCK,
+    CHAIN_OF_THOUGHT_BLOCK,
+    NEGATION_DETECTION_BLOCK,
+)
 
 
 def get_automation_system_prompt() -> str:

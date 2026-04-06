@@ -11,7 +11,7 @@ Sem migration — usa dados existentes:
   users (id, email — para recruiter linkage)
 """
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Stage ordering (para cálculo de conversão sequencial)
 # ---------------------------------------------------------------------------
-_STAGE_ORDER: List[str] = [
+_STAGE_ORDER: list[str] = [
     "applied", "novo", "initial",
     "screening", "triagem",
     "interview_hr", "entrevista_rh",
@@ -123,12 +123,12 @@ def health_label(score: int) -> str:
 # Predictive Pattern Detection
 # ---------------------------------------------------------------------------
 def detect_risk_patterns(
-    funnel: List[Dict[str, Any]],
+    funnel: list[dict[str, Any]],
     total_active: int,
     candidates_in_advanced: int,
-    drop_off_by_stage: Dict[str, float],
+    drop_off_by_stage: dict[str, float],
     health_score: int,
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """
     Detecta padrões preditivos de risco no funil.
     Retorna lista de padrões com severity e mensagem.
@@ -207,8 +207,8 @@ class JourneyIntelligenceService:
         self,
         vacancy_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Retorna métricas detalhadas do funil de uma vaga específica.
         """
@@ -294,10 +294,10 @@ class JourneyIntelligenceService:
                 await db.close()
 
         # Build funnel
-        funnel: List[Dict[str, Any]] = []
+        funnel: list[dict[str, Any]] = []
         total_active = 0
         total_exited = 0
-        drop_off_by_stage: Dict[str, float] = {}
+        drop_off_by_stage: dict[str, float] = {}
         last_movement_ts = None
         advanced_stages = {
             "interview_hr", "entrevista_rh", "interview_technical",
@@ -313,7 +313,7 @@ class JourneyIntelligenceService:
             drop_rate = exited / total if total > 0 else 0.0
             stage_norm = _normalize_stage(row.stage)
 
-            entry: Dict[str, Any] = {
+            entry: dict[str, Any] = {
                 "stage": row.stage,
                 "active_count": active,
                 "exited_count": exited,
@@ -349,12 +349,11 @@ class JourneyIntelligenceService:
 
         # Days since last movement
         import datetime
-        from datetime import timezone
-        now = datetime.datetime.now(timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
         if last_movement_ts:
             ts = last_movement_ts
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
+                ts = ts.replace(tzinfo=datetime.UTC)
             days_since_last_movement = (now - ts).total_seconds() / 86400
         else:
             days_since_last_movement = 999.0
@@ -383,7 +382,7 @@ class JourneyIntelligenceService:
         if vac_row and vac_row.deadline:
             dl = vac_row.deadline
             if dl.tzinfo is None:
-                dl = dl.replace(tzinfo=timezone.utc)
+                dl = dl.replace(tzinfo=datetime.UTC)
             days_to_deadline = max(0, (dl - now).days)
 
         return {
@@ -411,8 +410,8 @@ class JourneyIntelligenceService:
     async def get_company_overview(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Visão geral de saúde do pipeline por vaga ativa para toda a empresa.
         Retorna lista de vagas ordenada por health_score ASC (piores primeiro).
@@ -462,8 +461,7 @@ class JourneyIntelligenceService:
                 await db.close()
 
         import datetime
-        from datetime import timezone
-        now = datetime.datetime.now(timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
 
         vacancies = []
         for row in rows:
@@ -476,7 +474,7 @@ class JourneyIntelligenceService:
             if row.last_movement:
                 lm = row.last_movement
                 if lm.tzinfo is None:
-                    lm = lm.replace(tzinfo=timezone.utc)
+                    lm = lm.replace(tzinfo=datetime.UTC)
                 days_since = (now - lm).total_seconds() / 86400
             else:
                 days_since = 999.0
@@ -522,8 +520,8 @@ class JourneyIntelligenceService:
     async def get_company_recruiters_journey(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Agrega métricas de saúde por recrutador — para ProactiveWorker.
         Retorna apenas vagas com health_score < 50 (warning + critical).
@@ -533,7 +531,7 @@ class JourneyIntelligenceService:
             return []
 
         # Group by recruiter
-        recruiter_map: Dict[str, Dict[str, Any]] = {}
+        recruiter_map: dict[str, dict[str, Any]] = {}
         for vac in overview["vacancies"]:
             rid = vac.get("recruiter_id") or "unknown"
             if rid not in recruiter_map:

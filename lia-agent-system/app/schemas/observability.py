@@ -2,10 +2,11 @@
 Pydantic schemas for Observability and Governance API.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class AgentTypeEnum(str, Enum):
@@ -165,17 +166,17 @@ class AIInferenceLogResponse(BaseModel):
     id: str
     company_id: str
     agent_type: str
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    model_version: Optional[str] = None
-    decision_type: Optional[str] = None
-    confidence_score: Optional[float] = None
-    latency_ms: Optional[int] = None
-    tokens_used: Optional[int] = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    model_version: str | None = None
+    decision_type: str | None = None
+    confidence_score: float | None = None
+    latency_ms: int | None = None
+    tokens_used: int | None = None
     human_override: bool = False
-    feature_attributions: Dict[str, Any] = {}
-    bias_flags: List[Any] = []
-    created_at: Optional[datetime] = None
+    feature_attributions: dict[str, Any] = {}
+    bias_flags: list[Any] = []
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -183,7 +184,7 @@ class AIInferenceLogResponse(BaseModel):
 
 class AIInferenceLogListResponse(BaseModel):
     """Paginated list of AI inference logs."""
-    logs: List[AIInferenceLogResponse]
+    logs: list[AIInferenceLogResponse]
     total: int
     limit: int
     offset: int
@@ -192,10 +193,10 @@ class AIInferenceLogListResponse(BaseModel):
 class AIInferenceStatsResponse(BaseModel):
     """Statistics for AI inference logs."""
     total_inferences: int
-    by_agent_type: Dict[str, int]
-    by_decision_type: Dict[str, int]
-    avg_latency_ms: Optional[float] = None
-    avg_confidence: Optional[float] = None
+    by_agent_type: dict[str, int]
+    by_decision_type: dict[str, int]
+    avg_latency_ms: float | None = None
+    avg_confidence: float | None = None
     total_tokens_used: int
     human_override_count: int
     human_override_rate: float
@@ -207,13 +208,13 @@ class DataAccessLogResponse(BaseModel):
     id: str
     company_id: str
     user_id: str
-    data_subject_id: Optional[str] = None
+    data_subject_id: str | None = None
     data_type: str
     operation: str
-    pii_fields: List[str] = []
-    purpose: Optional[str] = None
-    legal_basis: Optional[str] = None
-    created_at: Optional[datetime] = None
+    pii_fields: list[str] = []
+    purpose: str | None = None
+    legal_basis: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -221,7 +222,7 @@ class DataAccessLogResponse(BaseModel):
 
 class DataAccessLogListResponse(BaseModel):
     """Paginated list of data access logs."""
-    logs: List[DataAccessLogResponse]
+    logs: list[DataAccessLogResponse]
     total: int
     limit: int
     offset: int
@@ -230,9 +231,9 @@ class DataAccessLogListResponse(BaseModel):
 class DataAccessStatsResponse(BaseModel):
     """Statistics for data access logs."""
     total_accesses: int
-    by_data_type: Dict[str, int]
-    by_operation: Dict[str, int]
-    by_legal_basis: Dict[str, int]
+    by_data_type: dict[str, int]
+    by_operation: dict[str, int]
+    by_legal_basis: dict[str, int]
     unique_users: int
     unique_data_subjects: int
 
@@ -243,14 +244,14 @@ class ConsentRecordResponse(BaseModel):
     company_id: str
     candidate_id: str
     consent_type: str
-    version: Optional[str] = None
-    granted_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
-    revoked_at: Optional[datetime] = None
+    version: str | None = None
+    granted_at: datetime | None = None
+    expires_at: datetime | None = None
+    revoked_at: datetime | None = None
     is_active: bool = True
-    source: Optional[str] = None
-    legal_basis: Optional[str] = None
-    created_at: Optional[datetime] = None
+    source: str | None = None
+    legal_basis: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -258,7 +259,7 @@ class ConsentRecordResponse(BaseModel):
 
 class ConsentRecordListResponse(BaseModel):
     """Paginated list of consent records."""
-    consents: List[ConsentRecordResponse]
+    consents: list[ConsentRecordResponse]
     total: int
     limit: int
     offset: int
@@ -268,12 +269,12 @@ class ConsentCreate(BaseModel):
     """Schema for creating a consent record."""
     candidate_id: str = Field(..., description="Candidate ID")
     consent_type: str = Field(..., description="Type of consent")
-    version: Optional[str] = Field(None, description="Consent version")
-    expires_at: Optional[datetime] = Field(None, description="Expiration date")
-    ip_address: Optional[str] = Field(None, description="IP address")
-    source: Optional[str] = Field(None, description="Source of consent")
-    legal_basis: Optional[str] = Field(None, description="Legal basis")
-    consent_text: Optional[str] = Field(None, description="Consent text shown")
+    version: str | None = Field(None, description="Consent version")
+    expires_at: datetime | None = Field(None, description="Expiration date")
+    ip_address: str | None = Field(None, description="IP address")
+    source: str | None = Field(None, description="Source of consent")
+    legal_basis: str | None = Field(None, description="Legal basis")
+    consent_text: str | None = Field(None, description="Consent text shown")
 
     class Config:
         json_schema_extra = {
@@ -289,7 +290,7 @@ class ConsentCreate(BaseModel):
 
 class ConsentRevoke(BaseModel):
     """Schema for revoking consent."""
-    reason: Optional[str] = Field(None, description="Reason for revocation")
+    reason: str | None = Field(None, description="Reason for revocation")
 
     class Config:
         json_schema_extra = {
@@ -302,19 +303,19 @@ class ConsentRevoke(BaseModel):
 class IncidentReportResponse(BaseModel):
     """Response schema for incident report."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     incident_type: str
     severity: str
     description: str
-    affected_resources: List[Any] = []
-    detected_at: Optional[datetime] = None
-    resolved_at: Optional[datetime] = None
-    root_cause: Optional[str] = None
-    remediation_actions: List[str] = []
-    notified_parties: List[str] = []
+    affected_resources: list[Any] = []
+    detected_at: datetime | None = None
+    resolved_at: datetime | None = None
+    root_cause: str | None = None
+    remediation_actions: list[str] = []
+    notified_parties: list[str] = []
     status: str = "open"
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -322,7 +323,7 @@ class IncidentReportResponse(BaseModel):
 
 class IncidentReportListResponse(BaseModel):
     """Paginated list of incident reports."""
-    incidents: List[IncidentReportResponse]
+    incidents: list[IncidentReportResponse]
     total: int
     limit: int
     offset: int
@@ -333,8 +334,8 @@ class IncidentCreate(BaseModel):
     incident_type: str = Field(..., description="Type of incident")
     severity: str = Field(..., description="Severity level")
     description: str = Field(..., description="Incident description")
-    affected_resources: Optional[List[Dict[str, Any]]] = Field(default=[], description="Affected resources")
-    detected_at: Optional[datetime] = Field(None, description="When incident was detected")
+    affected_resources: list[dict[str, Any]] | None = Field(default=[], description="Affected resources")
+    detected_at: datetime | None = Field(None, description="When incident was detected")
 
     class Config:
         json_schema_extra = {
@@ -350,20 +351,20 @@ class IncidentCreate(BaseModel):
 
 class IncidentUpdate(BaseModel):
     """Schema for updating an incident."""
-    severity: Optional[str] = Field(None, description="Severity level")
-    description: Optional[str] = Field(None, description="Incident description")
-    root_cause: Optional[str] = Field(None, description="Root cause analysis")
-    remediation_actions: Optional[List[str]] = Field(None, description="Actions taken")
-    notified_parties: Optional[List[str]] = Field(None, description="Parties notified")
-    status: Optional[str] = Field(None, description="Incident status")
-    assigned_to: Optional[str] = Field(None, description="Assigned user ID")
+    severity: str | None = Field(None, description="Severity level")
+    description: str | None = Field(None, description="Incident description")
+    root_cause: str | None = Field(None, description="Root cause analysis")
+    remediation_actions: list[str] | None = Field(None, description="Actions taken")
+    notified_parties: list[str] | None = Field(None, description="Parties notified")
+    status: str | None = Field(None, description="Incident status")
+    assigned_to: str | None = Field(None, description="Assigned user ID")
 
 
 class IncidentResolve(BaseModel):
     """Schema for resolving an incident."""
-    root_cause: Optional[str] = Field(None, description="Root cause")
-    remediation_actions: Optional[List[str]] = Field(None, description="Actions taken")
-    resolution_notes: Optional[str] = Field(None, description="Resolution notes")
+    root_cause: str | None = Field(None, description="Root cause")
+    remediation_actions: list[str] | None = Field(None, description="Actions taken")
+    resolution_notes: str | None = Field(None, description="Resolution notes")
 
     class Config:
         json_schema_extra = {
@@ -378,17 +379,17 @@ class IncidentResolve(BaseModel):
 class ModelEvaluationResponse(BaseModel):
     """Response schema for model evaluation."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     model_version: str
     evaluation_type: str
-    dimension: Optional[str] = None
+    dimension: str | None = None
     metric_name: str
-    metric_value: Optional[float] = None
-    threshold: Optional[float] = None
-    passed: Optional[bool] = None
-    sample_size: Optional[int] = None
-    evaluation_date: Optional[date] = None
-    created_at: Optional[datetime] = None
+    metric_value: float | None = None
+    threshold: float | None = None
+    passed: bool | None = None
+    sample_size: int | None = None
+    evaluation_date: date | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -396,7 +397,7 @@ class ModelEvaluationResponse(BaseModel):
 
 class ModelEvaluationListResponse(BaseModel):
     """Paginated list of model evaluations."""
-    evaluations: List[ModelEvaluationResponse]
+    evaluations: list[ModelEvaluationResponse]
     total: int
     limit: int
     offset: int
@@ -405,28 +406,28 @@ class ModelEvaluationListResponse(BaseModel):
 class ModelEvaluationSummaryResponse(BaseModel):
     """Summary of model evaluations by dimension."""
     total_evaluations: int
-    by_dimension: Dict[str, Dict[str, Any]]
-    by_evaluation_type: Dict[str, int]
+    by_dimension: dict[str, dict[str, Any]]
+    by_evaluation_type: dict[str, int]
     pass_rate: float
-    latest_evaluation_date: Optional[date] = None
+    latest_evaluation_date: date | None = None
 
 
 class ComplianceControlResponse(BaseModel):
     """Response schema for compliance control."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     framework: str
     control_id: str
     control_name: str
-    description: Optional[str] = None
+    description: str | None = None
     status: str
-    evidence_url: Optional[str] = None
-    last_reviewed_at: Optional[datetime] = None
-    next_review_at: Optional[datetime] = None
-    owner: Optional[str] = None
-    risk_level: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    evidence_url: str | None = None
+    last_reviewed_at: datetime | None = None
+    next_review_at: datetime | None = None
+    owner: str | None = None
+    risk_level: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -434,7 +435,7 @@ class ComplianceControlResponse(BaseModel):
 
 class ComplianceControlListResponse(BaseModel):
     """Paginated list of compliance controls."""
-    controls: List[ComplianceControlResponse]
+    controls: list[ComplianceControlResponse]
     total: int
     limit: int
     offset: int
@@ -443,20 +444,20 @@ class ComplianceControlListResponse(BaseModel):
 class ComplianceSummaryResponse(BaseModel):
     """Summary of compliance controls by framework."""
     total_controls: int
-    by_framework: Dict[str, Dict[str, int]]
-    by_status: Dict[str, int]
+    by_framework: dict[str, dict[str, int]]
+    by_status: dict[str, int]
     overdue_reviews: int
     upcoming_reviews: int
 
 
 class ComplianceControlUpdate(BaseModel):
     """Schema for updating a compliance control."""
-    status: Optional[str] = Field(None, description="Control status")
-    evidence_url: Optional[str] = Field(None, description="Evidence URL")
-    evidence_notes: Optional[str] = Field(None, description="Evidence notes")
-    owner: Optional[str] = Field(None, description="Control owner")
-    owner_email: Optional[str] = Field(None, description="Owner email")
-    next_review_at: Optional[datetime] = Field(None, description="Next review date")
+    status: str | None = Field(None, description="Control status")
+    evidence_url: str | None = Field(None, description="Evidence URL")
+    evidence_notes: str | None = Field(None, description="Evidence notes")
+    owner: str | None = Field(None, description="Control owner")
+    owner_email: str | None = Field(None, description="Owner email")
+    next_review_at: datetime | None = Field(None, description="Next review date")
 
     class Config:
         json_schema_extra = {
@@ -470,20 +471,20 @@ class ComplianceControlUpdate(BaseModel):
 
 class ObservabilityDashboardResponse(BaseModel):
     """Consolidated dashboard data for observability."""
-    ai_inference: Dict[str, Any]
-    data_access: Dict[str, Any]
-    consents: Dict[str, Any]
-    incidents: Dict[str, Any]
-    evaluations: Dict[str, Any]
-    compliance: Dict[str, Any]
-    alerts: List[Dict[str, Any]]
+    ai_inference: dict[str, Any]
+    data_access: dict[str, Any]
+    consents: dict[str, Any]
+    incidents: dict[str, Any]
+    evaluations: dict[str, Any]
+    compliance: dict[str, Any]
+    alerts: list[dict[str, Any]]
 
 
 class BiasResultItem(BaseModel):
     """Individual bias result for a category."""
     score: float = Field(..., ge=0, le=1, description="Bias score (0-1)")
     status: BiasStatusEnum = Field(..., description="Status: clear/consider/concern")
-    details: Optional[str] = Field(None, description="Details about the bias analysis")
+    details: str | None = Field(None, description="Details about the bias analysis")
 
 
 class BiasAuditReportResponse(BaseModel):
@@ -491,24 +492,24 @@ class BiasAuditReportResponse(BaseModel):
     id: str
     company_id: str
     audit_type: str
-    audit_date: Optional[date] = None
-    sample_size: Optional[int] = None
+    audit_date: date | None = None
+    sample_size: int | None = None
     auditor: str
-    auditor_name: Optional[str] = None
-    auditor_organization: Optional[str] = None
-    bias_results: Dict[str, Any] = {}
-    overall_score: Optional[float] = None
+    auditor_name: str | None = None
+    auditor_organization: str | None = None
+    bias_results: dict[str, Any] = {}
+    overall_score: float | None = None
     clear_count: int = 0
     consider_count: int = 0
     concern_count: int = 0
-    compliance_frameworks: List[str] = []
-    report_url: Optional[str] = None
+    compliance_frameworks: list[str] = []
+    report_url: str | None = None
     is_public: bool = False
-    notes: Optional[str] = None
-    recommendations: List[str] = []
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    notes: str | None = None
+    recommendations: list[str] = []
+    created_by: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -516,7 +517,7 @@ class BiasAuditReportResponse(BaseModel):
 
 class BiasAuditReportListResponse(BaseModel):
     """Paginated list of bias audit reports."""
-    audits: List[BiasAuditReportResponse]
+    audits: list[BiasAuditReportResponse]
     total: int
     limit: int
     offset: int
@@ -526,16 +527,16 @@ class BiasAuditCreate(BaseModel):
     """Schema for creating a bias audit report."""
     audit_type: str = Field(..., description="Type of audit: monthly/quarterly/annual/on_demand")
     audit_date: date = Field(..., description="Date of the audit")
-    sample_size: Optional[int] = Field(None, description="Number of candidates/decisions analyzed")
+    sample_size: int | None = Field(None, description="Number of candidates/decisions analyzed")
     auditor: str = Field(..., description="Type of auditor: internal/external/third_party")
-    auditor_name: Optional[str] = Field(None, description="Name of the auditor")
-    auditor_organization: Optional[str] = Field(None, description="Organization of the auditor")
-    bias_results: Dict[str, Any] = Field(default_factory=dict, description="Results for all 11 bias categories")
-    overall_score: Optional[float] = Field(None, ge=0, le=100, description="Overall bias score (0-100)")
-    compliance_frameworks: Optional[List[str]] = Field(default=[], description="Applicable compliance frameworks")
-    report_url: Optional[str] = Field(None, description="URL to full audit report")
-    notes: Optional[str] = Field(None, description="Additional notes")
-    recommendations: Optional[List[str]] = Field(default=[], description="Audit recommendations")
+    auditor_name: str | None = Field(None, description="Name of the auditor")
+    auditor_organization: str | None = Field(None, description="Organization of the auditor")
+    bias_results: dict[str, Any] = Field(default_factory=dict, description="Results for all 11 bias categories")
+    overall_score: float | None = Field(None, ge=0, le=100, description="Overall bias score (0-100)")
+    compliance_frameworks: list[str] | None = Field(default=[], description="Applicable compliance frameworks")
+    report_url: str | None = Field(None, description="URL to full audit report")
+    notes: str | None = Field(None, description="Additional notes")
+    recommendations: list[str] | None = Field(default=[], description="Audit recommendations")
 
     class Config:
         json_schema_extra = {
@@ -569,7 +570,7 @@ class BiasAuditCreate(BaseModel):
 class BiasAuditPublish(BaseModel):
     """Schema for publishing a bias audit."""
     is_public: bool = Field(True, description="Whether to make the audit public")
-    report_url: Optional[str] = Field(None, description="URL to the public report")
+    report_url: str | None = Field(None, description="URL to the public report")
 
     class Config:
         json_schema_extra = {
@@ -583,9 +584,9 @@ class BiasAuditPublish(BaseModel):
 class BiasAuditSummaryResponse(BaseModel):
     """Summary of bias audit reports."""
     total_audits: int
-    latest_audit_date: Optional[date] = None
-    latest_overall_score: Optional[float] = None
-    by_audit_type: Dict[str, int] = {}
-    by_status: Dict[str, int] = {}
-    compliance_coverage: List[str] = []
+    latest_audit_date: date | None = None
+    latest_overall_score: float | None = None
+    by_audit_type: dict[str, int] = {}
+    by_status: dict[str, int] = {}
+    compliance_coverage: list[str] = []
     public_audits_count: int = 0

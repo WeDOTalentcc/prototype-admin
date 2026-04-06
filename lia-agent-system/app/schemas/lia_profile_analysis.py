@@ -2,9 +2,9 @@
 Pydantic schemas for LIA Profile Analysis API.
 """
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class AnalysisTypeEnum(str, Enum):
@@ -18,8 +18,8 @@ class LiaProfileAnalysisCreate(BaseModel):
     candidate_id: str
     analysis_type: AnalysisTypeEnum
     content: str
-    candidate_name: Optional[str] = None
-    created_by: Optional[str] = None
+    candidate_name: str | None = None
+    created_by: str | None = None
 
 
 class LiaProfileAnalysisResponse(BaseModel):
@@ -28,10 +28,10 @@ class LiaProfileAnalysisResponse(BaseModel):
     candidate_id: str
     analysis_type: str
     content: str
-    candidate_name: Optional[str] = None
+    candidate_name: str | None = None
     is_active: bool = True
-    created_at: Optional[datetime] = None
-    created_by: Optional[str] = None
+    created_at: datetime | None = None
+    created_by: str | None = None
     company_id: str
     
     class Config:
@@ -42,7 +42,7 @@ class CandidateAnalysesSummary(BaseModel):
     """Summary of all analyses for a candidate."""
     candidate_id: str
     total_analyses: int = 0
-    analyses: List[LiaProfileAnalysisResponse] = Field(default_factory=list)
+    analyses: list[LiaProfileAnalysisResponse] = Field(default_factory=list)
     has_bullet_points: bool = False
     has_short_paragraph: bool = False
     has_detailed_bullets: bool = False

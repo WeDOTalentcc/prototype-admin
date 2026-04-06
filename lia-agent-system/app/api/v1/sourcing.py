@@ -9,20 +9,21 @@ Provides:
 - POST /api/v1/sourcing/proactive-suggest - Trigger proactive suggestions
 """
 import logging
+from datetime import datetime
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
-from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
-from datetime import datetime, timedelta
+from sqlalchemy import and_, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate import Candidate
 from app.domains.sourcing.services.query_builders import (
     BooleanQueryBuilder,
     CandidateMatcher,
 )
+from app.models.candidate import Candidate
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -31,17 +32,17 @@ router = APIRouter(prefix="/sourcing", tags=["sourcing"])
 
 class SourcingSearchRequest(BaseModel):
     """Request for candidate sourcing search."""
-    query: Optional[str] = Field(None, description="Free text search query")
-    title: Optional[str] = Field(None, description="Job title to search")
-    skills: List[str] = Field(default_factory=list, description="Required skills")
-    companies: List[str] = Field(default_factory=list, description="Target companies")
-    industries: List[str] = Field(default_factory=list, description="Target industries")
-    location: Optional[str] = Field(None, description="Location preference")
-    seniority: Optional[str] = Field(None, description="Seniority level: junior, pleno, senior, manager, director")
-    min_experience: Optional[int] = Field(None, ge=0, le=50, description="Minimum years of experience")
-    max_experience: Optional[int] = Field(None, ge=0, le=50, description="Maximum years of experience")
-    exclude_terms: List[str] = Field(default_factory=list, description="Terms to exclude")
-    job_id: Optional[str] = Field(None, description="Job ID to link search results")
+    query: str | None = Field(None, description="Free text search query")
+    title: str | None = Field(None, description="Job title to search")
+    skills: list[str] = Field(default_factory=list, description="Required skills")
+    companies: list[str] = Field(default_factory=list, description="Target companies")
+    industries: list[str] = Field(default_factory=list, description="Target industries")
+    location: str | None = Field(None, description="Location preference")
+    seniority: str | None = Field(None, description="Seniority level: junior, pleno, senior, manager, director")
+    min_experience: int | None = Field(None, ge=0, le=50, description="Minimum years of experience")
+    max_experience: int | None = Field(None, ge=0, le=50, description="Maximum years of experience")
+    exclude_terms: list[str] = Field(default_factory=list, description="Terms to exclude")
+    job_id: str | None = Field(None, description="Job ID to link search results")
     limit: int = Field(default=20, ge=1, le=100, description="Maximum results to return")
     include_boolean_queries: bool = Field(default=True, description="Include generated boolean queries")
 
@@ -49,42 +50,42 @@ class SourcingSearchRequest(BaseModel):
 class SourcingSearchResponse(BaseModel):
     """Response from candidate sourcing search."""
     success: bool
-    query: Optional[str] = None
-    boolean_queries: Optional[Dict[str, str]] = None
+    query: str | None = None
+    boolean_queries: dict[str, str] | None = None
     candidates_found: int
-    candidates: List[Dict[str, Any]]
-    job_id: Optional[str] = None
+    candidates: list[dict[str, Any]]
+    job_id: str | None = None
     search_time_ms: int = 0
 
 
 class MatchCandidatesRequest(BaseModel):
     """Request to match candidates against job requirements."""
     job_id: str = Field(..., description="Job ID to match against")
-    candidate_ids: List[str] = Field(default_factory=list, description="Specific candidate IDs to evaluate")
+    candidate_ids: list[str] = Field(default_factory=list, description="Specific candidate IDs to evaluate")
     limit: int = Field(default=50, ge=1, le=200, description="Maximum candidates to evaluate")
     min_score: float = Field(default=0, ge=0, le=100, description="Minimum score threshold")
-    weights: Optional[Dict[str, float]] = Field(None, description="Custom weights: skills, experience, location")
+    weights: dict[str, float] | None = Field(None, description="Custom weights: skills, experience, location")
 
 
 class MatchResult(BaseModel):
     """Individual candidate match result."""
     candidate_id: str
-    candidate_name: Optional[str] = None
+    candidate_name: str | None = None
     overall_score: float
     tier: str
     recommendation: str
-    breakdown: Dict[str, Any]
-    missing_skills: List[str] = Field(default_factory=list)
+    breakdown: dict[str, Any]
+    missing_skills: list[str] = Field(default_factory=list)
 
 
 class MatchCandidatesResponse(BaseModel):
     """Response from candidate matching."""
     success: bool
     job_id: str
-    job_title: Optional[str] = None
+    job_title: str | None = None
     total_evaluated: int
-    tier_summary: Dict[str, int]
-    results: List[MatchResult]
+    tier_summary: dict[str, int]
+    results: list[MatchResult]
     processing_time_ms: int = 0
 
 
@@ -92,29 +93,29 @@ class SuggestionResponse(BaseModel):
     """Response with suggested candidates for a job."""
     success: bool
     job_id: str
-    job_title: Optional[str] = None
+    job_title: str | None = None
     suggestions_count: int
-    suggestions: List[Dict[str, Any]]
-    criteria_used: Dict[str, Any]
+    suggestions: list[dict[str, Any]]
+    criteria_used: dict[str, Any]
 
 
 class BooleanQueryRequest(BaseModel):
     """Request to generate boolean search query."""
-    title: Optional[str] = Field(None, description="Job title")
-    skills: List[str] = Field(default_factory=list, description="Required skills")
-    companies: List[str] = Field(default_factory=list, description="Target companies")
-    industries: List[str] = Field(default_factory=list, description="Target industries")
-    location: Optional[str] = Field(None, description="Location")
-    seniority: Optional[str] = Field(None, description="Seniority level")
-    exclude_terms: List[str] = Field(default_factory=list, description="Terms to exclude")
+    title: str | None = Field(None, description="Job title")
+    skills: list[str] = Field(default_factory=list, description="Required skills")
+    companies: list[str] = Field(default_factory=list, description="Target companies")
+    industries: list[str] = Field(default_factory=list, description="Target industries")
+    location: str | None = Field(None, description="Location")
+    seniority: str | None = Field(None, description="Seniority level")
+    exclude_terms: list[str] = Field(default_factory=list, description="Terms to exclude")
     expand_synonyms: bool = Field(default=True, description="Expand skills with synonyms")
 
 
 class BooleanQueryResponse(BaseModel):
     """Response with generated boolean queries."""
     success: bool
-    queries: Dict[str, str]
-    synonyms_expanded: List[Dict[str, Any]] = Field(default_factory=list)
+    queries: dict[str, str]
+    synonyms_expanded: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ProactiveSuggestRequest(BaseModel):

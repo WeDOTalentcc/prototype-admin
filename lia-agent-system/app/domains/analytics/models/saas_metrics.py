@@ -7,13 +7,13 @@ This module provides models for tracking:
 - Health metrics (churn risk, health score, engagement)
 - Payment history
 """
-from datetime import datetime, date
-from sqlalchemy import Column, String, Integer, DateTime, Date, Boolean, Numeric, ForeignKey, Index, Text
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-import uuid
 import enum
-from typing import Dict, Any, Optional
+import uuid
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -93,7 +93,7 @@ class ClientSaasMetrics(Base):
     def __repr__(self):
         return f"<ClientSaasMetrics {self.id} - Client: {self.client_id}>"
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "id": str(self.id),
@@ -154,7 +154,7 @@ class ClientUsageMetrics(Base):
     def __repr__(self):
         return f"<ClientUsageMetrics {self.id} - Client: {self.client_id}>"
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "id": str(self.id),
@@ -234,7 +234,7 @@ class ClientHealthMetrics(Base):
     def __repr__(self):
         return f"<ClientHealthMetrics {self.id} - Client: {self.client_id}>"
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "id": str(self.id),
@@ -300,7 +300,7 @@ class PaymentHistory(Base):
     def __repr__(self):
         return f"<PaymentHistory {self.id} - Client: {self.client_id} - {self.amount}>"
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "id": str(self.id),

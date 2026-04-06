@@ -1,24 +1,25 @@
 """
 Alerts API - Endpoints for alert management.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Request, Header
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import List, Optional, cast, Any
-from datetime import datetime
-from pydantic import BaseModel
 import logging
+from datetime import datetime
+from typing import Any, cast
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.job_management.services.job_alert_service import job_alert_service
-from app.models.alert import AlertSeverity, AlertStatus, AlertConfig, AlertPreference
+from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
 
-def require_company_id(x_company_id: Optional[str] = Header(None, alias="X-Company-ID")) -> str:
+def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-ID")) -> str:
     """Dependency to require and validate X-Company-ID header."""
     if not x_company_id:
         raise HTTPException(
@@ -31,18 +32,18 @@ def require_company_id(x_company_id: Optional[str] = Header(None, alias="X-Compa
 class AlertResponse(BaseModel):
     """Response model for an alert."""
     id: str
-    alert_type: Optional[str]
-    severity: Optional[str]
-    status: Optional[str]
+    alert_type: str | None
+    severity: str | None
+    status: str | None
     title: str
     message: str
-    user_id: Optional[str]
-    job_id: Optional[str]
-    candidate_id: Optional[str]
-    context: Optional[dict]
-    suggested_actions: Optional[list]
-    acknowledged_at: Optional[datetime]
-    resolved_at: Optional[datetime]
+    user_id: str | None
+    job_id: str | None
+    candidate_id: str | None
+    context: dict | None
+    suggested_actions: list | None
+    acknowledged_at: datetime | None
+    resolved_at: datetime | None
     created_at: datetime
     
     class Config:
@@ -59,10 +60,10 @@ class AlertSummaryResponse(BaseModel):
     total: int
 
 
-@router.get("/", response_model=List[AlertResponse])
+@router.get("/", response_model=list[AlertResponse])
 async def list_alerts(
-    severity: Optional[AlertSeverity] = None,
-    user_id: Optional[str] = None,
+    severity: AlertSeverity | None = None,
+    user_id: str | None = None,
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -120,7 +121,7 @@ async def acknowledge_alert(
 async def resolve_alert(
     alert_id: str,
     user_id: str = "system",
-    resolution_note: Optional[str] = None,
+    resolution_note: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Resolve an alert."""
@@ -146,13 +147,13 @@ class AlertConfigItem(BaseModel):
 
 class AlertConfigRequest(BaseModel):
     """Request model for alert configuration."""
-    alerts: List[AlertConfigItem]
+    alerts: list[AlertConfigItem]
     briefing_frequency: str = "daily"
 
 
 class AlertConfigResponse(BaseModel):
     """Response model for alert configuration."""
-    alerts: List[dict]
+    alerts: list[dict]
     briefing_frequency: str
 
 
@@ -181,7 +182,7 @@ async def get_alert_config(
         config = result.scalar_one_or_none()
         
         if config:
-            alerts_value = cast(List[dict[Any, Any]], config.alerts) if config.alerts else DEFAULT_ALERTS
+            alerts_value = cast(list[dict[Any, Any]], config.alerts) if config.alerts else DEFAULT_ALERTS
             freq_value = cast(str, config.briefing_frequency) if config.briefing_frequency else "daily"
             return AlertConfigResponse(
                 alerts=alerts_value,
@@ -234,7 +235,7 @@ async def update_alert_config(
         logger.info(f"Alert config updated successfully for company {company_id}")
         
         return AlertConfigResponse(
-            alerts=cast(List[dict[Any, Any]], config.alerts),
+            alerts=cast(list[dict[Any, Any]], config.alerts),
             briefing_frequency=cast(str, config.briefing_frequency)
         )
     except Exception as e:
@@ -253,23 +254,23 @@ class AlertPreferenceChannels(BaseModel):
 
 class AlertPreferenceItem(BaseModel):
     """Model for individual alert preference."""
-    id: Optional[str] = None
+    id: str | None = None
     user_id: str
     alert_type: str
     is_enabled: bool = True
-    threshold: Optional[int] = None
+    threshold: int | None = None
     channels: AlertPreferenceChannels = AlertPreferenceChannels()
     cooldown_hours: int = 24
 
 
 class AlertPreferenceRequest(BaseModel):
     """Request model for creating/updating preferences."""
-    preferences: List[AlertPreferenceItem]
+    preferences: list[AlertPreferenceItem]
 
 
 class AlertPreferenceResponse(BaseModel):
     """Response model for alert preferences."""
-    preferences: List[dict]
+    preferences: list[dict]
     user_id: str
 
 

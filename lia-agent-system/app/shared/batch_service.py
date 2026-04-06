@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Callable, Coroutine, Generic, TypeVar
+from datetime import UTC, datetime
+from typing import Any, Generic, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class BatchReport(Generic[R]):
     failed: int
     results: list[BatchResult[R]] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
-    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     completed_at: datetime | None = None
     total_time_ms: float = 0.0
 
@@ -114,7 +115,7 @@ class BatchService(Generic[T, R]):
                         success=True,
                         processing_time_ms=elapsed,
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     elapsed = (time.monotonic() - t0) * 1000
                     logger.warning("[BatchService] Timeout on item %s after %.0fms",
                                    item.item_id, elapsed)
@@ -158,7 +159,7 @@ class BatchService(Generic[T, R]):
             failed=failed,
             results=normalized,
             errors=[r.error for r in normalized if r.error],
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(UTC),
             total_time_ms=total_time,
         )
 

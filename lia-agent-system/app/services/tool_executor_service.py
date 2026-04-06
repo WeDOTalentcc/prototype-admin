@@ -5,19 +5,12 @@ Provides a high-level service for executing tools from the ToolRegistry
 with user permission validation and tenant scoping.
 """
 import logging
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
-from app.tools import (
-    tool_registry,
-    tool_executor,
-    ToolExecutionContext,
-    ToolResult,
-    EnhancedToolResult,
-    ToolStatus
-)
+from app.tools import ToolExecutionContext, tool_executor, tool_registry
 
 logger = logging.getLogger(__name__)
 
@@ -25,26 +18,26 @@ logger = logging.getLogger(__name__)
 class ToolExecutionRequest(BaseModel):
     """Request model for tool execution."""
     tool_name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     user_id: str
-    company_id: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    company_id: str | None = None
+    context: dict[str, Any] | None = None
     agent_type: str = "orchestrator"
-    active_scope: Optional[str] = None  # E8: PromptScope str para validação de escopo
+    active_scope: str | None = None  # E8: PromptScope str para validação de escopo
 
 
 class ToolExecutionResponse(BaseModel):
     """Response model for tool execution."""
     success: bool
     message: str
-    data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    data: dict[str, Any] | None = None
+    error: str | None = None
     tool_name: str
     execution_time_ms: float = 0.0
     requires_confirmation: bool = False
-    confirmation_message: Optional[str] = None
-    action_taken: Optional[str] = None
-    affected_entities: List[str] = []
+    confirmation_message: str | None = None
+    action_taken: str | None = None
+    affected_entities: list[str] = []
 
 
 TOOL_PERMISSIONS = {
@@ -84,14 +77,14 @@ class ToolExecutorService:
         tool = tool_registry.get_tool(tool_name)
         return tool is not None
     
-    def get_required_permissions(self, tool_name: str) -> List[str]:
+    def get_required_permissions(self, tool_name: str) -> list[str]:
         """Get required permissions for a tool."""
         return TOOL_PERMISSIONS.get(tool_name, [])
     
     def validate_user_permission(
         self,
         tool_name: str,
-        user_permissions: List[str]
+        user_permissions: list[str]
     ) -> bool:
         """
         Validate if user has permission to execute a tool.
@@ -215,9 +208,9 @@ class ToolExecutorService:
     
     def get_available_tools(
         self,
-        agent_type: Optional[str] = None,
-        user_permissions: Optional[List[str]] = None
-    ) -> List[Dict[str, Any]]:
+        agent_type: str | None = None,
+        user_permissions: list[str] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get list of available tools for an agent/user.
         

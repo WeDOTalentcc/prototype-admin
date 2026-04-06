@@ -7,7 +7,6 @@ POST /api/v1/admin/token-budget/{company_id}/reset   (forçar reset — apenas s
 Requer autenticação de admin.
 """
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -16,7 +15,6 @@ from app.core.auth import get_current_user
 from app.services.token_budget_service import (
     check_budget,
     get_budget_status,
-    increment_usage,
 )
 
 router = APIRouter(prefix="/admin/token-budget", tags=["admin-token-budget"])
@@ -60,7 +58,7 @@ class BudgetCheckResponse(BaseModel):
 )
 async def get_company_token_budget(
     company_id: str,
-    plan_code: Optional[str] = Query(
+    plan_code: str | None = Query(
         default=None,
         description="Código do plano da assinatura ativa. Se omitido, usa fallback (starter/10k).",
     ),
@@ -90,7 +88,7 @@ async def get_company_token_budget(
 )
 async def check_company_budget(
     company_id: str,
-    plan_code: Optional[str] = Query(default=None),
+    plan_code: str | None = Query(default=None),
     current_user=Depends(get_current_user),
 ):
     try:

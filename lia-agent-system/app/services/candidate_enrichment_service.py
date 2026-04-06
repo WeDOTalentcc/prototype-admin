@@ -3,18 +3,17 @@ Candidate Enrichment Service.
 Enriches candidate data using Apify LinkedIn scrapers.
 Supports MCP (Model Context Protocol) for simplified actor calls.
 """
-import os
-import re
 import logging
-from typing import Dict, Optional, List, Any, Tuple
+import re
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, CandidateExperience, CandidateEducation
 from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient
+from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +48,11 @@ class CandidateEnrichmentService:
         self,
         db: AsyncSession,
         candidate_id: UUID,
-        linkedin_url: Optional[str] = None,
+        linkedin_url: str | None = None,
         include_experiences: bool = True,
         include_education: bool = True,
         include_email_discovery: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Enrich a candidate's data from their LinkedIn profile.
         
@@ -135,7 +134,7 @@ class CandidateEnrichmentService:
                 "fields_updated": []
             }
     
-    async def _scrape_linkedin_profile(self, linkedin_url: str, actor_id: str) -> Dict[str, Any]:
+    async def _scrape_linkedin_profile(self, linkedin_url: str, actor_id: str) -> dict[str, Any]:
         """
         Scrape a LinkedIn profile using Apify actor.
         
@@ -181,10 +180,10 @@ class CandidateEnrichmentService:
         self,
         db: AsyncSession,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
+        profile_data: dict[str, Any],
         include_experiences: bool,
         include_education: bool
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Apply enrichment data to candidate record.
         
@@ -231,7 +230,7 @@ class CandidateEnrichmentService:
                     updated_fields.append(candidate_field)
                     break
         
-        location_updated = self._apply_location(candidate, profile_data, updated_fields)
+        self._apply_location(candidate, profile_data, updated_fields)
         
         self._apply_skills(candidate, profile_data, updated_fields)
         
@@ -267,8 +266,8 @@ class CandidateEnrichmentService:
     def _apply_location(
         self,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
-        updated_fields: List[str]
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
     ) -> bool:
         """Parse and apply location data."""
         location = profile_data.get("location") or profile_data.get("locationName") or ""
@@ -300,8 +299,8 @@ class CandidateEnrichmentService:
     def _apply_skills(
         self,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
-        updated_fields: List[str]
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
     ):
         """Apply skills data."""
         skills = profile_data.get("skills") or []
@@ -327,8 +326,8 @@ class CandidateEnrichmentService:
     def _apply_languages(
         self,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
-        updated_fields: List[str]
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
     ):
         """Apply language data."""
         languages = profile_data.get("languages") or []
@@ -353,8 +352,8 @@ class CandidateEnrichmentService:
     def _apply_certifications(
         self,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
-        updated_fields: List[str]
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
     ):
         """Apply certification data."""
         certifications = profile_data.get("certifications") or []
@@ -382,8 +381,8 @@ class CandidateEnrichmentService:
     def _apply_social_metrics(
         self,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
-        updated_fields: List[str]
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
     ):
         """Apply social metrics (followers, connections, etc.)."""
         followers = profile_data.get("followersCount") or profile_data.get("followers")
@@ -412,8 +411,8 @@ class CandidateEnrichmentService:
     def _apply_contact_info(
         self,
         candidate: Candidate,
-        profile_data: Dict[str, Any],
-        updated_fields: List[str]
+        profile_data: dict[str, Any],
+        updated_fields: list[str]
     ):
         """Apply contact information (emails, phones)."""
         email = profile_data.get("email") or profile_data.get("emailAddress")
@@ -455,7 +454,7 @@ class CandidateEnrichmentService:
         self,
         db: AsyncSession,
         candidate: Candidate,
-        profile_data: Dict[str, Any]
+        profile_data: dict[str, Any]
     ) -> int:
         """Add work experience records from profile data."""
         experiences = profile_data.get("experience") or profile_data.get("positions") or []
@@ -520,7 +519,7 @@ class CandidateEnrichmentService:
         self,
         db: AsyncSession,
         candidate: Candidate,
-        profile_data: Dict[str, Any]
+        profile_data: dict[str, Any]
     ) -> int:
         """Add education records from profile data."""
         education_list = profile_data.get("education") or profile_data.get("educations") or []
@@ -562,7 +561,7 @@ class CandidateEnrichmentService:
         
         return added
     
-    def _parse_date(self, date_value: Any) -> Optional[str]:
+    def _parse_date(self, date_value: Any) -> str | None:
         """Parse various date formats into string."""
         if not date_value:
             return None
@@ -598,7 +597,7 @@ class CandidateEnrichmentService:
         db: AsyncSession,
         candidate_id: UUID,
         cv_text: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Extract LinkedIn URL from CV text and enrich candidate.
         

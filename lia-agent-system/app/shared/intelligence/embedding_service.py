@@ -5,7 +5,6 @@ Refactored to use EmbeddingProviderFactory instead of calling Gemini directly.
 Supports multi-provider operation, fallback, and per-embedding provider metadata.
 """
 import logging
-from typing import List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +26,8 @@ class EmbeddingService:
     async def generate_embedding(
         self,
         text: str,
-        provider: Optional[str] = None,
-    ) -> List[float]:
+        provider: str | None = None,
+    ) -> list[float]:
         """Generate embedding for text.
 
         Args:
@@ -58,8 +57,8 @@ class EmbeddingService:
     async def generate_embedding_with_metadata(
         self,
         text: str,
-        provider: Optional[str] = None,
-    ) -> Tuple[List[float], str, str]:
+        provider: str | None = None,
+    ) -> tuple[list[float], str, str]:
         """Generate embedding and return (vector, provider_name, model_name).
 
         Use this variant when callers need to record which provider/model
@@ -82,9 +81,9 @@ class EmbeddingService:
 
     async def generate_batch_embeddings(
         self,
-        texts: List[str],
-        provider: Optional[str] = None,
-    ) -> List[List[float]]:
+        texts: list[str],
+        provider: str | None = None,
+    ) -> list[list[float]]:
         """Generate embeddings for multiple texts.
 
         Args:
@@ -113,9 +112,9 @@ class EmbeddingService:
 
     async def generate_batch_embeddings_with_metadata(
         self,
-        texts: List[str],
-        provider: Optional[str] = None,
-    ) -> Tuple[List[List[float]], str, str]:
+        texts: list[str],
+        provider: str | None = None,
+    ) -> tuple[list[list[float]], str, str]:
         """Generate batch embeddings and return (vectors, provider_name, model_name)."""
         from app.shared.providers.embedding_factory import EmbeddingProviderFactory
 
@@ -133,7 +132,7 @@ class EmbeddingService:
         text: str,
         chunk_size: int = 1000,
         overlap: int = 100,
-    ) -> List[str]:
+    ) -> list[str]:
         """Split text into overlapping chunks for embedding.
 
         Args:

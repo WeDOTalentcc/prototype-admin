@@ -8,11 +8,14 @@ Rules:
   - All operations fail-open
 """
 from __future__ import annotations
+
 import logging
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +33,10 @@ class EventStoreService:
         aggregate_type: str,
         aggregate_id: str,
         event_type: str,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         company_id: str,
         db: AsyncSession,
-        created_by: Optional[str] = None,
+        created_by: str | None = None,
     ) -> bool:
         """Append event to store. Fail-open: returns False on error."""
         try:
@@ -75,7 +78,7 @@ class EventStoreService:
         db: AsyncSession,
         from_sequence: int = 0,
         limit: int = 500,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get ordered event history for an aggregate. Fail-open: returns []."""
         try:
             DomainEvent = _DomainEvent or __import__("app.models.event_store", fromlist=["DomainEvent"]).DomainEvent
@@ -110,8 +113,8 @@ class EventStoreService:
         aggregate_type: str,
         aggregate_id: str,
         db: AsyncSession,
-        folder: Optional[Callable[[Dict, Dict], Dict]] = None,
-    ) -> Dict[str, Any]:
+        folder: Callable[[dict, dict], dict] | None = None,
+    ) -> dict[str, Any]:
         """Reconstruct aggregate state by folding events. Fail-open: returns {}."""
         try:
             events = await self.get_history(aggregate_type, aggregate_id, db)
@@ -120,7 +123,7 @@ class EventStoreService:
 
             if folder is None:
                 # Default folder: merge event_data into state
-                def default_folder(state: Dict, event: Dict) -> Dict:
+                def default_folder(state: dict, event: dict) -> dict:
                     updated = {**state}
                     updated.update(event.get("event_data", {}))
                     updated["_last_event_type"] = event["event_type"]
@@ -128,7 +131,7 @@ class EventStoreService:
                     return updated
                 folder = default_folder
 
-            state: Dict[str, Any] = {}
+            state: dict[str, Any] = {}
             for event in events:
                 state = folder(state, event)
             return state

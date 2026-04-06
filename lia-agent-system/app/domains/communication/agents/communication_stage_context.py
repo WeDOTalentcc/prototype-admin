@@ -2,9 +2,9 @@
 
 Defines execution stages for the communication workflow and their associated tools.
 """
-from typing import Any, Dict, List
+from typing import Any
 
-STAGE_DEFINITIONS: Dict[str, Any] = {
+STAGE_DEFINITIONS: dict[str, Any] = {
     "intent-detection": {
         "description": (
             "Entender qual comunicação o usuário deseja enviar: canal, destinatário, "
@@ -38,11 +38,11 @@ STAGE_DEFINITIONS: Dict[str, Any] = {
 }
 
 
-def get_stage_context(stage: str) -> Dict[str, Any]:
+def get_stage_context(stage: str) -> dict[str, Any]:
     return STAGE_DEFINITIONS.get(stage, STAGE_DEFINITIONS["intent-detection"])
 
 
-def get_stage_tools(stage: str) -> List[str]:
+def get_stage_tools(stage: str) -> list[str]:
     return get_stage_context(stage).get("tools", [])
 
 

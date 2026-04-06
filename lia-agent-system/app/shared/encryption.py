@@ -2,14 +2,14 @@
 Encryption utilities for sensitive data (API keys, credentials).
 Uses Fernet symmetric encryption with key from environment.
 """
-import os
 import logging
-from typing import Optional
+import os
+
 from cryptography.fernet import Fernet
 
 logger = logging.getLogger(__name__)
 
-_fernet_instance: Optional[Fernet] = None
+_fernet_instance: Fernet | None = None
 
 
 def _get_fernet() -> Fernet:

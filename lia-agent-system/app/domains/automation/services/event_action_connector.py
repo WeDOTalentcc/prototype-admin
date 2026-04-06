@@ -6,8 +6,7 @@ PipelineMonitor events → EventActionConnector → ProactiveAlertService (notif
                                                → AutonomousAgentService (ProactiveActions)
 """
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +49,7 @@ class EventActionConnector:
                 logger.warning(f"Could not load NotificationService: {e}")
         return self._notification_service
 
-    async def process_events(self, events: List[Any]) -> Dict[str, int]:
+    async def process_events(self, events: list[Any]) -> dict[str, int]:
         """
         Process a batch of PipelineEvents.
         Creates ProactiveActions and sends notifications for each.

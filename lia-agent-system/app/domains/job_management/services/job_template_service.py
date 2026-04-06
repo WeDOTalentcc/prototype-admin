@@ -9,19 +9,17 @@ Provides:
 - Company-specific template creation
 """
 import os
-from typing import List, Optional, Dict, Any
+from typing import Any
 from uuid import UUID, uuid4
-from datetime import datetime
-from sqlalchemy import select, func, or_
+
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_template import JobTemplate, TemplateUsageLog
 from app.data.templates import (
     get_all_system_templates,
     get_template_categories,
-    search_templates as search_template_data,
 )
-
+from app.models.job_template import JobTemplate, TemplateUsageLog
 
 WSI_QUALITY_GATES = {
     "min_technical_skills": 9,
@@ -35,7 +33,7 @@ class WSIValidationError(Exception):
     pass
 
 
-def validate_wsi_quality(template_data: Dict[str, Any], strict: bool = False) -> Dict[str, Any]:
+def validate_wsi_quality(template_data: dict[str, Any], strict: bool = False) -> dict[str, Any]:
     """
     Validate template meets WSI quality gates.
     
@@ -89,11 +87,11 @@ class JobTemplateService:
     def __init__(self, db: AsyncSession):
         self.db = db
     
-    def validate_template(self, template_data: Dict[str, Any], strict: bool = False) -> Dict[str, Any]:
+    def validate_template(self, template_data: dict[str, Any], strict: bool = False) -> dict[str, Any]:
         """Validate template meets WSI quality gates."""
         return validate_wsi_quality(template_data, strict)
     
-    async def get_template_by_id(self, template_id: UUID) -> Optional[JobTemplate]:
+    async def get_template_by_id(self, template_id: UUID) -> JobTemplate | None:
         """Get a template by ID."""
         result = await self.db.execute(
             select(JobTemplate).where(JobTemplate.id == template_id)
@@ -102,14 +100,14 @@ class JobTemplateService:
     
     async def get_templates(
         self,
-        company_id: Optional[UUID] = None,
-        category: Optional[str] = None,
-        subcategory: Optional[str] = None,
-        seniority: Optional[str] = None,
+        company_id: UUID | None = None,
+        category: str | None = None,
+        subcategory: str | None = None,
+        seniority: str | None = None,
         include_system: bool = True,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[JobTemplate]:
+    ) -> list[JobTemplate]:
         """
         Get templates with filtering.
         
@@ -155,9 +153,9 @@ class JobTemplateService:
     async def search_templates(
         self,
         query: str,
-        company_id: Optional[UUID] = None,
+        company_id: UUID | None = None,
         limit: int = 20,
-    ) -> List[JobTemplate]:
+    ) -> list[JobTemplate]:
         """
         Search templates by title or alternative titles.
         
@@ -201,10 +199,10 @@ class JobTemplateService:
     
     async def get_popular_templates(
         self,
-        company_id: Optional[UUID] = None,
-        category: Optional[str] = None,
+        company_id: UUID | None = None,
+        category: str | None = None,
         limit: int = 10,
-    ) -> List[JobTemplate]:
+    ) -> list[JobTemplate]:
         """Get most popular templates."""
         query = (
             select(JobTemplate)
@@ -227,7 +225,7 @@ class JobTemplateService:
         result = await self.db.execute(query)
         return list(result.scalars().all())
     
-    async def create_template(self, template_data: Dict[str, Any]) -> JobTemplate:
+    async def create_template(self, template_data: dict[str, Any]) -> JobTemplate:
         """Create a new template."""
         template = JobTemplate(
             id=uuid4(),
@@ -270,7 +268,7 @@ class JobTemplateService:
         self,
         template_id: UUID,
         company_id: UUID,
-        modifications: Optional[Dict[str, Any]] = None,
+        modifications: dict[str, Any] | None = None,
     ) -> JobTemplate:
         """
         Clone a system template for a company with optional modifications.
@@ -322,8 +320,8 @@ class JobTemplateService:
         self,
         template_id: UUID,
         company_id: UUID,
-        user_id: Optional[UUID] = None,
-    ) -> Dict[str, Any]:
+        user_id: UUID | None = None,
+    ) -> dict[str, Any]:
         """
         Use a template for job creation (Fast Track).
         
@@ -360,10 +358,10 @@ class JobTemplateService:
         self,
         template_id: UUID,
         company_id: UUID,
-        job_id: Optional[UUID] = None,
-        fields_modified: Optional[List[str]] = None,
-        time_to_complete: Optional[int] = None,
-        feedback_rating: Optional[int] = None,
+        job_id: UUID | None = None,
+        fields_modified: list[str] | None = None,
+        time_to_complete: int | None = None,
+        feedback_rating: int | None = None,
     ) -> None:
         """Log template usage feedback for learning."""
         usage_log = TemplateUsageLog(
@@ -406,11 +404,11 @@ class JobTemplateService:
         
         return count
     
-    def get_categories(self) -> Dict[str, Any]:
+    def get_categories(self) -> dict[str, Any]:
         """Get all template categories with metadata."""
         return get_template_categories()
     
-    async def get_category_stats(self) -> Dict[str, int]:
+    async def get_category_stats(self) -> dict[str, int]:
         """Get template count by category."""
         result = await self.db.execute(
             select(
@@ -426,9 +424,9 @@ class JobTemplateService:
 
 
 async def enrich_template_with_ai(
-    template_data: Dict[str, Any],
-    fields_to_enrich: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    template_data: dict[str, Any],
+    fields_to_enrich: list[str] | None = None,
+) -> dict[str, Any]:
     """
     Enrich template with AI-generated content.
     

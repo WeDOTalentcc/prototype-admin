@@ -1,25 +1,21 @@
 """
 Calibration workflows, vacancy goal-check, and candidate management routes.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import (
-    logger, get_db, get_current_user_or_demo, get_user_company_id, assert_resource_ownership,
-    User, ImportUser, cv_parser_service, search_analytics_service,
-    extract_tags_from_search_spec, build_archetype_from_search,
-    ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse,
-    rubric_evaluation_service, JobRequirement, JobRequirementCreate, RequirementPriorityEnum,
-    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType, CandidateProfile,
-    _normalize_priority, _normalize_name, _generate_fingerprint,
-    _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
-    _evaluate_candidates_with_rubrics, _recruiter_agent,
-    ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
-    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
-    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
-    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
+    CandidateSearchResultDTO,
+    JobRequirement,
+    JobRequirementCreate,
+    _normalize_priority,
+    _recruiter_agent,
+    get_db,
+    logger,
+    rubric_evaluation_service,
 )
 
 router = APIRouter()
@@ -28,10 +24,10 @@ class CalibrationFeedbackRequest(BaseModel):
     """Request para feedback de calibração."""
     candidate_id: str = Field(..., description="ID do candidato")
     feedback: str = Field(..., pattern="^(like|dislike)$", description="Tipo: 'like' ou 'dislike'")
-    vacancy_id: Optional[str] = Field(None, description="ID da vaga (opcional)")
-    session_id: Optional[str] = Field(None, description="ID da sessão de calibração")
-    reason: Optional[str] = Field(None, description="Motivo do feedback")
-    candidate_snapshot: Optional[Dict[str, Any]] = Field(None, description="Dados do candidato")
+    vacancy_id: str | None = Field(None, description="ID da vaga (opcional)")
+    session_id: str | None = Field(None, description="ID da sessão de calibração")
+    reason: str | None = Field(None, description="Motivo do feedback")
+    candidate_snapshot: dict[str, Any] | None = Field(None, description="Dados do candidato")
 
 
 class CalibrationFeedbackResponse(BaseModel):
@@ -42,7 +38,7 @@ class CalibrationFeedbackResponse(BaseModel):
     dislikes_count: int
     calibration_complete: bool
     confidence_level: float
-    learned_patterns: Dict[str, Any]
+    learned_patterns: dict[str, Any]
     message: str
     feedback_id: str
     sourcing_blocked: bool = True
@@ -53,34 +49,34 @@ class CalibrationFeedbackResponse(BaseModel):
 
 class CalibrationStartRequest(BaseModel):
     """Request para iniciar sessão de calibração."""
-    vacancy_id: Optional[str] = Field(None, description="ID da vaga")
-    search_criteria: Optional[Dict[str, Any]] = Field(None, description="Critérios de busca")
+    vacancy_id: str | None = Field(None, description="ID da vaga")
+    search_criteria: dict[str, Any] | None = Field(None, description="Critérios de busca")
     sample_size: int = Field(5, ge=3, le=10, description="Quantidade de candidatos para avaliar")
 
 
 class CalibrationStartResponse(BaseModel):
     """Response do início da calibração."""
     session_id: str
-    vacancy_id: Optional[str]
+    vacancy_id: str | None
     status: str
-    candidates: List[CandidateSearchResultDTO]
+    candidates: list[CandidateSearchResultDTO]
     message: str
 
 
 class CalibrationStatusResponse(BaseModel):
     """Response do status da calibração."""
     session_id: str
-    vacancy_id: Optional[str]
+    vacancy_id: str | None
     status: str
     total_shown: int
     likes_count: int
     dislikes_count: int
     calibration_complete: bool
     confidence_level: float
-    learned_patterns: Optional[Dict[str, Any]]
+    learned_patterns: dict[str, Any] | None
     message: str
-    created_at: Optional[str]
-    completed_at: Optional[str]
+    created_at: str | None
+    completed_at: str | None
     sourcing_blocked: bool = True
     ready_to_source: bool = False
     feedbacks_remaining: int = 0
@@ -100,13 +96,13 @@ class VacancyGoalResponse(BaseModel):
     status: str
     vacancy_id: str
     current_count: int
-    target_range: List[int]
+    target_range: list[int]
     deficit: int
     surplus: int
     progress_percentage: int
     recommendation: str
     message: str
-    suggested_actions: List[Dict[str, Any]]
+    suggested_actions: list[dict[str, Any]]
 
 
 from app.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
@@ -127,8 +123,10 @@ async def submit_calibration_feedback(
     3. Confirma status e desbloqueia sourcing automático
     """
     from datetime import datetime
+
     from sqlalchemy import select
-    from app.models.calibration import CalibrationSession, CalibrationFeedback
+
+    from app.models.calibration import CalibrationFeedback, CalibrationSession
     
     try:
         session = None
@@ -249,9 +247,11 @@ async def start_calibration_session(
     Bloqueia sourcing automático até a calibração ser completada (5 feedbacks).
     """
     import uuid
-    from sqlalchemy import select, func
-    from app.models.candidate import Candidate
+
+    from sqlalchemy import func, select
+
     from app.models.calibration import CalibrationSession
+    from app.models.candidate import Candidate
     
     try:
         session_id = str(uuid.uuid4())
@@ -329,6 +329,7 @@ async def get_calibration_status(
     Mostra progresso, feedbacks recebidos, padrões aprendidos e estado de bloqueio de sourcing.
     """
     from sqlalchemy import select
+
     from app.models.calibration import CalibrationSession
     
     try:
@@ -434,9 +435,9 @@ async def check_vacancy_candidate_goal(
 
 class AddCandidatesToVacancyRequest(BaseModel):
     """Request para adicionar candidatos a uma vaga."""
-    candidate_ids: List[str] = Field(..., min_length=1, description="Lista de IDs de candidatos para adicionar")
+    candidate_ids: list[str] = Field(..., min_length=1, description="Lista de IDs de candidatos para adicionar")
     source: str = Field("local", description="Fonte dos candidatos: 'local' ou 'pearch'")
-    added_by: Optional[str] = Field(None, description="ID do usuário que adicionou")
+    added_by: str | None = Field(None, description="ID do usuário que adicionou")
 
 
 class AddCandidatesToVacancyResponse(BaseModel):
@@ -445,7 +446,7 @@ class AddCandidatesToVacancyResponse(BaseModel):
     added_count: int
     total_count: int
     skipped_count: int
-    skipped_ids: List[str] = Field(default_factory=list)
+    skipped_ids: list[str] = Field(default_factory=list)
     at_capacity: bool = Field(False, description="Indica se a vaga atingiu capacidade máxima (70)")
     goal_check: VacancyGoalResponse
     message: str
@@ -470,11 +471,13 @@ async def add_candidates_to_vacancy(
     A meta de candidatos por vaga é de 50-70 candidatos.
     O sistema não permite adicionar além de 70 candidatos.
     """
-    from sqlalchemy import select, func
-    from app.models.candidate import VacancyCandidate
-    from app.models.calibration import CalibrationSession
-    from app.models.job_vacancy import JobVacancy
     import uuid
+
+    from sqlalchemy import func, select
+
+    from app.models.calibration import CalibrationSession
+    from app.models.candidate import VacancyCandidate
+    from app.models.job_vacancy import JobVacancy
     
     try:
         vacancy_result = await db.execute(
@@ -668,9 +671,11 @@ async def get_vacancy_candidates_count(
     """
     Retorna a contagem de candidatos em uma vaga e o status da meta.
     """
-    from sqlalchemy import select, func
-    from app.models.candidate import VacancyCandidate
     import uuid
+
+    from sqlalchemy import func, select
+
+    from app.models.candidate import VacancyCandidate
     
     try:
         count_result = await db.execute(

@@ -2,23 +2,19 @@
 CV Parser Service - Extract structured data from CV files using AI.
 """
 import io
-import re
 import json
 import logging
-from typing import Optional, Tuple
+import re
 from datetime import datetime
 
-from fastapi import UploadFile, HTTPException
-from sqlalchemy import select, or_, and_, func
+from docx import Document
+from fastapi import HTTPException, UploadFile
+from pypdf import PdfReader
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from pypdf import PdfReader
-from docx import Document
-
-from app.schemas.cv_parser import (
-    ParsedCV, Experience, Education, DuplicateCheck
-)
 from app.models.candidate import Candidate
+from app.schemas.cv_parser import DuplicateCheck, Education, Experience, ParsedCV
 from app.services.llm import LLMService
 
 logger = logging.getLogger(__name__)
@@ -76,7 +72,7 @@ class CVParserService:
         if not file_type:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported file format. Supported: PDF, DOCX, DOC, TXT"
+                detail="Unsupported file format. Supported: PDF, DOCX, DOC, TXT"
             )
         
         try:
@@ -571,7 +567,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
             logger.error(f"Duplicate check failed: {e}", exc_info=True)
             return DuplicateCheck(is_duplicate=False, match_type=None)
     
-    def _extract_linkedin_username(self, url: str) -> Optional[str]:
+    def _extract_linkedin_username(self, url: str) -> str | None:
         """Extract LinkedIn username from URL."""
         match = re.search(r'linkedin\.com/in/([^/?\s]+)', url, re.IGNORECASE)
         return match.group(1) if match else None

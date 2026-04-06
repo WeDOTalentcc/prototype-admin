@@ -12,15 +12,14 @@ Features:
 - Intent-aware cache key generation
 """
 
-import os
-import json
 import hashlib
+import json
+import logging
+import os
 import time
-from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from functools import wraps
-import asyncio
-import logging
+from typing import Any
 
 try:
     import redis.asyncio as aioredis
@@ -45,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 class CacheConfig:
     """Cache configuration settings."""
-    REDIS_URL: Optional[str] = os.environ.get("REDIS_URL")
+    REDIS_URL: str | None = os.environ.get("REDIS_URL")
     CACHE_ENABLED: bool = os.environ.get("CACHE_ENABLED", "true").lower() == "true"
     CACHE_TTL_DEFAULT: int = int(os.environ.get("CACHE_TTL_DEFAULT", "300"))
     CACHE_TTL_PIPELINE_STATS: int = int(os.environ.get("CACHE_TTL_PIPELINE_STATS", "60"))
@@ -53,7 +52,7 @@ class CacheConfig:
     CACHE_TTL_JOB_INSIGHTS: int = int(os.environ.get("CACHE_TTL_JOB_INSIGHTS", "180"))
     CACHE_TTL_ANALYTICS: int = int(os.environ.get("CACHE_TTL_ANALYTICS", "90"))
     
-    INTENT_TTL_MAPPING: Dict[str, int] = {
+    INTENT_TTL_MAPPING: dict[str, int] = {
         "pipeline_stats": CACHE_TTL_PIPELINE_STATS,
         "candidate_search": CACHE_TTL_CANDIDATE_SEARCH,
         "job_insights": CACHE_TTL_JOB_INSIGHTS,
@@ -78,13 +77,13 @@ class InMemoryCache:
     """
     
     def __init__(self, max_size: int = 1000):
-        self._cache: Dict[str, Dict[str, Any]] = {}
-        self._access_times: Dict[str, float] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
+        self._access_times: dict[str, float] = {}
         self._max_size = max_size
         self._hits = 0
         self._misses = 0
     
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         """Get value from cache if not expired."""
         if key not in self._cache:
             self._misses += 1
@@ -127,7 +126,7 @@ class InMemoryCache:
             return 1
         return 0
     
-    async def keys(self, pattern: str) -> List[str]:
+    async def keys(self, pattern: str) -> list[str]:
         """Get keys matching a pattern (simple wildcard support)."""
         import fnmatch
         pattern = pattern.replace("*", ".*") if ".*" not in pattern else pattern
@@ -219,8 +218,8 @@ class ResponseCacheService:
         """
         self._redis_url = redis_url or CacheConfig.REDIS_URL
         self._default_ttl = default_ttl or CacheConfig.CACHE_TTL_DEFAULT
-        self._redis_client: Optional[Any] = None
-        self._sync_redis_client: Optional[Any] = None
+        self._redis_client: Any | None = None
+        self._sync_redis_client: Any | None = None
         self._memory_cache = InMemoryCache()
         self._hits = 0
         self._misses = 0
@@ -256,7 +255,7 @@ class ResponseCacheService:
     def generate_cache_key(
         self, 
         intent: str, 
-        context: Dict[str, Any], 
+        context: dict[str, Any], 
         user_message: str,
         company_id: str = None
     ) -> str:
@@ -284,7 +283,7 @@ class ResponseCacheService:
         prefix = f"lia_response:{company_id}:" if company_id else "lia_response:"
         return f"{prefix}{intent}:{content_hash}"
     
-    async def get_cached_response(self, cache_key: str) -> Optional[Dict[str, Any]]:
+    async def get_cached_response(self, cache_key: str) -> dict[str, Any] | None:
         """
         Get a cached response by key.
         
@@ -336,7 +335,7 @@ class ResponseCacheService:
     async def cache_response(
         self, 
         cache_key: str, 
-        response: Dict[str, Any], 
+        response: dict[str, Any], 
         ttl: int = None,
         intent: str = None
     ) -> bool:
@@ -437,7 +436,7 @@ class ResponseCacheService:
         """Invalidate all cache entries for a company."""
         return await self.invalidate_by_pattern(f"lia_response:{company_id}:*")
     
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get cache performance statistics.
         

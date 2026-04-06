@@ -7,7 +7,6 @@ Provides REST endpoints for:
 - Dashboard data
 """
 import logging
-from typing import Optional
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query
@@ -37,8 +36,8 @@ class FieldUpdateRequest(BaseModel):
     session_id: str
     field: str
     source: str
-    old_value: Optional[str] = None
-    new_value: Optional[str] = None
+    old_value: str | None = None
+    new_value: str | None = None
 
 
 class SuggestionTrackRequest(BaseModel):
@@ -51,7 +50,7 @@ class SuggestionTrackRequest(BaseModel):
 class CompleteSessionRequest(BaseModel):
     """Request to complete a session."""
     session_id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
 
 
 @router.post("/session/start")

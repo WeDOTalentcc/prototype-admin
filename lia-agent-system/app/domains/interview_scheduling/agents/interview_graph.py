@@ -17,8 +17,7 @@ Nós:
   6. interview_response_planner — planeja resposta final para o usuário
 """
 import logging
-import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:
     from langsmith import traceable as _traceable
@@ -29,12 +28,12 @@ except ImportError:
         return decorator
 
 from app.domains.interview_scheduling.agents.interview_scheduling_nodes import (
-    interview_state_loader,
-    interview_router,
     interview_details_collector,
-    interview_validator,
-    interview_scheduler_executor,
     interview_response_planner,
+    interview_router,
+    interview_scheduler_executor,
+    interview_state_loader,
+    interview_validator,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,15 +89,14 @@ class InterviewGraph:
             _EXECUTOR: interview_scheduler_executor,
             _RESPONSE: interview_response_planner,
         }
-        self._compiled: Optional[Any] = None
+        self._compiled: Any | None = None
 
     # ------------------------------------------------------------------
     # Roteamento condicional
     # ------------------------------------------------------------------
 
-    def _route_after_collector(self, state: Dict[str, Any]) -> str:
+    def _route_after_collector(self, state: dict[str, Any]) -> str:
         """Após coleta: verifica se ainda há campos pendentes."""
-        from app.schemas.interview_scheduling_state import InterviewSchedulingState
         from app.domains.interview_scheduling.agents.interview_scheduling_nodes import interview_service
 
         workflow_data = state.get("workflow_data", {})
@@ -108,14 +106,14 @@ class InterviewGraph:
             return _VALIDATOR
         return _ROUTER
 
-    def _route_after_validator(self, state: Dict[str, Any]) -> str:
+    def _route_after_validator(self, state: dict[str, Any]) -> str:
         """Após validação: executa agendamento ou pede campos faltantes."""
         workflow_data = state.get("workflow_data", {})
         if workflow_data.get("interview_ready_for_scheduling"):
             return _EXECUTOR
         return _RESPONSE
 
-    def _route_after_router(self, state: Dict[str, Any]) -> str:
+    def _route_after_router(self, state: dict[str, Any]) -> str:
         """Após router: volta para coleta ou parte para validação."""
         workflow_data = state.get("workflow_data", {})
         if workflow_data.get("next_collection_target"):
@@ -128,7 +126,8 @@ class InterviewGraph:
 
     def _build_langgraph(self):
         """Constrói e compila o StateGraph nativo do LangGraph."""
-        from langgraph.graph import StateGraph, END as LEND
+        from langgraph.graph import END as LEND
+        from langgraph.graph import StateGraph
         from lia_agents_core.checkpointer import get_checkpointer
 
         state_schema = _InterviewStateDict if _HAS_TYPED_DICT else dict
@@ -157,11 +156,11 @@ class InterviewGraph:
 
         return builder.compile(checkpointer=get_checkpointer())
 
-    def _lg_route_collector(self, state: Dict[str, Any]) -> str:
+    def _lg_route_collector(self, state: dict[str, Any]) -> str:
         """LangGraph routing após COLLECTOR — idêntico ao legado."""
         return self._route_after_collector(state)
 
-    def _lg_route_router(self, state: Dict[str, Any]) -> str:
+    def _lg_route_router(self, state: dict[str, Any]) -> str:
         """LangGraph routing após ROUTER.
 
         Diferença do legado: quando há campo pendente, retorna RESPONSE
@@ -174,8 +173,8 @@ class InterviewGraph:
         return _VALIDATOR
 
     async def _invoke_langgraph(
-        self, state: Dict[str, Any], audit_callback=None
-    ) -> Dict[str, Any]:
+        self, state: dict[str, Any], audit_callback=None
+    ) -> dict[str, Any]:
         """Executa via StateGraph nativo com PostgresSaver checkpoint."""
         if self._compiled is None:
             self._compiled = self._build_langgraph()
@@ -202,8 +201,8 @@ class InterviewGraph:
             result.setdefault("workflow_data", {})["interview_graph_error"] = str(exc)
             # Audit de erro — BCB 498 / SOX compliance
             try:
-                from app.shared.compliance.audit_service import audit_service
                 from app.core.database import get_db as _get_db
+                from app.shared.compliance.audit_service import audit_service
                 async for db in _get_db():
                     await audit_service.log_decision(
                         db=db,
@@ -236,8 +235,8 @@ class InterviewGraph:
         workflow_data_post = result.get("workflow_data", {})
         if workflow_data_post.get("interview_scheduling_complete"):
             try:
-                from app.shared.compliance.audit_service import audit_service
                 from app.core.database import get_db as _get_db
+                from app.shared.compliance.audit_service import audit_service
                 interview_sched_post = workflow_data_post.get("interview_scheduling_state", {})
                 async for db in _get_db():
                     await audit_service.log_decision(
@@ -273,11 +272,11 @@ class InterviewGraph:
     # Execução
     # ------------------------------------------------------------------
 
-    async def invoke(self, state: Dict[str, Any], audit_callback=None) -> Dict[str, Any]:
+    async def invoke(self, state: dict[str, Any], audit_callback=None) -> dict[str, Any]:
         """Invoca o grafo de agendamento via LangGraph nativo."""
         return await self._invoke_langgraph(state, audit_callback)
 
-    def get_graph_structure(self) -> Dict[str, Any]:
+    def get_graph_structure(self) -> dict[str, Any]:
         """Retorna metadata do grafo para observabilidade."""
         return {
             "graph_type": "InterviewGraph",

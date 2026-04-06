@@ -8,12 +8,13 @@ to Teams Incoming Webhook URLs for channel notifications.
 Environment Variables:
 - TEAMS_WEBHOOK_URL: Default Teams Incoming Webhook URL for notifications
 """
-import os
 import logging
-import httpx
-from typing import Dict, Any, List, Optional
+import os
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
+import httpx
 
 from app.core.config import settings
 
@@ -58,7 +59,7 @@ class TeamsService:
     In development mode (when TEAMS_WEBHOOK_URL is not set), messages are logged instead of sent.
     """
     
-    def __init__(self, webhook_url: Optional[str] = None):
+    def __init__(self, webhook_url: str | None = None):
         """
         Initialize TeamsService.
         
@@ -74,10 +75,10 @@ class TeamsService:
     async def send_message(
         self,
         text: str,
-        webhook_url: Optional[str] = None,
-        title: Optional[str] = None,
-        subtitle: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        webhook_url: str | None = None,
+        title: str | None = None,
+        subtitle: str | None = None,
+    ) -> dict[str, Any]:
         """
         Send a simple text message to Teams channel.
         
@@ -107,7 +108,7 @@ class TeamsService:
                 "error": "No Teams webhook URL configured"
             }
         
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "@type": "MessageCard",
             "@context": "http://schema.org/extensions",
             "themeColor": "0078D4",
@@ -124,9 +125,9 @@ class TeamsService:
     
     async def send_card(
         self,
-        card: Dict[str, Any],
-        webhook_url: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        card: dict[str, Any],
+        webhook_url: str | None = None,
+    ) -> dict[str, Any]:
         """
         Send a formatted Adaptive Card to Teams channel.
         
@@ -169,9 +170,9 @@ class TeamsService:
     
     async def send_adaptive_card(
         self,
-        card_payload: Dict[str, Any],
-        webhook_url: Optional[str] = None
-    ) -> Dict[str, Any]:
+        card_payload: dict[str, Any],
+        webhook_url: str | None = None
+    ) -> dict[str, Any]:
         """
         Send an adaptive card to Teams channel.
         
@@ -207,11 +208,11 @@ class TeamsService:
         title: str,
         message: str,
         severity: AlertSeverity = AlertSeverity.INFO,
-        webhook_url: Optional[str] = None,
-        facts: Optional[List[Dict[str, str]]] = None,
-        actions: Optional[List[Dict[str, Any]]] = None,
-        source: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        webhook_url: str | None = None,
+        facts: list[dict[str, str]] | None = None,
+        actions: list[dict[str, Any]] | None = None,
+        source: str | None = None,
+    ) -> dict[str, Any]:
         """
         Send an alert with severity level to Teams channel.
         
@@ -230,7 +231,7 @@ class TeamsService:
         url = webhook_url or self.webhook_url
         
         icon = SEVERITY_ICONS.get(severity, "ℹ️")
-        color = SEVERITY_COLORS.get(severity, "#0078D4")
+        SEVERITY_COLORS.get(severity, "#0078D4")
         
         if self.is_development and not url:
             logger.info(f"[TEAMS DEV] Alert [{severity.value}]: {icon} {title} - {message}")
@@ -308,11 +309,11 @@ class TeamsService:
         self,
         candidate_name: str,
         event: str,
-        job_title: Optional[str] = None,
-        details: Optional[str] = None,
-        action_url: Optional[str] = None,
-        webhook_url: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        job_title: str | None = None,
+        details: str | None = None,
+        action_url: str | None = None,
+        webhook_url: str | None = None,
+    ) -> dict[str, Any]:
         """
         Send a candidate-related notification to Teams.
         
@@ -361,9 +362,9 @@ class TeamsService:
         job_title: str,
         interview_time: datetime,
         interviewer: str,
-        meeting_url: Optional[str] = None,
-        webhook_url: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        meeting_url: str | None = None,
+        webhook_url: str | None = None,
+    ) -> dict[str, Any]:
         """
         Send an interview reminder to Teams.
         
@@ -403,7 +404,7 @@ class TeamsService:
             source="LIA Agent System"
         )
     
-    async def _send_webhook(self, url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def _send_webhook(self, url: str, payload: dict[str, Any]) -> dict[str, Any]:
         """
         Send payload to Teams Incoming Webhook.
         
@@ -423,7 +424,7 @@ class TeamsService:
                 )
                 
                 if response.status_code == 200:
-                    logger.info(f"Teams message sent successfully")
+                    logger.info("Teams message sent successfully")
                     return {
                         "success": True,
                         "status_code": response.status_code,
@@ -450,7 +451,7 @@ class TeamsService:
                 "error": str(e)
             }
     
-    async def test_connection(self, webhook_url: Optional[str] = None) -> Dict[str, Any]:
+    async def test_connection(self, webhook_url: str | None = None) -> dict[str, Any]:
         """
         Test Teams webhook connection by sending a test message.
         

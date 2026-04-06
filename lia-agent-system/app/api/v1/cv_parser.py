@@ -1,29 +1,29 @@
 """
 CV Parser API endpoints for uploading and parsing CVs.
 """
-from fastapi import APIRouter, Form, HTTPException, UploadFile, File, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, date
-from pathlib import Path
-import uuid
 import logging
-
-from app.core.database import get_db
-from app.models.candidate import Candidate, CandidateExperience, CandidateEducation
-from app.domains.cv_screening.services.cv_parser import cv_parser_service
-from app.utils.skill_classifier import classify_skills
 import re
-from typing import Tuple, Optional, Optional as Opt
-from app.schemas.cv_parser import (
-    ParsedCV,
-    CVUploadResponse,
-    CVParseTextRequest,
-    CVConfirmRequest,
-    CVConfirmResponse,
-    SupportedFormatsResponse,
-)
+import uuid
+from datetime import date, datetime
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_service_or_user
 from app.auth.models import User
+from app.core.database import get_db
+from app.domains.cv_screening.services.cv_parser import cv_parser_service
+from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
+from app.schemas.cv_parser import (
+    CVConfirmRequest,
+    CVConfirmResponse,
+    CVParseTextRequest,
+    CVUploadResponse,
+    ParsedCV,
+    SupportedFormatsResponse,
+)
+from app.utils.skill_classifier import classify_skills
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ MAX_RAW_TEXT_RESPONSE_LENGTH = 5000
 router = APIRouter(prefix="/cv", tags=["cv-parser"])
 
 
-def parse_date_of_birth(dob_string: Opt[str]) -> Opt[date]:
+def parse_date_of_birth(dob_string: str | None) -> date | None:
     """Parse date of birth from various formats."""
     if not dob_string:
         return None
@@ -54,7 +54,7 @@ def parse_date_of_birth(dob_string: Opt[str]) -> Opt[date]:
     return None
 
 
-def parse_location(location: Opt[str]) -> Tuple[Opt[str], Opt[str], Opt[str]]:
+def parse_location(location: str | None) -> tuple[str | None, str | None, str | None]:
     """
     Parse location string into city, state, country.
     
@@ -109,7 +109,7 @@ def parse_location(location: Opt[str]) -> Tuple[Opt[str], Opt[str], Opt[str]]:
     return city, state, country
 
 
-def calculate_years_of_experience(experiences: list) -> Opt[int]:
+def calculate_years_of_experience(experiences: list) -> int | None:
     """
     Calculate total years of experience from experience list.
     
@@ -132,7 +132,7 @@ def calculate_years_of_experience(experiences: list) -> Opt[int]:
         'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
     }
     
-    def parse_date(date_str: Opt[str], is_end: bool = False) -> Tuple[int, int]:
+    def parse_date(date_str: str | None, is_end: bool = False) -> tuple[int, int]:
         if not date_str:
             return (current_year, current_month) if is_end else (0, 0)
         
@@ -220,7 +220,7 @@ async def upload_and_parse_cv(
         file_size = len(file_content)
         await file.seek(0)
         
-        file_ext = Path(file.filename).suffix.lower() if file.filename else ".pdf"
+        Path(file.filename).suffix.lower() if file.filename else ".pdf"
         safe_filename = re.sub(r'[^\w\-.]', '_', file.filename or "cv")
         unique_filename = f"{uuid.uuid4().hex[:12]}_{safe_filename}"
         file_path = CV_UPLOAD_DIR / unique_filename
@@ -507,13 +507,13 @@ async def health_check():
 
 @router.post("/upload-and-screen")
 async def upload_and_screen_cv(
-    file: Optional[UploadFile] = File(None),
-    cv_text: Optional[str] = Form(None),
-    vacancy_title: Optional[str] = Form(None),
-    vacancy_id: Optional[str] = Form(None),
+    file: UploadFile | None = File(None),
+    cv_text: str | None = Form(None),
+    vacancy_title: str | None = Form(None),
+    vacancy_id: str | None = Form(None),
     run_bars: bool = Form(True),
-    company_id: Optional[str] = Form(None),
-    user_id: Optional[str] = Form(None),
+    company_id: str | None = Form(None),
+    user_id: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_service_or_user),
 ):
@@ -523,8 +523,6 @@ async def upload_and_screen_cv(
     Accepts either a file upload or raw CV text.
     Returns structured result with candidate_id, BARS score, and messages.
     """
-    from app.tools.registry import tool_registry
-    from app.tools.executor import ToolExecutionContext
 
     try:
         # Determine company_id from JWT or form field
@@ -550,7 +548,6 @@ async def upload_and_screen_cv(
             raise HTTPException(status_code=400, detail="Either file or cv_text is required")
 
         # Build execution context
-        from app.tools.executor import tool_executor
 
         class _MockContext:
             company_id = resolved_company

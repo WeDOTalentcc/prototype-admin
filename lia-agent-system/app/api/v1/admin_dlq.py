@@ -10,7 +10,7 @@ Endpoints:
 Acesso restrito a admins (require_admin).
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel
@@ -29,13 +29,13 @@ class DLQEntry(BaseModel):
     entry_id: str
     task_name: str
     queue: str
-    args: List[Any]
-    kwargs: Dict[str, Any]
+    args: list[Any]
+    kwargs: dict[str, Any]
     exception_type: str
     exception_msg: str
     traceback: str
     retries: int
-    company_id: Optional[str]
+    company_id: str | None
     failed_at: str
 
 
@@ -46,7 +46,7 @@ class DLQQueueSummary(BaseModel):
 
 class DLQSummaryResponse(BaseModel):
     total_entries: int
-    queues: Dict[str, int]
+    queues: dict[str, int]
 
 
 class RequeueResponse(BaseModel):
@@ -80,7 +80,7 @@ async def get_dlq_summary(
     )
 
 
-@router.get("/{queue}", response_model=List[DLQEntry])
+@router.get("/{queue}", response_model=list[DLQEntry])
 async def list_dlq_entries(
     queue: str = Path(..., description="Nome da fila (ex: onboarding_low)"),
     limit: int = Query(50, ge=1, le=500, description="Máximo de entradas retornadas"),

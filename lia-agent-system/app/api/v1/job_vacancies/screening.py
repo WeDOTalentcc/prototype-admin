@@ -2,6 +2,7 @@
 Screening configuration routes.
 """
 from fastapi import APIRouter
+
 from ._shared import *
 
 router = APIRouter()

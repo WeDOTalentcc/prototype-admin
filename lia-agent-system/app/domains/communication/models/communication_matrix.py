@@ -7,12 +7,13 @@ This model stores the communication matrix entries that define:
 - What channels are used
 - Whether approval is required
 """
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Integer, Index
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 import enum
-from typing import List, Dict, Any, Optional
+import uuid
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -96,7 +97,7 @@ class CommunicationMatrixEntry(Base):
     def __repr__(self):
         return f"<CommunicationMatrixEntry {self.module}:{self.trigger_name}>"
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "id": str(self.id),
@@ -116,7 +117,7 @@ class CommunicationMatrixEntry(Base):
         }
 
 
-DEFAULT_MATRIX_ENTRIES: List[Dict[str, Any]] = [
+DEFAULT_MATRIX_ENTRIES: list[dict[str, Any]] = [
     # ========================================
     # CANDIDATE JOURNEY - Sourcing e Primeiro Contato
     # ========================================

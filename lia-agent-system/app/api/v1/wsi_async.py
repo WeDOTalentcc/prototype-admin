@@ -7,9 +7,8 @@ Endpoints públicos protegidos por token de sessão.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -146,6 +145,7 @@ async def complete_session(
         # Marca sessão como completed via check_expired_sessions proxy or direct Redis update
         try:
             import json
+
             import redis
             from lia_config.config import settings
             _r = redis.from_url(settings.REDIS_URL)

@@ -5,35 +5,26 @@ Usa LangGraph nativo (create_react_agent) com PostgresSaver para persistência.
 Migração completa concluída — path legado ReActLoop removido.
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
     NavigationCommand,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
-from app.services.confidence_policy_service import confidence_policy_service
 
 from app.domains.recruiter_assistant.agents.kanban_stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
-    get_transition_prompt,
-    get_journey_insight_block,
-    get_pipeline_prediction_block,
 )
 from app.domains.recruiter_assistant.agents.kanban_system_prompt import get_kanban_system_prompt
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
     get_kanban_tools,
-    GUARDRAIL_TOOLS,
 )
+from app.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +50,7 @@ class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "kanban"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:

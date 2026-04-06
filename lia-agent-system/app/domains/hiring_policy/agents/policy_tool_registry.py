@@ -8,12 +8,12 @@ FairnessGuard for compliance validation.
 """
 import json
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-async def _wrap_get_current_policy(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_current_policy(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[policy_tools] get_current_policy called for company={company_id}")
     try:
@@ -86,7 +86,7 @@ async def _wrap_get_current_policy(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao carregar politicas: {str(e)}"}
 
 
-async def _wrap_save_policy_field(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_save_policy_field(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     block = kwargs.get("block", "")
     field = kwargs.get("field", "")
@@ -107,7 +107,7 @@ async def _wrap_save_policy_field(**kwargs: Any) -> Dict[str, Any]:
     try:
         async with AsyncSessionLocal() as session:
             existing = await session.execute(
-                text("SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1".format(block=block)),
+                text(f"SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
                 {"company_id": company_id},
             )
             row = existing.mappings().first()
@@ -126,21 +126,21 @@ async def _wrap_save_policy_field(**kwargs: Any) -> Dict[str, Any]:
                 block_json = json.dumps(current_block, ensure_ascii=False)
 
                 await session.execute(
-                    text("""
+                    text(f"""
                         UPDATE company_hiring_policies
                         SET {block} = :block_data::jsonb, updated_at = NOW()
                         WHERE company_id = :company_id
-                    """.format(block=block)),
+                    """),
                     {"block_data": block_json, "company_id": company_id},
                 )
             else:
                 block_data = {field: value}
                 block_json = json.dumps(block_data, ensure_ascii=False)
                 await session.execute(
-                    text("""
+                    text(f"""
                         INSERT INTO company_hiring_policies (company_id, {block}, created_at, updated_at)
                         VALUES (:company_id, :block_data::jsonb, NOW(), NOW())
-                    """.format(block=block)),
+                    """),
                     {"company_id": company_id, "block_data": block_json},
                 )
 
@@ -161,7 +161,7 @@ async def _wrap_save_policy_field(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao salvar politica: {str(e)}"}
 
 
-async def _wrap_get_policy_summary(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_policy_summary(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[policy_tools] get_policy_summary called for company={company_id}")
     try:
@@ -236,7 +236,7 @@ async def _wrap_get_policy_summary(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao gerar resumo: {str(e)}"}
 
 
-async def _wrap_validate_policy_compliance(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_validate_policy_compliance(**kwargs: Any) -> dict[str, Any]:
     policy_text = kwargs.get("policy_text", "")
     field_name = kwargs.get("field_name", "")
     deep_check = kwargs.get("deep_check", False)
@@ -296,7 +296,7 @@ async def _wrap_validate_policy_compliance(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_company_context(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_company_context(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[policy_tools] get_company_context called for company={company_id}")
     try:
@@ -483,7 +483,7 @@ INDUSTRY_BENCHMARKS = {
 }
 
 
-async def _wrap_get_industry_benchmarks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_industry_benchmarks(**kwargs: Any) -> dict[str, Any]:
     industry = kwargs.get("industry", "technology")
     logger.info(f"[policy_tools] get_industry_benchmarks called for industry={industry}")
 
@@ -502,7 +502,7 @@ async def _wrap_get_industry_benchmarks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_platform_benchmarks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_platform_benchmarks(**kwargs: Any) -> dict[str, Any]:
     industry = kwargs.get("industry", "")
     logger.info(f"[policy_tools] get_platform_benchmarks called for industry={industry}")
     try:
@@ -581,7 +581,7 @@ async def _wrap_get_platform_benchmarks(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao calcular benchmarks da plataforma: {str(e)}"}
 
 
-async def _wrap_explain_policy_impact(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_explain_policy_impact(**kwargs: Any) -> dict[str, Any]:
     block = kwargs.get("block", "")
     field = kwargs.get("field", "")
     value = kwargs.get("value")
@@ -630,7 +630,7 @@ async def _wrap_explain_policy_impact(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_setup_progress(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_setup_progress(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[policy_tools] get_setup_progress called for company={company_id}")
     try:
@@ -709,7 +709,7 @@ async def _wrap_get_setup_progress(**kwargs: Any) -> Dict[str, Any]:
                 if not configured:
                     pending.append(block_name)
 
-            overall = int((filled_fields / total_fields * 100)) if total_fields > 0 else 0
+            overall = int(filled_fields / total_fields * 100) if total_fields > 0 else 0
 
             return {
                 "success": True,
@@ -728,7 +728,7 @@ async def _wrap_get_setup_progress(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao calcular progresso: {str(e)}"}
 
 
-async def _wrap_detect_policy_impact_anomalies(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_detect_policy_impact_anomalies(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[policy_tools] detect_policy_impact_anomalies called for company={company_id}")
     try:
@@ -852,7 +852,7 @@ async def _wrap_detect_policy_impact_anomalies(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro na analise de impacto: {str(e)}"}
 
 
-async def _wrap_get_policy_effectiveness_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_policy_effectiveness_report(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     period_days = kwargs.get("period_days", 30)
     logger.info(f"[policy_tools] get_policy_effectiveness_report called for company={company_id} period={period_days}d")
@@ -935,7 +935,7 @@ async def _wrap_get_policy_effectiveness_report(**kwargs: Any) -> Dict[str, Any]
         return {"success": False, "data": {}, "message": f"Erro ao gerar relatorio: {str(e)}"}
 
 
-async def _wrap_save_policy_block(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_save_policy_block(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     block = kwargs.get("block", "")
     data = kwargs.get("data", {})
@@ -976,7 +976,7 @@ async def _wrap_save_policy_block(**kwargs: Any) -> Dict[str, Any]:
     try:
         async with AsyncSessionLocal() as session:
             existing = await session.execute(
-                text("SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1".format(block=block)),
+                text(f"SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
                 {"company_id": company_id},
             )
             row = existing.mappings().first()
@@ -995,20 +995,20 @@ async def _wrap_save_policy_block(**kwargs: Any) -> Dict[str, Any]:
                 block_json = json.dumps(current_block, ensure_ascii=False)
 
                 await session.execute(
-                    text("""
+                    text(f"""
                         UPDATE company_hiring_policies
                         SET {block} = :block_data::jsonb, updated_at = NOW()
                         WHERE company_id = :company_id
-                    """.format(block=block)),
+                    """),
                     {"block_data": block_json, "company_id": company_id},
                 )
             else:
                 block_json = json.dumps(data, ensure_ascii=False)
                 await session.execute(
-                    text("""
+                    text(f"""
                         INSERT INTO company_hiring_policies (company_id, {block}, created_at, updated_at)
                         VALUES (:company_id, :block_data::jsonb, NOW(), NOW())
-                    """.format(block=block)),
+                    """),
                     {"company_id": company_id, "block_data": block_json},
                 )
 
@@ -1029,7 +1029,7 @@ async def _wrap_save_policy_block(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao salvar bloco: {str(e)}"}
 
 
-async def _wrap_apply_industry_defaults(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_apply_industry_defaults(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     industry = kwargs.get("industry", "technology")
     logger.info(f"[policy_tools] apply_industry_defaults called: company={company_id} industry={industry}")
@@ -1080,11 +1080,11 @@ async def _wrap_apply_industry_defaults(**kwargs: Any) -> Dict[str, Any]:
                 for block_name, block_data in defaults.items():
                     block_json = json.dumps(block_data, ensure_ascii=False)
                     await session.execute(
-                        text("""
+                        text(f"""
                             UPDATE company_hiring_policies
-                            SET {block} = :block_data::jsonb, updated_at = NOW()
+                            SET {block_name} = :block_data::jsonb, updated_at = NOW()
                             WHERE company_id = :company_id
-                        """.format(block=block_name)),
+                        """),
                         {"block_data": block_json, "company_id": company_id},
                     )
             else:
@@ -1124,7 +1124,7 @@ async def _wrap_apply_industry_defaults(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": f"Erro ao aplicar defaults: {str(e)}"}
 
 
-def get_policy_tools() -> List[ToolDefinition]:
+def get_policy_tools() -> list[ToolDefinition]:
     return [
         ToolDefinition(
             name="get_current_policy",

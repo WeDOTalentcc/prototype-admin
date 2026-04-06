@@ -10,17 +10,18 @@ Provides full CRUD operations for interview management:
 - Cancel interviews
 - Generate ICS calendar files
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from fastapi.responses import Response
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
-from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
@@ -38,50 +39,50 @@ class CreateInterviewRequest(BaseModel):
     duration_minutes: int = 60
     interview_type: str = "technical"
     interview_mode: str = "video"
-    job_title: Optional[str] = None
-    job_vacancy_id: Optional[str] = None
-    location: Optional[str] = None
-    notes: Optional[str] = None
-    additional_interviewers: Optional[List[Dict[str, str]]] = None
+    job_title: str | None = None
+    job_vacancy_id: str | None = None
+    location: str | None = None
+    notes: str | None = None
+    additional_interviewers: list[dict[str, str]] | None = None
 
 
 class UpdateInterviewRequest(BaseModel):
     """Request to update an interview."""
-    start_time: Optional[datetime] = None
-    duration_minutes: Optional[int] = None
-    interview_type: Optional[str] = None
-    interview_mode: Optional[str] = None
-    location: Optional[str] = None
-    notes: Optional[str] = None
-    interviewer_name: Optional[str] = None
-    interviewer_email: Optional[EmailStr] = None
-    additional_interviewers: Optional[List[Dict[str, str]]] = None
-    status: Optional[str] = None
-    confirmation_status: Optional[str] = None
+    start_time: datetime | None = None
+    duration_minutes: int | None = None
+    interview_type: str | None = None
+    interview_mode: str | None = None
+    location: str | None = None
+    notes: str | None = None
+    interviewer_name: str | None = None
+    interviewer_email: EmailStr | None = None
+    additional_interviewers: list[dict[str, str]] | None = None
+    status: str | None = None
+    confirmation_status: str | None = None
 
 
 class InterviewResponse(BaseModel):
     """Response with interview details."""
     id: str
     title: str
-    candidate_id: Optional[str]
+    candidate_id: str | None
     candidate_name: str
     candidate_email: str
     interviewer_name: str
     interviewer_email: str
-    additional_interviewers: List[Dict[str, str]]
+    additional_interviewers: list[dict[str, str]]
     start_time: datetime
     end_time: datetime
     duration_minutes: int
     interview_type: str
     interview_mode: str
-    location: Optional[str]
-    meeting_url: Optional[str]
-    job_title: Optional[str]
-    job_vacancy_id: Optional[str]
+    location: str | None
+    meeting_url: str | None
+    job_title: str | None
+    job_vacancy_id: str | None
     status: str
     confirmation_status: str
-    notes: Optional[str]
+    notes: str | None
     is_synced_to_calendar: bool
     created_at: datetime
     updated_at: datetime
@@ -90,7 +91,7 @@ class InterviewResponse(BaseModel):
 class InterviewListResponse(BaseModel):
     """Response for listing interviews."""
     total: int
-    items: List[InterviewResponse]
+    items: list[InterviewResponse]
     calendar_status: str = "Funcional - Aguardando Configuração Calendar"
 
 
@@ -168,7 +169,7 @@ async def create_interview(
                     f"Type: {request.interview_type}",
                     f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
                     f"Duration: {request.duration_minutes}min",
-                    f"Calendar sync: pending",
+                    "Calendar sync: pending",
                 ],
                 criteria_used=["candidate_availability", "interviewer_availability", "calendar_slot", "interview_type"],
                 candidate_id=request.candidate_id,
@@ -194,19 +195,19 @@ class CreateInterviewWithTeamsRequest(BaseModel):
     start_time: datetime
     duration_minutes: int = 60
     interview_type: str = "technical"
-    job_title: Optional[str] = None
-    job_vacancy_id: Optional[str] = None
-    company_id: Optional[str] = None
-    notes: Optional[str] = None
-    additional_attendees: Optional[List[Dict[str, str]]] = None
+    job_title: str | None = None
+    job_vacancy_id: str | None = None
+    company_id: str | None = None
+    notes: str | None = None
+    additional_attendees: list[dict[str, str]] | None = None
     send_calendar_invites: bool = True
-    interviewer_name: Optional[str] = None
+    interviewer_name: str | None = None
 
 
 class InterviewWithTeamsResponse(BaseModel):
     """Response for interview creation with Teams meeting."""
     interview: InterviewResponse
-    teams_metadata: Dict[str, Any]
+    teams_metadata: dict[str, Any]
 
 
 @router.post("/interviews/with-teams", response_model=InterviewWithTeamsResponse)
@@ -261,12 +262,12 @@ async def create_interview_with_teams(
 
 @router.get("/interviews", response_model=InterviewListResponse)
 async def list_interviews(
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Filter by job vacancy ID"),
-    interviewer_email: Optional[str] = Query(None, description="Filter by interviewer email"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    from_date: Optional[datetime] = Query(None, description="Filter from this date"),
-    to_date: Optional[datetime] = Query(None, description="Filter to this date"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    vacancy_id: str | None = Query(None, description="Filter by job vacancy ID"),
+    interviewer_email: str | None = Query(None, description="Filter by interviewer email"),
+    status: str | None = Query(None, description="Filter by status"),
+    from_date: datetime | None = Query(None, description="Filter from this date"),
+    to_date: datetime | None = Query(None, description="Filter to this date"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
@@ -352,7 +353,7 @@ async def update_interview(
 @router.delete("/interviews/{interview_id}")
 async def cancel_interview(
     interview_id: str,
-    reason: Optional[str] = Query(None, description="Cancellation reason"),
+    reason: str | None = Query(None, description="Cancellation reason"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -432,10 +433,10 @@ class SendInterviewInviteRequest(BaseModel):
     candidate_name: str
     job_title: str
     bookings_link: str
-    company_id: Optional[str] = None
-    company_name: Optional[str] = None
-    recruiter_name: Optional[str] = None
-    interviewer_name: Optional[str] = None
+    company_id: str | None = None
+    company_name: str | None = None
+    recruiter_name: str | None = None
+    interviewer_name: str | None = None
     interview_format: str = "video"
     duration_minutes: int = 60
 
@@ -444,10 +445,10 @@ class SendInterviewInviteResponse(BaseModel):
     """Response for interview invite sending."""
     success: bool
     message: str
-    email_log_id: Optional[str] = None
-    candidate_email: Optional[str] = None
-    template_used: Optional[str] = None
-    error: Optional[str] = None
+    email_log_id: str | None = None
+    candidate_email: str | None = None
+    template_used: str | None = None
+    error: str | None = None
 
 
 @router.post("/interviews/send-invite", response_model=SendInterviewInviteResponse)
@@ -514,10 +515,10 @@ class SendInterviewConfirmationRequest(BaseModel):
     job_title: str
     interview_datetime: datetime
     interview_link: str
-    company_id: Optional[str] = None
-    company_name: Optional[str] = None
-    recruiter_name: Optional[str] = None
-    interviewer_name: Optional[str] = None
+    company_id: str | None = None
+    company_name: str | None = None
+    recruiter_name: str | None = None
+    interviewer_name: str | None = None
     interview_format: str = "video"
     duration_minutes: int = 60
 

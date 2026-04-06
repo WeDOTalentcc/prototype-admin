@@ -11,19 +11,18 @@ COMO APLICAR:
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import yaml
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, validator
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from libs.models.lia_models.agent_template import AgentTemplate, AgentTemplateStatus
-from sqlalchemy import select, or_
 
 router = APIRouter()
 
@@ -39,7 +38,7 @@ class AgentTemplateCreate(BaseModel):
     name: str = Field(..., min_length=3, max_length=500)
     domain: str = Field(..., description=f"Um de: {ALLOWED_DOMAINS}")
     system_prompt_yaml: str = Field(..., min_length=50, description="System prompt em formato YAML")
-    base_template_id: Optional[str] = None
+    base_template_id: str | None = None
 
     @validator("domain")
     def validate_domain(cls, v):
@@ -62,16 +61,16 @@ class AgentTemplateCreate(BaseModel):
 
 class AgentTemplateResponse(BaseModel):
     id: str
-    company_id: Optional[str]
+    company_id: str | None
     name: str
     domain: str
     system_prompt_yaml: str
     version: int
     status: str
-    base_template_id: Optional[str]
+    base_template_id: str | None
     created_by: str
     created_at: datetime
-    published_at: Optional[datetime]
+    published_at: datetime | None
     is_public: bool
 
     class Config:
@@ -80,9 +79,9 @@ class AgentTemplateResponse(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.get("/agent-templates", response_model=List[AgentTemplateResponse])
+@router.get("/agent-templates", response_model=list[AgentTemplateResponse])
 async def list_templates(
-    domain: Optional[str] = None,
+    domain: str | None = None,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -200,7 +199,7 @@ async def update_template(
         )
         # Arquivar a versão anterior publicada
         template.status = AgentTemplateStatus.ARCHIVED
-        template.archived_at = datetime.now(timezone.utc)
+        template.archived_at = datetime.now(UTC)
 
         db.add(new_version)
         await db.commit()
@@ -245,7 +244,7 @@ async def publish_template(
         )
 
     template.status = AgentTemplateStatus.PUBLISHED
-    template.published_at = datetime.now(timezone.utc)
+    template.published_at = datetime.now(UTC)
     await db.commit()
     await db.refresh(template)
     return template
@@ -270,5 +269,5 @@ async def archive_template(
         raise HTTPException(status_code=403, detail="Acesso negado.")
 
     template.status = AgentTemplateStatus.ARCHIVED
-    template.archived_at = datetime.now(timezone.utc)
+    template.archived_at = datetime.now(UTC)
     await db.commit()

@@ -6,12 +6,13 @@ This module provides:
 - Error wrapping decorator for agent methods
 - User-friendly error messages in Portuguese
 """
-from typing import Optional, Dict, Any, Callable, TypeVar, Awaitable
+import logging
+import traceback
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import wraps
-import logging
-import traceback
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +45,11 @@ class AgentErrorResponse:
     user_message: str
     technical_message: str = ""
     retryable: bool = False
-    suggested_action: Optional[str] = None
+    suggested_action: str | None = None
     missing_entities: list = field(default_factory=list)
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "error": True,
@@ -71,9 +72,9 @@ class AgentError(Exception):
         user_message: str,
         technical_message: str = "",
         retryable: bool = False,
-        suggested_action: Optional[str] = None,
+        suggested_action: str | None = None,
         missing_entities: list = None,
-        context: Dict[str, Any] = None
+        context: dict[str, Any] = None
     ):
         self.code = code
         self.user_message = user_message
@@ -129,7 +130,7 @@ def create_user_friendly_error(
     code: AgentErrorCode,
     technical_message: str = "",
     missing_entities: list = None,
-    context: Dict[str, Any] = None
+    context: dict[str, Any] = None
 ) -> AgentErrorResponse:
     """Create a user-friendly error response."""
     user_message = USER_FRIENDLY_MESSAGES.get(code, "Ocorreu um erro. Por favor, tente novamente.")

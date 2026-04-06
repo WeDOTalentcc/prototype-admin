@@ -13,7 +13,6 @@ Não expõe PII nem estado de sessões.
 """
 import logging
 import time
-from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel
@@ -29,13 +28,13 @@ class GraphHealthItem(BaseModel):
     name: str
     status: str          # "ok" | "error"
     checkpointer: str
-    compile_ms: Optional[float] = None
-    error: Optional[str] = None
+    compile_ms: float | None = None
+    error: str | None = None
 
 
 class LangGraphHealthResponse(BaseModel):
     checkpointer_type: str
-    graphs: List[GraphHealthItem]
+    graphs: list[GraphHealthItem]
     overall: str         # "ok" | "degraded" | "error"
 
 
@@ -47,7 +46,7 @@ def _probe_graph(name: str, factory) -> GraphHealthItem:
         cp = get_checkpointer()
         cp_type = type(cp).__name__ if cp is not None else "MemorySaver(default)"
 
-        graph = factory()
+        factory()
         compile_ms = (time.perf_counter() - t0) * 1000
         return GraphHealthItem(
             name=name,
@@ -77,7 +76,7 @@ def _probe_graph(name: str, factory) -> GraphHealthItem:
     ),
 )
 async def langgraph_health(
-    x_admin_key: Optional[str] = Header(default=None, alias="X-Admin-Key"),
+    x_admin_key: str | None = Header(default=None, alias="X-Admin-Key"),
 ) -> LangGraphHealthResponse:
     """
     Health check da camada LangGraph nativa.
@@ -102,7 +101,7 @@ async def langgraph_health(
     except Exception as exc:
         cp_type = f"error:{exc}"
 
-    graphs: List[GraphHealthItem] = []
+    graphs: list[GraphHealthItem] = []
 
     def _interview_factory():
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph

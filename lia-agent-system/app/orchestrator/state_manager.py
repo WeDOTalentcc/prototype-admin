@@ -9,9 +9,9 @@ Provides shared memory store for:
 """
 
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime
 import uuid
+from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class StateManager:
         """
         self.db = db_service
         self.conversation_memory = conversation_memory
-        self.state_store: Dict[str, Dict[str, Any]] = {}
+        self.state_store: dict[str, dict[str, Any]] = {}
         
     def set_conversation_memory(self, conversation_memory):
         """Set the ConversationMemory service for persistent storage."""
@@ -76,8 +76,8 @@ class StateManager:
         user_id: str,
         initial_message: str,
         context_type: str = "general",
-        context_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        context_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """
         Create new conversation state with context information.
@@ -113,14 +113,14 @@ class StateManager:
         logger.info(f"🆕 Conversation created with context: {conversation_id} ({context_type})")
         return conversation_id
     
-    def get_state(self, conversation_id: str) -> Optional[Dict[str, Any]]:
+    def get_state(self, conversation_id: str) -> dict[str, Any] | None:
         """Get current state for conversation."""
         return self.state_store.get(conversation_id)
     
     def update_state(
         self, 
         conversation_id: str,
-        updates: Dict[str, Any]
+        updates: dict[str, Any]
     ):
         """
         Update conversation state.
@@ -144,7 +144,7 @@ class StateManager:
         conversation_id: str,
         role: str,
         content: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ):
         """Add message to conversation history."""
         if conversation_id not in self.state_store:
@@ -196,7 +196,7 @@ class StateManager:
         self, 
         conversation_id: str,
         agent_name: str
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Retrieve result from specific agent."""
         state = self.get_state(conversation_id)
         if not state:
@@ -209,7 +209,7 @@ class StateManager:
         self, 
         conversation_id: str,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get recent conversation messages."""
         state = self.get_state(conversation_id)
         if not state:
@@ -218,7 +218,7 @@ class StateManager:
         messages = state.get("messages", [])
         return messages[-limit:]
     
-    def get_context_info(self, conversation_id: str) -> Dict[str, Any]:
+    def get_context_info(self, conversation_id: str) -> dict[str, Any]:
         """Get context information for a conversation."""
         state = self.get_state(conversation_id)
         if not state:
@@ -259,7 +259,7 @@ class StateManager:
             }
             logger.info(f"🔄 State cleared for: {conversation_id}")
     
-    def load_from_db(self, conversation_id: str, conversation_data: Dict[str, Any]):
+    def load_from_db(self, conversation_id: str, conversation_data: dict[str, Any]):
         """
         Load conversation state from database.
         
@@ -281,7 +281,7 @@ class StateManager:
         }
         logger.info(f"📂 Loaded conversation from DB: {conversation_id}")
     
-    def get_summary(self, conversation_id: str) -> Optional[str]:
+    def get_summary(self, conversation_id: str) -> str | None:
         """Get conversation summary if available."""
         state = self.get_state(conversation_id)
         if not state:
@@ -294,11 +294,11 @@ class StateManager:
             self.state_store[conversation_id]["summary"] = summary
             logger.info(f"📊 Summary updated for: {conversation_id}")
     
-    def get_all_active_conversations(self) -> List[str]:
+    def get_all_active_conversations(self) -> list[str]:
         """Get list of all active conversation IDs in memory."""
         return list(self.state_store.keys())
     
-    def get_conversations_by_user(self, user_id: str) -> List[str]:
+    def get_conversations_by_user(self, user_id: str) -> list[str]:
         """Get conversation IDs for a specific user."""
         return [
             conv_id for conv_id, state in self.state_store.items()

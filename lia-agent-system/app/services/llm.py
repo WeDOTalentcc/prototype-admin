@@ -4,27 +4,26 @@ Uses Replit AI Integrations for LLM access.
 Supports function calling (tool use) for agent systems.
 Supports structured outputs with Pydantic models.
 """
-import json
 import logging
 import os
+import time as _time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Literal, Type, TypeVar
+from typing import Any, Literal, TypeVar
 
-from pydantic import BaseModel, SecretStr
 from langchain_anthropic import ChatAnthropic
-from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, SecretStr
 
 from app.core.config import settings
+
+# === E7: Audit logging on all LLM calls ===
+from app.shared.compliance.audit_service import audit_service as _audit_svc
 
 # === Choose Your AI: Tenant-aware LLM routing ===
 # === E6: PII stripping on all LLM calls ===
 from app.shared.pii_masking import strip_pii_for_llm_prompt
-# === E7: Audit logging on all LLM calls ===
-from app.shared.compliance.audit_service import audit_service as _audit_svc
-from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
-import time as _time
-
+from app.shared.tenant_llm_context import get_current_llm_tenant
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -40,22 +39,22 @@ class ToolCallRequest:
     """Represents a tool call requested by the LLM."""
     id: str
     name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
 
 
 @dataclass
 class ToolCallResponse:
     """Response from generate_with_tools."""
-    text_response: Optional[str] = None
-    tool_calls: List[ToolCallRequest] = field(default_factory=list)
+    text_response: str | None = None
+    tool_calls: list[ToolCallRequest] = field(default_factory=list)
     is_tool_call: bool = False
-    raw_response: Optional[Any] = None
+    raw_response: Any | None = None
 
 
 @dataclass
 class LLMCascadeResult:
     """Result from generate_with_cascade — includes which model was used."""
-    content: Optional[str]
+    content: str | None
     model_used: str
     confidence: float
     requires_human: bool = False
@@ -69,8 +68,8 @@ class LLMService:
     """
     
     def __init__(self):
-        self._claude_client: Optional[ChatAnthropic] = None
-        self._openai_client: Optional[ChatOpenAI] = None
+        self._claude_client: ChatAnthropic | None = None
+        self._openai_client: ChatOpenAI | None = None
         self._gemini_client = None
     
     @property
@@ -139,7 +138,7 @@ class LLMService:
         
         raise ValueError("No OpenAI API key configured")
     
-    async def generate_with_gemini(self, prompt: str, model: Optional[str] = None) -> str:
+    async def generate_with_gemini(self, prompt: str, model: str | None = None) -> str:
         """Generate text using Gemini via Replit AI Integration."""
         client = self.gemini_native
         model_id = model or settings.LLM_GEMINI_MODEL
@@ -155,7 +154,7 @@ class LLMService:
         self,
         prompt: str,
         provider: LLMProvider = "gemini",
-        model: Optional[str] = None,
+        model: str | None = None,
         **kwargs
     ) -> str:
         """
@@ -234,10 +233,10 @@ class LLMService:
     
     async def generate_with_tools(
         self,
-        messages: List[Dict[str, Any]],
-        tools: List[Dict[str, Any]],
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
         provider: LLMProvider = "gemini",
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096
     ) -> ToolCallResponse:
         """
@@ -254,7 +253,7 @@ class LLMService:
             ToolCallResponse with either text or tool calls
         """
         # E6: PII stripping
-        prompt = strip_pii_for_llm_prompt(prompt)
+        strip_pii_for_llm_prompt(prompt)
 
         if provider == "claude":
             return await self._generate_with_tools_claude(
@@ -269,9 +268,9 @@ class LLMService:
     
     async def _generate_with_tools_claude(
         self,
-        messages: List[Dict[str, Any]],
-        tools: List[Dict[str, Any]],
-        system_prompt: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        system_prompt: str | None = None,
         max_tokens: int = 4096
     ) -> ToolCallResponse:
         """Generate with Claude's tool_use via anthropic SDK."""
@@ -345,13 +344,12 @@ class LLMService:
     
     async def _generate_with_tools_gemini(
         self,
-        messages: List[Dict[str, Any]],
-        tools: List[Dict[str, Any]],
-        system_prompt: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        system_prompt: str | None = None,
         max_tokens: int = 4096
     ) -> ToolCallResponse:
         """Generate with Gemini's function_calling via google.genai SDK."""
-        from google import genai
         from google.genai import types
         
         client = self.gemini_native
@@ -460,14 +458,14 @@ class LLMService:
     
     async def generate_with_tool_loop(
         self,
-        messages: List[Dict[str, Any]],
-        tools: List[Dict[str, Any]],
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
         tool_executor,
         provider: LLMProvider = "claude",
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
-        agent_type: Optional[str] = None,
-        conversation_id: Optional[str] = None
+        agent_type: str | None = None,
+        conversation_id: str | None = None
     ) -> str:
         """
         Generate response with automatic tool execution loop.
@@ -489,7 +487,7 @@ class LLMService:
             Final text response after tool execution
         """
         # E6: PII stripping
-        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+        if isinstance(prompt, str): strip_pii_for_llm_prompt(prompt)
 
         current_messages = list(messages)
         loop_count = 0
@@ -541,7 +539,6 @@ class LLMService:
                         ]
                     })
                 elif provider == "gemini":
-                    from google.genai import types
                     current_messages.append({
                         "role": "assistant",
                         "content": f"Called tool: {tool_call.name}",
@@ -579,10 +576,10 @@ class LLMService:
     
     async def generate_structured(
         self,
-        messages: List[Dict[str, Any]],
-        output_model: Type[T],
+        messages: list[dict[str, Any]],
+        output_model: type[T],
         provider: LLMProvider = "claude",
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 4096
     ) -> T:
         """
@@ -606,12 +603,8 @@ class LLMService:
             ValueError: If structured output parsing fails
         """
         # E6: PII stripping
-        prompt = strip_pii_for_llm_prompt(prompt)
+        strip_pii_for_llm_prompt(prompt)
 
-        from app.services.structured_output import (
-            structured_output_service,
-            parse_json_from_text
-        )
         
         logger.info(f"Generating structured output: {output_model.__name__} via {provider}")
         
@@ -628,17 +621,18 @@ class LLMService:
     
     async def _generate_structured_claude(
         self,
-        messages: List[Dict[str, Any]],
-        output_model: Type[T],
-        system_prompt: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        output_model: type[T],
+        system_prompt: str | None = None,
         max_tokens: int = 4096
     ) -> T:
         """Generate structured output using Claude's tool calling."""
         from anthropic import Anthropic
+
         from app.services.structured_output import (
-            structured_output_service,
             parse_claude_tool_response,
-            parse_json_from_text
+            parse_json_from_text,
+            structured_output_service,
         )
         
         api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
@@ -660,7 +654,7 @@ class LLMService:
         tool = structured_output_service.get_claude_tool(output_model, "respond")
         
         enhanced_system = system_prompt or ""
-        enhanced_system += f"\n\nYou MUST use the 'respond' tool to provide your response in the exact format specified. Do not respond with plain text."
+        enhanced_system += "\n\nYou MUST use the 'respond' tool to provide your response in the exact format specified. Do not respond with plain text."
         
         try:
             request_kwargs = {
@@ -696,18 +690,18 @@ class LLMService:
     
     async def _generate_structured_gemini(
         self,
-        messages: List[Dict[str, Any]],
-        output_model: Type[T],
-        system_prompt: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        output_model: type[T],
+        system_prompt: str | None = None,
         max_tokens: int = 4096
     ) -> T:
         """Generate structured output using Gemini's response_schema."""
-        from google import genai
         from google.genai import types
+
         from app.services.structured_output import (
-            structured_output_service,
             parse_gemini_json_response,
-            parse_json_from_text
+            parse_json_from_text,
+            structured_output_service,
         )
         
         client = self.gemini_native
@@ -732,7 +726,7 @@ class LLMService:
         gemini_schema = structured_output_service.get_gemini_schema(output_model)
         
         enhanced_system = system_prompt or ""
-        enhanced_system += f"\n\nRespond with a valid JSON object matching this schema. Do not include any text outside the JSON."
+        enhanced_system += "\n\nRespond with a valid JSON object matching this schema. Do not include any text outside the JSON."
         
         try:
             config = types.GenerateContentConfig(
@@ -767,8 +761,8 @@ class LLMService:
     async def generate_with_prompt_template(
         self,
         template_name: str,
-        context: Dict[str, Any],
-        user_message: Optional[str] = None,
+        context: dict[str, Any],
+        user_message: str | None = None,
         provider: LLMProvider = "gemini",
         **kwargs
     ) -> str:
@@ -794,7 +788,7 @@ class LLMService:
             KeyError: If template not found in PromptLibrary
         """
         # E6: PII stripping
-        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+        if isinstance(prompt, str): strip_pii_for_llm_prompt(prompt)
 
         from app.prompts.templates import PromptLibrary
         
@@ -815,9 +809,9 @@ class LLMService:
     async def generate_with_template_structured(
         self,
         template_name: str,
-        context: Dict[str, Any],
-        output_model: Type[T],
-        user_message: Optional[str] = None,
+        context: dict[str, Any],
+        output_model: type[T],
+        user_message: str | None = None,
         provider: LLMProvider = "gemini",
         **kwargs
     ) -> T:
@@ -838,7 +832,7 @@ class LLMService:
             Validated Pydantic model instance
         """
         # E6: PII stripping
-        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+        if isinstance(prompt, str): strip_pii_for_llm_prompt(prompt)
 
         from app.prompts.templates import PromptLibrary
         
@@ -872,7 +866,7 @@ class LLMService:
         if not api_key:
             raise ValueError("No Anthropic API key configured")
 
-        kwargs: Dict[str, Any] = {
+        kwargs: dict[str, Any] = {
             "model_name": model_name,
             "api_key": api_key,
             "temperature": settings.LLM_AGENT_TEMPERATURE,
@@ -906,7 +900,7 @@ class LLMService:
         if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
 
         import json as _json
-        from langchain_core.output_parsers import JsonOutputParser
+
 
         cascade = [
             (settings.LLM_FAST_MODEL,    settings.LLM_CASCADE_FAST_THRESHOLD),
@@ -919,9 +913,9 @@ class LLMService:
         for model_name, threshold in cascade:
             try:
                 llm = self._get_claude_for_model(model_name)
-                messages_to_send: List[Any] = []
+                messages_to_send: list[Any] = []
                 if system_prompt:
-                    from langchain_core.messages import SystemMessage, HumanMessage
+                    from langchain_core.messages import HumanMessage, SystemMessage
                     messages_to_send = [SystemMessage(content=system_prompt), HumanMessage(content=full_prompt)]
                 else:
                     messages_to_send = [full_prompt]
@@ -1032,6 +1026,7 @@ async def get_claude_response(
         Claude's text response
     """
     import os
+
     from anthropic import Anthropic
     
     api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")

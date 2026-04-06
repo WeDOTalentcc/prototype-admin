@@ -8,29 +8,37 @@ Provides endpoints for:
 - Evaluating policies
 - Seeding default rules
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, desc
-from typing import Optional, List
-from datetime import datetime
 import logging
+from datetime import datetime
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from sqlalchemy import and_, desc, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.policy import (
-    BusinessRule, RateLimitRule, EscalationRule,
-    PolicyEvaluationLog, EscalationLog
-)
+from app.models.policy import BusinessRule, EscalationLog, EscalationRule, PolicyEvaluationLog, RateLimitRule
 from app.schemas.policy import (
-    BusinessRuleCreate, BusinessRuleUpdate, BusinessRuleResponse,
-    RateLimitRuleCreate, RateLimitRuleUpdate, RateLimitRuleResponse,
-    EscalationRuleCreate, EscalationRuleUpdate, EscalationRuleResponse,
-    PolicyEvaluateRequest, PolicyEvaluateResponse,
-    RateLimitCheckRequest, RateLimitCheckResponse,
-    EscalationTriggerRequest, EscalationTriggerResponse,
-    PolicyListResponse, PolicySeedResponse,
-    PolicyEvaluationLogResponse, EscalationLogResponse,
-    PolicyEvaluationResultEnum
+    BusinessRuleCreate,
+    BusinessRuleResponse,
+    BusinessRuleUpdate,
+    EscalationLogResponse,
+    EscalationRuleCreate,
+    EscalationRuleResponse,
+    EscalationRuleUpdate,
+    EscalationTriggerRequest,
+    EscalationTriggerResponse,
+    PolicyEvaluateRequest,
+    PolicyEvaluateResponse,
+    PolicyEvaluationLogResponse,
+    PolicyEvaluationResultEnum,
+    PolicyListResponse,
+    PolicySeedResponse,
+    RateLimitCheckRequest,
+    RateLimitCheckResponse,
+    RateLimitRuleCreate,
+    RateLimitRuleResponse,
+    RateLimitRuleUpdate,
 )
 from app.services.policy_engine_service import PolicyEngineService
 from app.shared.tenant_guard import get_verified_company_id
@@ -41,8 +49,8 @@ router = APIRouter(prefix="/policy-engine", tags=["policy-engine"])
 
 
 def get_user_id_from_header(
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID")
-) -> Optional[str]:
+    x_user_id: str | None = Header(None, alias="X-User-ID")
+) -> str | None:
     """Extract user ID from header if present."""
     if x_user_id:
         try:
@@ -55,11 +63,11 @@ def get_user_id_from_header(
 
 @router.get("", response_model=PolicyListResponse, summary="List all policies")
 async def list_policies(
-    rule_type: Optional[str] = Query(None, description="Filter business rules by type"),
-    target_type: Optional[str] = Query(None, description="Filter rate limit rules by target type"),
-    trigger_type: Optional[str] = Query(None, description="Filter escalation rules by trigger type"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    rule_type: str | None = Query(None, description="Filter business rules by type"),
+    target_type: str | None = Query(None, description="Filter rate limit rules by target type"),
+    trigger_type: str | None = Query(None, description="Filter escalation rules by trigger type"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List all policy rules (business, rate limit, escalation)."""
@@ -116,8 +124,8 @@ async def list_policies(
 @router.post("/business-rules", response_model=BusinessRuleResponse, summary="Create business rule")
 async def create_business_rule(
     data: BusinessRuleCreate,
-    company_id: Optional[str] = Depends(get_verified_company_id),
-    user_id: Optional[str] = Depends(get_user_id_from_header),
+    company_id: str | None = Depends(get_verified_company_id),
+    user_id: str | None = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new business rule."""
@@ -239,7 +247,7 @@ async def delete_business_rule(
 @router.post("/rate-limit-rules", response_model=RateLimitRuleResponse, summary="Create rate limit rule")
 async def create_rate_limit_rule(
     data: RateLimitRuleCreate,
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new rate limit rule."""
@@ -306,7 +314,7 @@ async def update_rate_limit_rule(
 @router.post("/escalation-rules", response_model=EscalationRuleResponse, summary="Create escalation rule")
 async def create_escalation_rule(
     data: EscalationRuleCreate,
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new escalation rule."""
@@ -376,8 +384,8 @@ async def update_escalation_rule(
 @router.post("/evaluate", response_model=PolicyEvaluateResponse, summary="Evaluate policy")
 async def evaluate_policy(
     data: PolicyEvaluateRequest,
-    company_id: Optional[str] = Depends(get_verified_company_id),
-    user_id: Optional[str] = Depends(get_user_id_from_header)
+    company_id: str | None = Depends(get_verified_company_id),
+    user_id: str | None = Depends(get_user_id_from_header)
 ):
     """Evaluate whether an action is allowed by policies."""
     try:
@@ -411,7 +419,7 @@ async def evaluate_policy(
 @router.post("/check-rate-limit", response_model=RateLimitCheckResponse, summary="Check rate limit")
 async def check_rate_limit(
     data: RateLimitCheckRequest,
-    company_id: Optional[str] = Depends(get_verified_company_id)
+    company_id: str | None = Depends(get_verified_company_id)
 ):
     """Check rate limit for a specific target and action."""
     try:
@@ -433,7 +441,7 @@ async def check_rate_limit(
 @router.post("/trigger-escalation", response_model=EscalationTriggerResponse, summary="Trigger escalation")
 async def trigger_escalation(
     data: EscalationTriggerRequest,
-    company_id: Optional[str] = Depends(get_verified_company_id)
+    company_id: str | None = Depends(get_verified_company_id)
 ):
     """Trigger an escalation based on a rule or trigger type."""
     try:
@@ -525,14 +533,14 @@ async def seed_default_policies():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/evaluation-logs", response_model=List[PolicyEvaluationLogResponse], summary="Get evaluation logs")
+@router.get("/evaluation-logs", response_model=list[PolicyEvaluationLogResponse], summary="Get evaluation logs")
 async def get_evaluation_logs(
-    action: Optional[str] = Query(None, description="Filter by action"),
-    result: Optional[str] = Query(None, description="Filter by result"),
-    agent_name: Optional[str] = Query(None, description="Filter by agent name"),
+    action: str | None = Query(None, description="Filter by action"),
+    result: str | None = Query(None, description="Filter by result"),
+    agent_name: str | None = Query(None, description="Filter by agent name"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get policy evaluation logs."""
@@ -561,13 +569,13 @@ async def get_evaluation_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/escalation-logs", response_model=List[EscalationLogResponse], summary="Get escalation logs")
+@router.get("/escalation-logs", response_model=list[EscalationLogResponse], summary="Get escalation logs")
 async def get_escalation_logs(
-    resolved: Optional[bool] = Query(None, description="Filter by resolved status"),
-    action_taken: Optional[str] = Query(None, description="Filter by action taken"),
+    resolved: bool | None = Query(None, description="Filter by resolved status"),
+    action_taken: str | None = Query(None, description="Filter by action taken"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get escalation logs."""
@@ -597,8 +605,8 @@ async def get_escalation_logs(
 @router.post("/escalation-logs/{log_id}/resolve", summary="Resolve an escalation")
 async def resolve_escalation(
     log_id: str,
-    resolution_notes: Optional[str] = Query(None, description="Resolution notes"),
-    user_id: Optional[str] = Depends(get_user_id_from_header),
+    resolution_notes: str | None = Query(None, description="Resolution notes"),
+    user_id: str | None = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark an escalation as resolved."""

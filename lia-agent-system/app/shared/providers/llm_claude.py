@@ -1,8 +1,7 @@
 """Claude LLM Provider implementation."""
+import logging
 import os
 import time
-import logging
-from typing import Dict, Any, List, Optional, Type
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import ANTHROPIC_CIRCUIT, circuit_breaker_decorator

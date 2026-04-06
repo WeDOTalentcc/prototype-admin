@@ -9,22 +9,22 @@ Cobre:
 - Isolamento por company_id: sync de empresa A não afeta empresa B
 - Resposta contém campos 'success' e 'inserted'
 """
-import pytest
+from unittest.mock import patch
 from uuid import uuid4
-from unittest.mock import AsyncMock, patch, MagicMock
 
 import httpx
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.recruitment_stages import (
-    RecruitmentStage,
-    RecruitmentSubStatus,
-    CANONICAL_SUB_STATUSES,
-)
 from app.auth.models import UserRole
 from app.auth.security import create_access_token
 from app.main import app
+from app.models.recruitment_stages import (
+    CANONICAL_SUB_STATUSES,
+    RecruitmentStage,
+    RecruitmentSubStatus,
+)
 
 pytestmark = pytest.mark.asyncio
 

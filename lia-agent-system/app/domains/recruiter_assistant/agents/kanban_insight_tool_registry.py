@@ -4,12 +4,12 @@ Kanban Insight Tool Registry — Tools for predictive analytics and pipeline int
 Subset of kanban_tool_registry for KanbanInsightAgent (8 tools).
 Focus: analysis, bottleneck detection, risk prediction, aging reports.
 """
-from typing import List
 
 from lia_agents_core.react_loop import ToolDefinition
+
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
 
-_INSIGHT_TOOL_NAMES: List[str] = [
+_INSIGHT_TOOL_NAMES: list[str] = [
     "analyze_stage",
     "identify_bottlenecks",
     "get_candidate_aging",
@@ -21,6 +21,6 @@ _INSIGHT_TOOL_NAMES: List[str] = [
 ]
 
 
-def get_kanban_insight_tools() -> List[ToolDefinition]:
+def get_kanban_insight_tools() -> list[ToolDefinition]:
     """Return the 8 analytics/prediction tools for KanbanInsightAgent."""
     return [_TOOL_MAP[name] for name in _INSIGHT_TOOL_NAMES if name in _TOOL_MAP]

@@ -8,11 +8,12 @@ Supports outbound webhooks to notify external systems about events:
 - offer.sent
 - hire.completed
 """
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, Integer
-from enum import Enum
 import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
 
 from app.core.database import Base
 
@@ -78,7 +79,7 @@ class Webhook(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -104,7 +105,7 @@ class Webhook(Base):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
     
-    def to_dict_full(self) -> Dict[str, Any]:
+    def to_dict_full(self) -> dict[str, Any]:
         """Convert to dictionary with full details (including secret)."""
         result = self.to_dict()
         result["secret_key"] = self.secret_key
@@ -138,7 +139,7 @@ class WebhookLog(Base):
     completed_at = Column(DateTime, nullable=True)
     duration_ms = Column(Integer, nullable=True)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,

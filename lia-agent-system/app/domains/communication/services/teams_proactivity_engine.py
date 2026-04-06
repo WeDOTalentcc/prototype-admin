@@ -3,8 +3,8 @@ Teams Proactivity Engine.
 LIA proactively reaches out to recruiters via Teams based on platform events.
 """
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class TeamsProactivityEngine:
         vacancy_id: str,
         vacancy_title: str,
         company_id: str,
-        estimated_score: Optional[float] = None,
+        estimated_score: float | None = None,
     ) -> bool:
         """Triggered when a new candidate applies to a vacancy."""
         from app.domains.communication.services.teams_card_renderer import teams_card_renderer
@@ -51,7 +51,7 @@ class TeamsProactivityEngine:
         match_score: float,
         recommendation: str,
         company_id: str,
-        recruiter_teams_id: Optional[str] = None,
+        recruiter_teams_id: str | None = None,
     ) -> bool:
         """Triggered when WSI/BARS screening completes."""
         from app.domains.communication.services.teams_card_renderer import teams_card_renderer
@@ -72,7 +72,7 @@ class TeamsProactivityEngine:
         refs = await self._get_recruiter_refs_for_vacancy(vacancy_id, company_id)
         return await self._broadcast_card(card, refs)
 
-    async def check_stalled_pipelines(self, company_id: Optional[str] = None) -> int:
+    async def check_stalled_pipelines(self, company_id: str | None = None) -> int:
         """
         Periodic check: find pipelines stalled for 5+ days and notify recruiter.
         Returns number of notifications sent.
@@ -97,7 +97,7 @@ class TeamsProactivityEngine:
             logger.error(f"[ProactivityEngine] check_stalled_pipelines error: {e}", exc_info=True)
             return 0
 
-    async def check_approaching_deadlines(self, company_id: Optional[str] = None) -> int:
+    async def check_approaching_deadlines(self, company_id: str | None = None) -> int:
         """
         Periodic check: find vacancies with deadlines in <=7 days.
         Returns number of notifications sent.
@@ -125,12 +125,13 @@ class TeamsProactivityEngine:
     # --- DB queries ----------------------------------------------------------
 
     async def _find_stalled_pipelines(
-        self, company_id: Optional[str], stalled_days: int = 5
-    ) -> List[Dict[str, Any]]:
+        self, company_id: str | None, stalled_days: int = 5
+    ) -> list[dict[str, Any]]:
         """Query DB for vacancies with candidates stuck for stalled_days."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             cutoff = datetime.utcnow() - timedelta(days=stalled_days)
 
@@ -169,12 +170,13 @@ class TeamsProactivityEngine:
             return []
 
     async def _find_approaching_deadlines(
-        self, company_id: Optional[str], days_ahead: int = 7
-    ) -> List[Dict[str, Any]]:
+        self, company_id: str | None, days_ahead: int = 7
+    ) -> list[dict[str, Any]]:
         """Query DB for vacancies with deadlines in the next days_ahead days."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             now = datetime.utcnow()
             deadline_cutoff = now + timedelta(days=days_ahead)
@@ -218,11 +220,12 @@ class TeamsProactivityEngine:
 
     async def _get_recruiter_refs_for_vacancy(
         self, vacancy_id: str, company_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get stored Teams conversation refs for recruiters responsible for a vacancy."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             async with AsyncSessionLocal() as db:
                 q = text("""
@@ -246,11 +249,12 @@ class TeamsProactivityEngine:
             logger.warning(f"[ProactivityEngine] _get_recruiter_refs: {e}")
             return []
 
-    async def _get_conversation_ref(self, teams_user_id: str) -> Optional[Dict[str, Any]]:
+    async def _get_conversation_ref(self, teams_user_id: str) -> dict[str, Any] | None:
         """Get the most recent conversation reference for a specific Teams user."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             async with AsyncSessionLocal() as db:
                 q = text("""
@@ -270,7 +274,7 @@ class TeamsProactivityEngine:
 
     # --- Sending helpers -----------------------------------------------------
 
-    async def _broadcast_card(self, card: Dict[str, Any], refs: List[Dict[str, Any]]) -> bool:
+    async def _broadcast_card(self, card: dict[str, Any], refs: list[dict[str, Any]]) -> bool:
         """Send card to all refs. Returns True if at least one succeeded."""
         from app.domains.communication.services.teams_simple import simple_teams_bot
 
@@ -292,7 +296,7 @@ class TeamsProactivityEngine:
                 logger.warning(f"[ProactivityEngine] Failed to send to {ref}: {e}")
         return success
 
-    async def _send_card_to_ref(self, card: Dict[str, Any], ref: Dict[str, Any]) -> bool:
+    async def _send_card_to_ref(self, card: dict[str, Any], ref: dict[str, Any]) -> bool:
         from app.domains.communication.services.teams_simple import simple_teams_bot
         try:
             return await simple_teams_bot.send_adaptive_card(
@@ -305,16 +309,18 @@ class TeamsProactivityEngine:
             return False
 
 
-    async def send_daily_digest(self, company_id: Optional[str] = None) -> int:
+    async def send_daily_digest(self, company_id: str | None = None) -> int:
         """
         Send the daily morning digest to all recruiters via Teams.
         Shows: active jobs, pending candidates, critical alerts, suggested actions.
         Called by cron at 08:00 every weekday.
         """
-        from app.domains.communication.services.teams_card_renderer import teams_card_renderer
-        from sqlalchemy import select, func, and_
-        from app.models import JobVacancy, Candidate
         from datetime import datetime, timedelta
+
+        from sqlalchemy import and_, func, select
+
+        from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+        from app.models import Candidate, JobVacancy
 
         sent = 0
         try:

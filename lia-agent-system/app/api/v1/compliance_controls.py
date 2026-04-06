@@ -8,28 +8,37 @@ Provides endpoints for:
 - SOX Controls
 - Compliance Dashboard
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, desc
-from typing import Optional, List
-from datetime import datetime, date, timedelta
 import logging
+from datetime import date, datetime, timedelta
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import and_, desc, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.shared.tenant_guard import get_verified_company_id
-from app.models.observability import (
-    ComplianceControlLibrary, CompanyComplianceControl,
-    ComplianceAudit, SOXControl
-)
+from app.models.observability import CompanyComplianceControl, ComplianceAudit, ComplianceControlLibrary, SOXControl
 from app.schemas.compliance_controls import (
-    ControlLibraryResponse, ControlLibraryListResponse, ControlLibraryCreate,
-    CompanyControlResponse, CompanyControlListResponse, CompanyControlCreate, CompanyControlUpdate,
+    CompanyControlCreate,
+    CompanyControlListResponse,
+    CompanyControlResponse,
+    CompanyControlUpdate,
+    ComplianceAuditCreate,
+    ComplianceAuditListResponse,
+    ComplianceAuditResponse,
+    ComplianceDashboardResponse,
+    ControlLibraryCreate,
+    ControlLibraryListResponse,
+    ControlLibraryResponse,
     EvidenceUpload,
-    ComplianceAuditResponse, ComplianceAuditListResponse, ComplianceAuditCreate, ComplianceAuditUpdate,
-    SOXControlResponse, SOXControlListResponse, SOXControlCreate, SOXControlUpdate,
-    ComplianceDashboardResponse, FrameworkStats, SeedDataResponse
+    FrameworkStats,
+    SeedDataResponse,
+    SOXControlCreate,
+    SOXControlListResponse,
+    SOXControlResponse,
+    SOXControlUpdate,
 )
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +47,9 @@ router = APIRouter(prefix="/compliance", tags=["compliance-controls"])
 
 @router.get("/controls", response_model=ControlLibraryListResponse, summary="List control library entries")
 async def list_control_library(
-    framework: Optional[str] = Query(None, description="Filter by framework"),
-    category: Optional[str] = Query(None, description="Filter by category"),
-    search: Optional[str] = Query(None, description="Search in name/description"),
+    framework: str | None = Query(None, description="Filter by framework"),
+    category: str | None = Query(None, description="Filter by category"),
+    search: str | None = Query(None, description="Search in name/description"),
     limit: int = Query(100, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db)
@@ -154,8 +163,8 @@ async def get_controls_by_framework(
 
 @router.get("/company-controls", response_model=CompanyControlListResponse, summary="List company controls")
 async def list_company_controls(
-    framework: Optional[str] = Query(None, description="Filter by framework"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    framework: str | None = Query(None, description="Filter by framework"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
@@ -348,8 +357,8 @@ async def upload_evidence(
 
 @router.get("/audits", response_model=ComplianceAuditListResponse, summary="List compliance audits")
 async def list_audits(
-    framework: Optional[str] = Query(None, description="Filter by framework"),
-    audit_type: Optional[str] = Query(None, description="Filter by audit type"),
+    framework: str | None = Query(None, description="Filter by framework"),
+    audit_type: str | None = Query(None, description="Filter by audit type"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
@@ -532,8 +541,8 @@ async def get_compliance_dashboard(
 
 @router.get("/sox", response_model=SOXControlListResponse, summary="List SOX controls")
 async def list_sox_controls(
-    section: Optional[str] = Query(None, description="Filter by SOX section"),
-    test_result: Optional[str] = Query(None, description="Filter by test result"),
+    section: str | None = Query(None, description="Filter by SOX section"),
+    test_result: str | None = Query(None, description="Filter by test result"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),

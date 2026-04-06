@@ -10,11 +10,12 @@ Flow:
 6. Future messages route to correct company/user context
 """
 import logging
-import httpx
 import os
-from typing import Optional, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+import httpx
 from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class TeamsSSOService:
     def is_configured(self) -> bool:
         return bool(AZURE_CLIENT_ID and AZURE_CLIENT_SECRET and AZURE_TENANT_ID)
 
-    def get_sign_in_card(self, conversation_id: str) -> Dict[str, Any]:
+    def get_sign_in_card(self, conversation_id: str) -> dict[str, Any]:
         """
         Adaptive Card with a Sign-in button.
         Sent to users who haven't authenticated yet.
@@ -73,7 +74,7 @@ class TeamsSSOService:
 
     async def exchange_auth_code(
         self, auth_code: str, redirect_uri: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Exchange OAuth authorization code for user profile via Microsoft Graph.
         Returns dict with: aad_object_id, email, display_name, tenant_id
@@ -121,9 +122,9 @@ class TeamsSSOService:
     async def resolve_user(
         self,
         teams_user_id: str,
-        aad_object_id: Optional[str],
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        aad_object_id: str | None,
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Resolve WeDOTalent user from Teams/AAD identity.
         Returns: {company_id, user_id, email, is_authenticated}
@@ -132,8 +133,8 @@ class TeamsSSOService:
             return {"company_id": None, "user_id": teams_user_id, "is_authenticated": False}
 
         try:
-            from app.models.teams import TeamsConversation
             from app.models import User
+            from app.models.teams import TeamsConversation
 
             # Find conversation record
             stmt = select(TeamsConversation).where(

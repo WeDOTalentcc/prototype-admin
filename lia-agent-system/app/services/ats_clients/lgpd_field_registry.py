@@ -6,11 +6,10 @@ Ponto único de atualização quando schemas de ATS mudam.
 
 LGPD Art. 5 (dado pessoal) + Art. 6 (finalidade) + Art. 46 (segurança).
 """
-from typing import Dict, FrozenSet
 
 # Campos que requerem consentimento explícito (data_sharing) antes de enviar ao ATS
 # Chave: nome do campo no payload WeDOTalent (normalizado)
-OUTBOUND_SENSITIVE_FIELDS: FrozenSet[str] = frozenset({
+OUTBOUND_SENSITIVE_FIELDS: frozenset[str] = frozenset({
     "phone",               # Telefone — dado pessoal direto
     "email",               # E-mail — dado pessoal direto
     "salary_expectation",  # Pretensão salarial — dado financeiro sensível
@@ -22,14 +21,14 @@ OUTBOUND_SENSITIVE_FIELDS: FrozenSet[str] = frozenset({
 
 # Mapeamento ATS → campos de texto livre inbound que podem conter PII
 # Esses campos recebem strip_pii ao ser importados
-INBOUND_TEXT_FIELDS: Dict[str, FrozenSet[str]] = {
+INBOUND_TEXT_FIELDS: dict[str, frozenset[str]] = {
     "gupy": frozenset({"observacoes", "notes", "descricao_curriculo"}),
     "pandape": frozenset({"parecer_rh", "observacoes", "notes", "descricao"}),
     "merge": frozenset({"notes", "feedback", "description", "summary"}),
 }
 
 # Campos do payload WeDOTalent → campo ATS-específico (para log de auditoria)
-GUPY_FIELD_MAP: Dict[str, str] = {
+GUPY_FIELD_MAP: dict[str, str] = {
     "name": "nome",
     "email": "email",
     "phone": "telefone",
@@ -44,7 +43,7 @@ GUPY_FIELD_MAP: Dict[str, str] = {
     "wsi_score": "nota_avaliacao",
 }
 
-PANDAPE_FIELD_MAP: Dict[str, str] = {
+PANDAPE_FIELD_MAP: dict[str, str] = {
     "name": "nome_completo",
     "email": "email_principal",
     "phone": "telefone_celular",
@@ -60,6 +59,6 @@ PANDAPE_FIELD_MAP: Dict[str, str] = {
 }
 
 
-def get_inbound_text_fields(ats_name: str) -> FrozenSet[str]:
+def get_inbound_text_fields(ats_name: str) -> frozenset[str]:
     """Retorna campos de texto livre para strip de PII ao receber do ATS."""
     return INBOUND_TEXT_FIELDS.get(ats_name.lower(), frozenset())

@@ -9,7 +9,7 @@ Lógica:
 Fail-safe: exceções por sessão são logadas e não interrompem o batch.
 """
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,7 +29,7 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
         dict com first_reminders, second_reminders, consultant_alerts, errors
     """
     first_reminders = second_reminders = consultant_alerts = errors = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     try:
         cutoff_first = now - timedelta(hours=FIRST_REMINDER_HOURS)
@@ -56,7 +56,7 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
         reminder_count: int = row.reminder_count
         last_activity = row.last_activity
         if last_activity.tzinfo is None:
-            last_activity = last_activity.replace(tzinfo=timezone.utc)
+            last_activity = last_activity.replace(tzinfo=UTC)
         age_hours = (now - last_activity).total_seconds() / 3600
 
         try:

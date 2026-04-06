@@ -11,11 +11,10 @@ Abordagem:
 """
 import logging
 from dataclasses import dataclass
-from typing import Optional
 from datetime import datetime
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
 
 from app.models.communication_settings import LGPDConsent
 
@@ -27,8 +26,8 @@ class ConsentCheckResult:
     """Resultado da verificação de consentimento LGPD."""
     allowed: bool
     soft_warning: bool = False
-    reason: Optional[str] = None
-    consent_type: Optional[str] = None
+    reason: str | None = None
+    consent_type: str | None = None
 
 
 class ConsentCheckerService:
@@ -198,8 +197,8 @@ class ConsentCheckerService:
         consent_type: str,
         consent_given: bool,
         consent_source: str = "api",
-        consent_text: Optional[str] = None,
-        ip_address: Optional[str] = None,
+        consent_text: str | None = None,
+        ip_address: str | None = None,
     ) -> LGPDConsent:
         """
         Registra ou atualiza consentimento de um candidato por finalidade.

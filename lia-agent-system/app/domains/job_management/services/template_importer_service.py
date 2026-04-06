@@ -9,19 +9,18 @@ Imports job templates from external sources:
 This service enables fast population of the 480+ template library
 instead of creating each template manually.
 """
-import os
 import asyncio
 import logging
-import httpx
-from typing import Dict, List, Optional, Any
-from uuid import uuid4
 from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
-from sqlalchemy.ext.asyncio import AsyncSession
+import httpx
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_template import JobTemplate
 from app.domains.job_management.services.job_template_service import validate_wsi_quality
+from app.models.job_template import JobTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +115,7 @@ class TemplateImporterService:
         query: str,
         language: str = "en",
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search ESCO occupations by keyword.
         
@@ -211,7 +210,7 @@ class TemplateImporterService:
         self,
         occupation_uri: str,
         language: str = "en"
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get detailed occupation info including skills from ESCO.
         
@@ -308,9 +307,9 @@ class TemplateImporterService:
         self,
         category: str,
         subcategory: str,
-        search_terms: List[str],
-        seniority_levels: Optional[List[str]] = None
-    ) -> List[JobTemplate]:
+        search_terms: list[str],
+        seniority_levels: list[str] | None = None
+    ) -> list[JobTemplate]:
         """
         Import templates from ESCO for a category.
         
@@ -370,11 +369,11 @@ class TemplateImporterService:
     
     async def _create_template_from_esco(
         self,
-        esco_data: Dict[str, Any],
+        esco_data: dict[str, Any],
         category: str,
         subcategory: str,
         seniority: str
-    ) -> Optional[JobTemplate]:
+    ) -> JobTemplate | None:
         """Create a JobTemplate from ESCO occupation data."""
         try:
             # Validate required fields
@@ -472,7 +471,7 @@ class TemplateImporterService:
                 pass
             return None
     
-    def _generate_behavioral_for_seniority(self, seniority: str) -> List[Dict[str, Any]]:
+    def _generate_behavioral_for_seniority(self, seniority: str) -> list[dict[str, Any]]:
         """Generate behavioral competencies based on seniority."""
         base_behavioral = [
             {"name": "Comunicação", "weight": 1.0, "justification": "Essencial para trabalho em equipe"},
@@ -499,7 +498,7 @@ class TemplateImporterService:
         
         return base_behavioral
     
-    def _generate_responsibilities(self, title: str, seniority: str) -> List[str]:
+    def _generate_responsibilities(self, title: str, seniority: str) -> list[str]:
         """Generate responsibilities based on title and seniority."""
         base = [
             f"Executar atividades relacionadas a {title.lower()}",
@@ -592,7 +591,7 @@ class TemplateImporterService:
     async def import_bulk_templates(
         self,
         target_count: int = 480
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Import templates in bulk from ESCO to reach target count.
         
@@ -678,7 +677,7 @@ class TemplateImporterService:
         stats["completed_at"] = datetime.utcnow().isoformat()
         return stats
     
-    async def get_import_status(self) -> Dict[str, Any]:
+    async def get_import_status(self) -> dict[str, Any]:
         """Get current template import status."""
         result = await self.db.execute(
             text("""

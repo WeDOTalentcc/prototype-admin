@@ -8,32 +8,27 @@ This module handles:
 4. CV resubmission handling
 """
 import logging
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from uuid import UUID
 import uuid
+from datetime import datetime
+from enum import Enum as PyEnum
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
-from pydantic import BaseModel, Field, EmailStr
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate_feedback import CandidateFeedback
-from app.services.candidate_feedback_service import candidate_feedback_service
-from app.services.lia_score_service import LIAScoreService
 from app.domains.cv_screening.services.cv_parser import cv_parser_service
-from app.services.notification_service import (
-    notification_service,
-    NotificationType,
-    ProactiveNotificationType
-)
 from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.candidate_feedback import CandidateFeedback
+from app.models.job_vacancy import JobVacancy
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from enum import Enum as PyEnum
+from app.services.candidate_feedback_service import candidate_feedback_service
+from app.services.lia_score_service import LIAScoreService
+from app.services.notification_service import NotificationType, notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -61,15 +56,15 @@ class CandidateApplicationRequest(BaseModel):
     """Request para inscrição de candidato em uma vaga."""
     name: str = Field(..., description="Nome completo do candidato")
     email: EmailStr = Field(..., description="Email do candidato")
-    phone: Optional[str] = Field(None, description="Telefone do candidato")
-    linkedin_url: Optional[str] = Field(None, description="URL do LinkedIn")
-    current_title: Optional[str] = Field(None, description="Cargo atual")
-    current_company: Optional[str] = Field(None, description="Empresa atual")
-    years_of_experience: Optional[int] = Field(None, description="Anos de experiência")
-    technical_skills: List[str] = Field(default_factory=list, description="Habilidades técnicas")
-    location: Optional[str] = Field(None, description="Localização")
-    salary_expectation: Optional[float] = Field(None, description="Pretensão salarial")
-    cover_letter: Optional[str] = Field(None, description="Carta de apresentação")
+    phone: str | None = Field(None, description="Telefone do candidato")
+    linkedin_url: str | None = Field(None, description="URL do LinkedIn")
+    current_title: str | None = Field(None, description="Cargo atual")
+    current_company: str | None = Field(None, description="Empresa atual")
+    years_of_experience: int | None = Field(None, description="Anos de experiência")
+    technical_skills: list[str] = Field(default_factory=list, description="Habilidades técnicas")
+    location: str | None = Field(None, description="Localização")
+    salary_expectation: float | None = Field(None, description="Pretensão salarial")
+    cover_letter: str | None = Field(None, description="Carta de apresentação")
 
 
 class ApplicationResponseDTO(BaseModel):
@@ -79,10 +74,10 @@ class ApplicationResponseDTO(BaseModel):
     vacancy_id: str
     adherence_score: float
     feedback_sent: bool = False
-    feedback_channels: List[str] = Field(default_factory=list)
-    resubmit_url: Optional[str] = None
+    feedback_channels: list[str] = Field(default_factory=list)
+    resubmit_url: str | None = None
     message: str
-    next_step: Optional[str] = None
+    next_step: str | None = None
 
 
 class ResubmitResponseDTO(BaseModel):
@@ -101,16 +96,16 @@ class FeedbackAnalyticsDTO(BaseModel):
     """Analytics de feedback."""
     period_days: int
     total_feedbacks_sent: int
-    channels: Dict[str, int]
-    engagement: Dict[str, Any]
-    scores: Dict[str, Any]
+    channels: dict[str, int]
+    engagement: dict[str, Any]
+    scores: dict[str, Any]
 
 
 @router.post("/apply/{vacancy_id}", response_model=ApplicationResponseDTO)
 async def apply_to_vacancy(
     vacancy_id: str,
     application: CandidateApplicationRequest,
-    cv_file: Optional[UploadFile] = File(None),
+    cv_file: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -260,7 +255,8 @@ async def apply_to_vacancy(
 
             is_saturated = False
             try:
-                from sqlalchemy import func, and_, not_
+                from sqlalchemy import and_, func, not_
+
                 from app.models.company import CompanyProfile
                 company_id = vacancy.company_id
                 if not company_id:
@@ -315,7 +311,7 @@ async def apply_to_vacancy(
         
         await notification_service.create_notification(
             user_id="default_user",
-            title=f"✅ Nova candidatura qualificada",
+            title="✅ Nova candidatura qualificada",
             message=f"{candidate_data['name']} aplicou para {vacancy.title} com aderência de {adherence_score:.0f}%",
             notification_type=NotificationType.SUCCESS,
             category="new_application",
@@ -514,7 +510,7 @@ async def resubmit_cv(
             
             await notification_service.create_notification(
                 user_id="default_user",
-                title=f"🎯 Candidato melhorou perfil e qualificou!",
+                title="🎯 Candidato melhorou perfil e qualificou!",
                 message=f"{candidate.name} reenviou CV e agora tem aderência de {new_adherence_score:.0f}% "
                         f"(+{improvement:.0f}% de melhoria)",
                 notification_type=NotificationType.SUCCESS,

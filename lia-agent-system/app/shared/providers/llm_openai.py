@@ -1,7 +1,6 @@
 """OpenAI LLM Provider implementation."""
-import os
 import logging
-from typing import Dict, Any, List, Optional
+import os
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import OPENAI_CIRCUIT, circuit_breaker_decorator

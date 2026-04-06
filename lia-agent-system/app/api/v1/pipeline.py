@@ -1,15 +1,15 @@
 """
 Pipeline API endpoints - Stale candidates and pipeline health management.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 
-from app.domains.recruiter_assistant.services.pipeline_service import pipeline_service
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.shared.pii_masking import get_masked_logger
+from app.domains.recruiter_assistant.services.pipeline_service import pipeline_service
 from app.shared.compliance.audit_service import audit_service
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 

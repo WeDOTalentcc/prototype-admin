@@ -6,25 +6,25 @@ Includes:
 - Adaptive Card action webhook for Teams → WhatsApp Screening connector
 - Proactive notifications to Teams users
 """
-from typing import Dict, Any, Optional, List
-from fastapi import APIRouter, Request, HTTPException, Depends, Header
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel, Field
+import hashlib
+import hmac
+import json
+import logging
+import uuid
 from datetime import datetime
 from enum import Enum
-import logging
-import json
-import hmac
-import hashlib
-import os
-import uuid
+from typing import Any
 
-from app.core.database import get_db
-from app.models.teams import TeamsConversation, TeamsMessage, TeamsActionAuditLog
-from app.domains.communication.services.teams_simple import simple_teams_bot
-from app.domains.communication.services.teams_auth import bot_auth
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
+from app.core.database import get_db
+from app.domains.communication.services.teams_auth import bot_auth
+from app.domains.communication.services.teams_simple import simple_teams_bot
+from app.models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
 
 logger = logging.getLogger(__name__)
 
@@ -43,18 +43,18 @@ class TeamsCardAction(str, Enum):
 class TeamsWebhookPayload(BaseModel):
     """Payload from Teams Adaptive Card action."""
     action: str = Field(..., description="Action type: approve, reject, schedule")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID")
-    candidate_name: Optional[str] = Field(None, description="Candidate name")
-    candidate_phone: Optional[str] = Field(None, description="Candidate phone number")
-    vacancy_id: Optional[str] = Field(None, description="Job vacancy ID")
-    vacancy_title: Optional[str] = Field(None, description="Job vacancy title")
-    company_id: Optional[str] = Field(None, description="Company ID")
-    recruiter_id: Optional[str] = Field(None, description="Recruiter user ID who performed the action")
-    recruiter_name: Optional[str] = Field(None, description="Recruiter name")
-    notes: Optional[str] = Field(None, description="Optional notes from recruiter")
-    scheduled_date: Optional[str] = Field(None, description="Scheduled date for interviews")
-    item_id: Optional[str] = Field(None, description="Generic item ID for approvals")
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional metadata")
+    candidate_id: str | None = Field(None, description="Candidate ID")
+    candidate_name: str | None = Field(None, description="Candidate name")
+    candidate_phone: str | None = Field(None, description="Candidate phone number")
+    vacancy_id: str | None = Field(None, description="Job vacancy ID")
+    vacancy_title: str | None = Field(None, description="Job vacancy title")
+    company_id: str | None = Field(None, description="Company ID")
+    recruiter_id: str | None = Field(None, description="Recruiter user ID who performed the action")
+    recruiter_name: str | None = Field(None, description="Recruiter name")
+    notes: str | None = Field(None, description="Optional notes from recruiter")
+    scheduled_date: str | None = Field(None, description="Scheduled date for interviews")
+    item_id: str | None = Field(None, description="Generic item ID for approvals")
+    metadata: dict[str, Any] | None = Field(default_factory=dict, description="Additional metadata")
     
     class Config:
         json_schema_extra = {
@@ -76,8 +76,8 @@ class TeamsWebhookResponse(BaseModel):
     action: str
     message: str
     screening_initiated: bool = False
-    audit_id: Optional[str] = None
-    candidate_id: Optional[str] = None
+    audit_id: str | None = None
+    candidate_id: str | None = None
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 
@@ -85,18 +85,18 @@ class TeamsActionAuditLogSchema(BaseModel):
     """Pydantic schema for Teams audit log response."""
     id: str = Field(..., description="Audit log ID")
     action: str
-    actor_id: Optional[str] = None
-    actor_name: Optional[str] = None
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    company_id: Optional[str] = None
+    actor_id: str | None = None
+    actor_name: str | None = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    company_id: str | None = None
     source: str = "teams_adaptive_card"
     result: str
-    details: Dict[str, Any] = Field(default_factory=dict)
+    details: dict[str, Any] = Field(default_factory=dict)
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 
-def _verify_teams_webhook_signature(payload: bytes, signature: Optional[str]) -> bool:
+def _verify_teams_webhook_signature(payload: bytes, signature: str | None) -> bool:
     """
     Verify webhook signature from Teams.
     
@@ -147,13 +147,13 @@ def _verify_teams_webhook_signature(payload: bytes, signature: Optional[str]) ->
 async def _log_teams_action_audit(
     action: str,
     result: str,
-    actor_id: Optional[str] = None,
-    actor_name: Optional[str] = None,
-    candidate_id: Optional[str] = None,
-    vacancy_id: Optional[str] = None,
-    company_id: Optional[str] = None,
-    details: Optional[Dict[str, Any]] = None,
-    db: Optional[AsyncSession] = None
+    actor_id: str | None = None,
+    actor_name: str | None = None,
+    candidate_id: str | None = None,
+    vacancy_id: str | None = None,
+    company_id: str | None = None,
+    details: dict[str, Any] | None = None,
+    db: AsyncSession | None = None
 ) -> str:
     """
     Log Teams action for audit trail to database.
@@ -213,12 +213,12 @@ async def _start_whatsapp_screening(
     candidate_id: str,
     candidate_name: str,
     candidate_phone: str,
-    vacancy_id: Optional[str],
-    vacancy_title: Optional[str],
-    company_id: Optional[str],
-    recruiter_name: Optional[str],
+    vacancy_id: str | None,
+    vacancy_title: str | None,
+    company_id: str | None,
+    recruiter_name: str | None,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Start WhatsApp screening for an approved candidate.
     
@@ -419,8 +419,8 @@ async def _handle_schedule_action(
 @router.post("/webhook", response_model=TeamsWebhookResponse)
 async def teams_adaptive_card_webhook(
     request: Request,
-    x_teams_signature: Optional[str] = Header(None, alias="X-Teams-Signature"),
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    x_teams_signature: str | None = Header(None, alias="X-Teams-Signature"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -536,8 +536,8 @@ async def teams_adaptive_card_webhook(
 @router.get("/webhook/audit-logs")
 async def get_teams_audit_logs(
     limit: int = 50,
-    action: Optional[str] = None,
-    candidate_id: Optional[str] = None,
+    action: str | None = None,
+    candidate_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -562,7 +562,6 @@ async def get_teams_audit_logs(
             filters.append(TeamsActionAuditLog.candidate_id == candidate_id)
         
         if filters:
-            from sqlalchemy import and_
             for filter_clause in filters:
                 query = query.where(filter_clause)
         
@@ -581,7 +580,6 @@ async def get_teams_audit_logs(
             filters.append(TeamsActionAuditLog.candidate_id == candidate_id)
         
         if filters:
-            from sqlalchemy import and_
             for filter_clause in filters:
                 count_query = count_query.where(filter_clause)
         
@@ -647,8 +645,8 @@ async def receive_teams_message(
             ]
             if file_attachments:
                 try:
-                    from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
                     from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+                    from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
 
                     cv_result = await teams_orchestrator_bridge.process_cv_attachment(
                         activity, file_attachments[0], db=db
@@ -737,7 +735,7 @@ async def teams_health():
     }
 
 
-async def _store_conversation_reference(activity: Dict[str, Any], db: AsyncSession):
+async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSession):
     """Store conversation reference for proactive messaging."""
     try:
         conversation_id = activity.get("conversation", {}).get("id")
@@ -778,7 +776,7 @@ async def _store_conversation_reference(activity: Dict[str, Any], db: AsyncSessi
         logger.error(f"Error storing conversation reference: {e}", exc_info=True)
 
 
-async def _log_teams_message(activity: Dict[str, Any], db: AsyncSession):
+async def _log_teams_message(activity: dict[str, Any], db: AsyncSession):
     """Log Teams message to database."""
     try:
         conversation_id = activity.get("conversation", {}).get("id")
@@ -811,7 +809,7 @@ async def _log_teams_message(activity: Dict[str, Any], db: AsyncSession):
 
 @router.post("/send-notification")
 async def send_proactive_notification(
-    notification_data: Dict[str, Any],
+    notification_data: dict[str, Any],
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -867,7 +865,7 @@ async def send_proactive_notification(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _create_notification_card(notification_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+def _create_notification_card(notification_type: str, data: dict[str, Any]) -> dict[str, Any]:
     """Create adaptive card for notification."""
     if notification_type == "approval_needed":
         return {
@@ -921,7 +919,7 @@ def _create_notification_card(notification_type: str, data: Dict[str, Any]) -> D
 
 @router.post("/proactive/check")
 async def run_proactivity_checks(
-    company_id: Optional[str] = None,
+    company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Run proactivity checks (stalled pipelines, deadlines). Call periodically."""
@@ -946,7 +944,7 @@ async def notify_new_candidate(
     vacancy_id: str,
     vacancy_title: str,
     company_id: str,
-    estimated_score: Optional[float] = None,
+    estimated_score: float | None = None,
 ):
     """Notify recruiters when new candidate applies."""
     try:
@@ -974,7 +972,7 @@ async def notify_screening_complete(
     match_score: float,
     recommendation: str,
     company_id: str,
-    recruiter_teams_id: Optional[str] = None,
+    recruiter_teams_id: str | None = None,
 ):
     """Notify recruiters when a screening (WSI/BARS) completes."""
     try:
@@ -996,7 +994,7 @@ async def notify_screening_complete(
 
 @router.post("/proactive/daily-digest")
 async def send_daily_digest(
-    company_id: Optional[str] = None,
+    company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -1010,7 +1008,7 @@ async def send_daily_digest(
 
 @router.post("/feedback")
 async def receive_card_feedback(
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -1078,8 +1076,9 @@ async def teams_sso_callback(
     OAuth callback — Azure AD redirects here after user signs in.
     Exchanges code for profile, maps identity, sends confirmation to Teams.
     """
-    from fastapi.responses import HTMLResponse
     import os
+
+    from fastapi.responses import HTMLResponse
 
     platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com")
     redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
@@ -1155,13 +1154,13 @@ class ScheduleInterviewRequest(BaseModel):
     candidate_name: str
     vacancy_title: str
     recruiter_email: str
-    candidate_email: Optional[str] = None
+    candidate_email: str | None = None
     interview_date: str   # "2026-04-10"
     interview_time: str   # "14:00"
     duration: int = 60
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    notes: Optional[str] = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    notes: str | None = None
 
 
 @router.post("/calendar/schedule")
@@ -1179,8 +1178,9 @@ async def schedule_interview_via_teams(
     - Teams Meeting link embedded in the event
     - Platform deep link in event description
     """
-    from app.domains.communication.services.teams_calendar_service import teams_calendar_service
     from datetime import datetime
+
+    from app.domains.communication.services.teams_calendar_service import teams_calendar_service
 
     try:
         dt_str = f"{request.interview_date}T{request.interview_time}:00"
@@ -1211,7 +1211,7 @@ async def schedule_interview_via_teams(
 async def cancel_interview_via_teams(
     event_id: str,
     organizer_email: str,
-    message: Optional[str] = None,
+    message: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Cancel a previously scheduled interview event."""
@@ -1239,7 +1239,9 @@ async def get_teams_manifest():
       AZURE_CLIENT_ID     — for SSO
       WEDOTALENT_PLATFORM_URL — e.g. https://app.wedotalent.com
     """
-    import json, os, uuid
+    import os
+    import uuid
+
     from fastapi.responses import JSONResponse
 
     platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
@@ -1336,17 +1338,17 @@ class TabAuthResponse(BaseModel):
     user_id: str
     email: str
     company_id: str
-    teams_user_id: Optional[str] = None
+    teams_user_id: str | None = None
 
 
 class TabEventRequest(BaseModel):
     """Behavioral event from the Teams Tab tracker hook."""
     event_type: str = Field(..., description="e.g. click_create_job, prolonged_stay")
-    entity_type: Optional[str] = Field(None, description="e.g. job, candidate")
-    entity_id: Optional[str] = Field(None, description="ID of the entity being acted on")
-    teams_user_id: Optional[str] = Field(None, description="AAD object ID of the tab user")
-    platform_user_id: Optional[str] = Field(None, description="WeDOTalent user UUID")
-    context: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    entity_type: str | None = Field(None, description="e.g. job, candidate")
+    entity_id: str | None = Field(None, description="ID of the entity being acted on")
+    teams_user_id: str | None = Field(None, description="AAD object ID of the tab user")
+    platform_user_id: str | None = Field(None, description="WeDOTalent user UUID")
+    context: dict[str, Any] | None = Field(default_factory=dict)
 
 
 @router.post("/tab/auth", response_model=TabAuthResponse)
@@ -1364,8 +1366,11 @@ async def teams_tab_auth(
     4. Look up or create the matching WeDOTalent user
     5. Return a platform JWT so the iframe can call protected APIs
     """
-    import httpx, jwt as pyjwt, os
+    import os
+
+    import httpx
     from sqlalchemy import select
+
     from app.auth.models import User
 
     azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
@@ -1411,13 +1416,13 @@ async def teams_tab_auth(
 
         aad_object_id: str = profile.get("id", "")
         email: str = profile.get("mail") or profile.get("userPrincipalName") or ""
-        display_name: str = profile.get("displayName") or email
+        profile.get("displayName") or email
 
         if not aad_object_id or not email:
             raise HTTPException(status_code=401, detail="Could not retrieve user profile from Azure AD")
 
         # Look up WeDOTalent user by AAD object ID first, then email
-        user: Optional[User] = None
+        user: User | None = None
         stmt = select(User).where(User.azure_ad_object_id == aad_object_id).limit(1)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
@@ -1469,9 +1474,10 @@ async def teams_tab_events(
     If the event represents a complex action, sends a proactive Adaptive
     Card to the recruiter's Teams chat with a deep link to the platform.
     """
-    from app.domains.communication.services.teams_tab_trigger import get_trigger_engine
-    from app.domains.communication.services.teams_simple import SimpleTeamsBot
     from sqlalchemy import select
+
+    from app.domains.communication.services.teams_simple import SimpleTeamsBot
+    from app.domains.communication.services.teams_tab_trigger import get_trigger_engine
 
     engine = get_trigger_engine()
     card = engine.evaluate(

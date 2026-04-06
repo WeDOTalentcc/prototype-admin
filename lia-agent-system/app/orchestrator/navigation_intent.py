@@ -6,20 +6,18 @@ Returns page name matching dashboard-app.tsx navigation keys.
 
 Pages: "Vagas" | "Funil de Talentos" | "Painel de Controle" | "Configurações" | "Indicadores" | None
 """
-from dataclasses import dataclass
-from typing import Optional
-import re
 import logging
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class NavigationIntentResult:
-    page: Optional[str]          # matches dashboard-app currentPage values
+    page: str | None          # matches dashboard-app currentPage values
     confidence: float            # 0.0–1.0
-    hint: Optional[str]          # Suggested text: "Quer ver na página de Vagas?"
-    matched_pattern: Optional[str] = None
+    hint: str | None          # Suggested text: "Quer ver na página de Vagas?"
+    matched_pattern: str | None = None
 
 
 # Pattern groups → page mapping
@@ -101,9 +99,9 @@ class NavigationIntentDetector:
     def detect(self, message: str) -> NavigationIntentResult:
         text = message.lower().strip()
 
-        best_page: Optional[str] = None
-        best_hint: Optional[str] = None
-        best_matched: Optional[str] = None
+        best_page: str | None = None
+        best_hint: str | None = None
+        best_matched: str | None = None
         best_score = 0
 
         for keywords, page, hint in _PATTERNS:

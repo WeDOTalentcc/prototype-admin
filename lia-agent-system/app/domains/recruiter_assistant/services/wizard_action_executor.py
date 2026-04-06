@@ -10,12 +10,12 @@ Handles wizard-specific actions via conversational interaction:
 - clear_field: Clear a specific field from the draft
 - reset_wizard: Reset the wizard session
 """
+import json
 import logging
 import re
-import json
-from typing import Dict, Any, Optional, List, Tuple
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
@@ -25,15 +25,15 @@ logger = logging.getLogger(__name__)
 class WizardActionResult:
     status: str  # "executed", "needs_params", "needs_confirmation", "not_actionable", "error"
     message: str = ""
-    data: Optional[Dict[str, Any]] = None
-    action_type: Optional[str] = None
-    missing_params: Optional[List[str]] = None
-    pending_action_id: Optional[str] = None
-    confirmation_summary: Optional[Dict[str, Any]] = None
-    draft_updates: Optional[Dict[str, Any]] = None  # Fields to merge into job_draft
+    data: dict[str, Any] | None = None
+    action_type: str | None = None
+    missing_params: list[str] | None = None
+    pending_action_id: str | None = None
+    confirmation_summary: dict[str, Any] | None = None
+    draft_updates: dict[str, Any] | None = None  # Fields to merge into job_draft
 
 
-WIZARD_ACTIONABLE_INTENTS: Dict[str, Dict[str, Any]] = {
+WIZARD_ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "salvar_rascunho": {
         "action_id": "save_draft",
         "required_params": [],
@@ -114,7 +114,7 @@ WIZARD_FIELDS = {
 }
 
 
-def detect_wizard_action(message: str) -> Optional[Tuple[str, float]]:
+def detect_wizard_action(message: str) -> tuple[str, float] | None:
     """Detect if message is a wizard action command."""
     msg = message.lower().strip()
 
@@ -159,7 +159,7 @@ def detect_wizard_action(message: str) -> Optional[Tuple[str, float]]:
     return None
 
 
-def _calculate_completeness(draft: Dict[str, Any]) -> Tuple[float, List[str]]:
+def _calculate_completeness(draft: dict[str, Any]) -> tuple[float, list[str]]:
     """Calculate draft completeness percentage and list missing required fields."""
     required = ["title", "description", "department", "location", "seniority_level"]
     important = ["salary_range", "contract_type", "work_model", "required_skills", "responsibilities"]
@@ -174,7 +174,7 @@ def _calculate_completeness(draft: Dict[str, Any]) -> Tuple[float, List[str]]:
     return filled / total if total > 0 else 0.0, missing
 
 
-def _resolve_field_name(text: str) -> Optional[str]:
+def _resolve_field_name(text: str) -> str | None:
     """Resolve a Portuguese/English field reference to canonical field name."""
     text_lower = text.lower().strip()
     return WIZARD_FIELDS.get(text_lower)
@@ -191,11 +191,11 @@ class WizardActionExecutor:
     async def try_execute(
         self,
         intent: str,
-        draft: Dict[str, Any],
+        draft: dict[str, Any],
         session_id: str,
-        current_stage: Optional[str] = None,
-        entities: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None,
+        current_stage: str | None = None,
+        entities: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
     ) -> WizardActionResult:
         if not self.is_actionable(intent):
             return WizardActionResult(status="not_actionable")
@@ -233,8 +233,8 @@ class WizardActionExecutor:
         return await self._execute(action_id, draft, session_id, current_stage, params, context)
 
     def _build_confirmation_summary(
-        self, intent: str, config: Dict[str, Any], draft: Dict[str, Any], params: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, intent: str, config: dict[str, Any], draft: dict[str, Any], params: dict[str, Any]
+    ) -> dict[str, Any]:
         title = draft.get("title", "esta vaga")
         completeness, missing = _calculate_completeness(draft)
 
@@ -265,11 +265,11 @@ class WizardActionExecutor:
     async def _execute(
         self,
         action_id: str,
-        draft: Dict[str, Any],
+        draft: dict[str, Any],
         session_id: str,
-        current_stage: Optional[str],
-        params: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None,
+        current_stage: str | None,
+        params: dict[str, Any],
+        context: dict[str, Any] | None = None,
     ) -> WizardActionResult:
         self.execution_count += 1
         title = draft.get("title", "esta vaga")
@@ -437,7 +437,7 @@ class WizardActionExecutor:
         )
 
 
-def robust_json_parse(text: str) -> Optional[Dict[str, Any]]:
+def robust_json_parse(text: str) -> dict[str, Any] | None:
     """Robust JSON parser with multiple fallback strategies."""
     if not text:
         return None

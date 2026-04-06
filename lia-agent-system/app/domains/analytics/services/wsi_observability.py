@@ -13,11 +13,10 @@ Provides observability into:
 import logging
 import math
 import statistics
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, case, cast, Float as SAFloat
-from sqlalchemy.orm import aliased
 
 from app.models.candidate import VacancyCandidate
 from app.models.feedback_learning import JobOutcome, JobOutcomeType
@@ -39,7 +38,7 @@ WSI_BLOCKS = [
 ]
 
 
-def _point_biserial_correlation(scores: List[float], outcomes: List[int]) -> Optional[float]:
+def _point_biserial_correlation(scores: list[float], outcomes: list[int]) -> float | None:
     if len(scores) < MIN_SAMPLE_SIZE or len(set(outcomes)) < 2:
         return None
 
@@ -67,7 +66,7 @@ def _point_biserial_correlation(scores: List[float], outcomes: List[int]) -> Opt
     return max(-1.0, min(1.0, r))
 
 
-def _classify_predictive_power(correlation: Optional[float]) -> str:
+def _classify_predictive_power(correlation: float | None) -> str:
     if correlation is None:
         return "insufficient_data"
     abs_corr = abs(correlation)
@@ -91,7 +90,7 @@ class WSIObservabilityService:
 
     async def _get_scored_candidates_with_outcomes(
         self, company_id: str, db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         stmt = (
             select(
                 VacancyCandidate.id,
@@ -148,7 +147,7 @@ class WSIObservabilityService:
 
     async def get_score_vs_outcome_correlation(
         self, company_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         records = await self._get_scored_candidates_with_outcomes(company_id, db)
 
         scored_records = [r for r in records if r["lia_score"] is not None]
@@ -198,7 +197,7 @@ class WSIObservabilityService:
 
     async def get_block_accuracy(
         self, company_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         records = await self._get_scored_candidates_with_outcomes(company_id, db)
 
         records_with_blocks = [r for r in records if r.get("block_scores") and isinstance(r["block_scores"], dict)]
@@ -258,7 +257,7 @@ class WSIObservabilityService:
 
     async def get_score_distribution(
         self, company_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         records = await self._get_scored_candidates_with_outcomes(company_id, db)
 
         scored = [r for r in records if r["lia_score"] is not None]
@@ -330,7 +329,7 @@ class WSIObservabilityService:
 
     async def get_threshold_analysis(
         self, company_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         records = await self._get_scored_candidates_with_outcomes(company_id, db)
 
         scored = [r for r in records if r["lia_score"] is not None]
@@ -383,7 +382,7 @@ class WSIObservabilityService:
 
     async def get_observability_summary(
         self, company_id: str, db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         correlation_data = await self.get_score_vs_outcome_correlation(company_id, db)
         block_data = await self.get_block_accuracy(company_id, db)
         distribution_data = await self.get_score_distribution(company_id, db)

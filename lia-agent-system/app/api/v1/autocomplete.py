@@ -2,11 +2,11 @@
 Premium Autocomplete API - Company-specific search suggestions.
 """
 import logging
+
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
 from pydantic import BaseModel
-from typing import List, Optional
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 
@@ -19,13 +19,13 @@ class PremiumSuggestion(BaseModel):
     """A premium autocomplete suggestion."""
     text: str
     category: str  # recent, popular, team, recommended
-    count: Optional[int] = None
-    lastUsed: Optional[str] = None
+    count: int | None = None
+    lastUsed: str | None = None
 
 
 class PremiumAutocompleteResponse(BaseModel):
     """Response with premium suggestions."""
-    suggestions: List[PremiumSuggestion]
+    suggestions: list[PremiumSuggestion]
     query: str
 
 
@@ -46,7 +46,7 @@ async def get_premium_suggestions(
     - Team members' searches
     - LIA-recommended queries
     """
-    suggestions: List[PremiumSuggestion] = []
+    suggestions: list[PremiumSuggestion] = []
     query_lower = query.lower()
     
     try:
@@ -122,7 +122,7 @@ async def get_premium_suggestions(
     )
 
 
-def generate_fallback_suggestions(query: str) -> List[PremiumSuggestion]:
+def generate_fallback_suggestions(query: str) -> list[PremiumSuggestion]:
     """Generate fallback suggestions based on query patterns."""
     query_lower = query.lower()
     suggestions = []

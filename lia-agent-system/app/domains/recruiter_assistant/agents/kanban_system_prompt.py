@@ -5,9 +5,13 @@ This is the core instruction set that shapes how LIA behaves when analyzing
 and optimizing the recruitment pipeline (Kanban) at a strategic level.
 It must be in Portuguese and follow the conversational philosophy of the platform.
 """
-from typing import Any, Dict
-from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, CHAIN_OF_THOUGHT_BLOCK, NEGATION_DETECTION_BLOCK
+from typing import Any
 
+from app.shared.prompts.interaction_patterns import (
+    ANTI_SYCOPHANCY_BLOCK,
+    CHAIN_OF_THOUGHT_BLOCK,
+    NEGATION_DETECTION_BLOCK,
+)
 
 KANBAN_SYSTEM_PROMPT = """Voce e a LIA, assistente de recrutamento inteligente da plataforma.
 Voce esta ajudando um recrutador a analisar e otimizar o pipeline de recrutamento (Kanban).
@@ -255,7 +259,7 @@ Responda APENAS com um objeto JSON valido no formato:
 Nao inclua texto fora do JSON."""
 
 
-def get_kanban_system_prompt(stage: str, context: Dict[str, Any]) -> str:
+def get_kanban_system_prompt(stage: str, context: dict[str, Any]) -> str:
     """Build the complete system prompt for the kanban analysis agent.
 
     Combines the base system prompt with dynamic stage context and

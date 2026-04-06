@@ -3,12 +3,12 @@ RAG (Retrieval-Augmented Generation) service.
 Combines memory and knowledge base search with LLM generation.
 """
 import logging
-from typing import List, Optional, Dict, Any
-from uuid import UUID
 from dataclasses import dataclass
+from typing import Any
+from uuid import UUID
 
 from app.domains.recruiter_assistant.services.memory_service import memory_service
-from app.services.llm import llm_service, LLMProvider
+from app.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RAGContext:
     """Context retrieved for RAG generation."""
-    conversation_history: List[Dict[str, Any]]
-    similar_messages: List[Dict[str, Any]]
-    knowledge_base_docs: List[Dict[str, Any]]
+    conversation_history: list[dict[str, Any]]
+    similar_messages: list[dict[str, Any]]
+    knowledge_base_docs: list[dict[str, Any]]
     formatted_context: str
 
 
@@ -33,11 +33,11 @@ class RAGService:
         query: str,
         session_id: str,
         company_id: UUID,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         include_knowledge_base: bool = True,
         include_conversation_history: bool = True,
         include_similar_messages: bool = True,
-        knowledge_base_types: Optional[List[str]] = None,
+        knowledge_base_types: list[str] | None = None,
         conversation_limit: int = 10,
         similar_limit: int = 5,
         knowledge_limit: int = 5
@@ -110,9 +110,9 @@ class RAGService:
     
     def _format_context(
         self,
-        conversation_history: List[Dict[str, Any]],
-        similar_messages: List[Dict[str, Any]],
-        knowledge_docs: List[Dict[str, Any]]
+        conversation_history: list[dict[str, Any]],
+        similar_messages: list[dict[str, Any]],
+        knowledge_docs: list[dict[str, Any]]
     ) -> str:
         """Format retrieved context into a string for the LLM."""
         sections = []
@@ -149,13 +149,13 @@ class RAGService:
         session_id: str,
         company_id: UUID,
         system_prompt: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         provider: LLMProvider = "gemini",
         include_knowledge_base: bool = True,
         include_conversation_history: bool = True,
-        knowledge_base_types: Optional[List[str]] = None,
+        knowledge_base_types: list[str] | None = None,
         store_response: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a response using RAG.
         
@@ -240,8 +240,8 @@ Please provide a helpful and accurate response based on the context provided."""
         company_id: UUID,
         system_prompt: str,
         provider: LLMProvider = "gemini",
-        knowledge_base_types: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        knowledge_base_types: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Generate a response using only knowledge base context (no conversation history).
         

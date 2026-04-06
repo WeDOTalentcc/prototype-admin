@@ -5,16 +5,16 @@ Manages company-level communication configurations including email signatures,
 LGPD sending hours, message limits, and channel preferences.
 """
 
-from fastapi import APIRouter, HTTPException, Query, Header, Depends, status
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 from datetime import datetime
 
-from app.models.communication_settings import CommunicationSettings, DEFAULT_COMMUNICATION_SETTINGS
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
+from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
 
 logger = logging.getLogger(__name__)
 
@@ -22,30 +22,30 @@ router = APIRouter(prefix="/company", tags=["company"])
 
 
 class CommunicationSettingsUpdate(BaseModel):
-    signature: Optional[str] = None
-    signature_html: Optional[str] = None
-    sending_hours_start: Optional[int] = None
-    sending_hours_end: Optional[int] = None
-    respect_holidays: Optional[bool] = None
-    respect_weekends: Optional[bool] = None
-    timezone: Optional[str] = None
-    max_messages_per_day: Optional[int] = None
-    max_messages_per_candidate: Optional[int] = None
-    cooldown_hours_between_messages: Optional[int] = None
-    lgpd_compliant: Optional[bool] = None
-    require_consent_before_contact: Optional[bool] = None
-    auto_unsubscribe_after_days: Optional[int] = None
-    default_email_from_name: Optional[str] = None
-    default_reply_to: Optional[str] = None
-    mailgun_enabled: Optional[bool] = None
-    twilio_enabled: Optional[bool] = None
+    signature: str | None = None
+    signature_html: str | None = None
+    sending_hours_start: int | None = None
+    sending_hours_end: int | None = None
+    respect_holidays: bool | None = None
+    respect_weekends: bool | None = None
+    timezone: str | None = None
+    max_messages_per_day: int | None = None
+    max_messages_per_candidate: int | None = None
+    cooldown_hours_between_messages: int | None = None
+    lgpd_compliant: bool | None = None
+    require_consent_before_contact: bool | None = None
+    auto_unsubscribe_after_days: int | None = None
+    default_email_from_name: str | None = None
+    default_reply_to: str | None = None
+    mailgun_enabled: bool | None = None
+    twilio_enabled: bool | None = None
 
 
 class CommunicationSettingsResponse(BaseModel):
-    id: Optional[str] = None
+    id: str | None = None
     company_id: str
-    signature: Optional[str] = None
-    signature_html: Optional[str] = None
+    signature: str | None = None
+    signature_html: str | None = None
     sending_hours_start: int
     sending_hours_end: int
     respect_holidays: bool
@@ -57,17 +57,17 @@ class CommunicationSettingsResponse(BaseModel):
     lgpd_compliant: bool
     require_consent_before_contact: bool
     auto_unsubscribe_after_days: int
-    default_email_from_name: Optional[str] = None
-    default_reply_to: Optional[str] = None
+    default_email_from_name: str | None = None
+    default_reply_to: str | None = None
     mailgun_enabled: bool
     twilio_enabled: bool
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 def get_company_id(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    company_id: Optional[str] = Query(None, description="Company ID")
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str | None = Query(None, description="Company ID")
 ) -> str:
     """Get company_id from header or query param, with validation."""
     resolved_company_id = x_company_id or company_id

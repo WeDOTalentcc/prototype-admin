@@ -10,10 +10,10 @@ Custo de transcrição Teams: $0 (incluído no Microsoft 365)
 """
 import logging
 import re
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -223,13 +223,13 @@ class CompetencyEvidence:
     competency_name: str
     category: str  # technical, behavioral, cultural
     evidence_text: str
-    timestamp: Optional[str] = None
-    bloom_level: Optional[int] = None
-    dreyfus_stage: Optional[int] = None
-    cbi_components: List[str] = field(default_factory=list)
+    timestamp: str | None = None
+    bloom_level: int | None = None
+    dreyfus_stage: int | None = None
+    cbi_components: list[str] = field(default_factory=list)
     confidence: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "competency_name": self.competency_name,
             "category": self.category,
@@ -247,7 +247,7 @@ class TranscriptAnalysisResult:
     """Resultado da análise de transcrição."""
     interview_id: str
     candidate_id: str
-    job_vacancy_id: Optional[str]
+    job_vacancy_id: str | None
     
     # Scores WSI (0-5)
     technical_score: float
@@ -259,22 +259,22 @@ class TranscriptAnalysisResult:
     bloom_average: float
     dreyfus_average: float
     cbi_completeness: float
-    big_five_profile: Dict[str, float]
+    big_five_profile: dict[str, float]
     
     # Evidências
-    evidences: List[CompetencyEvidence]
-    strengths: List[str]
-    concerns: List[str]
-    red_flags: List[str]
+    evidences: list[CompetencyEvidence]
+    strengths: list[str]
+    concerns: list[str]
+    red_flags: list[str]
     
     # Parecer
     recommendation: str  # approve, reject, pending_review
     summary: str
-    detailed_analysis: Dict[str, Any]
+    detailed_analysis: dict[str, Any]
     
     analyzed_at: datetime = field(default_factory=datetime.utcnow)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "interview_id": self.interview_id,
             "candidate_id": self.candidate_id,
@@ -308,9 +308,9 @@ class InterviewTranscriptAnalysisService:
     
     def __init__(self):
         self.min_transcript_length = 500
-        self.competency_keywords: Dict[str, List[str]] = self._build_competency_keywords()
+        self.competency_keywords: dict[str, list[str]] = self._build_competency_keywords()
     
-    def _build_competency_keywords(self) -> Dict[str, List[str]]:
+    def _build_competency_keywords(self) -> dict[str, list[str]]:
         """Build dictionary of common competency keywords."""
         return {
             "python": ["python", "django", "flask", "fastapi", "pandas", "numpy"],
@@ -336,7 +336,7 @@ class InterviewTranscriptAnalysisService:
         text = text.strip()
         return text
     
-    def _count_indicator_matches(self, text: str, indicators: List[str]) -> int:
+    def _count_indicator_matches(self, text: str, indicators: list[str]) -> int:
         """Count how many indicators are found in text."""
         text_lower = text.lower()
         count = 0
@@ -348,8 +348,8 @@ class InterviewTranscriptAnalysisService:
     def _extract_sentences_with_indicators(
         self, 
         text: str, 
-        indicators: List[str]
-    ) -> List[str]:
+        indicators: list[str]
+    ) -> list[str]:
         """Extract sentences containing any of the indicators."""
         sentences = re.split(r'[.!?]+', text)
         matches = []
@@ -372,8 +372,8 @@ class InterviewTranscriptAnalysisService:
         transcript_text: str,
         interview_id: str,
         candidate_id: str,
-        job_vacancy_id: Optional[str] = None,
-        job_competencies: Optional[List[Dict]] = None
+        job_vacancy_id: str | None = None,
+        job_competencies: list[dict] | None = None
     ) -> TranscriptAnalysisResult:
         """
         Analyze interview transcript using WSI deterministic methodology.
@@ -469,7 +469,7 @@ class InterviewTranscriptAnalysisService:
         
         return result
     
-    def _calculate_bloom_score(self, text: str) -> Tuple[float, int]:
+    def _calculate_bloom_score(self, text: str) -> tuple[float, int]:
         """
         Calculate Bloom taxonomy score from text indicators.
         
@@ -512,7 +512,7 @@ class InterviewTranscriptAnalysisService:
         
         return normalized_score, highest_level.value
     
-    def _calculate_dreyfus_score(self, text: str) -> Tuple[float, int]:
+    def _calculate_dreyfus_score(self, text: str) -> tuple[float, int]:
         """
         Calculate Dreyfus stage from text indicators.
         
@@ -555,7 +555,7 @@ class InterviewTranscriptAnalysisService:
         
         return normalized_score, highest_stage.value
     
-    def _calculate_cbi_completeness(self, text: str) -> Tuple[float, Dict[str, bool]]:
+    def _calculate_cbi_completeness(self, text: str) -> tuple[float, dict[str, bool]]:
         """
         Calculate CBI STAR completeness score.
         
@@ -578,7 +578,7 @@ class InterviewTranscriptAnalysisService:
         
         return completeness, components_found
     
-    def _calculate_big_five_profile(self, text: str) -> Dict[str, float]:
+    def _calculate_big_five_profile(self, text: str) -> dict[str, float]:
         """
         Calculate Big Five profile from text indicators.
         
@@ -606,8 +606,8 @@ class InterviewTranscriptAnalysisService:
     def _extract_evidences(
         self, 
         text: str, 
-        competencies: List[Dict]
-    ) -> List[CompetencyEvidence]:
+        competencies: list[dict]
+    ) -> list[CompetencyEvidence]:
         """Extract competency evidences from transcript."""
         evidences = []
         sentences = re.split(r'[.!?]+', text)
@@ -670,7 +670,7 @@ class InterviewTranscriptAnalysisService:
         
         return list(unique_evidences.values())
     
-    def _get_sentence_bloom_level(self, sentence: str) -> Optional[int]:
+    def _get_sentence_bloom_level(self, sentence: str) -> int | None:
         """Get Bloom level for a specific sentence."""
         sentence_lower = sentence.lower()
         for level in reversed(list(BloomLevel)):
@@ -678,7 +678,7 @@ class InterviewTranscriptAnalysisService:
                 return level.value
         return None
     
-    def _get_sentence_dreyfus_stage(self, sentence: str) -> Optional[int]:
+    def _get_sentence_dreyfus_stage(self, sentence: str) -> int | None:
         """Get Dreyfus stage for a specific sentence."""
         sentence_lower = sentence.lower()
         for stage in reversed(list(DreyfusStage)):
@@ -686,7 +686,7 @@ class InterviewTranscriptAnalysisService:
                 return stage.value
         return None
     
-    def _get_sentence_cbi_components(self, sentence: str) -> List[str]:
+    def _get_sentence_cbi_components(self, sentence: str) -> list[str]:
         """Get CBI components present in a sentence."""
         components = []
         sentence_lower = sentence.lower()
@@ -698,7 +698,7 @@ class InterviewTranscriptAnalysisService:
     def _calculate_competency_match(
         self, 
         text: str, 
-        competencies: List[Dict]
+        competencies: list[dict]
     ) -> float:
         """Calculate competency match score (0-1)."""
         if not competencies:
@@ -720,7 +720,7 @@ class InterviewTranscriptAnalysisService:
         
         return matched / total if total > 0 else 0.7
     
-    def _detect_strengths(self, text: str) -> List[str]:
+    def _detect_strengths(self, text: str) -> list[str]:
         """Detect candidate strengths from transcript."""
         strengths = []
         text_lower = text.lower()
@@ -747,7 +747,7 @@ class InterviewTranscriptAnalysisService:
         text: str, 
         bloom_level: int, 
         dreyfus_stage: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Detect potential concerns."""
         concerns = []
         
@@ -769,7 +769,7 @@ class InterviewTranscriptAnalysisService:
         
         return concerns
     
-    def _detect_red_flags(self, text: str) -> List[str]:
+    def _detect_red_flags(self, text: str) -> list[str]:
         """Detect red flags in transcript."""
         red_flags = []
         text_lower = text.lower()
@@ -791,7 +791,7 @@ class InterviewTranscriptAnalysisService:
     def _calculate_technical_score(
         self,
         text: str,
-        competencies: List[Dict],
+        competencies: list[dict],
         bloom_level: int,
         dreyfus_stage: int
     ) -> float:
@@ -821,9 +821,9 @@ class InterviewTranscriptAnalysisService:
     
     def _calculate_behavioral_score(
         self,
-        big_five: Dict[str, float],
+        big_five: dict[str, float],
         cbi_score: float,
-        evidences: List[CompetencyEvidence]
+        evidences: list[CompetencyEvidence]
     ) -> float:
         """Calculate behavioral competency score (0-5)."""
         # CBI completeness contributes 40%
@@ -846,8 +846,8 @@ class InterviewTranscriptAnalysisService:
     
     def _calculate_cultural_score(
         self,
-        big_five: Dict[str, float],
-        evidences: List[CompetencyEvidence]
+        big_five: dict[str, float],
+        evidences: list[CompetencyEvidence]
     ) -> float:
         """Calculate cultural fit score (0-5)."""
         # Extraversion and agreeableness indicate cultural adaptability
@@ -902,7 +902,7 @@ class InterviewTranscriptAnalysisService:
     def _generate_recommendation(
         self,
         wsi_score: float,
-        red_flags: List[str],
+        red_flags: list[str],
         evidence_count: int
     ) -> str:
         """Generate recommendation based on scores."""
@@ -951,32 +951,32 @@ class InterviewTranscriptAnalysisService:
         summary_parts.append(f"\n{classification_desc}.")
         
         # Scores breakdown
-        summary_parts.append(f"\n\n**Scores por Dimensão:**")
+        summary_parts.append("\n\n**Scores por Dimensão:**")
         summary_parts.append(f"- Técnico: {result.technical_score}/5.0")
         summary_parts.append(f"- Comportamental: {result.behavioral_score}/5.0")
         summary_parts.append(f"- Cultural: {result.cultural_score}/5.0")
         
         # Frameworks
-        summary_parts.append(f"\n\n**Análise por Framework:**")
+        summary_parts.append("\n\n**Análise por Framework:**")
         summary_parts.append(f"- Bloom (nível cognitivo): {result.bloom_average}/5.0")
         summary_parts.append(f"- Dreyfus (estágio expertise): {result.dreyfus_average}/5.0")
         summary_parts.append(f"- CBI (completude STAR): {result.cbi_completeness * 100:.0f}%")
         
         # Strengths
         if result.strengths:
-            summary_parts.append(f"\n\n**Pontos Fortes Identificados:**")
+            summary_parts.append("\n\n**Pontos Fortes Identificados:**")
             for strength in result.strengths[:3]:
                 summary_parts.append(f"- {strength}")
         
         # Concerns
         if result.concerns:
-            summary_parts.append(f"\n\n**Pontos de Atenção:**")
+            summary_parts.append("\n\n**Pontos de Atenção:**")
             for concern in result.concerns[:3]:
                 summary_parts.append(f"- {concern}")
         
         # Red flags
         if result.red_flags:
-            summary_parts.append(f"\n\n**⚠️ Alertas Detectados:**")
+            summary_parts.append("\n\n**⚠️ Alertas Detectados:**")
             for flag in result.red_flags[:2]:
                 summary_parts.append(f"- {flag}")
         

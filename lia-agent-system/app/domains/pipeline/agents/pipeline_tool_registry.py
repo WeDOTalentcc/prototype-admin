@@ -8,13 +8,13 @@ Tools are filtered per action_behavior via STAGE_CAPABILITIES.
 import json
 import logging
 import re
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any
 
-from sqlalchemy import select, text, update
+from lia_agents_core.react_loop import ToolDefinition
+from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-async def _wrap_get_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     if not candidate_id:
         return {"success": False, "error": "candidate_id é obrigatório"}
@@ -59,7 +59,7 @@ async def _wrap_get_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
 
@@ -73,7 +73,7 @@ async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> Dict[str, Any]:
                 FROM lia_opinions lo
                 WHERE lo.candidate_id = :cid
             """
-            params: Dict[str, Any] = {"cid": candidate_id}
+            params: dict[str, Any] = {"cid": candidate_id}
             if job_id:
                 query += " AND lo.job_vacancy_id = :jid"
                 params["jid"] = job_id
@@ -99,7 +99,7 @@ async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_candidate_screening_results(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
 
@@ -113,7 +113,7 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> Dict[str, Any]
                 FROM screening_tasks st
                 WHERE st.candidate_id = :cid
             """
-            params: Dict[str, Any] = {"cid": candidate_id}
+            params: dict[str, Any] = {"cid": candidate_id}
             if job_id:
                 query += " AND st.job_vacancy_id = :jid"
                 params["jid"] = job_id
@@ -139,7 +139,7 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> Dict[str, Any]
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_candidate_salary_info(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
 
     try:
@@ -165,7 +165,7 @@ async def _wrap_get_candidate_salary_info(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_update_candidate_field(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     field_name = kwargs.get("field_name", "")
     field_value = kwargs.get("field_value", "")
@@ -206,7 +206,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_request_data_collection(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_request_data_collection(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     data_type = kwargs.get("data_type", "")
     description = kwargs.get("description", "")
@@ -234,7 +234,7 @@ async def _wrap_request_data_collection(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> dict[str, Any]:
     to_stage = kwargs.get("to_stage", "")
     company_id = kwargs.get("company_id", "")
 
@@ -279,7 +279,7 @@ async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> Dict[str, Any]:
         return {"success": True, "sub_statuses": [], "message": "Erro ao buscar sub-statuses."}
 
 
-async def _wrap_suggest_sub_status(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     action_behavior = kwargs.get("action_behavior", "")
     to_stage = kwargs.get("to_stage", "")
     company_id = kwargs.get("company_id", "")
@@ -335,11 +335,11 @@ async def _wrap_suggest_sub_status(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_extract_preferences(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_extract_preferences(**kwargs: Any) -> dict[str, Any]:
     text_input = kwargs.get("text", "")
-    action_behavior = kwargs.get("action_behavior", "")
+    kwargs.get("action_behavior", "")
 
-    preferences: Dict[str, Any] = {}
+    preferences: dict[str, Any] = {}
 
     days = re.findall(
         r'\b(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo|hoje|amanhã|amanha)\b',
@@ -424,7 +424,7 @@ async def _wrap_extract_preferences(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_validate_transition(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_validate_transition(**kwargs: Any) -> dict[str, Any]:
     from_stage = kwargs.get("from_stage", "")
     to_stage = kwargs.get("to_stage", "")
     action_behavior = kwargs.get("action_behavior", "")
@@ -439,7 +439,7 @@ async def _wrap_validate_transition(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_job_context(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_job_context(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
 
     if not job_id:
@@ -474,10 +474,10 @@ async def _wrap_get_job_context(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_schedule_secondary_task(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_schedule_secondary_task(**kwargs: Any) -> dict[str, Any]:
     task_type = kwargs.get("task_type", "")
     description = kwargs.get("description", "")
-    candidate_id = kwargs.get("candidate_id", "")
+    kwargs.get("candidate_id", "")
 
     return {
         "success": True,
@@ -488,7 +488,7 @@ async def _wrap_schedule_secondary_task(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_personalize_communication(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_personalize_communication(**kwargs: Any) -> dict[str, Any]:
     tone = kwargs.get("tone", "professional")
     language = kwargs.get("language", "pt-BR")
     extra_details = kwargs.get("extra_details", "")
@@ -506,7 +506,7 @@ async def _wrap_personalize_communication(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_check_rejection_fairness(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     rejection_reason = kwargs.get("rejection_reason", "")
     candidate_name = kwargs.get("candidate_name", "")
 
@@ -561,8 +561,8 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> Dict[str, Any]:
         return {"success": True, "is_fair": True, "warnings": [], "error": str(e)}
 
 
-async def _wrap_check_candidate_availability(**kwargs: Any) -> Dict[str, Any]:
-    candidate_id = kwargs.get("candidate_id", "")
+async def _wrap_check_candidate_availability(**kwargs: Any) -> dict[str, Any]:
+    kwargs.get("candidate_id", "")
 
     return {
         "success": True,
@@ -574,7 +574,7 @@ async def _wrap_check_candidate_availability(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_recruiter_preferences(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     action_behavior = kwargs.get("action_behavior", "")
 
@@ -613,7 +613,7 @@ async def _wrap_get_recruiter_preferences(**kwargs: Any) -> Dict[str, Any]:
         return {"success": True, "preferences": [], "message": "Sistema de preferências ainda não configurado"}
 
 
-async def _wrap_save_recruiter_preference(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     preference_key = kwargs.get("preference_key", "")
     preference_value = kwargs.get("preference_value", "")
@@ -681,7 +681,7 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> Dict[str, Any]:
 
 # ─── Interview Management Tools ───────────────────────────────────────────────
 
-async def _get_candidate_phone(candidate_email: str, interview_id: str) -> Optional[str]:
+async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str | None:
     """Busca telefone do candidato na tabela candidates usando email ou interview_id como fallback."""
     try:
         async with AsyncSessionLocal() as db:
@@ -711,7 +711,7 @@ async def _get_candidate_phone(candidate_email: str, interview_id: str) -> Optio
     return None
 
 
-async def _wrap_get_interview_details(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_interview_details(**kwargs: Any) -> dict[str, Any]:
     """Busca detalhes da entrevista agendada para o candidato na vaga atual."""
     candidate_id = kwargs.get("candidate_id", "") or kwargs.get("vacancy_candidate_id", "")
     if not candidate_id:
@@ -769,7 +769,7 @@ async def _wrap_get_interview_details(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_cancel_interview(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
     """
     Cancela a entrevista agendada do candidato.
     Atualiza o banco de dados, cancela o evento no Teams via Microsoft Graph
@@ -782,7 +782,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> Dict[str, Any]:
     if not interview_id:
         return {"success": False, "error": "interview_id é obrigatório"}
 
-    notifications_sent: List[Dict[str, Any]] = []
+    notifications_sent: list[dict[str, Any]] = []
     graph_status = "not_attempted"
 
     try:
@@ -904,7 +904,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_reschedule_interview(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
     """
     Reagenda a entrevista para nova data e hora.
     Atualiza o banco de dados, atualiza o evento no Teams via Microsoft Graph
@@ -918,7 +918,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> Dict[str, Any]:
     if not interview_id or not new_start_time_str:
         return {"success": False, "error": "interview_id e new_start_time são obrigatórios"}
 
-    notifications_sent: List[Dict[str, Any]] = []
+    notifications_sent: list[dict[str, Any]] = []
     graph_status = "not_attempted"
 
     try:
@@ -1048,7 +1048,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-ALL_TOOLS: List[ToolDefinition] = [
+ALL_TOOLS: list[ToolDefinition] = [
     ToolDefinition(
         name="get_candidate_profile",
         description="Busca o perfil completo do candidato: nome, email, telefone, LinkedIn, cargo atual, skills, localização, pretensão salarial, modelo de trabalho",
@@ -1316,12 +1316,12 @@ ALL_TOOLS: List[ToolDefinition] = [
     ),
 ]
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in ALL_TOOLS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in ALL_TOOLS}
 
 # Tools que requerem confirmação ou validação adicional antes de executar.
 # Carregados dinamicamente do banco (GuardrailRepository) em runtime.
 # Esta lista serve como fallback estático caso o banco esteja indisponível.
-GUARDRAIL_TOOLS: List[str] = [
+GUARDRAIL_TOOLS: list[str] = [
     "update_candidate_field",   # Alteração de dados cadastrais
     "move_candidate",           # Mudança de etapa no pipeline
     "batch_move",               # Mover múltiplos candidatos de uma vez
@@ -1334,8 +1334,8 @@ GUARDRAIL_TOOLS: List[str] = [
 
 def get_pipeline_transition_tools(
     action_behavior: str = "passive",
-    allowed_tool_names: Optional[List[str]] = None,
-) -> List[ToolDefinition]:
+    allowed_tool_names: list[str] | None = None,
+) -> list[ToolDefinition]:
     if allowed_tool_names is None:
         from app.domains.pipeline.agents.pipeline_stage_context import get_allowed_tools_for_behavior
         allowed_tool_names = get_allowed_tools_for_behavior(action_behavior)

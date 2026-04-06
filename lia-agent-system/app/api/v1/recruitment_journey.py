@@ -1,28 +1,27 @@
 """
 Recruitment Journey API endpoints for templates, SLAs, and automations.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime
-from uuid import UUID
-import uuid
 import logging
+import uuid
+from datetime import datetime
+from typing import Any
 
-from sqlalchemy import select, and_, or_, func
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.recruitment_journey import (
-    RecruitmentTemplate,
-    RecruitmentSLA,
+    DEFAULT_AUTOMATIONS,
+    DEFAULT_SLAS,
+    DEFAULT_TEMPLATES,
+    AutomationType,
     RecruitmentAutomation,
+    RecruitmentSLA,
+    RecruitmentTemplate,
     SLAViolation,
     TemplateType,
-    AutomationType,
-    DEFAULT_TEMPLATES,
-    DEFAULT_SLAS,
-    DEFAULT_AUTOMATIONS,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,102 +39,102 @@ def verify_ownership(resource, company_id: uuid.UUID, resource_name: str = "Reso
 
 class TemplateCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     template_type: str = "technical"
-    stages_config: List[Dict[str, Any]] = []
-    required_fields: List[str] = []
-    optional_fields: List[str] = []
+    stages_config: list[dict[str, Any]] = []
+    required_fields: list[str] = []
+    optional_fields: list[str] = []
     default_priority: str = "normal"
     default_sla_days: int = 30
     ai_screening_enabled: bool = True
     ai_matching_enabled: bool = True
-    ai_config: Dict[str, Any] = {}
+    ai_config: dict[str, Any] = {}
     is_default: bool = False
 
 
 class TemplateUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    template_type: Optional[str] = None
-    stages_config: Optional[List[Dict[str, Any]]] = None
-    required_fields: Optional[List[str]] = None
-    optional_fields: Optional[List[str]] = None
-    default_priority: Optional[str] = None
-    default_sla_days: Optional[int] = None
-    ai_screening_enabled: Optional[bool] = None
-    ai_matching_enabled: Optional[bool] = None
-    ai_config: Optional[Dict[str, Any]] = None
-    is_default: Optional[bool] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    template_type: str | None = None
+    stages_config: list[dict[str, Any]] | None = None
+    required_fields: list[str] | None = None
+    optional_fields: list[str] | None = None
+    default_priority: str | None = None
+    default_sla_days: int | None = None
+    ai_screening_enabled: bool | None = None
+    ai_matching_enabled: bool | None = None
+    ai_config: dict[str, Any] | None = None
+    is_default: bool | None = None
+    is_active: bool | None = None
 
 
 class SLACreate(BaseModel):
     name: str
-    description: Optional[str] = None
-    stage_id: Optional[str] = None
-    stage_name: Optional[str] = None
+    description: str | None = None
+    stage_id: str | None = None
+    stage_name: str | None = None
     target_days: int
-    warning_days: Optional[int] = None
-    critical_days: Optional[int] = None
-    applies_to_job_types: List[str] = []
-    applies_to_priority: List[str] = []
-    warning_action: Dict[str, Any] = {}
-    critical_action: Dict[str, Any] = {}
+    warning_days: int | None = None
+    critical_days: int | None = None
+    applies_to_job_types: list[str] = []
+    applies_to_priority: list[str] = []
+    warning_action: dict[str, Any] = {}
+    critical_action: dict[str, Any] = {}
 
 
 class SLAUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    stage_id: Optional[str] = None
-    stage_name: Optional[str] = None
-    target_days: Optional[int] = None
-    warning_days: Optional[int] = None
-    critical_days: Optional[int] = None
-    applies_to_job_types: Optional[List[str]] = None
-    applies_to_priority: Optional[List[str]] = None
-    warning_action: Optional[Dict[str, Any]] = None
-    critical_action: Optional[Dict[str, Any]] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    stage_id: str | None = None
+    stage_name: str | None = None
+    target_days: int | None = None
+    warning_days: int | None = None
+    critical_days: int | None = None
+    applies_to_job_types: list[str] | None = None
+    applies_to_priority: list[str] | None = None
+    warning_action: dict[str, Any] | None = None
+    critical_action: dict[str, Any] | None = None
+    is_active: bool | None = None
 
 
 class AutomationCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     automation_type: str
     trigger_event: str
-    trigger_conditions: Dict[str, Any] = {}
-    action_config: Dict[str, Any] = {}
+    trigger_conditions: dict[str, Any] = {}
+    action_config: dict[str, Any] = {}
     is_enabled: bool = True
 
 
 class AutomationUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    automation_type: Optional[str] = None
-    trigger_event: Optional[str] = None
-    trigger_conditions: Optional[Dict[str, Any]] = None
-    action_config: Optional[Dict[str, Any]] = None
-    is_enabled: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    automation_type: str | None = None
+    trigger_event: str | None = None
+    trigger_conditions: dict[str, Any] | None = None
+    action_config: dict[str, Any] | None = None
+    is_enabled: bool | None = None
 
 
 class AISuggestTemplateRequest(BaseModel):
     job_title: str
-    job_description: Optional[str] = None
-    job_type: Optional[str] = None
-    company_size: Optional[str] = None
-    industry: Optional[str] = None
+    job_description: str | None = None
+    job_type: str | None = None
+    company_size: str | None = None
+    industry: str | None = None
 
 
 class AIOptimizeSLARequest(BaseModel):
-    historical_data: Optional[Dict[str, Any]] = None
-    target_metrics: Optional[Dict[str, Any]] = None
-    current_slas: Optional[List[Dict[str, Any]]] = None
+    historical_data: dict[str, Any] | None = None
+    target_metrics: dict[str, Any] | None = None
+    current_slas: list[dict[str, Any]] | None = None
 
 
 @router.get("/templates")
 async def list_templates(
     company_id: str = Query(..., description="Company ID"),
-    template_type: Optional[str] = None,
+    template_type: str | None = None,
     is_active: bool = True,
     skip: int = Query(0, ge=0, description="Offset for pagination"),
     limit: int = Query(200, ge=1, le=500, description="Max templates to return"),
@@ -331,7 +330,7 @@ async def initialize_templates(
 @router.get("/slas")
 async def list_slas(
     company_id: str = Query(..., description="Company ID"),
-    stage_name: Optional[str] = None,
+    stage_name: str | None = None,
     is_active: bool = True,
     db: AsyncSession = Depends(get_db)
 ):
@@ -507,9 +506,9 @@ async def initialize_slas(
 @router.get("/slas/violations")
 async def get_sla_violations(
     company_id: str = Query(..., description="Company ID"),
-    job_id: Optional[str] = None,
-    violation_type: Optional[str] = None,
-    resolved: Optional[bool] = None,
+    job_id: str | None = None,
+    violation_type: str | None = None,
+    resolved: bool | None = None,
     limit: int = Query(50, le=100),
     offset: int = 0,
     db: AsyncSession = Depends(get_db)
@@ -554,9 +553,9 @@ async def get_sla_violations(
 @router.get("/automations")
 async def list_automations(
     company_id: str = Query(..., description="Company ID"),
-    automation_type: Optional[str] = None,
-    trigger_event: Optional[str] = None,
-    is_enabled: Optional[bool] = None,
+    automation_type: str | None = None,
+    trigger_event: str | None = None,
+    is_enabled: bool | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """List automations for a company."""

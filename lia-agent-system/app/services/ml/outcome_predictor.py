@@ -7,16 +7,14 @@ Provides predictions for:
 - Skill success likelihood
 - Candidate fit scoring
 """
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
-from dataclasses import dataclass
 import logging
-import math
-import hashlib
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .feature_engineering import OutcomeFeatureEngineer, JobFeatures, OutcomeFeatures
+from .feature_engineering import OutcomeFeatureEngineer, OutcomeFeatures
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +26,11 @@ class PredictionResult:
     confidence: float
     confidence_level: str
     explanation: str
-    factors: List[Dict[str, Any]]
+    factors: list[dict[str, Any]]
     model_version: str
     predicted_at: datetime
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "predicted_value": self.predicted_value,
             "confidence": self.confidence,
@@ -116,9 +114,9 @@ class OutcomePredictor:
     async def predict_time_to_fill(
         self,
         db: AsyncSession,
-        job_data: Dict[str, Any],
+        job_data: dict[str, Any],
         company_id: str,
-        company_data: Optional[Dict[str, Any]] = None
+        company_data: dict[str, Any] | None = None
     ) -> TimeToFillPrediction:
         """
         Predict time to fill for a job vacancy.
@@ -227,9 +225,9 @@ class OutcomePredictor:
     async def predict_optimal_salary(
         self,
         db: AsyncSession,
-        job_data: Dict[str, Any],
+        job_data: dict[str, Any],
         company_id: str,
-        market_benchmark: Optional[float] = None
+        market_benchmark: float | None = None
     ) -> SalaryPrediction:
         """
         Predict optimal salary range for a job vacancy.
@@ -331,7 +329,7 @@ class OutcomePredictor:
         db: AsyncSession,
         skill_name: str,
         company_id: str,
-        role: Optional[str] = None
+        role: str | None = None
     ) -> SkillSuccessPrediction:
         """
         Predict success likelihood for a skill.
@@ -345,8 +343,9 @@ class OutcomePredictor:
         Returns:
             SkillSuccessPrediction with success probability
         """
+        from sqlalchemy import and_, select
+
         from app.models.company_learning import CompanySkill
-        from sqlalchemy import select, and_
         
         try:
             stmt = select(CompanySkill).where(
@@ -422,8 +421,8 @@ class OutcomePredictor:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None
-    ) -> Dict[str, Any]:
+        role: str | None = None
+    ) -> dict[str, Any]:
         """
         Get comprehensive hiring insights for a company/role.
         
@@ -470,12 +469,13 @@ class OutcomePredictor:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
+        role: str | None = None,
         limit: int = 10
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get top skills associated with successful hires."""
+        from sqlalchemy import and_, select
+
         from app.models.company_learning import CompanySkill
-        from sqlalchemy import select, and_
         
         try:
             conditions = [

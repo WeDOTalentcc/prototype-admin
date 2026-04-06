@@ -1,12 +1,12 @@
 """
 Self-Scheduling Link models for candidate interview self-service.
 """
-from datetime import datetime, timedelta
-from typing import Optional
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 import secrets
+import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Column, DateTime, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

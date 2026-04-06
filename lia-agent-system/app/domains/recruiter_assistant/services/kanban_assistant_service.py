@@ -2,20 +2,21 @@
 LIA Kanban Assistant Service - AI-powered analysis for recruitment pipelines.
 Uses Replit AI Integrations for Anthropic access.
 """
-import os
 import json
 import logging
-from typing import Dict, List, Optional, Any
+import os
+from typing import Any
+
 from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.domains.recruiter_assistant.prompts.kanban_assistant_prompts import (
-    get_system_prompt,
+    KanbanCommandType,
+    build_full_prompt,
     detect_command_type,
     get_kanban_prompt_template,
-    build_full_prompt,
+    get_system_prompt,
     resolve_ui_action,
-    KanbanCommandType
 )
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class KanbanAssistantService:
     """Service for AI-powered Kanban pipeline analysis using Claude."""
     
     def __init__(self):
-        self._client: Optional[Anthropic] = None
+        self._client: Anthropic | None = None
     
     @property
     def client(self) -> Anthropic:
@@ -51,11 +52,11 @@ class KanbanAssistantService:
     async def process_command(
         self,
         command: str,
-        command_type: Optional[str],
-        job_context: Dict[str, Any],
-        candidates: List[Dict[str, Any]],
-        selected_candidate_ids: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        command_type: str | None,
+        job_context: dict[str, Any],
+        candidates: list[dict[str, Any]],
+        selected_candidate_ids: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Process a Kanban assistant command.
         
@@ -120,7 +121,7 @@ class KanbanAssistantService:
             logger.error(f"Error processing Kanban command: {e}", exc_info=True)
             raise
     
-    def _parse_json_response(self, response_text: str) -> Dict[str, Any]:
+    def _parse_json_response(self, response_text: str) -> dict[str, Any]:
         """Parse JSON from the AI response, handling markdown code blocks."""
         import re
         text = response_text.strip()
@@ -144,7 +145,7 @@ class KanbanAssistantService:
 
         return {"resposta": response_text}
     
-    def _format_markdown_response(self, response_type: str, data: Dict[str, Any]) -> str:
+    def _format_markdown_response(self, response_type: str, data: dict[str, Any]) -> str:
         """Format structured data as markdown for display."""
         
         if response_type == KanbanCommandType.RANKEAR_CANDIDATOS.value:
@@ -184,7 +185,7 @@ class KanbanAssistantService:
         else:
             return self._format_geral_markdown(data)
     
-    def _format_ranking_markdown(self, data: Dict) -> str:
+    def _format_ranking_markdown(self, data: dict) -> str:
         lines = ["## 🏆 Ranking de Candidatos\n"]
         
         ranking = data.get("ranking", [])
@@ -205,7 +206,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_performance_markdown(self, data: Dict) -> str:
+    def _format_performance_markdown(self, data: dict) -> str:
         lines = ["## 📊 Performance do Funil\n"]
         
         metricas = data.get("metricas", {})
@@ -239,7 +240,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_gargalos_markdown(self, data: Dict) -> str:
+    def _format_gargalos_markdown(self, data: dict) -> str:
         lines = ["## 🚧 Gargalos do Processo\n"]
         
         gargalos = data.get("gargalos", [])
@@ -265,7 +266,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_comparacao_markdown(self, data: Dict) -> str:
+    def _format_comparacao_markdown(self, data: dict) -> str:
         lines = ["## ⚖️ Comparação de Candidatos\n"]
         
         comparacao = data.get("comparacao", [])
@@ -287,13 +288,13 @@ class KanbanAssistantService:
         
         rec = data.get("recomendacao_final", {})
         if rec:
-            lines.append(f"\n### ✅ Recomendação Final")
+            lines.append("\n### ✅ Recomendação Final")
             lines.append(f"**Candidato Recomendado:** {rec.get('candidato_recomendado', 'N/A')}")
             lines.append(f"\n{rec.get('justificativa', '')}")
         
         return "\n".join(lines)
     
-    def _format_resumo_markdown(self, data: Dict) -> str:
+    def _format_resumo_markdown(self, data: dict) -> str:
         lines = ["## 📋 Resumo Executivo\n"]
         
         resumo = data.get("resumo_executivo", {})
@@ -329,7 +330,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_ativos_markdown(self, data: Dict) -> str:
+    def _format_ativos_markdown(self, data: dict) -> str:
         lines = ["## 👥 Candidatos Ativos\n"]
         
         visao = data.get("visao_geral", {})
@@ -352,7 +353,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_conversao_markdown(self, data: Dict) -> str:
+    def _format_conversao_markdown(self, data: dict) -> str:
         lines = ["## 📈 Taxas de Conversão\n"]
         
         geral = data.get("conversao_geral", {})
@@ -377,7 +378,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_tempo_markdown(self, data: Dict) -> str:
+    def _format_tempo_markdown(self, data: dict) -> str:
         lines = ["## ⏱️ Análise de Tempo\n"]
         
         tth = data.get("time_to_hire", {})
@@ -403,7 +404,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_parados_markdown(self, data: Dict) -> str:
+    def _format_parados_markdown(self, data: dict) -> str:
         lines = ["## ⏸️ Candidatos Parados\n"]
         
         resumo = data.get("resumo", {})
@@ -426,7 +427,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_top_markdown(self, data: Dict) -> str:
+    def _format_top_markdown(self, data: dict) -> str:
         lines = ["## 🌟 Top Candidatos\n"]
         
         top = data.get("top_candidatos", [])
@@ -449,7 +450,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_mover_markdown(self, data: Dict) -> str:
+    def _format_mover_markdown(self, data: dict) -> str:
         lines = ["## 🔄 Movimentação de Candidatos\n"]
         
         if data.get("resposta"):
@@ -480,7 +481,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_email_markdown(self, data: Dict) -> str:
+    def _format_email_markdown(self, data: dict) -> str:
         lines = ["## 📧 Envio de Email\n"]
         
         if data.get("resposta"):
@@ -505,7 +506,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_triagem_markdown(self, data: Dict) -> str:
+    def _format_triagem_markdown(self, data: dict) -> str:
         lines = ["## 🔍 Triagem de Candidatos\n"]
         
         if data.get("resposta"):
@@ -531,7 +532,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_entrevista_markdown(self, data: Dict) -> str:
+    def _format_entrevista_markdown(self, data: dict) -> str:
         lines = ["## 📅 Agendamento de Entrevista\n"]
         
         if data.get("resposta"):
@@ -555,7 +556,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_solicitar_dados_markdown(self, data: Dict) -> str:
+    def _format_solicitar_dados_markdown(self, data: dict) -> str:
         lines = ["## 📋 Solicitação de Dados\n"]
         
         if data.get("resposta"):
@@ -582,7 +583,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_analisar_perfil_markdown(self, data: Dict) -> str:
+    def _format_analisar_perfil_markdown(self, data: dict) -> str:
         lines = ["## 🔎 Análise de Perfil\n"]
         
         if data.get("resposta"):
@@ -607,7 +608,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_aprovar_markdown(self, data: Dict) -> str:
+    def _format_aprovar_markdown(self, data: dict) -> str:
         lines = ["## ✅ Aprovação de Candidatos\n"]
         
         if data.get("resposta"):
@@ -629,7 +630,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _format_geral_markdown(self, data: Dict) -> str:
+    def _format_geral_markdown(self, data: dict) -> str:
         lines = ["## 💡 Análise\n"]
         
         if data.get("resposta"):
@@ -649,7 +650,7 @@ class KanbanAssistantService:
         
         return "\n".join(lines)
     
-    def _extract_actions(self, data: Dict[str, Any]) -> List[str]:
+    def _extract_actions(self, data: dict[str, Any]) -> list[str]:
         """Extract suggested actions from the response data."""
         actions = []
         

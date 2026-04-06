@@ -2,11 +2,10 @@
 Proactive Service for LIA.
 Handles proactive notifications, briefings, and recruiter assistance.
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from enum import Enum
 import logging
-import asyncio
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from app.templates.communication_templates import RecruiterNotificationTemplates
 
@@ -56,9 +55,9 @@ class ProactiveService:
     """
     
     def __init__(self):
-        self.pending_notifications: List[Dict[str, Any]] = []
-        self.notification_history: List[Dict[str, Any]] = []
-        self.recruiter_preferences: Dict[str, Any] = {
+        self.pending_notifications: list[dict[str, Any]] = []
+        self.notification_history: list[dict[str, Any]] = []
+        self.recruiter_preferences: dict[str, Any] = {
             "briefing_time": "09:00",
             "end_of_day_time": "18:00",
             "interview_reminder_minutes": 30,
@@ -69,7 +68,7 @@ class ProactiveService:
         self,
         recruiter_id: str,
         recruiter_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate morning briefing for recruiter.
         Called proactively at configured time.
@@ -112,7 +111,7 @@ class ProactiveService:
         self,
         recruiter_id: str,
         recruiter_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate end-of-day summary for recruiter.
         Reviews what was accomplished and pending items.
@@ -156,7 +155,7 @@ class ProactiveService:
         candidate_name: str,
         interview_time: datetime,
         interview_link: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Send interview reminder to recruiter.
         Called before scheduled interview.
@@ -196,9 +195,9 @@ class ProactiveService:
         approval_type: str,
         title: str,
         description: str,
-        items: List[Dict[str, Any]],
-        job_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        items: list[dict[str, Any]],
+        job_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Proactively request approval from recruiter.
         Used for candidate profiles, contacts, actions.
@@ -241,19 +240,19 @@ class ProactiveService:
         job_title: str,
         wsi_score: float,
         passed: bool,
-        strengths: List[str],
-        development_areas: List[str],
+        strengths: list[str],
+        development_areas: list[str],
         session_id: str,
-        candidate_id: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        wsi_scores: Optional[Dict[str, float]] = None,
+        candidate_id: str | None = None,
+        vacancy_id: str | None = None,
+        company_id: str | None = None,
+        wsi_scores: dict[str, float] | None = None,
         dispatch_event: bool = True,
-        hiring_manager_name: Optional[str] = None,
-        department: Optional[str] = None,
-        confidence: Optional[float] = None,
-        wsi_classification: Optional[str] = None
-    ) -> Dict[str, Any]:
+        hiring_manager_name: str | None = None,
+        department: str | None = None,
+        confidence: float | None = None,
+        wsi_classification: str | None = None
+    ) -> dict[str, Any]:
         """
         Notify recruiter that a screening was completed.
         Includes WSI score and structured report with tier information.
@@ -356,7 +355,7 @@ class ProactiveService:
         alert_type: str,
         message: str,
         action_required: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Send critical alert that needs immediate attention.
         """
@@ -388,19 +387,19 @@ class ProactiveService:
         
         return notification
     
-    async def check_expired_screenings(self, job_id: str) -> List[Dict[str, Any]]:
+    async def check_expired_screenings(self, job_id: str) -> list[dict[str, Any]]:
         """
         Check for expired screening sessions and notify.
         Called periodically to identify candidates who didn't complete screening.
         """
-        expired_candidates: List[Dict[str, Any]] = []
+        expired_candidates: list[dict[str, Any]] = []
         return expired_candidates
     
     async def organize_agenda(
         self,
         recruiter_id: str,
-        date: Optional[datetime] = None
-    ) -> Dict[str, Any]:
+        date: datetime | None = None
+    ) -> dict[str, Any]:
         """
         Help organize recruiter's agenda for a day.
         Suggests optimal scheduling and priorities.
@@ -417,7 +416,7 @@ class ProactiveService:
         
         return agenda
     
-    async def _gather_briefing_data(self, recruiter_id: str) -> Dict[str, Any]:
+    async def _gather_briefing_data(self, recruiter_id: str) -> dict[str, Any]:
         """Gather data for daily briefing."""
         return {
             "pending_interviews": 0,
@@ -431,7 +430,7 @@ class ProactiveService:
             ]
         }
     
-    async def _gather_day_summary(self, recruiter_id: str) -> Dict[str, Any]:
+    async def _gather_day_summary(self, recruiter_id: str) -> dict[str, Any]:
         """Gather data for end-of-day summary."""
         return {
             "interviews_completed": 0,
@@ -440,11 +439,13 @@ class ProactiveService:
             "pending_items": []
         }
     
-    async def _create_bell_notification(self, notification: Dict[str, Any]) -> bool:
+    async def _create_bell_notification(self, notification: dict[str, Any]) -> bool:
         from lia_messaging.notification_service import (
-            notification_service,
-            NotificationType as MsgNT,
             NotificationChannel,
+            notification_service,
+        )
+        from lia_messaging.notification_service import (
+            NotificationType as MsgNT,
         )
 
         type_map = {
@@ -480,7 +481,7 @@ class ProactiveService:
             logger.warning("Bell notification creation failed", exc_info=True)
             return False
 
-    async def _send_notification(self, notification: Dict[str, Any]) -> bool:
+    async def _send_notification(self, notification: dict[str, Any]) -> bool:
         """
         Send notification via configured channel.
         Currently supports Teams and internal chat.
@@ -496,17 +497,17 @@ class ProactiveService:
         else:
             return await self._send_via_chat(notification)
     
-    async def _send_via_teams(self, notification: Dict[str, Any]) -> bool:
+    async def _send_via_teams(self, notification: dict[str, Any]) -> bool:
         """Send notification via Microsoft Teams."""
         logger.info(f"📤 Sending notification via Teams: {notification.get('title')}")
         return True
     
-    async def _send_via_chat(self, notification: Dict[str, Any]) -> bool:
+    async def _send_via_chat(self, notification: dict[str, Any]) -> bool:
         """Send notification via internal chat."""
         logger.info(f"💬 Sending notification via Chat: {notification.get('title')}")
         return True
     
-    def get_pending_notifications(self, recruiter_id: str) -> List[Dict[str, Any]]:
+    def get_pending_notifications(self, recruiter_id: str) -> list[dict[str, Any]]:
         """Get pending notifications for recruiter."""
         return [
             n for n in self.pending_notifications
@@ -517,7 +518,7 @@ class ProactiveService:
         self,
         recruiter_id: str,
         limit: int = 50
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get notification history for recruiter."""
         history = [
             n for n in self.notification_history

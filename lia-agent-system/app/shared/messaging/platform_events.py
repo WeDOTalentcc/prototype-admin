@@ -19,8 +19,9 @@ André (reunião 08/03/2026): "Evitar chamadas HTTP síncronas entre APIs.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Any, Awaitable, Callable, Optional
+from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -35,7 +36,7 @@ class PlatformEvent(BaseModel):
 
     event_id: str = Field(default_factory=lambda: str(uuid4()))
     event_type: str  # "vagas.job.published", "funil.candidate.moved", etc.
-    occurred_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    occurred_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     company_id: str
     payload: dict[str, Any]
     source_api: str  # "api-vagas" | "api-funil" | "api-onboarding"

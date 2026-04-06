@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from langchain_core.tools import BaseTool
 
@@ -46,13 +46,13 @@ class GlobalToolRegistry:
     tenant-aware filtering via ToolPermissionsLoader (declarative YAML).
     """
 
-    _instance: "GlobalToolRegistry | None" = None
+    _instance: GlobalToolRegistry | None = None
 
     def __init__(self) -> None:
         self._registry: dict[str, ToolRegistration] = {}
 
     @classmethod
-    def get_instance(cls) -> "GlobalToolRegistry":
+    def get_instance(cls) -> GlobalToolRegistry:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
@@ -136,7 +136,7 @@ class GlobalToolRegistry:
         self,
         requesting_domain: str,
         scope: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
         max_permission: ToolPermission = ToolPermission.READ_ONLY,
         tags: list[str] | None = None,
     ) -> list[BaseTool]:
@@ -197,7 +197,7 @@ class GlobalToolRegistry:
         tool_name: str,
         requesting_domain: str,
         scope: str,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
         max_permission: ToolPermission = ToolPermission.READ_ONLY,
     ) -> BaseTool | None:
         """

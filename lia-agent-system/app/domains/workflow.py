@@ -9,18 +9,18 @@ This replaces per-agent processing logic with a unified domain-driven flow.
 Compatible with the JobWizardGraph pattern but generalized for any domain.
 """
 import logging
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from app.domains.base import (
-    DomainPrompt,
     DomainContext,
+    DomainPrompt,
     DomainResponse,
     IntentResult,
-    ConfidenceLevel,
 )
+
 
 # LIA-C02: Import lazy para evitar circular imports
 def _get_compliance_class():
@@ -52,16 +52,16 @@ class WorkflowState:
     domain: DomainPrompt
     context: DomainContext
     current_step: WorkflowStep = WorkflowStep.ANALYZE_INTENT
-    intent_result: Optional[IntentResult] = None
-    raw_response: Optional[DomainResponse] = None
-    formatted_response: Optional[DomainResponse] = None
-    error: Optional[str] = None
+    intent_result: IntentResult | None = None
+    raw_response: DomainResponse | None = None
+    formatted_response: DomainResponse | None = None
+    error: str | None = None
     started_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
-    execution_log: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    completed_at: datetime | None = None
+    execution_log: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def log_step(self, step: str, details: Dict[str, Any]) -> None:
+    def log_step(self, step: str, details: dict[str, Any]) -> None:
         self.execution_log.append({
             "step": step,
             "timestamp": datetime.utcnow().isoformat(),
@@ -272,7 +272,7 @@ class DomainWorkflow:
             logger.warning(f"Reference resolution failed (non-blocking): {e}", exc_info=True)
             state.log_step("resolve_references", {"status": "error", "error": str(e)})
 
-    async def _pre_check(self, state: WorkflowState) -> Optional[DomainResponse]:
+    async def _pre_check(self, state: WorkflowState) -> DomainResponse | None:
         state.current_step = WorkflowStep.PRE_CHECK
 
         from app.shared.compliance.fairness_guard import FairnessGuard
@@ -526,7 +526,7 @@ class DomainWorkflow:
             },
         )
 
-    _DOMAIN_TO_AGENT: Dict[str, List[str]] = {
+    _DOMAIN_TO_AGENT: dict[str, list[str]] = {
         "job_management": ["wizard", "jobs_management"],
         "cv_screening": ["pipeline"],
         "hiring_policy": ["policy"],
@@ -539,7 +539,7 @@ class DomainWorkflow:
         "interview_scheduling": [],
     }
 
-    def _resolve_agent_domain(self, domain_id: str, action_id: str) -> Optional[str]:
+    def _resolve_agent_domain(self, domain_id: str, action_id: str) -> str | None:
         candidates = self._DOMAIN_TO_AGENT.get(domain_id)
         if candidates is None:
             return domain_id
@@ -570,7 +570,7 @@ class DomainWorkflow:
 
         return candidates[0]
 
-    async def _try_react_agent(self, state: WorkflowState) -> Optional[DomainResponse]:
+    async def _try_react_agent(self, state: WorkflowState) -> DomainResponse | None:
         """Tenta delegar a execução para o ReAct agent do domínio.
 
         Resolve o mapeamento entre domain_id (DomainRegistry) e agent_domain
@@ -580,8 +580,8 @@ class DomainWorkflow:
         ou None se o domínio não tem agente registrado (fallback para execute_action).
         """
         try:
-            from lia_agents_core.react_agent_registry import ReactAgentRegistry, AgentFactory
             from lia_agents_core.agent_interface import AgentInput
+            from lia_agents_core.react_agent_registry import AgentFactory, ReactAgentRegistry
 
             registry = ReactAgentRegistry()
             domain_id = state.domain.domain_id

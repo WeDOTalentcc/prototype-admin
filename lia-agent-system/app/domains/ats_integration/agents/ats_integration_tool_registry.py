@@ -6,7 +6,7 @@ can autonomously decide which tools to call for bidirectional ATS synchronizatio
 Supported providers: Gupy, Pandapé, Merge.
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 
@@ -17,16 +17,16 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-async def _wrap_sync_candidate_to_ats(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_sync_candidate_to_ats(**kwargs: Any) -> dict[str, Any]:
     """Push candidate data to an external ATS."""
     from app.domains.ats_integration.services.ats_sync_service import (
         ATSSyncService,
         ATSSyncTrigger,
     )
 
-    candidate_id: Optional[int] = kwargs.get("candidate_id")
-    company_id: Optional[str] = kwargs.get("company_id")
-    ats_provider: Optional[str] = kwargs.get("ats_provider")
+    candidate_id: int | None = kwargs.get("candidate_id")
+    company_id: str | None = kwargs.get("company_id")
+    ats_provider: str | None = kwargs.get("ats_provider")
     trigger_raw: str = kwargs.get("trigger", "CANDIDATE_UPDATED")
 
     if candidate_id is None:
@@ -59,13 +59,13 @@ async def _wrap_sync_candidate_to_ats(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_fetch_candidate_from_ats(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_fetch_candidate_from_ats(**kwargs: Any) -> dict[str, Any]:
     """Pull candidate data from an external ATS."""
     from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
 
-    ats_candidate_id: Optional[str] = kwargs.get("ats_candidate_id")
-    company_id: Optional[str] = kwargs.get("company_id")
-    ats_provider: Optional[str] = kwargs.get("ats_provider")
+    ats_candidate_id: str | None = kwargs.get("ats_candidate_id")
+    kwargs.get("company_id")
+    ats_provider: str | None = kwargs.get("ats_provider")
 
     if not ats_candidate_id:
         return {"success": False, "message": "ats_candidate_id é obrigatório"}
@@ -85,13 +85,13 @@ async def _wrap_fetch_candidate_from_ats(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_validate_ats_fields(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_validate_ats_fields(**kwargs: Any) -> dict[str, Any]:
     """Validate field mappings before a sync operation."""
     from app.domains.ats_integration.services.ats_sync_service import ATSFieldMapping
 
-    candidate_data: Optional[Dict[str, Any]] = kwargs.get("candidate_data")
-    company_id: Optional[str] = kwargs.get("company_id")
-    ats_provider: Optional[str] = kwargs.get("ats_provider")
+    candidate_data: dict[str, Any] | None = kwargs.get("candidate_data")
+    company_id: str | None = kwargs.get("company_id")
+    ats_provider: str | None = kwargs.get("ats_provider")
 
     if not candidate_data:
         return {"success": False, "message": "candidate_data é obrigatório"}
@@ -108,8 +108,8 @@ async def _wrap_validate_ats_fields(**kwargs: Any) -> Dict[str, Any]:
                 "supported_providers": ["gupy", "pandape", "merge"],
             }
 
-        syncable: List[Dict[str, Any]] = []
-        unsyncable: List[Dict[str, str]] = []
+        syncable: list[dict[str, Any]] = []
+        unsyncable: list[dict[str, str]] = []
 
         for field, value in candidate_data.items():
             can_sync = ATSFieldMapping.can_sync_field(provider, field)
@@ -136,16 +136,16 @@ async def _wrap_validate_ats_fields(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_bulk_sync_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_bulk_sync_candidates(**kwargs: Any) -> dict[str, Any]:
     """Sync multiple candidates to an external ATS in bulk."""
     from app.domains.ats_integration.services.ats_sync_service import (
         ATSSyncService,
         ATSSyncTrigger,
     )
 
-    candidate_ids: Optional[List[int]] = kwargs.get("candidate_ids")
-    company_id: Optional[str] = kwargs.get("company_id")
-    ats_provider: Optional[str] = kwargs.get("ats_provider")
+    candidate_ids: list[int] | None = kwargs.get("candidate_ids")
+    company_id: str | None = kwargs.get("company_id")
+    ats_provider: str | None = kwargs.get("ats_provider")
     trigger_raw: str = kwargs.get("trigger", "BULK_SYNC")
 
     if not candidate_ids:
@@ -192,13 +192,13 @@ async def _wrap_bulk_sync_candidates(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_get_sync_status(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_sync_status(**kwargs: Any) -> dict[str, Any]:
     """Get synchronization status for a candidate."""
     from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
 
-    candidate_id: Optional[int] = kwargs.get("candidate_id")
-    company_id: Optional[str] = kwargs.get("company_id")
-    ats_provider: Optional[str] = kwargs.get("ats_provider")
+    candidate_id: int | None = kwargs.get("candidate_id")
+    company_id: str | None = kwargs.get("company_id")
+    ats_provider: str | None = kwargs.get("ats_provider")
 
     if candidate_id is None:
         return {"success": False, "message": "candidate_id é obrigatório"}
@@ -235,7 +235,7 @@ async def _wrap_get_sync_status(**kwargs: Any) -> Dict[str, Any]:
 # Public registry
 # ---------------------------------------------------------------------------
 
-def get_ats_integration_tools() -> List[ToolDefinition]:
+def get_ats_integration_tools() -> list[ToolDefinition]:
     """Return all ATS Integration tools."""
     return [
         ToolDefinition(
@@ -290,7 +290,7 @@ def get_ats_integration_tools() -> List[ToolDefinition]:
     ]
 
 
-def get_stage_tools(stage: str) -> List[ToolDefinition]:
+def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """Return tools available for a given ATS integration stage."""
     from app.domains.ats_integration.agents.ats_integration_stage_context import (
         get_stage_tools as _stage_tools,

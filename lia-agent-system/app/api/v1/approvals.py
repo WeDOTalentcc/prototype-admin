@@ -2,21 +2,20 @@
 Approvals API endpoints for managing approval workflow requests.
 Handles creation, listing, approval, and rejection of approval requests.
 """
-from datetime import datetime
-from typing import List, Optional
-from uuid import UUID
 import uuid
+from datetime import datetime
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr
-from sqlalchemy import select, and_, or_
+from pydantic import BaseModel
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
 from app.domains.communication.services.email_service import email_service
-from app.shared.pii_masking import get_masked_logger
+from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import audit_service
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
@@ -27,46 +26,46 @@ class ApprovalRequestCreate(BaseModel):
     request_type: str = "vacancy_approval"
     requester_name: str
     requester_email: str
-    target_id: Optional[str] = None
-    target_type: Optional[str] = None
+    target_id: str | None = None
+    target_type: str | None = None
     target_name: str
-    target_description: Optional[str] = None
-    target_data: Optional[dict] = None
+    target_description: str | None = None
+    target_data: dict | None = None
     approver_name: str
     approver_email: str
     approval_level: int = 1
     priority: str = "normal"
-    due_date: Optional[datetime] = None
+    due_date: datetime | None = None
 
 
 class ApprovalRequestUpdate(BaseModel):
-    approval_notes: Optional[str] = None
-    rejection_reason: Optional[str] = None
+    approval_notes: str | None = None
+    rejection_reason: str | None = None
 
 
 class ApprovalRequestResponse(BaseModel):
     id: str
     company_id: str
     request_type: str
-    requester_id: Optional[str]
+    requester_id: str | None
     requester_name: str
     requester_email: str
-    target_id: Optional[str]
-    target_type: Optional[str]
+    target_id: str | None
+    target_type: str | None
     target_name: str
-    target_description: Optional[str]
-    target_data: Optional[dict]
-    approver_id: Optional[str]
+    target_description: str | None
+    target_data: dict | None
+    approver_id: str | None
     approver_name: str
     approver_email: str
     approval_level: int
     status: str
     priority: str
-    due_date: Optional[datetime]
-    approval_notes: Optional[str]
-    rejection_reason: Optional[str]
+    due_date: datetime | None
+    approval_notes: str | None
+    rejection_reason: str | None
     email_sent: bool
-    resolved_at: Optional[datetime]
+    resolved_at: datetime | None
     created_at: datetime
     updated_at: datetime
 
@@ -107,7 +106,7 @@ def to_response(approval: ApprovalRequest) -> ApprovalRequestResponse:
 async def create_approval_request(
     request: ApprovalRequestCreate,
     company_id: str = Query(..., description="Company ID"),
-    requester_id: Optional[str] = Query(None, description="Requester user ID"),
+    requester_id: str | None = Query(None, description="Requester user ID"),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new approval request and send notification email to approver."""
@@ -155,13 +154,13 @@ async def create_approval_request(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("", response_model=List[ApprovalRequestResponse])
+@router.get("", response_model=list[ApprovalRequestResponse])
 async def list_approval_requests(
     company_id: str = Query(..., description="Company ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    request_type: Optional[str] = Query(None, description="Filter by request type"),
-    approver_email: Optional[str] = Query(None, description="Filter by approver email"),
-    requester_email: Optional[str] = Query(None, description="Filter by requester email"),
+    status: str | None = Query(None, description="Filter by status"),
+    request_type: str | None = Query(None, description="Filter by request type"),
+    approver_email: str | None = Query(None, description="Filter by approver email"),
+    requester_email: str | None = Query(None, description="Filter by requester email"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
@@ -207,10 +206,10 @@ async def list_approval_requests(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/pending", response_model=List[ApprovalRequestResponse])
+@router.get("/pending", response_model=list[ApprovalRequestResponse])
 async def list_pending_approvals(
     company_id: str = Query(..., description="Company ID"),
-    approver_email: Optional[str] = Query(None, description="Filter by approver email"),
+    approver_email: str | None = Query(None, description="Filter by approver email"),
     db: AsyncSession = Depends(get_db)
 ):
     """List pending approval requests for a company."""

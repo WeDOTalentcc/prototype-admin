@@ -5,16 +5,21 @@ Uses Replit AI Integrations for Anthropic access.
 Enhanced with BARS rubric evaluation and WSI inferential trait extraction
 for unified profile analysis (Task #35).
 """
-import os
 import json
 import logging
-from typing import List, Optional, Dict, Any, Tuple
+import os
+from typing import Any
+
 from anthropic import Anthropic
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.schemas.analysis import (
-    CandidateInput, CandidateAnalysisResult, AnalysisRequest, 
-    AnalysisResponse, AnalysisType, ScoreBreakdown
+    AnalysisRequest,
+    AnalysisResponse,
+    AnalysisType,
+    CandidateAnalysisResult,
+    CandidateInput,
+    ScoreBreakdown,
 )
 from app.shared.prompts.loader import PromptLoader
 
@@ -82,7 +87,7 @@ class AnalysisService:
     """Service for AI-powered candidate analysis using Claude via Replit AI Integrations."""
     
     def __init__(self):
-        self._client: Optional[Anthropic] = None
+        self._client: Anthropic | None = None
     
     @property
     def client(self) -> Anthropic:
@@ -222,7 +227,7 @@ Para esta análise CONTEXTUAL, avalie o candidato em relação a esta vaga espec
             context = """## ANÁLISE GERAL (sem vaga específica):
 Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fortes e roles mais adequados."""
         
-        results: List[CandidateAnalysisResult] = []
+        results: list[CandidateAnalysisResult] = []
         
         for candidate in request.candidates:
             try:
@@ -305,7 +310,7 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
             alerts=alerts
         )
 
-    def _compute_confidence(self, cv_text: Optional[str]) -> str:
+    def _compute_confidence(self, cv_text: str | None) -> str:
         if not cv_text:
             return "low"
         word_count = len(cv_text.split())
@@ -315,7 +320,7 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
             return "medium"
         return "high"
 
-    async def _infer_wsi_traits(self, cv_text: str) -> Dict[str, Any]:
+    async def _infer_wsi_traits(self, cv_text: str) -> dict[str, Any]:
         from app.shared.pii_masking import strip_pii_for_llm_prompt
         clean_text = strip_pii_for_llm_prompt(cv_text[:4000])
 
@@ -349,17 +354,19 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
 
     async def _run_bars_evaluation(
         self,
-        candidate_data: Dict[str, Any],
+        candidate_data: dict[str, Any],
         vacancy_id: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         try:
-            from app.core.database import AsyncSessionLocal
-            from sqlalchemy import select
-            from app.models.rubric import JobRequirement
-            from app.models.job_vacancy import JobVacancy
-            from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-            from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
             from uuid import UUID
+
+            from sqlalchemy import select
+
+            from app.core.database import AsyncSessionLocal
+            from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+            from app.models.job_vacancy import JobVacancy
+            from app.models.rubric import JobRequirement
+            from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 
             async with AsyncSessionLocal() as db:
                 req_result = await db.execute(
@@ -427,9 +434,9 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
 
     async def analyze_profile_enriched(
         self,
-        candidate_data: Dict[str, Any],
-        vacancy_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        candidate_data: dict[str, Any],
+        vacancy_id: str | None = None,
+    ) -> dict[str, Any]:
         from datetime import datetime
 
         candidate_id = str(candidate_data.get("id", ""))
@@ -581,13 +588,15 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
     async def _persist_enriched_analysis(
         self,
         candidate_id: str,
-        vacancy_id: Optional[str],
-        analysis: Dict[str, Any],
+        vacancy_id: str | None,
+        analysis: dict[str, Any],
     ) -> None:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select
-        from app.models.candidate import Candidate, VacancyCandidate
         from uuid import UUID
+
+        from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate, VacancyCandidate
 
         enriched_payload = {
             "overall_score": analysis.get("overall_assessment", {}).get("score"),
@@ -605,7 +614,7 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
         async with AsyncSessionLocal() as db:
             if vacancy_id:
                 try:
-                    parsed_vid = UUID(vacancy_id)
+                    UUID(vacancy_id)
                 except (ValueError, AttributeError):
                     vacancy_id = None
 

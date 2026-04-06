@@ -1,11 +1,11 @@
 """
 Proactive Actions API - Endpoints for proactive LIA suggestions.
 """
-from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-from datetime import datetime
 import logging
+from typing import Any
+
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +20,11 @@ class ActionResponse(BaseModel):
     description: str
     priority: str
     status: str
-    suggested_action: Dict[str, Any] = {}
-    trigger_reason: Optional[str] = None
+    suggested_action: dict[str, Any] = {}
+    trigger_reason: str | None = None
     auto_executable: bool = False
-    created_at: Optional[str] = None
-    expires_at: Optional[str] = None
+    created_at: str | None = None
+    expires_at: str | None = None
 
 
 class AcceptRejectRequest(BaseModel):
@@ -35,7 +35,7 @@ class AcceptRejectResponse(BaseModel):
     success: bool
     action_id: str
     message: str = ""
-    execution_result: Optional[Dict[str, Any]] = None
+    execution_result: dict[str, Any] | None = None
 
 
 class ProactiveFeedItem(BaseModel):
@@ -44,10 +44,10 @@ class ProactiveFeedItem(BaseModel):
     message: str
     severity: str
     action_type: str
-    suggested_action: Dict[str, Any] = {}
+    suggested_action: dict[str, Any] = {}
     action_label: str = ""
     created_at: str
-    expires_at: Optional[str] = None
+    expires_at: str | None = None
 
 
 class PlanTemplateResponse(BaseModel):
@@ -55,7 +55,7 @@ class PlanTemplateResponse(BaseModel):
     display_name: str
     description: str
     steps_count: int
-    retry_policy: Dict[str, Any]
+    retry_policy: dict[str, Any]
 
 
 class MonitorTriggerResponse(BaseModel):
@@ -65,7 +65,7 @@ class MonitorTriggerResponse(BaseModel):
     notifications_sent: int
 
 
-@router.get("/pending/{company_id}", response_model=List[ActionResponse])
+@router.get("/pending/{company_id}", response_model=list[ActionResponse])
 async def get_pending_actions(
     company_id: str,
     limit: int = Query(default=10, le=50),
@@ -98,7 +98,7 @@ async def get_pending_actions(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/history/{company_id}", response_model=List[ActionResponse])
+@router.get("/history/{company_id}", response_model=list[ActionResponse])
 async def get_action_history(
     company_id: str,
     status: str = Query(default="accepted"),
@@ -169,7 +169,7 @@ async def reject_action(action_id: str, request: AcceptRejectRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/feed/{company_id}", response_model=List[ProactiveFeedItem])
+@router.get("/feed/{company_id}", response_model=list[ProactiveFeedItem])
 async def get_proactive_feed(
     company_id: str,
     limit: int = Query(default=10, le=30),
@@ -215,9 +215,9 @@ async def trigger_pipeline_monitor(company_id: str):
     Useful for testing and admin purposes.
     """
     try:
-        from app.domains.automation.services.pipeline_monitor import PipelineMonitor
-        from app.domains.automation.services.event_action_connector import event_action_connector
         from app.core.database import async_session_factory
+        from app.domains.automation.services.event_action_connector import event_action_connector
+        from app.domains.automation.services.pipeline_monitor import PipelineMonitor
         
         monitor = PipelineMonitor()
         async with async_session_factory() as db:
@@ -238,7 +238,7 @@ async def trigger_pipeline_monitor(company_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/plan-templates", response_model=List[PlanTemplateResponse])
+@router.get("/plan-templates", response_model=list[PlanTemplateResponse])
 async def list_plan_templates():
     """List available plan templates for multi-step actions."""
     try:
@@ -269,14 +269,14 @@ class ProactiveInsight(BaseModel):
     message: str
     urgency: str  # "low" | "normal" | "high" | "urgent"
     type: str
-    action_url: Optional[str] = None
+    action_url: str | None = None
     created_at: str
 
 
-@router.get("/insights", response_model=List[ProactiveInsight])
+@router.get("/insights", response_model=list[ProactiveInsight])
 async def get_proactive_insights(
     company_id: str = Query(...),
-    job_id: Optional[str] = Query(default=None),
+    job_id: str | None = Query(default=None),
     limit: int = Query(default=5, le=20),
 ):
     """

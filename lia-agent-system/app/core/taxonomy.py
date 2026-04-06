@@ -3,9 +3,9 @@ Biblioteca de Taxonomia para Recrutamento - LIA Platform
 Baseada em CBO (Classificação Brasileira de Ocupações), ESCO e padrões de mercado.
 """
 
-from typing import Dict, List, Set
 from dataclasses import dataclass
 from enum import Enum
+
 
 class TaxonomyCategory(str, Enum):
     JOB_TITLE = "job_title"
@@ -21,13 +21,13 @@ class TaxonomyCategory(str, Enum):
 @dataclass
 class TaxonomyEntry:
     canonical: str
-    synonyms: List[str]
+    synonyms: list[str]
     category: TaxonomyCategory
     subcategory: str = ""
     cbo_code: str = ""
 
 
-JOB_TITLES_TAXONOMY: Dict[str, List[str]] = {
+JOB_TITLES_TAXONOMY: dict[str, list[str]] = {
     "tecnologia": [
         "Desenvolvedor", "Developer", "Programador", "Software Engineer", "Engenheiro de Software",
         "Desenvolvedor Backend", "Backend Developer", "Desenvolvedor Back-end",
@@ -212,7 +212,7 @@ JOB_TITLES_TAXONOMY: Dict[str, List[str]] = {
     ],
 }
 
-TECHNICAL_SKILLS_TAXONOMY: Dict[str, List[str]] = {
+TECHNICAL_SKILLS_TAXONOMY: dict[str, list[str]] = {
     "linguagens_programacao": [
         "Python", "JavaScript", "TypeScript", "Java", "C#", "C++", "C",
         "Go", "Golang", "Rust", "Ruby", "PHP", "Swift", "Kotlin", "Scala",
@@ -364,7 +364,7 @@ TECHNICAL_SKILLS_TAXONOMY: Dict[str, List[str]] = {
     ],
 }
 
-SOFT_SKILLS_TAXONOMY: List[str] = [
+SOFT_SKILLS_TAXONOMY: list[str] = [
     "Comunicação", "Communication",
     "Comunicação verbal", "Verbal Communication",
     "Comunicação escrita", "Written Communication",
@@ -400,7 +400,7 @@ SOFT_SKILLS_TAXONOMY: List[str] = [
     "Trabalho sob pressão", "Work Under Pressure",
 ]
 
-LANGUAGES_TAXONOMY: Dict[str, Dict] = {
+LANGUAGES_TAXONOMY: dict[str, dict] = {
     "inglês": {"canonical": "Inglês", "synonyms": ["English", "Ingles"], "levels": ["Básico", "Intermediário", "Avançado", "Fluente", "Nativo"]},
     "espanhol": {"canonical": "Espanhol", "synonyms": ["Spanish", "Español", "Castelhano"], "levels": ["Básico", "Intermediário", "Avançado", "Fluente", "Nativo"]},
     "português": {"canonical": "Português", "synonyms": ["Portuguese", "Portugues"], "levels": ["Nativo", "Fluente"]},
@@ -419,7 +419,7 @@ LANGUAGES_TAXONOMY: Dict[str, Dict] = {
     "libras": {"canonical": "Libras", "synonyms": ["LIBRAS", "Língua Brasileira de Sinais"], "levels": ["Básico", "Intermediário", "Avançado", "Fluente"]},
 }
 
-CERTIFICATIONS_TAXONOMY: Dict[str, List[str]] = {
+CERTIFICATIONS_TAXONOMY: dict[str, list[str]] = {
     "cloud_aws": [
         "AWS Certified Cloud Practitioner",
         "AWS Certified Solutions Architect Associate",
@@ -524,7 +524,7 @@ CERTIFICATIONS_TAXONOMY: Dict[str, List[str]] = {
     ],
 }
 
-INDUSTRIES_TAXONOMY: List[str] = [
+INDUSTRIES_TAXONOMY: list[str] = [
     "Fintech", "Serviços Financeiros", "Banco", "Banco Digital", "Seguros", "Insurtech",
     "E-commerce", "Varejo", "Retail", "Marketplace",
     "Healthtech", "Saúde", "Healthcare", "Farmacêutico", "Biotech",
@@ -552,7 +552,7 @@ INDUSTRIES_TAXONOMY: List[str] = [
     "ONG", "Non-profit", "Terceiro Setor",
 ]
 
-SENIORITY_LEVELS: Dict[str, Dict] = {
+SENIORITY_LEVELS: dict[str, dict] = {
     "estagiario": {
         "canonical": "Estagiário",
         "synonyms": ["Estágio", "Intern", "Internship", "Trainee"],
@@ -600,13 +600,13 @@ SENIORITY_LEVELS: Dict[str, Dict] = {
     },
 }
 
-WORK_MODELS: Dict[str, List[str]] = {
+WORK_MODELS: dict[str, list[str]] = {
     "remoto": ["Remoto", "Remote", "100% Remoto", "Full Remote", "Trabalho Remoto", "Home Office"],
     "hibrido": ["Híbrido", "Hybrid", "Flexível", "Flexible", "Parcialmente Remoto"],
     "presencial": ["Presencial", "On-site", "Escritório", "Office", "In-person"],
 }
 
-LOCATIONS_BRAZIL: Dict[str, List[str]] = {
+LOCATIONS_BRAZIL: dict[str, list[str]] = {
     "sao_paulo": ["São Paulo", "SP", "São Paulo - Capital", "Grande São Paulo", "ABCD", "Campinas", "Santos", "Sorocaba", "Ribeirão Preto", "São José dos Campos"],
     "rio_de_janeiro": ["Rio de Janeiro", "RJ", "Rio de Janeiro - Capital", "Niterói", "Grande Rio"],
     "minas_gerais": ["Minas Gerais", "MG", "Belo Horizonte", "BH", "Uberlândia", "Contagem"],
@@ -629,10 +629,10 @@ class TaxonomyService:
     """Service for taxonomy lookups and matching."""
     
     _instance = None
-    _all_job_titles: Set[str] = set()
-    _all_skills: Set[str] = set()
-    _all_locations: Set[str] = set()
-    _synonym_map: Dict[str, str] = {}
+    _all_job_titles: set[str] = set()
+    _all_skills: set[str] = set()
+    _all_locations: set[str] = set()
+    _synonym_map: dict[str, str] = {}
     
     def __new__(cls):
         if cls._instance is None:
@@ -693,14 +693,14 @@ class TaxonomyService:
                 return self._synonym_map.get(location, location)
         return None
     
-    def get_all_job_titles(self) -> List[str]:
+    def get_all_job_titles(self) -> list[str]:
         """Get all job titles from taxonomy."""
         result = []
         for category, titles in JOB_TITLES_TAXONOMY.items():
             result.extend(titles)
         return result
     
-    def get_all_skills(self) -> List[str]:
+    def get_all_skills(self) -> list[str]:
         """Get all skills from taxonomy."""
         result = []
         for category, skills in TECHNICAL_SKILLS_TAXONOMY.items():
@@ -708,26 +708,26 @@ class TaxonomyService:
         result.extend(SOFT_SKILLS_TAXONOMY)
         return result
     
-    def get_skills_by_category(self, category: str) -> List[str]:
+    def get_skills_by_category(self, category: str) -> list[str]:
         """Get skills by category."""
         return TECHNICAL_SKILLS_TAXONOMY.get(category, [])
     
-    def get_job_titles_by_category(self, category: str) -> List[str]:
+    def get_job_titles_by_category(self, category: str) -> list[str]:
         """Get job titles by category."""
         return JOB_TITLES_TAXONOMY.get(category, [])
     
-    def get_certifications_by_category(self, category: str) -> List[str]:
+    def get_certifications_by_category(self, category: str) -> list[str]:
         """Get certifications by category."""
         return CERTIFICATIONS_TAXONOMY.get(category, [])
     
-    def get_all_certifications(self) -> List[str]:
+    def get_all_certifications(self) -> list[str]:
         """Get all certifications."""
         result = []
         for category, certs in CERTIFICATIONS_TAXONOMY.items():
             result.extend(certs)
         return result
     
-    def search_taxonomy(self, query: str, limit: int = 10) -> Dict[str, List[str]]:
+    def search_taxonomy(self, query: str, limit: int = 10) -> dict[str, list[str]]:
         """Search across all taxonomy categories."""
         query_lower = query.lower().strip()
         results = {

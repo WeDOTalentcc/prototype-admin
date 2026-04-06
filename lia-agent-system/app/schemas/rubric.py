@@ -3,11 +3,12 @@ Pydantic schemas for Rubric Evaluation API.
 
 Based on Schmidt & Hunter (1998) and BARS methodology.
 """
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
-from uuid import UUID
 from datetime import datetime
 from enum import Enum
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class RequirementPriorityEnum(str, Enum):
@@ -35,9 +36,9 @@ class EvidenceType(str, Enum):
 class JobRequirementCreate(BaseModel):
     """Schema for creating a job requirement."""
     requirement: str = Field(..., min_length=1, max_length=500)
-    description: Optional[str] = None
+    description: str | None = None
     priority: RequirementPriorityEnum = RequirementPriorityEnum.IMPORTANT
-    category: Optional[str] = None
+    category: str | None = None
 
 
 class JobRequirementResponse(BaseModel):
@@ -45,9 +46,9 @@ class JobRequirementResponse(BaseModel):
     id: UUID
     job_vacancy_id: UUID
     requirement: str
-    description: Optional[str] = None
+    description: str | None = None
     priority: str
-    category: Optional[str] = None
+    category: str | None = None
     created_at: datetime
 
     class Config:
@@ -66,9 +67,9 @@ class RequirementEvaluation(BaseModel):
     weighted_points: float = Field(..., description="Points × Multiplier")
     max_weighted_points: float = Field(..., description="100 × Multiplier")
     evidence: str = Field(..., description="Specific quote or evidence from CV")
-    reasoning: Optional[str] = Field(None, description="Explanation for the evaluation")
+    reasoning: str | None = Field(None, description="Explanation for the evaluation")
     vague_language_detected: bool = Field(default=False, description="Whether vague language was detected")
-    anomaly_flags: List[str] = Field(default_factory=list, description="Anomaly flags if any")
+    anomaly_flags: list[str] = Field(default_factory=list, description="Anomaly flags if any")
 
 
 class RubricEvaluationResult(BaseModel):
@@ -84,17 +85,17 @@ class RubricEvaluationResult(BaseModel):
     raw_score: float = Field(default=0.0, ge=0, description="Score before cap/floor/evidence adjustments")
     total_weighted_points: float = Field(..., description="Sum of all weighted points (with evidence weights)")
     max_possible_points: float = Field(..., description="Maximum possible weighted points")
-    evaluations: List[RequirementEvaluation] = Field(..., description="Individual requirement evaluations")
-    strengths: List[str] = Field(default_factory=list, description="Identified strengths")
-    concerns: List[str] = Field(default_factory=list, description="Identified concerns or gaps")
+    evaluations: list[RequirementEvaluation] = Field(..., description="Individual requirement evaluations")
+    strengths: list[str] = Field(default_factory=list, description="Identified strengths")
+    concerns: list[str] = Field(default_factory=list, description="Identified concerns or gaps")
     reasoning: str = Field(..., description="Overall evaluation reasoning")
     recommendation: str = Field(..., description="Recommendation level based on score")
-    anomaly_flags: List[str] = Field(default_factory=list, description="Global anomaly flags")
+    anomaly_flags: list[str] = Field(default_factory=list, description="Global anomaly flags")
     auto_excluded: bool = Field(default=False, description="Auto-excluded due to essential requirements missing")
-    exclusion_reasons: List[str] = Field(default_factory=list, description="Reasons for auto-exclusion")
+    exclusion_reasons: list[str] = Field(default_factory=list, description="Reasons for auto-exclusion")
     scoring_methodology: str = Field(default="andre_v1", description="Scoring methodology version")
-    consent_warnings: List[str] = Field(default_factory=list, description="LGPD: avisos de consentimento ausente (soft enforcement)")
-    fairness_warnings: List[str] = Field(
+    consent_warnings: list[str] = Field(default_factory=list, description="LGPD: avisos de consentimento ausente (soft enforcement)")
+    fairness_warnings: list[str] = Field(
         default_factory=list,
         description="DEI: avisos de viés implícito detectados pelo FairnessGuard no output do LLM"
     )
@@ -102,12 +103,12 @@ class RubricEvaluationResult(BaseModel):
 
 class RubricEvaluationResponse(BaseModel):
     """API response for rubric evaluation."""
-    id: Optional[UUID] = None
+    id: UUID | None = None
     candidate_id: UUID
     job_vacancy_id: UUID
     result: RubricEvaluationResult
     evaluated_at: datetime
-    model_version: Optional[str] = None
+    model_version: str | None = None
 
     class Config:
         from_attributes = True
@@ -117,16 +118,16 @@ class EvaluateCandidateRequest(BaseModel):
     """Request to evaluate a single candidate against job requirements."""
     candidate_id: UUID
     job_vacancy_id: UUID
-    candidate_data: Optional[Dict[str, Any]] = Field(None, description="Optional candidate data if not fetching from DB")
-    job_requirements: Optional[List[JobRequirementCreate]] = Field(None, description="Optional requirements if not fetching from DB")
+    candidate_data: dict[str, Any] | None = Field(None, description="Optional candidate data if not fetching from DB")
+    job_requirements: list[JobRequirementCreate] | None = Field(None, description="Optional requirements if not fetching from DB")
     save_result: bool = Field(True, description="Whether to persist the evaluation result")
 
 
 class BatchEvaluateRequest(BaseModel):
     """Request to evaluate multiple candidates against job requirements."""
-    candidate_ids: List[UUID] = Field(..., min_length=1, max_length=100)
+    candidate_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     job_vacancy_id: UUID
-    job_requirements: Optional[List[JobRequirementCreate]] = Field(None, description="Optional requirements if not fetching from DB")
+    job_requirements: list[JobRequirementCreate] | None = Field(None, description="Optional requirements if not fetching from DB")
     save_results: bool = Field(True, description="Whether to persist the evaluation results")
 
 
@@ -136,8 +137,8 @@ class BatchEvaluateResponse(BaseModel):
     total_candidates: int
     evaluated: int
     failed: int
-    results: List[RubricEvaluationResponse]
-    errors: List[Dict[str, Any]] = Field(default_factory=list)
+    results: list[RubricEvaluationResponse]
+    errors: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class LegacyScoreWrapper(BaseModel):
@@ -146,12 +147,12 @@ class LegacyScoreWrapper(BaseModel):
     Maintains backward compatibility during transition.
     """
     score: float
-    breakdown: Dict[str, float]
+    breakdown: dict[str, float]
     reasoning: str
-    matched_skills: List[str]
-    missing_skills: List[str]
-    strengths: List[str]
-    concerns: List[str]
+    matched_skills: list[str]
+    missing_skills: list[str]
+    strengths: list[str]
+    concerns: list[str]
 
     @classmethod
     def from_rubric_result(cls, result: RubricEvaluationResult) -> "LegacyScoreWrapper":

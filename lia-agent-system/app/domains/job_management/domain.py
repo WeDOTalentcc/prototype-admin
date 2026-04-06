@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import Dict, Any, List
-
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "criar vaga": "create_job",
     "nova vaga": "create_job",
     "create job": "create_job",
@@ -116,7 +115,7 @@ class JobManagementDomain(ComplianceDomainPrompt):
     domain_name = "Job Management & Wizard"
     description = "Criação, gestão e otimização de vagas de emprego"
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.job_management.actions import JOB_MANAGEMENT_ACTIONS
         return JOB_MANAGEMENT_ACTIONS
 
@@ -145,7 +144,7 @@ class JobManagementDomain(ComplianceDomainPrompt):
         )
 
     async def execute_action(
-        self, action_id: str, params: Dict[str, Any], context: DomainContext
+        self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
         action = self.get_action_by_id(action_id)
         if not action:
@@ -159,7 +158,7 @@ class JobManagementDomain(ComplianceDomainPrompt):
 
         tool_ids = {t["tool_id"] for t in JOB_MANAGEMENT_TOOLS}
 
-        _ACTION_TOOL_MAP: Dict[str, str] = {
+        _ACTION_TOOL_MAP: dict[str, str] = {
             "create_job": "create_job_vacancy",
             "update_job": "update_job_vacancy",
             "close_job": "close_job_vacancy",

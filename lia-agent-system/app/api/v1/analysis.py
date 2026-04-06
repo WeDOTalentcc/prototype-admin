@@ -2,8 +2,9 @@
 LIA Analysis API endpoints.
 Provides AI-powered candidate analysis using Claude.
 """
-from fastapi import APIRouter, HTTPException
 import logging
+
+from fastapi import APIRouter, HTTPException
 
 from app.schemas.analysis import AnalysisRequest, AnalysisResponse
 from app.services.analysis_service import analysis_service

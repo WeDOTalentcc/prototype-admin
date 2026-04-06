@@ -11,13 +11,13 @@ All functions are async, connect to PostgreSQL via AsyncSessionLocal,
 and return Dict[str, Any] with 'success', 'data', and 'message' keys.
 """
 import logging
-from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ STAGE_ORDER = [
 ]
 
 
-async def predict_dropout_risk(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def predict_dropout_risk(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Analyze dropout risk for candidates in the pipeline.
 
     Evaluates each candidate's risk of dropping out based on:
@@ -52,7 +52,7 @@ async def predict_dropout_risk(company_id: str, job_id: Optional[str] = None) ->
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND vc.vacancy_id = :job_id"
@@ -80,7 +80,7 @@ async def predict_dropout_risk(company_id: str, job_id: Optional[str] = None) ->
             )
             rows = result.mappings().all()
 
-            candidates_at_risk: List[Dict[str, Any]] = []
+            candidates_at_risk: list[dict[str, Any]] = []
             risk_distribution = {"low": 0, "medium": 0, "high": 0, "critical": 0}
 
             for row in rows:
@@ -155,7 +155,7 @@ async def predict_dropout_risk(company_id: str, job_id: Optional[str] = None) ->
         return {"success": False, "error": str(e)}
 
 
-async def predict_time_to_fill(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def predict_time_to_fill(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Estimate time to fill based on historical data and pipeline velocity.
 
     Uses:
@@ -174,7 +174,7 @@ async def predict_time_to_fill(company_id: str, job_id: Optional[str] = None) ->
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND jv.id = :job_id"
@@ -182,7 +182,7 @@ async def predict_time_to_fill(company_id: str, job_id: Optional[str] = None) ->
 
             # Get historical time-to-fill data
             historical_result = await session.execute(
-                text(f"""
+                text("""
                     SELECT
                         jv.seniority,
                         EXTRACT(EPOCH FROM (
@@ -211,7 +211,7 @@ async def predict_time_to_fill(company_id: str, job_id: Optional[str] = None) ->
             }
 
             # Calculate average time-to-fill by seniority from historical data
-            seniority_ttf: Dict[str, List[float]] = {}
+            seniority_ttf: dict[str, list[float]] = {}
             for row in historical_rows:
                 seniority = (row["seniority"] or "pleno").lower()
                 days = float(row["days_to_fill"])
@@ -304,7 +304,7 @@ async def predict_time_to_fill(company_id: str, job_id: Optional[str] = None) ->
         return {"success": False, "error": str(e)}
 
 
-async def get_pipeline_forecast(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def get_pipeline_forecast(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Forecast pipeline outcomes for next 4 weeks.
 
     Uses current conversion rates and stage distribution to project:
@@ -323,7 +323,7 @@ async def get_pipeline_forecast(company_id: str, job_id: Optional[str] = None) -
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND vc.vacancy_id = :job_id"
@@ -347,7 +347,7 @@ async def get_pipeline_forecast(company_id: str, job_id: Optional[str] = None) -
             )
             pipeline_rows = pipeline_result.mappings().all()
 
-            current_pipeline: Dict[str, int] = {}
+            current_pipeline: dict[str, int] = {}
             for row in pipeline_rows:
                 stage = row["stage"] or "unknown"
                 current_pipeline[stage] = int(row["cnt"])
@@ -373,7 +373,7 @@ async def get_pipeline_forecast(company_id: str, job_id: Optional[str] = None) -
             )
             conversion_rows = conversion_rates_result.mappings().all()
 
-            conversion_rates: Dict[str, float] = {}
+            conversion_rates: dict[str, float] = {}
             for row in conversion_rows:
                 stage = row["stage"] or "unknown"
                 stage_count = int(row["stage_count"] or 0)
@@ -478,7 +478,7 @@ async def get_pipeline_forecast(company_id: str, job_id: Optional[str] = None) -
         return {"success": False, "error": str(e)}
 
 
-async def get_strategic_recommendations(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def get_strategic_recommendations(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Generate data-driven strategic recommendations (the consultive brain).
 
     Cross-references multiple dimensions:
@@ -499,7 +499,7 @@ async def get_strategic_recommendations(company_id: str, job_id: Optional[str] =
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND vc.vacancy_id = :job_id"
@@ -522,7 +522,7 @@ async def get_strategic_recommendations(company_id: str, job_id: Optional[str] =
                 """),
                 params,
             )
-            pipeline_rows = pipeline_result.mappings().all()
+            pipeline_result.mappings().all()
 
             # Job data
             job_result = await session.execute(
@@ -592,7 +592,7 @@ async def get_strategic_recommendations(company_id: str, job_id: Optional[str] =
             risk_row = risk_result.mappings().first()
 
             # Build recommendations
-            recommendations: List[Dict[str, Any]] = []
+            recommendations: list[dict[str, Any]] = []
 
             # 1. Pipeline flow analysis
             applied_count = int(conversion_row["applied"] or 0) if conversion_row else 0
@@ -687,7 +687,7 @@ async def get_strategic_recommendations(company_id: str, job_id: Optional[str] =
                         "category": "Pipeline Progression",
                         "title": "Move candidates to offer stage",
                         "description": f"{in_process_count} candidates in process but none in offer stage. Accelerate final interviews.",
-                        "metric": f"0 candidates in offer stage",
+                        "metric": "0 candidates in offer stage",
                         "actions": ["Complete pending interviews", "Prepare offers", "Finalize decision approvals"],
                     })
 
@@ -727,7 +727,7 @@ async def get_strategic_recommendations(company_id: str, job_id: Optional[str] =
         return {"success": False, "error": str(e)}
 
 
-def get_predictive_tools() -> List[ToolDefinition]:
+def get_predictive_tools() -> list[ToolDefinition]:
     """Return all predictive tools as ToolDefinition objects for the ReAct loop.
 
     Each ToolDefinition includes the tool name, description, JSON Schema

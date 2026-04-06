@@ -10,8 +10,8 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
 
@@ -30,11 +30,11 @@ def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]
 async def update_candidate_stage(
     candidate_id: str,
     target_stage: str,
-    job_id: Optional[str] = None,
-    notes: Optional[str] = None,
+    job_id: str | None = None,
+    notes: str | None = None,
     notify_candidate: bool = False,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Move a candidate to a different stage in the recruitment pipeline.
     
@@ -55,8 +55,9 @@ async def update_candidate_stage(
     logger.info(f"🔄 Moving candidate {candidate_id} to stage: {target_stage} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
@@ -147,10 +148,10 @@ async def add_candidate_to_vacancy(
     candidate_id: str,
     job_id: str,
     initial_stage: str = "Triagem",
-    source: Optional[str] = None,
-    notes: Optional[str] = None,
+    source: str | None = None,
+    notes: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Add a candidate to a job vacancy pipeline.
     
@@ -171,9 +172,9 @@ async def add_candidate_to_vacancy(
     logger.info(f"➕ Adding candidate {candidate_id} to job {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
-        from sqlalchemy.exc import IntegrityError
         from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
         
@@ -227,7 +228,7 @@ async def add_candidate_to_vacancy(
             if existing.scalar_one_or_none():
                 return {
                     "success": False,
-                    "message": f"Candidato já está associado a esta vaga",
+                    "message": "Candidato já está associado a esta vaga",
                     "error": "candidate_already_in_vacancy"
                 }
             
@@ -291,16 +292,17 @@ async def _generate_rediscovery_embedding(
     """
     try:
         import uuid as _uuid
-        from app.domains.job_management.services.job_embedding_service import JobEmbeddingService
-        from app.core.database import AsyncSessionLocal
+
         from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
+        from app.domains.job_management.services.job_embedding_service import JobEmbeddingService
 
         embedding_svc = JobEmbeddingService()
 
         candidate_name = getattr(candidate, "name", "") if candidate else ""
-        skills: List[str] = []
+        skills: list[str] = []
         description = ""
-        job_title = candidate_name
         department = ""
 
         async with AsyncSessionLocal() as db:
@@ -317,7 +319,7 @@ async def _generate_rediscovery_embedding(
                     elif isinstance(raw_skills, str):
                         skills = [s.strip() for s in raw_skills.split(",") if s.strip()]
                     description = data.get("summary") or ""
-                    job_title = data.get("job_title") or candidate_name
+                    data.get("job_title") or candidate_name
                     department = data.get("department") or ""
             except Exception:
                 pass
@@ -352,9 +354,9 @@ async def reject_candidate(
     job_id: str,
     reason: str,
     send_feedback: bool = True,
-    feedback_template: Optional[str] = None,
+    feedback_template: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Reject a candidate from a job vacancy.
     
@@ -398,8 +400,9 @@ async def reject_candidate(
         logger.error("DEI-02: FairnessGuard check failed for candidate=%s, proceeding with rejection: %s", candidate_id, fg_err)
 
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -481,7 +484,7 @@ async def reject_candidate(
                 return {
                     "success": True,
                     "requires_confirmation": True,
-                    "confirmation_message": f"⚠️ Tem certeza que deseja rejeitar este candidato?",
+                    "confirmation_message": "⚠️ Tem certeza que deseja rejeitar este candidato?",
                     "message": f"✅ Candidato foi rejeitado. Motivo: {reason}",
                     "action_taken": "reject_candidate",
                     "affected_entities": [candidate_id],
@@ -507,9 +510,9 @@ async def shortlist_candidate(
     candidate_id: str,
     job_id: str,
     priority: str = "normal",
-    notes: Optional[str] = None,
+    notes: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Add a candidate to the shortlist for a job vacancy.
     
@@ -525,8 +528,9 @@ async def shortlist_candidate(
     logger.info(f"⭐ Shortlisting candidate {candidate_id} for job {job_id}")
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -582,12 +586,12 @@ async def shortlist_candidate(
 
 
 async def bulk_update_candidates_stage(
-    candidate_ids: List[str],
+    candidate_ids: list[str],
     target_stage: str,
-    job_id: Optional[str] = None,
-    notes: Optional[str] = None,
+    job_id: str | None = None,
+    notes: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Move multiple candidates to a stage at once.
     
@@ -635,9 +639,9 @@ async def bulk_update_candidates_stage(
 async def add_to_list(
     candidate_id: str,
     list_id: str,
-    notes: Optional[str] = None,
+    notes: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Add a candidate to a saved list/shortlist.
     
@@ -656,8 +660,9 @@ async def add_to_list(
     logger.info(f"📋 Adding candidate {candidate_id} to list {list_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate
         
         async with AsyncSessionLocal() as db:
@@ -706,9 +711,9 @@ async def wsi_screening(
     job_id: str,
     screening_type: str = "complete",
     priority: str = "normal",
-    custom_questions: Optional[List[str]] = None,
+    custom_questions: list[str] | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Trigger WSI (Work Style Interview) screening for a candidate.
     
@@ -732,11 +737,13 @@ async def wsi_screening(
     logger.info(f"🎯 Triggering WSI screening for candidate {candidate_id} on job {job_id} (company: {company_id})")
     
     try:
+        import uuid
+
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate
         from app.models.job_vacancy import JobVacancy
-        import uuid
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -830,11 +837,11 @@ async def wsi_screening(
 
 async def hide_candidate(
     candidate_id: str,
-    job_id: Optional[str] = None,
-    reason: Optional[str] = None,
+    job_id: str | None = None,
+    reason: str | None = None,
     hide_globally: bool = False,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Hide/archive a candidate from the pipeline.
     
@@ -856,8 +863,9 @@ async def hide_candidate(
     logger.info(f"🙈 Hiding candidate {candidate_id} (global={hide_globally}, job={job_id}, company={company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:

@@ -9,22 +9,20 @@ This service analyzes:
 When sufficient data is available (50+ vagas, 30+ outcomes), patterns are detected
 and cached for efficient retrieval during wizard execution.
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
-from dataclasses import dataclass
 import logging
 import statistics
-from uuid import UUID
-import re
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select, func, and_, text
+from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import WizardFeedback, JobOutcome, JobOutcomeType
+from app.models.feedback_learning import JobOutcome, JobOutcomeType, WizardFeedback
 from app.models.intelligence_layer import (
     CorrectionPattern,
-    SuccessProfile,
     PatternCache,
+    SuccessProfile,
 )
 
 logger = logging.getLogger(__name__)
@@ -41,12 +39,12 @@ PATTERN_CACHE_HOURS = 24
 class DetectedPattern:
     """Represents a detected pattern."""
     pattern_type: str
-    field: Optional[str]
+    field: str | None
     key: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     sample_size: int
     confidence: float
-    applies_to: Optional[str] = None
+    applies_to: str | None = None
 
 
 class PatternDetectorService:
@@ -66,8 +64,8 @@ class PatternDetectorService:
     def _calculate_confidence(
         self,
         sample_size: int,
-        std_deviation: Optional[float] = None,
-        mean_value: Optional[float] = None
+        std_deviation: float | None = None,
+        mean_value: float | None = None
     ) -> float:
         """
         Calculate confidence score based on sample size and consistency.
@@ -99,11 +97,11 @@ class PatternDetectorService:
         self,
         db: AsyncSession,
         company_id: str,
-        field: Optional[str] = None,
-        seniority: Optional[str] = None,
-        role_pattern: Optional[str] = None,
+        field: str | None = None,
+        seniority: str | None = None,
+        role_pattern: str | None = None,
         months_back: int = 12
-    ) -> List[DetectedPattern]:
+    ) -> list[DetectedPattern]:
         """
         Detect patterns in recruiter corrections.
         
@@ -145,7 +143,7 @@ class PatternDetectorService:
             
             patterns = []
             
-            field_groups: Dict[str, List[WizardFeedback]] = {}
+            field_groups: dict[str, list[WizardFeedback]] = {}
             for fb in feedbacks:
                 field_key = fb.field_corrected
                 if field_key not in field_groups:
@@ -174,14 +172,14 @@ class PatternDetectorService:
     
     def _detect_salary_patterns(
         self,
-        feedbacks: List[WizardFeedback],
+        feedbacks: list[WizardFeedback],
         field_name: str
-    ) -> List[DetectedPattern]:
+    ) -> list[DetectedPattern]:
         """Detect patterns in salary corrections."""
         patterns = []
         
         adjustments = []
-        seniority_adjustments: Dict[str, List[float]] = {}
+        seniority_adjustments: dict[str, list[float]] = {}
         
         for fb in feedbacks:
             orig = fb.original_value
@@ -214,7 +212,7 @@ class PatternDetectorService:
                 patterns.append(DetectedPattern(
                     pattern_type="salary_correction",
                     field=field_name,
-                    key=f"salary_correction_overall",
+                    key="salary_correction_overall",
                     data={
                         "direction": direction,
                         "avg_adjustment": round(avg_adjustment, 3),
@@ -253,12 +251,12 @@ class PatternDetectorService:
     
     def _detect_seniority_patterns(
         self,
-        feedbacks: List[WizardFeedback]
-    ) -> List[DetectedPattern]:
+        feedbacks: list[WizardFeedback]
+    ) -> list[DetectedPattern]:
         """Detect patterns in seniority corrections."""
         patterns = []
         
-        transitions: Dict[str, int] = {}
+        transitions: dict[str, int] = {}
         for fb in feedbacks:
             orig = str(fb.original_value).lower() if fb.original_value else "unknown"
             corr = str(fb.corrected_value).lower() if fb.corrected_value else "unknown"
@@ -289,13 +287,13 @@ class PatternDetectorService:
     
     def _detect_generic_patterns(
         self,
-        feedbacks: List[WizardFeedback],
+        feedbacks: list[WizardFeedback],
         field_name: str
-    ) -> List[DetectedPattern]:
+    ) -> list[DetectedPattern]:
         """Detect patterns for generic fields."""
         patterns = []
         
-        value_counts: Dict[str, int] = {}
+        value_counts: dict[str, int] = {}
         for fb in feedbacks:
             corr = str(fb.corrected_value) if fb.corrected_value else "none"
             value_counts[corr] = value_counts.get(corr, 0) + 1
@@ -327,10 +325,10 @@ class PatternDetectorService:
         self,
         db: AsyncSession,
         company_id: str,
-        seniority: Optional[str] = None,
-        role_pattern: Optional[str] = None,
+        seniority: str | None = None,
+        role_pattern: str | None = None,
         months_back: int = 12
-    ) -> List[SuccessProfile]:
+    ) -> list[SuccessProfile]:
         """
         Detect success profiles from filled positions.
         
@@ -370,7 +368,7 @@ class PatternDetectorService:
             
             profiles = []
             
-            seniority_groups: Dict[str, List[JobOutcome]] = {}
+            seniority_groups: dict[str, list[JobOutcome]] = {}
             for outcome in outcomes:
                 sen = str(outcome.seniority).lower() if outcome.seniority else "unknown"
                 if sen not in seniority_groups:
@@ -395,10 +393,10 @@ class PatternDetectorService:
     
     def _build_success_profile(
         self,
-        outcomes: List[JobOutcome],
-        seniority: Optional[str],
+        outcomes: list[JobOutcome],
+        seniority: str | None,
         company_id: str
-    ) -> Optional[SuccessProfile]:
+    ) -> SuccessProfile | None:
         """Build a success profile from outcomes."""
         if not outcomes:
             return None
@@ -406,15 +404,15 @@ class PatternDetectorService:
         time_to_fill = [o.time_to_fill_days for o in outcomes if o.time_to_fill_days]
         salaries = [o.salary_final for o in outcomes if o.salary_final]
         satisfaction = [o.satisfaction_score for o in outcomes if o.satisfaction_score]
-        screened = [o.candidate_count_screened for o in outcomes if o.candidate_count_screened]
-        interviewed = [o.candidate_count_interviewed for o in outcomes if o.candidate_count_interviewed]
+        [o.candidate_count_screened for o in outcomes if o.candidate_count_screened]
+        [o.candidate_count_interviewed for o in outcomes if o.candidate_count_interviewed]
         
-        all_skills: List[str] = []
+        all_skills: list[str] = []
         for o in outcomes:
             if o.skills_used:
                 all_skills.extend(o.skills_used)
         
-        skill_counts: Dict[str, int] = {}
+        skill_counts: dict[str, int] = {}
         for skill in all_skills:
             skill_counts[skill] = skill_counts.get(skill, 0) + 1
         
@@ -440,7 +438,7 @@ class PatternDetectorService:
         self,
         db: AsyncSession,
         company_id: str,
-        patterns: List[DetectedPattern],
+        patterns: list[DetectedPattern],
         pattern_type: str
     ) -> None:
         """Cache detected patterns for efficient retrieval."""
@@ -483,9 +481,9 @@ class PatternDetectorService:
         self,
         db: AsyncSession,
         company_id: str,
-        pattern_type: Optional[str] = None,
-        pattern_key: Optional[str] = None
-    ) -> List[PatternCache]:
+        pattern_type: str | None = None,
+        pattern_key: str | None = None
+    ) -> list[PatternCache]:
         """Retrieve cached patterns."""
         try:
             conditions = [
@@ -510,8 +508,8 @@ class PatternDetectorService:
         self,
         db: AsyncSession,
         company_id: str,
-        patterns: List[DetectedPattern]
-    ) -> List[CorrectionPattern]:
+        patterns: list[DetectedPattern]
+    ) -> list[CorrectionPattern]:
         """Save detected correction patterns to database."""
         saved = []
         try:

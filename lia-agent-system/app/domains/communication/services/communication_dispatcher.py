@@ -6,11 +6,11 @@ This service provides direct access to email and messaging APIs with:
 - Comprehensive logging of all attempts
 - Consistent return format with success/error status and message_id
 """
-import os
 import logging
+import os
 import uuid
-from typing import Optional, Dict, Any
 from datetime import datetime
+from typing import Any
 
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
@@ -22,8 +22,8 @@ except ImportError:
     _httpx = None  # type: ignore[assignment]
 
 try:
-    from twilio.rest import Client as TwilioClient
     from twilio.base.exceptions import TwilioRestException
+    from twilio.rest import Client as TwilioClient
     TWILIO_AVAILABLE = True
 except ImportError:
     TWILIO_AVAILABLE = False
@@ -42,7 +42,7 @@ class CommunicationDispatcher:
     """
 
     def __init__(self):
-        self._twilio_client: Optional[TwilioClient] = None
+        self._twilio_client: TwilioClient | None = None
         self._initialized = False
 
     def _ensure_initialized(self):
@@ -81,10 +81,10 @@ class CommunicationDispatcher:
         to_email: str,
         subject: str,
         body_html: str,
-        body_text: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None
-    ) -> Dict[str, Any]:
+        body_text: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None
+    ) -> dict[str, Any]:
         """
         Send an email via Mailgun with automatic Resend fallback.
 
@@ -127,14 +127,14 @@ class CommunicationDispatcher:
         if mailgun_circuit_open:
             logger.warning("[DISPATCHER] MAILGUN_CIRCUIT is OPEN — routing to Resend fallback")
 
-        mailgun_error: Optional[str] = None
+        mailgun_error: str | None = None
 
         if not mailgun_skip:
             api_key = os.getenv("MAILGUN_API_KEY", "")
             domain = os.getenv("MAILGUN_DOMAIN", "")
             api_base = os.getenv("MAILGUN_API_BASE", "https://api.mailgun.net/v3")
 
-            data: Dict[str, Any] = {
+            data: dict[str, Any] = {
                 "from": sender,
                 "to": to_email,
                 "subject": subject,
@@ -246,11 +246,11 @@ class CommunicationDispatcher:
         subject: str,
         body_html: str,
         resend_api_key: str,
-        body_text: Optional[str] = None,
-        from_name: Optional[str] = None,
-        from_email: Optional[str] = None,
-        reply_to: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        body_text: str | None = None,
+        from_name: str | None = None,
+        from_email: str | None = None,
+        reply_to: str | None = None,
+    ) -> dict[str, Any]:
         """Send email via Resend as fallback provider."""
         try:
             import resend as resend_sdk
@@ -270,7 +270,7 @@ class CommunicationDispatcher:
                 f"{resend_from_name} <{resend_from_email}>" if resend_from_name else resend_from_email
             )
 
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "from": resend_sender,
                 "to": [to_email],
                 "subject": subject,
@@ -315,8 +315,8 @@ class CommunicationDispatcher:
         self,
         to_phone: str,
         message: str,
-        template_sid: Optional[str] = None
-    ) -> Dict[str, Any]:
+        template_sid: str | None = None
+    ) -> dict[str, Any]:
         """
         Send a WhatsApp message via Twilio.
         
@@ -418,7 +418,7 @@ class CommunicationDispatcher:
         self,
         to_phone: str,
         message: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Send an SMS via Twilio.
         
@@ -519,15 +519,15 @@ class CommunicationDispatcher:
     async def dispatch_message(
         self,
         company_id: str,
-        recipient_email: Optional[str] = None,
-        recipient_phone: Optional[str] = None,
-        subject: Optional[str] = None,
+        recipient_email: str | None = None,
+        recipient_phone: str | None = None,
+        subject: str | None = None,
         message: str = "",
-        channel: Optional[str] = None,
-        candidate_name: Optional[str] = None,
+        channel: str | None = None,
+        candidate_name: str | None = None,
         db=None,
         multi_channel: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Smart dispatcher with multi-channel support.
         
@@ -595,11 +595,11 @@ class CommunicationDispatcher:
     async def _send_single_channel(
         self,
         channel: str,
-        recipient_email: Optional[str],
-        recipient_phone: Optional[str],
-        subject: Optional[str],
+        recipient_email: str | None,
+        recipient_phone: str | None,
+        subject: str | None,
         formatted_message: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if channel == "email" and recipient_email:
             return self.send_email(
                 to_email=recipient_email,
@@ -632,7 +632,7 @@ class CommunicationDispatcher:
         self,
         message: str,
         tone: str,
-        candidate_name: Optional[str] = None,
+        candidate_name: str | None = None,
     ) -> str:
         """
         Apply lia_tone modifier to message content.
@@ -666,10 +666,10 @@ class CommunicationDispatcher:
         phone_number: str,
         job_title: str,
         company_id: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         language: str = "pt-BR",
         db=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Initiate a voice screening call via Twilio Programmable Voice.
 
@@ -692,8 +692,8 @@ class CommunicationDispatcher:
         """
         try:
             from app.services.voice_screening_orchestrator import (
-                voice_screening_orchestrator,
                 ConsentNotGrantedError,
+                voice_screening_orchestrator,
             )
 
             session = await voice_screening_orchestrator.initiate_call(
@@ -742,7 +742,7 @@ class CommunicationDispatcher:
         self,
         company_id: str,
         db=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get effective communication configuration for a company.
         """

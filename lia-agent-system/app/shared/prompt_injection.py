@@ -15,10 +15,10 @@ Usage:
     
     sanitized = guard.sanitize(user_message)
 """
-import re
 import logging
-from typing import List, Optional, Dict, Any
+import re
 from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class InjectionCheckResult:
     is_suspicious: bool
     risk_level: str = "none"
-    matched_patterns: List[str] = field(default_factory=list)
+    matched_patterns: list[str] = field(default_factory=list)
     original_input: str = ""
     sanitized_input: str = ""
     confidence: float = 0.0
@@ -164,7 +164,7 @@ class PromptInjectionGuard:
         sanitized = re.sub(r'\[SYSTEM\][^\]]*', '', sanitized, flags=re.IGNORECASE)
         return sanitized.strip()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         return {
             "total_checks": self._total_checks,
             "total_blocks": self._total_blocks,

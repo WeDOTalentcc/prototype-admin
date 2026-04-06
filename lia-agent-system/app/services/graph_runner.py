@@ -5,22 +5,16 @@ Provides high-level interface for running LangGraph-style state machines
 with session management, state persistence, and streaming support.
 """
 import logging
-import json
-from typing import Dict, Any, Optional, AsyncIterator, List
+from collections.abc import AsyncIterator
 from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, and_, delete, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from lia_agents_core.state_machine import JobWizardState, WizardStage, create_initial_state
+from sqlalchemy import and_, select, update
 
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph, job_wizard_graph
-from lia_agents_core.state_machine import (
-    JobWizardState,
-    WizardStage,
-    create_initial_state,
-    GraphExecutionLog
-)
 from app.domains.recruiter_assistant.services.memory_service import MemoryService, memory_service
 from app.models.graph_session import GraphSession
 
@@ -38,11 +32,11 @@ class DatabaseSessionStore:
     """
     
     def __init__(self):
-        self._cache: Dict[str, JobWizardState] = {}
+        self._cache: dict[str, JobWizardState] = {}
         self._cache_timeout = 300
-        self._cache_timestamps: Dict[str, datetime] = {}
+        self._cache_timestamps: dict[str, datetime] = {}
     
-    async def get(self, session_id: str) -> Optional[JobWizardState]:
+    async def get(self, session_id: str) -> JobWizardState | None:
         """Get state for a session from cache or database."""
         if session_id in self._cache:
             cache_time = self._cache_timestamps.get(session_id)
@@ -103,7 +97,7 @@ class DatabaseSessionStore:
         if session_id in self._cache_timestamps:
             del self._cache_timestamps[session_id]
     
-    async def list_sessions(self, company_id: Optional[str] = None, limit: int = 100) -> List[str]:
+    async def list_sessions(self, company_id: str | None = None, limit: int = 100) -> list[str]:
         """List all active sessions, optionally filtered by company."""
         async with AsyncSessionLocal() as db:
             query = select(GraphSession.session_id).where(GraphSession.is_active == True)
@@ -150,8 +144,8 @@ class GraphRunnerService:
     
     def __init__(
         self,
-        graph: Optional[JobWizardGraph] = None,
-        memory: Optional[MemoryService] = None
+        graph: JobWizardGraph | None = None,
+        memory: MemoryService | None = None
     ):
         self.graph = graph or job_wizard_graph
         self.memory = memory or memory_service
@@ -164,9 +158,9 @@ class GraphRunnerService:
         user_message: str,
         company_id: str,
         user_id: str,
-        existing_draft: Optional[Dict[str, Any]] = None,
-        current_stage: Optional[str] = None
-    ) -> Dict[str, Any]:
+        existing_draft: dict[str, Any] | None = None,
+        current_stage: str | None = None
+    ) -> dict[str, Any]:
         """
         Run the job wizard graph for a user message.
         
@@ -284,9 +278,9 @@ class GraphRunnerService:
         user_message: str,
         company_id: str,
         user_id: str,
-        existing_draft: Optional[Dict[str, Any]] = None,
-        current_stage: Optional[str] = None
-    ) -> AsyncIterator[Dict[str, Any]]:
+        existing_draft: dict[str, Any] | None = None,
+        current_stage: str | None = None
+    ) -> AsyncIterator[dict[str, Any]]:
         """
         Stream job wizard execution for real-time updates.
         
@@ -341,7 +335,7 @@ class GraphRunnerService:
                 
                 await self.state_store.set(session_id, state)
     
-    async def get_session_state(self, session_id: str) -> Optional[Dict[str, Any]]:
+    async def get_session_state(self, session_id: str) -> dict[str, Any] | None:
         """
         Get current state for a session from database.
         
@@ -394,7 +388,7 @@ class GraphRunnerService:
         session_id: str,
         company_id: str,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get conversation history for a session from memory.
         
@@ -412,7 +406,7 @@ class GraphRunnerService:
             self.logger.error(f"Failed to get session history: {e}")
             return []
     
-    async def list_active_sessions(self, company_id: Optional[str] = None) -> List[str]:
+    async def list_active_sessions(self, company_id: str | None = None) -> list[str]:
         """Get list of all active session IDs."""
         return await self.state_store.list_sessions(company_id)
     
@@ -422,7 +416,7 @@ class GraphRunnerService:
         self.logger.info(f"Cleaned up {count} stale sessions")
         return count
     
-    def get_graph_info(self) -> Dict[str, Any]:
+    def get_graph_info(self) -> dict[str, Any]:
         """Get information about the graph structure."""
         return self.graph.get_graph_structure()
 

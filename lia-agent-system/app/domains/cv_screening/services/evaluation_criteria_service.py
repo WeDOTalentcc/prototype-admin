@@ -5,24 +5,24 @@ Seeds evaluation criteria from existing catalogs, provides fuzzy lookup
 for job requirements, and updates effectiveness based on recruiter feedback.
 """
 import logging
-from typing import Dict, List, Optional, Any
 from difflib import SequenceMatcher
+from typing import Any
 from uuid import UUID
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
-from app.models.evaluation_criteria import EvaluationCriteria, CriterionCategory
-from app.services.skills_catalog_service import (
-    TECH_SKILLS_CATALOG,
-    BEHAVIORAL_COMPETENCIES_CATALOG,
-)
+from app.models.evaluation_criteria import CriterionCategory, EvaluationCriteria
 from app.services.responsibilities_catalog_service import RESPONSIBILITIES_CATALOG
+from app.services.skills_catalog_service import (
+    BEHAVIORAL_COMPETENCIES_CATALOG,
+    TECH_SKILLS_CATALOG,
+)
 
 logger = logging.getLogger(__name__)
 
 
-EVIDENCE_PATTERNS: Dict[str, Dict[str, Any]] = {
+EVIDENCE_PATTERNS: dict[str, dict[str, Any]] = {
     "technical_skill": {
         "positive_templates": [
             "{years}+ anos de experiência com {skill} em produção",
@@ -89,7 +89,7 @@ EVIDENCE_PATTERNS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-SKILL_SPECIFIC_EVIDENCE: Dict[str, Dict[str, List[str]]] = {
+SKILL_SPECIFIC_EVIDENCE: dict[str, dict[str, list[str]]] = {
     "Python": {
         "positive": [
             "5+ anos de experiência com Python em produção",
@@ -228,8 +228,8 @@ SKILL_SPECIFIC_EVIDENCE: Dict[str, Dict[str, List[str]]] = {
 def _generate_evidence_for_skill(
     skill_name: str,
     category: str,
-    subcategory: Optional[str] = None,
-) -> Dict[str, Any]:
+    subcategory: str | None = None,
+) -> dict[str, Any]:
     if skill_name in SKILL_SPECIFIC_EVIDENCE:
         specific = SKILL_SPECIFIC_EVIDENCE[skill_name]
         pattern = EVIDENCE_PATTERNS.get(category, EVIDENCE_PATTERNS["technical_skill"])
@@ -268,7 +268,7 @@ class EvaluationCriteriaService:
     def _similarity(self, a: str, b: str) -> float:
         return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
-    async def seed_from_catalogs(self, db: AsyncSession) -> Dict[str, int]:
+    async def seed_from_catalogs(self, db: AsyncSession) -> dict[str, int]:
         existing_count = await db.scalar(
             select(func.count()).select_from(EvaluationCriteria)
         )
@@ -363,15 +363,15 @@ class EvaluationCriteriaService:
     async def get_criteria_for_requirements(
         self,
         db: AsyncSession,
-        requirements: List[str],
+        requirements: list[str],
         min_score: float = 0.4,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         result = await db.execute(
             select(EvaluationCriteria).where(EvaluationCriteria.is_active == True)
         )
         all_criteria = result.scalars().all()
 
-        matches: List[Dict[str, Any]] = []
+        matches: list[dict[str, Any]] = []
 
         for requirement in requirements:
             req_lower = requirement.lower()
@@ -413,7 +413,7 @@ class EvaluationCriteriaService:
         db: AsyncSession,
         criteria_id: UUID,
         was_helpful: bool,
-    ) -> Optional[EvaluationCriteria]:
+    ) -> EvaluationCriteria | None:
         result = await db.execute(
             select(EvaluationCriteria).where(EvaluationCriteria.id == criteria_id)
         )
@@ -441,8 +441,8 @@ class EvaluationCriteriaService:
     async def get_all_active(
         self,
         db: AsyncSession,
-        category: Optional[str] = None,
-    ) -> List[EvaluationCriteria]:
+        category: str | None = None,
+    ) -> list[EvaluationCriteria]:
         query = select(EvaluationCriteria).where(EvaluationCriteria.is_active == True)
         if category:
             query = query.where(EvaluationCriteria.category == category)
@@ -455,7 +455,7 @@ class EvaluationCriteriaService:
         self,
         db: AsyncSession,
         criteria_id: UUID,
-    ) -> Optional[EvaluationCriteria]:
+    ) -> EvaluationCriteria | None:
         result = await db.execute(
             select(EvaluationCriteria).where(EvaluationCriteria.id == criteria_id)
         )

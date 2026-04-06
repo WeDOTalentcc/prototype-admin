@@ -3,9 +3,10 @@ Automation Handlers
 Individual handlers for automation triggers, called by the StageAutomationEngine.
 """
 import logging
-from typing import Dict, Any, Optional, Tuple
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ async def validate_multi_tenancy(
     candidate_id: str,
     vacancy_id: str,
     company_id: str
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Validate that candidate and vacancy belong to the specified company.
     Returns (is_valid, error_message).
@@ -50,10 +51,10 @@ async def handle_screening_completed(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    wsi_scores: Optional[Dict[str, float]] = None,
+    wsi_scores: dict[str, float] | None = None,
     passed: bool = True,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle screening completed trigger.
     Creates activity and sends feedback communication to candidate.
@@ -147,11 +148,11 @@ async def handle_interview_scheduled(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    interview_datetime: Optional[str] = None,
+    interview_datetime: str | None = None,
     interview_type: str = "video",
-    interviewer_name: Optional[str] = None,
+    interviewer_name: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle interview scheduled trigger.
     Sends confirmation and creates calendar events.
@@ -197,11 +198,11 @@ async def handle_interview_completed(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    interview_id: Optional[str] = None,
-    outcome: Optional[str] = None,
-    feedback: Optional[Dict[str, Any]] = None,
+    interview_id: str | None = None,
+    outcome: str | None = None,
+    feedback: dict[str, Any] | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle interview completed trigger.
     Generates parecer and updates candidate status.
@@ -248,9 +249,9 @@ async def handle_candidate_inactive(
     company_id: str,
     db: AsyncSession,
     days_inactive: int = 0,
-    last_activity: Optional[str] = None,
+    last_activity: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle candidate inactive trigger.
     Sends follow-up communication or creates task for recruiter.
@@ -295,9 +296,9 @@ async def handle_candidate_no_show(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    interview_id: Optional[str] = None,
+    interview_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle candidate no-show trigger.
     Creates task to reschedule or reject candidate.
@@ -340,9 +341,9 @@ async def handle_offer_sent(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    offer_details: Optional[Dict[str, Any]] = None,
+    offer_details: dict[str, Any] | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle offer sent trigger.
     Logs activity and starts monitoring for response.
@@ -385,9 +386,9 @@ async def handle_candidate_hired(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    start_date: Optional[str] = None,
+    start_date: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle candidate hired trigger.
     Syncs with ATS and triggers onboarding process.
@@ -431,10 +432,10 @@ async def handle_candidate_rejected(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    rejection_reason: Optional[str] = None,
+    rejection_reason: str | None = None,
     add_to_talent_pool: bool = True,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle candidate rejected trigger.
     Sends feedback and optionally adds to talent pool.
@@ -497,10 +498,10 @@ async def handle_ats_sync(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    new_stage: Optional[str] = None,
-    previous_stage: Optional[str] = None,
+    new_stage: str | None = None,
+    previous_stage: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle ATS sync trigger.
     Synchronizes stage changes with external ATS.
@@ -534,11 +535,11 @@ async def handle_stage_changed(
     vacancy_id: str,
     company_id: str,
     db: AsyncSession,
-    new_stage: Optional[str] = None,
-    previous_stage: Optional[str] = None,
+    new_stage: str | None = None,
+    previous_stage: str | None = None,
     triggered_by: str = "system",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle stage changed trigger.
     Logs activity and triggers cross-domain cascades based on the new stage.
@@ -589,10 +590,11 @@ async def handle_stage_changed(
 
     if stage_lower in interview_stages:
         try:
+            from datetime import datetime, timedelta
+
             from app.domains.interview_scheduling.services.scheduling_service import SchedulingService
             from app.models.candidate import Candidate
             from app.models.job_vacancy import JobVacancy
-            from datetime import datetime, timedelta
 
             scheduling_service = SchedulingService()
 
@@ -713,7 +715,7 @@ async def handle_job_published(
     company_id: str,
     db: AsyncSession,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle job published trigger.
     Activates sourcing pipeline to start searching for candidates.
@@ -788,7 +790,7 @@ async def handle_candidates_sourced(
     company_id: str,
     db: AsyncSession,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle candidates sourced trigger.
     Triggers screening pipeline for newly sourced candidates.
@@ -882,7 +884,7 @@ async def handle_slot_opened(
     company_id: str,
     db: AsyncSession,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle slot opened trigger — process the screening queue.
 
@@ -968,10 +970,10 @@ async def process_screening_queue(
     - Update WhatsApp conversation state if applicable
     - Send screening invite via WhatsApp or chat web link via email
     """
+    from sqlalchemy import and_
+
     from app.models.candidate import Candidate, VacancyCandidate
-    from app.models.whatsapp_conversation import WhatsAppConversation, ConversationState
-    from sqlalchemy import and_, case, cast, Integer
-    from sqlalchemy.orm import aliased
+    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
 
     queued_result = await db.execute(
         select(VacancyCandidate)
@@ -1111,16 +1113,17 @@ async def handle_recruiter_override_approve(
     candidate_id: str,
     vacancy_id: str,
     company_id: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Handle recruiter manual override — Approve button on awaiting_screening candidate.
 
     This is a priority promotion: the recruiter explicitly approves a queued
     candidate, bypassing the queue order.
     """
-    from app.models.candidate import Candidate, VacancyCandidate
-    from app.models.whatsapp_conversation import WhatsAppConversation, ConversationState
     from sqlalchemy import and_
+
+    from app.models.candidate import Candidate, VacancyCandidate
+    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
 
     logger.info(
         f"[OVERRIDE] Recruiter override approve for candidate {candidate_id} "
@@ -1175,7 +1178,7 @@ async def handle_recruiter_override_approve(
 
     await db.commit()
 
-    promoted = await process_screening_queue(
+    await process_screening_queue(
         db=db,
         vacancy_id=vacancy_id,
         company_id=company_id,
@@ -1219,8 +1222,8 @@ async def handle_recruiter_override_approve(
     if not invite_sent and candidate and candidate.email:
         invite_channel = "email"
         try:
-            from app.services.candidate_feedback_service import candidate_feedback_service
             from app.models.job_vacancy import JobVacancy
+            from app.services.candidate_feedback_service import candidate_feedback_service
 
             job_result = await db.execute(
                 select(JobVacancy).where(JobVacancy.id == vacancy_id)
@@ -1293,7 +1296,7 @@ from datetime import datetime
 
 def register_all_handlers():
     """Register all handlers with the StageAutomationEngine."""
-    from app.domains.automation.services.stage_automation_engine import stage_automation_engine, TriggerType
+    from app.domains.automation.services.stage_automation_engine import TriggerType, stage_automation_engine
     
     stage_automation_engine.register_handler(TriggerType.SCREENING_COMPLETED, handle_screening_completed)
     stage_automation_engine.register_handler(TriggerType.INTERVIEW_SCHEDULED, handle_interview_scheduled)

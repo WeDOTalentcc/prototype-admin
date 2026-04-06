@@ -23,13 +23,12 @@ Endpoints:
 """
 import logging
 import os
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
 import httpx
 
 from app.services.ats_clients.base import (
-    ATSClientConfig,
     ATSCandidate,
     ATSJob,
 )
@@ -44,8 +43,8 @@ RAILS_API_TIMEOUT = int(os.environ.get("RAILS_API_TIMEOUT", "30"))
 class RailsAPIResponse:
     """Parsed JSONAPI response from Rails."""
     data: Any = None
-    meta: Dict[str, Any] = field(default_factory=dict)
-    errors: List[str] = field(default_factory=list)
+    meta: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
     status_code: int = 0
     success: bool = False
 
@@ -64,14 +63,14 @@ class WeDOTalentATSClient:
 
     def __init__(
         self,
-        token: Optional[str] = None,
-        base_url: Optional[str] = None,
+        token: str | None = None,
+        base_url: str | None = None,
         timeout: int = RAILS_API_TIMEOUT,
     ):
         self.base_url = (base_url or RAILS_API_URL).rstrip("/")
         self.token = token
         self.timeout = timeout
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
@@ -97,8 +96,8 @@ class WeDOTalentATSClient:
         self,
         method: str,
         path: str,
-        params: Optional[Dict] = None,
-        json_body: Optional[Dict] = None,
+        params: dict | None = None,
+        json_body: dict | None = None,
         retry: int = 3,
     ) -> RailsAPIResponse:
         """Make HTTP request with retry and JSONAPI parsing."""
@@ -150,13 +149,13 @@ class WeDOTalentATSClient:
             status_code=0,
         )
 
-    async def get(self, path: str, params: Optional[Dict] = None) -> RailsAPIResponse:
+    async def get(self, path: str, params: dict | None = None) -> RailsAPIResponse:
         return await self._request("GET", path, params=params)
 
-    async def post(self, path: str, json_body: Optional[Dict] = None) -> RailsAPIResponse:
+    async def post(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
         return await self._request("POST", path, json_body=json_body)
 
-    async def put(self, path: str, json_body: Optional[Dict] = None) -> RailsAPIResponse:
+    async def put(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
         return await self._request("PUT", path, json_body=json_body)
 
     async def delete(self, path: str) -> RailsAPIResponse:
@@ -166,7 +165,7 @@ class WeDOTalentATSClient:
     # Auth
     # ------------------------------------------------------------------
 
-    async def login(self, email: str, password: str) -> Optional[str]:
+    async def login(self, email: str, password: str) -> str | None:
         """Authenticate and get JWT token from Rails."""
         resp = await self.post("/v1/sessions", json_body={
             "email": email,
@@ -181,7 +180,7 @@ class WeDOTalentATSClient:
                 return token
         return None
 
-    async def get_current_user(self) -> Optional[Dict]:
+    async def get_current_user(self) -> dict | None:
         """Get authenticated user info (/v1/me)."""
         resp = await self.get("/v1/me")
         if resp.success:
@@ -194,7 +193,7 @@ class WeDOTalentATSClient:
 
     async def list_jobs(
         self, search: str = "*", page: int = 1, limit: int = 30, **filters
-    ) -> List[Dict]:
+    ) -> list[dict]:
         params = {"search": search, "page": page, "limit": limit}
         if filters:
             import json
@@ -202,7 +201,7 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/jobs", params=params)
         return self._extract_list(resp)
 
-    async def get_job(self, job_id: int) -> Optional[Dict]:
+    async def get_job(self, job_id: int) -> dict | None:
         resp = await self.get(f"/v1/users/jobs/{job_id}")
         if resp.success:
             return self._extract_attributes(resp.data)
@@ -214,7 +213,7 @@ class WeDOTalentATSClient:
 
     async def list_candidates(
         self, search: str = "*", page: int = 1, limit: int = 30, **filters
-    ) -> List[Dict]:
+    ) -> list[dict]:
         params = {"search": search, "page": page, "limit": limit}
         if filters:
             import json
@@ -222,7 +221,7 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/candidates", params=params)
         return self._extract_list(resp)
 
-    async def get_candidate(self, candidate_id: int) -> Optional[Dict]:
+    async def get_candidate(self, candidate_id: int) -> dict | None:
         resp = await self.get(f"/v1/users/candidates/{candidate_id}")
         if resp.success:
             return self._extract_attributes(resp.data)
@@ -234,7 +233,7 @@ class WeDOTalentATSClient:
 
     async def list_applies(
         self, search: str = "*", page: int = 1, limit: int = 30, **filters
-    ) -> List[Dict]:
+    ) -> list[dict]:
         params = {"search": search, "page": page, "limit": limit}
         if filters:
             import json
@@ -242,13 +241,13 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/applies", params=params)
         return self._extract_list(resp)
 
-    async def get_apply(self, apply_id: int) -> Optional[Dict]:
+    async def get_apply(self, apply_id: int) -> dict | None:
         resp = await self.get(f"/v1/users/applies/{apply_id}")
         if resp.success:
             return self._extract_attributes(resp.data)
         return None
 
-    async def create_apply(self, candidate_id: int, job_id: int) -> Optional[Dict]:
+    async def create_apply(self, candidate_id: int, job_id: int) -> dict | None:
         resp = await self.post("/v1/users/applies", json_body={
             "candidate_id": candidate_id,
             "job_id": job_id,
@@ -262,9 +261,9 @@ class WeDOTalentATSClient:
     # ------------------------------------------------------------------
 
     async def list_selective_processes(
-        self, job_id: Optional[int] = None, **filters
-    ) -> List[Dict]:
-        params: Dict[str, Any] = {"search": "*"}
+        self, job_id: int | None = None, **filters
+    ) -> list[dict]:
+        params: dict[str, Any] = {"search": "*"}
         if job_id:
             import json
             params["where"] = json.dumps({"job_id": job_id})
@@ -276,7 +275,7 @@ class WeDOTalentATSClient:
     # Write Operations (Work C)
     # ------------------------------------------------------------------
 
-    async def create_candidate(self, candidate_data: Dict) -> Optional[Dict]:
+    async def create_candidate(self, candidate_data: dict) -> dict | None:
         """Create a candidate in Rails."""
         resp = await self.post("/v1/users/candidates", json_body={"candidate": candidate_data})
         if resp.success:
@@ -284,7 +283,7 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] create_candidate failed: %s", resp.errors)
         return None
 
-    async def update_candidate(self, candidate_id: int, candidate_data: Dict) -> Optional[Dict]:
+    async def update_candidate(self, candidate_id: int, candidate_data: dict) -> dict | None:
         """Update a candidate in Rails."""
         resp = await self.put(f"/v1/users/candidates/{candidate_id}", json_body={"candidate": candidate_data})
         if resp.success:
@@ -292,7 +291,7 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] update_candidate %s failed: %s", candidate_id, resp.errors)
         return None
 
-    async def create_job(self, job_data: Dict) -> Optional[Dict]:
+    async def create_job(self, job_data: dict) -> dict | None:
         """Create a job in Rails."""
         resp = await self.post("/v1/users/jobs", json_body={"job": job_data})
         if resp.success:
@@ -300,7 +299,7 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] create_job failed: %s", resp.errors)
         return None
 
-    async def update_job(self, job_id: int, job_data: Dict) -> Optional[Dict]:
+    async def update_job(self, job_id: int, job_data: dict) -> dict | None:
         """Update a job in Rails."""
         resp = await self.put(f"/v1/users/jobs/{job_id}", json_body={"job": job_data})
         if resp.success:
@@ -308,7 +307,7 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] update_job %s failed: %s", job_id, resp.errors)
         return None
 
-    async def update_apply(self, apply_id: int, apply_data: Dict) -> Optional[Dict]:
+    async def update_apply(self, apply_id: int, apply_data: dict) -> dict | None:
         """Update an apply in Rails."""
         resp = await self.put(f"/v1/users/applies/{apply_id}", json_body={"apply": apply_data})
         if resp.success:
@@ -330,7 +329,7 @@ class WeDOTalentATSClient:
     # New Resources (Work C)
     # ------------------------------------------------------------------
 
-    async def list_interviews(self, **filters) -> List[Dict]:
+    async def list_interviews(self, **filters) -> list[dict]:
         params = {"search": "*"}
         if filters:
             import json
@@ -338,11 +337,11 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/interviews", params=params)
         return self._extract_list(resp)
 
-    async def list_notifications(self, **filters) -> List[Dict]:
+    async def list_notifications(self, **filters) -> list[dict]:
         resp = await self.get("/v1/users/notifications")
         return self._extract_list(resp)
 
-    async def list_email_templates(self, **filters) -> List[Dict]:
+    async def list_email_templates(self, **filters) -> list[dict]:
         resp = await self.get("/v1/users/email_templates")
         return self._extract_list(resp)
 
@@ -351,7 +350,7 @@ class WeDOTalentATSClient:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _extract_attributes(data: Any) -> Optional[Dict]:
+    def _extract_attributes(data: Any) -> dict | None:
         """Extract attributes from JSONAPI data object."""
         if isinstance(data, dict):
             attrs = data.get("attributes", {})
@@ -361,7 +360,7 @@ class WeDOTalentATSClient:
         return None
 
     @staticmethod
-    def _extract_list(resp: RailsAPIResponse) -> List[Dict]:
+    def _extract_list(resp: RailsAPIResponse) -> list[dict]:
         """Extract list of attributes from JSONAPI data array."""
         if not resp.success or not isinstance(resp.data, list):
             return []
@@ -374,7 +373,7 @@ class WeDOTalentATSClient:
                 results.append(attrs)
         return results
 
-    def to_ats_candidate(self, data: Dict) -> ATSCandidate:
+    def to_ats_candidate(self, data: dict) -> ATSCandidate:
         """Convert Rails candidate data to normalized ATSCandidate."""
         return ATSCandidate(
             ats_id=str(data.get("id", "")),
@@ -387,7 +386,7 @@ class WeDOTalentATSClient:
             raw_data=data,
         )
 
-    def to_ats_job(self, data: Dict) -> ATSJob:
+    def to_ats_job(self, data: dict) -> ATSJob:
         """Convert Rails job data to normalized ATSJob."""
         return ATSJob(
             ats_id=str(data.get("id", "")),

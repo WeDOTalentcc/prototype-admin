@@ -8,16 +8,15 @@ Enables:
 - Pattern discovery across departments
 """
 import logging
-from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
+from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, func, and_, or_, text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, func, or_, select, text
 
 from app.core.database import AsyncSessionLocal
-from app.models.job_pattern import JobEmbedding, EMBEDDING_DIMENSION
-from app.shared.intelligence.embedding_service import EmbeddingService, EMBEDDING_DIMENSION as EMB_DIM
+from app.models.job_pattern import EMBEDDING_DIMENSION, JobEmbedding
+from app.shared.intelligence.embedding_service import EmbeddingService
 
 logger = logging.getLogger(__name__)
 
@@ -49,10 +48,10 @@ class JobEmbeddingService:
         department: str = None,
         seniority: str = None,
         location: str = None,
-        skills: List[str] = None,
-        behavioral: List[str] = None,
+        skills: list[str] = None,
+        behavioral: list[str] = None,
         description: str = None
-    ) -> List[float]:
+    ) -> list[float]:
         """
         Generate embedding vector for a job.
 
@@ -82,8 +81,8 @@ class JobEmbeddingService:
         department: str = None,
         seniority: str = None,
         location: str = None,
-        skills: List[str] = None,
-        behavioral: List[str] = None,
+        skills: list[str] = None,
+        behavioral: list[str] = None,
         description: str = None
     ) -> tuple:
         """
@@ -117,14 +116,14 @@ class JobEmbeddingService:
         seniority: str = None,
         location: str = None,
         work_model: str = None,
-        skills: List[str] = None,
-        behavioral: List[str] = None,
+        skills: list[str] = None,
+        behavioral: list[str] = None,
         description: str = None,
         outcome_status: str = None,
         time_to_fill_days: int = None,
         is_template: bool = False,
         draft_id: str = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create or update embedding for a job vacancy.
         
@@ -230,13 +229,13 @@ class JobEmbeddingService:
         department: str = None,
         seniority: str = None,
         location: str = None,
-        skills: List[str] = None,
-        behavioral: List[str] = None,
+        skills: list[str] = None,
+        behavioral: list[str] = None,
         description: str = None,
         limit: int = 5,
         min_similarity: float = 0.5,
-        exclude_job_ids: List[str] = None
-    ) -> List[Dict[str, Any]]:
+        exclude_job_ids: list[str] = None
+    ) -> list[dict[str, Any]]:
         """
         Find semantically similar jobs using vector similarity.
         
@@ -371,7 +370,7 @@ class JobEmbeddingService:
         department: str = None,
         seniority: str = None,
         limit: int = 5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Fallback to text-based search when embeddings fail."""
         try:
             async with AsyncSessionLocal() as session:
@@ -409,7 +408,7 @@ class JobEmbeddingService:
         job_title: str,
         department: str = None,
         limit: int = 3
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get Fast Track suggestions for quick job creation.
         
@@ -452,9 +451,9 @@ class JobEmbeddingService:
     async def batch_process_jobs(
         self,
         company_id: str,
-        job_ids: List[str] = None,
+        job_ids: list[str] = None,
         limit: int = 100
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process embeddings for multiple jobs in batch.
         
@@ -538,7 +537,7 @@ class JobEmbeddingService:
             "total": processed + errors
         }
     
-    async def get_embedding_stats(self, company_id: str) -> Dict[str, Any]:
+    async def get_embedding_stats(self, company_id: str) -> dict[str, Any]:
         """Get statistics about job embeddings for a company."""
         try:
             async with AsyncSessionLocal() as session:
@@ -601,7 +600,7 @@ class JobEmbeddingService:
         self,
         company_id: str,
         job_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get complete job data for Fast Track copy.
         
@@ -716,7 +715,7 @@ class JobEmbeddingService:
         job_title: str,
         department: str = None,
         limit: int = 3
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get Fast Track suggestions with complete job data.
         
@@ -755,9 +754,9 @@ class JobEmbeddingService:
         company_id: str,
         source_job_id: str,
         new_job_id: str,
-        modified_fields: List[str],
+        modified_fields: list[str],
         was_published: bool
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Record when Fast Track is used to create a new job.
         
@@ -829,7 +828,7 @@ class JobEmbeddingService:
         outcome_status: str,
         time_to_fill_days: int = None,
         hire_quality_score: float = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update job embedding metadata based on outcome.
         
@@ -906,7 +905,7 @@ class JobEmbeddingService:
         self,
         company_id: str,
         limit: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get insights about Fast Track usage for a company.
         
@@ -982,8 +981,8 @@ class JobEmbeddingService:
     
     def _generate_improvement_suggestions(
         self,
-        modifications: List[tuple]
-    ) -> List[str]:
+        modifications: list[tuple]
+    ) -> list[str]:
         """Generate suggestions based on modification patterns."""
         suggestions = []
         

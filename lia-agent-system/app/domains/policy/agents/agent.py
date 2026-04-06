@@ -16,18 +16,17 @@ The agent uses Claude to:
 
 Moved from app/agents/policy_setup_agent.py (I3c cleanup).
 """
-import logging
 import json
-from typing import Dict, Any, Optional, List
+import logging
+from typing import Any
 
-from app.services.llm import LLMService
 from app.domains.policy.agents.stage_context import (
-    QUESTIONS,
     BLOCK_NAMES,
     PolicySetupSession,
     get_or_create_session,
 )
 from app.domains.policy.agents.system_prompt import EXTRACTION_PROMPT, REPLY_PROMPT
+from app.services.llm import LLMService
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +46,8 @@ class PolicySetupAgent:
         message: str,
         company_id: str,
         session_id: str,
-        current_policy: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        current_policy: dict[str, Any],
+    ) -> dict[str, Any]:
         session = get_or_create_session(company_id, session_id, current_policy)
 
         if session.completed:
@@ -62,7 +61,7 @@ class PolicySetupAgent:
 
         return await self._process_answer(message, session)
 
-    def _welcome_response(self, session: PolicySetupSession) -> Dict[str, Any]:
+    def _welcome_response(self, session: PolicySetupSession) -> dict[str, Any]:
         q = session.get_current_question()
         if not q:
             return self._completed_response(session)
@@ -88,7 +87,7 @@ class PolicySetupAgent:
 
     async def _process_answer(
         self, message: str, session: PolicySetupSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         q = session.get_current_question()
         if not q:
             return self._completed_response(session)
@@ -148,7 +147,7 @@ class PolicySetupAgent:
 
     async def _handle_block_transition(
         self, message: str, session: PolicySetupSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         is_continue = self._is_confirmation(message)
         session.waiting_for_block_confirmation = False
 
@@ -198,7 +197,7 @@ class PolicySetupAgent:
         ]
         return any(p in msg for p in positive)
 
-    async def _extract_value(self, message: str, question: Dict[str, Any]) -> Any:
+    async def _extract_value(self, message: str, question: dict[str, Any]) -> Any:
         try:
             prompt = EXTRACTION_PROMPT.format(
                 question=question["question"],
@@ -224,7 +223,7 @@ class PolicySetupAgent:
             logger.warning(f"LLM extraction failed for Q{question['id']}: {e}")
             return self._fallback_extract(message, question)
 
-    def _fallback_extract(self, message: str, question: Dict[str, Any]) -> Any:
+    def _fallback_extract(self, message: str, question: dict[str, Any]) -> Any:
         msg = message.strip().lower()
         q_type = question["type"]
 
@@ -269,7 +268,7 @@ class PolicySetupAgent:
 
         return question["default"]
 
-    def _build_update(self, question: Dict[str, Any], value: Any) -> Dict[str, Any]:
+    def _build_update(self, question: dict[str, Any], value: Any) -> dict[str, Any]:
         target_block = question.get("target_block", question["block"])
 
         if question["type"] == "salary_filter" and isinstance(value, dict):
@@ -288,9 +287,9 @@ class PolicySetupAgent:
     async def _generate_reply(
         self,
         user_message: str,
-        current_q: Dict[str, Any],
+        current_q: dict[str, Any],
         extracted_value: Any,
-        next_q: Dict[str, Any],
+        next_q: dict[str, Any],
         session: PolicySetupSession,
     ) -> str:
         try:
@@ -313,7 +312,7 @@ class PolicySetupAgent:
     async def _generate_block_end_reply(
         self,
         user_message: str,
-        current_q: Dict[str, Any],
+        current_q: dict[str, Any],
         extracted_value: Any,
         session: PolicySetupSession,
     ) -> str:
@@ -344,7 +343,7 @@ class PolicySetupAgent:
     async def _generate_completion_reply(
         self,
         user_message: str,
-        current_q: Dict[str, Any],
+        current_q: dict[str, Any],
         extracted_value: Any,
         session: PolicySetupSession,
     ) -> str:
@@ -355,7 +354,7 @@ class PolicySetupAgent:
             "ou pedir para mim diretamente no chat."
         )
 
-    def _completed_response(self, session: PolicySetupSession) -> Dict[str, Any]:
+    def _completed_response(self, session: PolicySetupSession) -> dict[str, Any]:
         return {
             "reply": (
                 "As politicas de contratacao ja estao configuradas! "

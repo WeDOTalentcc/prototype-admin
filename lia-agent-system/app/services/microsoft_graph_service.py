@@ -12,21 +12,22 @@ Environment Variables Required:
 - AZURE_CLIENT_SECRET: Azure AD Application client secret
 - AZURE_TENANT_ID: Azure AD Directory (tenant) ID
 """
-import os
-import logging
-import httpx
 import asyncio
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
+import logging
+import os
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
 
 class GraphAPIError(Exception):
     """Base exception for Microsoft Graph API errors."""
-    def __init__(self, message: str, status_code: int, error_code: Optional[str] = None):
+    def __init__(self, message: str, status_code: int, error_code: str | None = None):
         self.message = message
         self.status_code = status_code
         self.error_code = error_code
@@ -47,7 +48,7 @@ class GraphAPIForbiddenError(GraphAPIError):
 
 class GraphAPIRateLimitError(GraphAPIError):
     """429 Too Many Requests - Rate limit exceeded."""
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: Optional[int] = None):
+    def __init__(self, message: str = "Rate limit exceeded", retry_after: int | None = None):
         super().__init__(message, 429, "TooManyRequests")
         self.retry_after = retry_after or 60
 
@@ -93,10 +94,10 @@ class TeamsOnlineMeeting:
     start_time: datetime
     end_time: datetime
     organizer_email: str
-    attendees: List[str]
-    calendar_event_id: Optional[str] = None
-    dial_in_url: Optional[str] = None
-    video_teleconference_id: Optional[str] = None
+    attendees: list[str]
+    calendar_event_id: str | None = None
+    dial_in_url: str | None = None
+    video_teleconference_id: str | None = None
 
 
 @dataclass
@@ -106,9 +107,9 @@ class CalendarEvent:
     subject: str
     start_time: datetime
     end_time: datetime
-    location: Optional[str]
+    location: str | None
     is_online_meeting: bool
-    online_meeting_url: Optional[str]
+    online_meeting_url: str | None
     web_link: str
     ical_uid: str
 
@@ -128,16 +129,16 @@ class MicrosoftGraphService:
     
     def __init__(
         self,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-        tenant_id: Optional[str] = None
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        tenant_id: str | None = None
     ):
         self.client_id = client_id or os.getenv("AZURE_CLIENT_ID")
         self.client_secret = client_secret or os.getenv("AZURE_CLIENT_SECRET")
         self.tenant_id = tenant_id or os.getenv("AZURE_TENANT_ID")
         
-        self._access_token: Optional[str] = None
-        self._token_expires_at: Optional[datetime] = None
+        self._access_token: str | None = None
+        self._token_expires_at: datetime | None = None
         
         if not all([self.client_id, self.client_secret, self.tenant_id]):
             logger.warning(
@@ -194,11 +195,11 @@ class MicrosoftGraphService:
         self,
         method: str,
         endpoint: str,
-        json_data: Optional[Dict] = None,
-        params: Optional[Dict] = None,
+        json_data: dict | None = None,
+        params: dict | None = None,
         max_retries: int = 3,
         retry_delay: float = 1.0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Make an authenticated request to Microsoft Graph API with retry logic.
         
@@ -227,7 +228,7 @@ class MicrosoftGraphService:
             "Content-Type": "application/json"
         }
         
-        last_exception: Optional[Exception] = None
+        last_exception: Exception | None = None
         
         for attempt in range(max_retries + 1):
             try:
@@ -312,9 +313,9 @@ class MicrosoftGraphService:
         subject: str,
         start_time: datetime,
         duration_minutes: int = 60,
-        attendees: Optional[List[MeetingAttendee]] = None,
-        body_content: Optional[str] = None,
-        location: Optional[str] = None,
+        attendees: list[MeetingAttendee] | None = None,
+        body_content: str | None = None,
+        location: str | None = None,
         timezone: str = "America/Sao_Paulo",
         send_invites: bool = True
     ) -> TeamsOnlineMeeting:
@@ -416,8 +417,8 @@ class MicrosoftGraphService:
         subject: str,
         start_time: datetime,
         duration_minutes: int = 60,
-        attendees: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        attendees: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Create a standalone Teams online meeting (without calendar event).
         
@@ -500,8 +501,8 @@ class MicrosoftGraphService:
         self,
         user_email: str,
         event_id: str,
-        updates: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        updates: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Update a calendar event.
         
@@ -523,7 +524,7 @@ class MicrosoftGraphService:
         self,
         user_email: str,
         event_id: str,
-        comment: Optional[str] = None
+        comment: str | None = None
     ) -> None:
         """
         Cancel a calendar event and notify attendees.
@@ -543,11 +544,11 @@ class MicrosoftGraphService:
     
     async def get_user_availability(
         self,
-        user_emails: List[str],
+        user_emails: list[str],
         start_time: datetime,
         end_time: datetime,
         timezone: str = "America/Sao_Paulo"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get free/busy availability for users.
         
@@ -578,7 +579,7 @@ class MicrosoftGraphService:
         
         return result
     
-    async def get_bookings_businesses(self) -> List[Dict[str, Any]]:
+    async def get_bookings_businesses(self) -> list[dict[str, Any]]:
         """
         Get list of Microsoft Bookings businesses.
         
@@ -593,7 +594,7 @@ class MicrosoftGraphService:
     async def get_bookings_services(
         self,
         business_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get services offered by a Bookings business.
         
@@ -616,10 +617,10 @@ class MicrosoftGraphService:
         customer_name: str,
         start_time: datetime,
         duration_minutes: int = 60,
-        staff_member_ids: Optional[List[str]] = None,
-        notes: Optional[str] = None,
+        staff_member_ids: list[str] | None = None,
+        notes: str | None = None,
         timezone: str = "America/Sao_Paulo"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create an appointment in Microsoft Bookings.
         
@@ -672,7 +673,7 @@ class MicrosoftGraphService:
     async def get_booking_page_url(
         self,
         business_id: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get the public booking page URL for a business.
         
@@ -720,7 +721,7 @@ class MicrosoftGraphService:
             logger.warning(f"Failed to check calendar permissions for {user_email}: {e}")
             return False
     
-    async def test_connection(self) -> Dict[str, Any]:
+    async def test_connection(self) -> dict[str, Any]:
         """
         Test the Microsoft Graph API connection.
         
@@ -735,7 +736,7 @@ class MicrosoftGraphService:
             }
         
         try:
-            token = await self._get_access_token()
+            await self._get_access_token()
             
             endpoint = "/organization"
             result = await self._make_request("GET", endpoint)

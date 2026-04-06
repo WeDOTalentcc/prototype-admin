@@ -13,16 +13,16 @@ If X-Company-ID header is present, it MUST match the JWT's company_id
 (already enforced by AuthEnforcementMiddleware).
 """
 import logging
-from typing import Optional
-from fastapi import Request, HTTPException, Header, Query, Depends, status
+
+from fastapi import Header, HTTPException, Query, Request, status
 
 logger = logging.getLogger(__name__)
 
 
 def get_verified_company_id(
     request: Request,
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    company_id: Optional[str] = Query(None),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str | None = Query(None),
 ) -> str:
     """
     Get company_id from the VERIFIED JWT context (request.state).

@@ -1,18 +1,20 @@
 # API v1
-from app.api.v1 import communications
-from app.api.v1 import search_archetypes
-from app.api.v1 import dashboard_data
-from app.api.v1 import billing
-from app.api.v1 import observability
-from app.api.v1 import saas_metrics
-from app.api.v1 import audit_logs
-from app.api.v1 import default_templates
-from app.api.v1 import global_policies
-from app.api.v1 import technical_tests
-from app.api.v1 import data_subject_requests
-from app.api.v1 import consent_management
-from app.api.v1 import task_planner
-from app.api.v1 import cache
-from app.api.v1 import ml_predictions
-from app.api.v1 import jd_import
-from app.api.v1 import communication_optout
+from app.api.v1 import (
+    audit_logs,
+    billing,
+    cache,
+    communication_optout,
+    communications,
+    consent_management,
+    dashboard_data,
+    data_subject_requests,
+    default_templates,
+    global_policies,
+    jd_import,
+    ml_predictions,
+    observability,
+    saas_metrics,
+    search_archetypes,
+    task_planner,
+    technical_tests,
+)

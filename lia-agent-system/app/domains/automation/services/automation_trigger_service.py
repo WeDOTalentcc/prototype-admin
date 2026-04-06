@@ -9,19 +9,20 @@ This service manages automatic triggers that fire based on events:
 - Candidate updates LinkedIn → Re-engagement notification
 - Offer accepted → Welcome email + manager notification
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
-from enum import Enum
 import logging
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
-from app.models.task import Task, TaskStatus, TaskPriority, TaskType
+from sqlalchemy import and_, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import AsyncSessionLocal
 from app.models.alert import Alert
-from app.models.job_vacancy import JobVacancy
 from app.models.candidate import Candidate
 from app.models.interview import Interview
-from app.core.database import AsyncSessionLocal
+from app.models.job_vacancy import JobVacancy
+from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.services.activity_service import ActivityService
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,7 @@ class AutomationTriggerService:
                 logger.warning(f"Could not load WhatsAppService: {e}")
         return self._whatsapp_service
     
-    def _load_default_triggers(self) -> List[Dict[str, Any]]:
+    def _load_default_triggers(self) -> list[dict[str, Any]]:
         """Load default trigger configurations."""
         return [
             {
@@ -180,8 +181,8 @@ class AutomationTriggerService:
     
     async def check_and_execute_triggers(
         self,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Check all triggers and execute actions for matching conditions.
         
@@ -247,8 +248,8 @@ class AutomationTriggerService:
     async def _check_trigger(
         self,
         db: AsyncSession,
-        trigger: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        trigger: dict[str, Any]
+    ) -> dict[str, Any]:
         """Check if trigger conditions are met."""
         trigger_type = trigger["type"]
         now = datetime.utcnow()
@@ -347,9 +348,9 @@ class AutomationTriggerService:
     async def _execute_trigger_actions(
         self,
         db: AsyncSession,
-        trigger: Dict[str, Any],
-        items: List[Any]
-    ) -> Dict[str, Any]:
+        trigger: dict[str, Any],
+        items: list[Any]
+    ) -> dict[str, Any]:
         """Execute actions for triggered items."""
         actions_executed = 0
         
@@ -399,8 +400,8 @@ class AutomationTriggerService:
     async def _create_task_for_item(
         self,
         db: AsyncSession,
-        trigger: Dict[str, Any],
-        action: Dict[str, Any],
+        trigger: dict[str, Any],
+        action: dict[str, Any],
         item: Any
     ) -> None:
         """Create a task for a triggered item."""
@@ -446,8 +447,8 @@ class AutomationTriggerService:
     async def _create_alert_for_item(
         self,
         db: AsyncSession,
-        trigger: Dict[str, Any],
-        action: Dict[str, Any],
+        trigger: dict[str, Any],
+        action: dict[str, Any],
         item: Any
     ) -> None:
         """Create an alert for a triggered item."""
@@ -474,8 +475,8 @@ class AutomationTriggerService:
     
     async def _log_activity_for_item(
         self,
-        trigger: Dict[str, Any],
-        action: Dict[str, Any],
+        trigger: dict[str, Any],
+        action: dict[str, Any],
         item: Any
     ) -> None:
         """Log an activity for a triggered item."""
@@ -513,8 +514,8 @@ class AutomationTriggerService:
     async def _create_notification_for_item(
         self,
         db: AsyncSession,
-        trigger: Dict[str, Any],
-        action: Dict[str, Any],
+        trigger: dict[str, Any],
+        action: dict[str, Any],
         item: Any
     ) -> None:
         """Create a Bell in-app notification for a triggered item."""
@@ -578,11 +579,11 @@ class AutomationTriggerService:
     
     async def _send_email_for_item(
         self,
-        trigger: Dict[str, Any],
-        action: Dict[str, Any],
+        trigger: dict[str, Any],
+        action: dict[str, Any],
         item: Any,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send an email for a triggered item."""
         email_service = self._get_email_service()
         if not email_service:
@@ -650,7 +651,7 @@ class AutomationTriggerService:
             error = result.get("error") if isinstance(result, dict) else getattr(result, "error", None)
             
             if success:
-                logger.info(f"✅ [TRIGGER] Email sent successfully")
+                logger.info("✅ [TRIGGER] Email sent successfully")
                 return {
                     "success": True,
                     "action": "send_email",
@@ -673,10 +674,10 @@ class AutomationTriggerService:
     
     async def _send_whatsapp_for_item(
         self,
-        trigger: Dict[str, Any],
-        action: Dict[str, Any],
+        trigger: dict[str, Any],
+        action: dict[str, Any],
         item: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send a WhatsApp message for a triggered item."""
         whatsapp_service = self._get_whatsapp_service()
         if not whatsapp_service:
@@ -772,7 +773,7 @@ class AutomationTriggerService:
             logger.error(f"❌ [TRIGGER] Error sending WhatsApp to {recipient_phone}: {e}")
             return {"success": False, "error": str(e)}
     
-    def get_triggers_config(self) -> List[Dict[str, Any]]:
+    def get_triggers_config(self) -> list[dict[str, Any]]:
         """Get current triggers configuration."""
         return [
             {

@@ -7,12 +7,13 @@ This module provides:
 - Language detection
 - Edge case handling
 """
-from typing import Optional, Dict, Any, List, Union
-from pydantic import BaseModel, Field, field_validator, model_validator
-from enum import Enum
-import re
 import html
 import logging
+import re
+from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,8 @@ class SupportedLanguage(str, Enum):
 class BaseAgentInput(BaseModel):
     """Base input schema for all agent operations."""
     intent: str = Field(..., min_length=1, max_length=100)
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
+    user_id: str | None = None
+    session_id: str | None = None
     language: SupportedLanguage = SupportedLanguage.PT_BR
     
     class Config:
@@ -37,15 +38,15 @@ class BaseAgentInput(BaseModel):
 
 class JobInput(BaseAgentInput):
     """Input schema for job-related operations."""
-    job_id: Optional[str] = None
-    job_title: Optional[str] = Field(None, max_length=200)
-    job_description: Optional[str] = Field(None, max_length=50000)
-    skills: Optional[List[str]] = None
-    location: Optional[str] = Field(None, max_length=200)
-    salary_min: Optional[float] = Field(None, ge=0)
-    salary_max: Optional[float] = Field(None, ge=0)
-    experience_years_min: Optional[int] = Field(None, ge=0, le=50)
-    experience_years_max: Optional[int] = Field(None, ge=0, le=50)
+    job_id: str | None = None
+    job_title: str | None = Field(None, max_length=200)
+    job_description: str | None = Field(None, max_length=50000)
+    skills: list[str] | None = None
+    location: str | None = Field(None, max_length=200)
+    salary_min: float | None = Field(None, ge=0)
+    salary_max: float | None = Field(None, ge=0)
+    experience_years_min: int | None = Field(None, ge=0, le=50)
+    experience_years_max: int | None = Field(None, ge=0, le=50)
     
     @model_validator(mode='after')
     def validate_salary_range(self):
@@ -64,10 +65,10 @@ class JobInput(BaseAgentInput):
 
 class CandidateInput(BaseAgentInput):
     """Input schema for candidate-related operations."""
-    candidate_id: Optional[str] = None
-    candidate_name: Optional[str] = Field(None, max_length=200)
-    candidate_email: Optional[str] = Field(None, max_length=200)
-    cv_text: Optional[str] = Field(None, max_length=100000)
+    candidate_id: str | None = None
+    candidate_name: str | None = Field(None, max_length=200)
+    candidate_email: str | None = Field(None, max_length=200)
+    cv_text: str | None = Field(None, max_length=100000)
     
     @field_validator('candidate_email')
     @classmethod
@@ -79,11 +80,11 @@ class CandidateInput(BaseAgentInput):
 
 class SearchInput(BaseAgentInput):
     """Input schema for search operations."""
-    query: Optional[str] = Field(None, max_length=1000)
-    skills: Optional[List[str]] = None
-    location: Optional[str] = Field(None, max_length=200)
-    experience_min: Optional[int] = Field(None, ge=0, le=50)
-    experience_max: Optional[int] = Field(None, ge=0, le=50)
+    query: str | None = Field(None, max_length=1000)
+    skills: list[str] | None = None
+    location: str | None = Field(None, max_length=200)
+    experience_min: int | None = Field(None, ge=0, le=50)
+    experience_max: int | None = Field(None, ge=0, le=50)
     limit: int = Field(default=20, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
     
@@ -97,32 +98,32 @@ class SearchInput(BaseAgentInput):
 
 class InterviewInput(BaseAgentInput):
     """Input schema for interview operations."""
-    interview_id: Optional[str] = None
-    candidate_id: Optional[str] = None
-    job_id: Optional[str] = None
-    scheduled_at: Optional[str] = None
-    duration_minutes: Optional[int] = Field(None, ge=15, le=180)
-    interview_type: Optional[str] = Field(None, max_length=50)
+    interview_id: str | None = None
+    candidate_id: str | None = None
+    job_id: str | None = None
+    scheduled_at: str | None = None
+    duration_minutes: int | None = Field(None, ge=15, le=180)
+    interview_type: str | None = Field(None, max_length=50)
 
 
 class WSIInput(BaseAgentInput):
     """Input schema for WSI evaluation operations."""
     candidate_id: str = Field(..., min_length=1)
     job_id: str = Field(..., min_length=1)
-    responses: Optional[Dict[str, Any]] = None
-    autodeclaracao_override: Optional[float] = Field(None, ge=1.0, le=5.0)
-    contexto_override: Optional[float] = Field(None, ge=1.0, le=5.0)
-    years_experience: Optional[int] = Field(None, ge=0, le=50)
+    responses: dict[str, Any] | None = None
+    autodeclaracao_override: float | None = Field(None, ge=1.0, le=5.0)
+    contexto_override: float | None = Field(None, ge=1.0, le=5.0)
+    years_experience: int | None = Field(None, ge=0, le=50)
 
 
 class MessageInput(BaseAgentInput):
     """Input schema for messaging operations."""
-    recipient_id: Optional[str] = None
-    recipient_email: Optional[str] = None
-    subject: Optional[str] = Field(None, max_length=500)
-    message: Optional[str] = Field(None, max_length=50000)
-    template_id: Optional[str] = None
-    channel: Optional[str] = Field(None, pattern=r'^(email|whatsapp|sms|bell)$')
+    recipient_id: str | None = None
+    recipient_email: str | None = None
+    subject: str | None = Field(None, max_length=500)
+    message: str | None = Field(None, max_length=50000)
+    template_id: str | None = None
+    channel: str | None = Field(None, pattern=r'^(email|whatsapp|sms|bell)$')
 
 
 DANGEROUS_PATTERNS = [
@@ -246,7 +247,7 @@ def detect_language(text: str) -> SupportedLanguage:
 
 
 def validate_agent_input(
-    input_data: Dict[str, Any],
+    input_data: dict[str, Any],
     schema_class: type = BaseAgentInput
 ) -> BaseAgentInput:
     """
@@ -274,7 +275,7 @@ def validate_agent_input(
     return schema_class(**input_data)
 
 
-def is_empty_or_whitespace(text: Optional[str]) -> bool:
+def is_empty_or_whitespace(text: str | None) -> bool:
     """Check if text is empty or only whitespace."""
     return not text or not text.strip()
 

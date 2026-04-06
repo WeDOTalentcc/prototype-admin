@@ -9,9 +9,8 @@ Configures LangSmith tracing for:
 - Intent routing
 """
 
-import os
 import logging
-from typing import Optional
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +58,7 @@ def configure_langsmith() -> bool:
     return True
 
 
-def get_langsmith_project() -> Optional[str]:
+def get_langsmith_project() -> str | None:
     """Get current LangSmith project name."""
     return os.getenv("LANGCHAIN_PROJECT")
 

@@ -11,22 +11,22 @@ CRITICAL: Toggles control AI DATA CONSUMPTION only, not UI visibility.
 - Fields with is_active=False still appear in wizard UI
 - When is_active=False, agents use fallback strategies (job history, benchmarks)
 """
-from typing import Dict, List, Any, Optional, Tuple
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-import logging
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from typing import Any
 from uuid import UUID
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.company import CompanyProfile
+from app.models.job_vacancy import JobVacancy
 from app.models.lia_field_toggles import (
-    LiaFieldToggle,
     DEFAULT_FIELD_TOGGLES,
     FIELD_FALLBACK_CONFIG,
-    FALLBACK_STRATEGIES
+    LiaFieldToggle,
 )
-from app.models.job_vacancy import JobVacancy
-from app.models.company import CompanyProfile
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +45,8 @@ class FieldConfig:
     """Configuration for a single field."""
     field_key: str
     is_active: bool
-    comment: Optional[str] = None
-    fallback_strategies: List[str] = field(default_factory=list)
+    comment: str | None = None
+    fallback_strategies: list[str] = field(default_factory=list)
     company_value: Any = None
     fallback_value: Any = None
     data_source: DataSource = DataSource.NOT_AVAILABLE
@@ -62,17 +62,17 @@ class FieldContext:
     source_explanation: str
     confidence: float
     is_toggle_active: bool
-    recruiter_comment: Optional[str] = None
+    recruiter_comment: str | None = None
 
 
 @dataclass
 class LiaFieldConfigResult:
     """Result of field config lookup with all toggles, comments, and resolved values."""
     company_id: str
-    active_fields: Dict[str, FieldConfig]
-    inactive_fields: Dict[str, FieldConfig]
-    all_fields: Dict[str, FieldConfig]
-    field_contexts: Dict[str, FieldContext]
+    active_fields: dict[str, FieldConfig]
+    inactive_fields: dict[str, FieldConfig]
+    all_fields: dict[str, FieldConfig]
+    field_contexts: dict[str, FieldContext]
     context_prompt: str
     data_quality_score: float
 
@@ -177,7 +177,7 @@ class LiaFieldConfigService:
     async def get_field_config(
         self,
         company_id: str,
-        job_context: Optional[Dict[str, Any]] = None
+        job_context: dict[str, Any] | None = None
     ) -> LiaFieldConfigResult:
         """
         Get complete field configuration for a company.
@@ -200,10 +200,10 @@ class LiaFieldConfigService:
         company_profile = await self._load_company_profile(company_uuid)
         job_history = await self._load_job_history(company_id)
         
-        all_fields: Dict[str, FieldConfig] = {}
-        active_fields: Dict[str, FieldConfig] = {}
-        inactive_fields: Dict[str, FieldConfig] = {}
-        field_contexts: Dict[str, FieldContext] = {}
+        all_fields: dict[str, FieldConfig] = {}
+        active_fields: dict[str, FieldConfig] = {}
+        inactive_fields: dict[str, FieldConfig] = {}
+        field_contexts: dict[str, FieldContext] = {}
         
         for toggle_def in DEFAULT_FIELD_TOGGLES:
             field_key = toggle_def["field_key"]
@@ -277,7 +277,7 @@ class LiaFieldConfigService:
             data_quality_score=data_quality_score
         )
     
-    async def _load_toggles(self, company_uuid: UUID) -> Dict[str, LiaFieldToggle]:
+    async def _load_toggles(self, company_uuid: UUID) -> dict[str, LiaFieldToggle]:
         """Load all field toggles for a company."""
         result = await self.db.execute(
             select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
@@ -285,14 +285,14 @@ class LiaFieldConfigService:
         toggles = result.scalars().all()
         return {t.field_key: t for t in toggles}
     
-    async def _load_company_profile(self, company_uuid: UUID) -> Optional[CompanyProfile]:
+    async def _load_company_profile(self, company_uuid: UUID) -> CompanyProfile | None:
         """Load company profile data."""
         result = await self.db.execute(
             select(CompanyProfile).where(CompanyProfile.id == company_uuid)
         )
         return result.scalar_one_or_none()
     
-    async def _load_job_history(self, company_id: str, limit: int = 20) -> List[Dict[str, Any]]:
+    async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Load recent job history for pattern analysis."""
         result = await self.db.execute(
             select(JobVacancy)
@@ -318,7 +318,7 @@ class LiaFieldConfigService:
             for j in jobs
         ]
     
-    def _get_company_value(self, field_key: str, profile: Optional[CompanyProfile]) -> Any:
+    def _get_company_value(self, field_key: str, profile: CompanyProfile | None) -> Any:
         """Extract company value for a field from profile."""
         if not profile:
             return None
@@ -351,11 +351,11 @@ class LiaFieldConfigService:
     def _resolve_fallback(
         self,
         field_key: str,
-        strategies: List[str],
-        job_history: List[Dict[str, Any]],
-        job_context: Optional[Dict[str, Any]],
-        company_profile: Optional[CompanyProfile]
-    ) -> Tuple[Any, DataSource, float]:
+        strategies: list[str],
+        job_history: list[dict[str, Any]],
+        job_context: dict[str, Any] | None,
+        company_profile: CompanyProfile | None
+    ) -> tuple[Any, DataSource, float]:
         """
         Resolve fallback value using configured strategies.
         
@@ -385,8 +385,8 @@ class LiaFieldConfigService:
     def _from_job_history(
         self, 
         field_key: str, 
-        job_history: List[Dict[str, Any]]
-    ) -> Tuple[Optional[Any], float]:
+        job_history: list[dict[str, Any]]
+    ) -> tuple[Any | None, float]:
         """Extract pattern from job history."""
         if not job_history:
             return None, 0.0
@@ -440,9 +440,9 @@ class LiaFieldConfigService:
     def _from_market_benchmark(
         self,
         field_key: str,
-        job_context: Optional[Dict[str, Any]],
-        company_profile: Optional[CompanyProfile]
-    ) -> Optional[Any]:
+        job_context: dict[str, Any] | None,
+        company_profile: CompanyProfile | None
+    ) -> Any | None:
         """Get market benchmark value."""
         if field_key not in MARKET_BENCHMARKS:
             return None
@@ -470,15 +470,15 @@ class LiaFieldConfigService:
     def _from_role_inference(
         self,
         field_key: str,
-        job_context: Optional[Dict[str, Any]]
-    ) -> Optional[Any]:
+        job_context: dict[str, Any] | None
+    ) -> Any | None:
         """Infer value from job role context."""
         if not job_context:
             return None
         
         title = job_context.get("title", "").lower()
         seniority = job_context.get("seniority", "")
-        department = job_context.get("department", "")
+        job_context.get("department", "")
         
         if field_key == "tech_stack":
             tech_keywords = {
@@ -524,8 +524,8 @@ class LiaFieldConfigService:
     
     def _build_context_prompt(
         self,
-        field_contexts: Dict[str, FieldContext],
-        job_context: Optional[Dict[str, Any]]
+        field_contexts: dict[str, FieldContext],
+        job_context: dict[str, Any] | None
     ) -> str:
         """
         Build context prompt for AI agents respecting toggle states.
@@ -535,7 +535,7 @@ class LiaFieldConfigService:
         - Inactive fields with fallback values and source attribution
         - Recruiter comments as additional instructions
         """
-        parts: List[str] = []
+        parts: list[str] = []
         
         parts.append("## Contexto de Configuração da Empresa para Criação de Vaga\n")
         
@@ -615,7 +615,7 @@ class LiaFieldConfigService:
             return str(value)
         return str(value)
     
-    def _calculate_data_quality(self, field_contexts: Dict[str, FieldContext]) -> float:
+    def _calculate_data_quality(self, field_contexts: dict[str, FieldContext]) -> float:
         """Calculate overall data quality score."""
         critical_fields = ["seniority_levels", "work_model", "employment_types", "salary_ranges", "benefits"]
         
@@ -647,8 +647,8 @@ class LiaFieldConfigService:
         self,
         company_id: str,
         user_id: str,
-        job_context: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+        job_context: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Detect fields that have active toggles but empty company config values.
         
@@ -663,12 +663,12 @@ class LiaFieldConfigService:
         Returns:
             List of notification dicts with field info, impact, and actions
         """
-        from app.models.recruiter_profile import (
-            RecruiterFieldPreference,
-            FIELD_IMPACT_DESCRIPTIONS,
-            DEFAULT_IMPACT_DESCRIPTION
-        )
         from datetime import datetime
+
+        from app.models.recruiter_profile import (
+            DEFAULT_IMPACT_DESCRIPTION,
+            FIELD_IMPACT_DESCRIPTIONS,
+        )
         
         field_config = await self.get_field_config(company_id, job_context)
         
@@ -724,7 +724,7 @@ class LiaFieldConfigService:
         self, 
         user_id: str, 
         company_id: str
-    ) -> Dict[str, "RecruiterFieldPreference"]:
+    ) -> dict[str, "RecruiterFieldPreference"]:
         """Load recruiter field preferences from database."""
         from app.models.recruiter_profile import RecruiterFieldPreference
         
@@ -743,7 +743,7 @@ class LiaFieldConfigService:
         user_id: str,
         field_key: str,
         action: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update recruiter's preference for a field reminder.
         
@@ -756,8 +756,9 @@ class LiaFieldConfigService:
         Returns:
             Updated preference info
         """
-        from app.models.recruiter_profile import RecruiterFieldPreference
         from datetime import datetime, timedelta
+
+        from app.models.recruiter_profile import RecruiterFieldPreference
         
         result = await self.db.execute(
             select(RecruiterFieldPreference).where(
@@ -811,8 +812,8 @@ class LiaFieldConfigService:
         self,
         company_id: str,
         field_key: str,
-        job_context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        job_context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Generate AI suggestion for an empty field.
         

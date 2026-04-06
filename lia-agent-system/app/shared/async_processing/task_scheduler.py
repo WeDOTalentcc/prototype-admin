@@ -1,10 +1,10 @@
 import asyncio
-import uuid
 import logging
+import uuid
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any, Set
+from typing import Any, Optional
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
@@ -13,8 +13,8 @@ from app.models.task_record import TaskSchedule
 logger = logging.getLogger(__name__)
 
 
-def _parse_cron_field(field: str, min_val: int, max_val: int) -> Set[int]:
-    values: Set[int] = set()
+def _parse_cron_field(field: str, min_val: int, max_val: int) -> set[int]:
+    values: set[int] = set()
     for part in field.split(","):
         part = part.strip()
         if part == "*":
@@ -35,7 +35,7 @@ def _parse_cron_field(field: str, min_val: int, max_val: int) -> Set[int]:
     return values
 
 
-def parse_cron_expression(expression: str) -> Dict[str, Set[int]]:
+def parse_cron_expression(expression: str) -> dict[str, set[int]]:
     parts = expression.strip().split()
     if len(parts) != 5:
         raise ValueError(f"Invalid cron expression: {expression}. Expected 5 fields.")
@@ -62,7 +62,7 @@ def cron_matches(expression: str, dt: datetime) -> bool:
     )
 
 
-def next_cron_time(expression: str, after: Optional[datetime] = None) -> Optional[datetime]:
+def next_cron_time(expression: str, after: datetime | None = None) -> datetime | None:
     if after is None:
         after = datetime.utcnow()
     candidate = after.replace(second=0, microsecond=0) + timedelta(minutes=1)
@@ -84,7 +84,7 @@ class TaskScheduler:
 
     def __init__(self):
         self._running = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._check_interval = 60
 
     async def start(self) -> None:
@@ -172,13 +172,13 @@ class TaskScheduler:
         domain_id: str,
         action_id: str,
         cron_expression: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         priority: int = 1,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
         user_id: str = "system",
         max_retries: int = 2,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         parse_cron_expression(cron_expression)
         schedule_id = str(uuid.uuid4())
         computed_next = next_cron_time(cron_expression)
@@ -229,7 +229,7 @@ class TaskScheduler:
         active_only: bool = False,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         async with AsyncSessionLocal() as session:
             try:
                 stmt = select(TaskSchedule)

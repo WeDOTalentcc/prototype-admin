@@ -7,23 +7,31 @@ Provides endpoints for advanced LGPD consent management:
 - Subject History
 - Consent Statistics
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc, or_
-from typing import Optional
-from datetime import datetime, timedelta
 import hashlib
 import logging
+from datetime import datetime, timedelta
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.observability import ConsentVersion, ConsentEvent
-from app.shared.tenant_guard import get_verified_company_id
+from app.models.observability import ConsentEvent, ConsentVersion
 from app.schemas.consent_management import (
-    ConsentVersionCreate, ConsentVersionResponse, ConsentVersionListResponse,
-    ConsentEventCreate, ConsentEventResponse, ConsentEventListResponse,
-    ConsentSubjectHistory, ConsentSubjectEvent, ConsentRevokeRequest, ConsentStats, ConsentTypeStats
+    ConsentEventCreate,
+    ConsentEventListResponse,
+    ConsentEventResponse,
+    ConsentRevokeRequest,
+    ConsentStats,
+    ConsentSubjectEvent,
+    ConsentSubjectHistory,
+    ConsentTypeStats,
+    ConsentVersionCreate,
+    ConsentVersionListResponse,
+    ConsentVersionResponse,
 )
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +113,8 @@ async def create_consent_version(
 
 @router.get("/versions/", response_model=ConsentVersionListResponse, summary="List consent versions")
 async def list_consent_versions(
-    consent_type: Optional[str] = Query(None, description="Filter by consent type"),
-    is_current: Optional[bool] = Query(None, description="Filter by current status"),
+    consent_type: str | None = Query(None, description="Filter by consent type"),
+    is_current: bool | None = Query(None, description="Filter by current status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
@@ -276,11 +284,11 @@ async def create_consent_event(
 
 @router.get("/events/", response_model=ConsentEventListResponse, summary="List consent events")
 async def list_consent_events(
-    consent_version_id: Optional[str] = Query(None, description="Filter by consent version ID"),
-    subject_email: Optional[str] = Query(None, description="Filter by subject email"),
-    event_type: Optional[str] = Query(None, description="Filter by event type"),
-    date_from: Optional[datetime] = Query(None, description="Filter events from this date"),
-    date_to: Optional[datetime] = Query(None, description="Filter events until this date"),
+    consent_version_id: str | None = Query(None, description="Filter by consent version ID"),
+    subject_email: str | None = Query(None, description="Filter by subject email"),
+    event_type: str | None = Query(None, description="Filter by event type"),
+    date_from: datetime | None = Query(None, description="Filter events from this date"),
+    date_to: datetime | None = Query(None, description="Filter events until this date"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),

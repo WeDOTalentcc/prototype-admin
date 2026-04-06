@@ -4,24 +4,23 @@ Provides autocomplete, search analysis, and smart alerts for recruiters.
 Uses centralized taxonomy library for comprehensive term matching.
 """
 import logging
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any
+
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.taxonomy import (
-    taxonomy_service,
-    JOB_TITLES_TAXONOMY as TAXONOMY_JOB_TITLES,
-    TECHNICAL_SKILLS_TAXONOMY,
-    SOFT_SKILLS_TAXONOMY,
-    LANGUAGES_TAXONOMY,
-    CERTIFICATIONS_TAXONOMY,
     INDUSTRIES_TAXONOMY,
-    SENIORITY_LEVELS,
-    WORK_MODELS,
     LOCATIONS_BRAZIL,
+    SENIORITY_LEVELS,
+    TECHNICAL_SKILLS_TAXONOMY,
+    WORK_MODELS,
+)
+from app.core.taxonomy import (
+    JOB_TITLES_TAXONOMY as TAXONOMY_JOB_TITLES,
 )
 
 logger = logging.getLogger(__name__)
@@ -41,8 +40,8 @@ class SuggestionCategory(str, Enum):
 class SearchSuggestion(BaseModel):
     text: str
     category: SuggestionCategory
-    description: Optional[str] = None
-    synonyms: List[str] = Field(default_factory=list)
+    description: str | None = None
+    synonyms: list[str] = Field(default_factory=list)
     popularity_score: float = 0.0
 
 
@@ -56,23 +55,23 @@ class SearchAlert(BaseModel):
     type: str
     severity: AlertSeverity
     message: str
-    suggestion: Optional[str] = None
-    action_label: Optional[str] = None
-    action_value: Optional[str] = None
+    suggestion: str | None = None
+    action_label: str | None = None
+    action_value: str | None = None
 
 
 class SuggestionsResponse(BaseModel):
-    suggestions: List[SearchSuggestion] = Field(default_factory=list)
-    category_suggestions: Dict[str, List[str]] = Field(default_factory=dict)
+    suggestions: list[SearchSuggestion] = Field(default_factory=list)
+    category_suggestions: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class AnalysisResponse(BaseModel):
     completeness_score: int = Field(ge=0, le=100)
-    filled_criteria: List[str] = Field(default_factory=list)
-    missing_criteria: List[str] = Field(default_factory=list)
-    alerts: List[SearchAlert] = Field(default_factory=list)
-    enrichment_suggestions: Dict[str, List[str]] = Field(default_factory=dict)
-    next_recommended_action: Optional[str] = None
+    filled_criteria: list[str] = Field(default_factory=list)
+    missing_criteria: list[str] = Field(default_factory=list)
+    alerts: list[SearchAlert] = Field(default_factory=list)
+    enrichment_suggestions: dict[str, list[str]] = Field(default_factory=dict)
+    next_recommended_action: str | None = None
 
 
 JOB_TITLES_TAXONOMY = TAXONOMY_JOB_TITLES
@@ -133,7 +132,7 @@ SYNONYM_MAP = {
 }
 
 
-def get_synonyms(term: str) -> List[str]:
+def get_synonyms(term: str) -> list[str]:
     """Get synonyms for a term."""
     term_lower = term.lower()
     for key, synonyms in SYNONYM_MAP.items():
@@ -142,7 +141,7 @@ def get_synonyms(term: str) -> List[str]:
     return []
 
 
-def calculate_completeness(entities: Dict[str, Any]) -> tuple[int, List[str], List[str]]:
+def calculate_completeness(entities: dict[str, Any]) -> tuple[int, list[str], list[str]]:
     """Calculate search completeness based on filled criteria."""
     criteria = {
         "job_title": ("Cargo", entities.get("job_title")),
@@ -165,7 +164,7 @@ def calculate_completeness(entities: Dict[str, Any]) -> tuple[int, List[str], Li
     return score, filled, missing
 
 
-def analyze_search_quality(query: str, entities: Dict[str, Any]) -> List[SearchAlert]:
+def analyze_search_quality(query: str, entities: dict[str, Any]) -> list[SearchAlert]:
     """Analyze search query and return alerts."""
     alerts = []
     
@@ -226,7 +225,7 @@ def analyze_search_quality(query: str, entities: Dict[str, Any]) -> List[SearchA
     return alerts
 
 
-def get_suggestions_for_query(query: str, category: Optional[str] = None) -> List[SearchSuggestion]:
+def get_suggestions_for_query(query: str, category: str | None = None) -> list[SearchSuggestion]:
     """Get suggestions based on current query."""
     suggestions = []
     query_lower = query.lower() if query else ""
@@ -280,7 +279,7 @@ def get_suggestions_for_query(query: str, category: Optional[str] = None) -> Lis
     return suggestions[:20]
 
 
-def get_enrichment_suggestions(entities: Dict[str, Any]) -> Dict[str, List[str]]:
+def get_enrichment_suggestions(entities: dict[str, Any]) -> dict[str, list[str]]:
     """Get enrichment suggestions based on current entities."""
     enrichments = {}
     
@@ -311,7 +310,7 @@ def get_enrichment_suggestions(entities: Dict[str, Any]) -> Dict[str, List[str]]
 @router.get("/suggestions", response_model=SuggestionsResponse)
 async def get_search_suggestions(
     query: str = Query("", description="Texto atual da busca"),
-    category: Optional[str] = Query(None, description="Filtrar por categoria"),
+    category: str | None = Query(None, description="Filtrar por categoria"),
     limit: int = Query(15, ge=1, le=50),
     db: AsyncSession = Depends(get_db)
 ):
@@ -337,7 +336,7 @@ async def get_search_suggestions(
 
 class AnalyzeRequest(BaseModel):
     query: str = Field(..., description="Texto da busca")
-    entities: Dict[str, Any] = Field(default_factory=dict, description="Entidades parseadas")
+    entities: dict[str, Any] = Field(default_factory=dict, description="Entidades parseadas")
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
@@ -384,13 +383,13 @@ class AutocompleteItem(BaseModel):
     text: str
     category: str
     icon: str = "sparkles"
-    description: Optional[str] = None
+    description: str | None = None
     insert_text: str  # What to insert when selected
 
 
 class AutocompleteResponse(BaseModel):
-    items: List[AutocompleteItem] = Field(default_factory=list)
-    context_hint: Optional[str] = None
+    items: list[AutocompleteItem] = Field(default_factory=list)
+    context_hint: str | None = None
 
 
 AUTOCOMPLETE_TEMPLATES = [
@@ -487,7 +486,7 @@ AUTOCOMPLETE_TEMPLATES = [
 ]
 
 
-def get_predictive_suggestions(query: str, cursor_position: Optional[int] = None) -> List[AutocompleteItem]:
+def get_predictive_suggestions(query: str, cursor_position: int | None = None) -> list[AutocompleteItem]:
     """Get predictive autocomplete suggestions based on current query."""
     if not query or len(query) < 2:
         return []
@@ -570,7 +569,7 @@ def get_predictive_suggestions(query: str, cursor_position: Optional[int] = None
 @router.get("/autocomplete", response_model=AutocompleteResponse)
 async def get_autocomplete(
     query: str = Query("", description="Texto atual da busca"),
-    cursor: Optional[int] = Query(None, description="Posição do cursor"),
+    cursor: int | None = Query(None, description="Posição do cursor"),
 ):
     """
     Get predictive autocomplete suggestions as user types.

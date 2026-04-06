@@ -11,8 +11,8 @@ Dependências:
 """
 import json
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
+from typing import Any
 
 from app.core.config import settings
 from app.shared.resilience.circuit_breaker import GOOGLE_CALENDAR_CIRCUIT
@@ -27,7 +27,7 @@ class TimeSlot:
         self.start = start
         self.end = end
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"start": self.start.isoformat(), "end": self.end.isoformat()}
 
 
@@ -40,7 +40,7 @@ class GoogleCalendarClient:
     da tabela company_calendar_credentials.
     """
 
-    def __init__(self, credentials_json: Optional[str] = None, timezone: str = "America/Sao_Paulo"):
+    def __init__(self, credentials_json: str | None = None, timezone: str = "America/Sao_Paulo"):
         """
         Initialize Google Calendar client.
 
@@ -81,9 +81,9 @@ class GoogleCalendarClient:
             )
 
         try:
-            from googleapiclient.discovery import build  # type: ignore
             from google.oauth2 import service_account  # type: ignore
             from google.oauth2.credentials import Credentials  # type: ignore
+            from googleapiclient.discovery import build  # type: ignore
 
             creds_data = json.loads(self._credentials_json)
 
@@ -119,14 +119,14 @@ class GoogleCalendarClient:
 
     async def create_calendar_event(
         self,
-        attendees: List[str],
+        attendees: list[str],
         start_time: datetime,
         duration_minutes: int,
         summary: str,
         description: str = "",
         create_meet_link: bool = True,
-        organizer_email: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        organizer_email: str | None = None,
+    ) -> dict[str, Any]:
         """
         Create a Google Calendar event with optional Google Meet link.
 
@@ -145,7 +145,7 @@ class GoogleCalendarClient:
         service = self._get_service()
         end_time = start_time + timedelta(minutes=duration_minutes)
 
-        event_body: Dict[str, Any] = {
+        event_body: dict[str, Any] = {
             "summary": summary,
             "description": description,
             "start": {
@@ -211,7 +211,7 @@ class GoogleCalendarClient:
         user_email: str,
         start_date: datetime,
         end_date: datetime,
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """
         Get busy time blocks for a user using freebusy API.
 
@@ -235,7 +235,7 @@ class GoogleCalendarClient:
         event_id: str,
         calendar_id: str = "primary",
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update an existing calendar event."""
         service = self._get_service()
 
@@ -271,12 +271,12 @@ class GoogleCalendarClient:
     async def get_available_slots(
         self,
         organizer_email: str,
-        attendees: List[str],
+        attendees: list[str],
         duration_minutes: int,
         start: datetime,
         end: datetime,
         slot_step_minutes: int = 30,
-    ) -> List[TimeSlot]:
+    ) -> list[TimeSlot]:
         """
         Find available slots where all attendees are free.
 
@@ -304,7 +304,7 @@ class GoogleCalendarClient:
         )
 
         # Collect all busy blocks
-        busy_blocks: List[tuple[datetime, datetime]] = []
+        busy_blocks: list[tuple[datetime, datetime]] = []
         for calendar_data in freebusy.get("calendars", {}).values():
             for slot in calendar_data.get("busy", []):
                 busy_start = datetime.fromisoformat(slot["start"].replace("Z", "+00:00"))
@@ -312,7 +312,7 @@ class GoogleCalendarClient:
                 busy_blocks.append((busy_start.replace(tzinfo=None), busy_end.replace(tzinfo=None)))
 
         # Generate candidate slots and filter out busy ones
-        slots: List[TimeSlot] = []
+        slots: list[TimeSlot] = []
         current = start
         step = timedelta(minutes=slot_step_minutes)
         slot_duration = timedelta(minutes=duration_minutes)

@@ -9,11 +9,11 @@ Portability note for Rails migration:
   - The BaseRepository ABC defines the interface contract
   - Each method maps to a standard ActiveRecord operation
 """
-from typing import Optional, List, Dict, Any, Type, TypeVar
-from uuid import UUID
 import logging
+from typing import Any, TypeVar
+from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.shared.repositories.base import BaseRepository
@@ -30,13 +30,13 @@ class SQLAlchemyRepository(BaseRepository[T]):
     For sync usage, create a SyncSQLAlchemyRepository subclass.
     """
     
-    model_class: Type = None
+    model_class: type = None
 
     def __init__(self):
         if not self.model_class:
             raise ValueError(f"{self.__class__.__name__} must define model_class")
 
-    async def get_by_id(self, id: UUID, db: AsyncSession) -> Optional[T]:
+    async def get_by_id(self, id: UUID, db: AsyncSession) -> T | None:
         result = await db.execute(
             select(self.model_class).where(self.model_class.id == id)
         )
@@ -44,7 +44,7 @@ class SQLAlchemyRepository(BaseRepository[T]):
 
     async def list(
         self, db: AsyncSession, filters=None, limit=50, offset=0, order_by=None
-    ) -> List[T]:
+    ) -> list[T]:
         query = select(self.model_class)
         if filters:
             for key, value in filters.items():
@@ -58,13 +58,13 @@ class SQLAlchemyRepository(BaseRepository[T]):
         result = await db.execute(query)
         return list(result.scalars().all())
 
-    async def create(self, db: AsyncSession, data: Dict[str, Any]) -> T:
+    async def create(self, db: AsyncSession, data: dict[str, Any]) -> T:
         instance = self.model_class(**data)
         db.add(instance)
         await db.flush()
         return instance
 
-    async def update(self, db: AsyncSession, id: UUID, data: Dict[str, Any]) -> Optional[T]:
+    async def update(self, db: AsyncSession, id: UUID, data: dict[str, Any]) -> T | None:
         instance = await self.get_by_id(id, db)
         if not instance:
             return None

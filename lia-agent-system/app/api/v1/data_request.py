@@ -8,24 +8,23 @@ API for managing data requests to candidates, including:
 
 Part of LIA Data Collection System
 """
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
-from uuid import UUID
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.communication.services.data_request_service import data_request_service
 from app.domains.communication.services.data_request_whatsapp_service import data_request_whatsapp_service
 from app.models.data_request import (
-    DataRequestStatus,
-    DataFieldType,
-    TriggerType,
-    DEFAULT_DATA_FIELDS,
     DEFAULT_STAGE_FIELD_MAPPINGS,
+    DataFieldType,
+    DataRequestStatus,
+    TriggerType,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,53 +36,53 @@ class FieldSchema(BaseModel):
     """Schema for a data request field."""
     name: str
     label: str
-    label_en: Optional[str] = None
-    description: Optional[str] = None
+    label_en: str | None = None
+    description: str | None = None
     field_type: str
     is_required: bool = True
-    validation_rules: Optional[Dict[str, Any]] = None
-    options: Optional[List[str]] = None
-    placeholder: Optional[str] = None
-    help_text: Optional[str] = None
-    max_file_size_mb: Optional[int] = 10
-    allowed_file_types: Optional[List[str]] = None
+    validation_rules: dict[str, Any] | None = None
+    options: list[str] | None = None
+    placeholder: str | None = None
+    help_text: str | None = None
+    max_file_size_mb: int | None = 10
+    allowed_file_types: list[str] | None = None
 
 
 class CreateDataRequestRequest(BaseModel):
     """Request to create a new data request."""
     candidate_id: UUID
-    vacancy_id: Optional[UUID] = None
-    template_id: Optional[UUID] = None
-    fields: Optional[List[FieldSchema]] = None
+    vacancy_id: UUID | None = None
+    template_id: UUID | None = None
+    fields: list[FieldSchema] | None = None
     trigger_type: str = Field(default="manual")
-    trigger_stage: Optional[str] = None
+    trigger_stage: str | None = None
     is_blocking: bool = False
     expiration_days: int = Field(default=7, ge=1, le=90)
     send_notification: bool = True
-    notification_channels: List[str] = Field(default=["email"])
+    notification_channels: list[str] = Field(default=["email"])
 
 
 class DataRequestResponse(BaseModel):
     """Response schema for a data request."""
     id: UUID
     candidate_id: UUID
-    vacancy_id: Optional[UUID] = None
-    template_id: Optional[UUID] = None
+    vacancy_id: UUID | None = None
+    template_id: UUID | None = None
     token: str
     status: str
-    fields_requested: List[Dict[str, Any]]
-    fields_completed: List[Dict[str, Any]]
+    fields_requested: list[dict[str, Any]]
+    fields_completed: list[dict[str, Any]]
     trigger_type: str
-    trigger_stage: Optional[str] = None
+    trigger_stage: str | None = None
     is_blocking: bool
     expires_at: datetime
     completion_percentage: float
     sent_via_email: bool
     sent_via_whatsapp: bool
     reminder_count: int
-    first_accessed_at: Optional[datetime] = None
-    last_accessed_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    first_accessed_at: datetime | None = None
+    last_accessed_at: datetime | None = None
+    completed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -93,19 +92,19 @@ class DataRequestResponse(BaseModel):
 
 class DataRequestListResponse(BaseModel):
     """Response for listing data requests."""
-    items: List[DataRequestResponse]
+    items: list[DataRequestResponse]
     total: int
 
 
 class ResendNotificationRequest(BaseModel):
     """Request to resend notification."""
-    channels: List[str] = Field(default=["email"])
+    channels: list[str] = Field(default=["email"])
 
 
 class ResendNotificationResponse(BaseModel):
     """Response for resend notification."""
     reminder_count: int
-    channels: Dict[str, Any]
+    channels: dict[str, Any]
 
 
 class ConfigResponse(BaseModel):
@@ -119,14 +118,14 @@ class ConfigResponse(BaseModel):
     send_email_notification: bool
     send_whatsapp_notification: bool
     auto_reminder_enabled: bool
-    reminder_days: List[int]
+    reminder_days: list[int]
     max_reminders: int
-    portal_logo_url: Optional[str] = None
+    portal_logo_url: str | None = None
     portal_primary_color: str
-    portal_welcome_message: Optional[str] = None
-    portal_thank_you_message: Optional[str] = None
-    privacy_policy_url: Optional[str] = None
-    terms_url: Optional[str] = None
+    portal_welcome_message: str | None = None
+    portal_thank_you_message: str | None = None
+    privacy_policy_url: str | None = None
+    terms_url: str | None = None
 
     class Config:
         from_attributes = True
@@ -134,28 +133,28 @@ class ConfigResponse(BaseModel):
 
 class UpdateConfigRequest(BaseModel):
     """Request to update company configuration."""
-    default_expiration_days: Optional[int] = None
-    require_otp: Optional[bool] = None
-    otp_expiration_minutes: Optional[int] = None
-    max_otp_attempts: Optional[int] = None
-    send_email_notification: Optional[bool] = None
-    send_whatsapp_notification: Optional[bool] = None
-    auto_reminder_enabled: Optional[bool] = None
-    reminder_days: Optional[List[int]] = None
-    max_reminders: Optional[int] = None
-    portal_logo_url: Optional[str] = None
-    portal_primary_color: Optional[str] = None
-    portal_welcome_message: Optional[str] = None
-    portal_thank_you_message: Optional[str] = None
-    privacy_policy_url: Optional[str] = None
-    terms_url: Optional[str] = None
+    default_expiration_days: int | None = None
+    require_otp: bool | None = None
+    otp_expiration_minutes: int | None = None
+    max_otp_attempts: int | None = None
+    send_email_notification: bool | None = None
+    send_whatsapp_notification: bool | None = None
+    auto_reminder_enabled: bool | None = None
+    reminder_days: list[int] | None = None
+    max_reminders: int | None = None
+    portal_logo_url: str | None = None
+    portal_primary_color: str | None = None
+    portal_welcome_message: str | None = None
+    portal_thank_you_message: str | None = None
+    privacy_policy_url: str | None = None
+    terms_url: str | None = None
 
 
 class LGPDSettingsSchema(BaseModel):
     """LGPD settings schema."""
     require_consent: bool = True
-    consent_message: Optional[str] = None
-    disclaimer_text: Optional[str] = None
+    consent_message: str | None = None
+    disclaimer_text: str | None = None
     data_retention_days: int = 365
     allow_data_deletion: bool = True
 
@@ -166,14 +165,14 @@ class CollectionSettingsRequest(BaseModel):
         default="portal_only",
         description="Collection mode: portal_only, chat_only, or candidate_choice"
     )
-    collection_messages: Optional[Dict[str, Any]] = None
-    lgpd: Optional[LGPDSettingsSchema] = None
+    collection_messages: dict[str, Any] | None = None
+    lgpd: LGPDSettingsSchema | None = None
 
 
 class CollectionSettingsResponse(BaseModel):
     """Response for collection settings."""
     collection_mode: str
-    collection_messages: Dict[str, Any]
+    collection_messages: dict[str, Any]
     lgpd: LGPDSettingsSchema
 
     class Config:
@@ -185,12 +184,12 @@ class TemplateResponse(BaseModel):
     id: UUID
     company_id: UUID
     name: str
-    description: Optional[str] = None
-    trigger_stage: Optional[str] = None
+    description: str | None = None
+    trigger_stage: str | None = None
     trigger_type: str
     is_blocking: bool
     expiration_days: int
-    fields: List[Dict[str, Any]]
+    fields: list[dict[str, Any]]
     is_active: bool
     is_default: bool
     created_at: datetime
@@ -203,59 +202,59 @@ class TemplateResponse(BaseModel):
 class CreateTemplateRequest(BaseModel):
     """Request to create a template."""
     name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
-    trigger_stage: Optional[str] = None
+    description: str | None = None
+    trigger_stage: str | None = None
     trigger_type: str = Field(default="manual")
     is_blocking: bool = False
     expiration_days: int = Field(default=7, ge=1, le=90)
-    fields: List[FieldSchema] = Field(default=[])
+    fields: list[FieldSchema] = Field(default=[])
 
 
 class UpdateTemplateRequest(BaseModel):
     """Request to update a template."""
-    name: Optional[str] = None
-    description: Optional[str] = None
-    trigger_stage: Optional[str] = None
-    trigger_type: Optional[str] = None
-    is_blocking: Optional[bool] = None
-    expiration_days: Optional[int] = None
-    fields: Optional[List[FieldSchema]] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    trigger_stage: str | None = None
+    trigger_type: str | None = None
+    is_blocking: bool | None = None
+    expiration_days: int | None = None
+    fields: list[FieldSchema] | None = None
+    is_active: bool | None = None
 
 
 class CreateFieldRequest(BaseModel):
     """Request to create a custom field."""
     name: str = Field(..., min_length=1, max_length=100)
     label: str = Field(..., min_length=1, max_length=255)
-    label_en: Optional[str] = None
-    description: Optional[str] = None
+    label_en: str | None = None
+    description: str | None = None
     field_type: str
     is_required: bool = True
-    validation_rules: Optional[Dict[str, Any]] = None
-    options: Optional[List[str]] = None
-    placeholder: Optional[str] = None
-    help_text: Optional[str] = None
+    validation_rules: dict[str, Any] | None = None
+    options: list[str] | None = None
+    placeholder: str | None = None
+    help_text: str | None = None
     max_file_size_mb: int = 10
-    allowed_file_types: Optional[List[str]] = None
+    allowed_file_types: list[str] | None = None
     order: int = 0
 
 
 class FieldResponse(BaseModel):
     """Response for a field."""
-    id: Optional[str] = None
+    id: str | None = None
     name: str
     label: str
-    label_en: Optional[str] = None
-    description: Optional[str] = None
+    label_en: str | None = None
+    description: str | None = None
     field_type: str
     is_required: bool
-    validation_rules: Optional[Dict[str, Any]] = None
-    options: Optional[List[str]] = None
-    placeholder: Optional[str] = None
-    help_text: Optional[str] = None
-    max_file_size_mb: Optional[int] = None
-    allowed_file_types: Optional[List[str]] = None
-    order: Optional[int] = None
+    validation_rules: dict[str, Any] | None = None
+    options: list[str] | None = None
+    placeholder: str | None = None
+    help_text: str | None = None
+    max_file_size_mb: int | None = None
+    allowed_file_types: list[str] | None = None
+    order: int | None = None
     is_default: bool = False
 
 
@@ -293,9 +292,9 @@ def _data_request_to_response(dr) -> DataRequestResponse:
 
 @router.get("", response_model=DataRequestListResponse)
 async def list_data_requests(
-    vacancy_id: Optional[UUID] = Query(None, description="Filter by vacancy ID"),
-    candidate_id: Optional[UUID] = Query(None, description="Filter by candidate ID"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    vacancy_id: UUID | None = Query(None, description="Filter by vacancy ID"),
+    candidate_id: UUID | None = Query(None, description="Filter by candidate ID"),
+    status: str | None = Query(None, description="Filter by status"),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -327,6 +326,7 @@ async def list_data_requests(
         else:
             if candidate_id is None and vacancy_id is None:
                 from sqlalchemy import select
+
                 from app.models.data_request import DataRequest
                 
                 query = select(DataRequest).where(DataRequest.company_id == company_id)
@@ -518,7 +518,7 @@ async def get_collection_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/templates", response_model=List[TemplateResponse])
+@router.get("/templates", response_model=list[TemplateResponse])
 async def list_templates(
     include_inactive: bool = Query(False, description="Include inactive templates"),
     db: AsyncSession = Depends(get_db),
@@ -682,7 +682,7 @@ async def delete_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/fields", response_model=List[FieldResponse])
+@router.get("/fields", response_model=list[FieldResponse])
 async def list_fields(
     include_defaults: bool = Query(True, description="Include default fields"),
     db: AsyncSession = Depends(get_db),
@@ -783,18 +783,18 @@ async def get_stage_field_mappings():
 class TriggerConfigResponse(BaseModel):
     """Response schema for trigger configuration."""
     source: str
-    vacancy_id: Optional[str] = None
-    company_id: Optional[str] = None
-    stage_configs: Dict[str, Any]
-    custom_template_id: Optional[str] = None
+    vacancy_id: str | None = None
+    company_id: str | None = None
+    stage_configs: dict[str, Any]
+    custom_template_id: str | None = None
 
 
 class StageTriggerConfig(BaseModel):
     """Configuration for a stage trigger."""
     stage: str
     enabled: bool = True
-    template_id: Optional[str] = None
-    fields: List[Dict[str, Any]] = []
+    template_id: str | None = None
+    fields: list[dict[str, Any]] = []
     is_blocking: bool = False
     trigger_type: str = "stage_entry"
 
@@ -802,8 +802,8 @@ class StageTriggerConfig(BaseModel):
 class UpdateVacancyTriggersRequest(BaseModel):
     """Request to update vacancy triggers."""
     use_company_defaults: bool = False
-    stage_configs: Dict[str, StageTriggerConfig] = {}
-    custom_template_id: Optional[UUID] = None
+    stage_configs: dict[str, StageTriggerConfig] = {}
+    custom_template_id: UUID | None = None
 
 
 @router.get("/triggers/{vacancy_id}", response_model=TriggerConfigResponse)
@@ -854,9 +854,10 @@ async def update_vacancy_triggers(
     """
     try:
         from sqlalchemy import select
+
         from app.models.data_request import VacancyDataRequestConfig
         
-        company_id = _get_company_id()
+        _get_company_id()
         
         result = await db.execute(
             select(VacancyDataRequestConfig).where(
@@ -1042,26 +1043,26 @@ class WhatsAppStartRequest(BaseModel):
 class WhatsAppProcessMessageRequest(BaseModel):
     """Request to process incoming WhatsApp message."""
     message_content: str = Field(..., description="Text content of the message")
-    file_url: Optional[str] = Field(None, description="URL of uploaded file (if any)")
-    file_name: Optional[str] = Field(None, description="Original filename")
-    file_mime_type: Optional[str] = Field(None, description="MIME type of file")
-    file_size: Optional[int] = Field(None, description="File size in bytes")
+    file_url: str | None = Field(None, description="URL of uploaded file (if any)")
+    file_name: str | None = Field(None, description="Original filename")
+    file_mime_type: str | None = Field(None, description="MIME type of file")
+    file_size: int | None = Field(None, description="File size in bytes")
 
 
 class WhatsAppStatusResponse(BaseModel):
     """Response for WhatsApp conversation status."""
     success: bool
     state: str
-    collection_method: Optional[str] = None
-    current_field: Optional[str] = None
+    collection_method: str | None = None
+    current_field: str | None = None
     consent_given: bool = False
     fields_total: int
     fields_completed: int
     fields_pending: int
     completion_percentage: float
-    started_at: Optional[str] = None
-    last_message_at: Optional[str] = None
-    completed_at: Optional[str] = None
+    started_at: str | None = None
+    last_message_at: str | None = None
+    completed_at: str | None = None
 
 
 @router.post("/{data_request_id}/whatsapp/start")

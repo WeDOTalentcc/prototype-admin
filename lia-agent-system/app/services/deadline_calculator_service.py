@@ -9,12 +9,11 @@ Calculates:
 
 Uses SLAs defined in PipelineTemplate stages.
 """
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.models.pipeline_template import PipelineTemplate
@@ -32,9 +31,9 @@ class DeadlineCalculatorService:
     
     def calculate_deadlines_from_sla(
         self,
-        stages: List[Dict[str, Any]],
-        start_date: Optional[datetime] = None
-    ) -> Dict[str, Any]:
+        stages: list[dict[str, Any]],
+        start_date: datetime | None = None
+    ) -> dict[str, Any]:
         """
         Calculate deadlines from pipeline stage SLAs.
         
@@ -106,7 +105,7 @@ class DeadlineCalculatorService:
             "breakdown": breakdown
         }
     
-    def _get_default_deadlines(self, start_date: datetime) -> Dict[str, Any]:
+    def _get_default_deadlines(self, start_date: datetime) -> dict[str, Any]:
         """Get default deadlines when no pipeline is specified."""
         return {
             "deadline_screening": start_date + timedelta(days=self.DEFAULT_SCREENING_DAYS),
@@ -124,10 +123,10 @@ class DeadlineCalculatorService:
     
     async def calculate_deadlines_from_pipeline(
         self,
-        pipeline_template_id: Optional[str],
+        pipeline_template_id: str | None,
         company_id: str,
-        start_date: Optional[datetime] = None
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None
+    ) -> dict[str, Any]:
         """
         Calculate deadlines from a specific pipeline template.
         
@@ -202,8 +201,8 @@ class DeadlineCalculatorService:
     def calculate_sla_status(
         self,
         deadline: datetime,
-        current_date: Optional[datetime] = None
-    ) -> Dict[str, Any]:
+        current_date: datetime | None = None
+    ) -> dict[str, Any]:
         """
         Calculate SLA status for a deadline.
         
@@ -252,8 +251,8 @@ class DeadlineCalculatorService:
     
     def format_deadlines_for_display(
         self,
-        deadlines: Dict[str, Any]
-    ) -> Dict[str, str]:
+        deadlines: dict[str, Any]
+    ) -> dict[str, str]:
         """
         Format deadlines for display in UI.
         

@@ -11,11 +11,10 @@ Sprint Z1-02 — Tool decomposition to improve response quality and reduce cost.
 """
 import logging
 
-from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
 from app.domains.pipeline.agents.pipeline_action_tool_registry import (
     get_pipeline_action_tools,
-    GUARDRAIL_TOOLS,
 )
+from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
 
 logger = logging.getLogger(__name__)
 

@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import Dict, Any, List
-
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "analisar cv": "parse_cv",
     "parse cv": "parse_cv",
     "extrair cv": "parse_cv",
@@ -107,7 +106,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
     domain_name = "CV Screening & WSI Assessment"
     description = "Triagem curricular, avaliação WSI e scoring de candidatos"
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.cv_screening.actions import CV_SCREENING_ACTIONS
         return CV_SCREENING_ACTIONS
 
@@ -145,7 +144,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
         )
 
     async def execute_action(
-        self, action_id: str, params: Dict[str, Any], context: DomainContext
+        self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
         action = self.get_action_by_id(action_id)
         if not action:
@@ -159,7 +158,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
 
         tool_ids = {t["tool_id"] for t in CV_SCREENING_TOOLS}
 
-        _ACTION_TOOL_MAP: Dict[str, str] = {
+        _ACTION_TOOL_MAP: dict[str, str] = {
             "parse_cv": "parse_cv",
             "auto_screen": "score_cv",
             "calculate_wsi_score": "calculate_wsi",
@@ -199,8 +198,8 @@ class CVScreeningDomain(ComplianceDomainPrompt):
 # LIA-C06 - Registro de validador domain-specific para cv_screening
 # ---------------------------------------------------------------------------
 try:
-    from app.shared.compliance.fact_checker import FactChecker
     from app.shared.compliance.domain_validators import validate_cv_score_claim
+    from app.shared.compliance.fact_checker import FactChecker
     FactChecker.register_validator("cv_screening", validate_cv_score_claim)
     logger.debug("cv_screening domain validator registered")
 except Exception as _e:

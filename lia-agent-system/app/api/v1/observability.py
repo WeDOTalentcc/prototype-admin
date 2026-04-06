@@ -9,30 +9,55 @@ Provides endpoints for:
 - Model Evaluations (AI Ethics, bias/fairness)
 - Compliance Controls (ISO27001, SOC2, LGPD)
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, desc
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.shared.tenant_guard import get_verified_company_id
 from app.models.observability import (
-    AIInferenceLog, DataAccessLog, ConsentRecord,
-    IncidentReport, ModelEvaluation, ComplianceControl, BiasAuditReport
+    AIInferenceLog,
+    BiasAuditReport,
+    ComplianceControl,
+    ConsentRecord,
+    DataAccessLog,
+    IncidentReport,
+    ModelEvaluation,
 )
 from app.schemas.observability import (
-    AIInferenceLogResponse, AIInferenceLogListResponse, AIInferenceStatsResponse,
-    DataAccessLogResponse, DataAccessLogListResponse, DataAccessStatsResponse,
-    ConsentRecordResponse, ConsentRecordListResponse, ConsentCreate, ConsentRevoke,
-    IncidentReportResponse, IncidentReportListResponse, IncidentCreate, IncidentUpdate, IncidentResolve,
-    ModelEvaluationResponse, ModelEvaluationListResponse, ModelEvaluationSummaryResponse,
-    ComplianceControlResponse, ComplianceControlListResponse, ComplianceSummaryResponse, ComplianceControlUpdate,
+    AIInferenceLogListResponse,
+    AIInferenceLogResponse,
+    AIInferenceStatsResponse,
+    BiasAuditCreate,
+    BiasAuditPublish,
+    BiasAuditReportListResponse,
+    BiasAuditReportResponse,
+    BiasAuditSummaryResponse,
+    ComplianceControlListResponse,
+    ComplianceControlResponse,
+    ComplianceControlUpdate,
+    ComplianceSummaryResponse,
+    ConsentCreate,
+    ConsentRecordListResponse,
+    ConsentRecordResponse,
+    ConsentRevoke,
+    DataAccessLogListResponse,
+    DataAccessLogResponse,
+    DataAccessStatsResponse,
+    IncidentCreate,
+    IncidentReportListResponse,
+    IncidentReportResponse,
+    IncidentResolve,
+    IncidentUpdate,
+    ModelEvaluationListResponse,
+    ModelEvaluationResponse,
+    ModelEvaluationSummaryResponse,
     ObservabilityDashboardResponse,
-    BiasAuditReportResponse, BiasAuditReportListResponse, BiasAuditCreate, BiasAuditPublish, BiasAuditSummaryResponse
 )
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +74,9 @@ def log_cross_tenant_attempt(requested_id: str, company_id: str, resource_type: 
 
 @router.get("/ai-logs/stats", response_model=AIInferenceStatsResponse, summary="Get AI inference statistics")
 async def get_ai_inference_stats(
-    agent_type: Optional[str] = Query(None, description="Filter by agent type"),
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    agent_type: str | None = Query(None, description="Filter by agent type"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -119,11 +144,11 @@ async def get_ai_inference_stats(
 
 @router.get("/ai-logs", response_model=AIInferenceLogListResponse, summary="List AI inference logs")
 async def list_ai_inference_logs(
-    agent_type: Optional[str] = Query(None, description="Filter by agent type"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Filter by vacancy ID"),
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    agent_type: str | None = Query(None, description="Filter by agent type"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    vacancy_id: str | None = Query(None, description="Filter by vacancy ID"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -205,10 +230,10 @@ async def get_ai_inference_log(
 
 @router.get("/data-access/stats", response_model=DataAccessStatsResponse, summary="Get data access statistics")
 async def get_data_access_stats(
-    data_type: Optional[str] = Query(None, description="Filter by data type"),
-    operation: Optional[str] = Query(None, description="Filter by operation"),
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    data_type: str | None = Query(None, description="Filter by data type"),
+    operation: str | None = Query(None, description="Filter by operation"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -276,12 +301,12 @@ async def get_data_access_stats(
 
 @router.get("/data-access", response_model=DataAccessLogListResponse, summary="List data access logs")
 async def list_data_access_logs(
-    data_type: Optional[str] = Query(None, description="Filter by data type"),
-    operation: Optional[str] = Query(None, description="Filter by operation"),
-    user_id: Optional[str] = Query(None, description="Filter by user ID"),
-    data_subject_id: Optional[str] = Query(None, description="Filter by data subject ID"),
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    data_type: str | None = Query(None, description="Filter by data type"),
+    operation: str | None = Query(None, description="Filter by operation"),
+    user_id: str | None = Query(None, description="Filter by user ID"),
+    data_subject_id: str | None = Query(None, description="Filter by data subject ID"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -331,8 +356,8 @@ async def list_data_access_logs(
 
 @router.get("/consents", response_model=ConsentRecordListResponse, summary="List consent records")
 async def list_consent_records(
-    consent_type: Optional[str] = Query(None, description="Filter by consent type"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    consent_type: str | None = Query(None, description="Filter by consent type"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -375,7 +400,7 @@ async def list_consent_records(
 @router.get("/consents/{candidate_id}", response_model=ConsentRecordListResponse, summary="Get consents by candidate")
 async def get_candidate_consents(
     candidate_id: str,
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -496,11 +521,11 @@ async def revoke_consent(
 
 @router.get("/incidents", response_model=IncidentReportListResponse, summary="List incidents")
 async def list_incidents(
-    incident_type: Optional[str] = Query(None, description="Filter by incident type"),
-    severity: Optional[str] = Query(None, description="Filter by severity"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    incident_type: str | None = Query(None, description="Filter by incident type"),
+    severity: str | None = Query(None, description="Filter by severity"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -688,7 +713,7 @@ async def resolve_incident(
 
 @router.get("/evaluations/summary", response_model=ModelEvaluationSummaryResponse, summary="Get evaluation summary")
 async def get_evaluation_summary(
-    model_version: Optional[str] = Query(None, description="Filter by model version"),
+    model_version: str | None = Query(None, description="Filter by model version"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -711,7 +736,6 @@ async def get_evaluation_summary(
             func.sum(func.cast(ModelEvaluation.passed, Integer)).label('passed_count')
         ).where(and_(*conditions)).group_by(ModelEvaluation.dimension)
         
-        from sqlalchemy import Integer
         dimension_query = select(
             ModelEvaluation.dimension,
             func.count(ModelEvaluation.id).label('count')
@@ -754,10 +778,10 @@ async def get_evaluation_summary(
 
 @router.get("/evaluations", response_model=ModelEvaluationListResponse, summary="List model evaluations")
 async def list_model_evaluations(
-    model_version: Optional[str] = Query(None, description="Filter by model version"),
-    evaluation_type: Optional[str] = Query(None, description="Filter by evaluation type"),
-    dimension: Optional[str] = Query(None, description="Filter by dimension"),
-    passed: Optional[bool] = Query(None, description="Filter by pass status"),
+    model_version: str | None = Query(None, description="Filter by model version"),
+    evaluation_type: str | None = Query(None, description="Filter by evaluation type"),
+    dimension: str | None = Query(None, description="Filter by dimension"),
+    passed: bool | None = Query(None, description="Filter by pass status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -803,7 +827,7 @@ async def list_model_evaluations(
 
 @router.get("/compliance/summary", response_model=ComplianceSummaryResponse, summary="Get compliance summary")
 async def get_compliance_summary(
-    framework: Optional[str] = Query(None, description="Filter by framework"),
+    framework: str | None = Query(None, description="Filter by framework"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -876,9 +900,9 @@ async def get_compliance_summary(
 
 @router.get("/compliance", response_model=ComplianceControlListResponse, summary="List compliance controls")
 async def list_compliance_controls(
-    framework: Optional[str] = Query(None, description="Filter by framework"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    risk_level: Optional[str] = Query(None, description="Filter by risk level"),
+    framework: str | None = Query(None, description="Filter by framework"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    risk_level: str | None = Query(None, description="Filter by risk level"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -1210,10 +1234,10 @@ async def get_bias_audit_summary(
 
 @router.get("/bias-audits", response_model=BiasAuditReportListResponse, summary="List bias audits")
 async def list_bias_audits(
-    audit_type: Optional[str] = Query(None, description="Filter by audit type"),
-    is_public: Optional[bool] = Query(None, description="Filter by public status"),
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    audit_type: str | None = Query(None, description="Filter by audit type"),
+    is_public: bool | None = Query(None, description="Filter by public status"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),

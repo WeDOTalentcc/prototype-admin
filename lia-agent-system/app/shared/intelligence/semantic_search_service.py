@@ -17,11 +17,11 @@ Architecture:
 - Debounce on frontend (400-500ms)
 """
 
-import os
-import json
 import hashlib
-from typing import List, Optional, Dict, Any, Literal
+import json
+import os
 from enum import Enum
+
 try:
     import google.generativeai as genai
     GENAI_AVAILABLE = True
@@ -29,6 +29,7 @@ except ImportError:
     genai = None
     GENAI_AVAILABLE = False
 from pydantic import BaseModel
+
 try:
     import redis
     REDIS_AVAILABLE = True
@@ -57,13 +58,13 @@ class SemanticSuggestion(BaseModel):
     is_related: bool = False
     is_broader: bool = False
     is_narrower: bool = False
-    canonical_id: Optional[str] = None
+    canonical_id: str | None = None
 
 
 class SemanticExpansionResult(BaseModel):
     original_query: str
     domain: SemanticDomain
-    suggestions: List[SemanticSuggestion]
+    suggestions: list[SemanticSuggestion]
     cached: bool = False
     processing_time_ms: int = 0
 
@@ -204,7 +205,7 @@ JOB_TITLES_TAXONOMY = {
 
 class SemanticSearchService:
     def __init__(self):
-        self.redis_client: Optional[redis.Redis] = None
+        self.redis_client: redis.Redis | None = None
         self.cache_ttl = 600  # 10 minutes
         self._init_gemini()
         self._init_redis()
@@ -241,11 +242,11 @@ class SemanticSearchService:
         else:
             logger.info("No Redis URL, using in-memory fallback")
     
-    def _get_cache_key(self, domain: SemanticDomain, query: str, existing: List[str]) -> str:
+    def _get_cache_key(self, domain: SemanticDomain, query: str, existing: list[str]) -> str:
         content = f"{domain.value}:{query.lower().strip()}:{sorted(existing)}"
         return f"semantic:{hashlib.md5(content.encode()).hexdigest()}"
     
-    def _get_from_cache(self, key: str) -> Optional[SemanticExpansionResult]:
+    def _get_from_cache(self, key: str) -> SemanticExpansionResult | None:
         if not self.redis_client:
             return None
         try:
@@ -272,8 +273,8 @@ class SemanticSearchService:
         self, 
         domain: SemanticDomain, 
         query: str, 
-        existing: List[str]
-    ) -> List[SemanticSuggestion]:
+        existing: list[str]
+    ) -> list[SemanticSuggestion]:
         """Get suggestions from static taxonomies (fast fallback)"""
         suggestions = []
         query_lower = query.lower()
@@ -321,7 +322,7 @@ class SemanticSearchService:
         self,
         domain: SemanticDomain,
         query: str,
-        existing: List[str] = [],
+        existing: list[str] = [],
         use_cache: bool = True
     ) -> SemanticExpansionResult:
         """
@@ -417,25 +418,25 @@ class SemanticSearchService:
         
         return result
     
-    async def expand_skills(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_skills(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.SKILLS, query, existing)
     
-    async def expand_job_titles(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_job_titles(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.JOB_TITLES, query, existing)
     
-    async def expand_roles(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_roles(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.ROLES, query, existing)
     
-    async def expand_industries(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_industries(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.INDUSTRIES, query, existing)
     
-    async def expand_expertise(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_expertise(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.EXPERTISE, query, existing)
     
-    async def expand_fields_of_study(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_fields_of_study(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.FIELDS_OF_STUDY, query, existing)
     
-    async def expand_company_competitors(self, query: str, existing: List[str] = []) -> SemanticExpansionResult:
+    async def expand_company_competitors(self, query: str, existing: list[str] = []) -> SemanticExpansionResult:
         return await self.expand_query(SemanticDomain.COMPANIES, query, existing)
 
 

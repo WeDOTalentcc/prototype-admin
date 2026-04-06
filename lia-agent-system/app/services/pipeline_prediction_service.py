@@ -18,8 +18,7 @@ Sem migration — usa dados existentes:
 """
 import asyncio
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +32,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Constantes de etapa — mapeamento para score de proximidade ao fechamento
 # ---------------------------------------------------------------------------
-_STAGE_CLOSURE_SCORE: Dict[str, int] = {
+_STAGE_CLOSURE_SCORE: dict[str, int] = {
     "offer": 25,
     "proposta": 25,
     "interview_final": 20,
@@ -141,7 +140,7 @@ def estimate_days_to_close(
     best_stage: str,
     avg_days_in_stage: float,
     total_active: int,
-) -> Optional[int]:
+) -> int | None:
     """
     Estima dias restantes até fechamento com base na etapa mais avançada.
 
@@ -203,12 +202,12 @@ def build_factors(
     high_ews_count: int,
     total_active: int,
     health_score: int,
-) -> Tuple[List[str], List[str]]:
+) -> tuple[list[str], list[str]]:
     """
     Retorna (positive_factors, risk_factors) com base nos dados da vaga.
     """
-    positives: List[str] = []
-    risks: List[str] = []
+    positives: list[str] = []
+    risks: list[str] = []
 
     norm_best = (best_stage or "").lower()
 
@@ -274,8 +273,8 @@ class PipelinePredictionService:
         self,
         vacancy_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Previsão individual para uma vaga.
 
@@ -438,8 +437,8 @@ class PipelinePredictionService:
     async def get_company_overview(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Previsão de todas as vagas ativas da empresa, ordenadas por
         closure_probability ascendente (mais em risco primeiro).
@@ -480,9 +479,9 @@ class PipelinePredictionService:
             self.get_vacancy_prediction(row[0], company_id)
             for row in rows
         ]
-        predictions: List[Dict] = await asyncio.gather(*tasks, return_exceptions=True)
+        predictions: list[dict] = await asyncio.gather(*tasks, return_exceptions=True)
 
-        valid: List[Dict] = []
+        valid: list[dict] = []
         for pred in predictions:
             if isinstance(pred, Exception):
                 logger.debug(f"[PipelinePrediction] Prediction error: {pred}")
@@ -516,8 +515,8 @@ class PipelinePredictionService:
         self,
         company_id: str,
         recruiter_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Retorna previsões de fechamento apenas para vagas do recrutador indicado.
         Usado pelo ProactiveWorker para alertas dirigidos.
@@ -560,7 +559,7 @@ class PipelinePredictionService:
 
     def _empty_prediction(
         self, vacancy_id: str, company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "vacancy_id": vacancy_id,
             "company_id": company_id,

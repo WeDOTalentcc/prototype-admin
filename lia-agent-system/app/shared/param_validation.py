@@ -18,9 +18,11 @@ Usage:
         # params is now validated and typed
         ...
 """
-import logging
 import functools
-from typing import Type, Any, Callable, Dict, Optional
+import logging
+from collections.abc import Callable
+from typing import Any
+
 from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -37,10 +39,10 @@ class ParamValidationError(Exception):
         super().__init__(f"Validation failed for '{action_id}': {details}")
 
 
-def validate_params(schema: Type[BaseModel], action_id: str = ""):
+def validate_params(schema: type[BaseModel], action_id: str = ""):
     def decorator(func: Callable):
         @functools.wraps(func)
-        async def wrapper(params: Dict[str, Any], context: Optional[Dict[str, Any]] = None, **kwargs):
+        async def wrapper(params: dict[str, Any], context: dict[str, Any] | None = None, **kwargs):
             aid = action_id or func.__name__
             try:
                 validated = schema(**params)
@@ -88,10 +90,10 @@ class ToolParamSchemas:
     class MoveCandidate(BaseModel):
         vacancy_candidate_id: str
         to_stage: str
-        from_stage: Optional[str] = None
-        sub_status: Optional[str] = None
-        prompt: Optional[str] = None
-        channel: Optional[str] = None
+        from_stage: str | None = None
+        sub_status: str | None = None
+        prompt: str | None = None
+        channel: str | None = None
 
     class PredictSubStatus(BaseModel):
         vacancy_candidate_id: str

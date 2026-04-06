@@ -9,23 +9,20 @@ This service handles:
 5. Analytics on feedback effectiveness
 """
 import logging
-import uuid
 import secrets
-from typing import Optional, Dict, Any, List, Tuple
+import uuid
 from datetime import datetime
-from sqlalchemy import select, and_, func
+from typing import Any
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.candidate_feedback import CandidateFeedback, FeedbackType
-from app.models.candidate import Candidate
-from app.models.job_vacancy import JobVacancy
 from app.domains.communication.services.email_service import email_service
+from app.models.candidate_feedback import CandidateFeedback, FeedbackType
 from app.services.notification_service import (
-    notification_service, 
-    NotificationType, 
-    NotificationChannel,
-    ProactiveNotificationType
+    NotificationType,
+    notification_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -157,16 +154,16 @@ class CandidateFeedbackService:
         candidate_id: str,
         vacancy_id: str,
         adherence_score: float,
-        candidate_email: Optional[str] = None,
-        candidate_phone: Optional[str] = None,
-        candidate_name: Optional[str] = None,
-        vacancy_title: Optional[str] = None,
-        company_name: Optional[str] = None,
-        missing_skills: Optional[List[str]] = None,
-        matched_skills: Optional[List[str]] = None,
-        custom_tips: Optional[List[str]] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        candidate_email: str | None = None,
+        candidate_phone: str | None = None,
+        candidate_name: str | None = None,
+        vacancy_title: str | None = None,
+        company_name: str | None = None,
+        missing_skills: list[str] | None = None,
+        matched_skills: list[str] | None = None,
+        custom_tips: list[str] | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Verifica aderência e envia feedback se necessário.
         
@@ -261,7 +258,7 @@ class CandidateFeedbackService:
                     channels_used.append("email")
                     feedback_record.email_sent = True
                     feedback_record.email_sent_at = datetime.utcnow()
-                    logger.info(f"📧 Email feedback sent")
+                    logger.info("📧 Email feedback sent")
                 except Exception as e:
                     channels_failed.append({"channel": "email", "error": str(e)})
                     logger.error(f"Failed to send email feedback: {e}")
@@ -322,8 +319,8 @@ class CandidateFeedbackService:
     def _generate_improvement_tips(
         self,
         adherence_score: float,
-        missing_skills: Optional[List[str]] = None
-    ) -> List[str]:
+        missing_skills: list[str] | None = None
+    ) -> list[str]:
         """Gera dicas personalizadas baseadas no score e skills faltantes."""
         tips = []
         
@@ -353,10 +350,10 @@ class CandidateFeedbackService:
         vacancy_title: str,
         company_name: str,
         adherence_score: float,
-        improvement_tips: List[str],
-        missing_skills: List[str],
+        improvement_tips: list[str],
+        missing_skills: list[str],
         resubmit_url: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Gera mensagem de feedback em múltiplos formatos."""
         
         tips_html = "".join([f"<li style='margin-bottom: 8px;'>{tip}</li>" for tip in improvement_tips])
@@ -413,7 +410,7 @@ class CandidateFeedbackService:
     async def _send_email_feedback(
         self,
         email: str,
-        message: Dict[str, str],
+        message: dict[str, str],
         db: AsyncSession
     ):
         """Envia feedback via email usando o serviço de email existente."""
@@ -435,7 +432,7 @@ class CandidateFeedbackService:
     async def _send_whatsapp_feedback(
         self,
         phone: str,
-        message: Dict[str, str]
+        message: dict[str, str]
     ):
         """Envia feedback via WhatsApp."""
         logger.info(f"[WHATSAPP] Sending low adherence feedback to: {phone}")
@@ -446,9 +443,9 @@ class CandidateFeedbackService:
     async def _notify_recruiters_about_low_adherence(
         self,
         candidate_id: str,
-        candidate_name: Optional[str],
+        candidate_name: str | None,
         vacancy_id: str,
-        vacancy_title: Optional[str],
+        vacancy_title: str | None,
         adherence_score: float,
         db: AsyncSession
     ):
@@ -456,7 +453,7 @@ class CandidateFeedbackService:
         try:
             await notification_service.create_notification(
                 user_id="default_user",
-                title=f"📊 Candidato com baixa aderência",
+                title="📊 Candidato com baixa aderência",
                 message=f"{candidate_name or 'Candidato'} aplicou para {vacancy_title or 'vaga'} "
                         f"com aderência de {adherence_score:.0f}%. Feedback automático enviado.",
                 notification_type=NotificationType.INFO,
@@ -474,7 +471,7 @@ class CandidateFeedbackService:
     async def mark_resubmit_clicked(
         self,
         feedback_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> bool:
         """Marca que o candidato clicou no link de reenvio."""
         should_close = False
@@ -503,8 +500,8 @@ class CandidateFeedbackService:
     async def mark_resubmit_completed(
         self,
         feedback_id: str,
-        new_adherence_score: Optional[float] = None,
-        db: Optional[AsyncSession] = None
+        new_adherence_score: float | None = None,
+        db: AsyncSession | None = None
     ) -> bool:
         """Marca que o candidato completou o reenvio do CV."""
         should_close = False
@@ -534,10 +531,10 @@ class CandidateFeedbackService:
     
     async def get_feedback_analytics(
         self,
-        vacancy_id: Optional[str] = None,
+        vacancy_id: str | None = None,
         days: int = 30,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Retorna analytics sobre feedbacks enviados."""
         should_close = False
         if db is None:
@@ -662,7 +659,7 @@ class CandidateFeedbackService:
         candidate_name: str,
         vacancy_title: str,
         company_name: str,
-        extra_context: Optional[Dict[str, Any]] = None,
+        extra_context: dict[str, Any] | None = None,
     ) -> bool:
         """
         Envia feedback diferenciado ao candidato dependendo do gate.

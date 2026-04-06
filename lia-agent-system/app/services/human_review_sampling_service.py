@@ -11,9 +11,6 @@ O sampling é determinístico por decision_id (via hash MD5):
 """
 import hashlib
 import logging
-from datetime import datetime
-from typing import Optional
-from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +71,8 @@ class HumanReviewSamplingService:
         decision_type: str,
         agent_name: str,
         company_id: str,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
+        candidate_id: str | None = None,
+        job_id: str | None = None,
         summary: str = "",
         confidence: float = 0.0,
         reason: str = "5pct_sampling",
@@ -132,8 +129,8 @@ class HumanReviewSamplingService:
         agent_name: str,
         company_id: str,
         confidence: float = 0.9,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
+        candidate_id: str | None = None,
+        job_id: str | None = None,
         summary: str = "",
     ) -> bool:
         """

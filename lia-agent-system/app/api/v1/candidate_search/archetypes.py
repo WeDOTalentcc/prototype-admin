@@ -1,25 +1,25 @@
 """
 Archetype CRUD, generation (from-search, from-job, from-description), and search routes.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import (
-    logger, get_db, get_current_user_or_demo, get_user_company_id, assert_resource_ownership,
-    User, ImportUser, cv_parser_service, search_analytics_service,
-    extract_tags_from_search_spec, build_archetype_from_search,
-    ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse,
-    rubric_evaluation_service, JobRequirement, JobRequirementCreate, RequirementPriorityEnum,
-    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType, CandidateProfile,
-    _normalize_priority, _normalize_name, _generate_fingerprint,
-    _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
-    _evaluate_candidates_with_rubrics, _recruiter_agent,
-    ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
-    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
-    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
-    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
+    ArchetypeFromSearchCreate,
+    ArchetypeFromSearchResponse,
+    ArchetypeResponse,
+    CandidateSearchResultDTO,
+    HybridSearchRequest,
+    SearchType,
+    User,
+    build_archetype_from_search,
+    extract_tags_from_search_spec,
+    get_current_user_or_demo,
+    get_db,
+    logger,
+    pearch_service,
 )
 
 router = APIRouter()
@@ -28,50 +28,50 @@ class ArchetypeDTO(BaseModel):
     """DTO for archetype data in API responses."""
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     emoji: str = "🎯"
     query: str
     filters: dict = Field(default_factory=dict)
-    tags: List[str] = Field(default_factory=list)
-    industry: Optional[str] = None
-    seniority: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    industry: str | None = None
+    seniority: str | None = None
     is_default: bool = False
     is_active: bool = True
     usage_count: int = 0
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
 
 class ArchetypeListResponse(BaseModel):
     """Response for listing archetypes."""
-    archetypes: List[ArchetypeDTO]
+    archetypes: list[ArchetypeDTO]
     total: int
     default_count: int
 
 
 class ArchetypeCreateRequest(BaseModel):
     """Request to create a new archetype."""
-    id: Optional[str] = Field(None, description="ID único, gerado automaticamente se não fornecido")
+    id: str | None = Field(None, description="ID único, gerado automaticamente se não fornecido")
     name: str = Field(..., min_length=2, max_length=100)
-    description: Optional[str] = None
+    description: str | None = None
     emoji: str = Field("🎯", max_length=10)
     query: str = Field(..., min_length=5)
     filters: dict = Field(default_factory=dict)
-    tags: List[str] = Field(default_factory=list)
-    industry: Optional[str] = None
-    seniority: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    industry: str | None = None
+    seniority: str | None = None
 
 
 class ArchetypeUpdateRequest(BaseModel):
     """Request to update an existing archetype."""
-    name: Optional[str] = Field(None, min_length=2, max_length=100)
-    description: Optional[str] = None
-    emoji: Optional[str] = Field(None, max_length=10)
-    query: Optional[str] = Field(None, min_length=5)
-    filters: Optional[dict] = None
-    tags: Optional[List[str]] = None
-    industry: Optional[str] = None
-    seniority: Optional[str] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=2, max_length=100)
+    description: str | None = None
+    emoji: str | None = Field(None, max_length=10)
+    query: str | None = Field(None, min_length=5)
+    filters: dict | None = None
+    tags: list[str] | None = None
+    industry: str | None = None
+    seniority: str | None = None
+    is_active: bool | None = None
 
 
 class ArchetypeSearchRequest(BaseModel):
@@ -88,32 +88,32 @@ class ArchetypeSearchRequest(BaseModel):
 
 class ArchetypeSearchResultDTO(CandidateSearchResultDTO):
     """Extended search result with LIA score."""
-    lia_score: Optional[float] = None
-    lia_reasoning: Optional[str] = None
-    lia_breakdown: Optional[dict] = None
-    lia_strengths: List[str] = Field(default_factory=list)
-    lia_concerns: List[str] = Field(default_factory=list)
+    lia_score: float | None = None
+    lia_reasoning: str | None = None
+    lia_breakdown: dict | None = None
+    lia_strengths: list[str] = Field(default_factory=list)
+    lia_concerns: list[str] = Field(default_factory=list)
 
 
 class ArchetypeSearchResponse(BaseModel):
     """Response for archetype-based search."""
     archetype: ArchetypeDTO
     query: str
-    thread_id: Optional[str] = None
-    candidates: List[ArchetypeSearchResultDTO] = Field(default_factory=list)
+    thread_id: str | None = None
+    candidates: list[ArchetypeSearchResultDTO] = Field(default_factory=list)
     local_count: int = 0
     pearch_count: int = 0
     total_count: int = 0
-    credits_remaining: Optional[int] = None
-    search_time_seconds: Optional[float] = None
-    warning_message: Optional[str] = None
+    credits_remaining: int | None = None
+    search_time_seconds: float | None = None
+    warning_message: str | None = None
 
 
 @router.get("/archetypes", response_model=ArchetypeListResponse)
 async def list_archetypes(
     include_inactive: bool = Query(False, description="Incluir arquétipos inativos"),
-    industry: Optional[str] = Query(None, description="Filtrar por indústria"),
-    seniority: Optional[str] = Query(None, description="Filtrar por senioridade"),
+    industry: str | None = Query(None, description="Filtrar por indústria"),
+    seniority: str | None = Query(None, description="Filtrar por senioridade"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -123,6 +123,7 @@ async def list_archetypes(
     encontrar perfis específicos sem precisar construir queries complexas.
     """
     from sqlalchemy import select
+
     from app.models.archetype import SearchArchetype, seed_default_archetypes
     
     try:
@@ -193,9 +194,11 @@ async def create_archetype(
     Arquétipos criados pelo usuário não são marcados como 'default'
     e podem ser modificados ou excluídos posteriormente.
     """
-    from sqlalchemy import select
-    from app.models.archetype import SearchArchetype
     import uuid as uuid_lib
+
+    from sqlalchemy import select
+
+    from app.models.archetype import SearchArchetype
     
     try:
         # Generate ID if not provided
@@ -270,7 +273,6 @@ async def create_archetype_from_search(
     Returns:
         O arquétipo criado com as tags extraídas
     """
-    from app.models.archetype import SearchArchetype
     
     try:
         company_id = current_user.company_id or None
@@ -332,9 +334,9 @@ class ClosedJobSuggestion(BaseModel):
     """Sugestão de vaga fechada para criar arquétipo."""
     job_id: str
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    closed_at: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    closed_at: str | None = None
     hired_count: int = 0
     suggested_archetype_name: str
     suggested_emoji: str = "🎯"
@@ -342,14 +344,14 @@ class ClosedJobSuggestion(BaseModel):
 
 class ClosedJobSuggestionsResponse(BaseModel):
     """Response com sugestões de vagas fechadas."""
-    suggestions: List[ClosedJobSuggestion] = Field(default_factory=list)
+    suggestions: list[ClosedJobSuggestion] = Field(default_factory=list)
     total: int = 0
 
 
 class ArchetypeFromDescriptionRequest(BaseModel):
     """Request para criar arquétipo a partir de descrição."""
     description: str = Field(..., min_length=20, description="Descrição do perfil ideal")
-    name: Optional[str] = Field(None, description="Nome do arquétipo (opcional, será gerado se não fornecido)")
+    name: str | None = Field(None, description="Nome do arquétipo (opcional, será gerado se não fornecido)")
 
 
 @router.get("/archetypes/suggestions/closed-jobs", response_model=ClosedJobSuggestionsResponse)
@@ -363,7 +365,8 @@ async def get_closed_job_suggestions(
     Retorna as últimas vagas concluídas com contratação bem-sucedida,
     sugerindo nomes e emojis para os arquétipos.
     """
-    from sqlalchemy import select, desc, or_
+    from sqlalchemy import desc, or_, select
+
     from app.models.job_vacancy import JobVacancy
     
     try:
@@ -429,7 +432,7 @@ async def get_closed_job_suggestions(
 @router.post("/archetypes/from-job/{job_id}", response_model=ArchetypeDTO)
 async def create_archetype_from_job(
     job_id: str,
-    custom_name: Optional[str] = Query(None, description="Nome customizado para o arquétipo"),
+    custom_name: str | None = Query(None, description="Nome customizado para o arquétipo"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -439,10 +442,12 @@ async def create_archetype_from_job(
     comportamentais e outras informações da vaga para criar um
     arquétipo reutilizável.
     """
-    from sqlalchemy import select
-    from app.models.job_vacancy import JobVacancy
-    from app.models.archetype import SearchArchetype
     import uuid as uuid_lib
+
+    from sqlalchemy import select
+
+    from app.models.archetype import SearchArchetype
+    from app.models.job_vacancy import JobVacancy
     
     try:
         result = await db.execute(
@@ -585,9 +590,10 @@ async def create_archetype_from_description(
     - Competências comportamentais
     - Indústria/área
     """
-    from app.models.archetype import SearchArchetype
-    import uuid as uuid_lib
     import re
+    import uuid as uuid_lib
+
+    from app.models.archetype import SearchArchetype
     
     try:
         description = request.description.lower()
@@ -709,6 +715,7 @@ async def get_archetype(
 ):
     """Obtém detalhes de um arquétipo específico."""
     from sqlalchemy import select
+
     from app.models.archetype import SearchArchetype
     
     try:
@@ -753,7 +760,8 @@ async def delete_archetype(
     
     Arquétipos padrão do sistema não podem ser deletados.
     """
-    from sqlalchemy import select, delete
+    from sqlalchemy import delete, select
+
     from app.models.archetype import SearchArchetype
     
     try:
@@ -798,6 +806,7 @@ async def update_archetype(
     Arquétipos padrão do sistema podem ter apenas alguns campos atualizados.
     """
     from sqlalchemy import select
+
     from app.models.archetype import SearchArchetype
     
     try:
@@ -869,10 +878,12 @@ async def search_by_archetype(
     O arquétipo define a query e filtros pré-configurados.
     Opcionalmente calcula o score LIA para cada candidato encontrado.
     """
+    import logging
+
     from sqlalchemy import select, update
+
     from app.models.archetype import SearchArchetype
     from app.services.lia_score_service import lia_score_service
-    import logging
     
     logger = logging.getLogger(__name__)
     
@@ -1058,16 +1069,16 @@ async def search_by_archetype(
 class ArchetypeGenerationRequest(BaseModel):
     """Request to generate an archetype from a closed job vacancy."""
     job_id: int = Field(..., description="ID da vaga fechada")
-    name: Optional[str] = Field(None, description="Nome personalizado para o arquétipo (opcional, será gerado se não fornecido)")
+    name: str | None = Field(None, description="Nome personalizado para o arquétipo (opcional, será gerado se não fornecido)")
     emoji: str = Field("🎯", max_length=10, description="Emoji para o arquétipo")
 
 
 class ArchetypeGenerationResponse(BaseModel):
     """Response with generated archetype."""
     success: bool
-    archetype: Optional[ArchetypeDTO] = None
+    archetype: ArchetypeDTO | None = None
     job_title: str
-    hired_candidate_name: Optional[str] = None
+    hired_candidate_name: str | None = None
     message: str
 
 
@@ -1089,13 +1100,15 @@ async def generate_archetype_from_job(
     - Filtros pré-configurados
     - Tags relevantes
     """
-    from sqlalchemy import select
-    from app.models.job_vacancy import JobVacancy
-    from app.models.archetype import SearchArchetype
-    import uuid as uuid_lib
-    import anthropic
     import json
     import os
+    import uuid as uuid_lib
+
+    import anthropic
+    from sqlalchemy import select
+
+    from app.models.archetype import SearchArchetype
+    from app.models.job_vacancy import JobVacancy
     
     try:
         result = await db.execute(
@@ -1247,7 +1260,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
 class ArchetypeFromDescriptionRequest(BaseModel):
     """Request to generate an archetype from a text description."""
     description: str = Field(..., min_length=20, description="Descrição textual do perfil ideal")
-    name: Optional[str] = Field(None, description="Nome personalizado para o arquétipo")
+    name: str | None = Field(None, description="Nome personalizado para o arquétipo")
     emoji: str = Field("🎯", max_length=10)
 
 
@@ -1261,12 +1274,13 @@ async def generate_archetype_from_description(
     
     Útil quando o usuário descreve o perfil ideal em linguagem natural.
     """
-    from sqlalchemy import select
-    from app.models.archetype import SearchArchetype
-    import uuid as uuid_lib
-    import anthropic
     import json
     import os
+    import uuid as uuid_lib
+
+    import anthropic
+
+    from app.models.archetype import SearchArchetype
     
     try:
         api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -1375,15 +1389,15 @@ class ClosedJobSuggestionDTO(BaseModel):
     """Suggestion for creating archetype from closed job."""
     id: int
     title: str
-    department: Optional[str] = None
-    closed_at: Optional[str] = None
-    hired_candidate_name: Optional[str] = None
+    department: str | None = None
+    closed_at: str | None = None
+    hired_candidate_name: str | None = None
     has_hired_data: bool = False
 
 
 class ClosedJobSuggestionsResponse(BaseModel):
     """Response with list of closed jobs that can be used to create archetypes."""
-    jobs: List[ClosedJobSuggestionDTO]
+    jobs: list[ClosedJobSuggestionDTO]
     total: int
 
 
@@ -1397,6 +1411,7 @@ async def get_archetype_suggestions(
     Prioriza vagas com dados do candidato contratado.
     """
     from sqlalchemy import select
+
     from app.models.job_vacancy import JobVacancy
     
     try:
@@ -1440,12 +1455,12 @@ class CVSearchResultDTO(BaseModel):
     """Result from CV-based search."""
     parsed_cv: dict
     query_generated: str
-    candidates: List[CandidateSearchResultDTO] = Field(default_factory=list)
+    candidates: list[CandidateSearchResultDTO] = Field(default_factory=list)
     local_count: int = 0
     pearch_count: int = 0
     total_count: int = 0
-    credits_remaining: Optional[int] = None
-    search_time_seconds: Optional[float] = None
-    extracted_skills: List[str] = Field(default_factory=list)
-    extracted_title: Optional[str] = None
+    credits_remaining: int | None = None
+    search_time_seconds: float | None = None
+    extracted_skills: list[str] = Field(default_factory=list)
+    extracted_title: str | None = None
 

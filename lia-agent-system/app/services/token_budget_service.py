@@ -16,8 +16,7 @@ Fluxo:
   3. get_budget_status(company_id, plan_code) → para dashboard admin
 """
 import logging
-from datetime import datetime, timezone
-from typing import Optional, Tuple
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +43,11 @@ _REDIS_TTL = 25 * 3600
 
 def _redis_key(company_id: str) -> str:
     """Chave Redis diária por tenant. Formato: token_budget:{company_id}:YYYY-MM-DD"""
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     return f"token_budget:{company_id}:{today}"
 
 
-def get_plan_limit(plan_code: Optional[str]) -> int:
+def get_plan_limit(plan_code: str | None) -> int:
     """Retorna o limite diário de tokens para o plan_code informado."""
     if not plan_code:
         return DEFAULT_DAILY_LIMIT
@@ -58,10 +57,10 @@ def get_plan_limit(plan_code: Optional[str]) -> int:
 
 async def check_budget(
     company_id: str,
-    plan_code: Optional[str],
+    plan_code: str | None,
     *,
-    redis_url: Optional[str] = None,
-) -> Tuple[bool, int, int]:
+    redis_url: str | None = None,
+) -> tuple[bool, int, int]:
     """
     Verifica se o tenant ainda tem budget disponível hoje.
 
@@ -113,7 +112,7 @@ async def increment_usage(
     company_id: str,
     tokens_used: int,
     *,
-    redis_url: Optional[str] = None,
+    redis_url: str | None = None,
 ) -> int:
     """
     Registra tokens consumidos por tenant no contador diário Redis.
@@ -153,9 +152,9 @@ async def increment_usage(
 
 async def get_budget_status(
     company_id: str,
-    plan_code: Optional[str],
+    plan_code: str | None,
     *,
-    redis_url: Optional[str] = None,
+    redis_url: str | None = None,
 ) -> dict:
     """
     Retorna status completo do budget para dashboard admin.
@@ -192,8 +191,8 @@ async def get_budget_status(
     exhausted = (limit != -1) and (used >= limit)
 
     # Próximo reset: meia-noite UTC
-    now = datetime.now(timezone.utc)
-    reset_at = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+    now = datetime.now(UTC)
+    reset_at = datetime(now.year, now.month, now.day, tzinfo=UTC)
     # avança 1 dia
     from datetime import timedelta
     reset_at = reset_at + timedelta(days=1)
@@ -220,7 +219,7 @@ _redis_instance = None
 _PLAN_CACHE_TTL = 3600
 
 
-async def get_plan_for_company(company_id: str) -> Optional[str]:
+async def get_plan_for_company(company_id: str) -> str | None:
     """
     Retorna o plan_code da assinatura ativa de uma empresa.
 
@@ -252,7 +251,8 @@ async def get_plan_for_company(company_id: str) -> Optional[str]:
     plan_code = None
     try:
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
+        from sqlalchemy import and_, select
+
         from app.models.billing import Subscription
 
         async with AsyncSessionLocal() as db:
@@ -283,7 +283,7 @@ async def get_plan_for_company(company_id: str) -> Optional[str]:
     return plan_code
 
 
-async def _get_redis(redis_url: Optional[str] = None):
+async def _get_redis(redis_url: str | None = None):
     """Cria conexão Redis. Retorna None se indisponível."""
     try:
         import redis.asyncio as aioredis

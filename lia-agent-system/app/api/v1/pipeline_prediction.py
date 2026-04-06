@@ -9,7 +9,6 @@ Endpoints:
       → Ranking de todas as vagas ativas por probabilidade de fechamento
 """
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 

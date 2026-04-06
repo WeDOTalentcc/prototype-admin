@@ -1,15 +1,14 @@
 """Communication Domain - Multi-channel communication management."""
-from typing import Dict, Any, Optional, List
-import re
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "enviar email": "send_email",
     "send email": "send_email",
     "disparar email": "send_email",
@@ -101,7 +100,7 @@ class CommunicationDomain(ComplianceDomainPrompt):
         from app.domains.communication.actions import COMMUNICATION_ACTIONS
         self._actions = COMMUNICATION_ACTIONS
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.communication.actions import COMMUNICATION_ACTIONS
         return COMMUNICATION_ACTIONS
 
@@ -129,7 +128,7 @@ class CommunicationDomain(ComplianceDomainPrompt):
             reasoning=f"Keyword heuristic matched action '{best_action}'",
         )
 
-    _ACTION_TOOL_MAP: Dict[str, str] = {
+    _ACTION_TOOL_MAP: dict[str, str] = {
         "send_email": "communication_send_email",
         "send_bulk_email": "communication_send_bulk",
         "send_whatsapp": "communication_send_whatsapp",
@@ -142,7 +141,7 @@ class CommunicationDomain(ComplianceDomainPrompt):
         "handle_data_request": "communication_data_request",
     }
 
-    async def execute_action(self, action_id: str, params: Dict[str, Any], context: DomainContext) -> DomainResponse:
+    async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = None
         for a in self.get_allowed_actions():
             if a.action_id == action_id:

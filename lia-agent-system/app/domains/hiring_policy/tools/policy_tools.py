@@ -2,10 +2,10 @@
 Policy enforcement: diversity targets, discriminatory language checks,
 LGPD Art. 20 explanations, SOX-compliant audit trails, and compliance reports.
 """
-import uuid
 import json
 import logging
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 
 from langchain_core.tools import tool
 
@@ -153,7 +153,7 @@ def generate_explanation_report(
         "explanation": explanation,
         "factors": factors,
         "model_version": "lia-v1",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -185,7 +185,7 @@ def audit_hiring_decision(
         "candidate_id": candidate_id,
         "decision": decision,
         "reviewer_id": reviewer_id,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "immutable": True,
     }
 
@@ -222,5 +222,5 @@ def get_compliance_report(job_id: str) -> dict:
         "issues": [],
         "simulation_stub": True,
         "note": "Production implementation must query real audit and compliance services.",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
     }

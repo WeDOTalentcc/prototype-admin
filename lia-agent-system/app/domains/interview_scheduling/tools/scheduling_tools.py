@@ -3,7 +3,7 @@
 import logging
 import random
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from langchain_core.tools import tool
 
@@ -27,7 +27,7 @@ def check_interviewer_availability(interviewer_id: str, date_range: str) -> dict
         start_date = datetime.strptime(parts[0], "%Y-%m-%d")
         end_date = datetime.strptime(parts[1], "%Y-%m-%d")
     except (ValueError, IndexError):
-        start_date = datetime.now(timezone.utc)
+        start_date = datetime.now(UTC)
         end_date = start_date + timedelta(days=7)
 
     hours = [9, 10, 11, 14, 15, 16]
@@ -99,7 +99,7 @@ def send_interview_invitation(
         "email": candidate_email,
         "interview_id": interview_id,
         "candidate_id": candidate_id,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -121,7 +121,7 @@ def reschedule_interview(
         "old_datetime": "N/A",
         "new_datetime": new_datetime_str,
         "reason": reason,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
     }
 
 
@@ -136,7 +136,7 @@ def cancel_interview(interview_id: str, reason: str) -> dict:
         "interview_id": interview_id,
         "status": "cancelled",
         "reason": reason,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -155,7 +155,7 @@ def get_interview_status(interview_id: str) -> dict:
         "interview_id": interview_id,
         "status": status,
         "details": {
-            "queried_at": datetime.now(timezone.utc).isoformat(),
+            "queried_at": datetime.now(UTC).isoformat(),
             "source": "simulated",
         },
     }

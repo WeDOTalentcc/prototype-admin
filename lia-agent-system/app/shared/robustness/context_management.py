@@ -7,14 +7,13 @@ This module provides:
 - Agent handoff contracts
 - Idempotency key management
 """
-from typing import Dict, Any, Optional, List, Set
+import hashlib
+import json
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import uuid
-import logging
-import hashlib
-import json
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +54,9 @@ class HandoffContract:
     """Contract for data passed between agents during handoffs."""
     source_agent: str
     target_agent: str
-    shared_data: Dict[str, Any] = field(default_factory=dict)
-    required_keys: List[str] = field(default_factory=list)
-    optional_keys: List[str] = field(default_factory=list)
+    shared_data: dict[str, Any] = field(default_factory=dict)
+    required_keys: list[str] = field(default_factory=list)
+    optional_keys: list[str] = field(default_factory=list)
     ttl_seconds: int = 3600
     created_at: datetime = field(default_factory=datetime.utcnow)
     handoff_reason: str = ""
@@ -70,7 +69,7 @@ class HandoffContract:
         """Check if the handoff contract has expired."""
         return datetime.utcnow() > self.created_at + timedelta(seconds=self.ttl_seconds)
     
-    def get_missing_keys(self) -> List[str]:
+    def get_missing_keys(self) -> list[str]:
         """Get list of missing required keys."""
         return [key for key in self.required_keys if key not in self.shared_data]
 
@@ -89,11 +88,11 @@ class ContextSnapshot:
     """A snapshot of conversation context at a point in time."""
     version: int
     timestamp: datetime
-    data: Dict[str, Any]
+    data: dict[str, Any]
     agent_type: str
     action: str
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "version": self.version,
             "timestamp": self.timestamp.isoformat(),
@@ -111,16 +110,16 @@ class ContextManager:
     def __init__(self, session_id: str, user_id: str):
         self.session_id = session_id
         self.user_id = user_id
-        self.context: Dict[str, Any] = {}
+        self.context: dict[str, Any] = {}
         self.status = ContextStatus.ACTIVE
-        self.current_agent: Optional[str] = None
-        self.current_workflow: Optional[str] = None
+        self.current_agent: str | None = None
+        self.current_workflow: str | None = None
         self.workflow_step: int = 0
-        self.snapshots: List[ContextSnapshot] = []
+        self.snapshots: list[ContextSnapshot] = []
         self.version = 0
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
-        self.idempotency_keys: Set[str] = set()
+        self.idempotency_keys: set[str] = set()
     
     def update(self, key: str, value: Any, agent_type: str = "", action: str = "update") -> None:
         """Update a context value and create a snapshot."""
@@ -193,7 +192,7 @@ class ContextManager:
         self.idempotency_keys.add(operation_key)
         return True
     
-    def generate_idempotency_key(self, operation: str, params: Dict[str, Any]) -> str:
+    def generate_idempotency_key(self, operation: str, params: dict[str, Any]) -> str:
         """Generate an idempotency key for an operation."""
         key_data = {
             "session_id": self.session_id,
@@ -206,7 +205,7 @@ class ContextManager:
     def create_handoff(
         self,
         target_agent: str,
-        shared_keys: List[str],
+        shared_keys: list[str],
         reason: str = ""
     ) -> HandoffContract:
         """Create a handoff contract for passing context to another agent."""
@@ -221,7 +220,7 @@ class ContextManager:
             handoff_reason=reason
         )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize context for storage/transfer."""
         return {
             "session_id": self.session_id,
@@ -279,7 +278,7 @@ class CancellationHandler:
         return "Ok, vamos recomeçar do início. O que você gostaria de fazer?"
     
     @staticmethod
-    def handle_cancellation(context_manager: ContextManager, message: str) -> Optional[str]:
+    def handle_cancellation(context_manager: ContextManager, message: str) -> str | None:
         """
         Handle a potential cancellation/restart request.
         

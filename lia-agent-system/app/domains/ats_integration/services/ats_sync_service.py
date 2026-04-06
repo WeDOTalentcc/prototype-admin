@@ -15,17 +15,17 @@ Design Principle:
 - Data without ATS field mapping stays in WedoTalent only
 - NO field creation in client ATS (not authorized)
 """
-from typing import Dict, Any, List, Optional, Union
+import logging
+import os
+import uuid
 from datetime import datetime
 from enum import Enum
-import logging
-import uuid
-import os
+from typing import Any
 
-from .ats_clients.base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob, SyncResult
+from .ats_clients.base import ATSClient, ATSClientConfig
 from .ats_clients.gupy import GupyClient
-from .ats_clients.pandape import PandapeClient
 from .ats_clients.merge import MergeClient
+from .ats_clients.pandape import PandapeClient
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ class ATSFieldMapping:
     }
     
     @classmethod
-    def get_mapping(cls, ats_type: str) -> Dict[str, Any]:
+    def get_mapping(cls, ats_type: str) -> dict[str, Any]:
         """Get field mappings for a specific ATS."""
         mappings = {
             "gupy": cls.GUPY_MAPPINGS,
@@ -148,7 +148,7 @@ class ATSFieldMapping:
         return field_config.get("sync", False)
     
     @classmethod
-    def get_ats_field_name(cls, ats_type: str, field_name: str) -> Optional[str]:
+    def get_ats_field_name(cls, ats_type: str, field_name: str) -> str | None:
         """Get the corresponding ATS field name."""
         mapping = cls.get_mapping(ats_type)
         field_config = mapping.get(field_name, {})
@@ -165,13 +165,13 @@ class ATSSyncAuditLog:
         action: ATSSyncAction,
         source_agent: str,
         ats_type: str,
-        candidate_id: Optional[str],
-        job_id: Optional[str],
-        fields_synced: List[str],
-        fields_skipped: List[Dict[str, str]],
+        candidate_id: str | None,
+        job_id: str | None,
+        fields_synced: list[str],
+        fields_skipped: list[dict[str, str]],
         result: ATSSyncResult,
-        ats_response: Optional[Dict[str, Any]],
-        error_message: Optional[str],
+        ats_response: dict[str, Any] | None,
+        error_message: str | None,
         timestamp: datetime,
         direction: str = "push"
     ):
@@ -190,7 +190,7 @@ class ATSSyncAuditLog:
         self.timestamp = timestamp
         self.direction = direction
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "sync_id": self.sync_id,
             "trigger": self.trigger.value,
@@ -221,9 +221,9 @@ class ATSSyncService:
     """
     
     def __init__(self):
-        self.audit_log: List[ATSSyncAuditLog] = []
+        self.audit_log: list[ATSSyncAuditLog] = []
         self.supported_ats = ["gupy", "pandape", "merge"]
-        self._clients: Dict[str, ATSClient] = {}
+        self._clients: dict[str, ATSClient] = {}
         self._initialize_clients()
     
     def _initialize_clients(self) -> None:
@@ -272,7 +272,7 @@ class ATSSyncService:
         self._clients[ats_type.lower()] = client
         logger.info(f"✅ Registered {ats_type} client")
     
-    def get_client(self, ats_type: str) -> Optional[ATSClient]:
+    def get_client(self, ats_type: str) -> ATSClient | None:
         """Get an ATS client by type."""
         return self._clients.get(ats_type.lower())
     
@@ -292,11 +292,11 @@ class ATSSyncService:
         trigger: ATSSyncTrigger,
         source_agent: str,
         ats_type: str,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        data: Optional[Dict[str, Any]] = None,
+        candidate_id: str | None = None,
+        job_id: str | None = None,
+        data: dict[str, Any] | None = None,
         force_sync: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Trigger a push sync operation.
         
@@ -434,7 +434,7 @@ class ATSSyncService:
         ats_type: str,
         ats_candidate_id: str,
         source_agent: str = "system"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Pull a single candidate from ATS.
         
@@ -520,10 +520,10 @@ class ATSSyncService:
     async def pull_candidates(
         self,
         ats_type: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         limit: int = 100,
         source_agent: str = "system"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Pull multiple candidates from ATS.
         
@@ -600,10 +600,10 @@ class ATSSyncService:
     async def pull_jobs(
         self,
         ats_type: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100,
         source_agent: str = "system"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Pull jobs from ATS.
         
@@ -667,14 +667,14 @@ class ATSSyncService:
         job_id: str,
         old_status: str,
         new_status: str,
-        reason: Optional[str] = None
-    ) -> Dict[str, Any]:
+        reason: str | None = None
+    ) -> dict[str, Any]:
         """
         Specialized trigger for status changes (most common sync).
         
         Status changes are always synced immediately as they are critical.
         """
-        data: Dict[str, Any] = {"status": new_status}
+        data: dict[str, Any] = {"status": new_status}
         if reason:
             data["rejection_reason"] = reason
         
@@ -695,14 +695,14 @@ class ATSSyncService:
         candidate_id: str,
         job_id: str,
         parecer_text: str,
-        wsi_score: Optional[float] = None
-    ) -> Dict[str, Any]:
+        wsi_score: float | None = None
+    ) -> dict[str, Any]:
         """
         Specialized trigger for parecer/score sync.
         
         Pareceres are synced as notes/observations in ATSs that support it.
         """
-        data: Dict[str, Any] = {"parecer": parecer_text}
+        data: dict[str, Any] = {"parecer": parecer_text}
         if wsi_score is not None:
             data["wsi_score"] = wsi_score
         
@@ -736,10 +736,10 @@ class ATSSyncService:
         self,
         ats_type: str,
         action: ATSSyncAction,
-        candidate_id: Optional[str],
-        job_id: Optional[str],
-        fields: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        candidate_id: str | None,
+        job_id: str | None,
+        fields: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Execute the actual sync with the ATS using real clients.
         
@@ -808,9 +808,9 @@ class ATSSyncService:
         self,
         ats_type: str,
         action: ATSSyncAction,
-        candidate_id: Optional[str],
-        fields: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        candidate_id: str | None,
+        fields: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Mock sync for development/testing when no real client is configured.
         """
@@ -835,8 +835,8 @@ class ATSSyncService:
     def _get_result_message(
         self,
         result: ATSSyncResult,
-        fields_synced: List[Dict],
-        wedotalent_only: List[str]
+        fields_synced: list[dict],
+        wedotalent_only: list[str]
     ) -> str:
         """Generate human-readable result message."""
         if result == ATSSyncResult.SUCCESS:
@@ -863,7 +863,7 @@ class ATSSyncService:
         result: ATSSyncResult,
         message: str,
         timestamp: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a result dict for non-sync scenarios."""
         return {
             "sync_id": sync_id,
@@ -881,11 +881,11 @@ class ATSSyncService:
     
     def get_audit_log(
         self,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        direction: Optional[str] = None,
+        candidate_id: str | None = None,
+        job_id: str | None = None,
+        direction: str | None = None,
         limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get audit log entries, optionally filtered."""
         logs = self.audit_log
         
@@ -899,7 +899,7 @@ class ATSSyncService:
         logs = sorted(logs, key=lambda x: x.timestamp, reverse=True)
         return [l.to_dict() for l in logs[:limit]]
     
-    def get_sync_stats(self) -> Dict[str, Any]:
+    def get_sync_stats(self) -> dict[str, Any]:
         """Get synchronization statistics."""
         total = len(self.audit_log)
         success = len([l for l in self.audit_log if l.result == ATSSyncResult.SUCCESS])

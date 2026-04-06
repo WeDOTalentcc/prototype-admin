@@ -7,7 +7,7 @@ Delega para CandidateComparisonService que calcula scores por dimensão.
 Requer X-Company-ID header para isolamento multi-tenant.
 """
 import logging
-from typing import List, Literal, Optional
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/candidates", tags=["candidate-compare"])
 
 
 def _require_company_id(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
     if not x_company_id:
         raise HTTPException(
@@ -41,9 +41,9 @@ def _require_company_id(
 
 
 class CompareRequest(BaseModel):
-    candidate_ids: List[str] = Field(..., min_length=2, max_length=4)
-    job_id: Optional[str] = None
-    scenario: Optional[Literal["A", "B", "C"]] = None
+    candidate_ids: list[str] = Field(..., min_length=2, max_length=4)
+    job_id: str | None = None
+    scenario: Literal["A", "B", "C"] | None = None
 
 
 @router.post("/compare")

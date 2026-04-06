@@ -1,11 +1,11 @@
-import re
 import logging
-from typing import Optional, Any
+import re
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.triagem_session_service import triagem_service
@@ -18,20 +18,20 @@ router = APIRouter(prefix="/triagem", tags=["triagem"])
 class SendMessageRequest(BaseModel):
     content: str
     message_type: str = "text"
-    selected_option: Optional[str] = None
-    likert_value: Optional[int] = None
-    voice_mode: Optional[bool] = None
+    selected_option: str | None = None
+    likert_value: int | None = None
+    voice_mode: bool | None = None
 
 
 class InviteRequest(BaseModel):
     candidate_id: str
-    candidate_name: Optional[str] = None
-    candidate_email: Optional[str] = None
+    candidate_name: str | None = None
+    candidate_email: str | None = None
     job_id: str
-    job_title: Optional[str] = None
+    job_title: str | None = None
     company_id: str
-    company_name: Optional[str] = None
-    company_logo_url: Optional[str] = None
+    company_name: str | None = None
+    company_logo_url: str | None = None
     invite_channel: str = "email"
     expires_days: int = 7
     voice_mode: bool = False
@@ -138,8 +138,8 @@ async def complete_triagem(
 async def create_invite(
     request: InviteRequest,
     db: AsyncSession = Depends(get_db),
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
 ):
     company_id = request.company_id or x_company_id
     if not company_id:
@@ -237,13 +237,13 @@ async def request_phone_call(
 
 
 class StartSessionRequest(BaseModel):
-    voice_mode: Optional[bool] = None
+    voice_mode: bool | None = None
 
 
 @router.post("/{token}/start")
 async def start_triagem(
     token: str,
-    request: Optional[StartSessionRequest] = None,
+    request: StartSessionRequest | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     validation = await triagem_service.validate_token(db, token)
@@ -271,7 +271,7 @@ async def start_triagem(
 async def transcribe_audio(
     token: str,
     audio: UploadFile = File(...),
-    question_index: Optional[int] = Form(None),
+    question_index: int | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Transcribe candidate audio using OpenAI Whisper STT."""
@@ -317,7 +317,7 @@ class TTSRequest(BaseModel):
     text: str
     voice: str = "nova"
     speed: float = 1.0
-    question_index: Optional[int] = None
+    question_index: int | None = None
 
 
 @router.post("/{token}/tts")
@@ -385,8 +385,8 @@ async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
     if not validation.get("valid"):
         raise HTTPException(status_code=404, detail="Token inválido")
 
-    from app.services.voice_service import voice_service
     from app.domains.cv_screening.services.voice_service import triagem_voice_service
+    from app.services.voice_service import voice_service
 
     availability = voice_service.is_available()
     return JSONResponse(content={

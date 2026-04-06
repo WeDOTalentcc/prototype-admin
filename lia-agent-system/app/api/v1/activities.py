@@ -4,9 +4,9 @@ Activity Feed API Endpoints
 Handles activity feed retrieval for the recruitment system.
 """
 
-from fastapi import APIRouter, HTTPException, Query, status
-from typing import Optional
 import logging
+
+from fastapi import APIRouter, HTTPException, Query, status
 
 from app.services.activity_service import activity_service
 
@@ -17,10 +17,10 @@ router = APIRouter(prefix="/activities", tags=["activities"])
 
 @router.get("")
 async def list_activities(
-    activity_type: Optional[str] = Query(None, description="Filter by activity type (voice_screening, email_sent, etc.)"),
-    priority: Optional[str] = Query(None, description="Filter by priority (urgent, normal, low)"),
-    category: Optional[str] = Query(None, description="Filter by category (screening, hiring, communication, testing)"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID (shows activities related to this candidate)"),
+    activity_type: str | None = Query(None, description="Filter by activity type (voice_screening, email_sent, etc.)"),
+    priority: str | None = Query(None, description="Filter by priority (urgent, normal, low)"),
+    category: str | None = Query(None, description="Filter by category (screening, hiring, communication, testing)"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID (shows activities related to this candidate)"),
     limit: int = Query(50, ge=1, le=200, description="Max number of results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination (default: 0)"),
 ):
@@ -61,7 +61,7 @@ async def list_activities(
 
 @router.get("/urgent/count")
 async def get_urgent_count(
-    user_id: Optional[str] = Query(None, description="Optional user_id to filter visible activities"),
+    user_id: str | None = Query(None, description="Optional user_id to filter visible activities"),
 ):
     """
     Get count of urgent activities.

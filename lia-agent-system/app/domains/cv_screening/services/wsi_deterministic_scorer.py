@@ -10,10 +10,10 @@ O LLM pode ser usado APENAS para:
 
 O CÁLCULO FINAL é sempre determinístico.
 """
-from typing import Dict, Any, List, Optional, Tuple
-from dataclasses import dataclass
 import logging
 import re
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +42,10 @@ DREYFUS_LEVELS = {
 
 from app.domains.cv_screening.constants.wsi_constants import (
     BLOOM_LEVEL_LABELS as BLOOM_RECRUITER_LABELS,
+)
+from app.domains.cv_screening.constants.wsi_constants import (
     DREYFUS_STAGE_LABELS as DREYFUS_RECRUITER_LABELS,
 )
-
 
 BIG_FIVE_RECRUITER_LABELS = {
     "openness":          "Abertura a mudanças",
@@ -159,8 +160,8 @@ class DeterministicWSIResult:
     bloom_name: str
     dreyfus_level: int
     dreyfus_name: str
-    evidences: List[str]
-    red_flags: List[str]
+    evidences: list[str]
+    red_flags: list[str]
     penalty: float
     bonus: float
     final_score: float
@@ -168,13 +169,13 @@ class DeterministicWSIResult:
     justification: str
     # v2 — fórmula tri-componente (spec F8)
     formula_version: str = "v2"
-    star_components: Optional[Dict[str, bool]] = None   # S/T/A/R presentes
+    star_components: dict[str, bool] | None = None   # S/T/A/R presentes
     star_score: float = 0.0                             # score ponderado STAR
     bloom_alignment: float = 1.0                        # alinhamento bloom demonstrado vs esperado
-    flags_structured: Optional[Dict[str, bool]] = None  # is_inflation/is_generic/is_short
+    flags_structured: dict[str, bool] | None = None  # is_inflation/is_generic/is_short
 
 
-def extract_autodeclaracao_score(text: str) -> Optional[float]:
+def extract_autodeclaracao_score(text: str) -> float | None:
     """
     Extrai score de autodeclaração do texto.
     
@@ -212,7 +213,7 @@ def extract_autodeclaracao_score(text: str) -> Optional[float]:
     return None
 
 
-def calculate_context_score(text: str, evidences: Optional[List[str]] = None) -> float:
+def calculate_context_score(text: str, evidences: list[str] | None = None) -> float:
     """
     Calcula score de contexto baseado em indicadores determinísticos.
     
@@ -246,7 +247,7 @@ def calculate_context_score(text: str, evidences: Optional[List[str]] = None) ->
     return min(5.0, max(1.0, round(score, 2)))
 
 
-def calculate_bloom_level(text: str) -> Tuple[int, str]:
+def calculate_bloom_level(text: str) -> tuple[int, str]:
     """
     Classifica nível Bloom baseado em indicadores de texto.
     
@@ -268,8 +269,8 @@ def calculate_bloom_level(text: str) -> Tuple[int, str]:
 def calculate_dreyfus_level(
     years_experience: float,
     context_score: float,
-    years_reference: Optional[Dict[str, Tuple[float, float]]] = None,
-) -> Tuple[int, str]:
+    years_reference: dict[str, tuple[float, float]] | None = None,
+) -> tuple[int, str]:
     """
     Classifica nível Dreyfus baseado em anos de experiência e qualidade do contexto.
     
@@ -340,7 +341,7 @@ def extract_years_experience(text: str) -> float:
     return 2.0
 
 
-def detect_red_flags(text: str, autodeclaracao: Optional[float], context_score: float) -> List[str]:
+def detect_red_flags(text: str, autodeclaracao: float | None, context_score: float) -> list[str]:
     """
     Detecta red flags na resposta.
     
@@ -362,7 +363,7 @@ def detect_red_flags(text: str, autodeclaracao: Optional[float], context_score: 
     return red_flags
 
 
-def calculate_penalty(text: str, autodeclaracao: Optional[float], context_score: float) -> float:
+def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float) -> float:
     """
     Calcula penalidade determinística.
     
@@ -404,7 +405,7 @@ def calculate_bonus(text: str) -> float:
     return round(min(1.0, bonus), 2)
 
 
-def extract_evidences(text: str) -> List[str]:
+def extract_evidences(text: str) -> list[str]:
     """
     Extrai evidências do texto de forma determinística.
     
@@ -437,7 +438,7 @@ def extract_evidences(text: str) -> List[str]:
     return list(set(evidences))[:10]
 
 
-def calculate_star_score(text: str) -> Tuple[Dict[str, bool], float]:
+def calculate_star_score(text: str) -> tuple[dict[str, bool], float]:
     """
     Detecta componentes STAR na resposta e calcula score ponderado.
     Spec F8 — pesos: S=0.20, T=0.20, A=0.40, R=0.20
@@ -446,7 +447,7 @@ def calculate_star_score(text: str) -> Tuple[Dict[str, bool], float]:
         (components_dict, weighted_score_0_to_1)
     """
     text_lower = text.lower()
-    components: Dict[str, bool] = {}
+    components: dict[str, bool] = {}
     for component, indicators in STAR_INDICATORS.items():
         components[component] = any(ind in text_lower for ind in indicators)
 
@@ -473,10 +474,10 @@ def calculate_wsi_deterministic(
     response_text: str,
     competency_name: str = "",
     question_framework: str = "CBI",
-    autodeclaracao_override: Optional[float] = None,
-    contexto_override: Optional[float] = None,
-    years_experience: Optional[float] = None,
-    years_reference: Optional[Dict[str, Tuple[float, float]]] = None,
+    autodeclaracao_override: float | None = None,
+    contexto_override: float | None = None,
+    years_experience: float | None = None,
+    years_reference: dict[str, tuple[float, float]] | None = None,
     question_type: str = "technical",   # "technical" | "behavioral"
     bloom_expected: int = 3,            # nível Bloom esperado pela pergunta
 ) -> DeterministicWSIResult:
@@ -525,7 +526,7 @@ def calculate_wsi_deterministic(
     red_flags = detect_red_flags(response_text, autodeclaracao, context_score)
 
     # Flags estruturadas para G6 (spec F10)
-    flags_structured: Dict[str, bool] = {
+    flags_structured: dict[str, bool] = {
         "is_inflation": autodeclaracao >= 4.5 and context_score < 3.0,
         "is_generic": sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"]
                          if kw in response_text.lower()) >= 2,
@@ -609,7 +610,7 @@ def calculate_wsi_deterministic(
     )
 
 
-def get_seniority_weights(seniority: Optional[str]) -> Dict[str, float]:
+def get_seniority_weights(seniority: str | None) -> dict[str, float]:
     """
     Retorna os pesos técnico/comportamental para o nível de senioridade.
     Spec Seção 9.2 — tabela SENIORITY_WEIGHTS.
@@ -652,7 +653,7 @@ def classify_wsi_score(score: float) -> str:
     return "regular"
 
 
-def get_classification_display(classification: str) -> Dict[str, str]:
+def get_classification_display(classification: str) -> dict[str, str]:
     """Retorna label PT-BR e cor para a classificação WSI."""
     config = {
         "excepcional":      {"label": "Excepcional",      "color": "emerald-700"},
@@ -665,7 +666,7 @@ def get_classification_display(classification: str) -> Dict[str, str]:
     return config.get(classification, config["medio"])
 
 
-def get_wsi_decision(overall_score: float, technical_avg: Optional[float] = None) -> Dict[str, Any]:
+def get_wsi_decision(overall_score: float, technical_avg: float | None = None) -> dict[str, Any]:
     """
     Aplica WSI_CUTOFFS e Gate G3 a um score para retornar decisão.
 
@@ -708,13 +709,13 @@ def get_wsi_decision(overall_score: float, technical_avg: Optional[float] = None
 
 
 def calculate_final_wsi_score(
-    technical_scores: List[Tuple[str, float, float]],
-    behavioral_scores: List[Tuple[str, float, float]],
-    seniority: Optional[str] = None,
-    technical_weight: Optional[float] = None,
-    behavioral_weight: Optional[float] = None,
-    eligibility_score: Optional[float] = None,
-) -> Dict[str, Any]:
+    technical_scores: list[tuple[str, float, float]],
+    behavioral_scores: list[tuple[str, float, float]],
+    seniority: str | None = None,
+    technical_weight: float | None = None,
+    behavioral_weight: float | None = None,
+    eligibility_score: float | None = None,
+) -> dict[str, Any]:
     """
     Calcula score WSI final ponderado com SENIORITY_WEIGHTS da Spec Seção 9.2.
 
@@ -729,7 +730,7 @@ def calculate_final_wsi_score(
     Returns:
         Dict com score final, classificação 6 níveis, decisão, breakdown
     """
-    def weighted_avg(scores: List[Tuple[str, float, float]]) -> float:
+    def weighted_avg(scores: list[tuple[str, float, float]]) -> float:
         if not scores:
             return 0.0
         total_weight = sum(w for _, _, w in scores)

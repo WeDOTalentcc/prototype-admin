@@ -6,21 +6,21 @@ can autonomously decide which tools to call for portfolio management.
 """
 import logging
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
-from app.shared.compliance.fairness_guard import FairnessGuard
 from app.domains.hiring_policy.agents.policy_tool_registry import INDUSTRY_BENCHMARKS
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
 
-async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     period_days = kwargs.get("period_days", 90)
     logger.info(
@@ -100,7 +100,7 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_list_jobs(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     status = kwargs.get("status", "all")
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
@@ -163,7 +163,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_view_job_details(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
     try:
@@ -220,12 +220,12 @@ async def _wrap_view_job_details(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_get_portfolio_metrics(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
-    metrics: Dict[str, Any] = {}
+    metrics: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(
@@ -266,7 +266,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_compare_jobs(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     job_ids = kwargs.get("job_ids", [])
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
     comparison = []
@@ -310,7 +310,7 @@ async def _wrap_compare_jobs(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_check_sla(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] check_sla called: job={job_id or 'all'}")
@@ -363,7 +363,7 @@ async def _wrap_check_sla(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_analyze_bottlenecks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
@@ -427,7 +427,7 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_pause_job(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
@@ -453,7 +453,7 @@ async def _wrap_pause_job(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": f"Erro ao pausar vaga {job_id}."}
 
 
-async def _wrap_reopen_job(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] reopen_job called: job={job_id}")
@@ -478,7 +478,7 @@ async def _wrap_reopen_job(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": f"Erro ao reabrir vaga {job_id}."}
 
 
-async def _wrap_close_job(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
@@ -504,7 +504,7 @@ async def _wrap_close_job(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": f"Erro ao fechar vaga {job_id}."}
 
 
-async def _wrap_update_priority(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     priority = kwargs.get("priority", "média")
     company_id = kwargs.get("company_id", "")
@@ -534,14 +534,14 @@ async def _wrap_update_priority(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": f"Erro ao atualizar prioridade da vaga {job_id}."}
 
 
-async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[jobs_mgmt_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {}
+    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(
@@ -575,7 +575,7 @@ async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_validate_job_action_fairness(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
     action_description = kwargs.get("action_description", "")
     action_type = kwargs.get("action_type", "general")
     logger.info(
@@ -644,7 +644,7 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> Dict[str, Any]:
         return {"success": True, "data": {"is_compliant": True, "soft_warnings": []}, "error": str(e)}
 
 
-async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> dict[str, Any]:
     """Return closure probability prediction for company overview or individual vacancy."""
     from app.services.pipeline_prediction_service import pipeline_prediction_service
 
@@ -691,7 +691,7 @@ async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> Dict[str, An
         return {"success": False, "error": str(e)}
 
 
-TOOL_DEFINITIONS: List[ToolDefinition] = [
+TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="validate_job_action_fairness",
         description="Valida acoes de gestao de vagas contra vies discriminatorio usando FairnessGuard. Use ao fechar, pausar ou modificar vagas com justificativas do recrutador.",
@@ -883,16 +883,16 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
     ),
 ]
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
-STAGE_TOOLS: Dict[str, List[str]] = {
+STAGE_TOOLS: dict[str, list[str]] = {
     "overview": ["list_jobs", "view_job_details", "get_portfolio_metrics", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
     "analysis": ["compare_jobs", "check_sla", "analyze_bottlenecks", "view_job_details", "get_portfolio_metrics", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
     "action": ["pause_job", "reopen_job", "close_job", "update_priority", "generate_report", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
 }
 
 
-def get_jobs_mgmt_tools(stage: str = "") -> List[ToolDefinition]:
+def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
     """Return jobs management tools, optionally filtered by stage.
 
     Args:

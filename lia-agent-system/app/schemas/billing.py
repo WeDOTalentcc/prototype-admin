@@ -2,10 +2,11 @@
 Pydantic schemas for Billing API.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class SubscriptionStatusEnum(str, Enum):
@@ -46,12 +47,12 @@ class SubscriptionCreate(BaseModel):
     """Schema for creating a subscription."""
     client_id: str = Field(..., description="Client account ID")
     plan_code: str = Field(..., description="Plan identifier")
-    plan_name: Optional[str] = Field(None, description="Plan display name")
+    plan_name: str | None = Field(None, description="Plan display name")
     price_cents: int = Field(0, ge=0, description="Monthly price in cents")
-    provider: Optional[str] = Field(None, description="Billing provider (iugu or vindi)")
-    trial_days: Optional[int] = Field(None, ge=0, description="Trial period in days")
+    provider: str | None = Field(None, description="Billing provider (iugu or vindi)")
+    trial_days: int | None = Field(None, ge=0, description="Trial period in days")
     billing_cycle: str = Field("monthly", description="Billing cycle (monthly or yearly)")
-    payment_method_id: Optional[str] = Field(None, description="External payment method ID")
+    payment_method_id: str | None = Field(None, description="External payment method ID")
 
     class Config:
         json_schema_extra = {
@@ -69,10 +70,10 @@ class SubscriptionCreate(BaseModel):
 
 class SubscriptionUpdate(BaseModel):
     """Schema for updating a subscription."""
-    plan_code: Optional[str] = Field(None, description="New plan code")
-    plan_name: Optional[str] = Field(None, description="New plan name")
-    price_cents: Optional[int] = Field(None, ge=0, description="New price in cents")
-    status: Optional[str] = Field(None, description="New status")
+    plan_code: str | None = Field(None, description="New plan code")
+    plan_name: str | None = Field(None, description="New plan name")
+    price_cents: int | None = Field(None, ge=0, description="New price in cents")
+    status: str | None = Field(None, description="New status")
 
     class Config:
         json_schema_extra = {
@@ -87,7 +88,7 @@ class SubscriptionUpdate(BaseModel):
 class SubscriptionCancel(BaseModel):
     """Schema for cancelling a subscription."""
     at_period_end: bool = Field(True, description="Cancel at end of billing period")
-    reason: Optional[str] = Field(None, description="Cancellation reason")
+    reason: str | None = Field(None, description="Cancellation reason")
 
     class Config:
         json_schema_extra = {
@@ -103,22 +104,22 @@ class SubscriptionResponse(BaseModel):
     id: str
     client_id: str
     provider: str
-    external_id: Optional[str] = None
-    external_customer_id: Optional[str] = None
+    external_id: str | None = None
+    external_customer_id: str | None = None
     plan_code: str
-    plan_name: Optional[str] = None
+    plan_name: str | None = None
     status: str
-    current_period_start: Optional[datetime] = None
-    current_period_end: Optional[datetime] = None
-    trial_end: Optional[datetime] = None
+    current_period_start: datetime | None = None
+    current_period_end: datetime | None = None
+    trial_end: datetime | None = None
     price_cents: int
     currency: str = "BRL"
     billing_cycle: str
-    billing_day: Optional[int] = None
-    cancelled_at: Optional[datetime] = None
-    cancellation_reason: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    billing_day: int | None = None
+    cancelled_at: datetime | None = None
+    cancellation_reason: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -126,7 +127,7 @@ class SubscriptionResponse(BaseModel):
 
 class SubscriptionListResponse(BaseModel):
     """Schema for paginated subscription list response."""
-    subscriptions: List[SubscriptionResponse]
+    subscriptions: list[SubscriptionResponse]
     total: int
     limit: int
     offset: int
@@ -137,25 +138,25 @@ class InvoiceResponse(BaseModel):
     id: str
     subscription_id: str
     client_id: str
-    external_id: Optional[str] = None
+    external_id: str | None = None
     provider: str
     status: str
     amount_cents: int
     discount_cents: int = 0
     total_cents: int
     currency: str = "BRL"
-    due_date: Optional[date] = None
-    paid_at: Optional[datetime] = None
-    invoice_url: Optional[str] = None
-    pdf_url: Optional[str] = None
-    boleto_url: Optional[str] = None
-    boleto_barcode: Optional[str] = None
-    pix_qrcode: Optional[str] = None
-    pix_qrcode_url: Optional[str] = None
-    payment_method: Optional[str] = None
-    description: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    due_date: date | None = None
+    paid_at: datetime | None = None
+    invoice_url: str | None = None
+    pdf_url: str | None = None
+    boleto_url: str | None = None
+    boleto_barcode: str | None = None
+    pix_qrcode: str | None = None
+    pix_qrcode_url: str | None = None
+    payment_method: str | None = None
+    description: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -163,7 +164,7 @@ class InvoiceResponse(BaseModel):
 
 class InvoiceListResponse(BaseModel):
     """Schema for paginated invoice list response."""
-    invoices: List[InvoiceResponse]
+    invoices: list[InvoiceResponse]
     total: int
     limit: int
     offset: int
@@ -171,8 +172,8 @@ class InvoiceListResponse(BaseModel):
 
 class RefundRequest(BaseModel):
     """Schema for refund request."""
-    amount_cents: Optional[int] = Field(None, ge=0, description="Partial refund amount in cents (None for full refund)")
-    reason: Optional[str] = Field(None, description="Refund reason")
+    amount_cents: int | None = Field(None, ge=0, description="Partial refund amount in cents (None for full refund)")
+    reason: str | None = Field(None, description="Refund reason")
 
     class Config:
         json_schema_extra = {
@@ -188,17 +189,17 @@ class PaymentMethodCreate(BaseModel):
     client_id: str = Field(..., description="Client account ID")
     subscription_id: str = Field(..., description="Subscription ID")
     payment_type: str = Field(..., description="Payment type (credit_card, boleto, pix)")
-    card_token: Optional[str] = Field(None, description="Tokenized card data")
-    card_brand: Optional[str] = Field(None, description="Card brand")
-    card_last_digits: Optional[str] = Field(None, max_length=4, description="Last 4 digits of card")
-    card_holder_name: Optional[str] = Field(None, description="Card holder name")
-    card_expiry_month: Optional[int] = Field(None, ge=1, le=12, description="Card expiry month")
-    card_expiry_year: Optional[int] = Field(None, description="Card expiry year")
+    card_token: str | None = Field(None, description="Tokenized card data")
+    card_brand: str | None = Field(None, description="Card brand")
+    card_last_digits: str | None = Field(None, max_length=4, description="Last 4 digits of card")
+    card_holder_name: str | None = Field(None, description="Card holder name")
+    card_expiry_month: int | None = Field(None, ge=1, le=12, description="Card expiry month")
+    card_expiry_year: int | None = Field(None, description="Card expiry year")
     set_as_default: bool = Field(True, description="Set as default payment method")
-    billing_name: Optional[str] = Field(None, description="Billing name")
-    billing_email: Optional[str] = Field(None, description="Billing email")
-    billing_document: Optional[str] = Field(None, description="Billing CPF/CNPJ")
-    billing_phone: Optional[str] = Field(None, description="Billing phone")
+    billing_name: str | None = Field(None, description="Billing name")
+    billing_email: str | None = Field(None, description="Billing email")
+    billing_document: str | None = Field(None, description="Billing CPF/CNPJ")
+    billing_phone: str | None = Field(None, description="Billing phone")
 
     class Config:
         json_schema_extra = {
@@ -222,20 +223,20 @@ class PaymentMethodResponse(BaseModel):
     id: str
     subscription_id: str
     client_id: str
-    external_id: Optional[str] = None
+    external_id: str | None = None
     provider: str
     type: str
     is_default: bool
     is_active: bool
-    card_brand: Optional[str] = None
-    card_last_digits: Optional[str] = None
-    card_holder_name: Optional[str] = None
-    card_expiry_month: Optional[int] = None
-    card_expiry_year: Optional[int] = None
-    billing_name: Optional[str] = None
-    billing_email: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    card_brand: str | None = None
+    card_last_digits: str | None = None
+    card_holder_name: str | None = None
+    card_expiry_month: int | None = None
+    card_expiry_year: int | None = None
+    billing_name: str | None = None
+    billing_email: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -243,14 +244,14 @@ class PaymentMethodResponse(BaseModel):
 
 class PaymentMethodListResponse(BaseModel):
     """Schema for payment method list response."""
-    payment_methods: List[PaymentMethodResponse]
+    payment_methods: list[PaymentMethodResponse]
     total: int
 
 
 class WebhookPayload(BaseModel):
     """Schema for webhook payload."""
-    event: Optional[str] = Field(None, description="Event type")
-    data: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Event data")
+    event: str | None = Field(None, description="Event type")
+    data: dict[str, Any] | None = Field(default_factory=dict, description="Event data")
 
     class Config:
         extra = "allow"
@@ -259,7 +260,7 @@ class WebhookPayload(BaseModel):
 class BillingStatusResponse(BaseModel):
     """Schema for billing status response."""
     status: str
-    providers: Dict[str, Dict[str, Any]]
+    providers: dict[str, dict[str, Any]]
     timestamp: datetime
 
     class Config:

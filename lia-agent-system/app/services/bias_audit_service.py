@@ -22,22 +22,21 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Dict, List, Optional
 from uuid import UUID
 
 try:
-    from scipy.stats import chi2_contingency as _chi2_contingency, chi2 as _chi2_dist
+    from scipy.stats import chi2 as _chi2_dist
+    from scipy.stats import chi2_contingency as _chi2_contingency
     _SCIPY_AVAILABLE = True
 except ImportError:
     _SCIPY_AVAILABLE = False
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.rubric import RubricEvaluation
-from app.models.candidate import Candidate
 from app.models.bias_audit_snapshot import BiasAuditSnapshot
+from app.models.candidate import Candidate
+from app.models.rubric import RubricEvaluation
 
 logger = logging.getLogger(__name__)
 
@@ -61,11 +60,11 @@ NOT_INFORMED = "não informado"
 class DemographicAuditResult:
     """Resultado de adverse impact para uma dimensão demográfica."""
     dimension: str                         # "gender" | "age_group" | "disability" | "region"
-    groups: Dict[str, Dict]                # {label: {"count": N, "approved": N, "rate": float}}
+    groups: dict[str, dict]                # {label: {"count": N, "approved": N, "rate": float}}
     adverse_impact_ratio: float            # menor_taxa / maior_taxa (Four-Fifths Rule)
     below_threshold: bool                  # ratio < FOUR_FIFTHS_THRESHOLD
     alert_level: str                       # "ok" | "warning"
-    disparate_impact: Dict = field(default_factory=dict)  # {"chi2": float, "p_value": float, "significant": bool}
+    disparate_impact: dict = field(default_factory=dict)  # {"chi2": float, "p_value": float, "significant": bool}
     eeoc_compliant: bool = True            # Four-Fifths ok AND não significativo estatisticamente
 
 
@@ -75,7 +74,7 @@ class BiasAuditReport:
     job_id: str
     evaluated_at: datetime
     total_candidates: int
-    dimensions: List[DemographicAuditResult] = field(default_factory=list)
+    dimensions: list[DemographicAuditResult] = field(default_factory=list)
     has_alerts: bool = False
 
 
@@ -83,7 +82,7 @@ class BiasAuditReport:
 # Funções auxiliares
 # ---------------------------------------------------------------------------
 
-def _age_group(dob: Optional[date]) -> str:
+def _age_group(dob: date | None) -> str:
     """Classifica data de nascimento em faixa etária."""
     if dob is None:
         return NOT_INFORMED
@@ -101,7 +100,6 @@ def _chi_square_fallback(table: list) -> tuple:
     Chi-square de Pearson para tabela de contingência (Python puro, sem scipy).
     Retorna (chi2, p_value) usando aproximação da distribuição chi2.
     """
-    import math
 
     rows = len(table)
     cols = len(table[0])
@@ -136,7 +134,6 @@ def _chi_square_fallback(table: list) -> tuple:
 
 def _chi2_survival(x: float, k: float) -> float:
     """P(X > x) para distribuição chi2 com k graus de liberdade (aproximação)."""
-    import math
     # CDF da chi2: regularized incomplete gamma function
     # P(k/2, x/2) = gammainc(k/2, x/2)
     # survival = 1 - P(k/2, x/2) = Q(k/2, x/2)
@@ -147,7 +144,6 @@ def _chi2_survival(x: float, k: float) -> float:
 
 def _gammaincc(a: float, x: float) -> float:
     """Regularized upper incomplete gamma function Q(a,x) via series expansion."""
-    import math
     if x < 0:
         return 1.0
     if x == 0:
@@ -205,7 +201,7 @@ def _gammaincl_cf(a: float, x: float) -> float:
         return 0.0
 
 
-def _chi_square_test(groups: Dict[str, Dict]) -> Dict:
+def _chi_square_test(groups: dict[str, dict]) -> dict:
     """
     Calcula chi-quadrado para significância estatística do disparate impact.
 
@@ -234,7 +230,7 @@ def _chi_square_test(groups: Dict[str, Dict]) -> Dict:
         return {"chi2": 0.0, "p_value": 1.0, "significant": False, "available": True}
 
 
-def _adverse_impact_ratio(groups: Dict[str, Dict]) -> float:
+def _adverse_impact_ratio(groups: dict[str, dict]) -> float:
     """
     Calcula o adverse impact ratio: menor_taxa / maior_taxa.
 
@@ -266,7 +262,7 @@ def _audit_dimension(
         dimension: nome da dimensão (para o relatório)
         key_fn: função que extrai o rótulo do grupo a partir do Candidate
     """
-    groups: Dict[str, Dict] = {}
+    groups: dict[str, dict] = {}
 
     for evaluation, candidate in records:
         label = key_fn(candidate) or NOT_INFORMED
@@ -313,7 +309,7 @@ class BiasAuditService:
         self,
         db: AsyncSession,
         job_id: UUID,
-        company_id: Optional[UUID] = None,
+        company_id: UUID | None = None,
     ) -> BiasAuditReport:
         """
         Consulta RubricEvaluation JOIN Candidate para a vaga e calcula adverse impact
@@ -334,7 +330,7 @@ class BiasAuditService:
         rows = result.all()
         records = [(row[0], row[1]) for row in rows]
 
-        dimensions: List[DemographicAuditResult] = []
+        dimensions: list[DemographicAuditResult] = []
 
         if records:
             # Dimensão 1: Gênero
@@ -441,11 +437,11 @@ class BiasAuditService:
 
     def audit_ranking_results(
         self,
-        results: List[Dict],
+        results: list[dict],
         dimension: str = "gender",
         top_n: int = 10,
-        company_id: Optional[str] = None,
-    ) -> Dict:
+        company_id: str | None = None,
+    ) -> dict:
         """
         FAR-5: Audita disparate impact em tempo real para uma lista de candidatos rankeados.
 
@@ -485,8 +481,8 @@ class BiasAuditService:
         max_count = max(counts.values())
         max_rate = max_count / total
 
-        adverse_impact_ratios: Dict[str, float] = {}
-        flagged_groups: List[str] = []
+        adverse_impact_ratios: dict[str, float] = {}
+        flagged_groups: list[str] = []
         for group, cnt in counts.items():
             rate = cnt / total
             ratio = rate / max_rate if max_rate > 0 else 1.0

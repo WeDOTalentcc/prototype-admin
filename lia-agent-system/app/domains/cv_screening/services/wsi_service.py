@@ -7,22 +7,24 @@ Aplica 4 frameworks científicos:
 3. Dreyfus Model - Dreyfus & Dreyfus, 1980
 4. Big Five (OCEAN) - Goldberg, 1992
 """
-from typing import List, Dict, Optional, Literal, Any, Callable
-from pydantic import BaseModel, Field, ValidationError
-from dataclasses import dataclass, field as dc_field
-from datetime import datetime
 import json
-import uuid
 import logging
 import re
+import uuid
+from collections.abc import Callable
+from dataclasses import dataclass
+from dataclasses import field as dc_field
+from datetime import datetime
+from typing import Any, Literal
 
-from app.services.llm import llm_service
-from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-    calculate_wsi_deterministic,
-    calculate_final_wsi_score,
-    DeterministicWSIResult
-)
+from pydantic import BaseModel, Field
+
 from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
+from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+    DeterministicWSIResult,
+    calculate_wsi_deterministic,
+)
+from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +39,11 @@ class OceanTraitScore:
     trait: str              # openness | conscientiousness | extraversion | agreeableness | stability
     score: int              # 0-100: intensidade com que a vaga exige o trait
     confidence: str = "medium"                          # high | medium | low
-    evidence: List[str] = dc_field(default_factory=list)  # citações literais do JD
+    evidence: list[str] = dc_field(default_factory=list)  # citações literais do JD
 
 
 # Número de traits OCEAN selecionados por nível de senioridade (F5)
-SENIORITY_BIGFIVE_TOP_N: Dict[str, int] = {
+SENIORITY_BIGFIVE_TOP_N: dict[str, int] = {
     "estagiario": 2,
     "junior":     2,
     "pleno":      3,
@@ -57,7 +59,7 @@ SENIORITY_BIGFIVE_TOP_N: Dict[str, int] = {
 # HELPER FUNCTIONS - Error Handling & Robustness
 # ============================================================================
 
-def safe_json_parse(content: Any, fallback: Optional[Dict] = None) -> Dict:
+def safe_json_parse(content: Any, fallback: dict | None = None) -> dict:
     """
     Safely parse JSON content from LLM response with robust error handling.
     
@@ -103,7 +105,7 @@ def safe_json_parse(content: Any, fallback: Optional[Dict] = None) -> Dict:
         raise ValueError(f"Failed to parse JSON and no fallback provided: {e}")
 
 
-def normalize_weights(weights: Dict[str, float]) -> Dict[str, float]:
+def normalize_weights(weights: dict[str, float]) -> dict[str, float]:
     """
     Normalize weights to sum to 1.0.
     
@@ -137,15 +139,15 @@ class Competency(BaseModel):
     weight: float = Field(ge=0, le=1)
     seniority_level: Literal["junior", "pleno", "senior", "lead", "executive"]
     is_critical: bool = False
-    big_five_mapping: Optional[str] = None  # F6.6: trait OCEAN pré-mapeado (openness|conscientiousness|extraversion|agreeableness|stability)
+    big_five_mapping: str | None = None  # F6.6: trait OCEAN pré-mapeado (openness|conscientiousness|extraversion|agreeableness|stability)
 
 
 class CompetencySuggestion(BaseModel):
     """Sugestão automática de competências baseada em JD."""
-    technical_competencies: List[Competency]
-    behavioral_competencies: List[Competency]
-    cultural_competencies: List[Competency]
-    suggested_weights: Dict[str, float]
+    technical_competencies: list[Competency]
+    behavioral_competencies: list[Competency]
+    cultural_competencies: list[Competency]
+    suggested_weights: dict[str, float]
     confidence_score: float
 
 
@@ -157,12 +159,12 @@ class WSIQuestion(BaseModel):
     question_type: Literal["autodeclaration", "contextual", "microcase", "situational"]
     question_text: str
     weight: float
-    expected_signals: List[str]
-    scoring_criteria: Dict[str, Any]
+    expected_signals: list[str]
+    scoring_criteria: dict[str, Any]
     is_critical: bool = False
     # F6.8 — validação pós-geração
     needs_manual_review: bool = False
-    validation_flags: Dict[str, Any] = Field(default_factory=dict)
+    validation_flags: dict[str, Any] = Field(default_factory=dict)
 
 
 class ResponseAnalysis(BaseModel):
@@ -171,13 +173,13 @@ class ResponseAnalysis(BaseModel):
     competency: str
     response_text: str
     
-    autodeclaration_score: Optional[float] = Field(None, ge=1, le=5)
-    context_score: Optional[float] = Field(None, ge=1, le=5)
-    bloom_level: Optional[int] = Field(None, ge=1, le=6)
-    dreyfus_level: Optional[int] = Field(None, ge=1, le=5)
+    autodeclaration_score: float | None = Field(None, ge=1, le=5)
+    context_score: float | None = Field(None, ge=1, le=5)
+    bloom_level: int | None = Field(None, ge=1, le=6)
+    dreyfus_level: int | None = Field(None, ge=1, le=5)
     
-    evidences: List[str]
-    red_flags: List[str]
+    evidences: list[str]
+    red_flags: list[str]
     consistency_penalty: float = 0.0
     
     final_score: float = Field(ge=1, le=5)
@@ -194,9 +196,9 @@ class WSIResult(BaseModel):
     overall_wsi: float = Field(ge=0, le=5)
     
     classification: Literal["excepcional", "excelente", "alto", "medio", "regular", "baixo"]
-    percentile: Optional[int] = None
+    percentile: int | None = None
     
-    response_analyses: List[ResponseAnalysis]
+    response_analyses: list[ResponseAnalysis]
     created_at: datetime = Field(default_factory=datetime.now)
 
 
@@ -207,11 +209,11 @@ class StructuredReport(BaseModel):
     
     executive_summary: str
     
-    technical_analysis: Dict[str, Any]
-    behavioral_analysis: Dict[str, Any]
-    cultural_fit: Dict[str, Any]
+    technical_analysis: dict[str, Any]
+    behavioral_analysis: dict[str, Any]
+    cultural_fit: dict[str, Any]
     
-    recommendation: Dict[str, Any]
+    recommendation: dict[str, Any]
 
 
 class CandidateFeedback(BaseModel):
@@ -220,14 +222,14 @@ class CandidateFeedback(BaseModel):
     decision: Literal["aprovado", "aguardando", "nao_aprovado"]
     
     main_message: str
-    technical_strengths: List[str]
-    development_opportunities: List[str]
-    behavioral_strengths: List[str]
+    technical_strengths: list[str]
+    development_opportunities: list[str]
+    behavioral_strengths: list[str]
     
     next_steps: str
-    personalized_tip: Optional[str] = None
-    development_plan: Optional[Dict[str, List[str]]] = None
-    recommended_resources: Optional[List[str]] = None
+    personalized_tip: str | None = None
+    development_plan: dict[str, list[str]] | None = None
+    recommended_resources: list[str] | None = None
 
 
 class WSIService:
@@ -253,7 +255,7 @@ class WSIService:
     async def analyze_jd_and_suggest_competencies(
         self,
         job_description: str,
-        company_culture: Optional[Dict] = None,
+        company_culture: dict | None = None,
         seniority: Literal["junior", "pleno", "senior", "lead", "executive"] = "pleno"
     ) -> CompetencySuggestion:
         """
@@ -362,12 +364,12 @@ Responda em JSON:
     
     async def generate_screening_questions(
         self,
-        competencies: List[Competency],
+        competencies: list[Competency],
         mode: Literal["compact", "full"] = "compact",
-        job_description: Optional[str] = None,
-        seniority: Optional[str] = None,
-        enriched_jd: Optional[Dict] = None,
-    ) -> List[WSIQuestion]:
+        job_description: str | None = None,
+        seniority: str | None = None,
+        enriched_jd: dict | None = None,
+    ) -> list[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
 
@@ -409,13 +411,13 @@ Responda em JSON:
 
     async def generate_from_simple_inputs(
         self,
-        skills: List[str],
-        behavioral: Optional[List[str]] = None,
+        skills: list[str],
+        behavioral: list[str] | None = None,
         seniority: str = "pleno",
-        job_description: Optional[str] = None,
+        job_description: str | None = None,
         mode: Literal["compact", "full"] = "compact",
-        max_questions: Optional[int] = None,
-    ) -> List[WSIQuestion]:
+        max_questions: int | None = None,
+    ) -> list[WSIQuestion]:
         """Convenience wrapper: converts string skill/behavioral lists into Competency
         objects and delegates to ``generate_screening_questions()``.
 
@@ -429,7 +431,7 @@ Responda em JSON:
         if _seniority_level not in _valid_levels:
             _seniority_level = "pleno"
 
-        competencies: List[Competency] = []
+        competencies: list[Competency] = []
 
         for idx, skill in enumerate(skills or []):
             if not skill or not skill.strip():
@@ -558,9 +560,9 @@ Responda em JSON:
 
     @staticmethod
     def _merge_with_enriched(
-        original: List["Competency"],
-        enriched: List["Competency"],
-    ) -> List["Competency"]:
+        original: list["Competency"],
+        enriched: list["Competency"],
+    ) -> list["Competency"]:
         """Mescla lista original de competências com versão enriquecida.
 
         Para cada competência original sem big_five_mapping, tenta encontrar
@@ -610,8 +612,8 @@ Responda em JSON:
         self,
         candidate_id: str,
         job_vacancy_id: str,
-        responses: List[ResponseAnalysis],
-        weights: Dict[str, float]
+        responses: list[ResponseAnalysis],
+        weights: dict[str, float]
     ) -> WSIResult:
         """
         ETAPA 4: Calcula WSI final.
@@ -648,7 +650,7 @@ Responda em JSON:
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: List[ResponseAnalysis]
+        responses: list[ResponseAnalysis]
     ) -> StructuredReport:
         """
         ETAPA 5: Gera parecer estruturado.
@@ -675,7 +677,7 @@ Responda em JSON:
     async def generate_candidate_feedback(
         self,
         wsi_result: WSIResult,
-        responses: List[ResponseAnalysis],
+        responses: list[ResponseAnalysis],
         decision: Literal["aprovado", "aguardando", "nao_aprovado"]
     ) -> CandidateFeedback:
         """
@@ -765,8 +767,8 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
     async def _extract_ocean_scores(
         self,
         job_description: str,
-        behavioral_competencies: Optional[List[str]] = None,
-    ) -> List[OceanTraitScore]:
+        behavioral_competencies: list[str] | None = None,
+    ) -> list[OceanTraitScore]:
         """F2.5 — Extrai perfil Big Five do JD com rubric NEO-PI-R (Abordagem C).
 
         Temperatura 0.1: extração estruturada baseada em evidências — não criação.
@@ -852,9 +854,9 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
 
     def _select_traits_by_seniority(
         self,
-        ranked_traits: List[OceanTraitScore],
+        ranked_traits: list[OceanTraitScore],
         seniority: str,
-    ) -> List[OceanTraitScore]:
+    ) -> list[OceanTraitScore]:
         """F5 — Seleciona top-N traits conforme senioridade da vaga."""
         key = seniority.lower().strip().replace(" ", "_").replace("-", "_")
         n = SENIORITY_BIGFIVE_TOP_N.get(key, 3)
@@ -862,11 +864,11 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
 
     async def generate_all(
         self,
-        competencies: List[Competency],
+        competencies: list[Competency],
         mode: Literal["compact", "full"] = "compact",
-        job_description: Optional[str] = None,
-        seniority: Optional[str] = None,
-    ) -> List[WSIQuestion]:
+        job_description: str | None = None,
+        seniority: str | None = None,
+    ) -> list[WSIQuestion]:
         """
         Gera todas as perguntas para as competências selecionadas.
 
@@ -927,7 +929,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             )
 
         # F2.5 / F3 / F5 pipeline — quando job_description disponível
-        selected_traits: List[OceanTraitScore] = []
+        selected_traits: list[OceanTraitScore] = []
         if job_description:
             behav_names = [c.name for c in behavioral]
             ranked = await self._extract_ocean_scores(job_description, behav_names)
@@ -1126,8 +1128,8 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         self,
         gen_fn: Callable,
         competency: "Competency",
-        jd_text: Optional[str] = None,
-        skill_or_trait: Optional[str] = None,
+        jd_text: str | None = None,
+        skill_or_trait: str | None = None,
         question_category: str = "technical",
         **gen_kwargs,
     ) -> "WSIQuestion":
@@ -1140,8 +1142,8 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         4. Após 3 falhas em qualquer estágio, marca needs_manual_review=True e retorna
         """
         MAX_RETRIES = 3
-        last_question: Optional["WSIQuestion"] = None
-        improvement_hint: Optional[str] = None
+        last_question: WSIQuestion | None = None
+        improvement_hint: str | None = None
 
         for attempt in range(1, MAX_RETRIES + 1):
             if improvement_hint:
@@ -1220,7 +1222,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         return last_question  # type: ignore[return-value]
 
     async def _generate_cbi_question(
-        self, competency: Competency, improvement_hint: Optional[str] = None
+        self, competency: Competency, improvement_hint: str | None = None
     ) -> WSIQuestion:
         """Gera pergunta CBI (contextual) para competência."""
         hint_block = (
@@ -1293,7 +1295,7 @@ Responda APENAS em JSON:
         )
     
     async def _generate_dreyfus_question(
-        self, competency: Competency, improvement_hint: Optional[str] = None
+        self, competency: Competency, improvement_hint: str | None = None
     ) -> WSIQuestion:
         """Gera pergunta Dreyfus (autodeclaração) para competência."""
         hint_block = (
@@ -1350,7 +1352,7 @@ Responda APENAS em JSON com mesma estrutura anterior."""
         )
     
     async def _generate_bloom_question(
-        self, competency: Competency, improvement_hint: Optional[str] = None
+        self, competency: Competency, improvement_hint: str | None = None
     ) -> WSIQuestion:
         """Gera microcase Bloom para competência."""
         seniority_level_map = {
@@ -1420,7 +1422,7 @@ Responda APENAS em JSON."""
     def _select_comp_by_trait(
         self,
         trait: str,
-        behavioral: List["Competency"],
+        behavioral: list["Competency"],
         used_indices: set,
     ) -> tuple:
         """F6.6 — Seleciona competência comportamental por afinidade de trait OCEAN.
@@ -1455,8 +1457,8 @@ Responda APENAS em JSON."""
     async def _generate_bigfive_question(
         self,
         competency: Competency,
-        ocean_trait: Optional[str] = None,
-        improvement_hint: Optional[str] = None,
+        ocean_trait: str | None = None,
+        improvement_hint: str | None = None,
     ) -> WSIQuestion:
         """Gera pergunta Big Five (situacional) para competência.
 
@@ -1617,8 +1619,8 @@ class WSIScoreCalculator:
         self,
         candidate_id: str,
         job_vacancy_id: str,
-        responses: List[ResponseAnalysis],
-        weights: Dict[str, float]
+        responses: list[ResponseAnalysis],
+        weights: dict[str, float]
     ) -> WSIResult:
         """
         Calcula WSI final usando média ponderada.
@@ -1703,8 +1705,8 @@ class WSIScoreCalculator:
     
     def calculate_percentiles(
         self,
-        results: List[WSIResult]
-    ) -> List[WSIResult]:
+        results: list[WSIResult]
+    ) -> list[WSIResult]:
         """
         Calcula percentis para um grupo de candidatos.
         
@@ -1745,7 +1747,7 @@ class WSIReportGenerator:
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: List[ResponseAnalysis]
+        responses: list[ResponseAnalysis]
     ) -> StructuredReport:
         """Gera parecer estruturado para recrutadores."""
         
@@ -1900,7 +1902,7 @@ RETORNE APENAS JSON:
     async def generate_feedback(
         self,
         wsi_result: WSIResult,
-        responses: List[ResponseAnalysis],
+        responses: list[ResponseAnalysis],
         decision: Literal["aprovado", "aguardando", "nao_aprovado"]
     ) -> CandidateFeedback:
         """Gera feedback construtivo para candidato.
@@ -2010,7 +2012,7 @@ RETORNE APENAS JSON:
 wsi_service = WSIService()
 
 
-async def generate_wsi_questions_tool(job_id: str, count: int = 5, **kwargs) -> List[Dict[str, Any]]:
+async def generate_wsi_questions_tool(job_id: str, count: int = 5, **kwargs) -> list[dict[str, Any]]:
     result = await wsi_service.generate_from_simple_inputs(
         skills=kwargs.get("technical_skills", []),
         behavioral=kwargs.get("behavioral_competencies"),

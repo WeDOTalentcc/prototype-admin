@@ -5,24 +5,24 @@ These tests simulate complete user journeys through SSO authentication and SCIM 
 without requiring actual WorkOS credentials. They use mock fixtures to simulate WorkOS
 responses and verify the complete flow from authentication to database state.
 """
-import pytest
 import uuid
-from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock, AsyncMock
-from httpx import AsyncClient, ASGITransport
+from unittest.mock import MagicMock, patch
+
+import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.main import app
-from app.core.database import get_db
 from app.auth.models import User, UserRole
 from app.auth.workos_models import (
+    CompanyWorkOSConfig,
+    SSOAuditLog,
     WorkOSGroup,
     WorkOSGroupMembership,
     WorkOSGroupRoleMapping,
-    SSOAuditLog,
-    CompanyWorkOSConfig
 )
+from app.core.database import get_db
+from app.main import app
 
 INTERNAL_AUTH_HEADER = {"X-Internal-Auth": "test-secret"}
 
@@ -585,7 +585,7 @@ class TestSSOWithRoleMapping:
         company_id = f"company_{unique_id}"
         directory_id = f"dir_{unique_id}"
         
-        config = await setup_company_config(company_id, directory_id)
+        await setup_company_config(company_id, directory_id)
         
         group_workos_id = f"admins_group_{unique_id}"
         group = await setup_workos_group(group_workos_id, "Admins", directory_id)
@@ -685,7 +685,7 @@ class TestSSOWithRoleMapping:
         await setup_company_config(company_b, dir_b)
         
         group_a = await setup_workos_group(f"group_a_{unique_id}", "Company A Admins", dir_a)
-        group_b = await setup_workos_group(f"group_b_{unique_id}", "Company B Admins", dir_b)
+        await setup_workos_group(f"group_b_{unique_id}", "Company B Admins", dir_b)
         
         await test_client.post(
             f"/api/v1/workos/admin/groups/{group_a.id}/role-mapping",

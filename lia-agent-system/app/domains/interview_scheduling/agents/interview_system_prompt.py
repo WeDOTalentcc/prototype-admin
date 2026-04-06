@@ -7,8 +7,7 @@ Por que separar?
 - Testabilidade: prompts podem ser verificados sem executar o grafo
 - Manutenção: uma única fonte de verdade para ajuste de linguagem/CoT
 """
-from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, NEGATION_DETECTION_BLOCK
-
+from app.shared.prompts.interaction_patterns import NEGATION_DETECTION_BLOCK
 
 # ---------------------------------------------------------------------------
 # Prompt de extração de campos (usado em interview_details_collector)

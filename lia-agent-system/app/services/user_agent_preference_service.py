@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +34,7 @@ class UserAgentPreferenceService:
         company_id: str,
         domain: str,
         action_type: str,
-    ) -> Optional[UserAgentPreference]:
+    ) -> UserAgentPreference | None:
         """Retorna preferência existente ou None."""
         stmt = select(UserAgentPreference).where(
             UserAgentPreference.user_id == user_id,

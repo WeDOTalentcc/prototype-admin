@@ -5,20 +5,21 @@ Receives events from:
 - ATS platforms (Gupy, Pandapé, Merge)
 - Other external integrations
 """
-from fastapi import APIRouter, Request, HTTPException, Header, BackgroundTasks, status
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
-import hmac
 import hashlib
+import hmac
 import logging
 import os
 import uuid
+from typing import Any
+
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
+from pydantic import BaseModel
+
 from app.domains.automation.services.webhook_adapters import (
+    DocumentWebhookAdapter,
     InterviewWebhookAdapter,
     TestWebhookAdapter,
-    DocumentWebhookAdapter,
     WebhookAdapter,
-    WebhookEventType,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,11 +36,11 @@ class ATSWebhookEvent(BaseModel):
     """ATS webhook event payload."""
     event_type: str
     ats_candidate_id: str
-    ats_vacancy_id: Optional[str] = None
-    new_stage: Optional[str] = None
-    previous_stage: Optional[str] = None
-    candidate_data: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    ats_vacancy_id: str | None = None
+    new_stage: str | None = None
+    previous_stage: str | None = None
+    candidate_data: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 def verify_webhook_signature(payload: bytes, signature: str, secret: str, platform: str = "unknown") -> bool:
@@ -76,10 +77,10 @@ async def handle_ats_webhook(
     platform: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    x_webhook_signature: Optional[str] = Header(None, alias="X-Webhook-Signature"),
-    x_gupy_signature: Optional[str] = Header(None, alias="X-Gupy-Signature"),
-    x_pandape_signature: Optional[str] = Header(None, alias="X-Pandape-Signature"),
-    x_merge_signature: Optional[str] = Header(None, alias="X-Merge-Signature"),
+    x_webhook_signature: str | None = Header(None, alias="X-Webhook-Signature"),
+    x_gupy_signature: str | None = Header(None, alias="X-Gupy-Signature"),
+    x_pandape_signature: str | None = Header(None, alias="X-Pandape-Signature"),
+    x_merge_signature: str | None = Header(None, alias="X-Merge-Signature"),
 ):
     """
     Receive webhook from ATS platforms (Gupy, Pandapé, Merge).
@@ -184,10 +185,10 @@ async def handle_ats_webhook(
     }
 
 
-async def process_ats_candidate_updated(platform: str, payload: Dict[str, Any]):
+async def process_ats_candidate_updated(platform: str, payload: dict[str, Any]):
     """Sync candidate data from ATS to LIA."""
     try:
-        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, ATSSyncTrigger
+        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
         
         sync_service = ATSSyncService()
         
@@ -210,7 +211,7 @@ async def process_ats_candidate_updated(platform: str, payload: Dict[str, Any]):
         logger.error(f"❌ Error processing ATS candidate update: {e}", exc_info=True)
 
 
-async def process_ats_stage_changed(platform: str, payload: Dict[str, Any]):
+async def process_ats_stage_changed(platform: str, payload: dict[str, Any]):
     """Sync stage change from ATS to LIA (inbound sync)."""
     try:
         from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
@@ -238,19 +239,19 @@ async def process_ats_stage_changed(platform: str, payload: Dict[str, Any]):
         logger.error(f"❌ Error processing ATS stage change: {e}", exc_info=True)
 
 
-async def process_ats_candidate_created(platform: str, payload: Dict[str, Any]):
+async def process_ats_candidate_created(platform: str, payload: dict[str, Any]):
     """Handle new candidate created in ATS."""
     try:
         logger.info(f"[ATS SYNC] New candidate from {platform}")
         
-        candidate_data = payload.get("candidate_data") or payload.get("data", {})
+        payload.get("candidate_data") or payload.get("data", {})
         
-        logger.info(f"[ATS SYNC] Candidate created event received - may need to import to LIA")
+        logger.info("[ATS SYNC] Candidate created event received - may need to import to LIA")
     except Exception as e:
         logger.error(f"❌ Error processing ATS candidate created: {e}", exc_info=True)
 
 
-async def process_ats_candidate_hired(platform: str, payload: Dict[str, Any]):
+async def process_ats_candidate_hired(platform: str, payload: dict[str, Any]):
     """Handle candidate hired in ATS."""
     try:
         from app.services.activity_service import activity_service
@@ -275,14 +276,14 @@ async def process_ats_candidate_hired(platform: str, payload: Dict[str, Any]):
         logger.error(f"❌ Error processing ATS candidate hired: {e}", exc_info=True)
 
 
-async def process_ats_candidate_rejected(platform: str, payload: Dict[str, Any]):
+async def process_ats_candidate_rejected(platform: str, payload: dict[str, Any]):
     """Handle candidate rejected in ATS."""
     try:
         candidate_id = (
             payload.get("ats_candidate_id") or 
             payload.get("candidate_id")
         )
-        rejection_reason = payload.get("rejection_reason") or payload.get("reason")
+        payload.get("rejection_reason") or payload.get("reason")
         
         logger.info(f"[ATS SYNC] Candidate rejected in {platform}: {candidate_id}")
     except Exception as e:

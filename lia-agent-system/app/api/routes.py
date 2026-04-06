@@ -4,121 +4,224 @@ Called from app/main.py via register_all_routes(app).
 """
 from fastapi import FastAPI
 
-# ── Bulk import from app.api.v1 ──────────────────────────────────────────────
-from app.api.v1 import (
-    chat, teams, calendar, candidates, voice, activities, test_activities,
-    job_vacancies, job_drafts, credits, interviews, ats, auth, email_templates,
-    bulk_actions, cv_parser, tasks, task_lifecycle, alerts, reports,
-    sourcing_pipeline, admin, briefing, notifications, automation, pipeline,
-    agent_monitoring, predictive_analytics, calibration, candidate_search,
-    company, workforce, applications, recruitment_stages, company_culture,
-    goals, benefits, search_assistant, candidate_lists, analysis, email,
-    scheduling, communications, attachments, approvals, kanban_assistant,
-    file_analysis, autocomplete, opinions, journey_mapping, integrations_hub,
-    recruitment_journey, admin_settings, settings_progress, screening,
-    search_archetypes, dashboard_data, automations, webhooks, integrations,
-    communication_settings, communication, admin_templates, policies,
-    communication_matrix, clients, billing, observability, client_users,
-    ai_consumption, saas_metrics, lgpd_compliance, compliance_controls,
-    trust_center, audit_logs, default_templates, global_policies,
-    technical_tests, workforce_planning, big_five, experience_highlights,
-    lia_profile_analysis, data_subject_requests, consent_management,
-    health_check,
-    rubric_evaluation, task_planner, policy_engine, semantic_search, workos,
-    interview_notes, external_webhooks, automation_rules, merge_webhooks,
-    whatsapp, company_benefits, screening_questions, pipeline_templates,
-    sourcing, job_board, job_status_webhooks, recruitment_email_templates,
-    interview_analysis, data_request, lia_assistant, job_analytics,
-    orchestrated_job_chat, orchestrated_talent_chat,
-    orchestrated_jobs_management, shared_searches, lia_field_toggles,
-    organization_catalog, intelligence, recruiter_profiles, microsoft_graph,
-    cache, ml_predictions, affirmative, conversations, skills_catalog,
-    multi_channel, admin_token_budget,
-)
-
-# ── Individual imports ────────────────────────────────────────────────────────
-from app.api.v1 import communication_optout
-from app.api.v1 import twilio_voice
-from app.api.v1 import gemini_voice
-from app.api.v1 import digest
-from app.api.v1 import task_monitoring
-from app.api.v1 import fairness_reports
-from app.api.v1 import search_feedback
-from app.api.v1 import job_qualification
-from app.api.v1 import talent_funnel
-from app.api.v1.wsi import router as wsi_router
-from app.api.v1 import wsi_async as wsi_async_v1
-from app.api.v1 import stage_transition_automation
-from app.api.v1 import job_learning, wizard_analytics, job_embeddings, job_templates
-from app.api.v1 import wsi_questions
-from app.api.v1 import wsi_screening_pipeline_endpoint
-from app.api.v1 import wsi_question_adjust
-from app.api.v1 import jd_import
-from app.api.v1 import wizard_suggestions
-from app.api.v1 import wizard_smart_orchestrator
-from app.api.v1 import jd_generation
-from app.api.v1 import hiring_policy
-from app.api.v1 import learning_outcomes, suggestion_feedback, learning_patterns
-from app.api.v1 import (
-    lia_assistant_learning, lia_assistant_flags, lia_assistant_wizard_stages,
-    lia_assistant_vacancy, lia_assistant_fasttrack, lia_assistant_graph,
-)
-from app.api.v1 import triagem
-from app.api.v1 import wsi_observability
-from app.api.v1 import agent_explainability
-from app.api.v1 import drift
-from app.api.v1 import bias_audit
-from app.api.v1 import admin_bias_audit
-from app.api.v1 import guardrails
-from app.api.v1 import async_endpoints
-from app.api.v1 import jobs_ws
-from app.api.v1 import saturation
-from app.api.v1 import system_health
-from app.api.v1 import finetuning_export, ab_testing
-from app.api.v1 import (
-    pipeline_velocity, self_scheduling_public, recruiter_metrics,
-    early_warning, journey_intelligence, pipeline_prediction,
-)
-from app.api.v1.pipeline_policy import router as pipeline_policy_router
-from app.api.v1.proactive_actions import router as proactive_actions_router
-from app.api.v1.agent_memory import router as agent_memory_router
-from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_router
-from app.api.v1.sourcing_orchestrator import router as sourcing_orchestrator_router
-from app.api.v1.audit_timeline import router as audit_timeline_router
-from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
-from app.api.v1.health_langgraph import router as health_langgraph_router
-from app.api.v1.navigation_intent import router as navigation_intent_router
-from app.api.v1.toon import router as toon_router
-
-# ── Lazy imports (originally inline in main.py) ───────────────────────────────
-from app.api.v1 import admin_prompts
-from app.api.v1.granular_consent import router as granular_consent_router
-from app.api.v1.candidate_compare import router as candidate_compare_router
-from app.api.v1.ml_feedback import router as ml_feedback_router
-from app.api.v1.hitl import router as hitl_router
-from app.api.v1.short_lists import router as short_lists_router
-from app.api.v1.rag_search import router as rag_search_router
-from app.api.v1.agent_quality import router as agent_quality_router
-from app.api.v1.user_agent_preferences import router as user_prefs_router
-from app.api.v1.admin_lgpd import router as admin_lgpd_router
-from app.api.v1.email_tracking import router as email_tracking_router, communication_webhook_router
-from app.api.v1.admin_circuit_breakers import router as admin_cb_router
-from app.api.v1.admin_agents import router as admin_agents_router
-from app.api.v1.admin_dlq import router as admin_dlq_router
-from app.api.v1.traces import router as traces_router
-from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
-from app.api.v1.salary_benchmark import router as salary_benchmark_router
-from app.api.v1.cultural_fit import router as cultural_fit_router
-from app.api.v1.event_history import router as event_history_router
-from app.api.v1.company_retention import router as company_retention_router
-from app.api.v1.agent_templates import router as agent_templates_router
+# ── Orchestrator / WSI umbrella routers ───────────────────────────────────────
+from app.api import orchestrator_routes, wsi_endpoints
 
 # ── Public routes ─────────────────────────────────────────────────────────────
 from app.api.public import candidate_portal
 from app.api.public import shared_searches as public_shared_searches
 
-# ── Orchestrator / WSI umbrella routers ───────────────────────────────────────
-from app.api import orchestrator_routes, wsi_endpoints
+# ── Bulk import from app.api.v1 ──────────────────────────────────────────────
+# ── Individual imports ────────────────────────────────────────────────────────
+# ── Lazy imports (originally inline in main.py) ───────────────────────────────
+from app.api.v1 import (
+    ab_testing,
+    activities,
+    admin,
+    admin_bias_audit,
+    admin_prompts,
+    admin_settings,
+    admin_templates,
+    admin_token_budget,
+    affirmative,
+    agent_explainability,
+    agent_monitoring,
+    ai_consumption,
+    alerts,
+    analysis,
+    applications,
+    approvals,
+    async_endpoints,
+    ats,
+    attachments,
+    audit_logs,
+    auth,
+    autocomplete,
+    automation,
+    automation_rules,
+    automations,
+    benefits,
+    bias_audit,
+    big_five,
+    billing,
+    briefing,
+    bulk_actions,
+    cache,
+    calendar,
+    calibration,
+    candidate_lists,
+    candidate_search,
+    candidates,
+    chat,
+    client_users,
+    clients,
+    communication,
+    communication_matrix,
+    communication_optout,
+    communication_settings,
+    communications,
+    company,
+    company_benefits,
+    company_culture,
+    compliance_controls,
+    consent_management,
+    conversations,
+    credits,
+    cv_parser,
+    dashboard_data,
+    data_request,
+    data_subject_requests,
+    default_templates,
+    digest,
+    drift,
+    early_warning,
+    email,
+    email_templates,
+    experience_highlights,
+    external_webhooks,
+    fairness_reports,
+    file_analysis,
+    finetuning_export,
+    gemini_voice,
+    global_policies,
+    goals,
+    guardrails,
+    health_check,
+    hiring_policy,
+    integrations,
+    integrations_hub,
+    intelligence,
+    interview_analysis,
+    interview_notes,
+    interviews,
+    jd_generation,
+    jd_import,
+    job_analytics,
+    job_board,
+    job_drafts,
+    job_embeddings,
+    job_learning,
+    job_qualification,
+    job_status_webhooks,
+    job_templates,
+    job_vacancies,
+    jobs_ws,
+    journey_intelligence,
+    journey_mapping,
+    kanban_assistant,
+    learning_outcomes,
+    learning_patterns,
+    lgpd_compliance,
+    lia_assistant,
+    lia_assistant_fasttrack,
+    lia_assistant_flags,
+    lia_assistant_graph,
+    lia_assistant_learning,
+    lia_assistant_vacancy,
+    lia_assistant_wizard_stages,
+    lia_field_toggles,
+    lia_profile_analysis,
+    merge_webhooks,
+    microsoft_graph,
+    ml_predictions,
+    multi_channel,
+    notifications,
+    observability,
+    opinions,
+    orchestrated_job_chat,
+    orchestrated_jobs_management,
+    orchestrated_talent_chat,
+    organization_catalog,
+    pipeline,
+    pipeline_prediction,
+    pipeline_templates,
+    pipeline_velocity,
+    policies,
+    policy_engine,
+    predictive_analytics,
+    recruiter_metrics,
+    recruiter_profiles,
+    recruitment_email_templates,
+    recruitment_journey,
+    recruitment_stages,
+    reports,
+    rubric_evaluation,
+    saas_metrics,
+    saturation,
+    scheduling,
+    screening,
+    screening_questions,
+    search_archetypes,
+    search_assistant,
+    search_feedback,
+    self_scheduling_public,
+    semantic_search,
+    settings_progress,
+    shared_searches,
+    skills_catalog,
+    sourcing,
+    sourcing_pipeline,
+    stage_transition_automation,
+    suggestion_feedback,
+    system_health,
+    talent_funnel,
+    task_lifecycle,
+    task_monitoring,
+    task_planner,
+    tasks,
+    teams,
+    technical_tests,
+    test_activities,
+    triagem,
+    trust_center,
+    twilio_voice,
+    voice,
+    webhooks,
+    whatsapp,
+    wizard_analytics,
+    wizard_smart_orchestrator,
+    wizard_suggestions,
+    workforce,
+    workforce_planning,
+    workos,
+    wsi_observability,
+    wsi_question_adjust,
+    wsi_questions,
+    wsi_screening_pipeline_endpoint,
+)
+from app.api.v1 import wsi_async as wsi_async_v1
+from app.api.v1.admin_agents import router as admin_agents_router
+from app.api.v1.admin_circuit_breakers import router as admin_cb_router
+from app.api.v1.admin_dlq import router as admin_dlq_router
+from app.api.v1.admin_lgpd import router as admin_lgpd_router
+from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
+from app.api.v1.agent_memory import router as agent_memory_router
+from app.api.v1.agent_quality import router as agent_quality_router
+from app.api.v1.agent_templates import router as agent_templates_router
+from app.api.v1.audit_timeline import router as audit_timeline_router
+from app.api.v1.candidate_compare import router as candidate_compare_router
+from app.api.v1.company_retention import router as company_retention_router
+from app.api.v1.cultural_fit import router as cultural_fit_router
+from app.api.v1.email_tracking import communication_webhook_router
+from app.api.v1.email_tracking import router as email_tracking_router
+from app.api.v1.event_history import router as event_history_router
+from app.api.v1.granular_consent import router as granular_consent_router
+from app.api.v1.health_langgraph import router as health_langgraph_router
+from app.api.v1.hitl import router as hitl_router
+from app.api.v1.ml_feedback import router as ml_feedback_router
+from app.api.v1.navigation_intent import router as navigation_intent_router
+from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_router
+from app.api.v1.pipeline_policy import router as pipeline_policy_router
+from app.api.v1.proactive_actions import router as proactive_actions_router
+from app.api.v1.rag_search import router as rag_search_router
+from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
+from app.api.v1.salary_benchmark import router as salary_benchmark_router
+from app.api.v1.short_lists import router as short_lists_router
+from app.api.v1.sourcing_orchestrator import router as sourcing_orchestrator_router
+from app.api.v1.toon import router as toon_router
+from app.api.v1.traces import router as traces_router
+from app.api.v1.user_agent_preferences import router as user_prefs_router
+from app.api.v1.wsi import router as wsi_router
 
 
 def register_all_routes(app: FastAPI) -> None:

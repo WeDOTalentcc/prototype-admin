@@ -4,7 +4,8 @@ PolicySyncService — Synchronizes CompanyHiringPolicy to derived models.
 Called after policy save (PUT/PATCH) to keep SLAs and feature flags in sync.
 """
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -36,9 +37,9 @@ AUTONOMY_LEVEL_PRESETS = {
 
 async def sync_policy_to_models(
     company_id: str,
-    policy: Dict[str, Any],
+    policy: dict[str, Any],
     db: AsyncSession,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Synchronize policy data to derived models after save.
     
@@ -74,7 +75,7 @@ async def sync_policy_to_models(
 
 async def _sync_stage_slas(
     company_id: str,
-    policy: Dict[str, Any],
+    policy: dict[str, Any],
     db: AsyncSession,
 ) -> bool:
     """Sync max_days_in_stage to RecruitmentStage SLA hours."""
@@ -85,8 +86,9 @@ async def _sync_stage_slas(
         return False
     
     try:
-        from app.models.recruitment_stage import RecruitmentStage
         from sqlalchemy import select, update
+
+        from app.models.recruitment_stage import RecruitmentStage
         
         if isinstance(max_days, dict):
             for stage_name, days in max_days.items():
@@ -122,7 +124,7 @@ async def _sync_stage_slas(
 
 async def _sync_feature_flags(
     company_id: str,
-    policy: Dict[str, Any],
+    policy: dict[str, Any],
     db: AsyncSession,
 ) -> bool:
     """Sync automation_rules to per-company feature flags."""

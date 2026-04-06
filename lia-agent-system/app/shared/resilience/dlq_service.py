@@ -15,10 +15,9 @@ from __future__ import annotations
 
 import json
 import logging
-import traceback
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from app.shared.tracing import trace_span
 
@@ -72,13 +71,13 @@ class DLQService:
         self,
         task_name: str,
         queue: str,
-        args: List[Any],
-        kwargs: Dict[str, Any],
+        args: list[Any],
+        kwargs: dict[str, Any],
         exc: BaseException,
         tb: str = "",
         retries: int = 0,
-        company_id: Optional[str] = None,
-    ) -> Optional[str]:
+        company_id: str | None = None,
+    ) -> str | None:
         """
         Persiste uma task com falha na DLQ.
 
@@ -112,7 +111,7 @@ class DLQService:
                 "traceback": tb[:2000] if tb else "",
                 "retries": retries,
                 "company_id": company_id or kwargs.get("company_id"),
-                "failed_at": datetime.now(timezone.utc).isoformat(),
+                "failed_at": datetime.now(UTC).isoformat(),
             }
 
             redis = await _get_redis()
@@ -146,7 +145,7 @@ class DLQService:
 
     async def list_entries(
         self, queue: str, limit: int = 50
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Retorna as últimas `limit` entradas da DLQ de uma fila."""
         try:
             redis = await _get_redis()
@@ -159,7 +158,7 @@ class DLQService:
             logger.debug("[DLQ] list_entries falhou queue=%s: %s", queue, exc)
             return []
 
-    async def list_queues(self) -> List[str]:
+    async def list_queues(self) -> list[str]:
         """Retorna filas que têm entradas na DLQ."""
         try:
             redis = await _get_redis()
@@ -243,10 +242,10 @@ class DLQService:
             logger.error("[DLQ] clear falhou queue=%s: %s", queue, exc)
             return 0
 
-    async def summary(self) -> Dict[str, Any]:
+    async def summary(self) -> dict[str, Any]:
         """Retorna resumo de todas as filas com entradas na DLQ."""
         queues = await self.list_queues()
-        result: Dict[str, Any] = {"queues": {}, "total_entries": 0}
+        result: dict[str, Any] = {"queues": {}, "total_entries": 0}
         for q in queues:
             size = await self.queue_size(q)
             result["queues"][q] = size
@@ -256,7 +255,7 @@ class DLQService:
     # ── internals ──────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _mask_pii(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def _mask_pii(kwargs: dict[str, Any]) -> dict[str, Any]:
         """Remove/mascara campos sensíveis dos kwargs antes de persistir."""
         _PII_KEYS = {
             "password", "token", "secret", "cpf", "email",
@@ -288,7 +287,7 @@ class DLQService:
             logger.debug("[DLQ] _remove_entry falhou: %s", exc)
 
     async def _notify_if_critical(
-        self, task_name: str, entry: Dict[str, Any]
+        self, task_name: str, entry: dict[str, Any]
     ) -> None:
         """Envia notificação Bell para tasks críticas (fail-safe)."""
         _CRITICAL_TASKS = {

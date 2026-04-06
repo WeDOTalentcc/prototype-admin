@@ -13,16 +13,15 @@ E endpoints autenticados para o recrutador/agente criar links:
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.services.zero_touch_scheduling_service import zero_touch_scheduling_service
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
+from app.services.zero_touch_scheduling_service import zero_touch_scheduling_service
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +40,11 @@ class CreateSchedulingLinkRequest(BaseModel):
     candidate_id: str
     candidate_name: str
     candidate_email: EmailStr
-    candidate_phone: Optional[str] = None
+    candidate_phone: str | None = None
     job_vacancy_id: str
     job_title: str
-    available_slots: List[SlotSchema]
-    interviewer_emails: List[str]
+    available_slots: list[SlotSchema]
+    interviewer_emails: list[str]
     interview_type: str = "hr"
     interview_mode: str = "video"
     duration_minutes: int = 60
@@ -114,7 +113,7 @@ async def confirm_scheduling_slot(
 
     Cria o Interview automaticamente e marca o link como utilizado.
     """
-    selected_slot: Dict[str, str] = {"start": body.start, "end": body.end}
+    selected_slot: dict[str, str] = {"start": body.start, "end": body.end}
 
     result = await zero_touch_scheduling_service.confirm_slot(
         token=token,
@@ -132,7 +131,7 @@ async def confirm_scheduling_slot(
 
     return {
         "success": True,
-        "message": f"Entrevista agendada com sucesso! Você receberá um e-mail de confirmação.",
+        "message": "Entrevista agendada com sucesso! Você receberá um e-mail de confirmação.",
         "candidate_name": result.get("candidate_name"),
         "job_title": result.get("job_title"),
         "selected_slot": result.get("selected_slot"),

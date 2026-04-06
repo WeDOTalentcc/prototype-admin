@@ -8,20 +8,19 @@ Provides Fast Track template management:
 - Clone and customize templates
 - Template usage analytics
 """
-from typing import List, Optional
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.job_management.services.job_template_service import (
-    JobTemplateService, 
+    WSI_QUALITY_GATES,
+    JobTemplateService,
     enrich_template_with_ai,
     validate_wsi_quality,
-    WSI_QUALITY_GATES,
 )
-from app.domains.job_management.services.template_importer_service import TemplateImporterService
 
 router = APIRouter(prefix="/job-templates", tags=["Job Templates"])
 
@@ -45,18 +44,18 @@ class TemplateBehavioral(BaseModel):
 class TemplateResponse(BaseModel):
     """Template response model."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     category: str
     subcategory: str
     title: str
-    title_alternatives: List[str] = []
+    title_alternatives: list[str] = []
     seniority: str
-    default_description: Optional[str] = None
-    default_responsibilities: List[str] = []
-    default_requirements: Optional[str] = None
-    default_nice_to_have: Optional[str] = None
-    default_skills: List[dict] = []
-    default_behavioral: List[dict] = []
+    default_description: str | None = None
+    default_responsibilities: list[str] = []
+    default_requirements: str | None = None
+    default_nice_to_have: str | None = None
+    default_skills: list[dict] = []
+    default_behavioral: list[dict] = []
     salary_range: dict = {}
     work_model: str = "hybrid"
     employment_type: str = "clt"
@@ -70,12 +69,12 @@ class WizardDataResponse(BaseModel):
     title: str
     department: str
     seniority: str
-    description: Optional[str] = None
-    responsibilities: List[str] = []
-    requirements: Optional[str] = None
-    niceToHave: Optional[str] = None
-    technicalSkills: List[dict] = []
-    behavioralCompetencies: List[dict] = []
+    description: str | None = None
+    responsibilities: list[str] = []
+    requirements: str | None = None
+    niceToHave: str | None = None
+    technicalSkills: list[dict] = []
+    behavioralCompetencies: list[dict] = []
     salaryInfo: dict = {}
     workModel: str = "hybrid"
     employmentType: str = "clt"
@@ -87,7 +86,7 @@ class CategoryResponse(BaseModel):
     display_name: str
     icon: str
     color: str
-    subcategories: List[dict] = []
+    subcategories: list[dict] = []
     template_count: int = 0
 
 
@@ -96,16 +95,16 @@ class CreateTemplateRequest(BaseModel):
     category: str
     subcategory: str
     title: str
-    title_alternatives: List[str] = []
+    title_alternatives: list[str] = []
     seniority: str
-    default_description: Optional[str] = None
-    default_responsibilities: List[str] = []
-    default_requirements: Optional[str] = None
-    default_nice_to_have: Optional[str] = None
-    default_skills: List[dict] = []
-    default_behavioral: List[dict] = []
-    salary_range_min: Optional[int] = None
-    salary_range_max: Optional[int] = None
+    default_description: str | None = None
+    default_responsibilities: list[str] = []
+    default_requirements: str | None = None
+    default_nice_to_have: str | None = None
+    default_skills: list[dict] = []
+    default_behavioral: list[dict] = []
+    salary_range_min: int | None = None
+    salary_range_max: int | None = None
     work_model: str = "hybrid"
     employment_type: str = "clt"
 
@@ -118,13 +117,13 @@ class CloneTemplateRequest(BaseModel):
 
 class TemplateFeedbackRequest(BaseModel):
     """Template usage feedback request."""
-    job_id: Optional[str] = None
-    fields_modified: List[str] = []
-    time_to_complete_seconds: Optional[int] = None
-    feedback_rating: Optional[int] = Field(None, ge=1, le=5)
+    job_id: str | None = None
+    fields_modified: list[str] = []
+    time_to_complete_seconds: int | None = None
+    feedback_rating: int | None = Field(None, ge=1, le=5)
 
 
-@router.get("/categories", response_model=List[CategoryResponse])
+@router.get("/categories", response_model=list[CategoryResponse])
 async def get_categories(
     db: AsyncSession = Depends(get_db),
 ):
@@ -147,12 +146,12 @@ async def get_categories(
     return result
 
 
-@router.get("/", response_model=List[TemplateResponse])
+@router.get("/", response_model=list[TemplateResponse])
 async def list_templates(
-    category: Optional[str] = None,
-    subcategory: Optional[str] = None,
-    seniority: Optional[str] = None,
-    company_id: Optional[str] = None,
+    category: str | None = None,
+    subcategory: str | None = None,
+    seniority: str | None = None,
+    company_id: str | None = None,
     limit: int = Query(50, le=100),
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -175,7 +174,7 @@ async def list_templates(
 @router.get("/search")
 async def search_templates(
     q: str = Query(..., min_length=2),
-    company_id: Optional[str] = None,
+    company_id: str | None = None,
     limit: int = Query(20, le=50),
     db: AsyncSession = Depends(get_db),
 ):
@@ -191,10 +190,10 @@ async def search_templates(
     return [TemplateResponse(**t.to_dict()) for t in templates]
 
 
-@router.get("/popular", response_model=List[TemplateResponse])
+@router.get("/popular", response_model=list[TemplateResponse])
 async def get_popular_templates(
-    category: Optional[str] = None,
-    company_id: Optional[str] = None,
+    category: str | None = None,
+    company_id: str | None = None,
     limit: int = Query(10, le=20),
     db: AsyncSession = Depends(get_db),
 ):
@@ -261,7 +260,7 @@ async def get_template(
 async def use_template(
     template_id: str,
     company_id: str = Query(...),
-    user_id: Optional[str] = None,
+    user_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -522,17 +521,17 @@ class LearnFromJobRequest(BaseModel):
     """Request to learn from a job creation."""
     company_id: str
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    description: Optional[str] = None
-    responsibilities: Optional[List[str]] = []
-    requirements: Optional[str] = None
-    tech_skills: Optional[List[dict]] = []
-    behavioral_skills: Optional[List[dict]] = []
-    salary_min: Optional[int] = None
-    salary_max: Optional[int] = None
-    work_model: Optional[str] = "hybrid"
-    template_used: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    description: str | None = None
+    responsibilities: list[str] | None = []
+    requirements: str | None = None
+    tech_skills: list[dict] | None = []
+    behavioral_skills: list[dict] | None = []
+    salary_min: int | None = None
+    salary_max: int | None = None
+    work_model: str | None = "hybrid"
+    template_used: str | None = None
 
 
 @router.post("/learning/learn-from-job")

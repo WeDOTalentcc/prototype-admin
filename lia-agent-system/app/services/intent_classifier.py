@@ -11,7 +11,8 @@ import json
 import logging
 import re
 from enum import Enum
-from typing import Optional, Dict, Any, List
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from app.services.llm import llm_service
@@ -31,9 +32,9 @@ class ClassificationResult(BaseModel):
     """Result of intent classification."""
     intent_type: IntentType
     confidence: float = Field(ge=0.0, le=1.0)
-    extracted_entities: Dict[str, Any] = Field(default_factory=dict)
+    extracted_entities: dict[str, Any] = Field(default_factory=dict)
     original_text: str
-    reasoning: Optional[str] = None
+    reasoning: str | None = None
 
 
 class IntentClassifierService:
@@ -117,7 +118,7 @@ Responda APENAS em JSON:
     def __init__(self):
         self._llm_service = llm_service
 
-    def _quick_classify(self, text: str) -> Optional[IntentType]:
+    def _quick_classify(self, text: str) -> IntentType | None:
         """
         Quick rule-based pre-classification for obvious cases.
         Returns None if LLM classification is needed.
@@ -141,9 +142,9 @@ Responda APENAS em JSON:
 
         return None
 
-    def _extract_entities(self, text: str) -> Dict[str, Any]:
+    def _extract_entities(self, text: str) -> dict[str, Any]:
         """Extract entities from text using regex patterns."""
-        entities: Dict[str, Any] = {}
+        entities: dict[str, Any] = {}
 
         for entity_type, patterns in self.ENTITY_PATTERNS.items():
             for pattern in patterns:
@@ -168,7 +169,7 @@ Responda APENAS em JSON:
     async def classify(
         self,
         user_input: str,
-        stage_context: Optional[str] = None,
+        stage_context: str | None = None,
         use_llm: bool = True
     ) -> ClassificationResult:
         """
@@ -248,8 +249,8 @@ Responda APENAS em JSON:
     async def _classify_with_llm(
         self,
         user_input: str,
-        stage_context: Optional[str],
-        pre_extracted_entities: Dict[str, Any]
+        stage_context: str | None,
+        pre_extracted_entities: dict[str, Any]
     ) -> ClassificationResult:
         """Use Claude for intent classification."""
         prompt = self.CLASSIFICATION_PROMPT.format(
@@ -287,9 +288,9 @@ Responda APENAS em JSON:
 
     async def classify_batch(
         self,
-        inputs: List[str],
-        stage_context: Optional[str] = None
-    ) -> List[ClassificationResult]:
+        inputs: list[str],
+        stage_context: str | None = None
+    ) -> list[ClassificationResult]:
         """Classify multiple inputs (uses rule-based for speed)."""
         results = []
         for user_input in inputs:

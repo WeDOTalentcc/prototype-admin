@@ -9,20 +9,20 @@ Architecture:
 - Supports single job, multiple jobs, or portfolio-wide analysis
 - Returns structured responses suitable for chat display
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime
-from dataclasses import dataclass, field
 import logging
-import time
 import re
+import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.base_agent import AgentType
 from app.core.database import AsyncSessionLocal
-from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -158,14 +158,14 @@ class AnalyticsResponse:
     command: str
     agent_used: str
     response: str
-    data: Dict[str, Any] = field(default_factory=dict)
-    charts: List[Dict[str, Any]] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
+    charts: list[dict[str, Any]] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
     success: bool = True
-    error: Optional[str] = None
+    error: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "command": self.command,
@@ -197,7 +197,7 @@ class JobAnalyticsPromptService:
         self.command_templates = COMMAND_TEMPLATES
         self.query_patterns = QUERY_PATTERNS
     
-    def get_available_commands(self) -> List[Dict[str, Any]]:
+    def get_available_commands(self) -> list[dict[str, Any]]:
         """
         Returns list of available command templates.
         
@@ -218,8 +218,8 @@ class JobAnalyticsPromptService:
     async def execute_command(
         self,
         command_id: str,
-        context: Dict[str, Any],
-        db: Optional[AsyncSession] = None
+        context: dict[str, Any],
+        db: AsyncSession | None = None
     ) -> AnalyticsResponse:
         """
         Executes a command template with the provided context.
@@ -329,8 +329,8 @@ class JobAnalyticsPromptService:
     async def analyze_natural_query(
         self,
         query: str,
-        context: Dict[str, Any],
-        db: Optional[AsyncSession] = None
+        context: dict[str, Any],
+        db: AsyncSession | None = None
     ) -> AnalyticsResponse:
         """
         Routes a natural language query to the best matching command/agent.
@@ -408,7 +408,7 @@ class JobAnalyticsPromptService:
     async def get_job_quick_insights(
         self,
         job_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> AnalyticsResponse:
         """
         Returns quick metrics for a single job.
@@ -557,8 +557,8 @@ class JobAnalyticsPromptService:
     
     async def get_multi_job_comparison(
         self,
-        job_ids: List[str],
-        db: Optional[AsyncSession] = None
+        job_ids: list[str],
+        db: AsyncSession | None = None
     ) -> AnalyticsResponse:
         """
         Compares multiple jobs.
@@ -588,7 +588,7 @@ class JobAnalyticsPromptService:
     async def suggest_next_actions(
         self,
         job_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> AnalyticsResponse:
         """
         Suggests next actions based on job analysis.
@@ -705,7 +705,7 @@ class JobAnalyticsPromptService:
                 metadata={"execution_time_ms": int((time.time() - start_time) * 1000)}
             )
     
-    def _detect_command_from_query(self, query: str) -> Optional[str]:
+    def _detect_command_from_query(self, query: str) -> str | None:
         """
         Detect the most appropriate command from a natural language query.
         
@@ -732,9 +732,9 @@ class JobAnalyticsPromptService:
     
     async def _get_job_data(
         self,
-        context: Dict[str, Any],
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Fetch job data for template rendering.
         
@@ -777,9 +777,9 @@ class JobAnalyticsPromptService:
         self,
         command_id: str,
         prompt: str,
-        context: Dict[str, Any],
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Execute fallback when agent is not available.
         
@@ -802,9 +802,9 @@ class JobAnalyticsPromptService:
     async def _generate_charts_data(
         self,
         command_id: str,
-        data: Dict[str, Any],
-        context: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        data: dict[str, Any],
+        context: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Generate chart data for frontend visualization.
         

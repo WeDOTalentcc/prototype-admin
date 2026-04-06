@@ -6,22 +6,31 @@ so the ReActLoop can autonomously decide which tools to call.
 """
 import logging
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text as sql_text
 
 from app.core.database import AsyncSessionLocal
-
-from lia_agents_core.react_loop import ToolDefinition
-from app.shared.compliance.fairness_guard import FairnessGuard
 from app.domains.job_management.tools.job_wizard_tools import (
-    search_salary_benchmark as _search_salary_benchmark,
-    validate_job_fields as _validate_job_fields,
-    get_job_suggestions as _get_job_suggestions,
-    save_job_draft as _save_job_draft,
-    get_company_config as _get_company_config,
     generate_enriched_jd as _generate_enriched_jd,
 )
+from app.domains.job_management.tools.job_wizard_tools import (
+    get_company_config as _get_company_config,
+)
+from app.domains.job_management.tools.job_wizard_tools import (
+    get_job_suggestions as _get_job_suggestions,
+)
+from app.domains.job_management.tools.job_wizard_tools import (
+    save_job_draft as _save_job_draft,
+)
+from app.domains.job_management.tools.job_wizard_tools import (
+    search_salary_benchmark as _search_salary_benchmark,
+)
+from app.domains.job_management.tools.job_wizard_tools import (
+    validate_job_fields as _validate_job_fields,
+)
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +57,7 @@ MARKET_BENCHMARK_SOURCES = [
 _fairness_guard = FairnessGuard()
 
 
-async def _wrap_validate_job_requirements(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
     text = kwargs.get("text", "")
     field_name = kwargs.get("field_name", "requirements")
     logger.info(f"[wizard_tools] validate_job_requirements called for field={field_name}")
@@ -95,14 +104,14 @@ async def _wrap_validate_job_requirements(**kwargs: Any) -> Dict[str, Any]:
         return {"is_compliant": True, "soft_warnings": [], "error": str(e)}
 
 
-async def _wrap_get_salary_benchmarks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     job_title = kwargs.get("job_title", "")
     seniority = kwargs.get("seniority", "pleno")
     location = kwargs.get("location", "")
     department = kwargs.get("department", "")
     logger.info(f"[wizard_tools] get_salary_benchmarks called for title={job_title}, seniority={seniority}")
 
-    internal_avg: Optional[Dict[str, Any]] = None
+    internal_avg: dict[str, Any] | None = None
     try:
         from app.core.database import AsyncSessionLocal
 
@@ -174,7 +183,7 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_search_salary_benchmark(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_search_salary_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for search_salary_benchmark that handles errors gracefully."""
     logger.info(f"[wizard_tools] search_salary_benchmark called with: {list(kwargs.keys())}")
     try:
@@ -184,7 +193,7 @@ async def _wrap_search_salary_benchmark(**kwargs: Any) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
-async def _wrap_validate_job_fields(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_validate_job_fields(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for validate_job_fields that handles errors gracefully."""
     logger.info(f"[wizard_tools] validate_job_fields called with: {list(kwargs.keys())}")
     try:
@@ -194,7 +203,7 @@ async def _wrap_validate_job_fields(**kwargs: Any) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
-async def _wrap_get_job_suggestions(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_job_suggestions(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for get_job_suggestions that handles errors gracefully."""
     logger.info(f"[wizard_tools] get_job_suggestions called with: {list(kwargs.keys())}")
     try:
@@ -204,7 +213,7 @@ async def _wrap_get_job_suggestions(**kwargs: Any) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
-async def _wrap_save_job_draft(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_save_job_draft(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for save_job_draft that handles errors gracefully."""
     logger.info(f"[wizard_tools] save_job_draft called with: {list(kwargs.keys())}")
     try:
@@ -214,7 +223,7 @@ async def _wrap_save_job_draft(**kwargs: Any) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
-async def _wrap_get_company_config(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for get_company_config that handles errors gracefully."""
     logger.info(f"[wizard_tools] get_company_config called with: {list(kwargs.keys())}")
     try:
@@ -224,7 +233,7 @@ async def _wrap_get_company_config(**kwargs: Any) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
-async def _wrap_generate_enriched_jd(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_enriched_jd(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for generate_enriched_jd that handles errors gracefully."""
     logger.info(f"[wizard_tools] generate_enriched_jd called with: {list(kwargs.keys())}")
     try:
@@ -234,10 +243,10 @@ async def _wrap_generate_enriched_jd(**kwargs: Any) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
-async def _wrap_check_job_draft_health(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_job_draft_health(**kwargs: Any) -> dict[str, Any]:
     title = kwargs.get("title", "")
     seniority = kwargs.get("seniority", "")
-    salary_min = kwargs.get("salary_min", 0)
+    kwargs.get("salary_min", 0)
     salary_max = kwargs.get("salary_max", 0)
     skills_count = kwargs.get("skills_count", 0)
     responsibilities_count = kwargs.get("responsibilities_count", 0)
@@ -302,7 +311,7 @@ async def _wrap_check_job_draft_health(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-TOOL_DEFINITIONS: List[ToolDefinition] = [
+TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="validate_job_requirements",
         description="Valida requisitos da vaga contra viés discriminatório usando FairnessGuard. Verifica viés explícito (bloqueia) e implícito (alertas educacionais). Use para validar requirements, description e screening_questions.",
@@ -442,14 +451,14 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
 ]
 
 
-async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[wizard_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {}
+    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(sql_text("""
@@ -498,9 +507,9 @@ TOOL_DEFINITIONS.append(
     )
 )
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
-STAGE_TOOLS: Dict[str, List[str]] = {
+STAGE_TOOLS: dict[str, list[str]] = {
     "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
@@ -510,12 +519,12 @@ STAGE_TOOLS: Dict[str, List[str]] = {
 }
 
 
-def get_wizard_tools() -> List[ToolDefinition]:
+def get_wizard_tools() -> list[ToolDefinition]:
     """Return all wizard tool definitions."""
     return list(TOOL_DEFINITIONS)
 
 
-def get_stage_tools(stage: str) -> List[ToolDefinition]:
+def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """Return only tools relevant to the current wizard stage.
 
     Args:

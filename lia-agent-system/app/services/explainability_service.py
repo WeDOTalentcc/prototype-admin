@@ -5,9 +5,9 @@ This service generates human-readable explanations of AI decisions,
 enabling transparency for candidates and compliance with AI governance requirements.
 """
 import logging
-from typing import List, Dict, Any, Optional
-from sqlalchemy import select, and_
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+from sqlalchemy import and_, select
 
 from app.core.database import AsyncSessionLocal
 from app.models.audit_log import AuditLog
@@ -54,7 +54,7 @@ class ExplainabilityService:
         candidate_id: str,
         job_vacancy_id: str,
         include_suggestions: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a transparent explanation for a candidate about their evaluation.
         
@@ -140,7 +140,7 @@ class ExplainabilityService:
             
             return explanation
     
-    def _generate_improvement_suggestions(self, decision: AuditLog) -> List[str]:
+    def _generate_improvement_suggestions(self, decision: AuditLog) -> list[str]:
         """
         Generate actionable suggestions based on the evaluation.
         
@@ -247,7 +247,7 @@ class ExplainabilityService:
         company_id: str,
         candidate_id: str,
         job_vacancy_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a summary for recruiters with decision details.
         

@@ -1,25 +1,17 @@
 """
 Contact reveal (reveal/cost, reveal) and filter suggestions routes.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import (
-    logger, get_db, get_current_user_or_demo, get_user_company_id, assert_resource_ownership,
-    User, ImportUser, cv_parser_service, search_analytics_service,
-    extract_tags_from_search_spec, build_archetype_from_search,
-    ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse,
-    rubric_evaluation_service, JobRequirement, JobRequirementCreate, RequirementPriorityEnum,
-    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType, CandidateProfile,
-    _normalize_priority, _normalize_name, _generate_fingerprint,
-    _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
-    _evaluate_candidates_with_rubrics, _recruiter_agent,
-    ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
-    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
-    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
-    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
+    CandidateSearchResultDTO,
+    PearchSearchRequest,
+    SearchType,
+    get_db,
+    pearch_service,
 )
 
 router = APIRouter()
@@ -34,7 +26,7 @@ class RevealContactRequest(BaseModel):
     candidate_id: str = Field(..., description="ID do candidato (docid do Pearch)")
     candidate_name: str = Field(..., description="Nome do candidato para busca")
     reveal_type: str = Field(..., description="Tipo: 'email' ou 'phone'", pattern="^(email|phone)$")
-    linkedin_slug: Optional[str] = Field(None, description="LinkedIn slug para busca mais precisa")
+    linkedin_slug: str | None = Field(None, description="LinkedIn slug para busca mais precisa")
 
 
 class RevealContactResponse(BaseModel):
@@ -44,14 +36,14 @@ class RevealContactResponse(BaseModel):
     reveal_type: str
     
     # Dados revelados
-    email: Optional[str] = None
-    emails: List[str] = Field(default_factory=list)
-    phone: Optional[str] = None
-    phones: List[str] = Field(default_factory=list)
+    email: str | None = None
+    emails: list[str] = Field(default_factory=list)
+    phone: str | None = None
+    phones: list[str] = Field(default_factory=list)
     
     # Custos
     credits_used: int = 0
-    credits_remaining: Optional[int] = None
+    credits_remaining: int | None = None
     
     # Mensagem
     message: str = ""
@@ -230,8 +222,8 @@ class FilterSuggestion(BaseModel):
     value: str = Field(..., description="Valor canônico para o filtro")
     label: str = Field(..., description="Label para exibição")
     local_count: int = Field(0, description="Contagem de candidatos na base local")
-    global_count: Optional[int] = Field(None, description="Contagem estimada na busca global (se disponível)")
-    aliases: List[str] = Field(default_factory=list, description="Variações do mesmo termo")
+    global_count: int | None = Field(None, description="Contagem estimada na busca global (se disponível)")
+    aliases: list[str] = Field(default_factory=list, description="Variações do mesmo termo")
     source: str = Field("local", description="Fonte da sugestão: local ou global")
 
 
@@ -247,7 +239,7 @@ class FilterSuggestionsResponse(BaseModel):
     """Response com sugestões de filtros."""
     category: str
     query: str
-    suggestions: List[FilterSuggestion]
+    suggestions: list[FilterSuggestion]
     has_more: bool = Field(False, description="Indica se há mais resultados")
     global_pending: bool = Field(False, description="Indica se contagem global está sendo processada")
 
@@ -274,13 +266,12 @@ async def get_filter_suggestions(
     Retorna contagem local imediata. Contagem global pode ser solicitada
     via include_global=true (processada de forma assíncrona).
     """
-    from sqlalchemy import text, func
-    from app.models.candidate import Candidate
-    from sqlalchemy.future import select
-    from collections import Counter
+
+    from sqlalchemy import text
+
     
     query_lower = request.query.lower().strip()
-    suggestions: List[FilterSuggestion] = []
+    suggestions: list[FilterSuggestion] = []
     
     try:
         # Definir aliases comuns para termos de busca
@@ -692,50 +683,50 @@ class ArchetypeDTO(BaseModel):
     """DTO for archetype data in API responses."""
     id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     emoji: str = "🎯"
     query: str
     filters: dict = Field(default_factory=dict)
-    tags: List[str] = Field(default_factory=list)
-    industry: Optional[str] = None
-    seniority: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    industry: str | None = None
+    seniority: str | None = None
     is_default: bool = False
     is_active: bool = True
     usage_count: int = 0
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
 
 class ArchetypeListResponse(BaseModel):
     """Response for listing archetypes."""
-    archetypes: List[ArchetypeDTO]
+    archetypes: list[ArchetypeDTO]
     total: int
     default_count: int
 
 
 class ArchetypeCreateRequest(BaseModel):
     """Request to create a new archetype."""
-    id: Optional[str] = Field(None, description="ID único, gerado automaticamente se não fornecido")
+    id: str | None = Field(None, description="ID único, gerado automaticamente se não fornecido")
     name: str = Field(..., min_length=2, max_length=100)
-    description: Optional[str] = None
+    description: str | None = None
     emoji: str = Field("🎯", max_length=10)
     query: str = Field(..., min_length=5)
     filters: dict = Field(default_factory=dict)
-    tags: List[str] = Field(default_factory=list)
-    industry: Optional[str] = None
-    seniority: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    industry: str | None = None
+    seniority: str | None = None
 
 
 class ArchetypeUpdateRequest(BaseModel):
     """Request to update an existing archetype."""
-    name: Optional[str] = Field(None, min_length=2, max_length=100)
-    description: Optional[str] = None
-    emoji: Optional[str] = Field(None, max_length=10)
-    query: Optional[str] = Field(None, min_length=5)
-    filters: Optional[dict] = None
-    tags: Optional[List[str]] = None
-    industry: Optional[str] = None
-    seniority: Optional[str] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=2, max_length=100)
+    description: str | None = None
+    emoji: str | None = Field(None, max_length=10)
+    query: str | None = Field(None, min_length=5)
+    filters: dict | None = None
+    tags: list[str] | None = None
+    industry: str | None = None
+    seniority: str | None = None
+    is_active: bool | None = None
 
 
 class ArchetypeSearchRequest(BaseModel):
@@ -752,23 +743,23 @@ class ArchetypeSearchRequest(BaseModel):
 
 class ArchetypeSearchResultDTO(CandidateSearchResultDTO):
     """Extended search result with LIA score."""
-    lia_score: Optional[float] = None
-    lia_reasoning: Optional[str] = None
-    lia_breakdown: Optional[dict] = None
-    lia_strengths: List[str] = Field(default_factory=list)
-    lia_concerns: List[str] = Field(default_factory=list)
+    lia_score: float | None = None
+    lia_reasoning: str | None = None
+    lia_breakdown: dict | None = None
+    lia_strengths: list[str] = Field(default_factory=list)
+    lia_concerns: list[str] = Field(default_factory=list)
 
 
 class ArchetypeSearchResponse(BaseModel):
     """Response for archetype-based search."""
     archetype: ArchetypeDTO
     query: str
-    thread_id: Optional[str] = None
-    candidates: List[ArchetypeSearchResultDTO] = Field(default_factory=list)
+    thread_id: str | None = None
+    candidates: list[ArchetypeSearchResultDTO] = Field(default_factory=list)
     local_count: int = 0
     pearch_count: int = 0
     total_count: int = 0
-    credits_remaining: Optional[int] = None
-    search_time_seconds: Optional[float] = None
-    warning_message: Optional[str] = None
+    credits_remaining: int | None = None
+    search_time_seconds: float | None = None
+    warning_message: str | None = None
 

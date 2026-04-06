@@ -12,7 +12,7 @@ LGPD Art. 6 (finalidade/necessidade) + Art. 46 (medidas de segurança).
 D5 — Consentimento granular: LGPD Art. 7 / EU AI Act Art. 13.
 """
 import logging
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from app.services.ats_clients.lgpd_field_registry import (
     OUTBOUND_SENSITIVE_FIELDS,
@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 
 def filter_outbound(
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     ats_name: str,
     has_consent: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Remove campos sensíveis do payload antes de enviar ao ATS externo.
 
     Args:
@@ -43,8 +43,8 @@ def filter_outbound(
         return payload
 
     try:
-        stripped: Dict[str, Any] = {}
-        removed: List[str] = []
+        stripped: dict[str, Any] = {}
+        removed: list[str] = []
 
         for key, value in payload.items():
             if key in OUTBOUND_SENSITIVE_FIELDS:
@@ -68,12 +68,12 @@ def filter_outbound(
 
 
 async def filter_sensitive_outbound(
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     ats_name: str,
-    candidate_id: Optional[str] = None,
-    company_id: Optional[str] = None,
+    candidate_id: str | None = None,
+    company_id: str | None = None,
     db=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Remove campos sensíveis do payload antes de enviar ao ATS externo.
 
     Versão async (D5-G2): verifica consentimento granular ``ats_sharing`` via
@@ -107,9 +107,9 @@ async def filter_sensitive_outbound(
 
 
 def filter_inbound_text(
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     ats_name: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Aplica strip_pii em campos de texto livre recebidos do ATS.
 
     Campos de texto como notas/observações podem conter CPF, e-mail e telefone

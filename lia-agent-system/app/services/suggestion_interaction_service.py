@@ -10,18 +10,17 @@ during the job creation wizard, including:
 
 Uses regex patterns for fast detection (no LLM calls).
 """
-import re
 import logging
-from typing import List, Optional, Tuple, Dict, Any, Union
+import re
 from difflib import SequenceMatcher
+from typing import Any
 
+from app.schemas.job_description import RequirementLevel
 from app.schemas.suggestion_interaction import (
-    SuggestionInteractionType,
     DetectedInteraction,
+    SuggestionInteractionType,
 )
-from app.schemas.job_description import RequirementLevel, SuggestedItem
 from app.services.skills_catalog_service import skills_catalog_service
-
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ CLARIFY_PATTERN = re.compile(
 )
 
 
-LEVEL_MAPPING: Dict[str, RequirementLevel] = {
+LEVEL_MAPPING: dict[str, RequirementLevel] = {
     "obrigatório": RequirementLevel.REQUIRED,
     "obrigatorio": RequirementLevel.REQUIRED,
     "required": RequirementLevel.REQUIRED,
@@ -80,8 +79,8 @@ class SuggestionInteractionService:
     def detect_interactions(
         self,
         message: str,
-        current_suggestions: List[str]
-    ) -> List[DetectedInteraction]:
+        current_suggestions: list[str]
+    ) -> list[DetectedInteraction]:
         """
         Detect all suggestion interactions in a user message.
         
@@ -104,7 +103,7 @@ class SuggestionInteractionService:
         
         return validated_interactions
     
-    def _detect_via_regex(self, message: str) -> List[DetectedInteraction]:
+    def _detect_via_regex(self, message: str) -> list[DetectedInteraction]:
         """
         Fast path detection using regex patterns.
         
@@ -114,11 +113,11 @@ class SuggestionInteractionService:
         Returns:
             List of detected interactions (may need validation)
         """
-        interactions: List[DetectedInteraction] = []
-        message_lower = message.lower()
+        interactions: list[DetectedInteraction] = []
+        message.lower()
         
         for match in ACCEPT_PATTERN.finditer(message):
-            action_word = match.group(1)
+            match.group(1)
             target_skill = match.group(2).strip()
             
             interactions.append(DetectedInteraction(
@@ -132,7 +131,7 @@ class SuggestionInteractionService:
             self.logger.debug(f"Detected ACCEPT: {target_skill}")
         
         for match in REJECT_PATTERN.finditer(message):
-            action_word = match.group(1)
+            match.group(1)
             target_skill = match.group(2).strip()
             
             interactions.append(DetectedInteraction(
@@ -146,7 +145,7 @@ class SuggestionInteractionService:
             self.logger.debug(f"Detected REJECT: {target_skill}")
         
         for match in REPLACE_PATTERN.finditer(message):
-            action_word = match.group(1)
+            match.group(1)
             target_skill = match.group(2).strip()
             replacement_skill = match.group(3).strip()
             
@@ -192,7 +191,7 @@ class SuggestionInteractionService:
         
         return interactions
     
-    def _parse_level(self, level_text: str) -> Optional[RequirementLevel]:
+    def _parse_level(self, level_text: str) -> RequirementLevel | None:
         """
         Parse a level text string into a RequirementLevel enum.
         
@@ -213,9 +212,9 @@ class SuggestionInteractionService:
     
     def _validate_targets(
         self,
-        interactions: List[DetectedInteraction],
-        current_suggestions: List[str]
-    ) -> List[DetectedInteraction]:
+        interactions: list[DetectedInteraction],
+        current_suggestions: list[str]
+    ) -> list[DetectedInteraction]:
         """
         Validate that interaction targets match current suggestions.
         
@@ -231,7 +230,7 @@ class SuggestionInteractionService:
         if not current_suggestions:
             return interactions
         
-        validated: List[DetectedInteraction] = []
+        validated: list[DetectedInteraction] = []
         suggestions_lower = [s.lower() for s in current_suggestions]
         
         for interaction in interactions:
@@ -273,8 +272,8 @@ class SuggestionInteractionService:
     def _find_best_match(
         self,
         target: str,
-        suggestions: List[str]
-    ) -> Tuple[str, float]:
+        suggestions: list[str]
+    ) -> tuple[str, float]:
         """
         Find the best matching suggestion for a target skill name.
         
@@ -312,9 +311,9 @@ class SuggestionInteractionService:
     
     def apply_interactions(
         self,
-        interactions: List[DetectedInteraction],
-        current_suggestions: Union[List[str], List[Any]]
-    ) -> List[str]:
+        interactions: list[DetectedInteraction],
+        current_suggestions: list[str] | list[Any]
+    ) -> list[str]:
         """
         Apply detected interactions to the current list of suggestions.
         
@@ -327,7 +326,7 @@ class SuggestionInteractionService:
         Returns:
             Updated list of suggestions as strings after applying interactions
         """
-        suggestions: List[str] = []
+        suggestions: list[str] = []
         for s in current_suggestions:
             if isinstance(s, str):
                 suggestions.append(s)
@@ -374,7 +373,7 @@ class SuggestionInteractionService:
     def _validate_replacement_skill(
         self,
         skill_name: str
-    ) -> Tuple[bool, List[str]]:
+    ) -> tuple[bool, list[str]]:
         """
         Validate if a replacement skill exists in the catalog.
         
@@ -397,7 +396,7 @@ class SuggestionInteractionService:
     
     def generate_confirmation_message(
         self,
-        interactions: List[DetectedInteraction]
+        interactions: list[DetectedInteraction]
     ) -> str:
         """
         Generate a confirmation message in Portuguese for the applied interactions.
@@ -411,7 +410,7 @@ class SuggestionInteractionService:
         if not interactions:
             return "Entendi! Não detectei alterações específicas nas sugestões. Como posso ajudar?"
         
-        messages: List[str] = []
+        messages: list[str] = []
         
         accepts = [i for i in interactions if i.interaction_type == SuggestionInteractionType.ACCEPT]
         rejects = [i for i in interactions if i.interaction_type == SuggestionInteractionType.REJECT]
@@ -467,7 +466,7 @@ class SuggestionInteractionService:
         self,
         skill_name: str,
         limit: int = 5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get alternative skill suggestions from the catalog.
         
@@ -483,9 +482,9 @@ class SuggestionInteractionService:
     def suggest_skills_for_replacement(
         self,
         current_skill: str,
-        role: Optional[str] = None,
-        area: Optional[str] = None
-    ) -> List[str]:
+        role: str | None = None,
+        area: str | None = None
+    ) -> list[str]:
         """
         Suggest replacement skills based on context.
         

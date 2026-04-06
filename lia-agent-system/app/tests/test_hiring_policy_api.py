@@ -8,19 +8,19 @@ Uses httpx AsyncClient + FastAPI TestClient pattern to test:
 - GET /{company_id}/progress → returns progress and blocks_completed
 - Invalid block returns 400
 """
-import pytest
 import uuid
-from unittest.mock import AsyncMock, patch, MagicMock
-from httpx import AsyncClient, ASGITransport
+
+import pytest
+from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 from app.models.company_hiring_policy import (
-    CompanyHiringPolicy,
+    AUTOMATION_RULES_DEFAULTS,
+    COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
-    COMMUNICATION_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
-    AUTOMATION_RULES_DEFAULTS,
+    CompanyHiringPolicy,
 )
 
 

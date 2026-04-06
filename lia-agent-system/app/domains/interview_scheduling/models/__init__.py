@@ -1,13 +1,13 @@
 """Interview & Scheduling Domain - Model definitions."""
 from app.domains.interview_scheduling.models.interview import (
+    CalendarAvailability,
     Interview,
     InterviewFeedback,
-    CalendarAvailability,
 )
 from app.domains.interview_scheduling.models.self_scheduling import (
-    SelfSchedulingLink,
-    RescheduleHistory,
     InterviewReminder,
+    RescheduleHistory,
+    SelfSchedulingLink,
 )
 
 __all__ = [

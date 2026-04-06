@@ -1,46 +1,48 @@
 """
 Email Templates API endpoints for managing email communications.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional, List, Dict, cast, Any
-from sqlalchemy import select, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-import logging
-from datetime import datetime, timedelta
-import uuid as uuid_module
-import re
 import html
+import logging
+import re
+import uuid as uuid_module
+from datetime import datetime, timedelta
+from typing import Any, cast
 
-from app.models.email_template import EmailTemplate, EmailLog
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import get_current_user
+from app.auth.models import User
+from app.core.database import get_db
+from app.core.template_channels import ALL_CHANNELS, CHANNEL_DESCRIPTIONS, CHANNEL_LABELS
+from app.domains.communication.services.email_service import email_service
+from app.domains.job_management.services.template_seeder import clone_templates_for_client as clone_for_client_service
+from app.domains.job_management.services.template_seeder import seed_default_templates as seed_system_templates
 from app.models.candidate import Candidate
+from app.models.email_template import EmailLog, EmailTemplate
 from app.schemas.email_template import (
-    EmailTemplateCreate,
-    EmailTemplateUpdate,
-    EmailTemplateResponse,
-    EmailTemplateListResponse,
+    DefaultTemplatesResponse,
+    EmailLogListResponse,
+    EmailLogResponse,
     EmailPreviewRequest,
     EmailPreviewResponse,
     EmailSendRequest,
     EmailSendResponse,
-    EmailLogResponse,
-    EmailLogListResponse,
-    DefaultTemplatesResponse,
-    TemplateGenerateRequest,
-    TemplateGenerateData,
-    TemplateGenerateResponse,
-    TemplatePreviewByIdRequest,
-    TemplatePreviewByIdData,
-    TemplatePreviewByIdResponse,
-    TemplateAdjustRequest,
+    EmailTemplateCreate,
+    EmailTemplateListResponse,
+    EmailTemplateResponse,
+    EmailTemplateUpdate,
     TemplateAdjustData,
-    TemplateAdjustResponse
+    TemplateAdjustRequest,
+    TemplateAdjustResponse,
+    TemplateGenerateData,
+    TemplateGenerateRequest,
+    TemplateGenerateResponse,
+    TemplatePreviewByIdData,
+    TemplatePreviewByIdRequest,
+    TemplatePreviewByIdResponse,
 )
-from app.domains.communication.services.email_service import email_service
-from app.domains.job_management.services.template_seeder import seed_default_templates as seed_system_templates, clone_templates_for_client as clone_for_client_service
-from app.core.database import get_db
-from app.core.template_channels import ALL_CHANNELS, CHANNEL_LABELS, CHANNEL_DESCRIPTIONS
-from app.auth.dependencies import get_current_user
-from app.auth.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +68,7 @@ def sanitize_variable_value(value: str) -> str:
     return sanitized
 
 
-def sanitize_variables(variables: Dict[str, str]) -> Dict[str, str]:
+def sanitize_variables(variables: dict[str, str]) -> dict[str, str]:
     """Sanitize all template variables."""
     return {key: sanitize_variable_value(value) for key, value in variables.items()}
 
@@ -102,13 +104,13 @@ async def validate_recipient_is_known_candidate(db: AsyncSession, email: str) ->
 
 @router.get("", response_model=EmailTemplateListResponse)
 async def list_email_templates(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    channel: Optional[str] = Query(None, description="Filter by channel: email or whatsapp"),
-    situation: Optional[str] = Query(None, description="Filter by situation/context"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    search: Optional[str] = Query(None, description="Search in name and subject"),
-    company_id: Optional[str] = Query(None, description="Filter by company ID (includes system templates)"),
-    visibility: Optional[str] = Query(None, description="Filter by visibility: 'recruiter', 'admin', or 'all'"),
+    category: str | None = Query(None, description="Filter by category"),
+    channel: str | None = Query(None, description="Filter by channel: email or whatsapp"),
+    situation: str | None = Query(None, description="Filter by situation/context"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    search: str | None = Query(None, description="Search in name and subject"),
+    company_id: str | None = Query(None, description="Filter by company ID (includes system templates)"),
+    visibility: str | None = Query(None, description="Filter by visibility: 'recruiter', 'admin', or 'all'"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
@@ -226,18 +228,18 @@ async def list_email_templates(
                 EmailTemplateResponse(
                     id=cast(uuid_module.UUID, t.id),
                     name=cast(str, t.name),
-                    subject=cast(Optional[str], t.subject),
+                    subject=cast(str | None, t.subject),
                     body_html=cast(str, t.body_html),
-                    body_text=cast(Optional[str], t.body_text),
-                    category=cast(Optional[str], t.category),
+                    body_text=cast(str | None, t.body_text),
+                    category=cast(str | None, t.category),
                     channel=cast(str, t.channel) if t.channel else "email",
-                    situation=cast(Optional[str], t.situation),
-                    trigger_type=cast(Optional[str], t.trigger_type) if t.trigger_type else "manual",
-                    used_in=cast(List[str], t.used_in) if t.used_in else [],
-                    priority=cast(Optional[str], t.priority) if t.priority else "medium",
-                    variables=cast(List[str], t.variables) if t.variables else [],
+                    situation=cast(str | None, t.situation),
+                    trigger_type=cast(str | None, t.trigger_type) if t.trigger_type else "manual",
+                    used_in=cast(list[str], t.used_in) if t.used_in else [],
+                    priority=cast(str | None, t.priority) if t.priority else "medium",
+                    variables=cast(list[str], t.variables) if t.variables else [],
                     is_active=cast(bool, t.is_active),
-                    created_by=cast(Optional[str], t.created_by),
+                    created_by=cast(str | None, t.created_by),
                     created_at=cast(datetime, t.created_at),
                     updated_at=cast(datetime, t.updated_at) if t.updated_at else cast(datetime, t.created_at)
                 )
@@ -270,18 +272,18 @@ async def get_email_template(
         return EmailTemplateResponse(
             id=cast(uuid_module.UUID, template.id),
             name=cast(str, template.name),
-            subject=cast(Optional[str], template.subject),
+            subject=cast(str | None, template.subject),
             body_html=cast(str, template.body_html),
-            body_text=cast(Optional[str], template.body_text),
-            category=cast(Optional[str], template.category),
+            body_text=cast(str | None, template.body_text),
+            category=cast(str | None, template.category),
             channel=cast(str, template.channel) if template.channel else "email",
-            situation=cast(Optional[str], template.situation),
-            trigger_type=cast(Optional[str], template.trigger_type) if template.trigger_type else "manual",
-            used_in=cast(List[str], template.used_in) if template.used_in else [],
-            priority=cast(Optional[str], template.priority) if template.priority else "medium",
-            variables=cast(List[str], template.variables) if template.variables else [],
+            situation=cast(str | None, template.situation),
+            trigger_type=cast(str | None, template.trigger_type) if template.trigger_type else "manual",
+            used_in=cast(list[str], template.used_in) if template.used_in else [],
+            priority=cast(str | None, template.priority) if template.priority else "medium",
+            variables=cast(list[str], template.variables) if template.variables else [],
             is_active=cast(bool, template.is_active),
-            created_by=cast(Optional[str], template.created_by),
+            created_by=cast(str | None, template.created_by),
             created_at=cast(datetime, template.created_at),
             updated_at=cast(datetime, template.updated_at) if template.updated_at else cast(datetime, template.created_at)
         )
@@ -337,18 +339,18 @@ async def create_email_template(
         return EmailTemplateResponse(
             id=cast(uuid_module.UUID, template.id),
             name=cast(str, template.name),
-            subject=cast(Optional[str], template.subject),
+            subject=cast(str | None, template.subject),
             body_html=cast(str, template.body_html),
-            body_text=cast(Optional[str], template.body_text),
-            category=cast(Optional[str], template.category),
+            body_text=cast(str | None, template.body_text),
+            category=cast(str | None, template.category),
             channel=cast(str, template.channel) if template.channel else "email",
-            situation=cast(Optional[str], template.situation),
-            trigger_type=cast(Optional[str], template.trigger_type) if template.trigger_type else "manual",
-            used_in=cast(List[str], template.used_in) if template.used_in else [],
-            priority=cast(Optional[str], template.priority) if template.priority else "medium",
-            variables=cast(List[str], template.variables) if template.variables else [],
+            situation=cast(str | None, template.situation),
+            trigger_type=cast(str | None, template.trigger_type) if template.trigger_type else "manual",
+            used_in=cast(list[str], template.used_in) if template.used_in else [],
+            priority=cast(str | None, template.priority) if template.priority else "medium",
+            variables=cast(list[str], template.variables) if template.variables else [],
             is_active=cast(bool, template.is_active),
-            created_by=cast(Optional[str], template.created_by),
+            created_by=cast(str | None, template.created_by),
             created_at=cast(datetime, template.created_at),
             updated_at=cast(datetime, template.updated_at) if template.updated_at else datetime.utcnow()
         )
@@ -384,9 +386,9 @@ async def update_email_template(
                 setattr(template, field, value)
         
         if any(k in update_data for k in ['subject', 'body_html', 'body_text']):
-            subject_str = cast(Optional[str], template.subject) or ""
+            subject_str = cast(str | None, template.subject) or ""
             body_html_str = cast(str, template.body_html)
-            body_text_str = cast(Optional[str], template.body_text) or ""
+            body_text_str = cast(str | None, template.body_text) or ""
             detected_vars = email_service.extract_variables(
                 subject_str + " " + body_html_str + " " + body_text_str
             )
@@ -402,18 +404,18 @@ async def update_email_template(
         return EmailTemplateResponse(
             id=cast(uuid_module.UUID, template.id),
             name=cast(str, template.name),
-            subject=cast(Optional[str], template.subject),
+            subject=cast(str | None, template.subject),
             body_html=cast(str, template.body_html),
-            body_text=cast(Optional[str], template.body_text),
-            category=cast(Optional[str], template.category),
+            body_text=cast(str | None, template.body_text),
+            category=cast(str | None, template.category),
             channel=cast(str, template.channel) if template.channel else "email",
-            situation=cast(Optional[str], template.situation),
-            trigger_type=cast(Optional[str], template.trigger_type) if template.trigger_type else "manual",
-            used_in=cast(List[str], template.used_in) if template.used_in else [],
-            priority=cast(Optional[str], template.priority) if template.priority else "medium",
-            variables=cast(List[str], template.variables) if template.variables else [],
+            situation=cast(str | None, template.situation),
+            trigger_type=cast(str | None, template.trigger_type) if template.trigger_type else "manual",
+            used_in=cast(list[str], template.used_in) if template.used_in else [],
+            priority=cast(str | None, template.priority) if template.priority else "medium",
+            variables=cast(list[str], template.variables) if template.variables else [],
             is_active=cast(bool, template.is_active),
-            created_by=cast(Optional[str], template.created_by),
+            created_by=cast(str | None, template.created_by),
             created_at=cast(datetime, template.created_at),
             updated_at=cast(datetime, template.updated_at) if template.updated_at else datetime.utcnow()
         )
@@ -517,9 +519,9 @@ async def preview_template_by_id(
         
         sanitized_variables = sanitize_variables(request.variables)
         
-        subject = cast(Optional[str], template.subject) or ""
+        subject = cast(str | None, template.subject) or ""
         body_html = cast(str, template.body_html)
-        body_text = cast(Optional[str], template.body_text) or ""
+        body_text = cast(str | None, template.body_text) or ""
         
         for var_name, var_value in sanitized_variables.items():
             placeholder = "{{" + var_name + "}}"
@@ -619,10 +621,10 @@ async def send_email(
 
 @router.get("/logs/all", response_model=EmailLogListResponse)
 async def list_email_logs(
-    template_id: Optional[str] = Query(None, description="Filter by template ID"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    status: Optional[str] = Query(None, description="Filter by status: sent, failed, pending"),
-    recipient_email: Optional[str] = Query(None, description="Filter by recipient email"),
+    template_id: str | None = Query(None, description="Filter by template ID"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    status: str | None = Query(None, description="Filter by status: sent, failed, pending"),
+    recipient_email: str | None = Query(None, description="Filter by recipient email"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
@@ -657,14 +659,14 @@ async def list_email_logs(
             items=[
                 EmailLogResponse(
                     id=cast(uuid_module.UUID, log.id),
-                    template_id=cast(Optional[uuid_module.UUID], log.template_id),
-                    candidate_id=cast(Optional[str], log.candidate_id),
+                    template_id=cast(uuid_module.UUID | None, log.template_id),
+                    candidate_id=cast(str | None, log.candidate_id),
                     recipient_email=cast(str, log.recipient_email),
                     subject=cast(str, log.subject),
                     status=cast(str, log.status),
-                    sent_at=cast(Optional[datetime], log.sent_at),
-                    error_message=cast(Optional[str], log.error_message),
-                    variables_used=cast(Dict[str, Any], log.variables_used) if log.variables_used else {},
+                    sent_at=cast(datetime | None, log.sent_at),
+                    error_message=cast(str | None, log.error_message),
+                    variables_used=cast(dict[str, Any], log.variables_used) if log.variables_used else {},
                     created_at=cast(datetime, log.created_at)
                 )
                 for log in logs
@@ -694,15 +696,15 @@ async def seed_default_templates(
                 EmailTemplateResponse(
                     id=cast(uuid_module.UUID, t.id),
                     name=cast(str, t.name),
-                    subject=cast(Optional[str], t.subject),
+                    subject=cast(str | None, t.subject),
                     body_html=cast(str, t.body_html),
-                    body_text=cast(Optional[str], t.body_text),
-                    category=cast(Optional[str], t.category),
+                    body_text=cast(str | None, t.body_text),
+                    category=cast(str | None, t.category),
                     channel=cast(str, t.channel) if t.channel else "email",
-                    situation=cast(Optional[str], t.situation),
-                    variables=cast(List[str], t.variables) if t.variables else [],
+                    situation=cast(str | None, t.situation),
+                    variables=cast(list[str], t.variables) if t.variables else [],
                     is_active=cast(bool, t.is_active),
-                    created_by=cast(Optional[str], t.created_by),
+                    created_by=cast(str | None, t.created_by),
                     created_at=cast(datetime, t.created_at),
                     updated_at=cast(datetime, t.updated_at) if t.updated_at else cast(datetime, t.created_at)
                 )
@@ -848,6 +850,7 @@ async def generate_template_with_ai(
     - recruiter_name: Recruiter name (optional)
     """
     import os
+
     from anthropic import Anthropic
     
     try:
@@ -994,6 +997,7 @@ async def adjust_template_with_ai(
     - "Traduza para inglês mantendo as variáveis"
     """
     import os
+
     from anthropic import Anthropic
     
     try:

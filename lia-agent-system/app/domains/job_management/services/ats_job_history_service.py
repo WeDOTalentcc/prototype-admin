@@ -13,10 +13,10 @@ This data enriches the Job Wizard with:
 - Time-to-fill benchmarks
 """
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +36,26 @@ class ATSJobDescription:
     ats_job_id: str
     ats_type: str
     title: str
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    seniority: Optional[str] = None
-    status: Optional[ATSJobStatus] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    seniority: str | None = None
+    status: ATSJobStatus | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
     salary_currency: str = "BRL"
-    skills: Optional[List[str]] = None
-    responsibilities: Optional[List[str]] = None
-    requirements: Optional[List[str]] = None
-    benefits: Optional[List[str]] = None
-    description_text: Optional[str] = None
-    created_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
-    time_to_fill_days: Optional[int] = None
-    applications_count: Optional[int] = None
-    hired_count: Optional[int] = None
+    skills: list[str] | None = None
+    responsibilities: list[str] | None = None
+    requirements: list[str] | None = None
+    benefits: list[str] | None = None
+    description_text: str | None = None
+    created_at: datetime | None = None
+    closed_at: datetime | None = None
+    time_to_fill_days: int | None = None
+    applications_count: int | None = None
+    hired_count: int | None = None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "ats_job_id": self.ats_job_id,
@@ -93,8 +93,8 @@ class ATSSalaryInsight:
     confidence: str
     ats_type: str
     role_match: str
-    seniority_match: Optional[str] = None
-    location_match: Optional[str] = None
+    seniority_match: str | None = None
+    location_match: str | None = None
 
 
 @dataclass
@@ -142,7 +142,7 @@ class ATSJobHistoryService:
             self._ats_service = ats_sync_service
         return self._ats_service
     
-    def _normalize_role(self, role: str) -> List[str]:
+    def _normalize_role(self, role: str) -> list[str]:
         """Normalize role name for matching."""
         role_lower = role.lower()
         variations = [role_lower]
@@ -161,7 +161,7 @@ class ATSJobHistoryService:
         
         return any(var in job_lower for var in target_variations)
     
-    def _extract_seniority(self, title: str) -> Optional[str]:
+    def _extract_seniority(self, title: str) -> str | None:
         """Extract seniority level from job title."""
         title_lower = title.lower()
         
@@ -183,10 +183,10 @@ class ATSJobHistoryService:
         self,
         ats_type: str,
         company_id: str,
-        status: Optional[ATSJobStatus] = None,
+        status: ATSJobStatus | None = None,
         months_back: int = 12,
         limit: int = 100
-    ) -> List[ATSJobDescription]:
+    ) -> list[ATSJobDescription]:
         """
         Fetch jobs from a specific ATS.
         
@@ -228,7 +228,7 @@ class ATSJobHistoryService:
             self.logger.error(f"Error fetching jobs from {ats_type}: {e}")
             return []
     
-    def _normalize_job(self, raw_job: Dict[str, Any], ats_type: str) -> ATSJobDescription:
+    def _normalize_job(self, raw_job: dict[str, Any], ats_type: str) -> ATSJobDescription:
         """Normalize job data from specific ATS format to standard format."""
         if ats_type == "gupy":
             return self._normalize_gupy_job(raw_job)
@@ -239,7 +239,7 @@ class ATSJobHistoryService:
         else:
             return self._normalize_generic_job(raw_job, ats_type)
     
-    def _normalize_gupy_job(self, job: Dict[str, Any]) -> ATSJobDescription:
+    def _normalize_gupy_job(self, job: dict[str, Any]) -> ATSJobDescription:
         """Normalize Gupy job format."""
         salary_data = job.get("salary", {}) or {}
         
@@ -261,7 +261,7 @@ class ATSJobHistoryService:
             applications_count=job.get("applicationsCount", 0)
         )
     
-    def _normalize_pandape_job(self, job: Dict[str, Any]) -> ATSJobDescription:
+    def _normalize_pandape_job(self, job: dict[str, Any]) -> ATSJobDescription:
         """Normalize Pandapé job format."""
         return ATSJobDescription(
             ats_job_id=str(job.get("id", "")),
@@ -280,7 +280,7 @@ class ATSJobHistoryService:
             closed_at=self._parse_date(job.get("data_fechamento"))
         )
     
-    def _normalize_unified_job(self, job: Dict[str, Any], ats_type: str) -> ATSJobDescription:
+    def _normalize_unified_job(self, job: dict[str, Any], ats_type: str) -> ATSJobDescription:
         """Normalize Merge unified format."""
         compensation = job.get("compensation", {}) or {}
         
@@ -300,7 +300,7 @@ class ATSJobHistoryService:
             closed_at=self._parse_date(job.get("closed_at"))
         )
     
-    def _normalize_generic_job(self, job: Dict[str, Any], ats_type: str) -> ATSJobDescription:
+    def _normalize_generic_job(self, job: dict[str, Any], ats_type: str) -> ATSJobDescription:
         """Fallback normalization for unknown ATS formats."""
         return ATSJobDescription(
             ats_job_id=str(job.get("id", "")),
@@ -311,7 +311,7 @@ class ATSJobHistoryService:
             description_text=job.get("description", "")
         )
     
-    def _map_work_model(self, value: str) -> Optional[str]:
+    def _map_work_model(self, value: str) -> str | None:
         """Map ATS work model to standard format."""
         value_lower = str(value).lower()
         
@@ -324,7 +324,7 @@ class ATSJobHistoryService:
         
         return None
     
-    def _map_status(self, value: str) -> Optional[ATSJobStatus]:
+    def _map_status(self, value: str) -> ATSJobStatus | None:
         """Map ATS status to standard enum."""
         value_lower = str(value).lower()
         
@@ -342,7 +342,7 @@ class ATSJobHistoryService:
         
         return None
     
-    def _extract_location(self, locations: List[Any]) -> Optional[str]:
+    def _extract_location(self, locations: list[Any]) -> str | None:
         """Extract primary location from locations list."""
         if not locations:
             return None
@@ -352,7 +352,7 @@ class ATSJobHistoryService:
         
         return str(locations[0])
     
-    def _parse_date(self, value: Any) -> Optional[datetime]:
+    def _parse_date(self, value: Any) -> datetime | None:
         """Parse date from various formats."""
         if not value:
             return None
@@ -376,10 +376,10 @@ class ATSJobHistoryService:
         self,
         company_id: str,
         role: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
+        seniority: str | None = None,
+        location: str | None = None,
         months_back: int = 12
-    ) -> Optional[ATSSalaryInsight]:
+    ) -> ATSSalaryInsight | None:
         """
         Get salary insights from ATS historical data.
         
@@ -448,14 +448,14 @@ class ATSJobHistoryService:
         role: str,
         months_back: int = 12,
         limit: int = 20
-    ) -> List[ATSSkillInsight]:
+    ) -> list[ATSSkillInsight]:
         """
         Get common skills for a role from ATS historical data.
         
         Analyzes skills used in similar job postings.
         """
         ats_service = self._get_ats_service()
-        skill_counts: Dict[str, int] = {}
+        skill_counts: dict[str, int] = {}
         total_jobs = 0
         ats_sources = []
         
@@ -503,9 +503,9 @@ class ATSJobHistoryService:
         self,
         company_id: str,
         role: str,
-        seniority: Optional[str] = None,
+        seniority: str | None = None,
         limit: int = 10
-    ) -> List[ATSJobDescription]:
+    ) -> list[ATSJobDescription]:
         """
         Find similar jobs from ATS history.
         

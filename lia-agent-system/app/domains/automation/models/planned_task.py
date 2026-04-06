@@ -7,11 +7,13 @@ PlannedTasks are structured tasks created by the TaskPlannerAgent that support:
 - Duration estimation and tracking
 - DAG-based execution planning
 """
-from sqlalchemy import Column, String, Text, DateTime, Enum as SQLEnum, JSON, ForeignKey, Boolean, Integer, Float, ARRAY
-from sqlalchemy.orm import relationship
-from datetime import datetime
 import enum
 import uuid
+from datetime import datetime
+
+from sqlalchemy import ARRAY, JSON, Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 

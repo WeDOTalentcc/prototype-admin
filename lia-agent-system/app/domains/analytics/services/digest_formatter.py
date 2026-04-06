@@ -7,9 +7,8 @@ required by its target channel:
 - ChatDigestFormatter   → Markdown message for ProactiveService
 - BellDigestFormatter   → Short title + action_url for bell notification
 """
-from typing import Dict, Any, List
 from abc import ABC, abstractmethod
-from datetime import datetime
+from typing import Any
 
 from app.shared.pii_masking import get_masked_logger
 
@@ -19,18 +18,18 @@ logger = get_masked_logger(__name__)
 class DigestFormatter(ABC):
 
     @abstractmethod
-    def format(self, digest: Dict[str, Any]) -> Dict[str, Any]:
+    def format(self, digest: dict[str, Any]) -> dict[str, Any]:
         ...
 
 
 class BellDigestFormatter(DigestFormatter):
 
-    def format(self, digest: Dict[str, Any]) -> Dict[str, Any]:
+    def format(self, digest: dict[str, Any]) -> dict[str, Any]:
         pipeline = digest.get("pipeline_health", {})
         at_risk = digest.get("vagas_em_risco", {})
         compliance = digest.get("compliance_summary", {})
 
-        active_jobs = pipeline.get("total_active_jobs", 0)
+        pipeline.get("total_active_jobs", 0)
         screened = pipeline.get("candidates_screened_week", 0)
         risk_count = at_risk.get("count", 0)
         compliance_status = compliance.get("status", "ok")
@@ -53,7 +52,7 @@ class BellDigestFormatter(DigestFormatter):
 
 class ChatDigestFormatter(DigestFormatter):
 
-    def format(self, digest: Dict[str, Any]) -> Dict[str, Any]:
+    def format(self, digest: dict[str, Any]) -> dict[str, Any]:
         name = digest.get("recruiter_name", "").split()[0] if digest.get("recruiter_name") else "Recrutador"
         period = digest.get("period", {})
         pipeline = digest.get("pipeline_health", {})
@@ -62,7 +61,7 @@ class ChatDigestFormatter(DigestFormatter):
         optimization = digest.get("optimization_insights", {})
         patterns = digest.get("patterns_learned", {})
 
-        lines: List[str] = []
+        lines: list[str] = []
         lines.append(f"Bom dia, {name}. Preparei o resumo da sua semana de recrutamento ({period.get('start', '')} a {period.get('end', '')}).")
         lines.append("")
 
@@ -123,7 +122,7 @@ class ChatDigestFormatter(DigestFormatter):
 
 class TeamsDigestFormatter(DigestFormatter):
 
-    def format(self, digest: Dict[str, Any]) -> Dict[str, Any]:
+    def format(self, digest: dict[str, Any]) -> dict[str, Any]:
         name = digest.get("recruiter_name", "").split()[0] if digest.get("recruiter_name") else "Recrutador"
         period = digest.get("period", {})
         pipeline = digest.get("pipeline_health", {})
@@ -131,7 +130,7 @@ class TeamsDigestFormatter(DigestFormatter):
         compliance = digest.get("compliance_summary", {})
         optimization = digest.get("optimization_insights", {})
 
-        body: List[Dict[str, Any]] = []
+        body: list[dict[str, Any]] = []
 
         body.append({
             "type": "TextBlock",
@@ -235,7 +234,7 @@ class TeamsDigestFormatter(DigestFormatter):
         return card
 
     @staticmethod
-    def _metric_column(value: str, label: str) -> Dict[str, Any]:
+    def _metric_column(value: str, label: str) -> dict[str, Any]:
         return {
             "type": "Column",
             "width": "stretch",

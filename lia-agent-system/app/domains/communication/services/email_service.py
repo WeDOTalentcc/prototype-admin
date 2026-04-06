@@ -2,30 +2,33 @@
 Email Service for managing email templates and sending emails.
 Supports multiple email providers (Mailgun primary, Resend fallback) with abstraction layer.
 """
-import re
-import os
 import logging
-from datetime import datetime
-from typing import Dict, Any, List, Optional, Tuple, cast
-from uuid import UUID
+import os
+import re
 import uuid
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.email_template import EmailTemplate, EmailLog
 from app.domains.communication.services.email_providers import (
     EmailProvider,
-    EmailResult,
+    get_all_providers_status,
     get_email_provider,
     get_provider_for_client,
-    get_all_providers_status
+)
+from app.domains.communication.services.email_providers import (
+    FallbackEmailProvider as _FallbackEmailProvider,
 )
 from app.domains.communication.services.email_providers import (
     MailgunProvider as _DomainMailgunProvider,
-    ResendProvider as _DomainResendProvider,
-    FallbackEmailProvider as _FallbackEmailProvider,
 )
+from app.domains.communication.services.email_providers import (
+    ResendProvider as _DomainResendProvider,
+)
+from app.models.email_template import EmailLog, EmailTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +37,7 @@ logger.info(f"Email provider configured: {EMAIL_PROVIDER}")
 
 
 from .email_templates_data import DEFAULT_TEMPLATES
+
 
 class EmailService:
     """
@@ -55,7 +59,7 @@ class EmailService:
         )
         self.variable_pattern = re.compile(r'\{\{(\w+)\}\}')
     
-    def extract_variables(self, text: str) -> List[str]:
+    def extract_variables(self, text: str) -> list[str]:
         """Extract variable names from a template text."""
         if not text:
             return []
@@ -64,8 +68,8 @@ class EmailService:
     def render_template(
         self,
         template_text: str,
-        variables: Dict[str, Any]
-    ) -> Tuple[str, List[str]]:
+        variables: dict[str, Any]
+    ) -> tuple[str, list[str]]:
         """
         Render a template with the given variables.
         Returns the rendered text and a list of missing variables.
@@ -88,12 +92,12 @@ class EmailService:
     async def preview_email(
         self,
         db: AsyncSession,
-        template_id: Optional[UUID],
-        subject: Optional[str],
-        body_html: Optional[str],
-        body_text: Optional[str],
-        variables: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        template_id: UUID | None,
+        subject: str | None,
+        body_html: str | None,
+        body_text: str | None,
+        variables: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Preview an email with variables substituted.
         """
@@ -147,12 +151,12 @@ class EmailService:
         db: AsyncSession,
         template_id: UUID,
         recipient_email: str,
-        variables: Dict[str, Any],
-        candidate_id: Optional[str] = None,
+        variables: dict[str, Any],
+        candidate_id: str | None = None,
         send_immediately: bool = True,
-        created_by: Optional[str] = None,
-        subject_override: Optional[str] = None,
-        body_override: Optional[str] = None
+        created_by: str | None = None,
+        subject_override: str | None = None,
+        body_override: str | None = None
     ) -> EmailLog:
         """
         Send an email using a template.
@@ -221,11 +225,11 @@ class EmailService:
                 if success:
                     email_log.status = "sent"  # type: ignore[assignment]
                     email_log.sent_at = datetime.utcnow()  # type: ignore[assignment]
-                    logger.info(f"Email sent successfully")
+                    logger.info("Email sent successfully")
                 else:
                     email_log.status = "failed"  # type: ignore[assignment]
                     email_log.error_message = "Email provider returned failure"  # type: ignore[assignment]
-                    logger.error(f"Failed to send email")
+                    logger.error("Failed to send email")
                     
             except Exception as e:
                 email_log.status = "failed"  # type: ignore[assignment]
@@ -243,10 +247,10 @@ class EmailService:
         to_email: str,
         subject: str,
         body_html: str,
-        body_text: Optional[str] = None,
-        from_email: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_config: Optional[Dict[str, Any]] = None
+        body_text: str | None = None,
+        from_email: str | None = None,
+        client_id: str | None = None,
+        client_config: dict[str, Any] | None = None
     ) -> bool:
         """
         Send email using Mailgun as primary provider with automatic Resend fallback.
@@ -306,7 +310,7 @@ class EmailService:
         db: AsyncSession,
         notification_type: str,
         recipient_email: str,
-        variables: Dict[str, Any]
+        variables: dict[str, Any]
     ) -> bool:
         """
         Convenience method for sending auth-related notification emails.
@@ -373,7 +377,7 @@ class EmailService:
             logger.error(f"Error sending notification email ({notification_type}): {e}")
             return False
     
-    async def seed_default_templates(self, db: AsyncSession, created_by: str = "system") -> List[EmailTemplate]:
+    async def seed_default_templates(self, db: AsyncSession, created_by: str = "system") -> list[EmailTemplate]:
         """
         Seed the database with default email templates.
         Only creates templates that don't already exist (by name).
@@ -413,7 +417,7 @@ class EmailService:
         
         return created_templates
     
-    def get_provider_status(self) -> Dict[str, Any]:
+    def get_provider_status(self) -> dict[str, Any]:
         """
         Get status of all configured email providers.
         
@@ -593,18 +597,13 @@ class EmailService:
 
 email_service = EmailService()
 
-from app.domains.communication.schemas.email_schemas import (
-    EmailRecipient,
-    EmailAttachment,
-    SendEmailRequest,
-    SendTemplateEmailRequest,
-    BulkEmailRecipient,
-    SendBulkEmailRequest,
-    EmailSendResult,
-    BulkEmailResult,
-)
-
 import asyncio
+
+from app.domains.communication.schemas.email_schemas import (
+    BulkEmailRecipient,
+    BulkEmailResult,
+    EmailSendResult,
+)
 
 
 class MailgunEmailService:
@@ -650,13 +649,13 @@ class MailgunEmailService:
         to_email: str,
         subject: str,
         body: str,
-        to_name: Optional[str] = None,
-        body_html: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        reply_to: Optional[str] = None,
-        categories: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        to_name: str | None = None,
+        body_html: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        reply_to: str | None = None,
+        categories: list[str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EmailSendResult:
         """
         Send a single email via Mailgun.
@@ -708,12 +707,12 @@ class MailgunEmailService:
         self,
         to_email: str,
         template_name: str,
-        template_data: Dict[str, Any],
-        to_name: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        reply_to: Optional[str] = None,
-        categories: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        template_data: dict[str, Any],
+        to_name: str | None = None,
+        cc: list[str] | None = None,
+        reply_to: str | None = None,
+        categories: list[str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EmailSendResult:
         """
         Send an email using a predefined template from EmailTemplates.
@@ -782,12 +781,12 @@ class MailgunEmailService:
 
     async def send_bulk_email(
         self,
-        recipients: List[BulkEmailRecipient],
+        recipients: list[BulkEmailRecipient],
         subject: str,
         body: str,
-        body_html: Optional[str] = None,
-        categories: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        body_html: str | None = None,
+        categories: list[str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BulkEmailResult:
         """
         Send bulk emails to multiple recipients with optional personalization.
@@ -806,7 +805,7 @@ class MailgunEmailService:
         Returns:
             BulkEmailResult with total, successful, failed counts and individual results
         """
-        results: List[EmailSendResult] = []
+        results: list[EmailSendResult] = []
 
         for recipient in recipients:
             personalized_subject = subject
@@ -855,11 +854,11 @@ class MailgunEmailService:
         to_email: str,
         subject: str,
         body: str,
-        to_name: Optional[str] = None,
-        body_html: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        to_name: str | None = None,
+        body_html: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EmailSendResult:
         """Send email in development mode (logging only, no real sending)."""
         message_id = f"dev_mg_{uuid.uuid4().hex[:12]}"
@@ -900,13 +899,13 @@ class MailgunEmailService:
         to_email: str,
         subject: str,
         body: str,
-        to_name: Optional[str] = None,
-        body_html: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        reply_to: Optional[str] = None,
-        categories: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        to_name: str | None = None,
+        body_html: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        reply_to: str | None = None,
+        categories: list[str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EmailSendResult:
         """Send email via Mailgun HTTP API with automatic Resend fallback.
 
@@ -931,7 +930,7 @@ class MailgunEmailService:
                 "Mailgun not configured (MAILGUN_API_KEY/MAILGUN_DOMAIN missing) — trying Resend fallback"
             )
 
-        mailgun_result: Optional[EmailSendResult] = None
+        mailgun_result: EmailSendResult | None = None
 
         if self.is_configured and not mailgun_circuit_open:
             try:
@@ -940,7 +939,7 @@ class MailgunEmailService:
                 sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
                 to_addr = f"{to_name} <{to_email}>" if to_name else to_email
 
-                data: Dict[str, Any] = {
+                data: dict[str, Any] = {
                     "from": sender,
                     "to": to_addr,
                     "subject": subject,
@@ -1065,12 +1064,12 @@ class MailgunEmailService:
         to_email: str,
         subject: str,
         body: str,
-        to_name: Optional[str] = None,
-        body_html: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        reply_to: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        to_name: str | None = None,
+        body_html: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        reply_to: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> EmailSendResult:
         """Send via Resend as automatic fallback when Mailgun is unavailable."""
         try:
@@ -1092,7 +1091,7 @@ class MailgunEmailService:
 
         sender = f"{resend_from_name} <{resend_from_email}>" if resend_from_name else resend_from_email
 
-        params: Dict[str, Any] = {
+        params: dict[str, Any] = {
             "from": sender,
             "to": [to_email],
             "subject": subject,
@@ -1129,7 +1128,7 @@ class MailgunEmailService:
             error_code="UNEXPECTED_RESPONSE"
         )
 
-    async def check_status(self, message_id: str) -> Tuple[str, Dict[str, Any]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any]]:
         """
         Check email delivery status.
 

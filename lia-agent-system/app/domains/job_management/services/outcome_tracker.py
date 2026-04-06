@@ -6,15 +6,14 @@ and feeds it into the feedback learning pipeline for continuous improvement.
 """
 import logging
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.candidate import VacancyCandidate
 from app.models.feedback_learning import JobOutcome, JobOutcomeType
 from app.models.job_vacancy import JobVacancy
-from app.models.candidate import VacancyCandidate
 from app.services.feedback_learning_service import FeedbackLearningService
 
 logger = logging.getLogger(__name__)
@@ -41,9 +40,9 @@ class OutcomeTracker:
         job_id: str,
         company_id: str,
         reason: str,
-        hired_candidate_id: Optional[str],
+        hired_candidate_id: str | None,
         db: AsyncSession,
-    ) -> Optional[JobOutcome]:
+    ) -> JobOutcome | None:
         """
         Record structured outcome data when a job is closed.
 
@@ -101,13 +100,13 @@ class OutcomeTracker:
             logger.error(f"OutcomeTracker: failed to record outcome for job {job_id}: {e}", exc_info=True)
             return None
 
-    async def _fetch_job(self, db: AsyncSession, job_id: str) -> Optional[JobVacancy]:
+    async def _fetch_job(self, db: AsyncSession, job_id: str) -> JobVacancy | None:
         result = await db.execute(
             select(JobVacancy).where(JobVacancy.id == UUID(job_id))
         )
         return result.scalar_one_or_none()
 
-    def _calc_time_to_fill(self, job: JobVacancy) -> Optional[int]:
+    def _calc_time_to_fill(self, job: JobVacancy) -> int | None:
         open_date = getattr(job, "open_date", None) or getattr(job, "created_at", None)
         if not open_date:
             return None

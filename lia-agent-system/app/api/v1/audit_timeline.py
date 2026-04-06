@@ -11,15 +11,13 @@ GET /api/v1/audit/executions?company_id=&domain=&limit=
 Acesso restrito: apenas usuários autenticados com company_id correspondente.
 """
 import logging
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.core.auth import get_current_user
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -28,51 +26,51 @@ router = APIRouter(prefix="/api/v1/audit", tags=["audit"])
 
 class ExecutionMetadataResponse(BaseModel):
     execution_id: str
-    session_id: Optional[str]
+    session_id: str | None
     company_id: str
-    user_id: Optional[str]
-    domain: Optional[str]
-    agent_type: Optional[str]
-    timestamp: Optional[str]
-    duration_ms: Optional[float]
-    nodes_visited: Optional[list]
-    tools_used: Optional[list]
-    success: Optional[bool]
-    confidence: Optional[float]
-    storage_path: Optional[str]
-    error: Optional[str]
+    user_id: str | None
+    domain: str | None
+    agent_type: str | None
+    timestamp: str | None
+    duration_ms: float | None
+    nodes_visited: list | None
+    tools_used: list | None
+    success: bool | None
+    confidence: float | None
+    storage_path: str | None
+    error: str | None
 
 
 class TimelineStep(BaseModel):
     step: int
     type: str                       # "llm_call" | "tool_call" | "node_transition"
     timestamp: str
-    model: Optional[str] = None
-    prompt_preview: Optional[str] = None
-    response_preview: Optional[str] = None
-    tokens_total: Optional[int] = None
-    latency_ms: Optional[float] = None
-    tool: Optional[str] = None
-    input_preview: Optional[str] = None
-    output_preview: Optional[str] = None
-    success: Optional[bool] = None
-    error: Optional[str] = None
-    from_node: Optional[str] = None
-    to_node: Optional[str] = None
+    model: str | None = None
+    prompt_preview: str | None = None
+    response_preview: str | None = None
+    tokens_total: int | None = None
+    latency_ms: float | None = None
+    tool: str | None = None
+    input_preview: str | None = None
+    output_preview: str | None = None
+    success: bool | None = None
+    error: str | None = None
+    from_node: str | None = None
+    to_node: str | None = None
 
 
 class TimelineResponse(BaseModel):
     execution_id: str
-    domain: Optional[str]
-    user_id: Optional[str]
+    domain: str | None
+    user_id: str | None
     company_id: str
-    timestamp: Optional[str]
-    duration_ms: Optional[float]
-    confidence: Optional[float]
-    success: Optional[bool]
-    steps: List[TimelineStep]
+    timestamp: str | None
+    duration_ms: float | None
+    confidence: float | None
+    success: bool | None
+    steps: list[TimelineStep]
     total_steps: int
-    storage_path: Optional[str]
+    storage_path: str | None
 
 
 @router.get("/executions/{execution_id}/timeline", response_model=TimelineResponse)
@@ -105,7 +103,7 @@ async def get_execution_timeline(
         raise HTTPException(status_code=403, detail="Acesso negado")
 
     # 3. Carregar payload completo do storage
-    steps: List[TimelineStep] = []
+    steps: list[TimelineStep] = []
     storage_path = meta.get("storage_path")
 
     if storage_path:
@@ -149,11 +147,11 @@ async def get_execution_timeline(
     )
 
 
-@router.get("/executions", response_model=List[ExecutionMetadataResponse])
+@router.get("/executions", response_model=list[ExecutionMetadataResponse])
 async def list_executions(
-    domain: Optional[str] = Query(None),
-    agent_type: Optional[str] = Query(None),
-    success: Optional[bool] = Query(None),
+    domain: str | None = Query(None),
+    agent_type: str | None = Query(None),
+    success: bool | None = Query(None),
     limit: int = Query(50, le=200),
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),

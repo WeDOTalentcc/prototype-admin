@@ -1,15 +1,15 @@
 """Automation & Tasks Domain - Tool definitions and executor."""
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from app.domains.base import DomainContext
 from app.domains.automation.tools.automation_tools import (
-    trigger_workflow,
-    send_automated_email,
-    update_candidate_status,
     bulk_send_notifications,
-    schedule_reminder,
     get_automation_logs,
+    schedule_reminder,
+    send_automated_email,
+    trigger_workflow,
+    update_candidate_status,
 )
+from app.domains.base import DomainContext
 
 __all__ = [
     "trigger_workflow",
@@ -93,9 +93,9 @@ def _get_tool_by_id(tool_id: str) -> dict | None:
 
 async def execute_automation_tool(
     tool_id: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     context: DomainContext,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     tool = _get_tool_by_id(tool_id)
     if not tool:
         return {"error": f"Tool {tool_id} not found", "status": "error"}

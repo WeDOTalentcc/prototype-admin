@@ -8,36 +8,35 @@ This is the main entry point for the Intelligence Layer, coordinating:
 - Confidence adjustments based on patterns
 - Suggestion generation for the wizard
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field as dataclass_field
 import logging
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
+from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.feedback_learning import JobOutcome, JobOutcomeType, WizardFeedback
 from app.models.intelligence_layer import (
-    IntelligenceInsight,
-    PatternCache,
     CorrectionPattern,
-    SuccessProfile,
+    IntelligenceInsight,
     OutcomeCorrelation,
+    PatternCache,
+    SuccessProfile,
 )
-from app.models.feedback_learning import WizardFeedback, JobOutcome, JobOutcomeType
-from app.services.pattern_detector_service import (
-    PatternDetectorService,
-    pattern_detector_service,
-    DetectedPattern,
+from app.services.confidence_policy_service import (
+    ConfidencePolicyService,
+    ConfidenceThresholds,
 )
 from app.services.outcome_correlator_service import (
     OutcomeCorrelatorService,
     outcome_correlator_service,
 )
-from app.services.confidence_policy_service import (
-    ConfidencePolicyService,
-    ConfidenceThresholds,
-    ConfidenceAction,
+from app.services.pattern_detector_service import (
+    PatternDetectorService,
+    pattern_detector_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -61,7 +60,7 @@ class DataQualityReport:
     correlation_analysis_ready: bool = False
     personalization_ready: bool = False
     lite_mode_ready: bool = False   # sugestões básicas disponíveis com ≥10 vagas
-    recommendations: List[str] = dataclass_field(default_factory=list)
+    recommendations: list[str] = dataclass_field(default_factory=list)
 
 
 @dataclass
@@ -73,27 +72,27 @@ class FieldSuggestion:
     source: str
     action: str
     reasoning: str
-    insights: List[str] = dataclass_field(default_factory=list)
-    adjustments_applied: List[str] = dataclass_field(default_factory=list)
+    insights: list[str] = dataclass_field(default_factory=list)
+    adjustments_applied: list[str] = dataclass_field(default_factory=list)
 
 
 @dataclass
 class IntelligenceContext:
     """Full intelligence context for a job creation session."""
     company_id: str
-    recruiter_id: Optional[str] = None
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    recruiter_id: str | None = None
+    role: str | None = None
+    seniority: str | None = None
+    department: str | None = None
     
-    data_quality: Optional[DataQualityReport] = None
-    correction_patterns: List[CorrectionPattern] = dataclass_field(default_factory=list)
-    success_profile: Optional[SuccessProfile] = None
-    correlations: List[OutcomeCorrelation] = dataclass_field(default_factory=list)
+    data_quality: DataQualityReport | None = None
+    correction_patterns: list[CorrectionPattern] = dataclass_field(default_factory=list)
+    success_profile: SuccessProfile | None = None
+    correlations: list[OutcomeCorrelation] = dataclass_field(default_factory=list)
     
-    suggestions: Dict[str, FieldSuggestion] = dataclass_field(default_factory=dict)
+    suggestions: dict[str, FieldSuggestion] = dataclass_field(default_factory=dict)
     
-    time_to_fill_prediction: Optional[Dict[str, Any]] = None
+    time_to_fill_prediction: dict[str, Any] | None = None
     
     generated_at: datetime = dataclass_field(default_factory=datetime.utcnow)
 
@@ -112,9 +111,9 @@ class IntelligenceLayerService:
     
     def __init__(
         self,
-        pattern_detector: Optional[PatternDetectorService] = None,
-        outcome_correlator: Optional[OutcomeCorrelatorService] = None,
-        confidence_service: Optional[ConfidencePolicyService] = None
+        pattern_detector: PatternDetectorService | None = None,
+        outcome_correlator: OutcomeCorrelatorService | None = None,
+        confidence_service: ConfidencePolicyService | None = None
     ):
         self.pattern_detector = pattern_detector or pattern_detector_service
         self.outcome_correlator = outcome_correlator or outcome_correlator_service
@@ -220,10 +219,10 @@ class IntelligenceLayerService:
         self,
         db: AsyncSession,
         company_id: str,
-        recruiter_id: Optional[str] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None
+        recruiter_id: str | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None
     ) -> IntelligenceContext:
         """
         Build full intelligence context for a job creation session.
@@ -356,7 +355,7 @@ class IntelligenceLayerService:
         Deactivates old patterns and replaces cache entry on refresh.
         """
         try:
-            from sqlalchemy import update, delete
+            from sqlalchemy import delete, update
             
             await db.execute(
                 update(CorrectionPattern)
@@ -475,9 +474,9 @@ class IntelligenceLayerService:
         self,
         field: str,
         value: Any,
-        patterns: List[CorrectionPattern],
-        seniority: Optional[str] = None
-    ) -> tuple[Any, List[str], float]:
+        patterns: list[CorrectionPattern],
+        seniority: str | None = None
+    ) -> tuple[Any, list[str], float]:
         """
         Apply pattern-based adjustments to a field value.
         
@@ -528,7 +527,7 @@ class IntelligenceLayerService:
         base_confidence: float,
         source: str,
         context: IntelligenceContext,
-        custom_thresholds: Optional[ConfidenceThresholds] = None
+        custom_thresholds: ConfidenceThresholds | None = None
     ) -> FieldSuggestion:
         """
         Generate a field suggestion with intelligence adjustments.
@@ -591,7 +590,7 @@ class IntelligenceLayerService:
         self,
         field: str,
         source: str,
-        adjustments: List[str],
+        adjustments: list[str],
         base_confidence: float,
         final_confidence: float
     ) -> str:
@@ -613,15 +612,15 @@ class IntelligenceLayerService:
         db: AsyncSession,
         company_id: str,
         insight_type: str,
-        field: Optional[str] = None,
-        job_id: Optional[UUID] = None,
-        recruiter_id: Optional[str] = None,
+        field: str | None = None,
+        job_id: UUID | None = None,
+        recruiter_id: str | None = None,
         original_value: Any = None,
         suggested_value: Any = None,
         confidence: float = 0.0,
-        source: Optional[str] = None,
-        reasoning: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        source: str | None = None,
+        reasoning: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> IntelligenceInsight:
         """Log an intelligence insight for tracking and improvement."""
         insight = IntelligenceInsight(
@@ -666,7 +665,7 @@ class IntelligenceLayerService:
         self,
         db: AsyncSession,
         company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Refresh all patterns for a company.
         
@@ -719,10 +718,10 @@ class IntelligenceLayerService:
         self,
         db: AsyncSession,
         company_id: str,
-        recruiter_id: Optional[str] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None
-    ) -> Dict[str, Any]:
+        recruiter_id: str | None = None,
+        role: str | None = None,
+        seniority: str | None = None
+    ) -> dict[str, Any]:
         """
         Get all enhancements for the job creation wizard.
         

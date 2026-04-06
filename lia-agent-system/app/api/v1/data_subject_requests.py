@@ -13,23 +13,29 @@ Provides endpoints for data subjects to exercise their rights under LGPD Art. 18
 Multi-tenant: Uses X-Company-ID header for authenticated endpoints.
 SLA: 15 business days legal deadline per LGPD.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc
-from typing import Optional
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.observability import DataSubjectRequest
-from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.data_subject_requests import (
-    DataSubjectRequestCreate, DataSubjectRequestResponse, DataSubjectRequestListResponse,
-    DataSubjectRequestPublicCreate, DataSubjectRequestPublicTrack, DataSubjectRequestAssign,
-    DataSubjectRequestVerifyIdentity, DataSubjectRequestComplete, DataSubjectRequestReject,
-    DataSubjectRequestStats
+    DataSubjectRequestAssign,
+    DataSubjectRequestComplete,
+    DataSubjectRequestCreate,
+    DataSubjectRequestListResponse,
+    DataSubjectRequestPublicCreate,
+    DataSubjectRequestPublicTrack,
+    DataSubjectRequestReject,
+    DataSubjectRequestResponse,
+    DataSubjectRequestStats,
+    DataSubjectRequestVerifyIdentity,
 )
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +60,7 @@ _REQUEST_TYPE_LABELS = {
 
 async def _notify_subject(
     subject_email: str,
-    subject_name: Optional[str],
+    subject_name: str | None,
     subject: str,
     body: str,
     company_id: str,
@@ -106,7 +112,7 @@ def calculate_sla_deadline(start_date: datetime, business_days: int = 15) -> dat
     return current
 
 
-def add_audit_trail_entry(request: DataSubjectRequest, action: str, user_id: Optional[str] = None, details: Optional[dict] = None):
+def add_audit_trail_entry(request: DataSubjectRequest, action: str, user_id: str | None = None, details: dict | None = None):
     """Add an entry to the request's audit trail."""
     entry = {
         "action": action,
@@ -329,11 +335,11 @@ async def get_request_stats(
 
 @router.get("/", response_model=DataSubjectRequestListResponse, summary="List data subject requests")
 async def list_data_subject_requests(
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    request_type: Optional[str] = Query(None, description="Filter by request type"),
-    date_from: Optional[datetime] = Query(None, description="Filter by start date"),
-    date_to: Optional[datetime] = Query(None, description="Filter by end date"),
-    subject_email: Optional[str] = Query(None, description="Filter by subject email"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    request_type: str | None = Query(None, description="Filter by request type"),
+    date_from: datetime | None = Query(None, description="Filter by start date"),
+    date_to: datetime | None = Query(None, description="Filter by end date"),
+    subject_email: str | None = Query(None, description="Filter by subject email"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     company_id: str = Depends(get_verified_company_id),

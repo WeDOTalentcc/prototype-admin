@@ -2,10 +2,10 @@
 Email providers abstraction layer.
 Supports Resend as primary provider.
 """
-import os
 import logging
-from typing import Optional, Dict, Any
+import os
 from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 class EmailResult:
     """Result of sending an email."""
     success: bool
-    message_id: Optional[str] = None
-    error: Optional[str] = None
+    message_id: str | None = None
+    error: str | None = None
 
 
 class EmailProvider:
@@ -26,10 +26,10 @@ class EmailProvider:
         to: str,
         subject: str,
         html: str,
-        text: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None
+        text: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None
     ) -> EmailResult:
         raise NotImplementedError
 
@@ -58,10 +58,10 @@ class ResendProvider(EmailProvider):
         to: str,
         subject: str,
         html: str,
-        text: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None
+        text: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None
     ) -> EmailResult:
         if not self.is_available:
             return EmailResult(success=False, error="Resend not available")
@@ -71,7 +71,7 @@ class ResendProvider(EmailProvider):
             if from_name:
                 sender = f"{from_name} <{sender}>"
             
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "from": sender,
                 "to": [to],
                 "subject": subject,
@@ -99,16 +99,16 @@ class MockProvider(EmailProvider):
         to: str,
         subject: str,
         html: str,
-        text: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None
+        text: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None
     ) -> EmailResult:
         logger.info(f"[MOCK EMAIL] To: {to}, Subject: {subject}")
         return EmailResult(success=True, message_id="mock-id")
 
 
-_provider_instance: Optional[EmailProvider] = None
+_provider_instance: EmailProvider | None = None
 
 
 def get_email_provider() -> EmailProvider:
@@ -131,12 +131,12 @@ def get_email_provider() -> EmailProvider:
     return _provider_instance
 
 
-def get_provider_for_client(client_id: Optional[str] = None) -> EmailProvider:
+def get_provider_for_client(client_id: str | None = None) -> EmailProvider:
     """Get provider for a specific client (returns default for now)."""
     return get_email_provider()
 
 
-def get_all_providers_status() -> Dict[str, Any]:
+def get_all_providers_status() -> dict[str, Any]:
     """Get status of all configured providers."""
     api_key = os.environ.get("RESEND_API_KEY")
     return {

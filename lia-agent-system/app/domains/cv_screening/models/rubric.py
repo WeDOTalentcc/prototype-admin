@@ -3,11 +3,12 @@ Rubric models for structured candidate evaluation.
 
 Based on Schmidt & Hunter (1998) meta-analysis and BARS methodology.
 """
-from enum import Enum
-from sqlalchemy import Column, String, Integer, DateTime, Float, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from datetime import datetime
 import uuid
+from datetime import datetime
+from enum import Enum
+
+from sqlalchemy import Column, DateTime, Float, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.core.database import Base
 

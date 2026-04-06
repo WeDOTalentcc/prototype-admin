@@ -13,7 +13,7 @@ import asyncio
 import logging
 
 from app.core.database import AsyncSessionLocal
-from app.shared.compliance.guardrail_repository import GuardrailRepository, GuardrailCreate
+from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,8 @@ async def run_seed(skip_if_exists: bool = True) -> int:
     Returns:
         Número de guardrails inseridos.
     """
-    from sqlalchemy import select, func
+    from sqlalchemy import func, select
+
     from app.models.guardrail import Guardrail
 
     inserted = 0

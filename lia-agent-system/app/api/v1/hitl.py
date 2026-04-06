@@ -6,8 +6,7 @@ Permite que o frontend aprove ou rejeite ações pendentes de agentes.
 POST /api/v1/hitl/{thread_id}/approve
 """
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -31,14 +30,14 @@ router = APIRouter(prefix="/hitl", tags=["hitl"])
 class ApprovalRequest(BaseModel):
     pending_id: str
     approved: bool
-    comment: Optional[str] = None
+    comment: str | None = None
 
 
 class ApprovalResponse(BaseModel):
     thread_id: str
     pending_id: str
     approved: bool
-    comment: Optional[str]
+    comment: str | None
     timestamp: str
 
 
@@ -60,7 +59,7 @@ async def approve_hitl_action(
     O agente que está pausado aguardando aprovação será retomado após esta chamada.
     """
     try:
-        result = await hitl_service.receive_approval(
+        await hitl_service.receive_approval(
             thread_id=thread_id,
             pending_id=body.pending_id,
             approved=body.approved,
@@ -86,7 +85,7 @@ async def approve_hitl_action(
         pending_id=body.pending_id,
         approved=body.approved,
         comment=body.comment,
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )
 
 

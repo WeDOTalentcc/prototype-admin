@@ -5,29 +5,25 @@ Provides a unified interface for managing subscriptions, invoices,
 and payment methods using Iugu or Vindi as the payment gateway.
 """
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime, date
+from datetime import datetime
+from typing import Any
 from uuid import UUID
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm import selectinload
 
 from app.models.billing import (
-    Subscription,
     Invoice,
-    PaymentMethod,
-    SubscriptionStatus,
     InvoiceStatus,
-    PaymentMethodType,
-    BillingProvider as BillingProviderEnum,
+    PaymentMethod,
+    Subscription,
+    SubscriptionStatus,
 )
 from app.models.client_account import ClientAccount
 from app.services.billing_providers.base import (
     BillingProviderBase,
     CustomerData,
     PaymentMethodData,
-    BillingResult,
 )
 from app.services.billing_providers.iugu_provider import IuguProvider
 from app.services.billing_providers.vindi_provider import VindiProvider
@@ -53,33 +49,33 @@ class BillingService:
         """
         self.db = db
         self.default_provider = default_provider
-        self._providers: Dict[str, BillingProviderBase] = {
+        self._providers: dict[str, BillingProviderBase] = {
             "iugu": IuguProvider(),
             "vindi": VindiProvider(),
         }
     
-    def get_provider(self, provider_name: Optional[str] = None) -> BillingProviderBase:
+    def get_provider(self, provider_name: str | None = None) -> BillingProviderBase:
         """Get a billing provider instance."""
         name = provider_name or self.default_provider
         if name not in self._providers:
             raise ValueError(f"Unknown billing provider: {name}")
         return self._providers[name]
     
-    async def get_client(self, client_id: UUID) -> Optional[ClientAccount]:
+    async def get_client(self, client_id: UUID) -> ClientAccount | None:
         """Get client account by ID."""
         result = await self.db.execute(
             select(ClientAccount).where(ClientAccount.id == client_id)
         )
         return result.scalar_one_or_none()
     
-    async def get_subscription(self, subscription_id: UUID) -> Optional[Subscription]:
+    async def get_subscription(self, subscription_id: UUID) -> Subscription | None:
         """Get subscription by ID."""
         result = await self.db.execute(
             select(Subscription).where(Subscription.id == subscription_id)
         )
         return result.scalar_one_or_none()
     
-    async def get_active_subscription(self, client_id: UUID) -> Optional[Subscription]:
+    async def get_active_subscription(self, client_id: UUID) -> Subscription | None:
         """Get active subscription for a client."""
         result = await self.db.execute(
             select(Subscription).where(
@@ -98,13 +94,13 @@ class BillingService:
         self,
         client_id: UUID,
         plan_code: str,
-        plan_name: Optional[str] = None,
+        plan_name: str | None = None,
         price_cents: int = 0,
-        provider: Optional[str] = None,
-        trial_days: Optional[int] = None,
+        provider: str | None = None,
+        trial_days: int | None = None,
         billing_cycle: str = "monthly",
-        payment_method_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        payment_method_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Create a new subscription for a client.
         
@@ -202,8 +198,8 @@ class BillingService:
         self,
         subscription_id: UUID,
         at_period_end: bool = True,
-        reason: Optional[str] = None
-    ) -> Dict[str, Any]:
+        reason: str | None = None
+    ) -> dict[str, Any]:
         """
         Cancel a subscription.
         
@@ -249,7 +245,7 @@ class BillingService:
             "subscription": subscription.to_dict(),
         }
     
-    async def reactivate_subscription(self, subscription_id: UUID) -> Dict[str, Any]:
+    async def reactivate_subscription(self, subscription_id: UUID) -> dict[str, Any]:
         """
         Reactivate a cancelled subscription.
         
@@ -293,9 +289,9 @@ class BillingService:
         self,
         subscription_id: UUID,
         new_plan_code: str,
-        new_plan_name: Optional[str] = None,
-        new_price_cents: Optional[int] = None
-    ) -> Dict[str, Any]:
+        new_plan_name: str | None = None,
+        new_price_cents: int | None = None
+    ) -> dict[str, Any]:
         """
         Change the plan of an existing subscription.
         
@@ -346,9 +342,9 @@ class BillingService:
     async def list_invoices(
         self,
         client_id: UUID,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 50
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         List invoices for a client.
         
@@ -372,7 +368,7 @@ class BillingService:
         
         return [inv.to_dict() for inv in invoices]
     
-    async def get_invoice(self, invoice_id: UUID) -> Optional[Dict[str, Any]]:
+    async def get_invoice(self, invoice_id: UUID) -> dict[str, Any] | None:
         """Get invoice by ID."""
         result = await self.db.execute(
             select(Invoice).where(Invoice.id == invoice_id)
@@ -380,7 +376,7 @@ class BillingService:
         invoice = result.scalar_one_or_none()
         return invoice.to_dict() if invoice else None
     
-    async def sync_invoices(self, subscription_id: UUID) -> Dict[str, Any]:
+    async def sync_invoices(self, subscription_id: UUID) -> dict[str, Any]:
         """
         Sync invoices from the payment gateway.
         
@@ -446,10 +442,10 @@ class BillingService:
         self,
         subscription_id: UUID,
         payment_type: str,
-        card_token: Optional[str] = None,
-        card_data: Optional[Dict[str, Any]] = None,
+        card_token: str | None = None,
+        card_data: dict[str, Any] | None = None,
         set_as_default: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Add a payment method to a subscription.
         
@@ -526,9 +522,9 @@ class BillingService:
     async def process_webhook(
         self,
         provider: str,
-        payload: Dict[str, Any],
-        signature: Optional[str] = None
-    ) -> Dict[str, Any]:
+        payload: dict[str, Any],
+        signature: str | None = None
+    ) -> dict[str, Any]:
         """
         Process a webhook from the payment gateway.
         
@@ -563,7 +559,7 @@ class BillingService:
         self,
         provider: str,
         event_type: str,
-        data: Dict[str, Any]
+        data: dict[str, Any]
     ) -> None:
         """Handle subscription-related webhook events."""
         external_id = data.get("id") or data.get("subscription_id")
@@ -605,7 +601,7 @@ class BillingService:
         self,
         provider: str,
         event_type: str,
-        data: Dict[str, Any]
+        data: dict[str, Any]
     ) -> None:
         """Handle invoice-related webhook events."""
         external_id = data.get("id") or data.get("invoice_id") or data.get("bill_id")
@@ -642,7 +638,7 @@ class BillingService:
             await self.db.commit()
             logger.info(f"Updated invoice {invoice.id} status to {invoice.status}")
     
-    def get_provider_status(self, provider: Optional[str] = None) -> Dict[str, Any]:
+    def get_provider_status(self, provider: str | None = None) -> dict[str, Any]:
         """Get status of billing provider(s)."""
         if provider:
             billing_provider = self.get_provider(provider)

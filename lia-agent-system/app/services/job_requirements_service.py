@@ -5,7 +5,7 @@ Extracted from JobIntakeAgent._save_requirements_to_db (Sprint 5).
 Callers should use this service instead of the deprecated agent.
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
@@ -24,8 +24,8 @@ class JobRequirementsService:
     async def save_requirements(
         self,
         job_id: str,
-        requirements: List[JobRequirementCreate],
-        db: Optional[AsyncSession] = None,
+        requirements: list[JobRequirementCreate],
+        db: AsyncSession | None = None,
     ) -> int:
         """
         Persist a list of JobRequirementCreate objects for *job_id*.
@@ -59,8 +59,8 @@ class JobRequirementsService:
             return await _persist(session)
 
     def parse_requirements_from_raw(
-        self, requirements_data: List[Any]
-    ) -> List[JobRequirementCreate]:
+        self, requirements_data: list[Any]
+    ) -> list[JobRequirementCreate]:
         """
         Convert a mixed list (str | dict) of requirement specs into typed objects.
 
@@ -94,7 +94,7 @@ class JobRequirementsService:
 
     async def get_requirements_for_job(
         self, job_id: str, db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Return all requirements for a job as serialisable dicts."""
         job_uuid = UUID(job_id) if isinstance(job_id, str) else job_id
         result = await db.execute(

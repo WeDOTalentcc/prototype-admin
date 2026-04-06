@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import Dict, Any, List
-
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "search": "search_candidates",
     "buscar": "search_candidates",
     "busca": "search_candidates",
@@ -78,7 +77,7 @@ class SourcingDomain(ComplianceDomainPrompt):
     domain_name = "Sourcing & Talent Search"
     description = "Busca, identificação e gestão de candidatos em múltiplas fontes"
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.sourcing.actions import SOURCING_ACTIONS
         return SOURCING_ACTIONS
 
@@ -107,7 +106,7 @@ class SourcingDomain(ComplianceDomainPrompt):
         )
 
     async def execute_action(
-        self, action_id: str, params: Dict[str, Any], context: DomainContext
+        self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
         action = self.get_action_by_id(action_id)
         if not action:
@@ -129,8 +128,8 @@ class SourcingDomain(ComplianceDomainPrompt):
 # LIA-C06 - Registro de validador domain-specific para sourcing
 # ---------------------------------------------------------------------------
 try:
-    from app.shared.compliance.fact_checker import FactChecker
     from app.shared.compliance.domain_validators import validate_sourcing_count_claim
+    from app.shared.compliance.fact_checker import FactChecker
     FactChecker.register_validator("sourcing", validate_sourcing_count_claim)
     logger.debug("sourcing domain validator registered")
 except Exception as _e:

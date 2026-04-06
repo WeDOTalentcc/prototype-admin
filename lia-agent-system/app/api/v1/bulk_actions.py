@@ -2,28 +2,27 @@
 Bulk Actions API endpoints for mass operations on candidates and job vacancies.
 Allows performing actions on multiple records at once with transactional safety.
 """
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.responses import StreamingResponse
-from typing import Optional, List, Literal
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
+import csv
+import io
 import logging
 import uuid
-import io
-import csv
+from datetime import datetime
+from typing import Literal
 
-from sqlalchemy import func, and_, not_
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import and_, func, not_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
-from app.models.email_template import EmailTemplate
-from app.models.company import CompanyProfile
-from app.domains.communication.services.email_service import email_service
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user, require_admin_or_recruiter
-from app.auth.models import User, UserRole
+from app.auth.models import User
+from app.core.database import get_db
+from app.domains.communication.services.email_service import email_service
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.company import CompanyProfile
+from app.models.email_template import EmailTemplate
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,6 @@ DEFAULT_UNLOCK_HOURS = 24
 
 
 async def _check_vacancy_saturation(db: AsyncSession, vacancy: JobVacancy) -> dict:
-    from datetime import timedelta
     company = None
     try:
         result = await db.execute(
@@ -120,14 +118,14 @@ class BulkOperationResult(BaseModel):
     total: int
     successful: int
     failed: int
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     message: str = ""
 
 
 class BulkUpdateStatusRequest(BaseModel):
     """Request to update status of multiple candidates."""
-    candidate_ids: List[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     new_status: str = Field(..., description="Status: new, screening, interview, offer, hired, rejected")
     
     @field_validator('new_status')
@@ -147,9 +145,9 @@ class BulkUpdateStatusRequest(BaseModel):
 
 class BulkAssignJobRequest(BaseModel):
     """Request to assign multiple candidates to a job vacancy."""
-    candidate_ids: List[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     job_vacancy_id: str
-    notes: Optional[str] = None
+    notes: str | None = None
     
     @field_validator('candidate_ids')
     @classmethod
@@ -161,9 +159,9 @@ class BulkAssignJobRequest(BaseModel):
 
 class BulkSendEmailRequest(BaseModel):
     """Request to send emails to multiple candidates."""
-    candidate_ids: List[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     template_id: str
-    custom_variables: Optional[dict] = None
+    custom_variables: dict | None = None
     
     @field_validator('candidate_ids')
     @classmethod
@@ -175,7 +173,7 @@ class BulkSendEmailRequest(BaseModel):
 
 class BulkStartScreeningRequest(BaseModel):
     """Request to start WSI screening for multiple candidates."""
-    candidate_ids: List[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     job_vacancy_id: str
     screening_type: Literal["text", "voice"] = "text"
     override_saturation: bool = Field(False, description="Override saturation guardrail (manual approval)")
@@ -190,9 +188,9 @@ class BulkStartScreeningRequest(BaseModel):
 
 class BulkExportRequest(BaseModel):
     """Request to export multiple candidates data."""
-    candidate_ids: List[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     format: Literal["csv", "xlsx"] = "csv"
-    fields: Optional[List[str]] = None
+    fields: list[str] | None = None
     
     @field_validator('candidate_ids')
     @classmethod
@@ -204,7 +202,7 @@ class BulkExportRequest(BaseModel):
 
 class BulkDeleteRequest(BaseModel):
     """Request to delete (soft delete) multiple candidates."""
-    candidate_ids: List[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     permanent: bool = False
     
     @field_validator('candidate_ids')
@@ -231,8 +229,8 @@ async def bulk_update_candidate_status(
     """
     logger.info(f"Bulk update status by {current_user.email}: {len(request.candidate_ids)} candidates to '{request.new_status}'")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         for candidate_id in request.candidate_ids:
@@ -308,8 +306,8 @@ async def bulk_assign_to_job(
     """
     logger.info(f"Bulk assign job by {current_user.email}: {len(request.candidate_ids)} candidates to job {request.job_vacancy_id}")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         result = await db.execute(
@@ -408,8 +406,8 @@ async def bulk_send_email(
     """
     logger.info(f"Bulk send email by {current_user.email}: {len(request.candidate_ids)} candidates with template {request.template_id}")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         result = await db.execute(
@@ -533,8 +531,8 @@ async def bulk_start_screening(
     """
     logger.info(f"Bulk start screening by {current_user.email}: {len(request.candidate_ids)} candidates for job {request.job_vacancy_id}")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         result = await db.execute(
@@ -671,7 +669,7 @@ async def bulk_export_candidates(
     
     try:
         candidates_data = []
-        errors: List[BulkOperationError] = []
+        errors: list[BulkOperationError] = []
         
         for candidate_id in request.candidate_ids:
             try:
@@ -833,8 +831,8 @@ async def bulk_delete_candidates(
     """
     logger.info(f"Bulk delete by {current_user.email}: {len(request.candidate_ids)} candidates (permanent={request.permanent})")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         for candidate_id in request.candidate_ids:
@@ -895,8 +893,8 @@ async def bulk_delete_candidates(
 
 @router.post("/candidates/bulk/add-tags", response_model=BulkOperationResult)
 async def bulk_add_tags(
-    candidate_ids: List[str],
-    tags: List[str],
+    candidate_ids: list[str],
+    tags: list[str],
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -909,8 +907,8 @@ async def bulk_add_tags(
     
     logger.info(f"Bulk add tags by {current_user.email}: {len(candidate_ids)} candidates, tags: {tags}")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         for candidate_id in candidate_ids:
@@ -966,8 +964,8 @@ async def bulk_add_tags(
 
 @router.post("/candidates/bulk/remove-tags", response_model=BulkOperationResult)
 async def bulk_remove_tags(
-    candidate_ids: List[str],
-    tags: List[str],
+    candidate_ids: list[str],
+    tags: list[str],
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -980,8 +978,8 @@ async def bulk_remove_tags(
     
     logger.info(f"Bulk remove tags by {current_user.email}: {len(candidate_ids)} candidates, tags: {tags}")
     
-    errors: List[BulkOperationError] = []
-    processed_ids: List[str] = []
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
     
     try:
         for candidate_id in candidate_ids:

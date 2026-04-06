@@ -1,20 +1,21 @@
 """
 Goals API endpoints for managing user goals and targets.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, UploadFile, File
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-import logging
-from datetime import datetime
-import uuid
 import csv
 import io
+import logging
+import uuid
+from datetime import datetime
+from typing import Any
 
-from app.models.goal import Goal, GoalTemplate
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy import or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
+from app.models.goal import Goal, GoalTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -23,48 +24,48 @@ router = APIRouter(prefix="/goals", tags=["goals"])
 
 class GoalCreate(BaseModel):
     user_id: str
-    template_id: Optional[str] = None
+    template_id: str | None = None
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     target: float
     current: float = 0
-    unit: Optional[str] = None
+    unit: str | None = None
     period: str = "monthly"
     category: str = "recruitment"
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     is_custom: bool = False
-    company_id: Optional[uuid.UUID] = None
+    company_id: uuid.UUID | None = None
 
 
 class GoalUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    target: Optional[float] = None
-    current: Optional[float] = None
-    unit: Optional[str] = None
-    period: Optional[str] = None
-    category: Optional[str] = None
-    status: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    target: float | None = None
+    current: float | None = None
+    unit: str | None = None
+    period: str | None = None
+    category: str | None = None
+    status: str | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    is_active: bool | None = None
 
 
 class GoalResponse(BaseModel):
     id: uuid.UUID
     user_id: str
-    template_id: Optional[str]
+    template_id: str | None
     name: str
-    description: Optional[str]
+    description: str | None
     target: float
     current: float
-    unit: Optional[str]
+    unit: str | None
     period: str
     category: str
     status: str
-    start_date: Optional[datetime]
-    end_date: Optional[datetime]
+    start_date: datetime | None
+    end_date: datetime | None
     progress: float
     is_custom: bool
     is_active: bool
@@ -77,21 +78,21 @@ class GoalResponse(BaseModel):
 
 class GoalTemplateCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     category: str = "recruitment"
     default_target: float
-    unit: Optional[str] = None
+    unit: str | None = None
     period: str = "monthly"
-    company_id: Optional[uuid.UUID] = None
+    company_id: uuid.UUID | None = None
 
 
 class GoalTemplateResponse(BaseModel):
     id: uuid.UUID
     name: str
-    description: Optional[str]
+    description: str | None
     category: str
     default_target: float
-    unit: Optional[str]
+    unit: str | None
     period: str
     is_active: bool
     is_system: bool
@@ -101,13 +102,13 @@ class GoalTemplateResponse(BaseModel):
         from_attributes = True
 
 
-@router.get("", response_model=List[GoalResponse])
+@router.get("", response_model=list[GoalResponse])
 async def list_goals(
-    user_id: Optional[str] = Query(None),
-    company_id: Optional[uuid.UUID] = Query(None),
-    period: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
+    user_id: str | None = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    period: str | None = Query(None),
+    category: str | None = Query(None),
+    status: str | None = Query(None),
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=200),
@@ -320,7 +321,7 @@ async def delete_goal(
 
 @router.post("/bulk")
 async def create_goals_bulk(
-    goals: List[GoalCreate],
+    goals: list[GoalCreate],
     db: AsyncSession = Depends(get_db)
 ):
     """Create multiple goals at once (for applying templates to multiple users)."""
@@ -354,10 +355,10 @@ async def create_goals_bulk(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/templates/list", response_model=List[GoalTemplateResponse])
+@router.get("/templates/list", response_model=list[GoalTemplateResponse])
 async def list_goal_templates(
-    company_id: Optional[uuid.UUID] = Query(None),
-    category: Optional[str] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    category: str | None = Query(None),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -528,18 +529,18 @@ class GoalImportResponse(BaseModel):
     success: bool
     imported_count: int
     error_count: int
-    errors: List[Dict[str, Any]]
-    items: List[Dict[str, Any]]
+    errors: list[dict[str, Any]]
+    items: list[dict[str, Any]]
 
 
-def parse_csv_file_goals(content: bytes) -> List[Dict[str, str]]:
+def parse_csv_file_goals(content: bytes) -> list[dict[str, str]]:
     """Parse CSV file content and return list of dictionaries."""
     text = content.decode('utf-8-sig')
     reader = csv.DictReader(io.StringIO(text))
     return list(reader)
 
 
-def parse_excel_file_goals(content: bytes) -> List[Dict[str, str]]:
+def parse_excel_file_goals(content: bytes) -> list[dict[str, str]]:
     """Parse Excel file content and return list of dictionaries."""
     try:
         from openpyxl import load_workbook
@@ -571,7 +572,7 @@ def parse_excel_file_goals(content: bytes) -> List[Dict[str, str]]:
         )
 
 
-async def parse_goal_import_file(file: UploadFile) -> List[Dict[str, str]]:
+async def parse_goal_import_file(file: UploadFile) -> list[dict[str, str]]:
     """Parse uploaded file (CSV or Excel) and return data."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
@@ -619,7 +620,7 @@ async def download_goals_import_template():
 @router.post("/import", response_model=GoalImportResponse)
 async def import_goals(
     file: UploadFile = File(...),
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """

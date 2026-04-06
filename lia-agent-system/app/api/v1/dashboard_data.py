@@ -1,11 +1,11 @@
 """
 Dashboard Data API endpoints with fictitious data for visualization.
 """
+from datetime import datetime
+from enum import Enum
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime, date
-from enum import Enum
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -21,16 +21,16 @@ class StrategicIndicator(BaseModel):
     name: str
     value: float
     unit: str
-    target: Optional[float] = None
-    previous_value: Optional[float] = None
+    target: float | None = None
+    previous_value: float | None = None
     trend: TrendDirection
     trend_percentage: float
     category: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class StrategicIndicatorsResponse(BaseModel):
-    indicators: List[StrategicIndicator]
+    indicators: list[StrategicIndicator]
     period: str
     generated_at: datetime
 
@@ -45,7 +45,7 @@ class FunnelStage(BaseModel):
 
 
 class FunnelPerformanceResponse(BaseModel):
-    stages: List[FunnelStage]
+    stages: list[FunnelStage]
     total_candidates: int
     overall_conversion_rate: float
     period: str
@@ -63,7 +63,7 @@ class ChannelPerformance(BaseModel):
 
 
 class ChannelPerformanceResponse(BaseModel):
-    channels: List[ChannelPerformance]
+    channels: list[ChannelPerformance]
     total_candidates: int
     period: str
     generated_at: datetime
@@ -72,7 +72,7 @@ class ChannelPerformanceResponse(BaseModel):
 class RecruiterPerformance(BaseModel):
     recruiter_id: str
     recruiter_name: str
-    avatar_url: Optional[str] = None
+    avatar_url: str | None = None
     positions_filled: int
     positions_target: int
     candidates_screened: int
@@ -84,7 +84,7 @@ class RecruiterPerformance(BaseModel):
 
 
 class RecruiterRankingResponse(BaseModel):
-    recruiters: List[RecruiterPerformance]
+    recruiters: list[RecruiterPerformance]
     period: str
     generated_at: datetime
 
@@ -97,12 +97,12 @@ class Prediction(BaseModel):
     confidence: float
     timeframe: str
     trend: TrendDirection
-    factors: List[str]
-    recommendation: Optional[str] = None
+    factors: list[str]
+    recommendation: str | None = None
 
 
 class PredictionsResponse(BaseModel):
-    predictions: List[Prediction]
+    predictions: list[Prediction]
     model_version: str
     generated_at: datetime
 

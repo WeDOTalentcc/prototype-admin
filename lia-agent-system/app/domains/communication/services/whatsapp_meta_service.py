@@ -11,19 +11,20 @@ Environment Variables Required:
 - WHATSAPP_APP_SECRET: App secret for webhook signature verification
 """
 
-import os
-import httpx
-import hmac
 import hashlib
+import hmac
 import logging
-from typing import Optional, Dict, Any, List
+import os
 from datetime import datetime
+from typing import Any
+
+import httpx
 
 from app.domains.communication.services.whatsapp_provider import (
-    WhatsAppProvider,
+    IncomingMessage,
     ProviderType,
     SendResult,
-    IncomingMessage
+    WhatsAppProvider,
 )
 
 logger = logging.getLogger(__name__)
@@ -150,9 +151,9 @@ class MetaWhatsAppService(WhatsAppProvider):
         self,
         to: str,
         body_text: str,
-        buttons: List[Dict[str, str]],
-        header_text: Optional[str] = None,
-        footer_text: Optional[str] = None
+        buttons: list[dict[str, str]],
+        header_text: str | None = None,
+        footer_text: str | None = None
     ) -> SendResult:
         """
         Send an interactive message with buttons.
@@ -229,8 +230,8 @@ class MetaWhatsAppService(WhatsAppProvider):
         self,
         to: str,
         document_url: str,
-        caption: Optional[str] = None,
-        filename: Optional[str] = None
+        caption: str | None = None,
+        filename: str | None = None
     ) -> SendResult:
         """
         Send a document to a WhatsApp number.
@@ -293,7 +294,7 @@ class MetaWhatsAppService(WhatsAppProvider):
             logger.error(f"[META WHATSAPP] Document send error: {e}")
             return SendResult(success=False, error=str(e), provider="meta")
     
-    async def download_media(self, media_id: str) -> Dict[str, Any]:
+    async def download_media(self, media_id: str) -> dict[str, Any]:
         """
         Download media (CV, images) from WhatsApp.
         
@@ -336,7 +337,7 @@ class MetaWhatsAppService(WhatsAppProvider):
             logger.error(f"[META WHATSAPP] Media download error: {e}")
             return {"success": False, "error": str(e)}
     
-    def verify_webhook(self, mode: str, token: str, challenge: str) -> Optional[str]:
+    def verify_webhook(self, mode: str, token: str, challenge: str) -> str | None:
         """
         Verify webhook subscription from Meta.
         
@@ -383,7 +384,7 @@ class MetaWhatsAppService(WhatsAppProvider):
         
         return hmac.compare_digest(computed_signature, expected_signature)
     
-    def parse_webhook_message(self, payload: Dict[str, Any]) -> Optional[IncomingMessage]:
+    def parse_webhook_message(self, payload: dict[str, Any]) -> IncomingMessage | None:
         """
         Parse incoming webhook payload from WhatsApp.
         

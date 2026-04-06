@@ -4,15 +4,14 @@ Orchestrated Job Chat API — delegates to MainOrchestrator (consolidated entry-
 v3.0: Unified pipeline via MainOrchestrator.process() + ContextAdapter.from_job_chat().
       FairnessGuard, PendingAction, ActionExecutor, CascadedRouter all handled centrally.
 """
-from fastapi import APIRouter, HTTPException, Depends
-from app.dependencies.token_budget import require_token_budget
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
 import logging
-import uuid
+from typing import Any
 
-from app.domains.job_management.services.job_context_service import job_context_service, EnrichedJobContext
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+
 from app.api.orchestrator_routes import get_main_orchestrator
+from app.dependencies.token_budget import require_token_budget
 from app.orchestrator.context_adapter import ContextAdapter
 from app.orchestrator.main_orchestrator import MainOrchestrator
 
@@ -23,19 +22,19 @@ router = APIRouter()
 class OrchestratedJobChatRequest(BaseModel):
     """Request for orchestrated job chat."""
     message: str = Field(..., description="User's natural language query")
-    job_context: Dict[str, Any] = Field(
+    job_context: dict[str, Any] = Field(
         ..., 
         description="Job vacancy context: title, department, level, requirements, skills, etc."
     )
-    candidates: List[Dict[str, Any]] = Field(
+    candidates: list[dict[str, Any]] = Field(
         default_factory=list,
         description="List of candidates in the pipeline with their data"
     )
-    selected_candidate_ids: Optional[List[str]] = Field(
+    selected_candidate_ids: list[str] | None = Field(
         None,
         description="IDs of selected candidates for focused operations"
     )
-    conversation_id: Optional[str] = Field(
+    conversation_id: str | None = Field(
         None,
         description="Optional conversation ID for context continuity"
     )
@@ -47,23 +46,23 @@ class OrchestratedJobChatResponse(BaseModel):
     success: bool
     content: str = Field(..., description="Formatted markdown response")
     agent_used: str = Field(..., description="Primary agent that handled the query")
-    agents_consulted: List[str] = Field(default_factory=list, description="All agents consulted")
+    agents_consulted: list[str] = Field(default_factory=list, description="All agents consulted")
     intent_detected: str = Field(..., description="Detected user intent")
     confidence: float = Field(..., description="Routing confidence")
-    structured_data: Optional[Dict[str, Any]] = None
-    suggested_prompts: List[str] = Field(default_factory=list)
-    actions: List[Dict[str, Any]] = Field(default_factory=list, description="Suggested UI actions")
-    conversation_id: Optional[str] = None
-    ui_action: Optional[str] = Field(None, description="Frontend action trigger (fallback)")
-    ui_action_params: Optional[Dict[str, Any]] = Field(None, description="Parameters for UI action (fallback)")
+    structured_data: dict[str, Any] | None = None
+    suggested_prompts: list[str] = Field(default_factory=list)
+    actions: list[dict[str, Any]] = Field(default_factory=list, description="Suggested UI actions")
+    conversation_id: str | None = None
+    ui_action: str | None = Field(None, description="Frontend action trigger (fallback)")
+    ui_action_params: dict[str, Any] | None = Field(None, description="Parameters for UI action (fallback)")
     action_executed: bool = Field(default=False, description="Whether a real action was executed via closed-loop")
-    action_result: Optional[Dict[str, Any]] = Field(None, description="Result data of executed action")
-    action_type: Optional[str] = Field(None, description="Type of action executed (move_candidate, send_email, etc.)")
+    action_result: dict[str, Any] | None = Field(None, description="Result data of executed action")
+    action_type: str | None = Field(None, description="Type of action executed (move_candidate, send_email, etc.)")
     needs_confirmation: bool = Field(default=False, description="Whether action awaits user confirmation")
     needs_params: bool = Field(default=False, description="Whether action needs more parameters from user")
-    pending_action_id: Optional[str] = Field(None, description="ID for pending multi-turn action")
+    pending_action_id: str | None = Field(None, description="ID for pending multi-turn action")
 
-INTENT_TO_UI_ACTION: Dict[str, str] = {
+INTENT_TO_UI_ACTION: dict[str, str] = {
     "mover_candidato": "move_candidate",
     "atualizar_status_candidato": "move_candidate",
     "update_candidate_status": "move_candidate",

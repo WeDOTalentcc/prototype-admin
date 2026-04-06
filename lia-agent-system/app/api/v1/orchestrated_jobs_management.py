@@ -8,23 +8,25 @@ performance, job comparison, urgency analysis, and actionable job operations.
 v2.0: Closed-loop action execution - LIA executes job management actions directly
 instead of requiring manual user interaction through UI modals.
 """
+import logging
+import uuid
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-import logging
-import os
-import uuid
 
 from app.domains.recruiter_assistant.prompts.jobs_management_prompts import (
-    detect_jobs_command_type,
     JobsManagementCommandType,
+    detect_jobs_command_type,
 )
 from app.domains.recruiter_assistant.services.jobs_management_assistant_service import (
     jobs_management_assistant,
 )
 from app.orchestrator.action_executor import (
-    action_executor, ActionResult, ACTIONABLE_INTENTS,
-    is_confirmation, is_rejection,
+    ACTIONABLE_INTENTS,
+    action_executor,
+    is_confirmation,
+    is_rejection,
 )
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
 
@@ -48,7 +50,7 @@ _ANALYTICAL_COMMAND_TYPES = {
     JobsManagementCommandType.ANALISE_GERAL.value,
 }
 
-INTENT_TO_UI_ACTION: Dict[str, str] = {
+INTENT_TO_UI_ACTION: dict[str, str] = {
     "criar_vaga": "start_job_wizard",
     "create_job": "start_job_wizard",
     "nova_vaga": "start_job_wizard",
@@ -59,7 +61,7 @@ INTENT_TO_UI_ACTION: Dict[str, str] = {
     "filtrar_vagas": "filter_jobs",
 }
 
-_JOBS_MGMT_ACTION_KEYWORDS: Dict[str, List[str]] = {
+_JOBS_MGMT_ACTION_KEYWORDS: dict[str, list[str]] = {
     "pausar_vaga": ["pausar vaga", "pause"],
     "fechar_vaga": ["fechar vaga", "encerrar vaga", "close"],
     "duplicar_vaga": ["duplicar vaga", "copiar vaga"],
@@ -69,22 +71,22 @@ _JOBS_MGMT_ACTION_KEYWORDS: Dict[str, List[str]] = {
 
 class OrchestratedJobsManagementRequest(BaseModel):
     message: str = Field(..., description="User's natural language query")
-    jobs_context: Dict[str, Any] = Field(
+    jobs_context: dict[str, Any] = Field(
         default_factory=dict,
         description="Aggregated job metrics: total, active, paused, completed, urgent, etc.",
     )
-    selected_jobs: Optional[List[Dict[str, Any]]] = Field(
+    selected_jobs: list[dict[str, Any]] | None = Field(
         None, description="Jobs selected for batch operations"
     )
-    top_jobs: Optional[List[Dict[str, Any]]] = Field(
+    top_jobs: list[dict[str, Any]] | None = Field(
         None, description="Top jobs with detailed metrics"
     )
-    conversation_history: Optional[List[Dict[str, str]]] = Field(
+    conversation_history: list[dict[str, str]] | None = Field(
         None, description="Recent conversation messages for context"
     )
-    action: Optional[str] = Field(None, description="Pre-detected action/intent from frontend")
-    user_id: Optional[str] = Field(default="recruiter", description="User ID")
-    conversation_id: Optional[str] = Field(None, description="Conversation ID for multi-turn context")
+    action: str | None = Field(None, description="Pre-detected action/intent from frontend")
+    user_id: str | None = Field(default="recruiter", description="User ID")
+    conversation_id: str | None = Field(None, description="Conversation ID for multi-turn context")
     company_id: str = Field(default="", description="Tenant company ID for multi-tenancy isolation")
 
 
@@ -94,20 +96,20 @@ class OrchestratedJobsManagementResponse(BaseModel):
     agent_used: str = Field(default="JobsManagementAssistant")
     intent_detected: str = Field(..., description="Detected user intent")
     confidence: float = Field(..., description="Routing confidence")
-    structured_data: Optional[Dict[str, Any]] = None
-    suggested_prompts: List[str] = Field(default_factory=list)
-    ui_action: Optional[str] = Field(None, description="Frontend action trigger")
-    ui_action_params: Optional[Dict[str, Any]] = Field(None, description="Parameters for UI action")
+    structured_data: dict[str, Any] | None = None
+    suggested_prompts: list[str] = Field(default_factory=list)
+    ui_action: str | None = Field(None, description="Frontend action trigger")
+    ui_action_params: dict[str, Any] | None = Field(None, description="Parameters for UI action")
     action_executed: bool = Field(default=False)
-    action_result: Optional[Dict[str, Any]] = None
-    action_type: Optional[str] = None
+    action_result: dict[str, Any] | None = None
+    action_type: str | None = None
     needs_confirmation: bool = Field(default=False)
     needs_params: bool = Field(default=False)
-    pending_action_id: Optional[str] = None
-    conversation_id: Optional[str] = None
+    pending_action_id: str | None = None
+    conversation_id: str | None = None
 
 
-def detect_actionable_intent(message: str) -> Optional[str]:
+def detect_actionable_intent(message: str) -> str | None:
     msg_lower = message.lower().strip()
     action_keywords = {
         "criar_vaga": ["criar vaga", "nova vaga", "abrir vaga", "abrir posição", "create job"],
@@ -122,7 +124,7 @@ def detect_actionable_intent(message: str) -> Optional[str]:
     return None
 
 
-def _detect_jobs_mgmt_actionable_intent(message: str) -> Optional[str]:
+def _detect_jobs_mgmt_actionable_intent(message: str) -> str | None:
     msg_lower = message.lower().strip()
     for intent, keywords in _JOBS_MGMT_ACTION_KEYWORDS.items():
         for kw in keywords:
@@ -133,8 +135,8 @@ def _detect_jobs_mgmt_actionable_intent(message: str) -> Optional[str]:
 
 def _extract_jobs_mgmt_entities(
     request: "OrchestratedJobsManagementRequest",
-) -> Dict[str, Any]:
-    entities: Dict[str, Any] = {}
+) -> dict[str, Any]:
+    entities: dict[str, Any] = {}
 
     if request.selected_jobs and len(request.selected_jobs) > 0:
         first_job = request.selected_jobs[0]
@@ -163,7 +165,7 @@ def _extract_jobs_mgmt_entities(
 
 def _extract_param_value_from_message(
     message: str, param_name: str, request: "OrchestratedJobsManagementRequest",
-) -> Optional[Any]:
+) -> Any | None:
     msg = message.strip()
     if not msg:
         return None
@@ -342,8 +344,9 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
         # === PHASE 2: JobsManagementReActAgent — ReAct loop com tool calling ao DB ===
         # Caminho principal: agente autônomo com acesso real ao banco de dados.
         try:
-            from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent
             from lia_agents_core.agent_interface import AgentInput as ReactAgentInput
+
+            from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent
 
             agent_input = ReactAgentInput(
                 message=request.message,
@@ -599,7 +602,7 @@ async def get_jobs_management_intents():
     }
 
 
-def _generate_fallback(message: str, jobs_context: Dict[str, Any]) -> str:
+def _generate_fallback(message: str, jobs_context: dict[str, Any]) -> str:
     total = jobs_context.get("total", 0)
     active = jobs_context.get("active", 0)
     urgent = jobs_context.get("urgent", 0)

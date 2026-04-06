@@ -1,8 +1,7 @@
 import logging
 import re
-import uuid
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING, Any, Optional
 
 from app.tools.registry import ToolDefinition, tool_registry
 
@@ -12,7 +11,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     return kwargs.pop("_context", None)
 
 
@@ -32,10 +31,10 @@ def _slugify(name: str) -> str:
 async def create_pipeline_stage(
     stage_name: str,
     company_id: str,
-    job_id: Optional[str] = None,
-    position: Optional[str] = None,
+    job_id: str | None = None,
+    position: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     context = _extract_context(kwargs)
     effective_company_id = context.company_id if context else company_id
     user_id = context.user_id if context else "system"
@@ -53,9 +52,10 @@ async def create_pipeline_stage(
             f"(confidence: {behavior_confidence})"
         )
 
+        from sqlalchemy import and_, func, select
+
         from app.core.database import AsyncSessionLocal
         from app.models.recruitment_stages import RecruitmentStage
-        from sqlalchemy import select, and_, func
 
         async with AsyncSessionLocal() as db:
             existing = await db.execute(
@@ -147,7 +147,7 @@ async def create_pipeline_stage(
                 company_id=effective_company_id,
                 name=_slugify(stage_name),
                 display_name=stage_name.strip(),
-                description=f"Etapa criada via chat LIA",
+                description="Etapa criada via chat LIA",
                 stage_order=new_order,
                 color=BEHAVIOR_COLORS.get(suggested_behavior, "#6B7280"),
                 icon=BEHAVIOR_ICONS.get(suggested_behavior, "circle"),

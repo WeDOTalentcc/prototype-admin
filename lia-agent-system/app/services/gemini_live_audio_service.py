@@ -18,18 +18,15 @@ Compliance:
 Cost: ~$0.065/interview (15 min) vs ~$0.41 with Twilio+OpenAI TTS pipeline
 """
 
-import asyncio
-import json
 import logging
 import os
-import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
-from app.shared.pii_masking import mask_pii
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.shared.pii_masking import mask_pii
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 logger = logging.getLogger(__name__)
@@ -47,19 +44,19 @@ class GeminiLiveSession:
     candidate_name: str
     job_title: str
     company_id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
     language: str = "pt-BR"
     status: str = "pending"
     voice_provider: str = "gemini_live"
-    started_at: Optional[datetime] = None
-    ended_at: Optional[datetime] = None
-    transcript_segments: List[Dict[str, Any]] = field(default_factory=list)
-    questions_asked: List[str] = field(default_factory=list)
-    token_usage: Dict[str, int] = field(default_factory=lambda: {"input": 0, "output": 0})
-    turn_latencies_ms: List[float] = field(default_factory=list)
-    error: Optional[str] = None
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    transcript_segments: list[dict[str, Any]] = field(default_factory=list)
+    questions_asked: list[str] = field(default_factory=list)
+    token_usage: dict[str, int] = field(default_factory=lambda: {"input": 0, "output": 0})
+    turn_latencies_ms: list[float] = field(default_factory=list)
+    error: str | None = None
     consent_verified: bool = False
-    job_context: Optional[Dict[str, Any]] = None
+    job_context: dict[str, Any] | None = None
     presentation_done: bool = False
 
 
@@ -82,7 +79,7 @@ class GeminiLiveAudioService:
     def __init__(self):
         self._api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
         self._base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
-        self._sessions: Dict[str, GeminiLiveSession] = {}
+        self._sessions: dict[str, GeminiLiveSession] = {}
 
     @property
     def is_available(self) -> bool:
@@ -91,7 +88,7 @@ class GeminiLiveAudioService:
     def build_system_prompt(
         self,
         session: GeminiLiveSession,
-        wsi_questions: Optional[List[str]] = None,
+        wsi_questions: list[str] | None = None,
     ) -> str:
         from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
 
@@ -178,9 +175,9 @@ class GeminiLiveAudioService:
         candidate_name: str,
         job_title: str,
         company_id: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         language: str = "pt-BR",
-        job_context: Optional[Dict[str, Any]] = None,
+        job_context: dict[str, Any] | None = None,
     ) -> GeminiLiveSession:
         session = GeminiLiveSession(
             session_id=str(uuid4()),
@@ -204,7 +201,7 @@ class GeminiLiveAudioService:
         )
         return session
 
-    def get_session(self, session_id: str) -> Optional[GeminiLiveSession]:
+    def get_session(self, session_id: str) -> GeminiLiveSession | None:
         return self._sessions.get(session_id)
 
     def remove_session(self, session_id: str) -> None:
@@ -213,8 +210,8 @@ class GeminiLiveAudioService:
     async def create_live_connection_config(
         self,
         session: GeminiLiveSession,
-        wsi_questions: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        wsi_questions: list[str] | None = None,
+    ) -> dict[str, Any]:
         system_prompt = self.build_system_prompt(session, wsi_questions)
 
         config = {
@@ -265,7 +262,7 @@ class GeminiLiveAudioService:
         self,
         session: GeminiLiveSession,
         text: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         if not text or not text.strip():
             return None
 
@@ -322,7 +319,7 @@ class GeminiLiveAudioService:
     async def finalize_session(
         self,
         session: GeminiLiveSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         session.ended_at = datetime.utcnow()
         session.status = "completed"
 
@@ -366,7 +363,7 @@ class GeminiLiveAudioService:
             "latency_p95_ms": round(p95_latency, 1),
         }
 
-    def get_session_metrics(self, session: GeminiLiveSession) -> Dict[str, Any]:
+    def get_session_metrics(self, session: GeminiLiveSession) -> dict[str, Any]:
         return {
             "session_id": session.session_id,
             "status": session.status,
@@ -384,7 +381,7 @@ class GeminiLiveAudioService:
         }
 
 
-_gemini_live_service: Optional[GeminiLiveAudioService] = None
+_gemini_live_service: GeminiLiveAudioService | None = None
 
 
 def get_gemini_live_service() -> GeminiLiveAudioService:

@@ -14,7 +14,6 @@ verifica o budget Redis e bloqueia (HTTP 429) se esgotado.
 Falha silenciosa se Redis/DB indisponíveis.
 """
 import logging
-from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 
@@ -38,7 +37,7 @@ async def require_token_budget(
 
     Lança HTTP 429 se budget_exhausted=True.
     """
-    company_id: Optional[str] = None
+    company_id: str | None = None
     try:
         company_id = str(
             getattr(current_user, "company_id", None)

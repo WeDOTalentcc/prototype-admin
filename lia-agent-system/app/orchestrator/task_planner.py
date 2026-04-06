@@ -11,7 +11,8 @@ Architecture v2.2: 9 agents (1 orchestrator + 8 specialized)
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -123,8 +124,8 @@ Crie um plano de execução detalhado em JSON.""")
         self, 
         message: str, 
         intent: str,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Create execution plan for multi-step workflow.
         
@@ -202,7 +203,7 @@ Crie um plano de execução detalhado em JSON.""")
                 "parallel_steps_count": 0
             }
     
-    async def validate_plan(self, plan: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    async def validate_plan(self, plan: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         """
         Validate a plan for correctness.
         

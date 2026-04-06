@@ -1,11 +1,10 @@
 import asyncio
-import uuid
 import logging
 import time
-from typing import Dict, Any, Optional, List, Callable, Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -45,34 +44,34 @@ class AsyncTask:
     task_id: str
     domain_id: str
     action_id: str
-    params: Dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
     priority: TaskPriority = TaskPriority.NORMAL
     state: TaskState = TaskState.QUEUED
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    result: Any | None = None
+    error: str | None = None
     retry_count: int = 0
     max_retries: int = 2
     created_at: float = field(default_factory=time.time)
-    started_at: Optional[float] = None
-    completed_at: Optional[float] = None
+    started_at: float | None = None
+    completed_at: float | None = None
     user_id: str = ""
-    tenant_id: Optional[str] = None
-    callback: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tenant_id: str | None = None
+    callback: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def is_terminal(self) -> bool:
         return self.state in (TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED)
 
     @property
-    def duration_seconds(self) -> Optional[float]:
+    def duration_seconds(self) -> float | None:
         if self.started_at and self.completed_at:
             return self.completed_at - self.started_at
         elif self.started_at:
             return time.time() - self.started_at
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "task_id": self.task_id,
             "domain_id": self.domain_id,
@@ -101,12 +100,12 @@ class DomainTaskQueue:
         self.domain_id = domain_id
         self._max_concurrent = max_concurrent
         self._queue: asyncio.PriorityQueue = asyncio.PriorityQueue(maxsize=max_queue_size)
-        self._active_tasks: Dict[str, AsyncTask] = {}
-        self._completed_tasks: Dict[str, AsyncTask] = {}
+        self._active_tasks: dict[str, AsyncTask] = {}
+        self._completed_tasks: dict[str, AsyncTask] = {}
         self._max_completed_history = 50
         self._running = False
-        self._workers: List[asyncio.Task] = []
-        self._task_handlers: Dict[str, Callable] = {}
+        self._workers: list[asyncio.Task] = []
+        self._task_handlers: dict[str, Callable] = {}
         self._total_processed = 0
         self._total_failed = 0
 
@@ -116,7 +115,7 @@ class DomainTaskQueue:
     async def enqueue(
         self,
         task: AsyncTask,
-        priority: Optional[int] = None,
+        priority: int | None = None,
     ) -> str:
         """Enqueue a task for processing.
 
@@ -188,7 +187,7 @@ class DomainTaskQueue:
                 )
                 await self._process_task(task, worker_name)
                 self._queue.task_done()
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue
             except asyncio.CancelledError:
                 break
@@ -239,7 +238,7 @@ class DomainTaskQueue:
                                      key=lambda k: self._completed_tasks[k].completed_at or 0)
                     del self._completed_tasks[oldest_key]
 
-    def get_task_status(self, task_id: str) -> Optional[AsyncTask]:
+    def get_task_status(self, task_id: str) -> AsyncTask | None:
         if task_id in self._active_tasks:
             return self._active_tasks[task_id]
         if task_id in self._completed_tasks:
@@ -254,7 +253,7 @@ class DomainTaskQueue:
             return True
         return False
 
-    def get_queue_info(self) -> Dict[str, Any]:
+    def get_queue_info(self) -> dict[str, Any]:
         return {
             "domain_id": self.domain_id,
             "queue_size": self._queue.qsize(),

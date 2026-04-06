@@ -7,13 +7,12 @@ without changing business logic.
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 
 @dataclass
 class EmbeddingResult:
     """Standardized result from any embedding provider."""
-    vector: List[float]
+    vector: list[float]
     provider: str
     model: str
     dimensions: int = field(init=False)
@@ -60,7 +59,7 @@ class EmbeddingProviderABC(ABC):
         ...
 
     @abstractmethod
-    async def embed_batch(self, texts: List[str]) -> List[EmbeddingResult]:
+    async def embed_batch(self, texts: list[str]) -> list[EmbeddingResult]:
         """Generate embeddings for multiple texts.
 
         Args:

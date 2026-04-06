@@ -7,13 +7,13 @@ This module provides:
 - Professional tone validation
 - Emoji normalization
 """
-import re
-from typing import Dict, List, Tuple, Pattern
 import logging
+import re
+from re import Pattern
 
 logger = logging.getLogger(__name__)
 
-INFORMAL_TERMS: Dict[str, str] = {
+INFORMAL_TERMS: dict[str, str] = {
     r'\bvc\b': 'você',
     r'\bpra\b': 'para',
     r'\btá\b': 'está',
@@ -46,7 +46,7 @@ INFORMAL_TERMS: Dict[str, str] = {
     r'\babs\b': '',
 }
 
-LAUGHTER_PATTERNS: List[str] = [
+LAUGHTER_PATTERNS: list[str] = [
     r'\brs+\b',
     r'\brsrs+\b',
     r'\bkk+\b',
@@ -56,7 +56,7 @@ LAUGHTER_PATTERNS: List[str] = [
     r'\blol\b',
 ]
 
-INFORMAL_GREETINGS: Dict[str, str] = {
+INFORMAL_GREETINGS: dict[str, str] = {
     r'^oi\b': 'Olá',
     r'^e aí\b': 'Olá',
     r'^eai\b': 'Olá',
@@ -67,7 +67,7 @@ INFORMAL_GREETINGS: Dict[str, str] = {
     r'^iae\b': 'Olá',
 }
 
-FORBIDDEN_PATTERNS: List[str] = [
+FORBIDDEN_PATTERNS: list[str] = [
     r'\bvc\b',
     r'\bpra\b',
     r'\btá\b',
@@ -91,7 +91,7 @@ FORBIDDEN_PATTERNS: List[str] = [
     r'\btranqui\b',
 ]
 
-PROFESSIONAL_INDICATORS: List[str] = [
+PROFESSIONAL_INDICATORS: list[str] = [
     'olá',
     'prezado',
     'prezada',
@@ -138,18 +138,18 @@ class ToneFilter:
             max_emojis: Maximum number of emojis allowed (default: 1)
         """
         self.max_emojis = max_emojis
-        self._compiled_informal: List[Tuple[Pattern, str]] = [
+        self._compiled_informal: list[tuple[Pattern, str]] = [
             (re.compile(pattern, re.IGNORECASE), replacement)
             for pattern, replacement in INFORMAL_TERMS.items()
         ]
-        self._compiled_laughter: List[Pattern] = [
+        self._compiled_laughter: list[Pattern] = [
             re.compile(pattern, re.IGNORECASE) for pattern in LAUGHTER_PATTERNS
         ]
-        self._compiled_greetings: List[Tuple[Pattern, str]] = [
+        self._compiled_greetings: list[tuple[Pattern, str]] = [
             (re.compile(pattern, re.IGNORECASE | re.MULTILINE), replacement)
             for pattern, replacement in INFORMAL_GREETINGS.items()
         ]
-        self._compiled_forbidden: List[Pattern] = [
+        self._compiled_forbidden: list[Pattern] = [
             re.compile(pattern, re.IGNORECASE) for pattern in FORBIDDEN_PATTERNS
         ]
     
@@ -207,7 +207,6 @@ class ToneFilter:
                 chars_to_remove.add(i)
         
         result = []
-        emoji_idx = 0
         for match in EMOJI_PATTERN.finditer(text):
             pass
         
@@ -249,7 +248,7 @@ class ToneFilter:
         
         return result
     
-    def validate_professional_tone(self, text: str) -> Tuple[bool, List[str]]:
+    def validate_professional_tone(self, text: str) -> tuple[bool, list[str]]:
         """
         Validate if the text maintains a professional tone.
         
@@ -262,7 +261,7 @@ class ToneFilter:
         if not text:
             return True, []
         
-        issues: List[str] = []
+        issues: list[str] = []
         text_lower = text.lower()
         
         for pattern in self._compiled_forbidden:
@@ -310,7 +309,7 @@ class ToneFilter:
         
         return result
     
-    def get_filter_stats(self, original: str, filtered: str) -> Dict[str, any]:
+    def get_filter_stats(self, original: str, filtered: str) -> dict[str, any]:
         """
         Get statistics about the filtering applied.
         
@@ -351,7 +350,7 @@ def filter_response(text: str) -> str:
     return tone_filter.apply_all_filters(text)
 
 
-def validate_response(text: str) -> Tuple[bool, List[str]]:
+def validate_response(text: str) -> tuple[bool, list[str]]:
     """
     Convenience function to validate a response using the default ToneFilter.
     

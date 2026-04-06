@@ -13,13 +13,14 @@ Covers all critical services:
 
 Returns 200 if all critical components are healthy, 503 otherwise.
 """
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from datetime import datetime
 import logging
 import os
+from datetime import datetime
+
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 
@@ -118,7 +119,6 @@ def _check_circuit_breakers() -> dict:
 def _check_dlq() -> dict:
     """Check DLQ service availability (sync check only)."""
     try:
-        from app.shared.resilience.dlq_service import dlq_service
         return {"status": "healthy", "known_queues": len(["sourcing_high", "evaluation_normal", "vagas_normal", "onboarding_low", "celery"])}
     except Exception as exc:
         return {"status": "unavailable", "error": str(exc)[:200]}

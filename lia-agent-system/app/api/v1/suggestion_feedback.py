@@ -7,13 +7,11 @@ Provides:
 - Learned adjustments for wizard suggestions
 """
 import logging
-from typing import List, Optional, Any
-from datetime import datetime
-from uuid import UUID
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, and_, case
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -29,22 +27,22 @@ _feedback_service = FeedbackLearningService()
 class SuggestionFeedbackRequest(BaseModel):
     company_id: str
     field_name: str = Field(..., description="Field being suggested: salary, skills, seniority, etc.")
-    suggested_value: Optional[Any] = None
-    actual_value: Optional[Any] = None
+    suggested_value: Any | None = None
+    actual_value: Any | None = None
     accepted: bool = Field(..., description="True if user accepted the suggestion")
-    context: Optional[dict] = Field(default=None, description="Context: role, seniority, department, etc.")
-    created_by: Optional[str] = None
+    context: dict | None = Field(default=None, description="Context: role, seniority, department, etc.")
+    created_by: str | None = None
 
 
 class SuggestionFeedbackResponse(BaseModel):
     id: str
     company_id: str
     field_name: str
-    suggested_value: Optional[Any] = None
-    actual_value: Optional[Any] = None
+    suggested_value: Any | None = None
+    actual_value: Any | None = None
     accepted: int
-    context: Optional[dict] = None
-    created_at: Optional[str] = None
+    context: dict | None = None
+    created_at: str | None = None
 
 
 class FieldStatsResponse(BaseModel):
@@ -59,7 +57,7 @@ class SuggestionStatsResponse(BaseModel):
     company_id: str
     total_feedback: int = 0
     overall_acceptance_rate: float = 0.0
-    by_field: List[FieldStatsResponse] = Field(default_factory=list)
+    by_field: list[FieldStatsResponse] = Field(default_factory=list)
 
 
 class AdjustmentResponse(BaseModel):
@@ -67,8 +65,8 @@ class AdjustmentResponse(BaseModel):
     adjustment_reason: str
     confidence: str
     based_on_samples: int
-    original_value: Optional[Any] = None
-    adjusted_value: Optional[Any] = None
+    original_value: Any | None = None
+    adjusted_value: Any | None = None
 
 
 @router.post("/record")
@@ -161,11 +159,11 @@ async def get_suggestion_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{company_id}/adjustments", response_model=List[AdjustmentResponse])
+@router.get("/{company_id}/adjustments", response_model=list[AdjustmentResponse])
 async def get_learned_adjustments(
     company_id: str,
-    role: Optional[str] = Query(default=None),
-    seniority: Optional[str] = Query(default=None),
+    role: str | None = Query(default=None),
+    seniority: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
     try:

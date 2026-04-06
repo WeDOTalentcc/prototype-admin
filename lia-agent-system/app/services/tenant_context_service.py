@@ -3,11 +3,12 @@ TenantContextService — contexto rico por tenant para personalização da LIA.
 Injeta nome, setor, nível de autonomia e estado atual no contexto do orquestrador.
 """
 from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
-from typing import Optional
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 logger = logging.getLogger(__name__)
 

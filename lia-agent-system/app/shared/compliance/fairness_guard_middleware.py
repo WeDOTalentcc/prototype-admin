@@ -9,9 +9,8 @@ in request bodies or response payloads. Can be used as:
 Gap addressed: G1 — FairnessGuard as reusable middleware across all endpoints.
 """
 import logging
-from typing import List, Optional
 
-from app.shared.compliance.fairness_guard import FairnessGuard, FairnessCheckResult
+from app.shared.compliance.fairness_guard import FairnessCheckResult, FairnessGuard
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +35,10 @@ class FairnessCheckOutput:
 
     def __init__(self):
         self.is_blocked: bool = False
-        self.blocked_field: Optional[str] = None
-        self.blocked_result: Optional[FairnessCheckResult] = None
-        self.warnings: List[str] = []
-        self.checked_fields: List[str] = []
+        self.blocked_field: str | None = None
+        self.blocked_result: FairnessCheckResult | None = None
+        self.warnings: list[str] = []
+        self.checked_fields: list[str] = []
 
     @property
     def has_warnings(self) -> bool:

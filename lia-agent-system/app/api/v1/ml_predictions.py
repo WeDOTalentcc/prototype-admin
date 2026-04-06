@@ -7,14 +7,14 @@ Provides REST API access to ML predictions for:
 - Skill success prediction
 - Hiring insights
 """
-from typing import Optional, List
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.ml import OutcomePredictor, OutcomeFeatureEngineer, ModelRegistry, get_model_registry
+from app.services.ml import OutcomePredictor, get_model_registry
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class TimeToFillRequest(BaseModel):
     """Request for time to fill prediction."""
     company_id: str
     job_data: dict
-    company_data: Optional[dict] = None
+    company_data: dict | None = None
 
 
 class TimeToFillResponse(BaseModel):
@@ -37,7 +37,7 @@ class TimeToFillResponse(BaseModel):
     confidence_level: str
     comparison_to_market: str
     explanation: str
-    factors: List[dict]
+    factors: list[dict]
     model_version: str
 
 
@@ -45,7 +45,7 @@ class SalaryPredictionRequest(BaseModel):
     """Request for salary prediction."""
     company_id: str
     job_data: dict
-    market_benchmark: Optional[float] = None
+    market_benchmark: float | None = None
 
 
 class SalaryPredictionResponse(BaseModel):
@@ -57,14 +57,14 @@ class SalaryPredictionResponse(BaseModel):
     confidence: float
     confidence_level: str
     explanation: str
-    factors: List[dict]
+    factors: list[dict]
 
 
 class SkillSuccessRequest(BaseModel):
     """Request for skill success prediction."""
     company_id: str
     skill_name: str
-    role: Optional[str] = None
+    role: str | None = None
 
 
 class SkillSuccessResponse(BaseModel):
@@ -80,14 +80,14 @@ class SkillSuccessResponse(BaseModel):
 class HiringInsightsRequest(BaseModel):
     """Request for hiring insights."""
     company_id: str
-    role: Optional[str] = None
+    role: str | None = None
 
 
 class HiringInsightsResponse(BaseModel):
     """Response for hiring insights."""
     summary: dict
-    recommendations: List[dict]
-    top_successful_skills: List[dict]
+    recommendations: list[dict]
+    top_successful_skills: list[dict]
     confidence: float
 
 
@@ -290,7 +290,7 @@ async def get_hiring_insights(
 
 @router.get("/models")
 async def list_models(
-    model_name: Optional[str] = None,
+    model_name: str | None = None,
     active_only: bool = True
 ):
     """
@@ -329,7 +329,7 @@ async def get_model_performance(model_id: str):
 
 
 @router.post("/models/compare")
-async def compare_models(model_ids: List[str]):
+async def compare_models(model_ids: list[str]):
     """
     Compare performance of multiple models.
     """

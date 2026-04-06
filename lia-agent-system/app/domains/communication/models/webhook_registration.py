@@ -4,15 +4,15 @@ Webhook Registration model for job status change notifications.
 Stores webhook configurations for external systems to receive
 notifications when job vacancy statuses change.
 """
-from datetime import datetime
-from typing import List, Optional, Dict, Any
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, Integer, Index
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
-import hmac
 import hashlib
+import hmac
 import secrets
+import uuid
+from datetime import datetime
+from typing import Any
 
+from sqlalchemy import JSON, Boolean, Column, DateTime, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -105,7 +105,7 @@ class WebhookRegistration(Base):
         actual = signature if signature.startswith('sha256=') else f"sha256={signature}"
         return hmac.compare_digest(expected, actual)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary (masks sensitive data)."""
         return {
             "id": str(self.id),
@@ -131,7 +131,7 @@ class WebhookRegistration(Base):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
     
-    def to_dict_full(self) -> Dict[str, Any]:
+    def to_dict_full(self) -> dict[str, Any]:
         """Convert to dictionary with full details (including secrets)."""
         result = self.to_dict()
         result["secret_key"] = self.secret_key
@@ -170,7 +170,7 @@ class WebhookDeliveryLog(Base):
         Index('idx_webhook_delivery_company', 'company_id', 'triggered_at'),
     )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": str(self.id),

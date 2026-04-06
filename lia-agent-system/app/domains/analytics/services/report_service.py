@@ -10,16 +10,17 @@ Integrates with BriefingService for data and EmailService for delivery.
 """
 import logging
 import random
-from datetime import datetime, date, timedelta
-from typing import Dict, Any, List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
+from datetime import date, datetime, timedelta
+from typing import Any
 
-from app.services.briefing_service import briefing_service, BriefingService
-from app.domains.communication.services.email_service import EmailService
-from app.domains.communication.services.email_providers import get_email_provider
-from app.templates.report_templates import report_templates
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import AsyncSessionLocal
+from app.domains.communication.services.email_providers import get_email_provider
+from app.domains.communication.services.email_service import EmailService
+from app.services.briefing_service import briefing_service
+from app.templates.report_templates import report_templates
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class DemoDataGenerator:
         today = date.today()
         return today.year * 10000 + today.month * 100 + today.day
 
-    def _pick_names(self, rng: random.Random, count: int) -> List[str]:
+    def _pick_names(self, rng: random.Random, count: int) -> list[str]:
         firsts = rng.sample(self.FIRST_NAMES, min(count, len(self.FIRST_NAMES)))
         lasts = rng.sample(self.LAST_NAMES, min(count, len(self.LAST_NAMES)))
         return [f"{f} {l}" for f, l in zip(firsts, lasts)]
@@ -84,7 +85,7 @@ class DemoDataGenerator:
         val = round(rng.uniform(low, high), 1)
         return val if direction == "up" else -val
 
-    def weekly_kpis(self) -> List[Dict[str, Any]]:
+    def weekly_kpis(self) -> list[dict[str, Any]]:
         rng = self._rng(self._weekly_seed())
         hires = rng.randint(5, 20)
         candidates = rng.randint(500, 2000)
@@ -108,7 +109,7 @@ class DemoDataGenerator:
              "trend_percentage": self._trend_pct(rng, cost_trend), "positive_up": False},
         ]
 
-    def funnel_data(self) -> Dict[str, Any]:
+    def funnel_data(self) -> dict[str, Any]:
         rng = self._rng(self._weekly_seed() + 1)
         total = rng.randint(500, 2000)
         triagem_rate = rng.uniform(0.45, 0.60)
@@ -138,7 +139,7 @@ class DemoDataGenerator:
             "overall_conversion_rate": overall,
         }
 
-    def recruiter_ranking(self) -> List[Dict[str, Any]]:
+    def recruiter_ranking(self) -> list[dict[str, Any]]:
         rng = self._rng(self._weekly_seed() + 2)
         count = rng.randint(4, 7)
         names = self._pick_names(rng, count)
@@ -156,7 +157,7 @@ class DemoDataGenerator:
         ranking.sort(key=lambda r: r["positions_filled"], reverse=True)
         return ranking
 
-    def channel_performance(self) -> List[Dict[str, Any]]:
+    def channel_performance(self) -> list[dict[str, Any]]:
         rng = self._rng(self._weekly_seed() + 3)
         total_candidates = rng.randint(500, 2000)
         results = []
@@ -172,7 +173,7 @@ class DemoDataGenerator:
             })
         return results
 
-    def strategic_kpis(self) -> List[Dict[str, Any]]:
+    def strategic_kpis(self) -> list[dict[str, Any]]:
         rng = self._rng(self._monthly_seed())
         hires = rng.randint(8, 30)
         hires_target = hires + rng.randint(-3, 5)
@@ -208,7 +209,7 @@ class DemoDataGenerator:
              "trend": "up", "trend_percentage": self._trend_pct(rng, "up", 1.0, 8.0), "positive_up": True},
         ]
 
-    def executive_summary(self) -> Dict[str, Any]:
+    def executive_summary(self) -> dict[str, Any]:
         rng = self._rng(self._monthly_seed() + 1)
         hires = rng.randint(8, 30)
         open_pos = rng.randint(20, 80)
@@ -221,7 +222,7 @@ class DemoDataGenerator:
             "total_cost": total_cost,
         }
 
-    def department_breakdown(self) -> List[Dict[str, Any]]:
+    def department_breakdown(self) -> list[dict[str, Any]]:
         rng = self._rng(self._monthly_seed() + 2)
         dept_count = rng.randint(5, 8)
         depts = rng.sample(self.DEPARTMENTS, dept_count)
@@ -239,7 +240,7 @@ class DemoDataGenerator:
         results.sort(key=lambda d: d["hires"], reverse=True)
         return results
 
-    def predictions(self) -> List[Dict[str, Any]]:
+    def predictions(self) -> list[dict[str, Any]]:
         rng = self._rng(self._monthly_seed() + 3)
         hires_current = rng.randint(8, 25)
         hires_predicted = hires_current + rng.randint(1, 8)
@@ -287,7 +288,7 @@ class DemoDataGenerator:
         count = rng.randint(3, 4)
         return preds[:count]
 
-    def daily_sample(self, user_name: str, company_name: str) -> Dict[str, Any]:
+    def daily_sample(self, user_name: str, company_name: str) -> dict[str, Any]:
         rng = self._rng(self._daily_seed())
         urgent = rng.randint(1, 5)
         tasks = rng.randint(4, 12)
@@ -386,9 +387,9 @@ class ReportService:
         user_email: str,
         user_name: str,
         company_name: str = "Sua Empresa",
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
         send_email: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate and optionally send daily briefing email.
         
@@ -472,12 +473,12 @@ class ReportService:
     
     async def generate_weekly_performance_report(
         self,
-        recipient_emails: List[str],
+        recipient_emails: list[str],
         recipient_name: str = "Equipe",
         company_name: str = "Sua Empresa",
         company_id: str = None,
         send_email: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate and optionally send weekly performance report.
         
@@ -562,12 +563,12 @@ class ReportService:
     
     async def generate_monthly_manager_report(
         self,
-        recipient_emails: List[str],
+        recipient_emails: list[str],
         recipient_name: str = "Gestão",
         company_name: str = "Sua Empresa",
         company_id: str = None,
         send_email: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate and optionally send monthly manager report.
         
@@ -664,7 +665,7 @@ class ReportService:
         report_type: str,
         user_name: str = "Recrutador",
         company_name: str = "Empresa Demo"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a preview of a report without sending.
         
@@ -703,7 +704,7 @@ class ReportService:
         subject: str,
         html_content: str,
         report_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send report email using configured email provider."""
         try:
             provider = get_email_provider()
@@ -739,7 +740,7 @@ class ReportService:
                 "error": str(e)
             }
     
-    async def _get_weekly_kpis(self, company_id: str = None) -> List[Dict[str, Any]]:
+    async def _get_weekly_kpis(self, company_id: str = None) -> list[dict[str, Any]]:
         """Get weekly KPI data from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -794,7 +795,7 @@ class ReportService:
             logger.warning(f"Failed to get weekly KPIs from DB, using demo: {e}")
         return _demo_gen.weekly_kpis()
 
-    async def _get_funnel_data(self, company_id: str = None) -> Dict[str, Any]:
+    async def _get_funnel_data(self, company_id: str = None) -> dict[str, Any]:
         """Get funnel performance data from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -841,7 +842,7 @@ class ReportService:
             logger.warning(f"Failed to get funnel data from DB, using demo: {e}")
         return _demo_gen.funnel_data()
 
-    async def _get_recruiter_ranking(self, company_id: str = None) -> List[Dict[str, Any]]:
+    async def _get_recruiter_ranking(self, company_id: str = None) -> list[dict[str, Any]]:
         """Get recruiter performance ranking from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -884,7 +885,7 @@ class ReportService:
             logger.warning(f"Failed to get recruiter ranking from DB, using demo: {e}")
         return _demo_gen.recruiter_ranking()
 
-    async def _get_channel_performance(self, company_id: str = None) -> List[Dict[str, Any]]:
+    async def _get_channel_performance(self, company_id: str = None) -> list[dict[str, Any]]:
         """Get channel performance data from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -922,7 +923,7 @@ class ReportService:
             logger.warning(f"Failed to get channel performance from DB, using demo: {e}")
         return _demo_gen.channel_performance()
 
-    async def _get_strategic_kpis(self, company_id: str = None) -> List[Dict[str, Any]]:
+    async def _get_strategic_kpis(self, company_id: str = None) -> list[dict[str, Any]]:
         """Get strategic KPIs for monthly report from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -973,7 +974,7 @@ class ReportService:
             logger.warning(f"Failed to get strategic KPIs from DB, using demo: {e}")
         return _demo_gen.strategic_kpis()
 
-    async def _get_executive_summary(self, company_id: str = None) -> Dict[str, Any]:
+    async def _get_executive_summary(self, company_id: str = None) -> dict[str, Any]:
         """Get executive summary data from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -1013,7 +1014,7 @@ class ReportService:
             logger.warning(f"Failed to get executive summary from DB, using demo: {e}")
         return _demo_gen.executive_summary()
 
-    async def _get_department_breakdown(self, company_id: str = None) -> List[Dict[str, Any]]:
+    async def _get_department_breakdown(self, company_id: str = None) -> list[dict[str, Any]]:
         """Get department breakdown data from database with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -1051,7 +1052,7 @@ class ReportService:
             logger.warning(f"Failed to get department breakdown from DB, using demo: {e}")
         return _demo_gen.department_breakdown()
 
-    async def _get_predictions(self, company_id: str = None) -> List[Dict[str, Any]]:
+    async def _get_predictions(self, company_id: str = None) -> list[dict[str, Any]]:
         """Get AI predictions based on trend data with demo fallback."""
         try:
             async with AsyncSessionLocal() as db:
@@ -1119,9 +1120,9 @@ class ReportService:
     
     async def _generate_weekly_recommendations(
         self,
-        kpis: List[Dict[str, Any]],
-        funnel: Dict[str, Any]
-    ) -> List[str]:
+        kpis: list[dict[str, Any]],
+        funnel: dict[str, Any]
+    ) -> list[str]:
         """Generate weekly recommendations based on data."""
         recommendations = []
         
@@ -1141,10 +1142,10 @@ class ReportService:
     
     async def _generate_strategic_recommendations(
         self,
-        kpis: List[Dict[str, Any]],
-        executive_summary: Dict[str, Any],
-        predictions: List[Dict[str, Any]]
-    ) -> List[str]:
+        kpis: list[dict[str, Any]],
+        executive_summary: dict[str, Any],
+        predictions: list[dict[str, Any]]
+    ) -> list[str]:
         """Generate strategic recommendations for managers."""
         recommendations = []
         
@@ -1170,7 +1171,7 @@ class ReportService:
         
         return recommendations[:5]
     
-    async def _get_sample_daily_data(self, user_name: str, company_name: str, company_id: str = None) -> Dict[str, Any]:
+    async def _get_sample_daily_data(self, user_name: str, company_name: str, company_id: str = None) -> dict[str, Any]:
         """Get sample data for daily report preview, using real data when available."""
         try:
             async with AsyncSessionLocal() as db:
@@ -1208,7 +1209,7 @@ class ReportService:
             logger.warning(f"Failed to get daily sample from DB, using demo: {e}")
         return _demo_gen.daily_sample(user_name, company_name)
 
-    async def _get_sample_weekly_data(self, company_name: str, company_id: str = None) -> Dict[str, Any]:
+    async def _get_sample_weekly_data(self, company_name: str, company_id: str = None) -> dict[str, Any]:
         """Get sample data for weekly report preview."""
         now = datetime.now()
         week_start = now - timedelta(days=now.weekday())
@@ -1229,7 +1230,7 @@ class ReportService:
             "company_name": company_name,
         }
 
-    async def _get_sample_monthly_data(self, company_name: str, company_id: str = None) -> Dict[str, Any]:
+    async def _get_sample_monthly_data(self, company_name: str, company_id: str = None) -> dict[str, Any]:
         """Get sample data for monthly report preview."""
         now = datetime.now()
         month_names = [

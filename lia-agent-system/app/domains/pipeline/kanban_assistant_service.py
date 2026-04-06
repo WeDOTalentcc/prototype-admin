@@ -3,9 +3,9 @@ KanbanAssistantService - Generates proactive suggestions for the recruiter's Kan
 Uses candidate context and pipeline state to suggest next actions.
 """
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from app.shared.providers.llm_client import llm_complete, is_llm_available
+from app.shared.providers.llm_client import is_llm_available, llm_complete
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +15,11 @@ class KanbanAssistantService:
 
     @staticmethod
     async def get_suggestions(
-        candidates_in_stage: List[Dict[str, Any]],
+        candidates_in_stage: list[dict[str, Any]],
         stage_name: str,
         action_behavior: str,
-        company_context: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
+        company_context: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         suggestions = []
 
         try:
@@ -70,7 +70,7 @@ class KanbanAssistantService:
         candidate_count: int,
         action_behavior: str,
         avg_days_in_stage: float = 0,
-    ) -> Optional[str]:
+    ) -> str | None:
         if not is_llm_available():
             return None
 

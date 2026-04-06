@@ -8,10 +8,10 @@ This service integrates with RubricEvaluationService to calculate adherence scor
 and generates appropriate messages based on thresholds.
 """
 import logging
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class PreQualificationThresholds:
     strong_warning: int = 30
     
     @classmethod
-    def from_job_config(cls, job_config: Optional[Dict[str, Any]] = None) -> "PreQualificationThresholds":
+    def from_job_config(cls, job_config: dict[str, Any] | None = None) -> "PreQualificationThresholds":
         """Create thresholds from job screening config."""
         if not job_config:
             return cls()
@@ -59,10 +59,10 @@ class PreQualificationOutput:
     """Output of the pre-qualification evaluation."""
     result: PreQualificationResult
     score: int
-    matched_requirements: List[str]
-    missing_requirements: List[str]
+    matched_requirements: list[str]
+    missing_requirements: list[str]
     message: str
-    buttons: List[Dict[str, str]]
+    buttons: list[dict[str, str]]
     should_ask_confirmation: bool
 
 
@@ -132,12 +132,12 @@ class PreQualificationService:
     def evaluate(
         self,
         adherence_score: float,
-        matched_requirements: List[Dict[str, Any]],
-        missing_requirements: List[Dict[str, Any]],
+        matched_requirements: list[dict[str, Any]],
+        missing_requirements: list[dict[str, Any]],
         job_title: str,
         company_name: str,
-        job_area: Optional[str] = None,
-        thresholds: Optional[PreQualificationThresholds] = None
+        job_area: str | None = None,
+        thresholds: PreQualificationThresholds | None = None
     ) -> PreQualificationOutput:
         """
         Evaluate candidate pre-qualification based on rubric score.
@@ -207,8 +207,8 @@ class PreQualificationService:
     
     def _extract_requirement_names(
         self, 
-        requirements: List[Dict[str, Any]]
-    ) -> List[str]:
+        requirements: list[dict[str, Any]]
+    ) -> list[str]:
         """Extract requirement names from evaluation results."""
         names = []
         for req in requirements:
@@ -222,9 +222,9 @@ class PreQualificationService:
         result: PreQualificationResult,
         job_title: str,
         company_name: str,
-        matched_skills: List[str],
-        missing_requirements: List[str],
-        job_area: Optional[str] = None
+        matched_skills: list[str],
+        missing_requirements: list[str],
+        job_area: str | None = None
     ) -> str:
         """Generate humanized message for the candidate."""
         template = PRE_QUALIFICATION_TEMPLATES[result]
@@ -251,7 +251,7 @@ class PreQualificationService:
         
         return "\n\n".join(parts)
     
-    def _format_skills_list(self, skills: List[str]) -> str:
+    def _format_skills_list(self, skills: list[str]) -> str:
         """Format a list of skills into readable text."""
         if not skills:
             return ""
@@ -290,7 +290,7 @@ class PreQualificationService:
     
     def generate_confirmation_message(
         self,
-        parsed_cv: Dict[str, Any],
+        parsed_cv: dict[str, Any],
         is_update: bool = False
     ) -> str:
         """

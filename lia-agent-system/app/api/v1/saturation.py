@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, not_
-from typing import Optional
-from uuid import UUID
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, not_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
-from pydantic import BaseModel, Field
+from app.models.job_vacancy import JobVacancy
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -40,10 +40,10 @@ class ChannelSaturation(BaseModel):
 
 
 class SaturationSettingsRequest(BaseModel):
-    threshold_web: Optional[int] = Field(None, ge=1, le=500)
-    threshold_sourcing: Optional[int] = Field(None, ge=1, le=500)
-    unlock_increment: Optional[int] = Field(None, ge=1, le=100)
-    unlock_hours: Optional[int] = Field(None, ge=1, le=168)
+    threshold_web: int | None = Field(None, ge=1, le=500)
+    threshold_sourcing: int | None = Field(None, ge=1, le=500)
+    unlock_increment: int | None = Field(None, ge=1, le=100)
+    unlock_hours: int | None = Field(None, ge=1, le=168)
 
 
 class SaturationSettingsResponse(BaseModel):
@@ -52,7 +52,7 @@ class SaturationSettingsResponse(BaseModel):
     threshold_sourcing: int
     unlock_increment: int
     unlock_hours: int
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
 
 class SaturationStatusResponse(BaseModel):
@@ -64,8 +64,8 @@ class SaturationStatusResponse(BaseModel):
     recommendation: str
     saturation_percentage: float
     queued_count: int
-    last_screened_at: Optional[datetime] = None
-    saturation_disabled_until: Optional[datetime] = None
+    last_screened_at: datetime | None = None
+    saturation_disabled_until: datetime | None = None
     counts_by_channel: ChannelCounts
     organic: ChannelSaturation
     sourcing: ChannelSaturation
@@ -77,18 +77,18 @@ class SaturationStatusResponse(BaseModel):
 
 class UnlockPipelineRequest(BaseModel):
     action: str = Field(..., pattern="^(increase_threshold|disable_temporarily)$")
-    new_threshold: Optional[int] = Field(None, ge=5, le=500)
-    disable_hours: Optional[int] = Field(None, ge=1)
+    new_threshold: int | None = Field(None, ge=5, le=500)
+    disable_hours: int | None = Field(None, ge=1)
 
 
 class UnlockPipelineResponse(BaseModel):
     success: bool
     message: str
-    new_threshold: Optional[int] = None
-    saturation_disabled_until: Optional[datetime] = None
+    new_threshold: int | None = None
+    saturation_disabled_until: datetime | None = None
 
 
-def _get_company_saturation_defaults(company: Optional[object]) -> dict:
+def _get_company_saturation_defaults(company: object | None) -> dict:
     if company and company.additional_data:
         sat = company.additional_data.get("saturation_settings", {})
         return {
@@ -136,8 +136,8 @@ async def _find_company(db: AsyncSession, company_id: str):
 async def get_saturation_settings(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
 ):
     company = await _find_company(db, company_id)
     defaults = _get_company_saturation_defaults(company)
@@ -157,8 +157,8 @@ async def update_saturation_settings(
     request: SaturationSettingsRequest,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
 ):
     company = await _find_company(db, company_id)
 
@@ -424,8 +424,8 @@ async def unlock_pipeline(
     job_id: UUID,
     request: UnlockPipelineRequest,
     db: AsyncSession = Depends(get_db),
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
 ):
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()

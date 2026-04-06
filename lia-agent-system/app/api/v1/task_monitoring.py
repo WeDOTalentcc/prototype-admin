@@ -1,14 +1,15 @@
 import logging
-from typing import Optional, Dict, Any, List
-from fastapi import APIRouter, HTTPException, Query, Depends
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from app.shared.async_processing.enhanced_task_manager import EnhancedTaskManager
-from app.shared.async_processing.task_scheduler import TaskScheduler
-from app.shared.async_processing.task_persistence import TaskPersistenceService
-from app.shared.async_processing.task_queue import TaskPriority
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.shared.async_processing.enhanced_task_manager import EnhancedTaskManager
+from app.shared.async_processing.task_persistence import TaskPersistenceService
+from app.shared.async_processing.task_queue import TaskPriority
+from app.shared.async_processing.task_scheduler import TaskScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +19,13 @@ router = APIRouter(prefix="/async-tasks")
 class TaskSubmitRequest(BaseModel):
     domain_id: str
     action_id: str
-    params: Dict[str, Any] = Field(default_factory=dict)
+    params: dict[str, Any] = Field(default_factory=dict)
     user_id: str = ""
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
     priority: int = 1
     max_retries: int = 2
-    callback: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    callback: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ScheduleCreateRequest(BaseModel):
@@ -32,12 +33,12 @@ class ScheduleCreateRequest(BaseModel):
     domain_id: str
     action_id: str
     cron_expression: str
-    params: Dict[str, Any] = Field(default_factory=dict)
+    params: dict[str, Any] = Field(default_factory=dict)
     priority: int = 1
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
     user_id: str = "system"
     max_retries: int = 2
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @router.post("/submit")
@@ -76,10 +77,10 @@ async def get_stats(current_user: User = Depends(get_current_user_or_demo)):
 
 @router.get("/history")
 async def get_task_history(
-    domain_id: Optional[str] = Query(None),
-    state: Optional[str] = Query(None),
-    user_id: Optional[str] = Query(None),
-    tenant_id: Optional[str] = Query(None),
+    domain_id: str | None = Query(None),
+    state: str | None = Query(None),
+    user_id: str | None = Query(None),
+    tenant_id: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_user_or_demo),
@@ -157,8 +158,8 @@ async def remove_schedule(schedule_id: str, current_user: User = Depends(get_cur
 
 @router.get("/dlq")
 async def list_dlq(
-    resolved: Optional[bool] = Query(None),
-    domain_id: Optional[str] = Query(None),
+    resolved: bool | None = Query(None),
+    domain_id: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_user_or_demo),
@@ -183,7 +184,6 @@ async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_
             raise HTTPException(status_code=404, detail="DLQ entry not found")
 
         manager = EnhancedTaskManager.get_instance()
-        priority_map = {0: TaskPriority.LOW, 1: TaskPriority.NORMAL, 2: TaskPriority.HIGH, 3: TaskPriority.URGENT}
 
         task_id = await manager.submit_task(
             domain_id=record.domain_id,
@@ -219,9 +219,9 @@ async def get_task_status(task_id: str, current_user: User = Depends(get_current
 
 @router.get("/")
 async def list_tasks(
-    domain_id: Optional[str] = Query(None),
-    state: Optional[str] = Query(None),
-    user_id: Optional[str] = Query(None),
+    domain_id: str | None = Query(None),
+    state: str | None = Query(None),
+    user_id: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     try:

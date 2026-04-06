@@ -1,10 +1,10 @@
 """
 Pydantic schemas for Compliance Health Check API.
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class ChecklistItem(BaseModel):
@@ -56,22 +56,22 @@ class HealthCheckItemResponse(BaseModel):
     category: str
     req_id: str
     requirement: str
-    evidence: Optional[str] = None
-    evidence_details: Optional[str] = None
-    checklist_items: Optional[List[ChecklistItem]] = []
-    gap_observation: Optional[str] = None
+    evidence: str | None = None
+    evidence_details: str | None = None
+    checklist_items: list[ChecklistItem] | None = []
+    gap_observation: str | None = None
     status: str
-    last_checked_at: Optional[datetime] = None
-    checked_by_id: Optional[str] = None
-    checked_by_name: Optional[str] = None
-    next_review_date: Optional[datetime] = None
+    last_checked_at: datetime | None = None
+    checked_by_id: str | None = None
+    checked_by_name: str | None = None
+    next_review_date: datetime | None = None
     review_frequency: str
-    check_comments: Optional[str] = None
+    check_comments: str | None = None
     priority: str
-    reference_url: Optional[str] = None
-    reference_label: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    reference_url: str | None = None
+    reference_label: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -79,7 +79,7 @@ class HealthCheckItemResponse(BaseModel):
 
 class HealthCheckItemListResponse(BaseModel):
     """Paginated list of health check items."""
-    items: List[HealthCheckItemResponse]
+    items: list[HealthCheckItemResponse]
     total: int
     limit: int
     offset: int
@@ -92,10 +92,10 @@ class HealthCheckItemCreate(BaseModel):
     category: str = Field(..., description="Category within the framework", max_length=100)
     req_id: str = Field(..., description="Unique requirement ID", max_length=50)
     requirement: str = Field(..., description="Requirement description", max_length=500)
-    evidence: Optional[str] = Field(None, description="Expected evidence", max_length=500)
-    evidence_details: Optional[str] = Field(None, description="Detailed evidence description")
-    checklist_items: Optional[List[ChecklistItem]] = Field(None, description="List of sub-items to check")
-    gap_observation: Optional[str] = Field(None, description="Gap observation notes")
+    evidence: str | None = Field(None, description="Expected evidence", max_length=500)
+    evidence_details: str | None = Field(None, description="Detailed evidence description")
+    checklist_items: list[ChecklistItem] | None = Field(None, description="List of sub-items to check")
+    gap_observation: str | None = Field(None, description="Gap observation notes")
     status: HealthCheckStatusEnum = Field(HealthCheckStatusEnum.NOT_CHECKED, description="Current status")
     priority: PriorityEnum = Field(PriorityEnum.MEDIUM, description="Priority level")
     review_frequency: ReviewFrequencyEnum = Field(ReviewFrequencyEnum.MONTHLY, description="Review frequency")
@@ -116,19 +116,19 @@ class HealthCheckItemCreate(BaseModel):
 
 class HealthCheckItemUpdate(BaseModel):
     """Schema for updating a health check item."""
-    requirement: Optional[str] = Field(None, description="Requirement description", max_length=500)
-    evidence: Optional[str] = Field(None, description="Expected evidence", max_length=500)
-    gap_observation: Optional[str] = Field(None, description="Gap observation notes")
-    priority: Optional[PriorityEnum] = Field(None, description="Priority level")
-    review_frequency: Optional[ReviewFrequencyEnum] = Field(None, description="Review frequency")
+    requirement: str | None = Field(None, description="Requirement description", max_length=500)
+    evidence: str | None = Field(None, description="Expected evidence", max_length=500)
+    gap_observation: str | None = Field(None, description="Gap observation notes")
+    priority: PriorityEnum | None = Field(None, description="Priority level")
+    review_frequency: ReviewFrequencyEnum | None = Field(None, description="Review frequency")
 
 
 class HealthCheckVerifyRequest(BaseModel):
     """Schema for marking an item as verified."""
-    checked_by_id: Optional[str] = Field(None, description="ID of the user performing verification")
-    checked_by_name: Optional[str] = Field(None, description="Name of the user performing verification")
-    check_comments: Optional[str] = Field(None, description="Comments about the verification")
-    next_review_date: Optional[datetime] = Field(None, description="Next review date")
+    checked_by_id: str | None = Field(None, description="ID of the user performing verification")
+    checked_by_name: str | None = Field(None, description="Name of the user performing verification")
+    check_comments: str | None = Field(None, description="Comments about the verification")
+    next_review_date: datetime | None = Field(None, description="Next review date")
 
     class Config:
         json_schema_extra = {
@@ -144,10 +144,10 @@ class HealthCheckVerifyRequest(BaseModel):
 class HealthCheckStatusUpdateRequest(BaseModel):
     """Schema for updating item status."""
     status: HealthCheckStatusEnum = Field(..., description="New status")
-    changed_by_id: Optional[str] = Field(None, description="ID of user making the change")
-    changed_by_name: Optional[str] = Field(None, description="Name of user making the change")
-    comments: Optional[str] = Field(None, description="Comments about the status change")
-    gap_observation: Optional[str] = Field(None, description="Gap observation if status is partial or pending")
+    changed_by_id: str | None = Field(None, description="ID of user making the change")
+    changed_by_name: str | None = Field(None, description="Name of user making the change")
+    comments: str | None = Field(None, description="Comments about the status change")
+    gap_observation: str | None = Field(None, description="Gap observation if status is partial or pending")
 
     class Config:
         json_schema_extra = {
@@ -164,12 +164,12 @@ class HealthCheckHistoryResponse(BaseModel):
     """Response schema for a history entry."""
     id: str
     item_id: str
-    old_status: Optional[str] = None
+    old_status: str | None = None
     new_status: str
-    changed_by_id: Optional[str] = None
-    changed_by_name: Optional[str] = None
-    comments: Optional[str] = None
-    created_at: Optional[datetime] = None
+    changed_by_id: str | None = None
+    changed_by_name: str | None = None
+    comments: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -177,7 +177,7 @@ class HealthCheckHistoryResponse(BaseModel):
 
 class HealthCheckHistoryListResponse(BaseModel):
     """List of history entries."""
-    history: List[HealthCheckHistoryResponse]
+    history: list[HealthCheckHistoryResponse]
     total: int
 
 
@@ -198,11 +198,11 @@ class FrameworkSummary(BaseModel):
 class HealthCheckSummaryResponse(BaseModel):
     """Overall summary of health check status."""
     total_items: int
-    by_framework: List[FrameworkSummary]
+    by_framework: list[FrameworkSummary]
     overall_compliance_percentage: float
     total_critical_pending: int
     total_overdue_reviews: int
-    last_updated: Optional[datetime] = None
+    last_updated: datetime | None = None
 
 
 class SeedHealthCheckResponse(BaseModel):
@@ -214,8 +214,8 @@ class SeedHealthCheckResponse(BaseModel):
 
 class HealthCheckExportRequest(BaseModel):
     """Request schema for exporting health check data."""
-    framework: Optional[ComplianceFrameworkEnum] = Field(None, description="Filter by framework")
-    status: Optional[HealthCheckStatusEnum] = Field(None, description="Filter by status")
+    framework: ComplianceFrameworkEnum | None = Field(None, description="Filter by framework")
+    status: HealthCheckStatusEnum | None = Field(None, description="Filter by status")
     format: str = Field("csv", description="Export format: csv or json")
 
 

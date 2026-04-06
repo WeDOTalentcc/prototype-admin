@@ -9,12 +9,12 @@ Enables measuring:
 - Recruiter performance metrics
 """
 import logging
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
-from uuid import UUID, uuid4
 from statistics import mean, median
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
@@ -31,10 +31,10 @@ class WizardSession:
         self.company_id = company_id
         self.recruiter_id = recruiter_id
         self.started_at = datetime.utcnow()
-        self.events: List[Dict] = []
-        self.stage_times: Dict[str, float] = {}
-        self.current_stage: Optional[str] = None
-        self.stage_start: Optional[datetime] = None
+        self.events: list[dict] = []
+        self.stage_times: dict[str, float] = {}
+        self.current_stage: str | None = None
+        self.stage_start: datetime | None = None
         self.fields_auto_filled = 0
         self.fields_edited = 0
         self.total_fields = 0
@@ -103,7 +103,7 @@ class WizardSession:
             "timestamp": datetime.utcnow().isoformat(),
         })
     
-    def complete(self) -> Dict[str, Any]:
+    def complete(self) -> dict[str, Any]:
         """Complete session and return metrics."""
         if self.current_stage and self.stage_start:
             elapsed = (datetime.utcnow() - self.stage_start).total_seconds()
@@ -150,7 +150,7 @@ class WizardAnalyticsService:
     
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.active_sessions: Dict[str, WizardSession] = {}
+        self.active_sessions: dict[str, WizardSession] = {}
     
     def start_session(
         self,
@@ -170,7 +170,7 @@ class WizardAnalyticsService:
         
         return session
     
-    def get_session(self, session_id: str) -> Optional[WizardSession]:
+    def get_session(self, session_id: str) -> WizardSession | None:
         """Get an active session."""
         return self.active_sessions.get(session_id)
     
@@ -207,9 +207,9 @@ class WizardAnalyticsService:
     async def complete_session(
         self,
         session_id: str,
-        job_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        job_id: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """Complete session and persist metrics."""
         session = self.active_sessions.pop(session_id, None)
         if not session:
@@ -229,8 +229,8 @@ class WizardAnalyticsService:
         self,
         company_id: str,
         days: int = 30,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get aggregated metrics for a company.
         
@@ -321,8 +321,8 @@ class WizardAnalyticsService:
         company_id: str,
         recruiter_id: str,
         days: int = 30,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get metrics for a specific recruiter."""
         should_close = db is None
         if db is None:
@@ -352,8 +352,8 @@ class WizardAnalyticsService:
         self,
         company_id: str,
         days: int = 30,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get time breakdown by wizard stage."""
         return {
             "stages": {
@@ -371,8 +371,8 @@ class WizardAnalyticsService:
         self,
         company_id: str,
         days: int = 30,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get effectiveness metrics for LIA suggestions."""
         return {
             "salary_suggestions": {
@@ -394,7 +394,7 @@ class WizardAnalyticsService:
             "note": "Suggestion tracking requires integration with frontend",
         }
     
-    def get_kpi_summary(self) -> Dict[str, Any]:
+    def get_kpi_summary(self) -> dict[str, Any]:
         """Get KPI summary for dashboard."""
         return {
             "target_kpis": {

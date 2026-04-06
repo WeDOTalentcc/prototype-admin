@@ -7,11 +7,9 @@ Garante que todos os prompts têm os campos obrigatórios: version e updated_at.
 from __future__ import annotations
 
 import logging
-import os
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +23,13 @@ OPTIONAL_METADATA_FIELDS = {"updated_at", "description", "author"}
 class PromptVersionInfo:
     domain: str
     version: str
-    updated_at: Optional[str]
-    description: Optional[str]
+    updated_at: str | None
+    description: str | None
     has_system_prompt: bool
     file_path: str
 
 
-def load_prompt_yaml(file_path: str | Path) -> Dict[str, Any]:
+def load_prompt_yaml(file_path: str | Path) -> dict[str, Any]:
     """Carrega um YAML de prompt e retorna o dict parsed."""
     try:
         import yaml
@@ -45,7 +43,7 @@ def load_prompt_yaml(file_path: str | Path) -> Dict[str, Any]:
     return data or {}
 
 
-def validate_prompt_metadata(data: Dict[str, Any], file_path: str = "") -> list[str]:
+def validate_prompt_metadata(data: dict[str, Any], file_path: str = "") -> list[str]:
     """
     Valida metadados obrigatórios do prompt YAML.
 
@@ -69,7 +67,7 @@ def validate_prompt_metadata(data: Dict[str, Any], file_path: str = "") -> list[
     return errors
 
 
-def get_prompt_version_info(file_path: str | Path) -> Optional[PromptVersionInfo]:
+def get_prompt_version_info(file_path: str | Path) -> PromptVersionInfo | None:
     """Retorna VersionInfo de um arquivo de prompt YAML. Suporta formato legado e novo."""
     try:
         data = load_prompt_yaml(file_path)
@@ -92,7 +90,7 @@ def get_prompt_version_info(file_path: str | Path) -> Optional[PromptVersionInfo
         return None
 
 
-def list_all_prompt_versions(prompts_dir: Optional[Path] = None) -> list[PromptVersionInfo]:
+def list_all_prompt_versions(prompts_dir: Path | None = None) -> list[PromptVersionInfo]:
     """Lista versões de todos os prompts YAML no diretório de domínios."""
     directory = prompts_dir or _PROMPTS_DIR
     results = []
@@ -106,13 +104,13 @@ def list_all_prompt_versions(prompts_dir: Optional[Path] = None) -> list[PromptV
     return results
 
 
-def validate_all_prompts(prompts_dir: Optional[Path] = None) -> Dict[str, list[str]]:
+def validate_all_prompts(prompts_dir: Path | None = None) -> dict[str, list[str]]:
     """
     Valida todos os prompts YAML. Retorna dict {filename: [errors]}.
     Dict vazio = todos válidos.
     """
     directory = prompts_dir or _PROMPTS_DIR
-    issues: Dict[str, list[str]] = {}
+    issues: dict[str, list[str]] = {}
     try:
         for yaml_file in sorted(directory.glob("*.yaml")):
             data = load_prompt_yaml(yaml_file)

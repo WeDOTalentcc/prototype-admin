@@ -30,13 +30,13 @@ Environment Variables:
 - MAILGUN_DOMAIN: Mailgun sending domain (required for Mailgun)
 - RESEND_API_KEY: Resend API key (required for Resend fallback)
 """
-import os
 import logging
+import os
 from typing import Dict, Optional, Type
 
-from .base import EmailProvider, EmailMessage, EmailResult
-from .resend_provider import ResendProvider
+from .base import EmailMessage, EmailProvider, EmailResult
 from .mailgun_provider import MailgunProvider
+from .resend_provider import ResendProvider
 
 logger = logging.getLogger(__name__)
 
@@ -51,19 +51,19 @@ __all__ = [
     "AVAILABLE_PROVIDERS"
 ]
 
-AVAILABLE_PROVIDERS: Dict[str, Type[EmailProvider]] = {
+AVAILABLE_PROVIDERS: dict[str, type[EmailProvider]] = {
     "mailgun": MailgunProvider,
     "resend": ResendProvider,
 }
 
-_provider_instances: Dict[str, EmailProvider] = {}
+_provider_instances: dict[str, EmailProvider] = {}
 
 
 def get_email_provider(
-    provider_name: Optional[str] = None,
-    api_key: Optional[str] = None,
-    from_email: Optional[str] = None,
-    from_name: Optional[str] = None,
+    provider_name: str | None = None,
+    api_key: str | None = None,
+    from_email: str | None = None,
+    from_name: str | None = None,
     use_cache: bool = True
 ) -> EmailProvider:
     """
@@ -120,7 +120,7 @@ def get_email_provider(
 
 def get_provider_for_client(
     client_id: str,
-    client_config: Optional[Dict] = None
+    client_config: dict | None = None
 ) -> EmailProvider:
     """
     Get email provider configured for a specific client.
@@ -172,7 +172,7 @@ def clear_provider_cache():
     logger.info("Cleared email provider cache")
 
 
-def get_all_providers_status() -> Dict[str, Dict]:
+def get_all_providers_status() -> dict[str, dict]:
     """Get status of all available providers."""
     status = {}
     for name in AVAILABLE_PROVIDERS:

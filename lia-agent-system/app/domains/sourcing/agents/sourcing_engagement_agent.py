@@ -9,11 +9,12 @@ Tools (3): send_outreach (GUARDRAIL/HITL), generate_message, track_response
 Modelo: Sonnet (personalização de mensagens requer qualidade)
 """
 import logging
-from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+
 from app.domains.sourcing.agents.sourcing_engagement_tool_registry import (
-    get_engagement_tools,
     GUARDRAIL_TOOLS,
+    get_engagement_tools,
 )
+from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 
 logger = logging.getLogger(__name__)
 

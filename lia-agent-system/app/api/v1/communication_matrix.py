@@ -8,24 +8,24 @@ Provides endpoints for:
 - Updating entry configuration
 - Resetting to platform defaults (seed data)
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
 import logging
 from uuid import UUID
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.models.communication_matrix import (
+    DEFAULT_MATRIX_ENTRIES,
+    MODULE_LABELS,
+    ChannelType,
     CommunicationMatrixEntry,
     ModuleType,
     RecipientType,
-    ChannelType,
-    DEFAULT_MATRIX_ENTRIES,
-    MODULE_LABELS,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,11 +35,11 @@ router = APIRouter(prefix="/communication-matrix", tags=["communication-matrix"]
 
 class UpdateMatrixEntryRequest(BaseModel):
     """Request model for updating a matrix entry."""
-    channels: Optional[List[str]] = Field(None, description="List of channels to use")
-    is_automatic: Optional[bool] = Field(None, description="Whether this is sent automatically")
-    template_id: Optional[str] = Field(None, description="Reference to template")
-    requires_approval: Optional[bool] = Field(None, description="Whether approval is required")
-    is_active: Optional[bool] = Field(None, description="Whether this communication is enabled")
+    channels: list[str] | None = Field(None, description="List of channels to use")
+    is_automatic: bool | None = Field(None, description="Whether this is sent automatically")
+    template_id: str | None = Field(None, description="Reference to template")
+    requires_approval: bool | None = Field(None, description="Whether approval is required")
+    is_active: bool | None = Field(None, description="Whether this communication is enabled")
 
 
 class ResetMatrixRequest(BaseModel):
@@ -49,8 +49,8 @@ class ResetMatrixRequest(BaseModel):
 
 @router.get("", summary="List communication matrix entries")
 async def list_matrix_entries(
-    module: Optional[str] = Query(None, description="Filter by module type"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    module: str | None = Query(None, description="Filter by module type"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -83,7 +83,7 @@ async def list_matrix_entries(
         result = await db.execute(query)
         entries = result.scalars().all()
         
-        entries_by_module: Dict[str, List[Dict]] = {}
+        entries_by_module: dict[str, list[dict]] = {}
         for entry in entries:
             entry_dict = entry.to_dict()
             module_key = entry.module

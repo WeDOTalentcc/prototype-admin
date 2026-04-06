@@ -4,23 +4,23 @@ Communication API Endpoints using CommunicationDispatcher
 Provides endpoints for sending email and WhatsApp messages via the unified dispatcher.
 Logs all communications to the CommunicationHistory for tracking.
 """
-from fastapi import APIRouter, HTTPException, status, Header, Depends
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
-from datetime import datetime
 import uuid as uuid_mod
+from datetime import datetime
+from typing import Any
 
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, not_
 
+from app.core.database import get_db
 from app.domains.communication.services.communication_dispatcher import communication_dispatcher
 from app.domains.communication.services.communication_history_service import communication_history_service
-from app.core.database import get_db
-from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
-from app.shared.pii_masking import get_masked_logger
+from app.models.job_vacancy import JobVacancy
 from app.shared.compliance.audit_service import audit_service
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
@@ -111,75 +111,75 @@ async def _check_vacancy_saturation_for_invite(db: AsyncSession, vacancy_id: str
 
 class SendEmailRequest(BaseModel):
     to_email: str = Field(..., description="Recipient email address")
-    to_name: Optional[str] = Field(None, description="Recipient name")
+    to_name: str | None = Field(None, description="Recipient name")
     subject: str = Field(..., description="Email subject")
     body_html: str = Field(..., description="Email body in HTML format")
-    body_text: Optional[str] = Field(None, description="Plain text body fallback")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID for tracking")
-    candidate_name: Optional[str] = Field(None, description="Candidate name")
-    vacancy_id: Optional[str] = Field(None, description="Vacancy ID")
-    vacancy_title: Optional[str] = Field(None, description="Vacancy title")
-    communication_type: Optional[str] = Field("email", description="Type of communication")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
-    company_id: Optional[str] = Field(None, description="Company ID for multi-tenancy")
+    body_text: str | None = Field(None, description="Plain text body fallback")
+    candidate_id: str | None = Field(None, description="Candidate ID for tracking")
+    candidate_name: str | None = Field(None, description="Candidate name")
+    vacancy_id: str | None = Field(None, description="Vacancy ID")
+    vacancy_title: str | None = Field(None, description="Vacancy title")
+    communication_type: str | None = Field("email", description="Type of communication")
+    metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
+    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
 class SendWhatsAppRequest(BaseModel):
     to_phone: str = Field(..., description="Recipient phone number with country code")
     message: str = Field(..., description="Message content")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID for tracking")
-    candidate_name: Optional[str] = Field(None, description="Candidate name")
-    vacancy_id: Optional[str] = Field(None, description="Vacancy ID")
-    vacancy_title: Optional[str] = Field(None, description="Vacancy title")
-    communication_type: Optional[str] = Field("whatsapp", description="Type of communication")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
-    company_id: Optional[str] = Field(None, description="Company ID for multi-tenancy")
+    candidate_id: str | None = Field(None, description="Candidate ID for tracking")
+    candidate_name: str | None = Field(None, description="Candidate name")
+    vacancy_id: str | None = Field(None, description="Vacancy ID")
+    vacancy_title: str | None = Field(None, description="Vacancy title")
+    communication_type: str | None = Field("whatsapp", description="Type of communication")
+    metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
+    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
 class SendScreeningInviteRequest(BaseModel):
     channel: str = Field(..., description="Communication channel: email, whatsapp, or telefone")
     candidate_id: str = Field(..., description="Candidate ID")
     candidate_name: str = Field(..., description="Candidate name")
-    candidate_email: Optional[str] = Field(None, description="Candidate email")
-    candidate_phone: Optional[str] = Field(None, description="Candidate phone")
-    subject: Optional[str] = Field(None, description="Email subject (for email channel)")
+    candidate_email: str | None = Field(None, description="Candidate email")
+    candidate_phone: str | None = Field(None, description="Candidate phone")
+    subject: str | None = Field(None, description="Email subject (for email channel)")
     message: str = Field(..., description="Message content")
-    vacancy_id: Optional[str] = Field(None, description="Vacancy ID")
-    vacancy_title: Optional[str] = Field(None, description="Vacancy title")
-    screening_question_ids: Optional[list] = Field(None, description="List of screening question IDs")
-    stage: Optional[str] = Field("triagem", description="Pipeline stage")
-    tone_style: Optional[str] = Field("profissional", description="Message tone style")
-    company_id: Optional[str] = Field(None, description="Company ID for multi-tenancy")
+    vacancy_id: str | None = Field(None, description="Vacancy ID")
+    vacancy_title: str | None = Field(None, description="Vacancy title")
+    screening_question_ids: list | None = Field(None, description="List of screening question IDs")
+    stage: str | None = Field("triagem", description="Pipeline stage")
+    tone_style: str | None = Field("profissional", description="Message tone style")
+    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
     override_saturation: bool = Field(False, description="Override saturation guardrail (manual approval)")
 
 
 class ScreeningInviteResponse(BaseModel):
     success: bool
-    message_id: Optional[str] = None
+    message_id: str | None = None
     mock: bool = False
     channel: str
     recipient: str
-    error: Optional[str] = None
-    timestamp: Optional[str] = None
+    error: str | None = None
+    timestamp: str | None = None
     communication_logged: bool = False
     invite_type: str = "screening"
 
 
 class SendResponse(BaseModel):
     success: bool
-    message_id: Optional[str] = None
+    message_id: str | None = None
     mock: bool = False
     channel: str
     recipient: str
-    error: Optional[str] = None
-    timestamp: Optional[str] = None
+    error: str | None = None
+    timestamp: str | None = None
     communication_logged: bool = False
 
 
 @router.post("/send-email", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
+    x_company_id: str | None = Header(None, alias="X-Company-ID")
 ):
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
@@ -297,7 +297,7 @@ async def send_email(
 @router.post("/send-whatsapp", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
+    x_company_id: str | None = Header(None, alias="X-Company-ID")
 ):
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
@@ -412,7 +412,7 @@ async def send_whatsapp(
 @router.post("/send-screening-invite", response_model=ScreeningInviteResponse, status_code=status.HTTP_200_OK)
 async def send_screening_invite(
     request: SendScreeningInviteRequest,
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     db: AsyncSession = Depends(get_db),
 ):
     """

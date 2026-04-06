@@ -1,12 +1,13 @@
 """
 ATS Integration models for Gupy and Pandapé synchronization.
 """
-from datetime import datetime
-from typing import Optional
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 import enum
+import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

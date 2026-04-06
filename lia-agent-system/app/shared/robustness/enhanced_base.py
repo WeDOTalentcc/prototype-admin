@@ -8,37 +8,24 @@ Provides:
 - Cancellation detection
 - Telemetry/logging
 """
-from typing import Dict, Any, Optional, List
-from abc import abstractmethod
 import logging
 import time
+from typing import Any
 
-from app.agents.base_agent import BaseAgent, AgentType, AgentResponse
-from app.shared.robustness.error_handling import (
-    handle_agent_errors,
-    AgentError,
-    AgentErrorCode,
-    create_user_friendly_error
-)
-from app.shared.robustness.intent_schemas import (
-    IntentSchema,
-    get_agent_intents,
-    EntityRequirement
-)
-from app.shared.robustness.input_validation import (
-    sanitize_text,
-    detect_language,
-    SupportedLanguage
-)
-from app.shared.robustness.context_management import (
-    CancellationHandler,
-    ContextManager
-)
+from app.agents.base_agent import AgentResponse, BaseAgent
+from app.shared.robustness.context_management import CancellationHandler
 from app.shared.robustness.defensive_prompts import (
     get_clarification_message,
+    get_defensive_prompt_section,
     get_out_of_scope_response,
-    get_defensive_prompt_section
 )
+from app.shared.robustness.error_handling import (
+    AgentError,
+    AgentErrorCode,
+    create_user_friendly_error,
+)
+from app.shared.robustness.input_validation import sanitize_text
+from app.shared.robustness.intent_schemas import EntityRequirement, IntentSchema, get_agent_intents
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +44,9 @@ class EnhancedBaseAgent(BaseAgent):
     
     def __init__(self):
         super().__init__()
-        self._intent_schemas: List[IntentSchema] = []
+        self._intent_schemas: list[IntentSchema] = []
         self._load_intent_schemas()
-        self._metrics: Dict[str, Any] = {
+        self._metrics: dict[str, Any] = {
             "total_requests": 0,
             "successful_requests": 0,
             "failed_requests": 0,
@@ -71,11 +58,11 @@ class EnhancedBaseAgent(BaseAgent):
         """Load intent schemas for this agent type."""
         self._intent_schemas = get_agent_intents(self.agent_type)
     
-    def get_intent_schemas(self) -> List[IntentSchema]:
+    def get_intent_schemas(self) -> list[IntentSchema]:
         """Get all intent schemas for this agent."""
         return self._intent_schemas
     
-    def can_handle(self, intent: str, entities: Dict[str, Any]) -> float:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> float:
         """
         Dynamic confidence scoring based on intent schemas.
         
@@ -106,14 +93,14 @@ class EnhancedBaseAgent(BaseAgent):
         
         return 0.0
     
-    def get_missing_entities(self, intent: str, entities: Dict[str, Any]) -> List[EntityRequirement]:
+    def get_missing_entities(self, intent: str, entities: dict[str, Any]) -> list[EntityRequirement]:
         """Get missing required/recommended entities for an intent."""
         for schema in self._intent_schemas:
             if schema.intent == intent:
                 return schema.get_missing_entities(entities)
         return []
     
-    def validate_intent(self, intent: str, entities: Dict[str, Any]) -> bool:
+    def validate_intent(self, intent: str, entities: dict[str, Any]) -> bool:
         """Check if all required entities are present for an intent."""
         for schema in self._intent_schemas:
             if schema.intent == intent:
@@ -123,8 +110,8 @@ class EnhancedBaseAgent(BaseAgent):
     async def process_with_robustness(
         self,
         intent: str,
-        entities: Dict[str, Any],
-        context: Dict[str, Any]
+        entities: dict[str, Any],
+        context: dict[str, Any]
     ) -> AgentResponse:
         """
         Process with full robustness features.
@@ -194,7 +181,7 @@ class EnhancedBaseAgent(BaseAgent):
                 data=error.to_dict()
             )
     
-    def _sanitize_entities(self, entities: Dict[str, Any]) -> Dict[str, Any]:
+    def _sanitize_entities(self, entities: dict[str, Any]) -> dict[str, Any]:
         """Sanitize all string entities."""
         sanitized = {}
         for key, value in entities.items():
@@ -222,7 +209,7 @@ class EnhancedBaseAgent(BaseAgent):
             (current_avg * (total - 1) + elapsed_ms) / total
         )
     
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get agent performance metrics."""
         return self._metrics.copy()
     
@@ -232,7 +219,7 @@ class EnhancedBaseAgent(BaseAgent):
     
     def create_clarification_response(
         self,
-        missing_items: List[str],
+        missing_items: list[str],
         context_message: str = ""
     ) -> AgentResponse:
         """Create a response asking for clarification."""
@@ -265,21 +252,21 @@ class RobustAgentMixin:
             ...
     """
     
-    _intent_schemas: List[IntentSchema] = []
+    _intent_schemas: list[IntentSchema] = []
     
     def init_robustness(self):
         """Initialize robustness features. Call in __init__."""
         from app.shared.robustness.intent_schemas import get_agent_intents
         self._intent_schemas = get_agent_intents(self.agent_type)
     
-    def can_handle_robust(self, intent: str, entities: Dict[str, Any]) -> float:
+    def can_handle_robust(self, intent: str, entities: dict[str, Any]) -> float:
         """Enhanced can_handle with schema-based scoring."""
         for schema in self._intent_schemas:
             if schema.intent == intent:
                 return schema.calculate_confidence(entities, {}, "")
         return 0.0
     
-    def check_cancellation(self, message: str) -> Optional[AgentResponse]:
+    def check_cancellation(self, message: str) -> AgentResponse | None:
         """Check for and handle cancellation requests."""
         if CancellationHandler.is_cancellation_request(message):
             return AgentResponse(
@@ -289,7 +276,7 @@ class RobustAgentMixin:
             )
         return None
     
-    def sanitize_input(self, entities: Dict[str, Any]) -> Dict[str, Any]:
+    def sanitize_input(self, entities: dict[str, Any]) -> dict[str, Any]:
         """Sanitize input entities."""
         sanitized = {}
         for key, value in entities.items():

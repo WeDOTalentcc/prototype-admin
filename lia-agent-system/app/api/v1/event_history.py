@@ -1,7 +1,8 @@
 """Event history endpoint for SOX audit replay."""
+
 from fastapi import APIRouter, Depends, Header, HTTPException
-from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
 
 router = APIRouter(tags=["audit"])
@@ -11,7 +12,7 @@ async def get_candidate_event_history(
     candidate_id: str,
     from_sequence: int = 0,
     limit: int = 100,
-    x_company_id: Optional[str] = Header(None),
+    x_company_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
 ):
     if not x_company_id:

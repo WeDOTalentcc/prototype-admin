@@ -1,14 +1,14 @@
 """Interview & Scheduling Domain - Tool definitions and executor."""
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 from app.domains.base import DomainContext
 from app.domains.interview_scheduling.tools.scheduling_tools import (
+    cancel_interview,
     check_interviewer_availability,
+    get_interview_status,
+    reschedule_interview,
     schedule_interview,
     send_interview_invitation,
-    reschedule_interview,
-    cancel_interview,
-    get_interview_status,
 )
 
 __all__ = [
@@ -93,9 +93,9 @@ def _get_tool_by_id(tool_id: str) -> dict | None:
 
 async def execute_interview_scheduling_tool(
     tool_id: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     context: DomainContext,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     tool = _get_tool_by_id(tool_id)
     if not tool:
         return {"error": f"Tool {tool_id} not found", "status": "error"}

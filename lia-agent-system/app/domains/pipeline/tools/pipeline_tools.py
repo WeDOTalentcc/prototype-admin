@@ -1,9 +1,9 @@
 """Pipeline Transition Tools — LIA Sprint 3 T04
 Move candidates through hiring pipeline stages, manage offers and rejections.
 """
-import uuid
 import logging
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 
 from langchain_core.tools import tool
 
@@ -49,7 +49,7 @@ def move_candidate_to_stage(
         "old_stage": "unknown",
         "new_stage": new_stage,
         "reason": reason,
-        "moved_at": datetime.now(timezone.utc).isoformat(),
+        "moved_at": datetime.now(UTC).isoformat(),
     }
 
 
@@ -113,7 +113,7 @@ def reject_candidate(
         "status": "rejected",
         "reason": rejection_reason,
         "notified": notify,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -139,7 +139,7 @@ def extend_offer(candidate_id: str, job_id: str, offer_details: str) -> dict:
         "candidate_id": candidate_id,
         "job_id": job_id,
         "status": "offer_extended",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -160,7 +160,7 @@ def get_candidate_pipeline_history(candidate_id: str, job_id: str) -> dict:
     logger.info(
         "get_candidate_pipeline_history: candidate=%s job=%s", candidate_id, job_id
     )
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     history = [
         {"stage": "applied", "entered_at": now, "exited_at": now},
         {"stage": "screening", "entered_at": now, "exited_at": None},
@@ -197,5 +197,5 @@ def bulk_advance_candidates(job_id: str, from_stage: str, candidate_ids: str) ->
         "job_id": job_id,
         "from_stage": from_stage,
         "to_stage": to_stage,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }

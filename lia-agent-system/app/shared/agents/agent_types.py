@@ -6,12 +6,12 @@ Este é agora o local canônico para AgentType, AgentTask, AgentResponse e BaseA
 
 app/agents/base_agent.py é mantido como shim de retrocompatibilidade.
 """
+import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional, Dict, Any
-from enum import Enum
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class AgentAction:
     handler: str
     requires_confirmation: bool = False
     estimated_duration_seconds: int = 0
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -98,13 +98,13 @@ class AgentTask:
     title: str
     description: str
     created_by_agent: AgentType
-    assigned_to_agent: Optional[AgentType] = None
+    assigned_to_agent: AgentType | None = None
     priority: TaskPriority = TaskPriority.MEDIUM
     status: TaskStatus = TaskStatus.PENDING
-    due_date: Optional[datetime] = None
-    context: Dict[str, Any] = field(default_factory=dict)
+    due_date: datetime | None = None
+    context: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
 
 @dataclass
@@ -112,11 +112,11 @@ class AgentResponse:
     """Standard response structure from an agent."""
     success: bool
     message: str
-    data: Optional[Dict[str, Any]] = None
-    next_actions: List[str] = field(default_factory=list)
-    tasks_created: List[AgentTask] = field(default_factory=list)
+    data: dict[str, Any] | None = None
+    next_actions: list[str] = field(default_factory=list)
+    tasks_created: list[AgentTask] = field(default_factory=list)
     requires_user_input: bool = False
-    suggested_prompts: List[str] = field(default_factory=list)
+    suggested_prompts: list[str] = field(default_factory=list)
 
 
 class BaseAgent(ABC):
@@ -129,7 +129,7 @@ class BaseAgent(ABC):
     """
 
     def __init__(self):
-        self._actions: Dict[str, AgentAction] = {}
+        self._actions: dict[str, AgentAction] = {}
         self._register_actions()
 
     @property
@@ -148,7 +148,7 @@ class BaseAgent(ABC):
         pass
 
     @property
-    def capabilities(self) -> List[str]:
+    def capabilities(self) -> list[str]:
         return [action.name for action in self._actions.values()]
 
     @abstractmethod
@@ -158,21 +158,21 @@ class BaseAgent(ABC):
     def register_action(self, action: AgentAction) -> None:
         self._actions[action.name] = action
 
-    def get_actions(self) -> List[AgentAction]:
+    def get_actions(self) -> list[AgentAction]:
         return list(self._actions.values())
 
-    def get_action(self, action_name: str) -> Optional[AgentAction]:
+    def get_action(self, action_name: str) -> AgentAction | None:
         return self._actions.get(action_name)
 
-    def can_handle(self, intent: str, entities: Dict[str, Any]) -> float:
+    def can_handle(self, intent: str, entities: dict[str, Any]) -> float:
         return 0.0
 
     @abstractmethod
     async def process(
         self,
         intent: str,
-        entities: Dict[str, Any],
-        context: Dict[str, Any],
+        entities: dict[str, Any],
+        context: dict[str, Any],
     ) -> AgentResponse:
         pass
 

@@ -9,24 +9,31 @@ Provides RESTful API for WSI screening workflow:
 5. Generate reports → Structured output
 6. Generate feedback → Candidate feedback
 """
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
-from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-import uuid
 import json
 import logging
+import uuid
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.wsi_service import wsi_service, Competency, WSIQuestion, ResponseAnalysis, WSIResult
-from app.domains.cv_screening.services.wsi_voice_orchestrator import wsi_voice_orchestrator, VoiceScreeningRequest, VoiceScreeningResult
-from app.domains.cv_screening.services.seniority_utils import normalize_seniority
 from app.domains.cv_screening.services.seniority_context_calibrator import (
-    calibrate_or_fallback,
-    CalibrationContext,
     WSI_CONTEXTUAL_CALIBRATION_ENABLED,
+    CalibrationContext,
+    calibrate_or_fallback,
+)
+from app.domains.cv_screening.services.seniority_utils import normalize_seniority
+from app.domains.cv_screening.services.wsi_service import (
+    Competency,
+    ResponseAnalysis,
+    WSIQuestion,
+    wsi_service,
+)
+from app.domains.cv_screening.services.wsi_voice_orchestrator import (
+    wsi_voice_orchestrator,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,15 +49,15 @@ class AnalyzeJDRequest(BaseModel):
     """Request to analyze job description and suggest competencies."""
     job_description: str = Field(..., description="Full job description text")
     seniority_level: str = Field(..., description="junior, pleno, senior, lead, executive")
-    department: Optional[str] = Field(None, description="Department (e.g., Engineering, Product)")
+    department: str | None = Field(None, description="Department (e.g., Engineering, Product)")
 
 
 class CompetencySuggestionResponse(BaseModel):
     """Suggested competencies from JD analysis."""
-    technical_competencies: List[Dict[str, Any]]
-    behavioral_competencies: List[Dict[str, Any]]
-    cultural_competencies: List[Dict[str, Any]]
-    suggested_weights: Dict[str, float]
+    technical_competencies: list[dict[str, Any]]
+    behavioral_competencies: list[dict[str, Any]]
+    cultural_competencies: list[dict[str, Any]]
+    suggested_weights: dict[str, float]
     confidence_score: float
 
 
@@ -59,11 +66,11 @@ class GenerateQuestionsRequest(BaseModel):
     session_id: str = Field(..., description="WSI session UUID")
     candidate_id: str
     job_vacancy_id: str
-    competencies: List[Dict[str, Any]] = Field(..., description="List of competency dicts")
+    competencies: list[dict[str, Any]] = Field(..., description="List of competency dicts")
     mode: str = Field(default="compact", description="compact or compact_plus")
-    job_description: Optional[str] = None
-    seniority: Optional[str] = None
-    enriched_jd: Optional[Dict[str, Any]] = Field(
+    job_description: str | None = None
+    seniority: str | None = None
+    enriched_jd: dict[str, Any] | None = Field(
         default=None,
         description="Output serializado de JdEnrichmentService. Quando fornecido, "
                     "preenche big_five_mapping das competências comportamentais (F6.6 trait-affinity) "
@@ -74,7 +81,7 @@ class GenerateQuestionsRequest(BaseModel):
 class GenerateQuestionsResponse(BaseModel):
     """Generated WSI questions."""
     session_id: str
-    questions: List[Dict[str, Any]]
+    questions: list[dict[str, Any]]
     total_questions: int
 
 
@@ -86,7 +93,7 @@ class AnalyzeResponseRequest(BaseModel):
     job_vacancy_id: str
     question_text: str
     response_text: str
-    response_audio_url: Optional[str] = None
+    response_audio_url: str | None = None
     competency: str
     framework: str
 
@@ -95,12 +102,12 @@ class AnalyzeResponseResponse(BaseModel):
     """Analyzed response with scores."""
     analysis_id: str
     competency: str
-    autodeclaration_score: Optional[float]
-    context_score: Optional[float]
-    bloom_level: Optional[int]
-    dreyfus_level: Optional[int]
-    evidences: List[str]
-    red_flags: List[str]
+    autodeclaration_score: float | None
+    context_score: float | None
+    bloom_level: int | None
+    dreyfus_level: int | None
+    evidences: list[str]
+    red_flags: list[str]
     final_score: float
     justification: str
 
@@ -110,7 +117,7 @@ class CalculateWSIRequest(BaseModel):
     session_id: str
     candidate_id: str
     job_vacancy_id: str
-    weights: Dict[str, float]
+    weights: dict[str, float]
 
 
 class CalculateWSIResponse(BaseModel):
@@ -122,7 +129,7 @@ class CalculateWSIResponse(BaseModel):
     behavioral_wsi: float
     overall_wsi: float
     classification: str
-    percentile: Optional[int]
+    percentile: int | None
 
 
 class GenerateReportRequest(BaseModel):
@@ -135,10 +142,10 @@ class GenerateReportResponse(BaseModel):
     """Structured report for recruiters."""
     report_id: str
     executive_summary: str
-    technical_analysis: Dict[str, Any]
-    behavioral_analysis: Dict[str, Any]
-    cultural_fit: Dict[str, Any]
-    recommendation: Dict[str, Any]
+    technical_analysis: dict[str, Any]
+    behavioral_analysis: dict[str, Any]
+    cultural_fit: dict[str, Any]
+    recommendation: dict[str, Any]
 
 
 class GenerateFeedbackRequest(BaseModel):
@@ -152,9 +159,9 @@ class GenerateFeedbackResponse(BaseModel):
     feedback_id: str
     decision: str
     main_message: str
-    technical_strengths: List[str]
-    development_opportunities: List[str]
-    behavioral_strengths: List[str]
+    technical_strengths: list[str]
+    development_opportunities: list[str]
+    behavioral_strengths: list[str]
     next_steps: str
 
 
@@ -162,11 +169,11 @@ class StartVoiceScreeningRequest(BaseModel):
     """Request to start a voice screening session."""
     candidate_id: str = Field(..., description="Internal candidate ID")
     job_vacancy_id: str = Field(..., description="Job vacancy ID")
-    competencies: List[Dict[str, Any]] = Field(..., description="Competencies to assess")
+    competencies: list[dict[str, Any]] = Field(..., description="Competencies to assess")
     candidate_phone: str = Field(..., description="Phone number (+5511999999999)")
     candidate_name: str = Field(..., description="Candidate full name")
-    job_title: Optional[str] = Field(None, description="Job title for context")
-    job_description: Optional[str] = Field(None, description="Job description for context")
+    job_title: str | None = Field(None, description="Job title for context")
+    job_description: str | None = Field(None, description="Job description for context")
     mode: str = Field(default="compact", description="compact (6-8 questions) or compact_plus (8-10)")
 
 
@@ -189,11 +196,11 @@ class VoiceScreeningStatusResponse(BaseModel):
     screening_type: str
     mode: str
     status: str
-    call_id: Optional[str]
-    agent_id: Optional[str]
-    started_at: Optional[str]
-    completed_at: Optional[str]
-    result: Optional[Dict[str, Any]]
+    call_id: str | None
+    agent_id: str | None
+    started_at: str | None
+    completed_at: str | None
+    result: dict[str, Any] | None
 
 
 # ============================================================================
@@ -959,12 +966,12 @@ async def get_voice_screening_by_call(
 class GenerateJobScreeningQuestionsRequest(BaseModel):
     """Request to generate WSI screening questions for job creation wizard."""
     job_title: str = Field(..., description="Job title")
-    job_description: Optional[str] = Field(None, description="Full job description")
-    technical_skills: List[str] = Field(default=[], description="Required technical skills")
-    behavioral_competencies: List[str] = Field(default=[], description="Required behavioral competencies")
+    job_description: str | None = Field(None, description="Full job description")
+    technical_skills: list[str] = Field(default=[], description="Required technical skills")
+    behavioral_competencies: list[str] = Field(default=[], description="Required behavioral competencies")
     seniority_level: str = Field(default="pleno", description="junior, pleno, senior, lead")
-    work_model: Optional[str] = Field(None, description="remote, hybrid, onsite")
-    location: Optional[str] = Field(None, description="Job location")
+    work_model: str | None = Field(None, description="remote, hybrid, onsite")
+    location: str | None = Field(None, description="Job location")
     count: int = Field(default=7, ge=3, le=10, description="Number of questions to generate")
 
 
@@ -974,24 +981,24 @@ class ScreeningQuestionItem(BaseModel):
     question: str
     type: str = Field(description="open, yes-no, numeric, multiple-choice")
     required: bool = True
-    options: Optional[List[str]] = None
-    expected_answer: Optional[Any] = None
-    correct_option_index: Optional[int] = None
-    competency: Optional[str] = None
-    framework: Optional[str] = Field(None, description="CBI, Bloom, Dreyfus, BigFive, or Fit")
-    category: Optional[str] = Field(None, description="autodeclaracao_contexto, micro_case, situacional, fit, autodeclaracao")
-    bloom_level: Optional[int] = Field(None, ge=1, le=6, description="Bloom Taxonomy level: 1=Lembrar, 2=Compreender, 3=Aplicar, 4=Analisar, 5=Avaliar, 6=Criar")
-    bloom_level_name: Optional[str] = Field(None, description="Bloom level name in Portuguese")
-    dreyfus_stage: Optional[int] = Field(None, ge=1, le=5, description="Dreyfus stage: 1=Novato, 2=Iniciante Avançado, 3=Competente, 4=Proficiente, 5=Especialista")
-    dreyfus_stage_name: Optional[str] = Field(None, description="Dreyfus stage name in Portuguese")
+    options: list[str] | None = None
+    expected_answer: Any | None = None
+    correct_option_index: int | None = None
+    competency: str | None = None
+    framework: str | None = Field(None, description="CBI, Bloom, Dreyfus, BigFive, or Fit")
+    category: str | None = Field(None, description="autodeclaracao_contexto, micro_case, situacional, fit, autodeclaracao")
+    bloom_level: int | None = Field(None, ge=1, le=6, description="Bloom Taxonomy level: 1=Lembrar, 2=Compreender, 3=Aplicar, 4=Analisar, 5=Avaliar, 6=Criar")
+    bloom_level_name: str | None = Field(None, description="Bloom level name in Portuguese")
+    dreyfus_stage: int | None = Field(None, ge=1, le=5, description="Dreyfus stage: 1=Novato, 2=Iniciante Avançado, 3=Competente, 4=Proficiente, 5=Especialista")
+    dreyfus_stage_name: str | None = Field(None, description="Dreyfus stage name in Portuguese")
 
 
 class GenerateJobScreeningQuestionsResponse(BaseModel):
     """Generated WSI screening questions for job creation."""
-    questions: List[ScreeningQuestionItem]
+    questions: list[ScreeningQuestionItem]
     total_generated: int
     methodology: str = "WSI (Work Sample Interview)"
-    seniority_calibration: Optional[Dict[str, Any]] = Field(None, description="Bloom and Dreyfus calibration based on seniority")
+    seniority_calibration: dict[str, Any] | None = Field(None, description="Bloom and Dreyfus calibration based on seniority")
 
 
 @router.post("/generate-job-screening-questions", response_model=GenerateJobScreeningQuestionsResponse)
@@ -1013,8 +1020,12 @@ async def generate_job_screening_questions(request: GenerateJobScreeningQuestion
         from app.domains.cv_screening.constants.wsi_constants import (
             BLOOM_LEVEL_LABELS,
             DREYFUS_STAGE_LABELS,
-            SENIORITY_TO_DREYFUS as _BASE_S2D,
+        )
+        from app.domains.cv_screening.constants.wsi_constants import (
             SENIORITY_TO_BLOOM as _BASE_S2B,
+        )
+        from app.domains.cv_screening.constants.wsi_constants import (
+            SENIORITY_TO_DREYFUS as _BASE_S2D,
         )
         _BLOOM_TARGET = {"junior": 2, "pleno": 3, "senior": 4, "lead": 5, "executive": 6}
         SENIORITY_TO_BLOOM = {
@@ -1338,7 +1349,7 @@ async def trigger_post_screening_feedback(
                 "reason": "Score above threshold"
             }
 
-        development_areas: List[str] = []
+        development_areas: list[str] = []
         try:
             report_result = await db.execute(text("""
                 SELECT content FROM wsi_reports WHERE wsi_result_id = :result_id LIMIT 1
@@ -1447,8 +1458,9 @@ async def get_feedback_status(
         except Exception as e:
             logger.warning(f"Could not fetch wsi_feedbacks: {e}")
 
+        from sqlalchemy import and_, select
+
         from app.models.candidate_feedback import CandidateFeedback
-        from sqlalchemy import select, and_
         sent_result = await db.execute(
             select(CandidateFeedback).where(
                 and_(
@@ -1499,7 +1511,7 @@ async def get_candidates_wsi_scores(
 
         rows = result.fetchall()
 
-        candidates: Dict[str, Any] = {}
+        candidates: dict[str, Any] = {}
         for row in rows:
             candidate_id = str(row[0])
             overall_raw = float(row[1]) if row[1] is not None else 0.0

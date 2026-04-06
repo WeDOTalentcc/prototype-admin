@@ -2,7 +2,6 @@
 LIA Kanban Assistant - Structured Prompt Templates.
 Templates para análises inteligentes do pipeline de recrutamento.
 """
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
 
 
@@ -136,7 +135,7 @@ Responda SEMPRE em JSON com esta estrutura para perguntas fora do contexto:
 8. Para batch_move, SEMPRE liste candidatos e peca confirmacao"""
 
 
-COMMAND_TEMPLATES: Dict[str, Dict] = {
+COMMAND_TEMPLATES: dict[str, dict] = {
     KanbanCommandType.RANKEAR_CANDIDATOS.value: {
         "description": "Ordenar candidatos por fit com a vaga",
         "keywords": ["rankear", "ranking", "ordenar", "classificar", "melhores candidatos", "top candidatos", "ordenação"],
@@ -1020,7 +1019,7 @@ def _is_negated(msg_lower: str, keyword: str) -> bool:
     return any(neg in prefix_window for neg in NEGATION_PREFIXES)
 
 
-def detect_command_type(command: str) -> Tuple[str, float]:
+def detect_command_type(command: str) -> tuple[str, float]:
     """
     Detecta o tipo de comando baseado em palavras-chave com detecção de negação.
     
@@ -1060,7 +1059,7 @@ def detect_command_type(command: str) -> Tuple[str, float]:
     return (best_match, confidence)
 
 
-def resolve_ui_action(command_type: str, structured_data: dict, candidates: list) -> Tuple:
+def resolve_ui_action(command_type: str, structured_data: dict, candidates: list) -> tuple:
     """
     Resolve the UI action and params based on command type and AI response.
     
@@ -1125,7 +1124,7 @@ def resolve_ui_action(command_type: str, structured_data: dict, candidates: list
     }
     
     if command_type == KanbanCommandType.MOVER_CANDIDATO.value:
-        etapas = structured_data.get("etapas_disponiveis", [])
+        structured_data.get("etapas_disponiveis", [])
         sugeridos = structured_data.get("candidatos_sugeridos", [])
         if sugeridos and sugeridos[0].get("etapas_possiveis"):
             params["to_stage"] = sugeridos[0]["etapas_possiveis"][0] if sugeridos[0]["etapas_possiveis"] else None
@@ -1157,7 +1156,7 @@ def resolve_ui_action(command_type: str, structured_data: dict, candidates: list
     return ui_action, params
 
 
-def get_kanban_prompt_template(command_type: str) -> Dict:
+def get_kanban_prompt_template(command_type: str) -> dict:
     """
     Retorna o template de prompt para um tipo de comando.
     
@@ -1187,7 +1186,7 @@ def format_job_context(job_data: dict) -> str:
 """
 
 
-def format_candidates_context(candidates: List[dict]) -> str:
+def format_candidates_context(candidates: list[dict]) -> str:
     """Formata o contexto dos candidatos para o prompt."""
     if not candidates:
         return "Nenhum candidato no pipeline."
@@ -1207,7 +1206,7 @@ def format_candidates_context(candidates: List[dict]) -> str:
     return "\n".join(lines)
 
 
-def format_selected_candidates_context(candidates: List[dict], selected_ids: List[str]) -> str:
+def format_selected_candidates_context(candidates: list[dict], selected_ids: list[str]) -> str:
     """Formata apenas os candidatos selecionados."""
     selected = [c for c in candidates if str(c.get('id')) in [str(sid) for sid in selected_ids]]
     if not selected:
@@ -1215,7 +1214,7 @@ def format_selected_candidates_context(candidates: List[dict], selected_ids: Lis
     return format_candidates_context(selected)
 
 
-def format_pipeline_context(job_data: dict, candidates: List[dict]) -> str:
+def format_pipeline_context(job_data: dict, candidates: list[dict]) -> str:
     """Formata contexto do pipeline com métricas."""
     stages = {}
     for c in candidates:
@@ -1238,8 +1237,8 @@ def build_full_prompt(
     command_type: str,
     user_query: str,
     job_data: dict,
-    candidates: List[dict],
-    selected_ids: Optional[List[str]] = None
+    candidates: list[dict],
+    selected_ids: list[str] | None = None
 ) -> str:
     """
     Constrói o prompt completo para a chamada à IA.

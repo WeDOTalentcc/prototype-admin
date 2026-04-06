@@ -6,38 +6,32 @@ Integrates:
 - Deadline calculation from pipeline SLAs
 - Automatic recruiter/created_by population
 """
-from typing import Optional, Dict, Any, List, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from app.models.user import User
-from datetime import datetime, timedelta
+    pass
 import logging
-import json
+from datetime import datetime, timedelta
 
 from app.schemas.job_vacancy_state import (
+    InterviewStage,
     JobVacancyState,
     SalaryRange,
-    TechnicalRequirement,
-    Language,
-    BehavioralCompetency,
-    InterviewStage,
     ScreeningQuestion,
-    OrganizationalStructure,
-    TeamComposition,
+    TechnicalRequirement,
     Timeline,
     WeeklyBreakdown,
-    GovernanceRules
 )
 
 logger = logging.getLogger(__name__)
 
 
 async def infer_manager_email_if_missing(
-    manager_name: Optional[str],
-    manager_email: Optional[str],
+    manager_name: str | None,
+    manager_email: str | None,
     company_id: str,
-    department: Optional[str] = None
-) -> Optional[str]:
+    department: str | None = None
+) -> str | None:
     """
     Infer manager email if not provided but name is available.
     Uses the manager_inference_service to search company structure.
@@ -66,9 +60,9 @@ async def infer_manager_email_if_missing(
 
 async def calculate_job_deadlines(
     company_id: str,
-    pipeline_template_id: Optional[str] = None,
-    start_date: Optional[datetime] = None
-) -> Dict[str, Any]:
+    pipeline_template_id: str | None = None,
+    start_date: datetime | None = None
+) -> dict[str, Any]:
     """
     Calculate job deadlines from pipeline SLAs.
     Returns dict with deadline_screening, deadline_shortlist, deadline_closing, deadline.
@@ -87,7 +81,7 @@ async def calculate_job_deadlines(
 
 def infer_whatsapp_template_type(
     is_confidential: bool = False,
-    visibility: Optional[str] = None
+    visibility: str | None = None
 ) -> str:
     """
     Infer WhatsApp template type based on confidentiality settings.
@@ -101,7 +95,7 @@ class JobVacancyService:
     """Service for job vacancy creation workflow."""
     
     @staticmethod
-    def load_from_workflow_data(workflow_data: Dict[str, Any]) -> Optional[JobVacancyState]:
+    def load_from_workflow_data(workflow_data: dict[str, Any]) -> JobVacancyState | None:
         """
         Load JobVacancyState from conversation workflow_data.
         """
@@ -115,7 +109,7 @@ class JobVacancyService:
             return None
     
     @staticmethod
-    def save_to_workflow_data(state: JobVacancyState, workflow_data: Dict[str, Any]) -> Dict[str, Any]:
+    def save_to_workflow_data(state: JobVacancyState, workflow_data: dict[str, Any]) -> dict[str, Any]:
         """
         Save JobVacancyState to conversation workflow_data.
         """
@@ -123,7 +117,7 @@ class JobVacancyService:
         return workflow_data
     
     @staticmethod
-    def normalize_seniority(seniority: str) -> Optional[str]:
+    def normalize_seniority(seniority: str) -> str | None:
         """Normalize seniority level."""
         mapping = {
             "junior": "Júnior",
@@ -140,7 +134,7 @@ class JobVacancyService:
         return mapping.get(seniority.lower())
     
     @staticmethod
-    def normalize_work_model(work_model: str) -> Optional[str]:
+    def normalize_work_model(work_model: str) -> str | None:
         """Normalize work model."""
         mapping = {
             "presencial": "presencial",
@@ -153,7 +147,7 @@ class JobVacancyService:
         return mapping.get(work_model.lower())
     
     @staticmethod
-    def parse_salary_range(salary_text: str) -> Optional[SalaryRange]:
+    def parse_salary_range(salary_text: str) -> SalaryRange | None:
         """
         Parse salary range from text.
         Examples: "R$ 12.000 a R$ 18.000", "12k-18k", "15000"
@@ -181,7 +175,7 @@ class JobVacancyService:
     
     @staticmethod
     def calculate_timeline(
-        interview_stages: List[InterviewStage],
+        interview_stages: list[InterviewStage],
         target_weeks: int = 4
     ) -> Timeline:
         """
@@ -248,9 +242,9 @@ class JobVacancyService:
     @staticmethod
     def suggest_screening_questions(
         job_title: str,
-        technical_requirements: List[TechnicalRequirement],
-        target_sector: Optional[str] = None
-    ) -> List[ScreeningQuestion]:
+        technical_requirements: list[TechnicalRequirement],
+        target_sector: str | None = None
+    ) -> list[ScreeningQuestion]:
         """
         Suggest screening questions based on job requirements.
         """
@@ -396,8 +390,8 @@ class JobVacancyService:
         created_by: str,
         db,
         company_id: str,
-        current_user: Optional[Any] = None,
-        pipeline_template_id: Optional[str] = None
+        current_user: Any | None = None,
+        pipeline_template_id: str | None = None
     ):
         """
         Finalize job vacancy creation and persist to PostgreSQL.
@@ -420,9 +414,10 @@ class JobVacancyService:
         Returns:
             JobVacancy ORM object
         """
-        from app.models.job_vacancy import JobVacancy
-        from datetime import datetime
         import uuid
+        from datetime import datetime
+
+        from app.models.job_vacancy import JobVacancy
         
         # === PEOPLE INFERENCE ===
         # Infer manager email if name provided but email missing
@@ -544,7 +539,7 @@ class JobVacancyService:
 
 
     @staticmethod
-    def _normalize_skills_to_objects(skills: Any) -> List[Dict[str, Any]]:
+    def _normalize_skills_to_objects(skills: Any) -> list[dict[str, Any]]:
         """Convert skills list to proper object format for database."""
         if not skills:
             return []
@@ -564,7 +559,7 @@ class JobVacancyService:
         return normalized
     
     @staticmethod
-    def _normalize_salary_range(salary_range: Any) -> Optional[Dict[str, Any]]:
+    def _normalize_salary_range(salary_range: Any) -> dict[str, Any] | None:
         """Normalize salary range to proper format."""
         if not salary_range:
             return None
@@ -580,7 +575,7 @@ class JobVacancyService:
         return None
     
     @staticmethod
-    def _normalize_questions(questions: Any) -> List[Dict[str, Any]]:
+    def _normalize_questions(questions: Any) -> list[dict[str, Any]]:
         """Normalize screening questions to proper format."""
         if not questions:
             return []
@@ -601,7 +596,7 @@ class JobVacancyService:
 
     @staticmethod
     async def create_from_wizard_draft(
-        draft: Dict[str, Any],
+        draft: dict[str, Any],
         conversation_id: str,
         created_by: str,
         company_id: str,
@@ -624,8 +619,9 @@ class JobVacancyService:
         Returns:
             JobVacancy ORM object
         """
-        from app.models.job_vacancy import JobVacancy
         import uuid
+
+        from app.models.job_vacancy import JobVacancy
         
         title = draft.get("title") or draft.get("job_title") or "Vaga sem título"
         

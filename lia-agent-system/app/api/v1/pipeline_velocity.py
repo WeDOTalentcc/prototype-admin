@@ -5,15 +5,14 @@ Expõe métricas de velocidade de pipeline baseadas em stage_entered_at
 para o frontend e para integração com o agente Kanban.
 """
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.services.pipeline_velocity_service import pipeline_velocity_service
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
+from app.services.pipeline_velocity_service import pipeline_velocity_service
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +21,8 @@ router = APIRouter(prefix="/pipeline/velocity", tags=["pipeline-velocity"])
 
 @router.get("")
 async def get_pipeline_velocity(
-    vacancy_id: Optional[str] = Query(None, description="ID da vaga (omitir para visão empresa)"),
-    company_id: Optional[str] = Query(None, description="ID da empresa (opcional)"),
+    vacancy_id: str | None = Query(None, description="ID da vaga (omitir para visão empresa)"),
+    company_id: str | None = Query(None, description="ID da empresa (opcional)"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
@@ -60,7 +59,7 @@ async def get_pipeline_velocity(
 
 @router.get("/bottlenecks")
 async def get_velocity_bottlenecks(
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):

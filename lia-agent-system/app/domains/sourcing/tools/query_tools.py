@@ -10,8 +10,8 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
@@ -22,25 +22,25 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
 
 
 async def search_candidates(
-    skills: Optional[List[str]] = None,
-    min_experience_years: Optional[int] = None,
-    max_experience_years: Optional[int] = None,
-    seniority: Optional[str] = None,
-    min_score: Optional[float] = None,
-    status: Optional[str] = None,
-    available_immediately: Optional[bool] = None,
-    location: Optional[str] = None,
-    language: Optional[str] = None,
-    in_vacancy_id: Optional[str] = None,
+    skills: list[str] | None = None,
+    min_experience_years: int | None = None,
+    max_experience_years: int | None = None,
+    seniority: str | None = None,
+    min_score: float | None = None,
+    status: str | None = None,
+    available_immediately: bool | None = None,
+    location: str | None = None,
+    language: str | None = None,
+    in_vacancy_id: str | None = None,
     limit: int = 20,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Search candidates with various filters.
     
@@ -66,8 +66,9 @@ async def search_candidates(
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_, or_, func
         from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
@@ -183,12 +184,12 @@ async def search_candidates(
 
 
 async def rank_candidates(
-    vacancy_id: Optional[str] = None,
-    candidate_ids: Optional[List[str]] = None,
-    qualification_level: Optional[str] = None,
+    vacancy_id: str | None = None,
+    candidate_ids: list[str] | None = None,
+    qualification_level: str | None = None,
     limit: int = 20,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Rank candidates using Weighted Rank Fusion (WRF).
 
@@ -207,10 +208,11 @@ async def rank_candidates(
     logger.info(f"🏆 Ranking candidates with WRF (company: {company_id}, level: {qualification_level})")
 
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
-        from app.models.candidate import Candidate, VacancyCandidate
         from app.domains.sourcing.services.wrf_service import wrf_dynamic_k_service
+        from app.models.candidate import Candidate, VacancyCandidate
 
         async with AsyncSessionLocal() as db:
             query = select(Candidate)
@@ -287,7 +289,7 @@ async def get_candidate_details(
     include_vacancies: bool = True,
     include_evaluations: bool = True,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get detailed information about a specific candidate.
     
@@ -305,8 +307,9 @@ async def get_candidate_details(
     logger.info(f"📋 Getting candidate details: {candidate_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
@@ -385,10 +388,10 @@ async def get_candidate_details(
 
 
 async def get_candidate_stats(
-    job_id: Optional[str] = None,
-    period: Optional[str] = "month",
+    job_id: str | None = None,
+    period: str | None = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get statistics about candidates (quality, distribution, engagement).
     
@@ -405,12 +408,13 @@ async def get_candidate_stats(
     logger.info(f"📊 Getting candidate stats (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
         from app.models.candidate import Candidate, VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
-        start_date = datetime.utcnow() - timedelta(days=period_days)
+        datetime.utcnow() - timedelta(days=period_days)
         
         async with AsyncSessionLocal() as db:
             if job_id:
@@ -488,10 +492,10 @@ async def get_candidate_stats(
 
 
 async def get_candidate_history(
-    candidate_id: Optional[str] = None,
-    job_id: Optional[str] = None,
+    candidate_id: str | None = None,
+    job_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get candidate participation history across multiple processes.
     
@@ -508,9 +512,10 @@ async def get_candidate_history(
     logger.info(f"📜 Getting candidate history (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_, func
-        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             if candidate_id:
@@ -575,7 +580,7 @@ async def get_candidate_history(
             )
             all_participations = vc_result.scalars().all()
             
-            candidate_process_count: Dict[str, int] = {}
+            candidate_process_count: dict[str, int] = {}
             for vc in all_participations:
                 cid = str(vc.candidate_id)
                 candidate_process_count[cid] = candidate_process_count.get(cid, 0) + 1
@@ -589,7 +594,7 @@ async def get_candidate_history(
             
             return {
                 "success": True,
-                "message": f"✅ Histórico de participação de candidatos",
+                "message": "✅ Histórico de participação de candidatos",
                 "data": {
                     "job_filter": job_id,
                     "total_candidates_analyzed": total_candidates,
@@ -615,9 +620,9 @@ async def get_candidate_history(
 
 async def get_talent_quality(
     period: str = "month",
-    min_score: Optional[float] = None,
+    min_score: float | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get talent quality metrics including average scores and score distribution.
     
@@ -635,8 +640,9 @@ async def get_talent_quality(
     logger.info(f"📊 Getting talent quality metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_, case
         from app.models.candidate import Candidate, VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
@@ -727,7 +733,7 @@ async def get_talent_quality(
 async def get_talent_engagement(
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get talent engagement metrics including response rates.
     
@@ -744,8 +750,9 @@ async def get_talent_engagement(
     logger.info(f"📬 Getting talent engagement metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
@@ -815,7 +822,7 @@ async def get_talent_engagement(
 
 async def get_talent_availability(
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get talent availability metrics including immediate availability and salary expectations.
     
@@ -829,8 +836,9 @@ async def get_talent_availability(
     logger.info(f"📅 Getting talent availability metrics (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
@@ -893,7 +901,7 @@ async def get_talent_availability(
             
             return {
                 "success": True,
-                "message": f"✅ Métricas de disponibilidade de talentos",
+                "message": "✅ Métricas de disponibilidade de talentos",
                 "data": {
                     "total_candidates": total,
                     "immediately_available_count": immediately_available,
@@ -914,10 +922,10 @@ async def get_talent_availability(
 
 
 async def get_diversity_metrics(
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get diversity and inclusion metrics for candidates.
     
@@ -934,8 +942,9 @@ async def get_diversity_metrics(
     logger.info(f"🌈 Getting diversity metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_, func
         from app.models.candidate import Candidate, VacancyCandidate
         
         period_days = {
@@ -968,10 +977,10 @@ async def get_diversity_metrics(
             
             total_candidates = len(candidates)
             
-            gender_dist: Dict[str, int] = {}
-            ethnicity_dist: Dict[str, int] = {}
+            gender_dist: dict[str, int] = {}
+            ethnicity_dist: dict[str, int] = {}
             pcd_count = 0
-            age_dist: Dict[str, int] = {"18-25": 0, "26-35": 0, "36-45": 0, "46-55": 0, "55+": 0}
+            age_dist: dict[str, int] = {"18-25": 0, "26-35": 0, "36-45": 0, "46-55": 0, "55+": 0}
             
             today = datetime.utcnow().date()
             
@@ -1031,11 +1040,11 @@ async def get_diversity_metrics(
 
 
 async def get_market_benchmarks(
-    job_title: Optional[str] = None,
-    industry: Optional[str] = None,
-    region: Optional[str] = None,
+    job_title: str | None = None,
+    industry: str | None = None,
+    region: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get market comparison benchmarks for recruitment metrics.
     
@@ -1053,10 +1062,11 @@ async def get_market_benchmarks(
     logger.info(f"🏆 Getting market benchmarks (company: {company_id}, title: {job_title})")
     
     try:
+        from sqlalchemy import and_, func, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             start_date = datetime.utcnow() - timedelta(days=90)
@@ -1079,12 +1089,6 @@ async def get_market_benchmarks(
             else:
                 company_avg_ttf = 35
             
-            seniority_map = {
-                "Júnior": "junior",
-                "Pleno": "mid",
-                "Sênior": "senior",
-                "Especialista": "specialist"
-            }
             
             market_avg_ttf = 42
             market_avg_salary_range = {"min": 8000, "max": 15000, "median": 11500}
@@ -1131,7 +1135,7 @@ async def get_market_benchmarks(
             
             return {
                 "success": True,
-                "message": f"✅ Benchmarks de mercado obtidos",
+                "message": "✅ Benchmarks de mercado obtidos",
                 "data": {
                     "filters": {
                         "job_title": job_title,

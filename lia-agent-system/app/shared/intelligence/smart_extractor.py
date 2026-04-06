@@ -1,14 +1,16 @@
-import re
 import hashlib
 import logging
+import re
 import time
 import unicodedata
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from app.shared.intelligence.param_patterns import (
-    ParamPattern, ExtractionResult, get_patterns_for_domain, UNIVERSAL_PATTERNS
+    UNIVERSAL_PATTERNS,
+    ExtractionResult,
+    get_patterns_for_domain,
 )
 
 logger = logging.getLogger(__name__)
@@ -16,12 +18,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ExtractedParams:
-    params: Dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
     source: str = "none"
     confidence: float = 0.0
     cached: bool = False
     extraction_time_ms: float = 0.0
-    extraction_details: List[ExtractionResult] = field(default_factory=list)
+    extraction_details: list[ExtractionResult] = field(default_factory=list)
 
     @property
     def has_params(self) -> bool:
@@ -30,7 +32,7 @@ class ExtractedParams:
 
 class ExtractionCache:
     def __init__(self, ttl_seconds: int = 300, max_entries: int = 200):
-        self._cache: Dict[str, tuple] = {}
+        self._cache: dict[str, tuple] = {}
         self._ttl = ttl_seconds
         self._max_entries = max_entries
 
@@ -44,7 +46,7 @@ class ExtractionCache:
         text = re.sub(r"\s+", " ", text)
         return text
 
-    def get(self, query: str, domain_id: str) -> Optional[ExtractedParams]:
+    def get(self, query: str, domain_id: str) -> ExtractedParams | None:
         key = self._make_key(query, domain_id)
         if key in self._cache:
             result, expires_at = self._cache[key]
@@ -83,12 +85,12 @@ class ExtractionCache:
 
 
 class ParamExtractor:
-    def extract(self, query: str, domain_id: Optional[str] = None) -> ExtractedParams:
+    def extract(self, query: str, domain_id: str | None = None) -> ExtractedParams:
         start = time.monotonic()
         patterns = get_patterns_for_domain(domain_id) if domain_id else UNIVERSAL_PATTERNS
 
-        results: List[ExtractionResult] = []
-        params: Dict[str, Any] = {}
+        results: list[ExtractionResult] = []
+        params: dict[str, Any] = {}
 
         for pattern in patterns:
             for regex in pattern.patterns:
@@ -162,8 +164,8 @@ class SmartExtractor:
     def extract(
         self,
         query: str,
-        domain_id: Optional[str] = None,
-        available_actions: Optional[List[str]] = None,
+        domain_id: str | None = None,
+        available_actions: list[str] | None = None,
     ) -> ExtractedParams:
         self._extraction_count += 1
 
@@ -197,7 +199,7 @@ class SmartExtractor:
         )
         return result
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         total = self._extraction_count or 1
         return {
             "total_extractions": self._extraction_count,

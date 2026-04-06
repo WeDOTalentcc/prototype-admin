@@ -5,10 +5,10 @@ Provides abstraction for different payment gateway providers (Iugu, Vindi).
 """
 from app.services.billing_providers.base import (
     BillingProviderBase,
-    CustomerData,
-    SubscriptionData,
-    InvoiceData,
     BillingResult,
+    CustomerData,
+    InvoiceData,
+    SubscriptionData,
 )
 from app.services.billing_providers.iugu_provider import IuguProvider
 from app.services.billing_providers.vindi_provider import VindiProvider

@@ -6,10 +6,11 @@ Both Meta Cloud API and Twilio implementations must follow this interface.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any, List
 from datetime import datetime
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class ProviderType(str, Enum):
@@ -21,30 +22,30 @@ class ProviderType(str, Enum):
 class SendResult(BaseModel):
     """Unified result of a WhatsApp send operation."""
     success: bool
-    message_id: Optional[str] = None
-    error: Optional[str] = None
-    error_code: Optional[str] = None
-    sent_at: Optional[datetime] = None
-    provider: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    message_id: str | None = None
+    error: str | None = None
+    error_code: str | None = None
+    sent_at: datetime | None = None
+    provider: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class IncomingMessage(BaseModel):
     """Unified representation of an incoming WhatsApp message."""
     type: str
-    message_id: Optional[str] = None
-    from_number: Optional[str] = None
-    timestamp: Optional[str] = None
-    message_type: Optional[str] = None
-    text: Optional[str] = None
-    document: Optional[Dict[str, Any]] = None
-    image: Optional[Dict[str, Any]] = None
-    button_reply: Optional[Dict[str, str]] = None
-    list_reply: Optional[Dict[str, str]] = None
-    contact_name: Optional[str] = None
-    status: Optional[str] = None
-    recipient_id: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    message_id: str | None = None
+    from_number: str | None = None
+    timestamp: str | None = None
+    message_type: str | None = None
+    text: str | None = None
+    document: dict[str, Any] | None = None
+    image: dict[str, Any] | None = None
+    button_reply: dict[str, str] | None = None
+    list_reply: dict[str, str] | None = None
+    contact_name: str | None = None
+    status: str | None = None
+    recipient_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class WhatsAppProvider(ABC):
@@ -86,9 +87,9 @@ class WhatsAppProvider(ABC):
         self,
         to: str,
         body_text: str,
-        buttons: List[Dict[str, str]],
-        header_text: Optional[str] = None,
-        footer_text: Optional[str] = None
+        buttons: list[dict[str, str]],
+        header_text: str | None = None,
+        footer_text: str | None = None
     ) -> SendResult:
         """
         Send an interactive message with buttons.
@@ -110,8 +111,8 @@ class WhatsAppProvider(ABC):
         self,
         to: str,
         document_url: str,
-        caption: Optional[str] = None,
-        filename: Optional[str] = None
+        caption: str | None = None,
+        filename: str | None = None
     ) -> SendResult:
         """
         Send a document to a WhatsApp number.
@@ -128,7 +129,7 @@ class WhatsAppProvider(ABC):
         pass
     
     @abstractmethod
-    def parse_webhook_message(self, payload: Dict[str, Any]) -> Optional[IncomingMessage]:
+    def parse_webhook_message(self, payload: dict[str, Any]) -> IncomingMessage | None:
         """
         Parse incoming webhook payload from the provider.
         
@@ -155,7 +156,7 @@ class WhatsAppProvider(ABC):
         pass
     
     @abstractmethod
-    async def download_media(self, media_id_or_url: str) -> Dict[str, Any]:
+    async def download_media(self, media_id_or_url: str) -> dict[str, Any]:
         """
         Download media (CV, images) from WhatsApp.
         

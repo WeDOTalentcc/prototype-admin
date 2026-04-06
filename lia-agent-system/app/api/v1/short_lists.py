@@ -14,7 +14,6 @@ Nota de implementação: enquanto a migration 033 não existe, `list_type` é
 armazenado no campo `description` com prefixo "shortlist:" para compatibilidade.
 """
 import logging
-from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -37,19 +36,19 @@ _SHORTLIST_PREFIX = "shortlist:"
 class ShortListCreate(BaseModel):
     job_id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class ShortListCandidateAdd(BaseModel):
     candidate_id: str
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class ShortListResponse(BaseModel):
     id: str
     job_id: str
     name: str
-    description: Optional[str]
+    description: str | None
     created_by: str
     created_at: str
     candidate_count: int
@@ -59,12 +58,12 @@ class ShortListCandidateResponse(BaseModel):
     id: str
     candidate_id: str
     added_at: str
-    notes: Optional[str]
+    notes: str | None
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _encode_meta(job_id: str, description: Optional[str] = None) -> str:
+def _encode_meta(job_id: str, description: str | None = None) -> str:
     """Encoda job_id no campo description com prefixo shortlist:."""
     base = f"{_SHORTLIST_PREFIX}{job_id}"
     if description:
@@ -72,7 +71,7 @@ def _encode_meta(job_id: str, description: Optional[str] = None) -> str:
     return base
 
 
-def _decode_meta(description: Optional[str]) -> tuple[str, str]:
+def _decode_meta(description: str | None) -> tuple[str, str]:
     """Retorna (job_id, description) a partir do campo description."""
     if not description or not description.startswith(_SHORTLIST_PREFIX):
         return "", description or ""
@@ -124,10 +123,10 @@ async def create_short_list(
     return _to_short_list_response(record)
 
 
-@router.get("", response_model=List[ShortListResponse])
+@router.get("", response_model=list[ShortListResponse])
 async def list_short_lists(
     company_id: str = Query(...),
-    job_id: Optional[str] = Query(None, description="Filtrar por vaga"),
+    job_id: str | None = Query(None, description="Filtrar por vaga"),
     db: AsyncSession = Depends(get_db),
 ):
     """Lista short lists da empresa, opcionalmente filtradas por vaga."""

@@ -9,19 +9,14 @@ This service handles:
 - Priority calculation
 - Execution plan generation
 """
-from typing import List, Optional, Dict, Any, Set, Tuple
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, update
-from collections import defaultdict, deque
 import logging
+from datetime import datetime
+from typing import Any
 
-from app.models.planned_task import (
-    PlannedTask,
-    PlannedTaskPriority,
-    PlannedTaskStatus,
-    ExecutionPlan
-)
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.planned_task import ExecutionPlan, PlannedTask, PlannedTaskPriority, PlannedTaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -47,21 +42,21 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         title: str,
-        description: Optional[str] = None,
-        agent_type: Optional[str] = None,
+        description: str | None = None,
+        agent_type: str | None = None,
         priority: PlannedTaskPriority = PlannedTaskPriority.MEDIUM,
-        parent_task_id: Optional[str] = None,
-        dependencies: Optional[List[str]] = None,
-        estimated_duration: Optional[int] = None,
-        deadline: Optional[datetime] = None,
-        goal_id: Optional[str] = None,
+        parent_task_id: str | None = None,
+        dependencies: list[str] | None = None,
+        estimated_duration: int | None = None,
+        deadline: datetime | None = None,
+        goal_id: str | None = None,
         goal_criticality: float = 0.5,
-        related_job_id: Optional[str] = None,
-        related_candidate_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-        created_by: Optional[str] = None,
-        chain_of_thought: Optional[List[str]] = None
+        related_job_id: str | None = None,
+        related_candidate_id: str | None = None,
+        company_id: str | None = None,
+        context: dict[str, Any] | None = None,
+        created_by: str | None = None,
+        chain_of_thought: list[str] | None = None
     ) -> PlannedTask:
         """Create a new planned task."""
         task = PlannedTask(
@@ -95,10 +90,10 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         parent_task_id: str,
-        subtasks_data: List[Dict[str, Any]],
-        company_id: Optional[str] = None,
-        created_by: Optional[str] = None
-    ) -> List[PlannedTask]:
+        subtasks_data: list[dict[str, Any]],
+        company_id: str | None = None,
+        created_by: str | None = None
+    ) -> list[PlannedTask]:
         """Create multiple subtasks for a parent task."""
         created_tasks = []
         
@@ -123,7 +118,7 @@ class PlannedTaskService:
         
         return created_tasks
     
-    async def get_task(self, db: AsyncSession, task_id: str) -> Optional[PlannedTask]:
+    async def get_task(self, db: AsyncSession, task_id: str) -> PlannedTask | None:
         """Get a planned task by ID."""
         result = await db.execute(
             select(PlannedTask).where(PlannedTask.id == task_id)
@@ -135,7 +130,7 @@ class PlannedTaskService:
         db: AsyncSession,
         goal_id: str,
         include_completed: bool = False
-    ) -> List[PlannedTask]:
+    ) -> list[PlannedTask]:
         """Get all tasks for a specific goal."""
         query = select(PlannedTask).where(PlannedTask.goal_id == goal_id)
         
@@ -156,7 +151,7 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         parent_task_id: str
-    ) -> List[PlannedTask]:
+    ) -> list[PlannedTask]:
         """Get all subtasks of a parent task."""
         result = await db.execute(
             select(PlannedTask)
@@ -170,9 +165,9 @@ class PlannedTaskService:
         db: AsyncSession,
         task_id: str,
         status: PlannedTaskStatus,
-        result: Optional[Dict[str, Any]] = None,
-        error_message: Optional[str] = None
-    ) -> Optional[PlannedTask]:
+        result: dict[str, Any] | None = None,
+        error_message: str | None = None
+    ) -> PlannedTask | None:
         """Update task status."""
         task = await self.get_task(db, task_id)
         if not task:
@@ -202,8 +197,8 @@ class PlannedTaskService:
     
     def _detect_cycle(
         self,
-        tasks: List[PlannedTask]
-    ) -> Tuple[bool, Optional[List[str]]]:
+        tasks: list[PlannedTask]
+    ) -> tuple[bool, list[str] | None]:
         """
         Detect cycles in the task dependency graph using DFS.
         
@@ -216,7 +211,7 @@ class PlannedTaskService:
         color = {task.id: WHITE for task in tasks}
         parent = {}
         
-        def dfs(task_id: str) -> Optional[List[str]]:
+        def dfs(task_id: str) -> list[str] | None:
             color[task_id] = GRAY
             
             task = task_map.get(task_id)
@@ -252,8 +247,8 @@ class PlannedTaskService:
     
     def _topological_sort(
         self,
-        tasks: List[PlannedTask]
-    ) -> List[List[PlannedTask]]:
+        tasks: list[PlannedTask]
+    ) -> list[list[PlannedTask]]:
         """
         Perform topological sort and group tasks by execution level.
         
@@ -297,8 +292,8 @@ class PlannedTaskService:
     async def build_task_dag(
         self,
         db: AsyncSession,
-        task_ids: List[str]
-    ) -> Dict[str, Any]:
+        task_ids: list[str]
+    ) -> dict[str, Any]:
         """
         Build a DAG from task dependencies.
         
@@ -346,8 +341,8 @@ class PlannedTaskService:
     
     def _calculate_deadline_urgency(
         self,
-        deadline: Optional[datetime],
-        now: Optional[datetime] = None
+        deadline: datetime | None,
+        now: datetime | None = None
     ) -> float:
         """Calculate urgency score based on deadline proximity."""
         if not deadline:
@@ -376,7 +371,7 @@ class PlannedTaskService:
     def _calculate_dependents_impact(
         self,
         task: PlannedTask,
-        all_tasks: List[PlannedTask]
+        all_tasks: list[PlannedTask]
     ) -> float:
         """Calculate impact score based on number of dependent tasks."""
         dependents_count = task.get_dependents_count(all_tasks)
@@ -394,7 +389,7 @@ class PlannedTaskService:
     
     def _calculate_effort_efficiency(
         self,
-        estimated_duration: Optional[int]
+        estimated_duration: int | None
     ) -> float:
         """
         Calculate efficiency score based on effort.
@@ -418,7 +413,7 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         task: PlannedTask,
-        all_tasks: Optional[List[PlannedTask]] = None
+        all_tasks: list[PlannedTask] | None = None
     ) -> float:
         """
         Calculate weighted priority score for a task.
@@ -455,8 +450,8 @@ class PlannedTaskService:
     async def reprioritize_tasks(
         self,
         db: AsyncSession,
-        task_ids: List[str]
-    ) -> List[PlannedTask]:
+        task_ids: list[str]
+    ) -> list[PlannedTask]:
         """Recalculate priority scores for a set of tasks."""
         result = await db.execute(
             select(PlannedTask).where(PlannedTask.id.in_(task_ids))
@@ -478,12 +473,12 @@ class PlannedTaskService:
     async def get_next_tasks(
         self,
         db: AsyncSession,
-        goal_id: Optional[str] = None,
-        parent_task_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        agent_type: Optional[str] = None,
+        goal_id: str | None = None,
+        parent_task_id: str | None = None,
+        company_id: str | None = None,
+        agent_type: str | None = None,
         limit: int = 5
-    ) -> List[PlannedTask]:
+    ) -> list[PlannedTask]:
         """
         Get the next tasks that are ready to execute.
         
@@ -541,11 +536,11 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         name: str,
-        task_ids: List[str],
-        description: Optional[str] = None,
-        goal_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        created_by: Optional[str] = None
+        task_ids: list[str],
+        description: str | None = None,
+        goal_id: str | None = None,
+        company_id: str | None = None,
+        created_by: str | None = None
     ) -> ExecutionPlan:
         """Create an execution plan from a set of tasks."""
         dag_result = await self.build_task_dag(db, task_ids)
@@ -597,7 +592,7 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         plan_id: str
-    ) -> Optional[ExecutionPlan]:
+    ) -> ExecutionPlan | None:
         """Get an execution plan by ID."""
         result = await db.execute(
             select(ExecutionPlan).where(ExecutionPlan.id == plan_id)
@@ -608,7 +603,7 @@ class PlannedTaskService:
         self,
         db: AsyncSession,
         task_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Check the dependency status for a task.
         
@@ -675,7 +670,7 @@ class PlannedTaskService:
         task_id: str,
         thought: str,
         thought_type: str = "reasoning"
-    ) -> Optional[PlannedTask]:
+    ) -> PlannedTask | None:
         """Add a chain-of-thought entry to a task."""
         task = await self.get_task(db, task_id)
         if not task:

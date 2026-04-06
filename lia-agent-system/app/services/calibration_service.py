@@ -8,19 +8,19 @@ This service handles:
 - Generating calibration suggestions
 - Applying approved weight adjustments
 """
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, and_, or_, select
-from sqlalchemy.sql import desc
 import uuid
+from datetime import datetime, timedelta
+from typing import Any
+
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import desc
 
 from app.models.calibration import (
-    CalibrationEvent, 
-    CalibrationWeight, 
+    CalibrationEvent,
     CalibrationSuggestion,
+    CalibrationWeight,
     FeedbackType,
-    CalibrationStatus
 )
 
 
@@ -33,13 +33,13 @@ class CalibrationService:
     async def record_explicit_feedback(
         self,
         candidate_id: str,
-        job_id: Optional[str],
+        job_id: str | None,
         user_id: str,
         agrees_with_lia: bool,
-        lia_score: Optional[float] = None,
-        lia_recommendation: Optional[str] = None,
-        feedback_reason: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        lia_score: float | None = None,
+        lia_recommendation: str | None = None,
+        feedback_reason: str | None = None,
+        context: dict[str, Any] | None = None
     ) -> CalibrationEvent:
         """Record explicit feedback (thumbs up/down) from recruiter."""
         event = CalibrationEvent(
@@ -68,11 +68,11 @@ class CalibrationService:
         job_id: str,
         user_id: str,
         action: str,
-        stage_from: Optional[str] = None,
-        stage_to: Optional[str] = None,
-        lia_score: Optional[float] = None,
-        lia_ranking: Optional[int] = None,
-        context: Optional[Dict[str, Any]] = None
+        stage_from: str | None = None,
+        stage_to: str | None = None,
+        lia_score: float | None = None,
+        lia_ranking: int | None = None,
+        context: dict[str, Any] | None = None
     ) -> CalibrationEvent:
         """Record implicit feedback from recruiter actions."""
         if action == "advance":
@@ -113,9 +113,9 @@ class CalibrationService:
         job_id: str,
         user_id: str,
         success: bool,
-        lia_score: Optional[float] = None,
-        feedback_reason: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        lia_score: float | None = None,
+        feedback_reason: str | None = None,
+        context: dict[str, Any] | None = None
     ) -> CalibrationEvent:
         """Record post-hire outcome feedback."""
         event = CalibrationEvent(
@@ -142,7 +142,7 @@ class CalibrationService:
         days: int = 30,
         min_score_delta: float = 5.0,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get recent divergences between LIA and recruiter decisions."""
         since = datetime.utcnow() - timedelta(days=days)
         
@@ -184,7 +184,7 @@ class CalibrationService:
         
         return divergences
     
-    async def get_calibration_stats(self, days: int = 30) -> Dict[str, Any]:
+    async def get_calibration_stats(self, days: int = 30) -> dict[str, Any]:
         """Get calibration statistics for the dashboard."""
         since = datetime.utcnow() - timedelta(days=days)
         
@@ -277,7 +277,7 @@ class CalibrationService:
             "accuracy_indicator": round(100 - (divergence_count / max(total_events, 1) * 100), 1)
         }
     
-    async def generate_suggestions(self) -> List[CalibrationSuggestion]:
+    async def generate_suggestions(self) -> list[CalibrationSuggestion]:
         """Analyze divergences and generate calibration suggestions."""
         stats = await self.get_calibration_stats(days=30)
         suggestions = []
@@ -331,7 +331,7 @@ class CalibrationService:
         
         return suggestions
     
-    async def get_pending_suggestions(self) -> List[Dict[str, Any]]:
+    async def get_pending_suggestions(self) -> list[dict[str, Any]]:
         """Get all pending calibration suggestions."""
         stmt = select(CalibrationSuggestion).where(
             CalibrationSuggestion.status == "pending"
@@ -346,7 +346,7 @@ class CalibrationService:
         self,
         suggestion_id: str,
         user_id: str
-    ) -> Optional[CalibrationSuggestion]:
+    ) -> CalibrationSuggestion | None:
         """Approve a calibration suggestion."""
         stmt = select(CalibrationSuggestion).where(
             CalibrationSuggestion.id == suggestion_id
@@ -412,8 +412,8 @@ class CalibrationService:
         self,
         suggestion_id: str,
         user_id: str,
-        reason: Optional[str] = None
-    ) -> Optional[CalibrationSuggestion]:
+        reason: str | None = None
+    ) -> CalibrationSuggestion | None:
         """Reject a calibration suggestion."""
         stmt = select(CalibrationSuggestion).where(
             CalibrationSuggestion.id == suggestion_id
@@ -437,8 +437,8 @@ class CalibrationService:
     async def get_recent_events(
         self,
         limit: int = 50,
-        feedback_types: Optional[List[str]] = None
-    ) -> List[Dict[str, Any]]:
+        feedback_types: list[str] | None = None
+    ) -> list[dict[str, Any]]:
         """Get recent calibration events."""
         stmt = select(CalibrationEvent).order_by(
             desc(CalibrationEvent.created_at)
@@ -454,7 +454,7 @@ class CalibrationService:
         
         return [e.to_dict() for e in events]
     
-    async def get_weights(self, job_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def get_weights(self, job_id: str | None = None) -> list[dict[str, Any]]:
         """Get current calibration weights."""
         stmt = select(CalibrationWeight).where(
             CalibrationWeight.is_active == True

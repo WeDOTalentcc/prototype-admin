@@ -1,32 +1,37 @@
 """
 Shared Searches API endpoints - manage shared candidate searches with external stakeholders.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional, List
-from sqlalchemy import select, and_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-import logging
-from datetime import datetime
-import uuid
-import secrets
 import hashlib
+import logging
+import secrets
+import uuid
+from datetime import datetime
 
-from app.models.shared_search import (
-    SharedSearch, SharedSearchAccess, SharedSearchFeedback,
-    ShareType, SharedSearchStatus, FeedbackDecision
-)
-from app.models.candidate import Candidate, VacancyCandidate
-from app.schemas.shared_search import (
-    CreateSharedSearchRequest, SharedSearchResponse, SharedSearchDetailResponse,
-    FeedbackSummary, RecipientSummary, CandidateSnapshot, FeedbackResponse,
-    ShareStatus, ShareType as SchemaShareType, ShareChannel
-)
-from app.models.email_template import EmailTemplate
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
 from app.domains.communication.services.email_providers import get_email_provider
-from pydantic import BaseModel, EmailStr
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.email_template import EmailTemplate
+from app.models.shared_search import (
+    FeedbackDecision,
+    SharedSearch,
+    SharedSearchAccess,
+    SharedSearchFeedback,
+    SharedSearchStatus,
+    ShareType,
+)
+from app.schemas.shared_search import (
+    CreateSharedSearchRequest,
+    FeedbackSummary,
+    RecipientSummary,
+    ShareChannel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +39,9 @@ router = APIRouter()
 
 
 class UpdateSharedSearchRequest(BaseModel):
-    status: Optional[str] = None
-    expires_at: Optional[datetime] = None
-    description: Optional[str] = None
+    status: str | None = None
+    expires_at: datetime | None = None
+    description: str | None = None
 
 
 class ResendInviteRequest(BaseModel):
@@ -45,7 +50,7 @@ class ResendInviteRequest(BaseModel):
 
 class AddToJobRequest(BaseModel):
     job_id: str
-    candidate_ids: Optional[List[str]] = None
+    candidate_ids: list[str] | None = None
     all_approved: bool = False
     include_notes: bool = False
 
@@ -172,7 +177,7 @@ def send_shared_search_invite_email(
         return False
 
 
-async def fetch_share_template(db: AsyncSession, channel: str, company_id: str | None = None) -> Optional[EmailTemplate]:
+async def fetch_share_template(db: AsyncSession, channel: str, company_id: str | None = None) -> EmailTemplate | None:
     """Fetch template with situation='share_with_manager' for the given channel."""
     try:
         if company_id:
@@ -228,7 +233,7 @@ def send_whatsapp_simulated(
     return True
 
 
-async def build_candidate_snapshot(db: AsyncSession, candidate_ids: List[uuid.UUID]) -> List[dict]:
+async def build_candidate_snapshot(db: AsyncSession, candidate_ids: list[uuid.UUID]) -> list[dict]:
     if not candidate_ids:
         return []
     
@@ -259,7 +264,7 @@ async def build_candidate_snapshot(db: AsyncSession, candidate_ids: List[uuid.UU
     return snapshots
 
 
-def build_feedback_summary(feedbacks: List[SharedSearchFeedback], total_candidates: int) -> FeedbackSummary:
+def build_feedback_summary(feedbacks: list[SharedSearchFeedback], total_candidates: int) -> FeedbackSummary:
     counts = {"approved": 0, "maybe": 0, "rejected": 0}
     for f in feedbacks:
         if f.decision.value in counts:
@@ -496,8 +501,8 @@ async def create_shared_search(
 
 @router.get("")
 async def list_shared_searches(
-    status: Optional[str] = Query(None, description="Filter by status: active, expired, revoked"),
-    share_type: Optional[str] = Query(None, description="Filter by type: search, list"),
+    status: str | None = Query(None, description="Filter by status: active, expired, revoked"),
+    share_type: str | None = Query(None, description="Filter by type: search, list"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),

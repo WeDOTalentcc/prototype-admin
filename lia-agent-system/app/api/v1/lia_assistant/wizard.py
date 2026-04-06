@@ -6,49 +6,49 @@ Job-wizard routes:
   POST /lia/job-wizard/evaluate
   POST /lia/job-wizard/step
 """
-import re
 import json
-from typing import Dict, Any, List, Optional
+import re
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.services.llm import LLMService
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
+from app.services.llm import LLMService
 
 from ._shared import (
-    logger,
-    # models
-    InterpretMessageAction,
-    InterpretMessageRequest,
-    InterpretMessageResponse,
-    WizardOrchestratorRequest,
-    WizardOrchestratorAction,
-    WizardOrchestratorResponse,
-    WizardEvaluateRequest,
-    WizardEvaluateResponse,
-    WizardEvaluateSuggestion,
-    WizardEvaluateCompensation,
-    WizardStepRequest,
-    WizardStepResponse,
-    SalaryBenchmarkRequest,
-    SalaryBenchmarkResponse,
     # constants
     STAGE_MAP,
     STAGE_NAMES,
     STAGE_ORDER,
-    WIZARD_STAGES_INFO,
     WIZARD_ORCHESTRATOR_PROMPT,
-    # services
-    llm_service,
-    market_benchmark_service,
+    WIZARD_STAGES_INFO,
     # imports needed by routes
     EnhancedIntentType,
-    enhanced_intent_classifier,
+    # models
+    InterpretMessageAction,
+    InterpretMessageRequest,
+    InterpretMessageResponse,
+    SalaryBenchmarkRequest,
+    SalaryBenchmarkResponse,
+    WizardEvaluateCompensation,
+    WizardEvaluateRequest,
+    WizardEvaluateResponse,
+    WizardEvaluateSuggestion,
     WizardOrchestrationResult,
+    WizardOrchestratorAction,
+    WizardOrchestratorRequest,
+    WizardOrchestratorResponse,
+    WizardStepRequest,
+    WizardStepResponse,
+    enhanced_intent_classifier,
+    # services
+    llm_service,
+    logger,
+    market_benchmark_service,
 )
 
 router = APIRouter()
@@ -65,7 +65,7 @@ async def interpret_user_message(
     what the user wants to do, providing intelligent conversation flow.
     """
     try:
-        stage_context = f"Stage: {STAGE_NAMES.get(request.current_stage, request.current_stage)}"
+        f"Stage: {STAGE_NAMES.get(request.current_stage, request.current_stage)}"
         filled_fields = request.context.get('filled_fields', []) if request.context else []
 
         classification = await enhanced_intent_classifier.classify(
@@ -172,7 +172,6 @@ async def orchestrate_wizard_message(
     When use_structured_outputs=True, uses the structured output feature
     for more reliable JSON parsing directly via LLM provider capabilities.
     """
-    company_id = current_user.company_id
     try:
         stage_info = WIZARD_STAGES_INFO.get(request.current_stage, {
             "name": request.current_stage,
@@ -398,15 +397,14 @@ async def evaluate_wizard_input(
     - Suggests additional competencies based on the role
     - Returns confidence scores and field origins
     """
-    company_id = current_user.company_id
 
     conversation_id = request.conversation_id or str(uuid4())
     user_input = request.user_input
     context = request.context or {}
 
     local_llm_service = LLMService()
-    detected_fields: Dict[str, Any] = {}
-    suggestions: List[WizardEvaluateSuggestion] = []
+    detected_fields: dict[str, Any] = {}
+    suggestions: list[WizardEvaluateSuggestion] = []
     compensation_analysis = None
     lia_message = ""
     overall_confidence = 0.7

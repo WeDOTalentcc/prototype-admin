@@ -6,10 +6,10 @@ Tracks voice screenings, emails, interviews, approvals, tests, and other activit
 """
 
 import logging
-from typing import Dict, Any, Optional, List
 from datetime import datetime
-from sqlalchemy import select, desc, and_, or_
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+from sqlalchemy import and_, desc, or_, select
 
 from app.core.database import AsyncSessionLocal
 from app.models import ActivityFeed
@@ -24,21 +24,21 @@ class ActivityService:
         self,
         activity_type: str,
         title: str,
-        description: Optional[str] = None,
-        summary: Optional[str] = None,
-        actor_id: Optional[str] = None,
-        actor_name: Optional[str] = None,
-        actor_type: Optional[str] = None,
-        target_id: Optional[str] = None,
-        target_name: Optional[str] = None,
-        target_type: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        description: str | None = None,
+        summary: str | None = None,
+        actor_id: str | None = None,
+        actor_name: str | None = None,
+        actor_type: str | None = None,
+        target_id: str | None = None,
+        target_name: str | None = None,
+        target_type: str | None = None,
+        extra_data: dict[str, Any] | None = None,
         priority: str = "normal",
-        category: Optional[str] = None,
-        action_url: Optional[str] = None,
-        action_label: Optional[str] = None,
-        visible_to: Optional[List[str]] = None,
-        created_by: Optional[str] = None,
+        category: str | None = None,
+        action_url: str | None = None,
+        action_label: str | None = None,
+        visible_to: list[str] | None = None,
+        created_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create a new activity in the feed.
@@ -96,13 +96,13 @@ class ActivityService:
     
     async def list_activities(
         self,
-        activity_type: Optional[str] = None,
-        priority: Optional[str] = None,
-        category: Optional[str] = None,
-        candidate_id: Optional[str] = None,
+        activity_type: str | None = None,
+        priority: str | None = None,
+        category: str | None = None,
+        candidate_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         List activities with optional filters.
         
@@ -168,7 +168,7 @@ class ActivityService:
                 "offset": offset,
             }
     
-    async def get_activity_by_id(self, activity_id: str) -> Optional[ActivityFeed]:
+    async def get_activity_by_id(self, activity_id: str) -> ActivityFeed | None:
         """
         Get a single activity by ID.
         
@@ -190,7 +190,7 @@ class ActivityService:
             
             return activity
     
-    async def get_urgent_count(self, user_id: Optional[str] = None) -> int:
+    async def get_urgent_count(self, user_id: str | None = None) -> int:
         """
         Get count of urgent unread activities.
         Used for header badge notification count.
@@ -225,7 +225,7 @@ class ActivityService:
         interviewer_name: str,
         interview_date: datetime,
         interview_type: str = "technical",
-        scheduled_by: Optional[str] = None,
+        scheduled_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for scheduled interview.
@@ -262,7 +262,7 @@ class ActivityService:
         recipient_type: str,
         email_subject: str,
         email_type: str = "notification",
-        sent_by: Optional[str] = None,
+        sent_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for email sent.
@@ -295,8 +295,8 @@ class ActivityService:
         candidate_id: str,
         candidate_name: str,
         job_title: str,
-        salary_range: Optional[str] = None,
-        sent_by: Optional[str] = None,
+        salary_range: str | None = None,
+        sent_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for job offer sent.
@@ -334,7 +334,7 @@ class ActivityService:
         item_id: str,
         item_name: str,
         approval_type: str,
-        requested_by: Optional[str] = None,
+        requested_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for pending approval.
@@ -368,7 +368,7 @@ class ActivityService:
         from_stage: str,
         to_stage: str,
         job_title: str,
-        moved_by: Optional[str] = None,
+        moved_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for candidate pipeline movement.
@@ -443,8 +443,8 @@ class ActivityService:
         total_count: int,
         used_global: bool = False,
         credits_consumed: int = 0,
-        user_id: Optional[str] = None,
-        conversation_id: Optional[str] = None,
+        user_id: str | None = None,
+        conversation_id: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for candidate search completion.
@@ -454,7 +454,7 @@ class ActivityService:
         if used_global and local_count > 0:
             source_label = "Banco Proprietário + Global"
         
-        title = f"Busca de Candidatos Realizada"
+        title = "Busca de Candidatos Realizada"
         if used_global:
             description = f"{total_count} candidatos encontrados • {source_label} ({credits_consumed} créditos)"
         else:
@@ -493,8 +493,8 @@ class ActivityService:
         search_query: str,
         local_count: int,
         estimated_credits: int,
-        user_id: Optional[str] = None,
-        conversation_id: Optional[str] = None,
+        user_id: str | None = None,
+        conversation_id: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity when LIA suggests global search.
@@ -528,8 +528,8 @@ class ActivityService:
         search_query: str,
         credits_consumed: int,
         results_count: int,
-        user_id: Optional[str] = None,
-        conversation_id: Optional[str] = None,
+        user_id: str | None = None,
+        conversation_id: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity when user authorizes global search.
@@ -565,8 +565,8 @@ class ActivityService:
         candidate_id: str,
         candidate_name: str,
         message_preview: str,
-        sent_by: Optional[str] = None,
-        job_title: Optional[str] = None,
+        sent_by: str | None = None,
+        job_title: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for WhatsApp message sent to candidate.
@@ -605,7 +605,7 @@ class ActivityService:
         candidate_name: str,
         channel: str,
         job_title: str,
-        sent_by: Optional[str] = None,
+        sent_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for screening invitation sent.
@@ -643,8 +643,8 @@ class ActivityService:
         channel: str,
         job_title: str,
         interview_type: str,
-        sent_by: Optional[str] = None,
-        interview_date: Optional[datetime] = None,
+        sent_by: str | None = None,
+        interview_date: datetime | None = None,
     ) -> ActivityFeed:
         """
         Create activity for interview scheduling invitation sent.
@@ -696,7 +696,7 @@ class ActivityService:
         candidate_name: str,
         feedback_type: str,
         job_title: str,
-        sent_by: Optional[str] = None,
+        sent_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for feedback message sent.
@@ -738,10 +738,10 @@ class ActivityService:
         candidate_name: str,
         communication_type: str,
         channel: str,
-        sent_by: Optional[str] = None,
-        subject: Optional[str] = None,
-        job_title: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        sent_by: str | None = None,
+        subject: str | None = None,
+        job_title: str | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> ActivityFeed:
         """
         Create activity for generic communication logging.
@@ -793,15 +793,15 @@ class ActivityService:
         candidate_name: str,
         job_id: str,
         job_title: str,
-        job_code: Optional[str] = None,
+        job_code: str | None = None,
         score: float = 0.0,
         score_label: str = "Não Avaliado",
-        evaluations: Optional[List[Dict[str, Any]]] = None,
-        summary: Optional[str] = None,
+        evaluations: list[dict[str, Any]] | None = None,
+        summary: str | None = None,
         recommendation: str = "review",
-        strengths: Optional[List[str]] = None,
-        concerns: Optional[List[str]] = None,
-        created_by: Optional[str] = None,
+        strengths: list[str] | None = None,
+        concerns: list[str] | None = None,
+        created_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for rubric evaluation (CV vs Job analysis).
@@ -887,17 +887,17 @@ class ActivityService:
         candidate_name: str,
         analysis_type: str = "curricular",
         overall_score: float = 0.0,
-        experience_quality: Optional[str] = None,
-        career_trajectory: Optional[str] = None,
-        red_flags: Optional[List[str]] = None,
-        green_flags: Optional[List[str]] = None,
-        experience_gaps: Optional[List[Dict[str, Any]]] = None,
-        education_analysis: Optional[Dict[str, Any]] = None,
-        skills_analysis: Optional[Dict[str, Any]] = None,
+        experience_quality: str | None = None,
+        career_trajectory: str | None = None,
+        red_flags: list[str] | None = None,
+        green_flags: list[str] | None = None,
+        experience_gaps: list[dict[str, Any]] | None = None,
+        education_analysis: dict[str, Any] | None = None,
+        skills_analysis: dict[str, Any] | None = None,
         recommendation: str = "review",
-        summary: Optional[str] = None,
-        detailed_reasoning: Optional[str] = None,
-        created_by: Optional[str] = None,
+        summary: str | None = None,
+        detailed_reasoning: str | None = None,
+        created_by: str | None = None,
     ) -> ActivityFeed:
         """
         Create activity for detailed screening analysis (independent of job).

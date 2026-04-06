@@ -8,14 +8,14 @@ Improvements:
 - Enhanced SSE parsing with multi-event support
 - Better error handling and retry logic
 """
-import os
-import uuid
+import asyncio
 import json
 import logging
-import asyncio
-from typing import Dict, Optional, List, Any
+import os
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import Any
 
 import httpx
 
@@ -32,7 +32,7 @@ class MCPSession:
     created_at: datetime
     initialized: bool = False
     protocol_version: str = "2024-11-05"
-    server_capabilities: Dict = field(default_factory=dict)
+    server_capabilities: dict = field(default_factory=dict)
     
     def is_valid(self, max_age_minutes: int = 30) -> bool:
         """Check if session is still valid based on age."""
@@ -53,15 +53,15 @@ class ApifyMCPClient:
     - Retry logic for transient failures
     """
     
-    _shared_session: Optional[MCPSession] = None
-    _session_lock: Optional[asyncio.Lock] = None
+    _shared_session: MCPSession | None = None
+    _session_lock: asyncio.Lock | None = None
     
-    def __init__(self, api_key: Optional[str] = None, session_max_age_minutes: int = 30):
+    def __init__(self, api_key: str | None = None, session_max_age_minutes: int = 30):
         self.api_key = api_key or APIFY_API_KEY
         self.mcp_url = APIFY_MCP_URL
         self.timeout = httpx.Timeout(180.0, connect=30.0)
         self.session_max_age = session_max_age_minutes
-        self._http_client: Optional[httpx.AsyncClient] = None
+        self._http_client: httpx.AsyncClient | None = None
         self._max_retries = 3
     
     async def _get_http_client(self) -> httpx.AsyncClient:
@@ -76,7 +76,7 @@ class ApifyMCPClient:
             await self._http_client.aclose()
             self._http_client = None
     
-    def _get_headers(self, session_id: Optional[str] = None) -> Dict[str, str]:
+    def _get_headers(self, session_id: str | None = None) -> dict[str, str]:
         """Get headers for MCP requests."""
         headers = {
             "Content-Type": "application/json",
@@ -127,13 +127,13 @@ class ApifyMCPClient:
     async def _send_raw_request(
         self, 
         method: str, 
-        params: Optional[Dict[str, Any]] = None,
-        session_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        params: dict[str, Any] | None = None,
+        session_id: str | None = None
+    ) -> dict[str, Any]:
         """Send a raw JSON-RPC request without session management."""
         request_id = str(uuid.uuid4())
         
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "jsonrpc": "2.0",
             "id": request_id,
             "method": method,
@@ -176,9 +176,9 @@ class ApifyMCPClient:
     async def _send_mcp_request(
         self, 
         method: str, 
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         retry_count: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Send a JSON-RPC request to the MCP server with session management and retry.
         
@@ -204,7 +204,7 @@ class ApifyMCPClient:
         
         return response
     
-    def _parse_sse_response(self, sse_text: str, request_id: Optional[str] = None) -> Dict:
+    def _parse_sse_response(self, sse_text: str, request_id: str | None = None) -> dict:
         """
         Parse Server-Sent Events response with multi-event support.
         
@@ -273,7 +273,7 @@ class ApifyMCPClient:
         session = await self._ensure_session()
         return session.initialized
     
-    async def list_tools(self) -> List[Dict]:
+    async def list_tools(self) -> list[dict]:
         """List available MCP tools."""
         response = await self._send_mcp_request("tools/list")
         
@@ -281,7 +281,7 @@ class ApifyMCPClient:
             return response["result"].get("tools", [])
         return []
     
-    async def call_tool(self, tool_name: str, arguments: Dict) -> Dict:
+    async def call_tool(self, tool_name: str, arguments: dict) -> dict:
         """
         Call an MCP tool.
         
@@ -301,7 +301,7 @@ class ApifyMCPClient:
             return response["result"]
         return response
     
-    async def search_actors(self, query: str, limit: int = 10) -> List[Dict]:
+    async def search_actors(self, query: str, limit: int = 10) -> list[dict]:
         """
         Search for Apify actors.
         
@@ -329,10 +329,10 @@ class ApifyMCPClient:
     async def call_actor(
         self,
         actor_id: str,
-        input_data: Dict,
+        input_data: dict,
         wait_for_finish: bool = True,
         timeout_secs: int = 300
-    ) -> Dict:
+    ) -> dict:
         """
         Run an Apify actor via MCP.
         
@@ -359,7 +359,7 @@ class ApifyMCPClient:
         dataset_id: str,
         limit: int = 100,
         offset: int = 0
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Get items from an Apify dataset.
         
@@ -379,7 +379,7 @@ class ApifyMCPClient:
         
         return self._extract_tool_result(result)
     
-    def _extract_tool_result(self, result: Dict) -> Any:
+    def _extract_tool_result(self, result: dict) -> Any:
         """Extract actual data from MCP tool result."""
         if "content" in result:
             for item in result["content"]:
@@ -390,7 +390,7 @@ class ApifyMCPClient:
                         return item["text"]
         return result
     
-    async def scrape_website(self, url: str, max_pages: int = 15) -> Dict:
+    async def scrape_website(self, url: str, max_pages: int = 15) -> dict:
         """
         Scrape a website using apify/website-content-crawler.
         
@@ -411,7 +411,7 @@ class ApifyMCPClient:
             }
         )
     
-    async def scrape_linkedin_company(self, linkedin_url: str) -> Dict:
+    async def scrape_linkedin_company(self, linkedin_url: str) -> dict:
         """
         Scrape LinkedIn company profile.
         
@@ -430,7 +430,7 @@ class ApifyMCPClient:
             }
         )
     
-    async def scrape_glassdoor(self, company_name: str) -> Dict:
+    async def scrape_glassdoor(self, company_name: str) -> dict:
         """
         Scrape Glassdoor company data.
         
@@ -450,7 +450,7 @@ class ApifyMCPClient:
             }
         )
     
-    async def browse_web(self, query: str, max_results: int = 5) -> Dict:
+    async def browse_web(self, query: str, max_results: int = 5) -> dict:
         """
         Browse the web using RAG Web Browser actor.
         

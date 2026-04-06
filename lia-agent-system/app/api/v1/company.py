@@ -2,85 +2,86 @@
 Company Setup API endpoints for admin configuration.
 Manages company profiles, departments, benefits, culture values, and ideal profiles.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, UploadFile, File
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-import logging
-from datetime import datetime
-import uuid
 import csv
 import io
+import logging
+import os
+import uuid
+from datetime import datetime
+from typing import Any
 
+import httpx
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
+from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
+from app.auth.security import generate_secure_token, get_password_hash
+from app.core.database import get_db
+from app.domains.communication.services.email_service import email_service
+from app.domains.sourcing.services.apify_service import apify_service
 from app.models.company import (
-    CompanyProfile,
-    Department,
-    DepartmentMember,
+    Approver,
     Benefit,
-    CultureValue,
-    IdealProfile,
     BigFiveQuestion,
     BigFiveRoleProfile,
+    CompanyProfile,
+    CultureValue,
+    Department,
+    DepartmentMember,
+    GlobalSearchSettings,
+    IdealProfile,
     TechnicalQuestion,
     TechnicalTestTemplate,
-    Approver,
-    GlobalSearchSettings
 )
 from app.models.company_culture import CompanyCultureProfile
 from app.models.job_vacancy import JobVacancy
-from app.auth.dependencies import get_current_user_or_demo
 from app.schemas.company import (
-    CompanyProfileCreate,
-    CompanyProfileUpdate,
-    CompanyProfileResponse,
-    CompanyProfileWithRelations,
-    DepartmentCreate,
-    DepartmentUpdate,
-    DepartmentResponse,
-    DepartmentMemberCreate,
-    DepartmentMemberUpdate,
-    DepartmentMemberResponse,
+    ApproverCreate,
+    ApproverResponse,
+    ApproverUpdate,
     BenefitCreate,
-    BenefitUpdate,
     BenefitResponse,
-    CultureValueCreate,
-    CultureValueUpdate,
-    CultureValueResponse,
-    IdealProfileCreate,
-    IdealProfileUpdate,
-    IdealProfileResponse,
+    BenefitUpdate,
     BigFiveQuestionCreate,
-    BigFiveQuestionUpdate,
     BigFiveQuestionResponse,
+    BigFiveQuestionUpdate,
     BigFiveRoleProfileCreate,
-    BigFiveRoleProfileUpdate,
     BigFiveRoleProfileResponse,
-    TechnicalQuestionCreate,
-    TechnicalQuestionUpdate,
-    TechnicalQuestionResponse,
-    TechnicalTestTemplateCreate,
-    TechnicalTestTemplateUpdate,
-    TechnicalTestTemplateResponse,
+    BigFiveRoleProfileUpdate,
+    CompanyProfileCreate,
+    CompanyProfileResponse,
+    CompanyProfileUpdate,
+    CompanyProfileWithRelations,
     CultureAnalysisRequest,
     CultureAnalysisResponse,
-    ApproverCreate,
-    ApproverUpdate,
-    ApproverResponse,
-    GlobalSearchSettingsUpdate,
+    CultureValueCreate,
+    CultureValueResponse,
+    CultureValueUpdate,
+    DepartmentCreate,
+    DepartmentMemberCreate,
+    DepartmentMemberResponse,
+    DepartmentMemberUpdate,
+    DepartmentResponse,
+    DepartmentUpdate,
     GlobalSearchSettingsResponse,
+    GlobalSearchSettingsUpdate,
+    IdealProfileCreate,
+    IdealProfileResponse,
+    IdealProfileUpdate,
+    TechnicalQuestionCreate,
+    TechnicalQuestionResponse,
+    TechnicalQuestionUpdate,
+    TechnicalTestTemplateCreate,
+    TechnicalTestTemplateResponse,
+    TechnicalTestTemplateUpdate,
 )
-from app.core.database import get_db
-from app.services.llm import llm_service
 from app.services.company_configuration_service import company_config_service
-from app.auth.models import User
-from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
-from app.auth.security import get_password_hash, generate_secure_token
-from app.domains.communication.services.email_service import email_service
-from app.domains.sourcing.services.apify_service import apify_service
-import httpx
-import os
+from app.services.llm import llm_service
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 import json
@@ -95,17 +96,17 @@ from app.models.client_account import ClientAccount
 
 
 class TenantResolutionResponse(BaseModel):
-    client_account_id: Optional[str] = None
-    company_profile_id: Optional[str] = None
-    company_name: Optional[str] = None
-    plan_id: Optional[str] = None
-    status: Optional[str] = None
+    client_account_id: str | None = None
+    company_profile_id: str | None = None
+    company_name: str | None = None
+    plan_id: str | None = None
+    status: str | None = None
 
 
 @router.get("/resolve-tenant", response_model=TenantResolutionResponse)
 async def resolve_tenant(
-    workos_organization_id: Optional[str] = Query(None),
-    client_account_id: Optional[str] = Query(None),
+    workos_organization_id: str | None = Query(None),
+    client_account_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
 ):
@@ -175,57 +176,57 @@ async def resolve_tenant(
 
 
 class CompanyEnrichRequest(BaseModel):
-    linkedin_url: Optional[str] = None
-    glassdoor_company_name: Optional[str] = None
+    linkedin_url: str | None = None
+    glassdoor_company_name: str | None = None
 
 
 class CompanyEnrichResponse(BaseModel):
     success: bool
-    linkedin_data: Dict[str, Any] = {}
-    glassdoor_data: Dict[str, Any] = {}
-    enriched_culture: Dict[str, Any] = {}
-    errors: List[str] = []
+    linkedin_data: dict[str, Any] = {}
+    glassdoor_data: dict[str, Any] = {}
+    enriched_culture: dict[str, Any] = {}
+    errors: list[str] = []
 
 
 class OnboardingCultureProfile(BaseModel):
-    mission: Optional[str] = None
-    vision: Optional[str] = None
-    values: Optional[List[str]] = None
-    evp_bullets: Optional[List[str]] = None
-    openness_score: Optional[int] = None
-    conscientiousness_score: Optional[int] = None
-    extraversion_score: Optional[int] = None
-    agreeableness_score: Optional[int] = None
-    stability_score: Optional[int] = None
+    mission: str | None = None
+    vision: str | None = None
+    values: list[str] | None = None
+    evp_bullets: list[str] | None = None
+    openness_score: int | None = None
+    conscientiousness_score: int | None = None
+    extraversion_score: int | None = None
+    agreeableness_score: int | None = None
+    stability_score: int | None = None
 
 
 class OnboardingData(BaseModel):
-    company_id: Optional[str] = None
+    company_id: str | None = None
     company_name: str
-    trade_name: Optional[str] = None
-    cnpj: Optional[str] = None
-    address: Optional[str] = None
-    work_model: Optional[str] = None
-    logo_url: Optional[str] = None
-    sector: Optional[str] = None
-    employee_count: Optional[str] = None
-    website: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    hiring_volume: Optional[int] = None
-    job_types: Optional[List[str]] = None
-    current_ats: Optional[str] = None
-    main_challenges: Optional[List[str]] = None
-    main_priority: Optional[str] = None
-    platform_expectations: Optional[str] = None
-    communication_channels: Optional[List[str]] = None
+    trade_name: str | None = None
+    cnpj: str | None = None
+    address: str | None = None
+    work_model: str | None = None
+    logo_url: str | None = None
+    sector: str | None = None
+    employee_count: str | None = None
+    website: str | None = None
+    linkedin_url: str | None = None
+    hiring_volume: int | None = None
+    job_types: list[str] | None = None
+    current_ats: str | None = None
+    main_challenges: list[str] | None = None
+    main_priority: str | None = None
+    platform_expectations: str | None = None
+    communication_channels: list[str] | None = None
     allow_lia_contact: bool = True
-    additional_notes: Optional[str] = None
-    responsible_name: Optional[str] = None
-    responsible_email: Optional[str] = None
-    responsible_phone: Optional[str] = None
-    responsible_position: Optional[str] = None
-    preferred_contact_time: Optional[str] = None
-    culture_profile: Optional[OnboardingCultureProfile] = None
+    additional_notes: str | None = None
+    responsible_name: str | None = None
+    responsible_email: str | None = None
+    responsible_phone: str | None = None
+    responsible_position: str | None = None
+    preferred_contact_time: str | None = None
+    culture_profile: OnboardingCultureProfile | None = None
 
 
 @router.post("/onboarding")
@@ -462,10 +463,10 @@ async def enrich_company_profile(
 
 class AutoEnrichResponse(BaseModel):
     success: bool
-    fields_updated: List[str] = []
-    apify_data: Dict[str, Any] = {}
-    inferred_data: Dict[str, Any] = {}
-    errors: List[str] = []
+    fields_updated: list[str] = []
+    apify_data: dict[str, Any] = {}
+    inferred_data: dict[str, Any] = {}
+    errors: list[str] = []
 
 
 @router.post("/auto-enrich/{profile_id}", response_model=AutoEnrichResponse)
@@ -687,7 +688,7 @@ REGRAS:
 
 @router.get("/profile", response_model=CompanyProfileResponse)
 async def get_company_profile(
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
 ):
@@ -750,7 +751,7 @@ async def get_company_profile(
 @router.post("/profile", response_model=CompanyProfileResponse)
 async def create_company_profile(
     data: CompanyProfileCreate,
-    client_account_id: Optional[str] = Query(None),
+    client_account_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
 ):
@@ -879,8 +880,8 @@ async def get_company_profile_with_relations(
 
 class EVPAnalysisResponse(BaseModel):
     success: bool
-    evp_analysis: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    evp_analysis: dict[str, Any] | None = None
+    error: str | None = None
 
 
 @router.post("/profile/{profile_id}/generate-evp", response_model=EVPAnalysisResponse)
@@ -1028,9 +1029,9 @@ REGRAS:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/departments", response_model=List[DepartmentResponse])
+@router.get("/departments", response_model=list[DepartmentResponse])
 async def list_departments(
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1163,7 +1164,7 @@ async def delete_department(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/departments/{department_id}/members", response_model=List[DepartmentMemberResponse])
+@router.get("/departments/{department_id}/members", response_model=list[DepartmentMemberResponse])
 async def list_department_members(
     department_id: uuid.UUID,
     include_inactive: bool = Query(False),
@@ -1307,23 +1308,23 @@ class ManagerResponse(BaseModel):
     """Manager info for autocomplete/selection."""
     id: str
     name: str
-    email: Optional[str] = None
-    role: Optional[str] = None
-    department_id: Optional[str] = None
-    department_name: Optional[str] = None
+    email: str | None = None
+    role: str | None = None
+    department_id: str | None = None
+    department_name: str | None = None
 
 
 class ManagerSearchResponse(BaseModel):
     """Response for manager search."""
-    managers: List[ManagerResponse]
+    managers: list[ManagerResponse]
     total_count: int
 
 
 @router.get("/managers", response_model=ManagerSearchResponse)
 async def list_managers(
-    company_id: Optional[str] = Query(None),
-    search: Optional[str] = Query(None, description="Search term for name"),
-    department_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
+    search: str | None = Query(None, description="Search term for name"),
+    department_id: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
@@ -1365,8 +1366,8 @@ async def list_managers(
 @router.get("/managers/infer-email")
 async def infer_manager_email(
     name: str = Query(..., description="Manager name to search"),
-    department: Optional[str] = Query(None, description="Department context"),
-    company_id: Optional[str] = Query(None),
+    department: str | None = Query(None, description="Department context"),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
 ):
@@ -1410,10 +1411,10 @@ async def infer_manager_email(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/benefits", response_model=List[BenefitResponse])
+@router.get("/benefits", response_model=list[BenefitResponse])
 async def list_benefits(
-    company_id: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
+    category: str | None = Query(None),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1552,13 +1553,13 @@ class BenefitsSummaryResponse(BaseModel):
     highlighted_count: int
     categories: dict
     formatted_text: str
-    benefits: List[dict]
+    benefits: list[dict]
 
 
-@router.get("/benefits/active", response_model=List[BenefitResponse])
+@router.get("/benefits/active", response_model=list[BenefitResponse])
 async def list_active_benefits(
-    company_id: Optional[str] = Query(None),
-    seniority_level: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
+    seniority_level: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1591,9 +1592,9 @@ async def list_active_benefits(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/benefits/highlighted", response_model=List[BenefitResponse])
+@router.get("/benefits/highlighted", response_model=list[BenefitResponse])
 async def list_highlighted_benefits(
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1623,7 +1624,7 @@ async def list_highlighted_benefits(
 
 @router.get("/benefits/summary", response_model=BenefitsSummaryResponse)
 async def get_benefits_summary(
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1721,10 +1722,10 @@ async def get_benefits_summary(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/culture-values", response_model=List[CultureValueResponse])
+@router.get("/culture-values", response_model=list[CultureValueResponse])
 async def list_culture_values(
-    company_id: Optional[uuid.UUID] = Query(None),
-    category: Optional[str] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    category: str | None = Query(None),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1840,12 +1841,12 @@ async def delete_culture_value(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ideal-profiles", response_model=List[IdealProfileResponse])
+@router.get("/ideal-profiles", response_model=list[IdealProfileResponse])
 async def list_ideal_profiles(
-    company_id: Optional[uuid.UUID] = Query(None),
-    department_id: Optional[uuid.UUID] = Query(None),
-    role_type: Optional[str] = Query(None),
-    seniority_level: Optional[str] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    department_id: uuid.UUID | None = Query(None),
+    role_type: str | None = Query(None),
+    seniority_level: str | None = Query(None),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1970,11 +1971,11 @@ async def delete_ideal_profile(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/big-five/questions", response_model=List[BigFiveQuestionResponse])
+@router.get("/big-five/questions", response_model=list[BigFiveQuestionResponse])
 async def list_big_five_questions(
-    trait: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
-    is_core: Optional[bool] = Query(None),
+    trait: str | None = Query(None),
+    category: str | None = Query(None),
+    is_core: bool | None = Query(None),
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
@@ -2092,10 +2093,10 @@ async def delete_big_five_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/big-five/role-profiles", response_model=List[BigFiveRoleProfileResponse])
+@router.get("/big-five/role-profiles", response_model=list[BigFiveRoleProfileResponse])
 async def list_big_five_role_profiles(
-    company_id: Optional[uuid.UUID] = Query(None),
-    role_category: Optional[str] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    role_category: str | None = Query(None),
     include_templates: bool = Query(True),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
@@ -2187,12 +2188,12 @@ async def update_big_five_role_profile(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/technical/questions", response_model=List[TechnicalQuestionResponse])
+@router.get("/technical/questions", response_model=list[TechnicalQuestionResponse])
 async def list_technical_questions(
-    area: Optional[str] = Query(None),
-    difficulty: Optional[str] = Query(None),
-    question_type: Optional[str] = Query(None),
-    tag: Optional[str] = Query(None),
+    area: str | None = Query(None),
+    difficulty: str | None = Query(None),
+    question_type: str | None = Query(None),
+    tag: str | None = Query(None),
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
@@ -2313,11 +2314,11 @@ async def delete_technical_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/technical/templates", response_model=List[TechnicalTestTemplateResponse])
+@router.get("/technical/templates", response_model=list[TechnicalTestTemplateResponse])
 async def list_technical_templates(
-    company_id: Optional[uuid.UUID] = Query(None),
-    area: Optional[str] = Query(None),
-    role_type: Optional[str] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    area: str | None = Query(None),
+    role_type: str | None = Query(None),
     include_public: bool = Query(True),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
@@ -2443,7 +2444,7 @@ async def delete_technical_template(
 
 @router.get("/stats")
 async def get_company_stats(
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Get statistics for company setup completion."""
@@ -2703,9 +2704,9 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
 
 # ============= APPROVERS ENDPOINTS =============
 
-@router.get("/approvers", response_model=List[ApproverResponse])
+@router.get("/approvers", response_model=list[ApproverResponse])
 async def list_approvers(
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     include_inactive: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -2840,24 +2841,24 @@ async def delete_approver(
 
 class DepartmentImportRow(BaseModel):
     name: str
-    description: Optional[str] = None
-    manager: Optional[str] = None
-    cost_center: Optional[str] = None
+    description: str | None = None
+    manager: str | None = None
+    cost_center: str | None = None
     row_number: int
     is_valid: bool = True
-    errors: List[str] = []
+    errors: list[str] = []
 
 
 class DepartmentImportResponse(BaseModel):
     success: bool
     imported_count: int
     error_count: int
-    errors: List[Dict[str, Any]]
-    items: List[Dict[str, Any]]
-    ai_suggestions: Optional[Dict[str, Any]] = None
+    errors: list[dict[str, Any]]
+    items: list[dict[str, Any]]
+    ai_suggestions: dict[str, Any] | None = None
 
 
-def parse_csv_file(content: bytes) -> List[Dict[str, str]]:
+def parse_csv_file(content: bytes) -> list[dict[str, str]]:
     """Parse CSV file content and return list of dictionaries. Auto-detects delimiter."""
     text = content.decode('utf-8-sig')
     first_line = text.split('\n')[0] if text else ''
@@ -2866,7 +2867,7 @@ def parse_csv_file(content: bytes) -> List[Dict[str, str]]:
     return list(reader)
 
 
-def parse_excel_file(content: bytes) -> List[Dict[str, str]]:
+def parse_excel_file(content: bytes) -> list[dict[str, str]]:
     """Parse Excel file content and return list of dictionaries."""
     try:
         from openpyxl import load_workbook
@@ -2897,7 +2898,7 @@ def parse_excel_file(content: bytes) -> List[Dict[str, str]]:
         )
 
 
-async def parse_import_file(file: UploadFile) -> List[Dict[str, str]]:
+async def parse_import_file(file: UploadFile) -> list[dict[str, str]]:
     """Parse uploaded file (CSV or Excel) and return data."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
@@ -3127,7 +3128,7 @@ async def import_departments(
         if llm_service:
             try:
                 if imported_items:
-                    dept_names = [item['name'] for item in imported_items]
+                    [item['name'] for item in imported_items]
                     ai_suggestions = {
                         "message": f"Successfully imported {len(imported_items)} departments",
                         "recommendations": [
@@ -3157,7 +3158,7 @@ async def import_departments(
 
 @router.get("/global-search-settings", response_model=GlobalSearchSettingsResponse)
 async def get_global_search_settings(
-    company_id: Optional[str] = Query(None, description="Company ID for multi-tenant isolation"),
+    company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get global search settings for a specific company (multi-tenant isolated)."""
@@ -3199,7 +3200,7 @@ async def get_global_search_settings(
 @router.put("/global-search-settings", response_model=GlobalSearchSettingsResponse)
 async def update_global_search_settings(
     data: GlobalSearchSettingsUpdate,
-    company_id: Optional[str] = Query(None, description="Company ID for multi-tenant isolation"),
+    company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
     db: AsyncSession = Depends(get_db)
 ):
     """Update global search settings for a specific company (multi-tenant isolated)."""
@@ -3240,7 +3241,7 @@ async def update_global_search_settings(
 # User Management Endpoints
 # ==========================================
 
-@router.get("/users", response_model=List[UserManagementResponse])
+@router.get("/users", response_model=list[UserManagementResponse])
 async def list_users(
     company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
     db: AsyncSession = Depends(get_db)
@@ -3264,7 +3265,7 @@ async def list_users(
 @router.post("/users", response_model=UserManagementResponse, status_code=201)
 async def create_user(
     data: UserManagementCreate,
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new user with invitation token. User will be inactive until invitation is accepted."""
@@ -3459,13 +3460,13 @@ class CompanyUserResponse(BaseModel):
 
 
 class CompanyUsersListResponse(BaseModel):
-    users: List[CompanyUserResponse]
+    users: list[CompanyUserResponse]
     total: int
 
 
 @router.get("/users/list", response_model=CompanyUsersListResponse)
 async def list_company_users(
-    role: Optional[str] = Query(None, description="Filter by role (recruiter, admin, viewer)"),
+    role: str | None = Query(None, description="Filter by role (recruiter, admin, viewer)"),
     is_active: bool = Query(True, description="Filter by active status"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
@@ -3541,19 +3542,19 @@ class CatalogStatusResponse(BaseModel):
     company_id: str
     maturity_score: int
     maturity_level: str
-    maturity_factors: List[str]
+    maturity_factors: list[str]
     smart_start_enabled: bool
-    required_fields_for_wizard: List[str]
-    available_data_summary: List[str]
-    counts: Dict[str, int]
-    recommendations: List[str]
+    required_fields_for_wizard: list[str]
+    available_data_summary: list[str]
+    counts: dict[str, int]
+    recommendations: list[str]
 
 
 class SmartWizardGreetingResponse(BaseModel):
     """Response model for smart wizard greeting."""
     greeting_message: str
     catalog_status: CatalogStatusResponse
-    prefill_data: Dict[str, Any]
+    prefill_data: dict[str, Any]
 
 
 @router.get("/catalog-status", response_model=CatalogStatusResponse)
@@ -3601,7 +3602,7 @@ async def get_smart_wizard_greeting(
         )
         
         # Build greeting message based on maturity level and required_fields
-        required_fields = status["required_fields_for_wizard"]
+        status["required_fields_for_wizard"]
         
         # Base greeting asking how user wants to start
         base_intro = """Olá! Sou a LIA, sua assistente de recrutamento.

@@ -3,8 +3,7 @@ Teams Adaptive Card Renderer.
 Converts LIA orchestrator responses into rich Adaptive Cards for Microsoft Teams.
 """
 import logging
-import re
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +11,7 @@ logger = logging.getLogger(__name__)
 LIA_COLOR = "#6366F1"
 # Platform base URL for deep links — set WEDOTALENT_PLATFORM_URL env var in production
 import os as _os
+
 PLATFORM_URL = _os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
 SUCCESS_COLOR = "#22C55E"
 WARNING_COLOR = "#F59E0B"
@@ -25,7 +25,7 @@ class TeamsCardRenderer:
     Provides the same richness as the web UI but in card format.
     """
 
-    def render(self, result: Dict[str, Any], source_text: str = "", deep_link_path: str = "") -> Optional[Dict[str, Any]]:
+    def render(self, result: dict[str, Any], source_text: str = "", deep_link_path: str = "") -> dict[str, Any] | None:
         """
         Main entry point. Returns Adaptive Card JSON or None for plain text.
         """
@@ -63,10 +63,10 @@ class TeamsCardRenderer:
     def _render_text_card(
         self,
         text: str,
-        suggestions: List = [],
+        suggestions: list = [],
         deep_link_path: str = "",
         show_feedback: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Rich text response card with follow-up suggestion buttons + 👍👎 feedback + deep link."""
         body = [
             {
@@ -110,7 +110,7 @@ class TeamsCardRenderer:
                 "url": full_url,
             })
 
-        card: Dict[str, Any] = {
+        card: dict[str, Any] = {
             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
             "type": "AdaptiveCard",
             "version": "1.4",
@@ -120,12 +120,12 @@ class TeamsCardRenderer:
             card["actions"] = actions
         return card
 
-    def _render_plan_card(self, result: Dict[str, Any]) -> Dict[str, Any]:
+    def _render_plan_card(self, result: dict[str, Any]) -> dict[str, Any]:
         """Multi-step plan execution card — mirrors PlanProgressCard from web UI."""
         plan = result.get("execution_plan", {})
         steps = plan.get("steps", [])
         status = plan.get("status", "completed")
-        pattern = plan.get("pattern", "")
+        plan.get("pattern", "")
         message = result.get("message") or result.get("response", "Plano executado.")
 
         status_emoji = {"completed": "✅", "partial": "⚠️", "failed": "❌"}.get(status, "✅")
@@ -198,11 +198,11 @@ class TeamsCardRenderer:
             "body": body,
         }
 
-    def _render_candidates_card(self, result: Dict[str, Any], candidates: List[Dict]) -> Dict[str, Any]:
+    def _render_candidates_card(self, result: dict[str, Any], candidates: list[dict]) -> dict[str, Any]:
         """Candidate list card with scores and action buttons."""
         message = result.get("message") or result.get("response") or result.get("content", "")
 
-        body: List[Dict] = []
+        body: list[dict] = []
 
         if message:
             body.append({
@@ -292,7 +292,7 @@ class TeamsCardRenderer:
             "actions": actions,
         }
 
-    def _render_cv_screening_card(self, result: Dict[str, Any]) -> Dict[str, Any]:
+    def _render_cv_screening_card(self, result: dict[str, Any]) -> dict[str, Any]:
         """CV screening result card with score bar and actions."""
         candidate_name = result.get("candidate_name") or result.get("name", "Candidato")
         job_title = result.get("job_title") or result.get("vacancy_title", "")
@@ -302,11 +302,6 @@ class TeamsCardRenderer:
         candidate_id = result.get("candidate_id") or ""
         success = result.get("success", True)
 
-        score_color = (
-            "Good" if match_score >= 70
-            else "Warning" if match_score >= 40
-            else "Attention"
-        )
 
         body = [
             {
@@ -374,7 +369,7 @@ class TeamsCardRenderer:
                 },
             ]
 
-        card: Dict[str, Any] = {
+        card: dict[str, Any] = {
             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
             "type": "AdaptiveCard",
             "version": "1.4",
@@ -384,7 +379,7 @@ class TeamsCardRenderer:
             card["actions"] = actions
         return card
 
-    def _render_confirmation_card(self, result: Dict[str, Any]) -> Dict[str, Any]:
+    def _render_confirmation_card(self, result: dict[str, Any]) -> dict[str, Any]:
         """Confirmation request card with Confirm/Cancel buttons."""
         message = result.get("message") or result.get("confirmation_message", "Confirma a ação?")
         pending_id = result.get("pending_action_id") or ""
@@ -427,11 +422,11 @@ class TeamsCardRenderer:
         self,
         title: str,
         body_text: str,
-        actions: List[Dict] = [],
+        actions: list[dict] = [],
         color: str = "Accent",
         emoji: str = "🔔",
         deep_link_path: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generic proactive notification card."""
         body_items = [
             {
@@ -449,7 +444,7 @@ class TeamsCardRenderer:
             },
         ]
 
-        card: Dict[str, Any] = {
+        card: dict[str, Any] = {
             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
             "type": "AdaptiveCard",
             "version": "1.4",
@@ -465,9 +460,9 @@ class TeamsCardRenderer:
         job_title: str,
         candidate_id: str,
         vacancy_id: str,
-        estimated_score: Optional[float] = None,
+        estimated_score: float | None = None,
         deep_link_path: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Proactive card: new candidate applied."""
         score_text = f" | Score estimado: **{estimated_score:.0f}%** {self._score_bar(estimated_score)}" if estimated_score else ""
         return self.render_notification_card(
@@ -509,7 +504,7 @@ class TeamsCardRenderer:
         days_stalled: int,
         vacancy_id: str,
         deep_link_path: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Proactive card: pipeline stalled."""
         return self.render_notification_card(
             title="Pipeline parado",
@@ -547,7 +542,7 @@ class TeamsCardRenderer:
         candidates_in_pipeline: int,
         vacancy_id: str,
         deep_link_path: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Proactive card: vacancy deadline approaching."""
         urgency = "🔴" if days_remaining <= 3 else "🟡"
         return self.render_notification_card(
@@ -581,7 +576,7 @@ class TeamsCardRenderer:
         recommendation: str,
         candidate_id: str,
         deep_link_path: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Proactive card: WSI/BARS screening completed."""
         score_bar = self._score_bar(match_score)
         result_emoji = "✅" if match_score >= 70 else "⚠️" if match_score >= 40 else "❌"
@@ -616,7 +611,7 @@ class TeamsCardRenderer:
 
     # --- Helpers -------------------------------------------------------------
 
-    def _extract_candidates(self, result: Dict[str, Any]) -> List[Dict]:
+    def _extract_candidates(self, result: dict[str, Any]) -> list[dict]:
         """Extract candidate list from various result structures."""
         # Try structured_data
         sd = result.get("structured_data") or {}
@@ -708,9 +703,9 @@ class TeamsCardRenderer:
     def render_context_greeting_card(
         self,
         page: str = "home",
-        entity_name: Optional[str] = None,
-        user_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        entity_name: str | None = None,
+        user_name: str | None = None,
+    ) -> dict[str, Any]:
         from datetime import datetime as _dt
         hour = _dt.now().hour
         greeting = "Bom dia" if hour < 12 else ("Boa tarde" if hour < 18 else "Boa noite")

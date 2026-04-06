@@ -10,17 +10,16 @@ This service provides:
 - Microsoft Bookings integration
 """
 import logging
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 import uuid
-from icalendar import Calendar, Event, vText
-from pytz import timezone as pytz_timezone
+from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, and_, or_, desc
+from icalendar import Calendar, Event, vText
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview import Interview, InterviewFeedback
+from app.models.interview import Interview
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 _microsoft_graph_service = None
@@ -75,7 +74,7 @@ class SchedulingService:
         self,
         company_id: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get effective scheduling configuration for a company,
         merging CompanyHiringPolicy with defaults.
@@ -98,7 +97,7 @@ class SchedulingService:
                 "self_scheduling_enabled": False,
             }
     
-    def _resolve_company_id(self, company_id: Optional[str]) -> str:
+    def _resolve_company_id(self, company_id: str | None) -> str:
         """
         Resolve company_id with fallback to 'default'.
         
@@ -115,8 +114,8 @@ class SchedulingService:
     async def _resolve_company_name(
         self,
         db: AsyncSession,
-        company_id: Optional[str],
-        company_name: Optional[str]
+        company_id: str | None,
+        company_name: str | None
     ) -> str:
         """
         Resolve company_name from company_id if not provided.
@@ -160,12 +159,12 @@ class SchedulingService:
         duration_minutes: int = 60,
         interview_type: str = "video",
         interview_mode: str = "video",
-        job_title: Optional[str] = None,
-        job_vacancy_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        location: Optional[str] = None,
-        notes: Optional[str] = None,
-        additional_interviewers: Optional[List[Dict[str, str]]] = None,
+        job_title: str | None = None,
+        job_vacancy_id: str | None = None,
+        company_id: str | None = None,
+        location: str | None = None,
+        notes: str | None = None,
+        additional_interviewers: list[dict[str, str]] | None = None,
         created_by: str = "system",
         dispatch_event: bool = True
     ) -> Interview:
@@ -241,7 +240,7 @@ class SchedulingService:
         logger.info(f"📅 Interview created: {interview.id} for {candidate_name}")
         logger.info(f"   Date/Time: {start_time.isoformat()}")
         logger.info(f"   Type: {interview_type} ({interview_mode})")
-        logger.info(f"   Status: Funcional - Aguardando Configuração Calendar para sync")
+        logger.info("   Status: Funcional - Aguardando Configuração Calendar para sync")
         
         if dispatch_event and company_id and job_vacancy_id:
             try:
@@ -274,15 +273,15 @@ class SchedulingService:
         start_time: datetime,
         duration_minutes: int = 60,
         interview_type: str = "video",
-        job_title: Optional[str] = None,
-        job_vacancy_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        notes: Optional[str] = None,
-        additional_attendees: Optional[List[Dict[str, str]]] = None,
+        job_title: str | None = None,
+        job_vacancy_id: str | None = None,
+        company_id: str | None = None,
+        notes: str | None = None,
+        additional_attendees: list[dict[str, str]] | None = None,
         created_by: str = "system",
         send_calendar_invites: bool = True,
-        interviewer_name: Optional[str] = None
-    ) -> tuple[Interview, Dict[str, Any]]:
+        interviewer_name: str | None = None
+    ) -> tuple[Interview, dict[str, Any]]:
         """
         Create an interview with Microsoft Teams meeting and calendar sync.
         
@@ -312,9 +311,12 @@ class SchedulingService:
             Tuple of (Interview object, metadata dict with Teams meeting info)
         """
         from app.services.microsoft_graph_service import (
-            MeetingAttendee, AttendeeType,
-            GraphAPICalendarPermissionError, GraphAPIForbiddenError,
-            GraphAPIUnauthorizedError, GraphAPIRateLimitError
+            AttendeeType,
+            GraphAPICalendarPermissionError,
+            GraphAPIForbiddenError,
+            GraphAPIRateLimitError,
+            GraphAPIUnauthorizedError,
+            MeetingAttendee,
         )
         
         graph_service = get_microsoft_graph_service()
@@ -324,7 +326,7 @@ class SchedulingService:
         async def create_fallback_interview_with_ics(
             error_message: str,
             teams_configured: bool = True
-        ) -> tuple[Interview, Dict[str, Any]]:
+        ) -> tuple[Interview, dict[str, Any]]:
             """Create interview without Teams and generate ICS file as fallback."""
             interview = await self.create_interview(
                 db=db,
@@ -344,7 +346,7 @@ class SchedulingService:
                 created_by=created_by
             )
             
-            ics_content = self.generate_ics_content(interview, include_meeting_link=False)
+            self.generate_ics_content(interview, include_meeting_link=False)
             
             logger.info(f"📅 Interview created with ICS fallback: {interview.id}")
             
@@ -464,7 +466,7 @@ class SchedulingService:
                     job_vacancy_id=job_vacancy_id
                 )
                 if confirmation_result.get("success"):
-                    logger.info(f"📧 Interview confirmation email sent")
+                    logger.info("📧 Interview confirmation email sent")
                 else:
                     logger.warning(f"⚠️ Failed to send confirmation email: {confirmation_result.get('message')}")
             except Exception as email_error:
@@ -490,19 +492,19 @@ class SchedulingService:
         except GraphAPIUnauthorizedError as e:
             logger.error(f"Graph API unauthorized for {organizer_email}: {e}")
             return await create_fallback_interview_with_ics(
-                f"Authentication failed for Microsoft Graph. ICS file available for download."
+                "Authentication failed for Microsoft Graph. ICS file available for download."
             )
         
         except (GraphAPIForbiddenError, GraphAPICalendarPermissionError) as e:
             logger.error(f"Permission denied for {organizer_email}: {e}")
             return await create_fallback_interview_with_ics(
-                f"Permission denied for calendar access. ICS file available for download."
+                "Permission denied for calendar access. ICS file available for download."
             )
         
         except GraphAPIRateLimitError as e:
             logger.error(f"Rate limit exceeded: {e}")
             return await create_fallback_interview_with_ics(
-                f"Microsoft Graph rate limit exceeded. ICS file available for download."
+                "Microsoft Graph rate limit exceeded. ICS file available for download."
             )
             
         except Exception as e:
@@ -569,7 +571,7 @@ class SchedulingService:
         self,
         db: AsyncSession,
         interview_id: str,
-        cancellation_reason: Optional[str] = None
+        cancellation_reason: str | None = None
     ) -> Interview:
         """
         Cancel an interview.
@@ -607,9 +609,9 @@ class SchedulingService:
         self,
         db: AsyncSession,
         interview_id: str,
-        outcome: Optional[str] = None,
-        feedback: Optional[Dict[str, Any]] = None,
-        company_id: Optional[str] = None,
+        outcome: str | None = None,
+        feedback: dict[str, Any] | None = None,
+        company_id: str | None = None,
         dispatch_event: bool = True
     ) -> Interview:
         """
@@ -666,7 +668,7 @@ class SchedulingService:
         self,
         db: AsyncSession,
         interview_id: str
-    ) -> Optional[Interview]:
+    ) -> Interview | None:
         """Get a single interview by ID."""
         result = await db.execute(
             select(Interview).where(Interview.id == interview_id)
@@ -676,15 +678,15 @@ class SchedulingService:
     async def list_interviews(
         self,
         db: AsyncSession,
-        candidate_id: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-        interviewer_email: Optional[str] = None,
-        status: Optional[str] = None,
-        from_date: Optional[datetime] = None,
-        to_date: Optional[datetime] = None,
+        candidate_id: str | None = None,
+        vacancy_id: str | None = None,
+        interviewer_email: str | None = None,
+        status: str | None = None,
+        from_date: datetime | None = None,
+        to_date: datetime | None = None,
         skip: int = 0,
         limit: int = 50
-    ) -> tuple[List[Interview], int]:
+    ) -> tuple[list[Interview], int]:
         """
         List interviews with optional filters.
         
@@ -791,7 +793,7 @@ class SchedulingService:
         
         return cal.to_ical().decode('utf-8')
     
-    async def get_calendar_status(self) -> Dict[str, Any]:
+    async def get_calendar_status(self) -> dict[str, Any]:
         """
         Get the current status of calendar integration.
         """
@@ -840,14 +842,14 @@ class SchedulingService:
         candidate_name: str,
         job_title: str,
         bookings_link: str,
-        company_id: Optional[str] = None,
-        company_name: Optional[str] = None,
-        recruiter_name: Optional[str] = None,
-        interviewer_name: Optional[str] = None,
+        company_id: str | None = None,
+        company_name: str | None = None,
+        recruiter_name: str | None = None,
+        interviewer_name: str | None = None,
         interview_format: str = "video",
         duration_minutes: int = 60,
-        job_vacancy_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        job_vacancy_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Send interview invite email with Bookings link for candidate to schedule.
         
@@ -875,7 +877,7 @@ class SchedulingService:
         Returns:
             Result dict with success status and details
         """
-        from app.domains.communication.services.communication_service import MessageType, MessageChannel
+        from app.domains.communication.services.communication_service import MessageChannel, MessageType
         
         try:
             resolved_company_id = self._resolve_company_id(company_id)
@@ -944,14 +946,14 @@ class SchedulingService:
         job_title: str,
         interview_datetime: datetime,
         interview_link: str,
-        company_id: Optional[str] = None,
-        company_name: Optional[str] = None,
-        recruiter_name: Optional[str] = None,
-        interviewer_name: Optional[str] = None,
+        company_id: str | None = None,
+        company_name: str | None = None,
+        recruiter_name: str | None = None,
+        interviewer_name: str | None = None,
         interview_format: str = "video",
         duration_minutes: int = 60,
-        job_vacancy_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        job_vacancy_id: str | None = None
+    ) -> dict[str, Any]:
         """
         Send interview confirmation email with Teams/meeting link.
         
@@ -980,8 +982,9 @@ class SchedulingService:
         Returns:
             Result dict with success status and details
         """
-        from app.domains.communication.services.communication_service import MessageType, MessageChannel
         from pytz import timezone as pytz_timezone
+
+        from app.domains.communication.services.communication_service import MessageChannel, MessageType
         
         try:
             resolved_company_id = self._resolve_company_id(company_id)
@@ -1024,7 +1027,7 @@ class SchedulingService:
             )
             
             if send_result.get("success"):
-                logger.info(f"📧 Interview confirmation sent")
+                logger.info("📧 Interview confirmation sent")
                 logger.info(f"   Date: {data_entrevista} at {horario_entrevista}")
                 logger.info(f"   Meeting Link: {interview_link}")
 

@@ -6,7 +6,7 @@ Used by MailgunEmailService and API endpoints.
 """
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -22,7 +22,7 @@ class EmailDeliveryStatus(str, Enum):
 
 class EmailRecipient(BaseModel):
     email: str = Field(..., description="Recipient email address")
-    name: Optional[str] = Field(None, description="Recipient name")
+    name: str | None = Field(None, description="Recipient name")
 
 
 class EmailAttachment(BaseModel):
@@ -33,59 +33,59 @@ class EmailAttachment(BaseModel):
 
 class SendEmailRequest(BaseModel):
     to_email: str = Field(..., description="Primary recipient email")
-    to_name: Optional[str] = Field(None, description="Recipient name")
+    to_name: str | None = Field(None, description="Recipient name")
     subject: str = Field(..., description="Email subject")
     body: str = Field(..., description="Plain text body")
-    body_html: Optional[str] = Field(None, description="HTML body")
-    cc: Optional[List[str]] = Field(default=None, description="CC recipients")
-    bcc: Optional[List[str]] = Field(default=None, description="BCC recipients")
-    reply_to: Optional[str] = Field(None, description="Reply-to address")
-    categories: Optional[List[str]] = Field(default=None, description="Categories for tracking")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata")
-    company_id: Optional[str] = Field(None, description="Company ID for multi-tenancy")
+    body_html: str | None = Field(None, description="HTML body")
+    cc: list[str] | None = Field(default=None, description="CC recipients")
+    bcc: list[str] | None = Field(default=None, description="BCC recipients")
+    reply_to: str | None = Field(None, description="Reply-to address")
+    categories: list[str] | None = Field(default=None, description="Categories for tracking")
+    metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
+    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
 class SendTemplateEmailRequest(BaseModel):
     to_email: str = Field(..., description="Primary recipient email")
-    to_name: Optional[str] = Field(None, description="Recipient name")
+    to_name: str | None = Field(None, description="Recipient name")
     template_name: str = Field(..., description="Template name from EmailTemplates")
-    template_data: Dict[str, Any] = Field(..., description="Template variables")
-    cc: Optional[List[str]] = Field(default=None, description="CC recipients")
-    reply_to: Optional[str] = Field(None, description="Reply-to address")
-    categories: Optional[List[str]] = Field(default=None, description="Categories")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata")
-    company_id: Optional[str] = Field(None, description="Company ID")
+    template_data: dict[str, Any] = Field(..., description="Template variables")
+    cc: list[str] | None = Field(default=None, description="CC recipients")
+    reply_to: str | None = Field(None, description="Reply-to address")
+    categories: list[str] | None = Field(default=None, description="Categories")
+    metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
+    company_id: str | None = Field(None, description="Company ID")
 
 
 class BulkEmailRecipient(BaseModel):
     email: str
-    name: Optional[str] = None
-    personalization: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    name: str | None = None
+    personalization: dict[str, Any] | None = Field(default_factory=dict)
 
 
 class SendBulkEmailRequest(BaseModel):
-    recipients: List[BulkEmailRecipient] = Field(..., description="List of recipients")
+    recipients: list[BulkEmailRecipient] = Field(..., description="List of recipients")
     subject: str = Field(..., description="Email subject")
     body: str = Field(..., description="Plain text body")
-    body_html: Optional[str] = Field(None, description="HTML body")
-    categories: Optional[List[str]] = Field(default=None, description="Categories")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata")
-    company_id: Optional[str] = Field(None, description="Company ID")
+    body_html: str | None = Field(None, description="HTML body")
+    categories: list[str] | None = Field(default=None, description="Categories")
+    metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
+    company_id: str | None = Field(None, description="Company ID")
 
 
 class EmailSendResult(BaseModel):
     success: bool
-    message_id: Optional[str] = None
+    message_id: str | None = None
     status: str = "pending"
     provider: str = "mailgun"
-    error: Optional[str] = None
-    error_code: Optional[str] = None
-    sent_at: Optional[datetime] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
+    error_code: str | None = None
+    sent_at: datetime | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class BulkEmailResult(BaseModel):
     total: int
     successful: int
     failed: int
-    results: List[EmailSendResult]
+    results: list[EmailSendResult]

@@ -24,20 +24,20 @@ Key Principles:
 - Respect the candidate's time and effort
 """
 import uuid
-from typing import Dict, Any, List, Optional, Literal
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from typing import Any, Literal
 
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, Float, Integer, select, and_
+from pydantic import BaseModel, Field
+from sqlalchemy import JSON, Column, DateTime, Float, Integer, String, Text, and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import Base, AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, Base
 from app.services.llm import llm_service
-from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
+from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger
-from app.shared.compliance.audit_service import audit_service
+from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
 
 _fairness_guard = FairnessGuard()
 
@@ -72,46 +72,46 @@ class CandidateContext(BaseModel):
     """Context about the candidate for personalization."""
     candidate_id: str
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    current_title: Optional[str] = None
-    current_company: Optional[str] = None
-    years_of_experience: Optional[int] = None
-    technical_skills: List[str] = Field(default_factory=list)
-    seniority_level: Optional[str] = None
+    email: str | None = None
+    phone: str | None = None
+    current_title: str | None = None
+    current_company: str | None = None
+    years_of_experience: int | None = None
+    technical_skills: list[str] = Field(default_factory=list)
+    seniority_level: str | None = None
 
 
 class JobContext(BaseModel):
     """Context about the job position."""
     job_id: str
     title: str
-    company_name: Optional[str] = None
+    company_name: str | None = None
     is_confidential: bool = False
-    required_skills: List[str] = Field(default_factory=list)
-    seniority_level: Optional[str] = None
-    department: Optional[str] = None
+    required_skills: list[str] = Field(default_factory=list)
+    seniority_level: str | None = None
+    department: str | None = None
 
 
 class WSIEvaluationContext(BaseModel):
     """WSI evaluation results for personalization."""
     overall_wsi: float = Field(ge=0, le=5)
-    technical_wsi: Optional[float] = Field(default=None, ge=0, le=5)
-    behavioral_wsi: Optional[float] = Field(default=None, ge=0, le=5)
+    technical_wsi: float | None = Field(default=None, ge=0, le=5)
+    behavioral_wsi: float | None = Field(default=None, ge=0, le=5)
     classification: Literal[
         "excepcional", "excelente", "alto", "medio", "abaixo_da_media", "regular"
     ] = "medio"
-    seniority_label: Optional[str] = None
+    seniority_label: str | None = None
     
-    strengths: List[str] = Field(default_factory=list)
-    development_areas: List[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    development_areas: list[str] = Field(default_factory=list)
     
-    technical_strengths: List[str] = Field(default_factory=list)
-    behavioral_strengths: List[str] = Field(default_factory=list)
+    technical_strengths: list[str] = Field(default_factory=list)
+    behavioral_strengths: list[str] = Field(default_factory=list)
     
-    skill_gaps: List[str] = Field(default_factory=list)
-    competency_scores: Dict[str, float] = Field(default_factory=dict)
+    skill_gaps: list[str] = Field(default_factory=list)
+    competency_scores: dict[str, float] = Field(default_factory=dict)
     
-    summary: Optional[str] = None
+    summary: str | None = None
 
 
 class PersonalizedFeedbackRequest(BaseModel):
@@ -126,13 +126,13 @@ class PersonalizedFeedbackRequest(BaseModel):
     include_development_plan: bool = True
     include_resources: bool = True
 
-    recruiter_notes: Optional[str] = None
+    recruiter_notes: str | None = None
     company_id: str
-    requested_by: Optional[str] = None
+    requested_by: str | None = None
     auto_send: bool = False
     # Gap #11/#12: Caminho de decisão + gates ativados para template determinístico
     decision_type: Literal["REPROVADO", "EM_AVALIACAO", "APROVADO"] = "REPROVADO"
-    failed_gates: List[str] = Field(default_factory=list)
+    failed_gates: list[str] = Field(default_factory=list)
 
 
 class PersonalizedFeedbackResult(BaseModel):
@@ -141,13 +141,13 @@ class PersonalizedFeedbackResult(BaseModel):
     
     subject: str
     body_text: str
-    body_html: Optional[str] = None
+    body_html: str | None = None
     
-    whatsapp_message: Optional[str] = None
+    whatsapp_message: str | None = None
     
-    key_points: List[str] = Field(default_factory=list)
-    development_suggestions: List[str] = Field(default_factory=list)
-    recommended_resources: List[str] = Field(default_factory=list)
+    key_points: list[str] = Field(default_factory=list)
+    development_suggestions: list[str] = Field(default_factory=list)
+    recommended_resources: list[str] = Field(default_factory=list)
     
     personalization_level: Literal["high", "medium", "low"] = "high"
     ai_model_used: str = "claude-sonnet"
@@ -214,7 +214,7 @@ class PersonalizedFeedbackRecord(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -349,7 +349,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
     async def generate_personalized_feedback(
         self,
         request: PersonalizedFeedbackRequest,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> PersonalizedFeedbackResult:
         """
         Generate personalized rejection feedback using Claude AI.
@@ -467,7 +467,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                         f"WSI classification: {request.evaluation.classification}",
                         f"WSI score: {request.evaluation.overall_wsi}/5.0",
                         f"Decision: {request.decision_type}",
-                        f"AI-generated: True",
+                        "AI-generated: True",
                         f"Auto-send: {getattr(request, 'auto_send', False)}",
                     ],
                     criteria_used=["wsi_score", "strengths", "development_areas", "skill_gaps", "classification"],
@@ -723,7 +723,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         job: JobContext,
         evaluation: WSIEvaluationContext,
         company_id: str = None,
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
     ) -> PersonalizedFeedbackResult:
         """Gap #11 — Path APROVADO: gera feedback de convite para próxima etapa."""
         request = PersonalizedFeedbackRequest(
@@ -743,7 +743,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         job: JobContext,
         evaluation: WSIEvaluationContext,
         company_id: str = None,
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
     ) -> PersonalizedFeedbackResult:
         """Gap #11 — Path EM_AVALIACAO: gera feedback de análise em andamento."""
         request = PersonalizedFeedbackRequest(
@@ -795,7 +795,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             tone=tone_map.get(request.tone, "warm")
         )
     
-    def _parse_ai_response(self, content: str) -> Dict[str, Any]:
+    def _parse_ai_response(self, content: str) -> dict[str, Any]:
         """Parse the AI response into structured data."""
         import json
         
@@ -826,7 +826,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 "recommended_resources": []
             }
     
-    def _compose_email_body(self, feedback_data: Dict[str, Any]) -> str:
+    def _compose_email_body(self, feedback_data: dict[str, Any]) -> str:
         """Compose the plain text email body from parsed data."""
         parts = [
             feedback_data.get("greeting", ""),
@@ -847,7 +847,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
     
     def _compose_html_body(
         self,
-        feedback_data: Dict[str, Any],
+        feedback_data: dict[str, Any],
         request: PersonalizedFeedbackRequest
     ) -> str:
         """Compose the HTML email body."""
@@ -949,8 +949,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
     async def get_feedback_preview(
         self,
         feedback_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """
         Get a preview of generated feedback for recruiter review.
         
@@ -1022,11 +1022,11 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         self,
         feedback_id: str,
         approved_by: str,
-        edited_subject: Optional[str] = None,
-        edited_body: Optional[str] = None,
-        editor_notes: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        edited_subject: str | None = None,
+        edited_body: str | None = None,
+        editor_notes: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Approve feedback for sending (with optional edits).
         
@@ -1100,9 +1100,9 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         self,
         feedback_id: str,
         rejected_by: str,
-        rejection_reason: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        rejection_reason: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Reject feedback and optionally regenerate.
         
@@ -1157,8 +1157,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         self,
         feedback_id: str,
         channel: str,
-        send_result: Dict[str, Any],
-        db: Optional[AsyncSession] = None
+        send_result: dict[str, Any],
+        db: AsyncSession | None = None
     ) -> bool:
         """
         Mark feedback as sent after successful delivery.
@@ -1208,7 +1208,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                         "Personalized feedback delivered to candidate",
                         f"Channel: {channel}",
                         f"Feedback type: {getattr(record, 'feedback_type', 'rejection')}",
-                        f"AI-generated: True",
+                        "AI-generated: True",
                         f"Send result: {send_result.get('message_id', 'N/A') if isinstance(send_result, dict) else 'N/A'}",
                     ],
                     criteria_used=["feedback_status", "channel_availability", "approval_status"],
@@ -1228,8 +1228,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         self,
         feedback_id: str,
         reason: str,
-        send_result: Optional[Dict[str, Any]] = None,
-        db: Optional[AsyncSession] = None,
+        send_result: dict[str, Any] | None = None,
+        db: AsyncSession | None = None,
     ) -> bool:
         """
         Mark feedback as failed — preserves APPROVED/EDITED status so
@@ -1273,8 +1273,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         self,
         company_id: str,
         days: int = 30,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get analytics on personalized feedback effectiveness.
         
@@ -1353,7 +1353,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
     def generate_from_template(
         self,
         request: PersonalizedFeedbackRequest
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """
         Generate feedback using existing templates (fallback method).
         

@@ -2,9 +2,9 @@
 from .industries import (
     INDUSTRIES,
     INDUSTRY_CATEGORIES,
-    normalize_industry,
-    get_canonical_key,
     get_all_equivalent_terms,
+    get_canonical_key,
     match_industry,
+    normalize_industry,
     search_industries,
 )

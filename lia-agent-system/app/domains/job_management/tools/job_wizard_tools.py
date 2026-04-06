@@ -5,24 +5,19 @@ Provides function calling capabilities for the job wizard,
 including salary benchmarks, field validation, suggestions, and draft saving.
 """
 import logging
-from typing import Any, Dict, List, Optional
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tools.registry import ToolDefinition, tool_registry
-from app.services.market_benchmark_service import MarketBenchmarkService
-from app.services.config_completeness_service import ConfigCompletenessService
-from app.services.skills_catalog_service import skills_catalog_service
-from app.services.company_configuration_service import CompanyConfigurationService
-from app.services.intelligent_data_orchestrator import (
-    intelligent_data_orchestrator,
-    JobContext,
-    DataSource
-)
 from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
 from app.schemas.jd_enrichment import EnrichmentRequest
+from app.services.company_configuration_service import CompanyConfigurationService
+from app.services.config_completeness_service import ConfigCompletenessService
+from app.services.intelligent_data_orchestrator import JobContext, intelligent_data_orchestrator
+from app.services.market_benchmark_service import MarketBenchmarkService
+from app.services.skills_catalog_service import skills_catalog_service
+from app.tools.registry import ToolDefinition, tool_registry
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +29,11 @@ jd_enrichment_service = JdEnrichmentService()
 
 async def search_salary_benchmark(
     job_title: str,
-    seniority: Optional[str] = None,
-    location: Optional[str] = None,
-    industry: Optional[str] = None,
+    seniority: str | None = None,
+    location: str | None = None,
+    industry: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Search for salary benchmark data for a given role.
     
@@ -81,7 +76,7 @@ async def search_salary_benchmark(
         }
 
 
-def _get_fallback_salary_range(seniority: Optional[str]) -> Dict[str, Any]:
+def _get_fallback_salary_range(seniority: str | None) -> dict[str, Any]:
     """Get fallback salary range based on seniority."""
     ranges = {
         "Júnior": {"min": 3000, "max": 5000, "currency": "BRL"},
@@ -98,10 +93,10 @@ def _get_fallback_salary_range(seniority: Optional[str]) -> Dict[str, Any]:
 
 
 async def validate_job_fields(
-    job_data: Dict[str, Any],
-    company_config: Optional[Dict[str, Any]] = None,
+    job_data: dict[str, Any],
+    company_config: dict[str, Any] | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Validate that required job fields are complete.
     
@@ -141,10 +136,10 @@ async def validate_job_fields(
 
 async def get_job_suggestions(
     field_name: str,
-    job_context: Dict[str, Any],
-    company_id: Optional[str] = None,
+    job_context: dict[str, Any],
+    company_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get AI suggestions for a specific job field using real data sources.
     
@@ -164,7 +159,7 @@ async def get_job_suggestions(
     try:
         job_title = job_context.get("job_title", "") or job_context.get("title", "")
         seniority = job_context.get("seniority", "Pleno")
-        department = job_context.get("department", "")
+        job_context.get("department", "")
         
         suggestions = {
             "field_name": field_name,
@@ -268,7 +263,7 @@ async def get_job_suggestions(
         }
 
 
-def _get_default_benefits() -> List[Dict[str, Any]]:
+def _get_default_benefits() -> list[dict[str, Any]]:
     """Return default benefits list when company config is unavailable."""
     return [
         {"name": "Vale Refeição", "category": "food", "is_highlighted": True},
@@ -285,11 +280,11 @@ def _get_default_benefits() -> List[Dict[str, Any]]:
 
 async def save_job_draft(
     draft_id: str,
-    updates: Dict[str, Any],
+    updates: dict[str, Any],
     recruiter_id: str,
     company_id: str,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Save updates to a job draft.
     
@@ -305,9 +300,10 @@ async def save_job_draft(
     logger.info(f"Saving job draft {draft_id} with updates: {list(updates.keys())}")
     
     try:
+        from sqlalchemy import select
+
         from app.core.database import AsyncSessionLocal
         from app.models.job_draft import JobDraft
-        from sqlalchemy import select
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -349,9 +345,9 @@ async def save_job_draft(
 async def get_company_config(
     company_id: str,
     config_type: str = "all",
-    seniority: Optional[str] = None,
+    seniority: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Fetch company configuration from CompanyConfigurationService.
     
@@ -375,7 +371,7 @@ async def get_company_config(
             allow_default_fallback=True
         )
         
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "company_id": company_id,
             "company_name": config.company_name,
             "config_type": config_type,
@@ -448,12 +444,12 @@ async def get_company_config(
 async def get_intelligent_salary(
     company_id: str,
     job_title: str,
-    seniority: Optional[str] = None,
-    location: Optional[str] = None,
-    department: Optional[str] = None,
-    session_id: Optional[str] = None,
+    seniority: str | None = None,
+    location: str | None = None,
+    department: str | None = None,
+    session_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get intelligent salary data from multiple sources with priority-based confidence.
     
@@ -536,11 +532,11 @@ async def get_intelligent_salary(
 async def get_intelligent_skills(
     company_id: str,
     job_title: str,
-    seniority: Optional[str] = None,
-    session_id: Optional[str] = None,
+    seniority: str | None = None,
+    session_id: str | None = None,
     limit: int = 15,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get intelligent skills suggestions from multiple sources.
     
@@ -608,13 +604,13 @@ async def capture_wizard_feedback(
     field_name: str,
     suggested_value: Any,
     final_value: Any,
-    role: Optional[str] = None,
-    seniority: Optional[str] = None,
-    source: Optional[str] = None,
-    source_confidence: Optional[float] = None,
+    role: str | None = None,
+    seniority: str | None = None,
+    source: str | None = None,
+    source_confidence: float | None = None,
     explicitly_rejected: bool = False,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Capture feedback for the learning loop (silent operation).
     
@@ -934,15 +930,15 @@ GENERATE_ENRICHED_JD_SCHEMA = {
 async def generate_enriched_jd(
     title: str,
     company_id: str,
-    seniority: Optional[str] = None,
-    location: Optional[str] = None,
-    detected_responsibilities: Optional[List[str]] = None,
-    detected_skills: Optional[List[str]] = None,
-    detected_behavioral: Optional[List[str]] = None,
-    salary_min: Optional[float] = None,
-    salary_max: Optional[float] = None,
+    seniority: str | None = None,
+    location: str | None = None,
+    detected_responsibilities: list[str] | None = None,
+    detected_skills: list[str] | None = None,
+    detected_behavioral: list[str] | None = None,
+    salary_min: float | None = None,
+    salary_max: float | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Generate enriched job description with suggestions for all sections.
     

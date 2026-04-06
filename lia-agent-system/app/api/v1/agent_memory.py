@@ -1,12 +1,14 @@
+import logging
+from datetime import datetime
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
-from sqlalchemy import select, desc
-from app.core.database import AsyncSessionLocal
-from lia_agents_core.working_memory import AgentWorkingMemory, WorkingMemorySchema
+from lia_agents_core.working_memory import AgentWorkingMemory
+from sqlalchemy import desc, select
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-import logging
+from app.core.database import AsyncSessionLocal
 
 logger = logging.getLogger("lia.agent_memory")
 router = APIRouter(prefix="/agent-memory", tags=["Agent Memory"])
@@ -18,7 +20,7 @@ WIZARD_EXPECTED_FIELDS = [
 ]
 
 
-def _memory_to_dict(memory: AgentWorkingMemory) -> Dict[str, Any]:
+def _memory_to_dict(memory: AgentWorkingMemory) -> dict[str, Any]:
     return {
         "session_id": memory.session_id,
         "domain": memory.domain,
@@ -36,7 +38,7 @@ def _memory_to_dict(memory: AgentWorkingMemory) -> Dict[str, Any]:
     }
 
 
-def _default_memory(session_id: str, domain: str) -> Dict[str, Any]:
+def _default_memory(session_id: str, domain: str) -> dict[str, Any]:
     return {
         "session_id": session_id,
         "domain": domain,
@@ -54,14 +56,14 @@ def _default_memory(session_id: str, domain: str) -> Dict[str, Any]:
     }
 
 
-def _compute_completion(collected_fields: Dict[str, Any], domain: str) -> float:
+def _compute_completion(collected_fields: dict[str, Any], domain: str) -> float:
     if domain != "wizard" or not collected_fields:
         return 0.0
     filled = sum(1 for f in WIZARD_EXPECTED_FIELDS if f in collected_fields)
     return round((filled / len(WIZARD_EXPECTED_FIELDS)) * 100, 1)
 
 
-def _memory_to_summary(memory: AgentWorkingMemory) -> Dict[str, Any]:
+def _memory_to_summary(memory: AgentWorkingMemory) -> dict[str, Any]:
     fields = memory.collected_fields or {}
     return {
         "session_id": memory.session_id,
@@ -73,7 +75,7 @@ def _memory_to_summary(memory: AgentWorkingMemory) -> Dict[str, Any]:
     }
 
 
-def _default_summary(session_id: str, domain: str) -> Dict[str, Any]:
+def _default_summary(session_id: str, domain: str) -> dict[str, Any]:
     return {
         "session_id": session_id,
         "domain": domain,
@@ -86,7 +88,7 @@ def _default_summary(session_id: str, domain: str) -> Dict[str, Any]:
 
 @router.get("/active-sessions")
 async def get_active_sessions(
-    domain: Optional[str] = Query(None),
+    domain: str | None = Query(None),
     limit: int = Query(10, ge=1, le=100),
     current_user: User = Depends(get_current_user_or_demo),
 ):

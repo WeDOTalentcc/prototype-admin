@@ -10,7 +10,8 @@ Supports:
 """
 import json
 import logging
-from typing import Any, Dict, Type, Optional, TypeVar, get_origin, get_args, Union
+from typing import Any, TypeVar, Union, get_args, get_origin
+
 from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ def _get_json_type(python_type: Any) -> str:
     return "string"
 
 
-def pydantic_to_json_schema(model: Type[BaseModel]) -> Dict[str, Any]:
+def pydantic_to_json_schema(model: type[BaseModel]) -> dict[str, Any]:
     """
     Convert a Pydantic model to JSON schema format.
     
@@ -90,7 +91,7 @@ def pydantic_to_json_schema(model: Type[BaseModel]) -> Dict[str, Any]:
         raise
 
 
-def pydantic_to_claude_tool(model: Type[BaseModel], tool_name: str = "respond") -> Dict[str, Any]:
+def pydantic_to_claude_tool(model: type[BaseModel], tool_name: str = "respond") -> dict[str, Any]:
     """
     Convert a Pydantic model to Claude's tool format.
     
@@ -121,7 +122,7 @@ def pydantic_to_claude_tool(model: Type[BaseModel], tool_name: str = "respond") 
     }
 
 
-def pydantic_to_gemini_schema(model: Type[BaseModel]) -> Dict[str, Any]:
+def pydantic_to_gemini_schema(model: type[BaseModel]) -> dict[str, Any]:
     """
     Convert a Pydantic model to Gemini's response_schema format.
     
@@ -138,7 +139,7 @@ def pydantic_to_gemini_schema(model: Type[BaseModel]) -> Dict[str, Any]:
 
 def parse_claude_tool_response(
     response: Any,
-    model: Type[T],
+    model: type[T],
     tool_name: str = "respond"
 ) -> T:
     """
@@ -210,7 +211,7 @@ def parse_claude_tool_response(
 
 def parse_gemini_json_response(
     response: Any,
-    model: Type[T]
+    model: type[T]
 ) -> T:
     """
     Parse Gemini's JSON response into a Pydantic model.
@@ -267,7 +268,7 @@ def parse_gemini_json_response(
 
 def parse_json_from_text(
     text: str,
-    model: Type[T]
+    model: type[T]
 ) -> T:
     """
     Fallback parser to extract JSON from text response.
@@ -312,20 +313,20 @@ class StructuredOutputService:
     """
     
     def __init__(self):
-        self._schema_cache: Dict[str, Dict[str, Any]] = {}
+        self._schema_cache: dict[str, dict[str, Any]] = {}
     
     def get_claude_tool(
         self,
-        model: Type[BaseModel],
+        model: type[BaseModel],
         tool_name: str = "respond"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get Claude tool definition for a Pydantic model."""
         cache_key = f"claude_{model.__name__}_{tool_name}"
         if cache_key not in self._schema_cache:
             self._schema_cache[cache_key] = pydantic_to_claude_tool(model, tool_name)
         return self._schema_cache[cache_key]
     
-    def get_gemini_schema(self, model: Type[BaseModel]) -> Dict[str, Any]:
+    def get_gemini_schema(self, model: type[BaseModel]) -> dict[str, Any]:
         """Get Gemini response schema for a Pydantic model."""
         cache_key = f"gemini_{model.__name__}"
         if cache_key not in self._schema_cache:
@@ -335,7 +336,7 @@ class StructuredOutputService:
     def parse_response(
         self,
         response: Any,
-        model: Type[T],
+        model: type[T],
         provider: str,
         tool_name: str = "respond"
     ) -> T:

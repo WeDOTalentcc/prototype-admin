@@ -5,10 +5,9 @@ Each stage of the job portfolio management workflow has different requirements,
 available tools, and goals. This module injects the right context so the agent
 knows what to focus on when helping recruiters manage their job portfolio.
 """
-from typing import Any, Dict, List
+from typing import Any
 
-
-STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
     "overview": {
         "name": "Visao Geral",
         "display_name": "Visão Geral",
@@ -72,7 +71,7 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
 }
 
 
-def get_pipeline_prediction_block(overview: Dict[str, Any]) -> str:
+def get_pipeline_prediction_block(overview: dict[str, Any]) -> str:
     """
     Gera bloco de previsão de pipeline para injeção no contexto do JobsMgmtAgent.
     Exibe vagas em risco e prestes a fechar do portfolio completo do recrutador.
@@ -116,7 +115,7 @@ def get_pipeline_prediction_block(overview: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
+def get_stage_context(stage: str, collected_fields: dict[str, Any]) -> str:
     """Build a formatted context string for the current jobs management stage.
 
     Includes stage information, field completion status, percentage and
@@ -137,9 +136,9 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     optional = stage_def["optional_fields"]
     all_fields = required + optional
 
-    filled: List[str] = []
-    missing_required: List[str] = []
-    missing_optional: List[str] = []
+    filled: list[str] = []
+    missing_required: list[str] = []
+    missing_optional: list[str] = []
 
     for field in required:
         value = collected_fields.get(field)
@@ -159,13 +158,13 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     completion = (len(filled) / total * 100) if total > 0 else 100.0
 
     parts = [
-        f"=== CONTEXTO DO ESTAGIO ===",
+        "=== CONTEXTO DO ESTAGIO ===",
         f"Estagio atual: {stage_def['display_name']} ({stage})",
         f"Fase: {stage_def['phase']}",
         f"Descricao: {stage_def['description']}",
         f"Proximo estagio: {stage_def['next_stage']}",
-        f"",
-        f"--- Progresso ---",
+        "",
+        "--- Progresso ---",
         f"Completude: {completion:.0f}%",
     ]
 
@@ -217,7 +216,7 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def get_transition_prompt(current_stage: str, collected_fields: Dict[str, Any]) -> str:
+def get_transition_prompt(current_stage: str, collected_fields: dict[str, Any]) -> str:
     """Generate a prompt for checking whether transition criteria are met.
 
     Args:

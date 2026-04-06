@@ -2,16 +2,16 @@
 Pydantic schemas for ClientUser endpoints.
 """
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr
 from uuid import UUID
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ClientUserBase(BaseModel):
     email: EmailStr
     name: str = Field(..., min_length=1, max_length=255)
     role: str = Field(default="viewer", description="Role: admin, recruiter, viewer, manager")
-    permissions: Optional[List[str]] = []
+    permissions: list[str] | None = []
 
 
 class ClientUserCreate(ClientUserBase):
@@ -19,11 +19,11 @@ class ClientUserCreate(ClientUserBase):
 
 
 class ClientUserUpdate(BaseModel):
-    email: Optional[EmailStr] = None
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    permissions: Optional[List[str]] = None
-    status: Optional[str] = Field(None, description="Status: active, inactive, pending")
-    resend_invitation: Optional[bool] = Field(None, description="Set to true to resend invitation email")
+    email: EmailStr | None = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    permissions: list[str] | None = None
+    status: str | None = Field(None, description="Status: active, inactive, pending")
+    resend_invitation: bool | None = Field(None, description="Set to true to resend invitation email")
 
 
 class AcceptInvitationRequest(BaseModel):
@@ -33,8 +33,8 @@ class AcceptInvitationRequest(BaseModel):
 class AcceptInvitationResponse(BaseModel):
     success: bool
     message: str
-    redirect_url: Optional[str] = None
-    user: Optional[dict] = None
+    redirect_url: str | None = None
+    user: dict | None = None
 
 
 class ClientUserRoleUpdate(BaseModel):
@@ -44,11 +44,11 @@ class ClientUserRoleUpdate(BaseModel):
 class ClientUserResponse(ClientUserBase):
     id: UUID
     company_id: UUID
-    user_id: Optional[UUID] = None
+    user_id: UUID | None = None
     status: str
-    invited_at: Optional[datetime] = None
-    accepted_at: Optional[datetime] = None
-    last_login_at: Optional[datetime] = None
+    invited_at: datetime | None = None
+    accepted_at: datetime | None = None
+    last_login_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
     

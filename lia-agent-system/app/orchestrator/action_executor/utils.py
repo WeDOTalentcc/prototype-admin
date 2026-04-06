@@ -3,15 +3,15 @@ Pure utility functions for ActionExecutor.
 No async code, no database access — safe to import from anywhere.
 """
 import re
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from typing import Any
 
 from app.orchestrator.action_executor.intents_config import (
     CONFIRMATION_PATTERNS,
-    REJECTION_PATTERNS,
-    VALID_PIPELINE_STAGES,
-    STAGE_ALIASES,
     MESSAGE_INTENT_PATTERNS,
+    REJECTION_PATTERNS,
+    STAGE_ALIASES,
+    VALID_PIPELINE_STAGES,
 )
 
 
@@ -32,10 +32,10 @@ def is_rejection(message: str) -> bool:
 
 
 def resolve_candidate_from_context(
-    candidate_name: Optional[str],
-    candidate_id: Optional[str],
-    candidates_data: List[Dict[str, Any]],
-) -> Optional[Dict[str, Any]]:
+    candidate_name: str | None,
+    candidate_id: str | None,
+    candidates_data: list[dict[str, Any]],
+) -> dict[str, Any] | None:
     if candidate_id:
         for c in candidates_data:
             if str(c.get("id", "")) == str(candidate_id):
@@ -59,7 +59,7 @@ def resolve_candidate_from_context(
     return None
 
 
-def resolve_stage(stage_text: Optional[str]) -> Optional[str]:
+def resolve_stage(stage_text: str | None) -> str | None:
     if not stage_text:
         return None
     normalized = stage_text.strip().lower()
@@ -75,7 +75,7 @@ def resolve_stage(stage_text: Optional[str]) -> Optional[str]:
     return stage_text.title()
 
 
-def _detect_intent_from_message(message: str) -> Optional[str]:
+def _detect_intent_from_message(message: str) -> str | None:
     """Detect an actionable intent from a raw message string."""
     if not message:
         return None
@@ -87,9 +87,9 @@ def _detect_intent_from_message(message: str) -> Optional[str]:
     return None
 
 
-def _extract_entities_from_message(message: str, intent: str) -> Dict[str, Any]:
+def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
     """Extract entity values from raw message for a given intent."""
-    entities: Dict[str, Any] = {}
+    entities: dict[str, Any] = {}
     msg = message.strip()
 
     # Title/content for tasks, reminders, notes, events
@@ -152,7 +152,7 @@ def _extract_entities_from_message(message: str, intent: str) -> Dict[str, Any]:
     return entities
 
 
-def _resolve_ptbr_datetime(date_str: str) -> Optional[datetime]:
+def _resolve_ptbr_datetime(date_str: str) -> datetime | None:
     """
     Deterministically resolve a Portuguese-language date/time string to a datetime.
 
@@ -165,7 +165,8 @@ def _resolve_ptbr_datetime(date_str: str) -> Optional[datetime]:
         return None
 
     import re as _re
-    from datetime import datetime as _dt, timedelta as _td
+    from datetime import datetime as _dt
+    from datetime import timedelta as _td
 
     now = _dt.now()
     date_str_lower = date_str.lower().strip()

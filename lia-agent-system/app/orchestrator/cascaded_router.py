@@ -15,13 +15,13 @@ Coexiste com IntentRouter legado — usa como fallback do Tier 5 quando disponí
 import hashlib
 import logging
 import time
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
-from app.orchestrator.fast_router import FastRouter, FastRouteResult
-from app.orchestrator.semantic_cache import SemanticCache
 from app.core.config import settings
+from app.orchestrator.fast_router import FastRouter
+from app.orchestrator.semantic_cache import SemanticCache
 from app.shared.tracing import trace_span
 
 logger = logging.getLogger(__name__)
@@ -40,17 +40,17 @@ class RouteResult:
     domain_id: str
     confidence: float
     source: str
-    matched_pattern: Optional[str] = None
-    intent_details: Optional[Dict[str, Any]] = None
+    matched_pattern: str | None = None
+    intent_details: dict[str, Any] | None = None
     cached: bool = False
     resolved_at: datetime = field(default_factory=datetime.utcnow)
     # Campos de clarificação (Fase 2 — Gap #2)
     needs_clarification: bool = False
-    clarification_question: Optional[str] = None
-    clarification_options: Optional[List[str]] = None
+    clarification_question: str | None = None
+    clarification_options: list[str] | None = None
 
 
-AGENT_TYPE_TO_DOMAIN: Dict[str, str] = {
+AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
     "job_planner": "job_management",
     "job_intake": "job_management",
     "sourcing": "sourcing",
@@ -105,15 +105,15 @@ def _build_clarification_question(message: str) -> str:
 class CascadedRouter:
     def __init__(
         self,
-        fast_router: Optional[FastRouter] = None,
-        intent_router: Optional[Any] = None,
-        domain_registry: Optional[Any] = None,
+        fast_router: FastRouter | None = None,
+        intent_router: Any | None = None,
+        domain_registry: Any | None = None,
         cache_max_size: int = settings.ROUTER_CACHE_MAX_SIZE,
     ):
         self.fast = fast_router or FastRouter()
         self.llm_fallback = intent_router
         self.registry = domain_registry
-        self._memory_cache: Dict[str, RouteResult] = {}
+        self._memory_cache: dict[str, RouteResult] = {}
         self._cache_max_size = cache_max_size
         self._redis_cache = SemanticCache(ttl=settings.ROUTER_CACHE_TTL)
         self._vector_cache = self._init_vector_cache()
@@ -153,8 +153,8 @@ class CascadedRouter:
     async def route(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-        session_id: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        session_id: str | None = None,
     ) -> RouteResult:
         self._stats["total"] += 1
         _hit_counter, _latency_hist, _conf_hist = _get_metrics()
@@ -366,7 +366,7 @@ class CascadedRouter:
         )
 
     async def _apply_adaptive_adjustments(
-        self, route_result: "RouteResult", company_id: Optional[str]
+        self, route_result: "RouteResult", company_id: str | None
     ) -> "RouteResult":
         """Apply adaptive routing confidence adjustments from learning history.
 
@@ -398,9 +398,9 @@ class CascadedRouter:
     async def _route_via_llm_cascade(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-        company_id: Optional[str] = None,
-    ) -> Optional[RouteResult]:
+        context: dict[str, Any] | None = None,
+        company_id: str | None = None,
+    ) -> RouteResult | None:
         """Usa LLMCascadeRouter (Haiku→Sonnet→Opus) para roteamento de intent."""
         try:
             from app.orchestrator.llm_cascade import llm_cascade_router
@@ -422,7 +422,7 @@ class CascadedRouter:
             logger.debug("[CascadedRouter] llm_cascade falhou: %s", exc)
             return None
 
-    async def _route_via_llm(self, message: str, context: Optional[Dict[str, Any]] = None) -> Optional[RouteResult]:
+    async def _route_via_llm(self, message: str, context: dict[str, Any] | None = None) -> RouteResult | None:
         if not self.llm_fallback:
             return None
 
@@ -484,7 +484,7 @@ class CascadedRouter:
         self._memory_cache.clear()
         logger.info("CascadedRouter cache cleared")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         total = self._stats["total"] or 1
         return {
             **self._stats,

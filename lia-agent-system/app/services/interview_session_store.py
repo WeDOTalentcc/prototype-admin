@@ -6,7 +6,7 @@ Falls back to an in-memory dict when Redis is unavailable (e.g., local dev).
 """
 import logging
 import pickle
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +34,10 @@ class InterviewSessionStore:
 
     def __init__(self) -> None:
         self._memory: dict[str, Any] = {}
-        self._redis: Optional[Any] = None
+        self._redis: Any | None = None
         self._redis_available = False
 
-    async def _get_redis(self) -> Optional[Any]:
+    async def _get_redis(self) -> Any | None:
         if not _AIOREDIS_AVAILABLE:
             return None
         if self._redis is not None:
@@ -69,7 +69,7 @@ class InterviewSessionStore:
                 logger.warning(f"[InterviewSessionStore] Redis set failed ({exc}), falling back to memory")
         self._memory[session_id] = state
 
-    async def get(self, session_id: str) -> Optional[Any]:
+    async def get(self, session_id: str) -> Any | None:
         key = KEY_PREFIX + session_id
         redis = await self._get_redis()
         if redis and self._redis_available:

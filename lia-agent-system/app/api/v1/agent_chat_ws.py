@@ -27,9 +27,7 @@ Multi-tenant: company_id extraído do JWT.
 import asyncio
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
-from uuid import uuid4
+from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
@@ -87,7 +85,7 @@ def _strip_react_json(text: str) -> str:
 async def send_panel_update(
     session_id: str,
     panel_type: str,
-    panel_data: Dict[str, Any],
+    panel_data: dict[str, Any],
     panel_title: str = "",
     action: str = "open",
 ) -> None:
@@ -114,9 +112,9 @@ async def send_background_task_update(
     task_type: str,
     label: str,
     status: str,
-    progress: Optional[int] = None,
+    progress: int | None = None,
     message: str = "",
-    result: Optional[Dict[str, Any]] = None,
+    result: dict[str, Any] | None = None,
 ) -> None:
     """Send a background_task_update event to the frontend via WebSocket.
 
@@ -124,7 +122,7 @@ async def send_background_task_update(
     status: "running" | "completed" | "failed"
     progress: 0-100 (optional, only for running tasks)
     """
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "type": "background_task_update",
         "task_id": task_id,
         "task_type": task_type,
@@ -178,7 +176,7 @@ _injection_guard = PromptInjectionGuard()
 
 def _build_agent_input(
     content: str,
-    context: Dict[str, Any],
+    context: dict[str, Any],
     session_id: str,
     company_id: str,
     user_id: str,
@@ -292,7 +290,7 @@ def _subagent_for_pipeline(message: str) -> str:
     return "pipeline_context"
 
 
-def _get_agent(domain: str) -> Optional[Any]:
+def _get_agent(domain: str) -> Any | None:
     """Retorna instância do agente para o domínio solicitado."""
     try:
         if domain == "wizard":
@@ -370,7 +368,7 @@ def _get_agent(domain: str) -> Optional[Any]:
         return None
 
 
-def _extract_auth(token: Optional[str]) -> Dict[str, Any]:
+def _extract_auth(token: str | None) -> dict[str, Any]:
     """Extrai company_id e user_id do JWT (best-effort, sem bloquear WS)."""
     if not token:
         return {"company_id": "", "user_id": "anonymous"}
@@ -389,7 +387,7 @@ def _extract_auth(token: Optional[str]) -> Dict[str, Any]:
 async def agent_chat_ws(
     websocket: WebSocket,
     session_id: str,
-    token: Optional[str] = Query(None),
+    token: str | None = Query(None),
     domain: str = Query("recruiter_assistant"),
 ):
     """
@@ -426,7 +424,7 @@ async def agent_chat_ws(
         while True:
             try:
                 raw = await asyncio.wait_for(websocket.receive_text(), timeout=300.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Ping de keepalive
                 await ws_manager.send_to_session(session_id, {"type": "ping"})
                 continue
@@ -573,7 +571,7 @@ async def agent_chat_ws(
 
                             # SEG-5: AuditService — registrar rejeição HITL
                             try:
-                                from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                                from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                                 _rejected_candidate_id = str(
                                     resume_input_dict.get("context", {}).get("candidate_id", "")
                                     if resume_input_dict else ""
@@ -660,9 +658,9 @@ async def agent_chat_ws(
                 except Exception as _budget_exc:
                     logger.warning("[AgentChatWS] Budget check falhou (plan path) — continuando: %s", _budget_exc)
 
-                from app.shared.execution import PlanDetector, PlanExecutor
                 from app.domains.registry import DomainRegistry
                 from app.domains.workflow import DomainWorkflow
+                from app.shared.execution import PlanDetector, PlanExecutor
 
                 _plan_detector = PlanDetector()
                 _detected_plan = _plan_detector.detect(content)
@@ -924,7 +922,7 @@ async def agent_chat_ws(
 
                 # FAR-3: incluir soft_warnings de fairness na resposta ao cliente
                 _fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
-                _ws_payload: Dict[str, Any] = {
+                _ws_payload: dict[str, Any] = {
                     "type": "message",
                     "content": clean_message,
                     "confidence": output.confidence,
@@ -938,7 +936,7 @@ async def agent_chat_ws(
                     _ws_payload["fairness_warnings"] = _fairness_warnings
                 await ws_manager.send_to_session(session_id, _ws_payload)
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await ws_manager.send_to_session(session_id, {
                     "type": "error",
                     "message": "Tempo limite de processamento excedido. Tente novamente.",
@@ -968,7 +966,7 @@ class HTTPChatRequest(BaseModel):
     message: str
     domain: str = ""
     session_id: str = ""
-    context: Dict[str, Any] = {}
+    context: dict[str, Any] = {}
 
     class Config:
         from_attributes = True
@@ -979,7 +977,7 @@ class HTTPChatResponse(BaseModel):
     confidence: float = 0.0
     domain: str = ""
     actions: list = []
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @router.post("/chat/message", response_model=HTTPChatResponse)
@@ -1079,7 +1077,7 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
             domain=active_domain,
             actions=[a.dict() for a in (output.actions or [])],
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return HTTPChatResponse(
             content="Tempo limite de processamento excedido. Tente novamente.",
             error="timeout",

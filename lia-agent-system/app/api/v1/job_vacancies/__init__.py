@@ -14,12 +14,13 @@ Sub-modules:
 
 from fastapi import APIRouter
 
-from .crud import router as _crud_router
-from .lifecycle import router as _lifecycle_router
 from .analytics import router as _analytics_router
-from .screening import router as _screening_router
-from .public import router as _public_router, router_public
+from .crud import router as _crud_router
 from .export import router as _export_router
+from .lifecycle import router as _lifecycle_router
+from .public import router as _public_router
+from .public import router_public
+from .screening import router as _screening_router
 
 # Main aggregated router
 router = APIRouter()

@@ -4,29 +4,30 @@ Default Templates API Endpoints.
 Provides REST endpoints for managing system-wide default communication templates.
 These templates serve as starting points that clients can copy and customize.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
 from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.default_templates import (
-    DefaultTemplate,
     AVAILABLE_TEMPLATE_VARIABLES,
     DEFAULT_TEMPLATES_SEED,
+    DefaultTemplate,
 )
 from app.schemas.default_templates import (
     DefaultTemplateCreate,
-    DefaultTemplateUpdate,
-    DefaultTemplateResponse,
+    DefaultTemplateDuplicateRequest,
     DefaultTemplateListResponse,
+    DefaultTemplateResponse,
+    DefaultTemplateUpdate,
+    SeedTemplatesResponse,
     TemplateVariableResponse,
     TemplateVariablesListResponse,
-    DefaultTemplateDuplicateRequest,
-    SeedTemplatesResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,9 +36,9 @@ router = APIRouter(prefix="/default-templates", tags=["default-templates"])
 
 
 def get_user_from_headers(
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """Get user context from request headers."""
     return {
         "user_id": x_user_id or "system",
@@ -46,7 +47,7 @@ def get_user_from_headers(
     }
 
 
-def require_admin(current_user: Dict[str, Any]) -> None:
+def require_admin(current_user: dict[str, Any]) -> None:
     """Raise exception if user is not admin."""
     if not current_user.get("is_admin", False):
         raise HTTPException(
@@ -71,9 +72,9 @@ async def list_template_variables() -> TemplateVariablesListResponse:
 
 @router.get("", summary="List default templates")
 async def list_default_templates(
-    category: Optional[str] = Query(None, description="Filter by category: email, sms, whatsapp, push"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status: active, draft, archived"),
-    search: Optional[str] = Query(None, description="Search by template name"),
+    category: str | None = Query(None, description="Filter by category: email, sms, whatsapp, push"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status: active, draft, archived"),
+    search: str | None = Query(None, description="Search by template name"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db)
@@ -184,7 +185,7 @@ async def get_default_template(
 @router.post("", summary="Create default template", status_code=status.HTTP_201_CREATED)
 async def create_default_template(
     data: DefaultTemplateCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> DefaultTemplateResponse:
     """
@@ -240,7 +241,7 @@ async def create_default_template(
 async def update_default_template(
     template_id: UUID,
     data: DefaultTemplateUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> DefaultTemplateResponse:
     """
@@ -309,9 +310,9 @@ async def update_default_template(
 @router.delete("/{template_id}", summary="Delete default template")
 async def delete_default_template(
     template_id: UUID,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Delete a default template.
     
@@ -355,8 +356,8 @@ async def delete_default_template(
 @router.post("/{template_id}/duplicate", summary="Duplicate default template")
 async def duplicate_default_template(
     template_id: UUID,
-    data: Optional[DefaultTemplateDuplicateRequest] = None,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    data: DefaultTemplateDuplicateRequest | None = None,
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> DefaultTemplateResponse:
     """
@@ -422,7 +423,7 @@ async def duplicate_default_template(
 
 @router.post("/seed", summary="Seed default templates")
 async def seed_default_templates(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> SeedTemplatesResponse:
     """

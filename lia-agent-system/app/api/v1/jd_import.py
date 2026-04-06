@@ -12,19 +12,19 @@ Endpoints:
 - GET /similar-jobs - Find similar jobs for Fast Track
 """
 import logging
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 from datetime import datetime
+from typing import Any, Optional
+from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
 from app.domains.job_management.services.jd_import_service import JDImportService
-from app.domains.job_management.services.wizard_data_priority_service import WizardDataPriorityService, JobContext
+from app.domains.job_management.services.wizard_data_priority_service import JobContext, WizardDataPriorityService
 
 router = APIRouter(tags=["Learning Loop"])
 logger = logging.getLogger(__name__)
@@ -42,35 +42,35 @@ def parse_company_id(company_id: str) -> UUID:
 class JDImportItem(BaseModel):
     """Single JD to import."""
     title: str = Field(..., description="Job title")
-    external_id: Optional[str] = None
-    department: Optional[str] = None
-    area: Optional[str] = None
-    seniority: Optional[str] = None
-    employment_type: Optional[str] = None
-    work_model: Optional[str] = None
-    location: Optional[str] = None
-    description: Optional[str] = None
-    responsibilities_text: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
+    external_id: str | None = None
+    department: str | None = None
+    area: str | None = None
+    seniority: str | None = None
+    employment_type: str | None = None
+    work_model: str | None = None
+    location: str | None = None
+    description: str | None = None
+    responsibilities_text: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
     salary_currency: str = "BRL"
-    benefits: List[str] = []
-    hiring_manager: Optional[str] = None
-    recruiter: Optional[str] = None
+    benefits: list[str] = []
+    hiring_manager: str | None = None
+    recruiter: str | None = None
     headcount: int = 1
-    status: Optional[str] = None
-    was_filled: Optional[bool] = None
-    candidates_count: Optional[int] = None
-    time_to_fill_days: Optional[int] = None
-    created_date: Optional[datetime] = None
-    closed_date: Optional[datetime] = None
-    metadata: Dict[str, Any] = {}
+    status: str | None = None
+    was_filled: bool | None = None
+    candidates_count: int | None = None
+    time_to_fill_days: int | None = None
+    created_date: datetime | None = None
+    closed_date: datetime | None = None
+    metadata: dict[str, Any] = {}
 
 
 class BatchImportRequest(BaseModel):
     """Request to import multiple JDs."""
     source: str = Field(default="manual_upload", description="Import source (ats_gupy, manual_upload, etc.)")
-    jds: List[JDImportItem] = Field(..., description="List of JDs to import")
+    jds: list[JDImportItem] = Field(..., description="List of JDs to import")
 
 
 class BatchImportResponse(BaseModel):
@@ -81,7 +81,7 @@ class BatchImportResponse(BaseModel):
     successful: int
     failed: int
     skipped: int
-    errors: List[Dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
 
 
 class SuggestionResponse(BaseModel):
@@ -90,7 +90,7 @@ class SuggestionResponse(BaseModel):
     source: str
     confidence: float
     explanation: str
-    metadata: Dict[str, Any] = {}
+    metadata: dict[str, Any] = {}
 
 
 class DataCoverageResponse(BaseModel):
@@ -99,7 +99,7 @@ class DataCoverageResponse(BaseModel):
     skills_catalog: int
     job_patterns: int
     coverage_score: int
-    recommendations: List[str] = []
+    recommendations: list[str] = []
 
 
 @router.post("/import/batch", response_model=BatchImportResponse)
@@ -163,7 +163,7 @@ async def import_batch_jds(
     )
 
 
-@router.post("/import/single", response_model=Dict[str, Any])
+@router.post("/import/single", response_model=dict[str, Any])
 async def import_single_jd(
     jd: JDImportItem,
     source: str = Query("manual_upload", description="Import source"),
@@ -211,7 +211,7 @@ async def import_single_jd(
     return imported.to_dict()
 
 
-@router.get("/import/stats", response_model=Dict[str, Any])
+@router.get("/import/stats", response_model=dict[str, Any])
 async def get_import_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
@@ -230,11 +230,11 @@ async def get_import_stats(
 @router.get("/suggestions/{field}", response_model=Optional[SuggestionResponse])
 async def get_field_suggestion(
     field: str,
-    job_title: Optional[str] = Query(None),
-    department: Optional[str] = Query(None),
-    seniority: Optional[str] = Query(None),
-    location: Optional[str] = Query(None),
-    work_model: Optional[str] = Query(None),
+    job_title: str | None = Query(None),
+    department: str | None = Query(None),
+    seniority: str | None = Query(None),
+    location: str | None = Query(None),
+    work_model: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -275,12 +275,12 @@ async def get_field_suggestion(
     return None
 
 
-@router.get("/suggestions/all", response_model=Dict[str, SuggestionResponse])
+@router.get("/suggestions/all", response_model=dict[str, SuggestionResponse])
 async def get_all_field_suggestions(
-    job_title: Optional[str] = Query(None),
-    department: Optional[str] = Query(None),
-    seniority: Optional[str] = Query(None),
-    location: Optional[str] = Query(None),
+    job_title: str | None = Query(None),
+    department: str | None = Query(None),
+    seniority: str | None = Query(None),
+    location: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -315,10 +315,10 @@ async def get_all_field_suggestions(
     }
 
 
-@router.get("/similar-jobs", response_model=List[Dict[str, Any]])
+@router.get("/similar-jobs", response_model=list[dict[str, Any]])
 async def get_similar_jobs(
-    job_title: Optional[str] = Query(None),
-    department: Optional[str] = Query(None),
+    job_title: str | None = Query(None),
+    department: str | None = Query(None),
     limit: int = Query(5, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
@@ -342,13 +342,13 @@ async def get_similar_jobs(
     return await service.get_similar_jobs(db, context, limit)
 
 
-@router.post("/import/upload-file", response_model=Dict[str, Any])
+@router.post("/import/upload-file", response_model=dict[str, Any])
 async def upload_jd_file(
     file: UploadFile = File(..., description="Arquivo JD (.txt, .pdf, .docx, .md)"),
     title: str = Query("", description="Título da vaga (opcional, extraído do arquivo se vazio)"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Importa uma Job Description a partir de upload de arquivo (P3-2).
 
@@ -380,6 +380,7 @@ async def upload_jd_file(
     elif ext == ".pdf":
         try:
             import io
+
             import pypdf  # type: ignore[import]
             reader = pypdf.PdfReader(io.BytesIO(content))
             raw_text = "\n".join(page.extract_text() or "" for page in reader.pages)
@@ -394,6 +395,7 @@ async def upload_jd_file(
     elif ext == ".docx":
         try:
             import io
+
             import docx  # type: ignore[import]
             doc = docx.Document(io.BytesIO(content))
             raw_text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())

@@ -12,9 +12,9 @@ Usage:
 """
 import logging
 import os
-from typing import Any, Dict, List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +193,7 @@ MESSAGE_FORK_TO_RAILS = {
 }
 
 
-def rails_candidate_to_fork(data: Dict) -> Dict:
+def rails_candidate_to_fork(data: dict) -> dict:
     """Convert Rails candidate JSON to fork format (complete mapping)."""
     if not data:
         return {}
@@ -258,7 +258,7 @@ def rails_candidate_to_fork(data: Dict) -> Dict:
     return {k: v for k, v in result.items() if v is not None}
 
 
-def rails_job_to_fork(data: Dict) -> Dict:
+def rails_job_to_fork(data: dict) -> dict:
     """Convert Rails job JSON to fork format."""
     if not data:
         return {}
@@ -276,7 +276,7 @@ def rails_job_to_fork(data: Dict) -> Dict:
     }
 
 
-def rails_apply_to_fork(data: Dict) -> Dict:
+def rails_apply_to_fork(data: dict) -> dict:
     """Convert Rails apply JSON to fork format."""
     if not data:
         return {}
@@ -307,8 +307,8 @@ class RailsAdapter:
 
     def __init__(
         self,
-        db: Optional[AsyncSession] = None,
-        rails_token: Optional[str] = None,
+        db: AsyncSession | None = None,
+        rails_token: str | None = None,
     ):
         self.db = db
         self._rails_client = None
@@ -322,7 +322,7 @@ class RailsAdapter:
 
     # ---- Candidates ----
 
-    async def get_candidate(self, candidate_id: str) -> Optional[Dict]:
+    async def get_candidate(self, candidate_id: str) -> dict | None:
         """Get candidate: Rails first, local DB fallback."""
         # Try Rails
         client = await self._get_rails_client()
@@ -353,7 +353,7 @@ class RailsAdapter:
 
     async def list_candidates(
         self, search: str = "*", page: int = 1, limit: int = 30
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """List candidates: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
@@ -379,7 +379,7 @@ class RailsAdapter:
 
     # ---- Jobs ----
 
-    async def get_job(self, job_id: str) -> Optional[Dict]:
+    async def get_job(self, job_id: str) -> dict | None:
         """Get job: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
@@ -406,7 +406,7 @@ class RailsAdapter:
 
     async def list_jobs(
         self, search: str = "*", page: int = 1, limit: int = 30
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """List jobs: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
@@ -434,7 +434,7 @@ class RailsAdapter:
 
     async def list_applies(
         self, search: str = "*", page: int = 1, limit: int = 30
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """List applies: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
@@ -449,7 +449,7 @@ class RailsAdapter:
 
     # ---- Write Operations (Work C) ----
 
-    async def create_candidate(self, candidate_data: Dict) -> Optional[Dict]:
+    async def create_candidate(self, candidate_data: dict) -> dict | None:
         """Create candidate: Rails first, local DB fallback."""
         # Map fork fields to Rails fields
         rails_data = {}
@@ -482,7 +482,7 @@ class RailsAdapter:
 
         return None
 
-    async def update_candidate(self, candidate_id: str, candidate_data: Dict) -> Optional[Dict]:
+    async def update_candidate(self, candidate_id: str, candidate_data: dict) -> dict | None:
         """Update candidate: Rails first, local DB fallback."""
         rails_data = {}
         for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
@@ -500,7 +500,7 @@ class RailsAdapter:
 
         return None
 
-    async def create_job(self, job_data: Dict) -> Optional[Dict]:
+    async def create_job(self, job_data: dict) -> dict | None:
         """Create job: Rails first, local DB fallback."""
         rails_data = {}
         for fork_field, rails_field in JOB_FORK_TO_RAILS.items():
@@ -531,7 +531,7 @@ class RailsAdapter:
 
         return None
 
-    async def update_job(self, job_id: str, job_data: Dict) -> Optional[Dict]:
+    async def update_job(self, job_id: str, job_data: dict) -> dict | None:
         """Update job: Rails first, local DB fallback."""
         rails_data = {}
         for fork_field, rails_field in JOB_FORK_TO_RAILS.items():

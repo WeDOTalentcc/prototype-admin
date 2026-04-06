@@ -3,12 +3,10 @@ Simplified Microsoft Teams integration without Bot Framework SDK.
 Handles webhooks directly from Teams.
 """
 import logging
-from typing import Optional, Dict, Any
-import httpx
-import hmac
-import hashlib
-import base64
 from datetime import datetime
+from typing import Any
+
+import httpx
 
 from app.core.config import settings
 
@@ -25,8 +23,8 @@ class SimpleTeamsBot:
         """Initialize Teams bot."""
         self.app_id = settings.MICROSOFT_APP_ID
         self.app_password = settings.MICROSOFT_APP_PASSWORD
-        self._access_token: Optional[str] = None
-        self._token_expires: Optional[datetime] = None
+        self._access_token: str | None = None
+        self._token_expires: datetime | None = None
     
     async def get_access_token(self) -> str:
         """
@@ -66,7 +64,7 @@ class SimpleTeamsBot:
             
             return self._access_token
     
-    async def process_activity(self, activity: Dict[str, Any]) -> Optional[Any]:
+    async def process_activity(self, activity: dict[str, Any]) -> Any | None:
         """
         Process incoming activity from Teams.
         
@@ -125,11 +123,11 @@ class SimpleTeamsBot:
 
     # ─────────────────────────────────────────────────────────────────────────
 
-    async def _handle_message(self, activity: Dict[str, Any]) -> Dict[str, Any]:
+    async def _handle_message(self, activity: dict[str, Any]) -> dict[str, Any]:
         """Handle incoming message — routes through full LIA orchestrator."""
         try:
-            from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
             from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+            from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
 
             raw_text = activity.get("text", "").strip()
             # Strip @mention tags (e.g. <at>LIA</at> in group channels)
@@ -155,7 +153,7 @@ class SimpleTeamsBot:
             logger.error(f"[Teams] _handle_message error: {e}", exc_info=True)
             return {"type": "text", "text": "Ocorreu um erro ao processar sua mensagem. Tente novamente."}
     
-    async def _handle_conversation_update(self, activity: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def _handle_conversation_update(self, activity: dict[str, Any]) -> dict[str, Any] | None:
         """Handle conversation update (bot added, user joined, etc)."""
         members_added = activity.get("membersAdded", [])
         bot_id = activity.get("recipient", {}).get("id")
@@ -185,7 +183,7 @@ class SimpleTeamsBot:
         
         return None
     
-    async def _handle_invoke(self, activity: Dict[str, Any]) -> Optional[str]:
+    async def _handle_invoke(self, activity: dict[str, Any]) -> str | None:
         """Handle adaptive card action."""
         action_data = activity.get("value", {})
         
@@ -209,7 +207,7 @@ class SimpleTeamsBot:
         service_url: str,
         conversation_id: str,
         text: str,
-        reply_to_activity_id: Optional[str] = None
+        reply_to_activity_id: str | None = None
     ) -> bool:
         """
         Send message to Teams conversation.
@@ -273,7 +271,7 @@ class SimpleTeamsBot:
         self,
         service_url: str,
         conversation_id: str,
-        card_payload: Dict[str, Any]
+        card_payload: dict[str, Any]
     ) -> bool:
         """
         Send adaptive card to Teams.

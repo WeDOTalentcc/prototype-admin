@@ -12,13 +12,13 @@ Features:
 - Formatting benefits for AI prompts
 - Filtering by category, seniority, and highlighting
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm import selectinload
 import logging
 import time
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.models.company import Benefit
@@ -26,7 +26,7 @@ from app.models.company import Benefit
 logger = logging.getLogger(__name__)
 
 
-BENEFIT_CATEGORIES: Dict[str, str] = {
+BENEFIT_CATEGORIES: dict[str, str] = {
     "health": "Saúde & Bem-estar",
     "food": "Alimentação",
     "transport": "Transporte",
@@ -55,10 +55,10 @@ class BenefitsCache:
     """In-memory cache for benefits with TTL support."""
     
     def __init__(self, default_ttl: int = 300):
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry] = {}
         self.default_ttl = default_ttl
     
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get cached data if not expired."""
         if key in self._cache:
             entry = self._cache[key]
@@ -68,7 +68,7 @@ class BenefitsCache:
                 del self._cache[key]
         return None
     
-    def set(self, key: str, data: Any, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, data: Any, ttl: int | None = None) -> None:
         """Set cache entry with TTL."""
         ttl = ttl or self.default_ttl
         self._cache[key] = CacheEntry(data, ttl)
@@ -100,8 +100,8 @@ class BenefitsService:
     async def get_active_benefits(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[Benefit]:
+        db: AsyncSession | None = None
+    ) -> list[Benefit]:
         """
         Get all active benefits for a company.
         
@@ -152,8 +152,8 @@ class BenefitsService:
     async def get_highlighted_benefits(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[Benefit]:
+        db: AsyncSession | None = None
+    ) -> list[Benefit]:
         """
         Get highlighted/featured benefits for a company.
         
@@ -206,8 +206,8 @@ class BenefitsService:
         self,
         company_id: str,
         category: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[Benefit]:
+        db: AsyncSession | None = None
+    ) -> list[Benefit]:
         """
         Get benefits filtered by category.
         
@@ -262,8 +262,8 @@ class BenefitsService:
         self,
         company_id: str,
         seniority_level: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[Benefit]:
+        db: AsyncSession | None = None
+    ) -> list[Benefit]:
         """
         Get benefits filtered by seniority level.
         
@@ -318,7 +318,7 @@ class BenefitsService:
             if should_close:
                 await db.close()
     
-    def format_for_ai_prompt(self, benefits: List[Benefit]) -> str:
+    def format_for_ai_prompt(self, benefits: list[Benefit]) -> str:
         """
         Format benefits list for use in AI prompts.
         
@@ -336,7 +336,7 @@ class BenefitsService:
         if not benefits:
             return "**Benefícios da Empresa:**\n- Nenhum benefício cadastrado."
         
-        benefits_by_category: Dict[str, List[str]] = {}
+        benefits_by_category: dict[str, list[str]] = {}
         
         for benefit in benefits:
             category_key = benefit.category or "other"
@@ -400,8 +400,8 @@ class BenefitsService:
     async def get_benefits_summary(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get a summary of benefits with counts by category.
         
@@ -431,7 +431,7 @@ class BenefitsService:
         
         benefits = await self.get_active_benefits(company_id, db)
         
-        by_category: Dict[str, Dict[str, Any]] = {}
+        by_category: dict[str, dict[str, Any]] = {}
         for category_key, category_name in BENEFIT_CATEGORIES.items():
             by_category[category_key] = {
                 "count": 0,
@@ -493,9 +493,9 @@ class BenefitsService:
     async def get_benefits_for_job_posting(
         self,
         company_id: str,
-        seniority_level: Optional[str] = None,
-        department: Optional[str] = None,
-        db: Optional[AsyncSession] = None
+        seniority_level: str | None = None,
+        department: str | None = None,
+        db: AsyncSession | None = None
     ) -> str:
         """
         Get formatted benefits for a job posting.
@@ -526,7 +526,7 @@ class BenefitsService:
     async def get_highlighted_benefits_text(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> str:
         """
         Get formatted highlighted benefits for quick display.

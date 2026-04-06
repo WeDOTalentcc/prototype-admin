@@ -1,15 +1,15 @@
 """
 Notification Repository - Database access for Notification model.
 """
-from typing import Optional, List, Dict, Any
-from uuid import UUID
-from datetime import datetime
 import logging
+from datetime import datetime
+from uuid import UUID
 
-from sqlalchemy import select, func, update as sa_update
+from sqlalchemy import func, select
+from sqlalchemy import update as sa_update
 
-from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 from app.services.notification_service import Notification
+from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class NotificationRepository(SQLAlchemyRepository[Notification]):
     model_class = Notification
     
     async def get_for_user(self, db, user_id: str, limit: int = 50,
-                           include_read: bool = False) -> List[Notification]:
+                           include_read: bool = False) -> list[Notification]:
         """Get notifications for a specific user."""
         query = select(self.model_class).where(
             self.model_class.user_id == user_id

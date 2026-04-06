@@ -4,14 +4,13 @@ Tests for the 3 policy gaps fixed:
   2. manager_approval_for_offer added to warnings (not just metadata)
   3. governance_collector reads company policy defaults (tested via unit logic)
 """
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 
 # ─────────────────────────────────────────────────────────────────
 # Gap 1 — Salary filter (_check_salary_compatibility)
 # ─────────────────────────────────────────────────────────────────
-
 from app.domains.cv_screening.services.cv_screening_batch_service import (
     _check_salary_compatibility,
 )

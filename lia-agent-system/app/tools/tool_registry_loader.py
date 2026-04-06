@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     import yaml  # PyYAML
@@ -35,7 +35,7 @@ _DEFAULT_YAML_PATH = Path(__file__).parent / "tool_registry_metadata.yaml"
 # Public API
 # ---------------------------------------------------------------------------
 
-def load_tool_metadata(path: Optional[Path] = None) -> Dict[str, Dict[str, Any]]:
+def load_tool_metadata(path: Path | None = None) -> dict[str, dict[str, Any]]:
     """
     Load tool metadata from YAML file.
 
@@ -63,13 +63,13 @@ def load_tool_metadata(path: Optional[Path] = None) -> Dict[str, Dict[str, Any]]
     with target.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
 
-    tools_list: List[Dict[str, Any]] = data.get("tools", [])
+    tools_list: list[dict[str, Any]] = data.get("tools", [])
     return {t["name"]: t for t in tools_list if "name" in t}
 
 
 def export_registry_to_yaml(
-    registry_tools: List[Any],
-    path: Optional[Path] = None,
+    registry_tools: list[Any],
+    path: Path | None = None,
 ) -> str:
     """
     Serialize ToolDefinition objects to YAML string (and optionally write to file).
@@ -86,7 +86,7 @@ def export_registry_to_yaml(
 
     serialized = []
     for tool in registry_tools:
-        entry: Dict[str, Any] = {
+        entry: dict[str, Any] = {
             "name": tool.name,
             "description": tool.description,
             "allowed_agents": tool.allowed_agents,
@@ -106,9 +106,9 @@ def export_registry_to_yaml(
 
 
 def validate_registry_against_yaml(
-    registry_tools: List[Any],
-    path: Optional[Path] = None,
-) -> Dict[str, Any]:
+    registry_tools: list[Any],
+    path: Path | None = None,
+) -> dict[str, Any]:
     """
     Validate registered tools against the YAML metadata snapshot.
 
@@ -127,7 +127,7 @@ def validate_registry_against_yaml(
     missing_in_yaml = sorted(registered_names - yaml_names)
     missing_in_registry = sorted(yaml_names - registered_names)
 
-    description_mismatches: List[Dict[str, str]] = []
+    description_mismatches: list[dict[str, str]] = []
     for tool in registry_tools:
         if tool.name in metadata:
             yaml_desc = metadata[tool.name].get("description", "")

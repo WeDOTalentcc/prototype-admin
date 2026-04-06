@@ -7,9 +7,8 @@ Supports:
 - Candidate profile enrichment (LinkedIn person profiles, email discovery)
 - Salary benchmarking data
 """
-import os
 import logging
-from typing import Dict, List, Optional
+import os
 
 import httpx
 
@@ -282,10 +281,10 @@ class ApifyService:
 
     async def enrich_candidate_profile(
         self,
-        linkedin_url: Optional[str] = None,
-        candidate_name: Optional[str] = None,
-        candidate_email: Optional[str] = None,
-    ) -> Dict:
+        linkedin_url: str | None = None,
+        candidate_name: str | None = None,
+        candidate_email: str | None = None,
+    ) -> dict:
         """
         Enrich a candidate profile with data from LinkedIn and email discovery.
 
@@ -306,7 +305,7 @@ class ApifyService:
                 "source": "apify",
             }
         """
-        enriched: Dict = {"source": "apify"}
+        enriched: dict = {"source": "apify"}
 
         if linkedin_url:
             try:
@@ -329,7 +328,7 @@ class ApifyService:
 
         return enriched
 
-    async def _scrape_linkedin_person(self, linkedin_url: str) -> Dict:
+    async def _scrape_linkedin_person(self, linkedin_url: str) -> dict:
         """Scrape a LinkedIn person profile via Apify actor."""
         if not linkedin_url:
             return {}
@@ -407,15 +406,15 @@ class ApifyService:
         return extracted
 
     async def _discover_email(
-        self, candidate_name: str, linkedin_url: Optional[str] = None
-    ) -> List[str]:
+        self, candidate_name: str, linkedin_url: str | None = None
+    ) -> list[str]:
         """Attempt to discover candidate emails via Apify email finder."""
         if not candidate_name:
             return []
 
         logger.info("[Apify] Discovering email for: %s", candidate_name)
 
-        input_data: Dict = {"name": candidate_name}
+        input_data: dict = {"name": candidate_name}
         if linkedin_url:
             input_data["linkedinUrl"] = linkedin_url
 
@@ -423,7 +422,7 @@ class ApifyService:
         if not result:
             return []
 
-        emails: List[str] = []
+        emails: list[str] = []
         if isinstance(result, dict):
             if result.get("email"):
                 emails.append(result["email"])

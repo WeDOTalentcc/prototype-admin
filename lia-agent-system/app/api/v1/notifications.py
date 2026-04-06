@@ -9,18 +9,18 @@ Provides endpoints for:
 - Getting notification summary
 - Multi-channel notification sending
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List
-from pydantic import BaseModel
 import logging
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.notification_service import (
-    notification_service, 
-    NotificationType, 
     NotificationChannel,
-    ProactiveNotificationType
+    NotificationType,
+    ProactiveNotificationType,
+    notification_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,14 +31,14 @@ class CreateNotificationRequest(BaseModel):
     """Request model for creating a notification."""
     user_id: str
     title: str
-    message: Optional[str] = None
+    message: str | None = None
     notification_type: str = "info"
-    category: Optional[str] = None
-    source_agent: Optional[str] = None
-    related_job_id: Optional[str] = None
-    related_candidate_id: Optional[str] = None
-    action_url: Optional[str] = None
-    action_label: Optional[str] = None
+    category: str | None = None
+    source_agent: str | None = None
+    related_job_id: str | None = None
+    related_candidate_id: str | None = None
+    action_url: str | None = None
+    action_label: str | None = None
 
 
 class MultiChannelNotificationRequest(BaseModel):
@@ -46,35 +46,35 @@ class MultiChannelNotificationRequest(BaseModel):
     user_id: str
     title: str
     message: str
-    channels: List[str] = ["chat", "bell"]
+    channels: list[str] = ["chat", "bell"]
     notification_type: str = "info"
-    proactive_type: Optional[str] = None
+    proactive_type: str | None = None
     priority: str = "normal"
-    data: Optional[dict] = None
-    related_job_id: Optional[str] = None
-    related_candidate_id: Optional[str] = None
-    suggested_actions: Optional[List[str]] = None
-    thread_id: Optional[str] = None
+    data: dict | None = None
+    related_job_id: str | None = None
+    related_candidate_id: str | None = None
+    suggested_actions: list[str] | None = None
+    thread_id: str | None = None
 
 
 class MarkDeliveredRequest(BaseModel):
     """Request model for marking chat notifications as delivered."""
-    notification_ids: List[str]
+    notification_ids: list[str]
 
 
 class RecruiterActionNotificationRequest(BaseModel):
     """Request model for sending recruiter notifications about job actions."""
-    recruiter_ids: List[str]
+    recruiter_ids: list[str]
     action: str  # 'pause', 'activate', 'unpublish', etc.
-    job_titles: List[str]
-    job_ids: List[str]
-    channels: List[str] = ["bell"]  # email, teams, bell
-    reason: Optional[str] = None
+    job_titles: list[str]
+    job_ids: list[str]
+    channels: list[str] = ["bell"]  # email, teams, bell
+    reason: str | None = None
     cancelled_screenings: bool = False
     cancelled_interviews: bool = False
     cancelled_tests: bool = False
     notified_candidates_count: int = 0
-    performed_by: Optional[str] = None
+    performed_by: str | None = None
 
 
 class TechnicalRequirement(BaseModel):
@@ -91,14 +91,14 @@ class Language(BaseModel):
     level: str
 
 class SalaryRange(BaseModel):
-    min: Optional[float] = None
-    max: Optional[float] = None
+    min: float | None = None
+    max: float | None = None
     currency: str = "BRL"
 
 class InterviewStageNotification(BaseModel):
     stageName: str
     order: int
-    sla: Optional[int] = None
+    sla: int | None = None
 
 class PublishingPlatforms(BaseModel):
     linkedin: bool = False
@@ -109,37 +109,37 @@ class JobCreatedNotificationRequest(BaseModel):
     """Request model for sending job created notifications (workplan format)."""
     job_id: str
     job_title: str
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    seniority_level: Optional[str] = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    seniority_level: str | None = None
     job_description: str
-    technical_requirements: List[TechnicalRequirement] = []
-    behavioral_competencies: List[BehavioralCompetency] = []
-    languages: List[Language] = []
-    salary_range: Optional[SalaryRange] = None
-    benefits: List[str] = []
+    technical_requirements: list[TechnicalRequirement] = []
+    behavioral_competencies: list[BehavioralCompetency] = []
+    languages: list[Language] = []
+    salary_range: SalaryRange | None = None
+    benefits: list[str] = []
     deadline_screening: str
     deadline_shortlist: str
     deadline_closing: str
-    interview_stages: List[InterviewStageNotification] = []
+    interview_stages: list[InterviewStageNotification] = []
     publishing_platforms: PublishingPlatforms
     urgency_level: int = 3
     is_confidential: bool = False
     is_affirmative: bool = False
     recruiter_email: str
-    recruiter_name: Optional[str] = None
-    manager_email: Optional[str] = None
-    manager_name: Optional[str] = None
-    channels: List[str] = ["email", "teams"]
+    recruiter_name: str | None = None
+    manager_email: str | None = None
+    manager_name: str | None = None
+    channels: list[str] = ["email", "teams"]
 
 
 @router.get("")
 async def get_notifications(
     user_id: str = "default_user",
     unread_only: bool = False,
-    category: Optional[str] = None,
-    notification_type: Optional[str] = None,
+    category: str | None = None,
+    notification_type: str | None = None,
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db)
@@ -243,7 +243,7 @@ async def mark_notification_as_read(
 @router.post("/read-all")
 async def mark_all_as_read(
     user_id: str = "default_user",
-    category: Optional[str] = None,
+    category: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -412,7 +412,7 @@ async def get_unread_count(
 @router.get("/chat")
 async def get_chat_notifications(
     user_id: str = "default_user",
-    thread_id: Optional[str] = None,
+    thread_id: str | None = None,
     undelivered_only: bool = True,
     limit: int = 20,
     db: AsyncSession = Depends(get_db)
@@ -547,10 +547,10 @@ async def send_proactive_notification(
     proactive_type: str,
     title: str,
     message: str,
-    data: Optional[dict] = None,
-    related_job_id: Optional[str] = None,
-    related_candidate_id: Optional[str] = None,
-    suggested_actions: Optional[List[str]] = None,
+    data: dict | None = None,
+    related_job_id: str | None = None,
+    related_candidate_id: str | None = None,
+    suggested_actions: list[str] | None = None,
     priority: str = "normal",
     db: AsyncSession = Depends(get_db)
 ):
@@ -679,10 +679,7 @@ async def update_alert_threshold(
     each specific condition.
     """
     try:
-        from app.domains.automation.services.proactive_alert_service import (
-            proactive_alert_service,
-            AlertCondition
-        )
+        from app.domains.automation.services.proactive_alert_service import AlertCondition, proactive_alert_service
         
         try:
             condition = AlertCondition(request.condition)
@@ -714,10 +711,7 @@ async def get_alert_thresholds():
     including thresholds, cooldowns, and severity levels.
     """
     try:
-        from app.domains.automation.services.proactive_alert_service import (
-            ThresholdConfig,
-            AlertCondition
-        )
+        from app.domains.automation.services.proactive_alert_service import AlertCondition, ThresholdConfig
         
         thresholds = {}
         for condition in AlertCondition:
@@ -752,9 +746,10 @@ async def send_job_created_notification(
     Recipients: recruiter (required) and manager/hiring manager (optional)
     """
     try:
+        from datetime import datetime
+
         from app.domains.communication.services.email_service import email_service
         from app.domains.communication.services.teams_service import teams_service
-        from datetime import datetime
         
         notifications_sent = {
             "recruiter": {"email": False, "teams": False},
@@ -817,8 +812,8 @@ Localização:       {request.location or 'A definir'}
 Modelo de Trabalho: {request.work_model or 'A definir'}
 Senioridade:       {request.seniority_level or 'A definir'}
 Urgência:          {urgency_label}
-{f"🔒 Vaga Confidencial" if request.is_confidential else ""}
-{f"🌈 Vaga Afirmativa" if request.is_affirmative else ""}
+{"🔒 Vaga Confidencial" if request.is_confidential else ""}
+{"🌈 Vaga Afirmativa" if request.is_affirmative else ""}
 
 💰 REMUNERAÇÃO
 ───────────────────────────────────────────────────────────

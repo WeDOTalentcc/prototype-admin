@@ -10,11 +10,11 @@ This service provides intelligent automation for candidate stage transitions:
 Part of LIA Automation System v1.0
 """
 
-import os
 import json
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+import os
+from typing import Any
+
 from app.shared.providers.llm_client import get_anthropic_client, is_llm_available
 
 logger = logging.getLogger(__name__)
@@ -74,10 +74,10 @@ class SubStatusPredictor:
     @classmethod
     def predict(
         cls,
-        candidate_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
         from_stage: str,
         to_stage: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Predict the most appropriate sub-status for a transition.
         
@@ -92,14 +92,14 @@ class SubStatusPredictor:
     @classmethod
     def _predict_rejection(
         cls,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         from_stage: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Predict rejection sub-status based on context analysis."""
         
         wsi_score = context.get('wsi_score', {})
         interview_notes = context.get('interview_notes', [])
-        lia_parecer = context.get('lia_parecer', {})
+        context.get('lia_parecer', {})
         job = context.get('job', {})
         
         overall_score = wsi_score.get('overall', 0) if wsi_score else 0
@@ -169,10 +169,10 @@ class SubStatusPredictor:
     @classmethod
     def _predict_non_rejection(
         cls,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         from_stage: str,
         to_stage: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Predict sub-status for non-rejection transitions."""
         
         stage_default_substatus = {
@@ -284,13 +284,13 @@ class MessageGenerator:
     @classmethod
     async def generate(
         cls,
-        candidate_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
         to_stage: str,
         substatus: str,
-        job_context: Dict[str, Any],
+        job_context: dict[str, Any],
         message_type: str,
         channel: str = 'email'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a personalized message using Claude.
         
@@ -309,7 +309,7 @@ class MessageGenerator:
             substatus_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(substatus, 'Feedback geral construtivo')
             
             candidate_name = candidate_context.get('name', 'Candidato')
-            first_name = candidate_name.split()[0] if candidate_name else 'Candidato'
+            candidate_name.split()[0] if candidate_name else 'Candidato'
             job_title = job_context.get('title', 'a vaga')
             
             personalization_data = cls._build_personalization_data(candidate_context)
@@ -379,7 +379,7 @@ Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email
             return cls._generate_fallback(candidate_context, to_stage, substatus, job_context, channel)
     
     @classmethod
-    def _build_personalization_data(cls, context: Dict[str, Any]) -> str:
+    def _build_personalization_data(cls, context: dict[str, Any]) -> str:
         """Build personalization data string from context."""
         parts = []
         
@@ -414,12 +414,12 @@ Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email
     @classmethod
     def _generate_fallback(
         cls,
-        candidate_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
         to_stage: str,
         substatus: str,
-        job_context: Dict[str, Any],
+        job_context: dict[str, Any],
         channel: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate fallback message without LLM."""
         candidate_name = candidate_context.get('name', 'Candidato')
         first_name = candidate_name.split()[0] if candidate_name else 'Candidato'
@@ -464,10 +464,10 @@ Equipe WeDoTalent"""
         original_message: str,
         old_substatus: str,
         new_substatus: str,
-        candidate_context: Dict[str, Any],
-        job_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
+        job_context: dict[str, Any],
         channel: str = 'email'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Regenerate message when sub-status changes.
         Adjusts only the parts related to the reason/feedback.
@@ -548,10 +548,10 @@ class StageTransitionAutomationService:
     
     async def predict_substatus(
         self,
-        candidate_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
         from_stage: str,
         to_stage: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Predict appropriate sub-status for transition."""
         enable_llm = os.environ.get('ENABLE_LLM_SUBSTATUS_PREDICTION', 'true').lower() == 'true'
         
@@ -562,10 +562,10 @@ class StageTransitionAutomationService:
     
     async def _predict_substatus_with_llm(
         self,
-        candidate_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
         from_stage: str,
         to_stage: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             client = get_anthropic_client()
             
@@ -624,13 +624,13 @@ Responda APENAS com JSON válido:
     
     async def generate_message(
         self,
-        candidate_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
         to_stage: str,
         substatus: str,
-        job_context: Dict[str, Any],
+        job_context: dict[str, Any],
         message_type: str,
         channel: str = 'email'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate personalized message for transition."""
         return await self.generator.generate(
             candidate_context, to_stage, substatus,
@@ -642,10 +642,10 @@ Responda APENAS com JSON válido:
         original_message: str,
         old_substatus: str,
         new_substatus: str,
-        candidate_context: Dict[str, Any],
-        job_context: Dict[str, Any],
+        candidate_context: dict[str, Any],
+        job_context: dict[str, Any],
         channel: str = 'email'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Regenerate message when sub-status changes."""
         return await self.generator.regenerate_for_substatus(
             original_message, old_substatus, new_substatus,
@@ -656,7 +656,7 @@ Responda APENAS com JSON válido:
         self,
         from_stage: str,
         to_stage: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get available actions for a transition."""
         actions = []
         
@@ -760,7 +760,7 @@ Responda APENAS com JSON válido:
         from_stage: str,
         to_stage: str,
         db: Any = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Predict substatus using real data from database."""
         if db:
             from app.domains.automation.services.candidate_context_aggregator import CandidateContextAggregator
@@ -773,11 +773,11 @@ Responda APENAS com JSON válido:
     
     async def predict_substatus_bulk_from_db(
         self,
-        vacancy_candidate_ids: List[str],
+        vacancy_candidate_ids: list[str],
         from_stage: str,
         to_stage: str,
         db: Any = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Predict substatus for multiple candidates using real DB data."""
         results = []
         if db:

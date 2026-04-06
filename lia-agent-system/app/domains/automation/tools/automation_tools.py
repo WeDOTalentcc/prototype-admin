@@ -2,7 +2,7 @@
 """LangChain tools for Automation domain."""
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from langchain_core.tools import tool
 
@@ -22,7 +22,7 @@ def trigger_workflow(workflow_id: str, trigger_data: str) -> dict:
         "status": "triggered",
         "workflow_id": workflow_id,
         "trigger_data": trigger_data,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -43,7 +43,7 @@ def send_automated_email(
         "template_id": template_id,
         "recipient": recipient_email,
         "template_vars": template_vars,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -64,7 +64,7 @@ def update_candidate_status(
         "old_status": "unknown",
         "new_status": new_status,
         "pipeline_stage": pipeline_stage,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
     }
 
 
@@ -86,7 +86,7 @@ def bulk_send_notifications(
         "failed_count": 0,
         "notification_type": notification_type,
         "recipient_ids": ids,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -113,7 +113,7 @@ def schedule_reminder(
         "entity_id": entity_id,
         "entity_type": entity_type,
         "message": reminder_message,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
     }
 
 
@@ -130,7 +130,7 @@ def get_automation_logs(workflow_id: str, limit: int = 10) -> dict:
             {
                 "run_id": f"WF-{uuid.uuid4().hex[:8].upper()}",
                 "status": "success",
-                "executed_at": datetime.now(timezone.utc).isoformat(),
+                "executed_at": datetime.now(UTC).isoformat(),
                 "duration_ms": (i + 1) * 120,
             }
         )

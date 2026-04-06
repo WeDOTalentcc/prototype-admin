@@ -4,15 +4,16 @@ Endpoints for classifying job vacancies and managing qualification levels.
 """
 import logging
 from datetime import datetime
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.job_vacancy import JobVacancy
 from app.domains.job_management.services.job_qualification_service import job_qualification_service
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +22,13 @@ router = APIRouter(prefix="/jobs/qualification", tags=["job-qualification"])
 
 class ClassifyJobRequest(BaseModel):
     title: str = Field(..., min_length=1)
-    department: Optional[str] = None
-    seniority_level: Optional[str] = None
-    description: Optional[str] = None
-    requirements: Optional[list] = None
-    salary_range: Optional[Dict[str, Any]] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
+    department: str | None = None
+    seniority_level: str | None = None
+    description: str | None = None
+    requirements: list | None = None
+    salary_range: dict[str, Any] | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
 
 
 class ClassifyJobResponse(BaseModel):
@@ -38,16 +39,16 @@ class ClassifyJobResponse(BaseModel):
 
 class JobQualificationResponse(BaseModel):
     job_id: str
-    qualification_level: Optional[str] = None
-    qualification_confidence: Optional[float] = None
-    qualification_reasoning: Optional[str] = None
+    qualification_level: str | None = None
+    qualification_confidence: float | None = None
+    qualification_reasoning: str | None = None
     qualification_override: bool = False
     classified: bool = False
 
 
 class OverrideQualificationRequest(BaseModel):
     level: str = Field(..., pattern="^(alta|media|baixa)$")
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 @router.post("/classify", response_model=ClassifyJobResponse)

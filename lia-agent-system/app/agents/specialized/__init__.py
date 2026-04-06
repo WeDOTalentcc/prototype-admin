@@ -10,7 +10,7 @@
 #   CommunicationAgent → CommunicationService
 #   AnalyticsAgent, AnalistaFeedbackAgent → analytics services
 #   IntegradorATSAgent → REST endpoints + Merge
-from app.domains.sourcing.services.query_builders import BooleanQueryBuilder, CandidateMatcher
-from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph, interview_graph
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
 from app.domains.cv_screening.services.cv_screening_batch_service import run_batch as run_cv_screening_batch
+from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph, interview_graph
+from app.domains.sourcing.services.query_builders import BooleanQueryBuilder, CandidateMatcher

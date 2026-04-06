@@ -7,24 +7,24 @@ Tests validate:
 3. Agent context endpoint
 4. Data source tracking
 """
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from uuid import uuid4
 from datetime import datetime
+from unittest.mock import AsyncMock
+from uuid import uuid4
+
+import pytest
 
 from app.models.lia_field_toggles import (
-    LiaFieldToggle,
     DEFAULT_FIELD_TOGGLES,
+    FALLBACK_STRATEGIES,
     FIELD_FALLBACK_CONFIG,
-    FALLBACK_STRATEGIES
+    LiaFieldToggle,
 )
 from app.services.lia_field_config_service import (
-    LiaFieldConfigService,
+    MARKET_BENCHMARKS,
     DataSource,
     FieldConfig,
     FieldContext,
-    LiaFieldConfigResult,
-    MARKET_BENCHMARKS
+    LiaFieldConfigService,
 )
 
 
@@ -271,7 +271,7 @@ class TestFieldToggleAPIIntegration:
     
     def test_field_toggles_response_includes_comments(self):
         """Verify field toggles response includes comments dict."""
-        from app.api.v1.lia_field_toggles import FieldTogglesResponse, FieldToggleResponse
+        from app.api.v1.lia_field_toggles import FieldTogglesResponse
         
         response = FieldTogglesResponse(
             company_id="test-company",
@@ -324,7 +324,7 @@ class TestAgentFieldConfigIntegration:
     
     def test_is_field_active_helper(self):
         """Test is_field_active helper method."""
-        from app.agents.base_agent import BaseAgent, AgentType
+        from app.agents.base_agent import AgentType, BaseAgent
         
         class TestAgent(BaseAgent):
             @property
@@ -361,7 +361,7 @@ class TestAgentFieldConfigIntegration:
     
     def test_get_field_value_with_source_helper(self):
         """Test get_field_value_with_source helper method."""
-        from app.agents.base_agent import BaseAgent, AgentType
+        from app.agents.base_agent import AgentType, BaseAgent
         
         class TestAgent(BaseAgent):
             @property
@@ -490,7 +490,7 @@ class TestEmptyFieldDetection:
     
     def test_field_impact_descriptions_defined(self):
         """Test that field impact descriptions are defined."""
-        from app.models.recruiter_profile import FIELD_IMPACT_DESCRIPTIONS, DEFAULT_IMPACT_DESCRIPTION
+        from app.models.recruiter_profile import DEFAULT_IMPACT_DESCRIPTION, FIELD_IMPACT_DESCRIPTIONS
         
         assert "benefits" in FIELD_IMPACT_DESCRIPTIONS
         assert "tech_stack" in FIELD_IMPACT_DESCRIPTIONS
@@ -499,8 +499,9 @@ class TestEmptyFieldDetection:
     
     def test_recruiter_field_preference_model_has_reminder_fields(self):
         """Test that RecruiterFieldPreference has the reminder fields."""
-        from app.models.recruiter_profile import RecruiterFieldPreference
         import inspect
+
+        from app.models.recruiter_profile import RecruiterFieldPreference
         
         source = inspect.getsource(RecruiterFieldPreference)
         

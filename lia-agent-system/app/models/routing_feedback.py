@@ -1,10 +1,13 @@
 """RoutingFeedback — stores routing correction signals for adaptive learning."""
 from __future__ import annotations
+
 import hashlib
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Index
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Index, String
+from sqlalchemy.dialects.postgresql import UUID
+
 from app.core.database import Base
 
 

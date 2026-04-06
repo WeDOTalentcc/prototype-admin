@@ -5,10 +5,10 @@ Manages candidate file attachments including CVs, documents, certificates, video
 """
 
 import logging
-from typing import Dict, Any, Optional
 from datetime import datetime
-from sqlalchemy import select, desc, and_, func
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+from sqlalchemy import and_, desc, func, select
 
 from app.core.database import AsyncSessionLocal
 from app.models.candidate_attachment import CandidateAttachment
@@ -29,12 +29,12 @@ class AttachmentService:
         upload_source: str,
         uploaded_by: str,
         company_id: str,
-        file_size: Optional[int] = None,
-        mime_type: Optional[str] = None,
-        related_entity_type: Optional[str] = None,
-        related_entity_id: Optional[str] = None,
-        description: Optional[str] = None,
-        uploaded_by_name: Optional[str] = None,
+        file_size: int | None = None,
+        mime_type: str | None = None,
+        related_entity_type: str | None = None,
+        related_entity_id: str | None = None,
+        description: str | None = None,
+        uploaded_by_name: str | None = None,
     ) -> CandidateAttachment:
         """
         Create a new attachment record.
@@ -87,13 +87,13 @@ class AttachmentService:
     async def list_attachments(
         self,
         company_id: str,
-        candidate_id: Optional[str] = None,
-        file_type: Optional[str] = None,
-        upload_source: Optional[str] = None,
-        is_active: Optional[bool] = True,
+        candidate_id: str | None = None,
+        file_type: str | None = None,
+        upload_source: str | None = None,
+        is_active: bool | None = True,
         limit: int = 50,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         List attachments with optional filters.
         
@@ -155,7 +155,7 @@ class AttachmentService:
     async def get_attachment_by_id(
         self,
         attachment_id: str
-    ) -> Optional[CandidateAttachment]:
+    ) -> CandidateAttachment | None:
         """
         Get a single attachment by ID.
         
@@ -185,7 +185,7 @@ class AttachmentService:
         company_id: str,
         limit: int = 100,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get all attachments for a specific candidate.
         
@@ -234,7 +234,7 @@ class AttachmentService:
     async def deactivate_attachment(
         self,
         attachment_id: str
-    ) -> Optional[CandidateAttachment]:
+    ) -> CandidateAttachment | None:
         """
         Soft delete an attachment by setting is_active=False.
         

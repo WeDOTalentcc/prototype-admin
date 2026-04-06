@@ -85,15 +85,16 @@ Usage with Celery:
         },
     }
 """
-import os
 import logging
-from datetime import datetime
-from typing import Dict, Any, List, Optional
+import os
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+
 from sqlalchemy import select
 
-from app.domains.analytics.services.report_service import report_service
 from app.core.database import AsyncSessionLocal
+from app.domains.analytics.services.report_service import report_service
 
 logger = logging.getLogger(__name__)
 
@@ -108,9 +109,9 @@ class ReportRecipient:
     user_id: str
     email: str
     name: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     company_name: str = "Empresa"
-    report_types: List[str] = field(default_factory=lambda: ["daily"])
+    report_types: list[str] = field(default_factory=lambda: ["daily"])
 
 
 @dataclass
@@ -148,7 +149,7 @@ class ScheduledReportJob:
     - Custom: Call methods directly from any scheduler
     """
     
-    def __init__(self, config: Optional[ReportJobConfig] = None):
+    def __init__(self, config: ReportJobConfig | None = None):
         """
         Initialize the scheduled report job handler.
         
@@ -157,10 +158,10 @@ class ScheduledReportJob:
         """
         self.config = config or ReportJobConfig()
         self.report_service = report_service
-        self._recipients_cache: Dict[str, List[ReportRecipient]] = {}
-        self._last_run: Dict[str, datetime] = {}
+        self._recipients_cache: dict[str, list[ReportRecipient]] = {}
+        self._last_run: dict[str, datetime] = {}
     
-    async def run_daily_briefings(self) -> Dict[str, Any]:
+    async def run_daily_briefings(self) -> dict[str, Any]:
         """
         Execute daily briefing job for all eligible recipients.
         
@@ -265,7 +266,7 @@ class ScheduledReportJob:
         
         return results
     
-    async def run_weekly_reports(self) -> Dict[str, Any]:
+    async def run_weekly_reports(self) -> dict[str, Any]:
         """
         Execute weekly performance report job.
         
@@ -364,7 +365,7 @@ class ScheduledReportJob:
         
         return results
     
-    async def run_monthly_reports(self) -> Dict[str, Any]:
+    async def run_monthly_reports(self) -> dict[str, Any]:
         """
         Execute monthly manager/executive report job.
         
@@ -462,7 +463,7 @@ class ScheduledReportJob:
         
         return results
     
-    async def _get_daily_briefing_recipients(self) -> List[ReportRecipient]:
+    async def _get_daily_briefing_recipients(self) -> list[ReportRecipient]:
         """
         Get list of recipients for daily briefings from database.
         
@@ -476,8 +477,8 @@ class ScheduledReportJob:
         
         try:
             async with AsyncSessionLocal() as db:
-                from app.models.user import User
                 from app.models.company import Company
+                from app.models.user import User
                 
                 result = await db.execute(
                     select(User, Company)
@@ -505,7 +506,7 @@ class ScheduledReportJob:
         
         return recipients
     
-    async def _get_weekly_report_recipients(self) -> Dict[str, List[ReportRecipient]]:
+    async def _get_weekly_report_recipients(self) -> dict[str, list[ReportRecipient]]:
         """
         Get recipients for weekly reports, grouped by team/department.
         
@@ -515,12 +516,12 @@ class ScheduledReportJob:
         Returns:
             Dict mapping team/department names to list of recipients
         """
-        team_recipients: Dict[str, List[ReportRecipient]] = {}
+        team_recipients: dict[str, list[ReportRecipient]] = {}
         
         try:
             async with AsyncSessionLocal() as db:
-                from app.models.user import User
                 from app.models.company import Company
+                from app.models.user import User
                 
                 result = await db.execute(
                     select(User, Company)
@@ -555,7 +556,7 @@ class ScheduledReportJob:
         
         return team_recipients
     
-    async def _get_monthly_report_recipients(self) -> Dict[str, List[ReportRecipient]]:
+    async def _get_monthly_report_recipients(self) -> dict[str, list[ReportRecipient]]:
         """
         Get recipients for monthly manager reports, grouped by company.
         
@@ -565,12 +566,12 @@ class ScheduledReportJob:
         Returns:
             Dict mapping company names to list of recipients
         """
-        company_recipients: Dict[str, List[ReportRecipient]] = {}
+        company_recipients: dict[str, list[ReportRecipient]] = {}
         
         try:
             async with AsyncSessionLocal() as db:
-                from app.models.user import User
                 from app.models.company import Company
+                from app.models.user import User
                 
                 result = await db.execute(
                     select(User, Company)
@@ -603,7 +604,7 @@ class ScheduledReportJob:
         
         return company_recipients
     
-    def get_job_status(self) -> Dict[str, Any]:
+    def get_job_status(self) -> dict[str, Any]:
         """
         Get current status of scheduled jobs.
         
@@ -634,7 +635,7 @@ class ScheduledReportJob:
         self,
         report_type: str,
         recipient: ReportRecipient
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run a single report for a specific recipient.
         

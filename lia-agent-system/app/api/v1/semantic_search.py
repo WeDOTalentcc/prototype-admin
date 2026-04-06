@@ -5,16 +5,14 @@ Provides semantic expansion for advanced filters modal fields.
 Supports 8 domains with LLM-powered suggestions and Redis caching.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import List, Optional
-from enum import Enum
 
 from app.services.semantic_search_service import (
-    semantic_search_service,
     SemanticDomain,
     SemanticExpansionResult,
-    SemanticSuggestion
+    semantic_search_service,
 )
 
 router = APIRouter(prefix="/semantic-search", tags=["Semantic Search"])
@@ -22,7 +20,7 @@ router = APIRouter(prefix="/semantic-search", tags=["Semantic Search"])
 
 class SemanticSearchRequest(BaseModel):
     query: str = Field(..., min_length=2, max_length=200, description="Search query to expand")
-    existing: List[str] = Field(default=[], description="Already selected items to exclude")
+    existing: list[str] = Field(default=[], description="Already selected items to exclude")
     
 
 class SemanticSearchResponse(BaseModel):

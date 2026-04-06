@@ -5,14 +5,14 @@ Domains: talent (candidates), jobs (vacancies), policy (policy blocks),
          company (company documents), general (default).
 """
 from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
-from typing import Optional, List, Dict
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-DOMAIN_MAP: Dict[str, str] = {
+DOMAIN_MAP: dict[str, str] = {
     "candidates": "talent",
     "job_vacancies": "jobs",
     "policy_blocks": "policy",

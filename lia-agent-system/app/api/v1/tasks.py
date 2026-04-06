@@ -1,11 +1,11 @@
 """
 Tasks API - Endpoints for task management.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
 from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.automation.services.task_service import task_service
@@ -17,46 +17,46 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 class TaskCreate(BaseModel):
     """Request model for creating a task."""
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
-    task_type: Optional[TaskType] = TaskType.GENERAL
-    priority: Optional[TaskPriority] = TaskPriority.MEDIUM
-    assigned_to_user_id: Optional[str] = None
-    assigned_to_agent: Optional[str] = None
-    related_job_id: Optional[str] = None
-    related_candidate_id: Optional[str] = None
-    due_date: Optional[datetime] = None
-    context: Optional[dict] = None
+    description: str | None = None
+    task_type: TaskType | None = TaskType.GENERAL
+    priority: TaskPriority | None = TaskPriority.MEDIUM
+    assigned_to_user_id: str | None = None
+    assigned_to_agent: str | None = None
+    related_job_id: str | None = None
+    related_candidate_id: str | None = None
+    due_date: datetime | None = None
+    context: dict | None = None
     is_automated: bool = False
     requires_confirmation: bool = False
 
 
 class TaskUpdate(BaseModel):
     """Request model for updating a task."""
-    title: Optional[str] = None
-    description: Optional[str] = None
-    priority: Optional[TaskPriority] = None
-    status: Optional[TaskStatus] = None
-    assigned_to_user_id: Optional[str] = None
-    assigned_to_agent: Optional[str] = None
-    due_date: Optional[datetime] = None
+    title: str | None = None
+    description: str | None = None
+    priority: TaskPriority | None = None
+    status: TaskStatus | None = None
+    assigned_to_user_id: str | None = None
+    assigned_to_agent: str | None = None
+    due_date: datetime | None = None
 
 
 class TaskResponse(BaseModel):
     """Response model for a task."""
     id: str
     title: str
-    description: Optional[str]
-    task_type: Optional[str]
-    priority: Optional[str]
-    status: Optional[str]
-    created_by_agent: Optional[str]
-    assigned_to_agent: Optional[str]
-    assigned_to_user_id: Optional[str]
-    related_job_id: Optional[str]
-    related_candidate_id: Optional[str]
-    due_date: Optional[datetime]
-    completed_at: Optional[datetime]
-    context: Optional[dict]
+    description: str | None
+    task_type: str | None
+    priority: str | None
+    status: str | None
+    created_by_agent: str | None
+    assigned_to_agent: str | None
+    assigned_to_user_id: str | None
+    related_job_id: str | None
+    related_candidate_id: str | None
+    due_date: datetime | None
+    completed_at: datetime | None
+    context: dict | None
     is_automated: bool
     requires_confirmation: bool
     created_at: datetime
@@ -100,12 +100,12 @@ async def create_task(
     return task.to_dict()
 
 
-@router.get("/", response_model=List[TaskResponse])
+@router.get("/", response_model=list[TaskResponse])
 async def list_tasks(
-    status: Optional[TaskStatus] = None,
-    priority: Optional[TaskPriority] = None,
-    user_id: Optional[str] = None,
-    agent_type: Optional[str] = None,
+    status: TaskStatus | None = None,
+    priority: TaskPriority | None = None,
+    user_id: str | None = None,
+    agent_type: str | None = None,
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -122,7 +122,7 @@ async def list_tasks(
 
 @router.get("/summary", response_model=TaskSummaryResponse)
 async def get_task_summary(
-    user_id: Optional[str] = None,
+    user_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Get task summary for dashboard."""
@@ -130,9 +130,9 @@ async def get_task_summary(
     return summary
 
 
-@router.get("/today", response_model=List[TaskResponse])
+@router.get("/today", response_model=list[TaskResponse])
 async def get_tasks_due_today(
-    user_id: Optional[str] = None,
+    user_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Get tasks due today."""
@@ -140,9 +140,9 @@ async def get_tasks_due_today(
     return [task.to_dict() for task in tasks]
 
 
-@router.get("/overdue", response_model=List[TaskResponse])
+@router.get("/overdue", response_model=list[TaskResponse])
 async def get_overdue_tasks(
-    user_id: Optional[str] = None,
+    user_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Get overdue tasks."""
@@ -201,7 +201,7 @@ async def update_task(
 @router.post("/{task_id}/complete", response_model=TaskResponse)
 async def complete_task(
     task_id: str,
-    result: Optional[dict] = None,
+    result: dict | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Mark a task as completed."""
@@ -219,7 +219,7 @@ async def complete_task(
 @router.post("/{task_id}/cancel", response_model=TaskResponse)
 async def cancel_task(
     task_id: str,
-    reason: Optional[str] = None,
+    reason: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Cancel a task."""
@@ -236,8 +236,8 @@ async def cancel_task(
 @router.post("/{task_id}/assign", response_model=TaskResponse)
 async def assign_task(
     task_id: str,
-    user_id: Optional[str] = None,
-    agent_type: Optional[str] = None,
+    user_id: str | None = None,
+    agent_type: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Assign a task to a user or agent."""

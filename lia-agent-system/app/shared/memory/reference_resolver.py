@@ -1,7 +1,6 @@
-import re
-import logging
 import difflib
-from typing import Optional, List
+import logging
+import re
 from dataclasses import dataclass, field
 
 from app.shared.memory.conversation_state import ConversationState
@@ -15,11 +14,11 @@ FUZZY_MATCH_THRESHOLD = 0.7
 class ResolvedReference:
     resolved: bool
     reference_type: str
-    resolved_id: Optional[int] = None
-    resolved_ids: List[int] = field(default_factory=list)
+    resolved_id: int | None = None
+    resolved_ids: list[int] = field(default_factory=list)
     original_text: str = ""
     confidence: float = 0.0
-    action: Optional[str] = None
+    action: str | None = None
     keep_filters: bool = False
 
 
@@ -112,7 +111,7 @@ class ReferenceResolver:
 
         return ResolvedReference(resolved=False, reference_type="none", original_text=normalized)
 
-    def _resolve_pronoun(self, query: str, state: ConversationState) -> Optional[ResolvedReference]:
+    def _resolve_pronoun(self, query: str, state: ConversationState) -> ResolvedReference | None:
         for pattern in self.PRONOUN_PATTERNS:
             match = re.search(pattern, query, re.IGNORECASE)
             if match:
@@ -137,7 +136,7 @@ class ReferenceResolver:
                 )
         return None
 
-    def _resolve_position(self, query: str, state: ConversationState) -> Optional[ResolvedReference]:
+    def _resolve_position(self, query: str, state: ConversationState) -> ResolvedReference | None:
         for pattern, index in self.POSITION_PATTERNS:
             match = re.search(pattern, query, re.IGNORECASE)
             if match:
@@ -176,7 +175,7 @@ class ReferenceResolver:
                 )
         return None
 
-    def _resolve_previous(self, query: str, state: ConversationState) -> Optional[ResolvedReference]:
+    def _resolve_previous(self, query: str, state: ConversationState) -> ResolvedReference | None:
         for pattern in self.PREVIOUS_PATTERNS:
             match = re.search(pattern, query, re.IGNORECASE)
             if match:
@@ -198,7 +197,7 @@ class ReferenceResolver:
                 )
         return None
 
-    def _resolve_shortlist(self, query: str, state: ConversationState) -> Optional[ResolvedReference]:
+    def _resolve_shortlist(self, query: str, state: ConversationState) -> ResolvedReference | None:
         for pattern in self.SHORTLIST_PATTERNS_REMOVE:
             match = re.search(pattern, query, re.IGNORECASE)
             if match:
@@ -242,7 +241,7 @@ class ReferenceResolver:
 
         return None
 
-    def _resolve_continuation(self, query: str, state: ConversationState) -> Optional[ResolvedReference]:
+    def _resolve_continuation(self, query: str, state: ConversationState) -> ResolvedReference | None:
         for pattern in self.CONTINUATION_PATTERNS:
             match = re.search(pattern, query, re.IGNORECASE)
             if match:
@@ -256,7 +255,7 @@ class ReferenceResolver:
                 )
         return None
 
-    def _resolve_name(self, query: str, state: ConversationState) -> Optional[ResolvedReference]:
+    def _resolve_name(self, query: str, state: ConversationState) -> ResolvedReference | None:
         if not state.mentioned_candidates:
             return None
 

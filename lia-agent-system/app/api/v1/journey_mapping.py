@@ -2,24 +2,19 @@
 Journey Mapping API endpoints for Admin section.
 Manages recruitment journey blueprints, steps, and integrations.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
+import logging
+import uuid
+from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, or_, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-import logging
-from datetime import datetime
-import uuid
 
-from app.models.journey_mapping import (
-    JourneyBlueprint,
-    JourneyStep,
-    JourneyIntegration,
-    JourneyStatus,
-    IntegrationType
-)
 from app.core.database import get_db
+from app.models.journey_mapping import JourneyBlueprint, JourneyIntegration, JourneyStep
 from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
@@ -38,52 +33,52 @@ def verify_ownership(resource, company_id: uuid.UUID, resource_name: str = "Reso
 class JourneyStepCreate(BaseModel):
     blueprint_id: uuid.UUID
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     step_type: str
     order: int = 0
     is_enabled: bool = True
     is_required: bool = True
-    config: Dict[str, Any] = {}
-    sla_days: Optional[int] = None
-    responsible_role: Optional[str] = None
+    config: dict[str, Any] = {}
+    sla_days: int | None = None
+    responsible_role: str | None = None
     automation_enabled: bool = False
-    automation_config: Dict[str, Any] = {}
+    automation_config: dict[str, Any] = {}
     ai_enabled: bool = False
-    ai_config: Dict[str, Any] = {}
+    ai_config: dict[str, Any] = {}
 
 
 class JourneyStepUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    step_type: Optional[str] = None
-    order: Optional[int] = None
-    is_enabled: Optional[bool] = None
-    is_required: Optional[bool] = None
-    config: Optional[Dict[str, Any]] = None
-    sla_days: Optional[int] = None
-    responsible_role: Optional[str] = None
-    automation_enabled: Optional[bool] = None
-    automation_config: Optional[Dict[str, Any]] = None
-    ai_enabled: Optional[bool] = None
-    ai_config: Optional[Dict[str, Any]] = None
+    name: str | None = None
+    description: str | None = None
+    step_type: str | None = None
+    order: int | None = None
+    is_enabled: bool | None = None
+    is_required: bool | None = None
+    config: dict[str, Any] | None = None
+    sla_days: int | None = None
+    responsible_role: str | None = None
+    automation_enabled: bool | None = None
+    automation_config: dict[str, Any] | None = None
+    ai_enabled: bool | None = None
+    ai_config: dict[str, Any] | None = None
 
 
 class JourneyStepResponse(BaseModel):
     id: uuid.UUID
     blueprint_id: uuid.UUID
     name: str
-    description: Optional[str]
+    description: str | None
     step_type: str
     order: int
     is_enabled: bool
     is_required: bool
-    config: Dict[str, Any]
-    sla_days: Optional[int]
-    responsible_role: Optional[str]
+    config: dict[str, Any]
+    sla_days: int | None
+    responsible_role: str | None
     automation_enabled: bool
-    automation_config: Dict[str, Any]
+    automation_config: dict[str, Any]
     ai_enabled: bool
-    ai_config: Dict[str, Any]
+    ai_config: dict[str, Any]
     created_at: datetime
     updated_at: datetime
 
@@ -95,24 +90,24 @@ class JourneyIntegrationCreate(BaseModel):
     blueprint_id: uuid.UUID
     name: str
     integration_type: str
-    provider: Optional[str] = None
+    provider: str | None = None
     is_enabled: bool = False
-    connection_config: Dict[str, Any] = {}
-    field_mappings: Dict[str, Any] = {}
+    connection_config: dict[str, Any] = {}
+    field_mappings: dict[str, Any] = {}
     sync_direction: str = "bidirectional"
     sync_frequency: str = "realtime"
 
 
 class JourneyIntegrationUpdate(BaseModel):
-    name: Optional[str] = None
-    integration_type: Optional[str] = None
-    provider: Optional[str] = None
-    is_enabled: Optional[bool] = None
-    is_connected: Optional[bool] = None
-    connection_config: Optional[Dict[str, Any]] = None
-    field_mappings: Optional[Dict[str, Any]] = None
-    sync_direction: Optional[str] = None
-    sync_frequency: Optional[str] = None
+    name: str | None = None
+    integration_type: str | None = None
+    provider: str | None = None
+    is_enabled: bool | None = None
+    is_connected: bool | None = None
+    connection_config: dict[str, Any] | None = None
+    field_mappings: dict[str, Any] | None = None
+    sync_direction: str | None = None
+    sync_frequency: str | None = None
 
 
 class JourneyIntegrationResponse(BaseModel):
@@ -120,14 +115,14 @@ class JourneyIntegrationResponse(BaseModel):
     blueprint_id: uuid.UUID
     name: str
     integration_type: str
-    provider: Optional[str]
+    provider: str | None
     is_enabled: bool
     is_connected: bool
-    connection_config: Dict[str, Any]
-    field_mappings: Dict[str, Any]
+    connection_config: dict[str, Any]
+    field_mappings: dict[str, Any]
     sync_direction: str
     sync_frequency: str
-    last_sync_at: Optional[datetime]
+    last_sync_at: datetime | None
     sync_status: str
     created_at: datetime
     updated_at: datetime
@@ -139,45 +134,45 @@ class JourneyIntegrationResponse(BaseModel):
 class JourneyBlueprintCreate(BaseModel):
     company_id: uuid.UUID
     name: str = "Jornada Principal"
-    description: Optional[str] = None
-    vacancy_origin: Optional[str] = None
+    description: str | None = None
+    vacancy_origin: str | None = None
     has_external_wfp: bool = False
     has_internal_wfp: bool = False
 
 
 class JourneyBlueprintUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    wizard_step: Optional[int] = None
-    wizard_completed: Optional[bool] = None
-    wizard_data: Optional[Dict[str, Any]] = None
-    ai_summary: Optional[str] = None
-    ai_recommendations: Optional[List[Dict[str, Any]]] = None
-    vacancy_origin: Optional[str] = None
-    has_external_wfp: Optional[bool] = None
-    has_internal_wfp: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    status: str | None = None
+    wizard_step: int | None = None
+    wizard_completed: bool | None = None
+    wizard_data: dict[str, Any] | None = None
+    ai_summary: str | None = None
+    ai_recommendations: list[dict[str, Any]] | None = None
+    vacancy_origin: str | None = None
+    has_external_wfp: bool | None = None
+    has_internal_wfp: bool | None = None
 
 
 class JourneyBlueprintResponse(BaseModel):
     id: uuid.UUID
     company_id: uuid.UUID
     name: str
-    description: Optional[str]
+    description: str | None
     status: str
     wizard_step: int
     wizard_completed: bool
-    wizard_data: Dict[str, Any]
-    ai_summary: Optional[str]
-    ai_recommendations: List[Dict[str, Any]]
-    vacancy_origin: Optional[str]
+    wizard_data: dict[str, Any]
+    ai_summary: str | None
+    ai_recommendations: list[dict[str, Any]]
+    vacancy_origin: str | None
     has_external_wfp: bool
     has_internal_wfp: bool
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
-    steps: List[JourneyStepResponse] = []
-    integrations: List[JourneyIntegrationResponse] = []
+    created_by: str | None
+    steps: list[JourneyStepResponse] = []
+    integrations: list[JourneyIntegrationResponse] = []
 
     class Config:
         from_attributes = True
@@ -186,29 +181,29 @@ class JourneyBlueprintResponse(BaseModel):
 class WizardStepData(BaseModel):
     blueprint_id: uuid.UUID
     step_number: int
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
 
 class WizardCompleteData(BaseModel):
     """Complete wizard data submitted from frontend."""
     company_id: uuid.UUID
     vagas_abertura: str = Field(..., description="Origin type: requisicao_formal, demanda_direta, planejamento_anual")
-    sistemas_usados: List[str] = Field(default=[], description="List of system IDs used")
-    etapas_processo: List[str] = Field(default=[], description="List of process step names")
-    automacoes_desejadas: List[str] = Field(default=[], description="List of automation IDs")
-    canais_publicacao: List[str] = Field(default=[], description="List of publication channel IDs")
-    careers_page_url: Optional[str] = Field(None, description="URL of careers page if site_proprio selected")
+    sistemas_usados: list[str] = Field(default=[], description="List of system IDs used")
+    etapas_processo: list[str] = Field(default=[], description="List of process step names")
+    automacoes_desejadas: list[str] = Field(default=[], description="List of automation IDs")
+    canais_publicacao: list[str] = Field(default=[], description="List of publication channel IDs")
+    careers_page_url: str | None = Field(None, description="URL of careers page if site_proprio selected")
 
 
 class AIRecommendationsRequest(BaseModel):
     blueprint_id: uuid.UUID
-    context: Optional[Dict[str, Any]] = {}
+    context: dict[str, Any] | None = {}
 
 
 class AIRecommendationsResponse(BaseModel):
-    recommendations: List[Dict[str, Any]]
+    recommendations: list[dict[str, Any]]
     summary: str
-    suggested_steps: List[Dict[str, Any]]
+    suggested_steps: list[dict[str, Any]]
 
 
 SYSTEM_CATEGORY_MAP = {
@@ -525,7 +520,7 @@ async def save_wizard_step(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/steps", response_model=List[JourneyStepResponse])
+@router.get("/steps", response_model=list[JourneyStepResponse])
 async def get_steps(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
@@ -655,7 +650,7 @@ async def delete_step(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/integrations", response_model=List[JourneyIntegrationResponse])
+@router.get("/integrations", response_model=list[JourneyIntegrationResponse])
 async def get_integrations(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),

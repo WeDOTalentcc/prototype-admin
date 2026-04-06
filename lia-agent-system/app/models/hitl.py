@@ -9,8 +9,7 @@ Redis permanece como cache fast-path (TTL 24h).
 DB é source of truth persistente.
 """
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -42,7 +41,7 @@ class HITLPendingAction(Base):
     approved = Column(Boolean, nullable=True)
     comment = Column(Text, nullable=True)
     resolved_by = Column(String(255), nullable=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
     expires_at = Column(DateTime(timezone=True), nullable=False)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -90,7 +89,7 @@ class HITLAuditTrail(Base):
     approved = Column(Boolean, nullable=False)
     comment = Column(Text, nullable=True)
     resolved_by = Column(String(255), nullable=True)
-    resolved_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    resolved_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         Index("ix_hitl_audit_thread_id", "thread_id"),

@@ -20,14 +20,13 @@ Data: 2026-02-11
 Versão: 1.0
 """
 
-from typing import Optional, Dict
 import logging
 
 logger = logging.getLogger(__name__)
 
 WSI_SENIORITY_LEVELS = ["junior", "pleno", "senior", "lead", "executive"]
 
-SENIORITY_NORMALIZATION_MAP: Dict[str, str] = {
+SENIORITY_NORMALIZATION_MAP: dict[str, str] = {
     "júnior": "junior",
     "junior": "junior",
     "jr": "junior",
@@ -102,7 +101,7 @@ SENIORITY_NORMALIZATION_MAP: Dict[str, str] = {
     "executive director": "executive",
 }
 
-SENIORITY_NUMERIC_MAPPING: Dict[str, int] = {
+SENIORITY_NUMERIC_MAPPING: dict[str, int] = {
     "junior": 1,
     "pleno": 2,
     "senior": 3,
@@ -111,7 +110,7 @@ SENIORITY_NUMERIC_MAPPING: Dict[str, int] = {
 }
 
 
-def normalize_seniority(raw: Optional[str]) -> str:
+def normalize_seniority(raw: str | None) -> str:
     """
     Normaliza uma string de senioridade para um dos 5 níveis oficiais WSI.
     
@@ -158,7 +157,7 @@ def normalize_seniority(raw: Optional[str]) -> str:
     return "pleno"
 
 
-def get_seniority_numeric(seniority: Optional[str]) -> int:
+def get_seniority_numeric(seniority: str | None) -> int:
     """
     Retorna o valor numérico de um nível de senioridade para comparação e ordenação.
     
@@ -200,7 +199,7 @@ def get_seniority_numeric(seniority: Optional[str]) -> int:
     return numeric
 
 
-def infer_seniority_from_title(title: Optional[str]) -> Optional[str]:
+def infer_seniority_from_title(title: str | None) -> str | None:
     """
     Infere o nível de senioridade a partir de um título de cargo.
     
@@ -299,7 +298,7 @@ def infer_seniority_from_title(title: Optional[str]) -> Optional[str]:
     return None
 
 
-def is_valid_seniority_level(seniority: Optional[str]) -> bool:
+def is_valid_seniority_level(seniority: str | None) -> bool:
     """
     Verifica se uma senioridade é um nível válido da taxonomia WSI.
     
@@ -356,7 +355,7 @@ def compare_seniority(seniority1: str, seniority2: str) -> int:
         return 0
 
 
-def normalize_and_validate(raw: Optional[str]) -> Optional[str]:
+def normalize_and_validate(raw: str | None) -> str | None:
     """
     Normaliza uma senioridade e retorna None se não conseguir normalizar.
     

@@ -11,18 +11,19 @@ Example:
     If LIA suggests R$15k for "Dev Sênior" and recruiters consistently correct to R$18k+,
     the service learns to suggest R$18k for similar roles in the future.
 """
-from typing import Optional, Dict, Any, List, Sequence, cast
-from datetime import datetime, timedelta
-from dataclasses import dataclass
+import json
 import logging
 import statistics
-import json
+from collections.abc import Sequence
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, cast
 from uuid import UUID
 
-from sqlalchemy import select, func, and_, or_, case
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import WizardFeedback, JobOutcome, JobOutcomeType, SuggestionFeedback
+from app.models.feedback_learning import JobOutcome, JobOutcomeType, SuggestionFeedback, WizardFeedback
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +33,8 @@ class CorrectionPattern:
     """Represents a pattern of corrections for a specific field."""
     field: str
     sample_size: int
-    average_original: Optional[float]
-    average_corrected: Optional[float]
+    average_original: float | None
+    average_corrected: float | None
     correction_direction: str
     correction_percentage: float
     confidence: str
@@ -44,12 +45,12 @@ class CorrectionPattern:
 class SuccessPattern:
     """Represents patterns from successful hires."""
     role: str
-    seniority: Optional[str]
+    seniority: str | None
     sample_size: int
     avg_time_to_fill: float
     avg_salary: float
     avg_candidates_screened: int
-    common_skills: List[str]
+    common_skills: list[str]
     satisfaction_score: float
     confidence: str
 
@@ -102,13 +103,13 @@ class FeedbackLearningService:
         field: str,
         original_value: Any,
         corrected_value: Any,
-        stage: Optional[str] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        location: Optional[str] = None,
-        correction_reason: Optional[str] = None,
-        created_by: Optional[str] = None
+        stage: str | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        correction_reason: str | None = None,
+        created_by: str | None = None
     ) -> WizardFeedback:
         """
         Record a correction made by a recruiter during the wizard flow.
@@ -167,23 +168,23 @@ class FeedbackLearningService:
         company_id: str,
         job_id: UUID,
         outcome: JobOutcomeType,
-        time_to_fill_days: Optional[int] = None,
-        salary_initial_min: Optional[float] = None,
-        salary_initial_max: Optional[float] = None,
-        salary_final: Optional[float] = None,
-        candidate_count_total: Optional[int] = None,
-        candidate_count_screened: Optional[int] = None,
-        candidate_count_interviewed: Optional[int] = None,
-        candidate_count_offered: Optional[int] = None,
-        satisfaction_score: Optional[float] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        location: Optional[str] = None,
-        work_model: Optional[str] = None,
-        skills_used: Optional[List[str]] = None,
-        notes: Optional[str] = None,
-        created_by: Optional[str] = None
+        time_to_fill_days: int | None = None,
+        salary_initial_min: float | None = None,
+        salary_initial_max: float | None = None,
+        salary_final: float | None = None,
+        candidate_count_total: int | None = None,
+        candidate_count_screened: int | None = None,
+        candidate_count_interviewed: int | None = None,
+        candidate_count_offered: int | None = None,
+        satisfaction_score: float | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        work_model: str | None = None,
+        skills_used: list[str] | None = None,
+        notes: str | None = None,
+        created_by: str | None = None
     ) -> JobOutcome:
         """
         Record the final outcome of a job vacancy.
@@ -257,8 +258,8 @@ class FeedbackLearningService:
         suggested_value: Any,
         accepted: bool,
         actual_value: Any = None,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Optional[SuggestionFeedback]:
+        context: dict[str, Any] | None = None
+    ) -> SuggestionFeedback | None:
         """
         Record user feedback on a suggestion for learning.
         
@@ -324,10 +325,10 @@ class FeedbackLearningService:
         db: AsyncSession,
         company_id: str,
         field: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         months_back: int = 12
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze patterns in recruiter corrections for a specific field.
         
@@ -398,7 +399,7 @@ class FeedbackLearningService:
         self,
         feedbacks: Sequence[WizardFeedback],
         field: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Analyze corrections for a specific field type."""
         
         if field == "salary_range":
@@ -411,7 +412,7 @@ class FeedbackLearningService:
     def _analyze_salary_corrections(
         self,
         feedbacks: Sequence[WizardFeedback]
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Analyze salary-related corrections."""
         patterns = []
         
@@ -455,7 +456,7 @@ class FeedbackLearningService:
                 "sample_size": len(original_values)
             })
         
-        seniority_patterns: Dict[str, Dict[str, List[float]]] = {}
+        seniority_patterns: dict[str, dict[str, list[float]]] = {}
         for fb in feedbacks:
             fb_seniority = fb.seniority
             seniority = str(fb_seniority) if fb_seniority is not None else "unknown"
@@ -492,7 +493,7 @@ class FeedbackLearningService:
     def _analyze_categorical_corrections(
         self,
         feedbacks: Sequence[WizardFeedback]
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Analyze categorical field corrections (e.g., seniority level)."""
         transitions = {}
         
@@ -521,7 +522,7 @@ class FeedbackLearningService:
     def _analyze_generic_corrections(
         self,
         feedbacks: Sequence[WizardFeedback]
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Analyze generic field corrections."""
         return [{
             "type": "generic",
@@ -532,9 +533,9 @@ class FeedbackLearningService:
     
     def _generate_recommendation(
         self,
-        patterns: List[Dict[str, Any]],
+        patterns: list[dict[str, Any]],
         field: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """Generate a recommendation based on correction patterns."""
         if not patterns:
             return None
@@ -555,10 +556,10 @@ class FeedbackLearningService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         months_back: int = 12
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze patterns from successful hires.
         
@@ -593,7 +594,7 @@ class FeedbackLearningService:
             
             query = select(JobOutcome).where(and_(*conditions))
             result = await db.execute(query)
-            outcomes = cast(List[JobOutcome], list(result.scalars().all()))
+            outcomes = cast(list[JobOutcome], list(result.scalars().all()))
             
             if not outcomes:
                 return {
@@ -604,11 +605,11 @@ class FeedbackLearningService:
                     "confidence": "none"
                 }
             
-            time_to_fill: List[int] = []
-            salaries: List[float] = []
-            satisfaction: List[float] = []
-            candidates_screened: List[int] = []
-            all_skills: List[str] = []
+            time_to_fill: list[int] = []
+            salaries: list[float] = []
+            satisfaction: list[float] = []
+            candidates_screened: list[int] = []
+            all_skills: list[str] = []
             
             for o in outcomes:
                 if o.time_to_fill_days is not None:
@@ -680,10 +681,10 @@ class FeedbackLearningService:
         self,
         db: AsyncSession,
         company_id: str,
-        suggestion: Dict[str, Any],
-        role: Optional[str] = None,
-        seniority: Optional[str] = None
-    ) -> Dict[str, Any]:
+        suggestion: dict[str, Any],
+        role: str | None = None,
+        seniority: str | None = None
+    ) -> dict[str, Any]:
         """
         Adjust a suggestion based on past corrections and success patterns.
         
@@ -774,7 +775,7 @@ class FeedbackLearningService:
         db: AsyncSession,
         company_id: str,
         months_back: int = 12
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get a summary of all learning data for a company.
         

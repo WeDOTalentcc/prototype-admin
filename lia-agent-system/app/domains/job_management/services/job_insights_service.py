@@ -8,13 +8,13 @@ This service queries the JobVacancy table to provide:
 - Time to fill metrics
 - Success metrics from closed positions
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
-from dataclasses import dataclass
 import logging
 import statistics
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select, func, and_, or_, case, extract
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.job_vacancy import JobVacancy
@@ -59,13 +59,13 @@ class TimeToFillMetrics:
 class SimilarJob:
     id: str
     title: str
-    department: Optional[str]
-    seniority: Optional[str]
-    location: Optional[str]
-    work_model: Optional[str]
+    department: str | None
+    seniority: str | None
+    location: str | None
+    work_model: str | None
     status: str
     created_at: datetime
-    closed_at: Optional[datetime]
+    closed_at: datetime | None
     similarity_score: float
 
 
@@ -98,7 +98,7 @@ class JobInsightsService:
             return "low"
         return "none"
     
-    def _calculate_trend(self, values_by_date: List[tuple]) -> str:
+    def _calculate_trend(self, values_by_date: list[tuple]) -> str:
         """
         Calculate salary trend based on historical data.
         Returns: 'increasing', 'decreasing', 'stable'
@@ -125,7 +125,7 @@ class JobInsightsService:
             return "decreasing"
         return "stable"
     
-    def _normalize_role_for_search(self, role: str) -> List[str]:
+    def _normalize_role_for_search(self, role: str) -> list[str]:
         """Generate variations of role for fuzzy matching."""
         variations = [role.lower()]
         
@@ -155,11 +155,11 @@ class JobInsightsService:
         db: AsyncSession,
         company_id: str,
         role: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
-        work_model: Optional[str] = None,
+        seniority: str | None = None,
+        location: str | None = None,
+        work_model: str | None = None,
         months_back: int = 12
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get salary benchmark based on similar past jobs.
         
@@ -279,9 +279,9 @@ class JobInsightsService:
     def _empty_salary_response(
         self,
         role: str,
-        seniority: Optional[str] = None,
-        error: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        error: str | None = None
+    ) -> dict[str, Any]:
         """Return empty salary response when no data is available."""
         return {
             "min": None,
@@ -301,11 +301,11 @@ class JobInsightsService:
         self,
         db: AsyncSession,
         company_id: str,
-        department: Optional[str] = None,
-        role: Optional[str] = None,
+        department: str | None = None,
+        role: str | None = None,
         months_back: int = 12,
         limit: int = 20
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get most frequently used skills for similar roles.
         
@@ -351,7 +351,7 @@ class JobInsightsService:
             if not rows:
                 return self._empty_skills_response(department, role)
             
-            skill_counts: Dict[str, Dict[str, Any]] = {}
+            skill_counts: dict[str, dict[str, Any]] = {}
             total_jobs = len(rows)
             
             for row in rows:
@@ -436,17 +436,17 @@ class JobInsightsService:
     
     def _empty_skills_response(
         self,
-        department: Optional[str] = None,
-        role: Optional[str] = None,
-        error: Optional[str] = None
-    ) -> Dict[str, Any]:
+        department: str | None = None,
+        role: str | None = None,
+        error: str | None = None
+    ) -> dict[str, Any]:
         """Return empty skills response when no data is available."""
         return {
             "skills": [],
             "categories_summary": {},
             "total_jobs_analyzed": 0,
             "confidence": "none",
-            "based_on": f"Nenhuma vaga encontrada" + 
+            "based_on": "Nenhuma vaga encontrada" + 
                        (f" em {department}" if department else "") +
                        (f" para {role}" if role else ""),
             "error": error
@@ -456,14 +456,14 @@ class JobInsightsService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        department: Optional[str] = None,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
-        work_model: Optional[str] = None,
-        exclude_job_id: Optional[str] = None,
+        role: str | None = None,
+        department: str | None = None,
+        seniority: str | None = None,
+        location: str | None = None,
+        work_model: str | None = None,
+        exclude_job_id: str | None = None,
         limit: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Find similar jobs based on criteria.
         
@@ -564,11 +564,11 @@ class JobInsightsService:
     def _calculate_similarity_score(
         self,
         row,
-        target_role: Optional[str] = None,
-        target_department: Optional[str] = None,
-        target_seniority: Optional[str] = None,
-        target_location: Optional[str] = None,
-        target_work_model: Optional[str] = None
+        target_role: str | None = None,
+        target_department: str | None = None,
+        target_seniority: str | None = None,
+        target_location: str | None = None,
+        target_work_model: str | None = None
     ) -> float:
         """Calculate similarity score between a job and target criteria."""
         score = 0.0
@@ -624,11 +624,11 @@ class JobInsightsService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None,
         months_back: int = 24
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get average time to fill similar positions.
         
@@ -718,10 +718,10 @@ class JobInsightsService:
     
     def _empty_time_to_fill_response(
         self,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        error: Optional[str] = None
-    ) -> Dict[str, Any]:
+        role: str | None = None,
+        seniority: str | None = None,
+        error: str | None = None
+    ) -> dict[str, Any]:
         """Return empty time to fill response when no data is available."""
         return {
             "average_days": None,
@@ -730,7 +730,7 @@ class JobInsightsService:
             "max_days": None,
             "sample_size": 0,
             "confidence": "none",
-            "based_on": f"Nenhuma vaga fechada encontrada" + 
+            "based_on": "Nenhuma vaga fechada encontrada" + 
                        (f" para {role}" if role else "") +
                        (f" nível {seniority}" if seniority else ""),
             "error": error
@@ -740,11 +740,11 @@ class JobInsightsService:
         self,
         db: AsyncSession,
         company_id: str,
-        job_id: Optional[str] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None
-    ) -> Dict[str, Any]:
+        job_id: str | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None
+    ) -> dict[str, Any]:
         """
         Get metrics from successfully filled similar jobs.
         
@@ -870,11 +870,11 @@ class JobInsightsService:
     
     def _empty_success_metrics_response(
         self,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        error: Optional[str] = None
-    ) -> Dict[str, Any]:
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None,
+        error: str | None = None
+    ) -> dict[str, Any]:
         """Return empty success metrics response when no data is available."""
         return {
             "total_filled_jobs": 0,
@@ -893,7 +893,7 @@ class JobInsightsService:
                 "avg_interviews_conducted": None
             },
             "confidence": "none",
-            "based_on": f"Nenhuma vaga preenchida encontrada" +
+            "based_on": "Nenhuma vaga preenchida encontrada" +
                        (f" para {role}" if role else "") +
                        (f" nível {seniority}" if seniority else "") +
                        (f" em {department}" if department else ""),
@@ -905,11 +905,11 @@ class JobInsightsService:
         db: AsyncSession,
         company_id: str,
         role: str,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        location: Optional[str] = None,
-        work_model: Optional[str] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        work_model: str | None = None
+    ) -> dict[str, Any]:
         """
         Get all insights for a job creation flow.
         

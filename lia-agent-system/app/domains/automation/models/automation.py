@@ -4,11 +4,12 @@ Communication Automation Model - Database-backed automation rules.
 This model stores automation configurations that trigger actions based on events
 like candidate stage changes, interview scheduling, screening completion, etc.
 """
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Index
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 import enum
+import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

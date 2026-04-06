@@ -7,24 +7,21 @@ Compara janela recente (7 dias) vs baseline (7 dias anteriores).
 GET /api/v1/drift/status?company_id=<uuid>
 """
 import logging
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from typing import Dict, List, Optional
-from datetime import datetime
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import require_admin
 from app.auth.models import User
-from app.services.model_drift_service import (
-    model_drift_service,
-    DriftStatus,
-    DriftTrigger,
-)
+from app.core.database import get_db
 from app.jobs.drift_job import run_drift_check_all_companies
+from app.services.model_drift_service import (
+    DriftStatus,
+    model_drift_service,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +49,7 @@ class DriftStatusResponse(BaseModel):
     baseline_window_start: datetime
     drift_detected: bool
     alert_level: str
-    triggers: List[DriftTriggerResponse]
+    triggers: list[DriftTriggerResponse]
 
 
 def _to_response(status: DriftStatus) -> DriftStatusResponse:
@@ -91,7 +88,7 @@ class DriftBatchResponse(BaseModel):
 
 @router.post("/run-batch", response_model=DriftBatchResponse)
 async def run_drift_batch(
-    notify_user_id: Optional[str] = Query(None, description="ID do usuário que receberá alertas"),
+    notify_user_id: str | None = Query(None, description="ID do usuário que receberá alertas"),
     _current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ) -> DriftBatchResponse:

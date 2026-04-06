@@ -2,11 +2,11 @@
 Abstract base class for billing providers.
 Provides a unified interface for different payment gateway services (Iugu, Vindi).
 """
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
-from datetime import datetime, date
-import logging
+from datetime import date, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -14,75 +14,75 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CustomerData:
     """Data class representing a customer in the billing system."""
-    id: Optional[str] = None
-    external_id: Optional[str] = None
+    id: str | None = None
+    external_id: str | None = None
     name: str = ""
     email: str = ""
-    document: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[Dict[str, str]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    document: str | None = None
+    phone: str | None = None
+    address: dict[str, str] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class SubscriptionData:
     """Data class representing a subscription."""
-    id: Optional[str] = None
-    external_id: Optional[str] = None
+    id: str | None = None
+    external_id: str | None = None
     customer_id: str = ""
     plan_code: str = ""
-    plan_name: Optional[str] = None
+    plan_name: str | None = None
     status: str = "pending"
     price_cents: int = 0
     currency: str = "BRL"
     billing_cycle: str = "monthly"
-    current_period_start: Optional[datetime] = None
-    current_period_end: Optional[datetime] = None
-    trial_end: Optional[datetime] = None
-    cancelled_at: Optional[datetime] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    current_period_start: datetime | None = None
+    current_period_end: datetime | None = None
+    trial_end: datetime | None = None
+    cancelled_at: datetime | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class InvoiceData:
     """Data class representing an invoice."""
-    id: Optional[str] = None
-    external_id: Optional[str] = None
-    subscription_id: Optional[str] = None
+    id: str | None = None
+    external_id: str | None = None
+    subscription_id: str | None = None
     customer_id: str = ""
     status: str = "pending"
     amount_cents: int = 0
     discount_cents: int = 0
     total_cents: int = 0
     currency: str = "BRL"
-    due_date: Optional[date] = None
-    paid_at: Optional[datetime] = None
-    invoice_url: Optional[str] = None
-    pdf_url: Optional[str] = None
-    boleto_url: Optional[str] = None
-    boleto_barcode: Optional[str] = None
-    pix_qrcode: Optional[str] = None
-    pix_qrcode_url: Optional[str] = None
-    payment_method: Optional[str] = None
-    description: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    due_date: date | None = None
+    paid_at: datetime | None = None
+    invoice_url: str | None = None
+    pdf_url: str | None = None
+    boleto_url: str | None = None
+    boleto_barcode: str | None = None
+    pix_qrcode: str | None = None
+    pix_qrcode_url: str | None = None
+    payment_method: str | None = None
+    description: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class PaymentMethodData:
     """Data class representing a payment method."""
-    id: Optional[str] = None
-    external_id: Optional[str] = None
+    id: str | None = None
+    external_id: str | None = None
     customer_id: str = ""
     type: str = "credit_card"
     is_default: bool = False
-    card_brand: Optional[str] = None
-    card_last_digits: Optional[str] = None
-    card_holder_name: Optional[str] = None
-    card_expiry_month: Optional[int] = None
-    card_expiry_year: Optional[int] = None
-    token: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    card_brand: str | None = None
+    card_last_digits: str | None = None
+    card_holder_name: str | None = None
+    card_expiry_month: int | None = None
+    card_expiry_year: int | None = None
+    token: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -91,10 +91,10 @@ class BillingResult:
     success: bool
     provider: str = ""
     operation: str = ""
-    data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
-    error_code: Optional[str] = None
-    raw_response: Optional[Dict[str, Any]] = None
+    data: dict[str, Any] | None = None
+    error: str | None = None
+    error_code: str | None = None
+    raw_response: dict[str, Any] | None = None
 
 
 class BillingProviderBase(ABC):
@@ -156,9 +156,9 @@ class BillingProviderBase(ABC):
         self, 
         customer_id: str, 
         plan_code: str,
-        payment_method_id: Optional[str] = None,
-        trial_days: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        payment_method_id: str | None = None,
+        trial_days: int | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BillingResult:
         """
         Create a subscription for a customer.
@@ -179,9 +179,9 @@ class BillingProviderBase(ABC):
     async def update_subscription(
         self, 
         subscription_id: str, 
-        plan_code: Optional[str] = None,
-        payment_method_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        plan_code: str | None = None,
+        payment_method_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BillingResult:
         """
         Update a subscription.
@@ -202,7 +202,7 @@ class BillingProviderBase(ABC):
         self, 
         subscription_id: str,
         at_period_end: bool = True,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> BillingResult:
         """
         Cancel a subscription.
@@ -247,7 +247,7 @@ class BillingProviderBase(ABC):
     async def list_invoices(
         self, 
         customer_id: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100
     ) -> BillingResult:
         """
@@ -280,10 +280,10 @@ class BillingProviderBase(ABC):
     async def create_invoice(
         self,
         customer_id: str,
-        items: List[Dict[str, Any]],
-        due_date: Optional[date] = None,
-        payment_method: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        items: list[dict[str, Any]],
+        due_date: date | None = None,
+        payment_method: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> BillingResult:
         """
         Create a one-off invoice.
@@ -304,8 +304,8 @@ class BillingProviderBase(ABC):
     async def refund_invoice(
         self, 
         invoice_id: str,
-        amount_cents: Optional[int] = None,
-        reason: Optional[str] = None
+        amount_cents: int | None = None,
+        reason: str | None = None
     ) -> BillingResult:
         """
         Refund an invoice (fully or partially).
@@ -370,7 +370,7 @@ class BillingProviderBase(ABC):
         pass
     
     @abstractmethod
-    def parse_webhook(self, payload: Dict[str, Any], signature: Optional[str] = None) -> Dict[str, Any]:
+    def parse_webhook(self, payload: dict[str, Any], signature: str | None = None) -> dict[str, Any]:
         """
         Parse and validate a webhook payload.
         
@@ -384,7 +384,7 @@ class BillingProviderBase(ABC):
         pass
     
     @abstractmethod
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """
         Get provider status for health checks.
         

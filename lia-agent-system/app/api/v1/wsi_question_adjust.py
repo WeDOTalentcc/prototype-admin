@@ -5,7 +5,8 @@ and persisting screening questions per job vacancy.
 """
 import logging
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
@@ -14,39 +15,39 @@ from app.domains.cv_screening.services.wsi_question_adjuster import wsi_question
 router = APIRouter(prefix="/wsi", tags=["WSI Question Adjust"])
 logger = logging.getLogger(__name__)
 
-_saved_questions: Dict[str, Dict[str, Any]] = {}
+_saved_questions: dict[str, dict[str, Any]] = {}
 
 
 class QuestionItem(BaseModel):
-    id: Optional[str] = None
+    id: str | None = None
     text: str
-    category: Optional[str] = None
-    type: Optional[str] = "open"
-    weight: Optional[float] = 0.75
-    skill_targeted: Optional[str] = None
+    category: str | None = None
+    type: str | None = "open"
+    weight: float | None = 0.75
+    skill_targeted: str | None = None
 
 
 class AdjustQuestionsRequest(BaseModel):
     job_id: str
     block_id: str
     adjustment_prompt: str
-    current_questions: List[QuestionItem]
-    job_context: Optional[Dict[str, Any]] = None
+    current_questions: list[QuestionItem]
+    job_context: dict[str, Any] | None = None
 
 
 class EvaluateJDRequest(BaseModel):
     job_title: str
-    responsibilities: List[str] = Field(default_factory=list)
-    technical_skills: List[str] = Field(default_factory=list)
-    behavioral_competencies: List[str] = Field(default_factory=list)
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    description: Optional[str] = None
+    responsibilities: list[str] = Field(default_factory=list)
+    technical_skills: list[str] = Field(default_factory=list)
+    behavioral_competencies: list[str] = Field(default_factory=list)
+    seniority: str | None = None
+    department: str | None = None
+    description: str | None = None
 
 
 class SaveQuestionsRequest(BaseModel):
     job_id: str
-    questions: List[QuestionItem]
+    questions: list[QuestionItem]
     source: str = "wsi_generation"
 
 
@@ -62,10 +63,10 @@ class SaveQuestionsResponse(BaseModel):
 class GetQuestionsResponse(BaseModel):
     success: bool
     job_id: str
-    questions: List[QuestionItem]
+    questions: list[QuestionItem]
     questions_count: int
-    source: Optional[str] = None
-    saved_at: Optional[str] = None
+    source: str | None = None
+    saved_at: str | None = None
 
 
 @router.post("/questions/adjust")

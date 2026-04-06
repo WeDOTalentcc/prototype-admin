@@ -5,7 +5,7 @@ Handles: move_candidate, update_candidate_field, start_screening, analyze_profil
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +48,10 @@ FIELD_ALIASES = {
 
 async def execute_candidate_action(
     action_id: str,
-    params: Dict[str, Any],
-    context: Dict[str, Any],
+    params: dict[str, Any],
+    context: dict[str, Any],
 ):
     """Route candidate actions to specific handler."""
-    from app.orchestrator.action_executor import ActionResult
 
     if action_id == "move_candidate":
         return await _move_candidate(params, context)
@@ -65,11 +64,12 @@ async def execute_candidate_action(
     return None
 
 
-async def _move_candidate(params: Dict[str, Any], context: Dict[str, Any]):
+async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")
         to_stage = params.get("to_stage", "")
@@ -111,11 +111,12 @@ async def _move_candidate(params: Dict[str, Any], context: Dict[str, Any]):
         return None
 
 
-async def _update_candidate_field(params: Dict[str, Any], context: Dict[str, Any]):
+async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         candidate_id = params.get("candidate_id", "")
         field_name = params.get("field_name", "")
@@ -200,7 +201,7 @@ async def _update_candidate_field(params: Dict[str, Any], context: Dict[str, Any
         )
 
 
-async def _start_screening(params: Dict[str, Any], context: Dict[str, Any]):
+async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         candidate_ids = params.get("candidate_ids", [])
@@ -221,16 +222,17 @@ async def _start_screening(params: Dict[str, Any], context: Dict[str, Any]):
         return None
 
 
-async def _analyze_profile(params: Dict[str, Any], context: Dict[str, Any]):
+async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select
-        from app.models.candidate import Candidate
         from uuid import UUID
-        from app.services.analysis_service import analysis_service
 
+        from sqlalchemy import select
         from sqlalchemy import text as sql_text
+
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate
+        from app.services.analysis_service import analysis_service
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")

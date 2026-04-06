@@ -16,9 +16,9 @@ Servidor → Cliente:
   WSErrorMessage        : erro
   WSPongMessage         : resposta ao ping
 """
-from typing import Any, Dict, List, Literal, Optional
-from pydantic import BaseModel, Field
+from typing import Any, Literal
 
+from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
 # Cliente → Servidor
@@ -29,7 +29,7 @@ class WSUserMessage(BaseModel):
 
     type: Literal["message"] = "message"
     content: str = Field(..., description="Texto da mensagem do usuário")
-    context: Dict[str, Any] = Field(
+    context: dict[str, Any] = Field(
         default_factory=dict,
         description="Contexto do domínio (current_stage, collected_data, etc.)",
     )
@@ -62,7 +62,7 @@ class WSThinkingMessage(BaseModel):
     """Indica que o agente está processando. Pode incluir job_id para tarefas async."""
 
     type: Literal["thinking"] = "thinking"
-    job_id: Optional[str] = Field(
+    job_id: str | None = Field(
         default=None,
         description="ID do job assíncrono (Celery task ou correlation_id RabbitMQ)",
     )
@@ -83,9 +83,9 @@ class WSResponseMessage(BaseModel):
     type: Literal["message"] = "message"
     content: str = Field(..., description="Texto completo da resposta")
     confidence: float = Field(default=0.7, ge=0.0, le=1.0)
-    actions: List[Dict[str, Any]] = Field(default_factory=list)
-    navigation: Optional[Dict[str, Any]] = Field(default=None)
-    state_updates: Dict[str, Any] = Field(default_factory=dict)
+    actions: list[dict[str, Any]] = Field(default_factory=list)
+    navigation: dict[str, Any] | None = Field(default=None)
+    state_updates: dict[str, Any] = Field(default_factory=dict)
     domain: str = ""
     source: str = Field(
         default="direct",
@@ -97,7 +97,7 @@ class WSResponseMessage(BaseModel):
 class WSErrorMessage(BaseModel):
     type: Literal["error"] = "error"
     message: str
-    code: Optional[str] = None
+    code: str | None = None
     timestamp: str = ""
 
 

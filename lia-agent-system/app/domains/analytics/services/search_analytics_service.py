@@ -3,11 +3,11 @@ Search Analytics Service - Proactive analysis of candidate search results.
 
 Provides metrics, insights, and suggested actions based on search results.
 """
+import logging
 import re
 import statistics
-from typing import List, Dict, Any, Optional
 from collections import Counter
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +26,9 @@ class SearchAnalyticsService:
     
     def analyze_search_results(
         self,
-        candidates: List[Dict[str, Any]],
-        search_criteria: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        candidates: list[dict[str, Any]],
+        search_criteria: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Analisa resultados de busca e retorna métricas e insights.
         
@@ -63,7 +63,7 @@ class SearchAnalyticsService:
             "suggested_actions": suggested_actions
         }
     
-    def _empty_analytics(self) -> Dict[str, Any]:
+    def _empty_analytics(self) -> dict[str, Any]:
         """Returns empty analytics structure when no candidates."""
         return {
             "summary": {
@@ -96,7 +96,7 @@ class SearchAnalyticsService:
             "suggested_actions": self._get_suggested_actions([])
         }
     
-    def _calculate_summary(self, candidates: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_summary(self, candidates: list[dict[str, Any]]) -> dict[str, Any]:
         """Calculate summary metrics."""
         total = len(candidates)
         local_count = sum(1 for c in candidates if c.get("source") == "local")
@@ -116,7 +116,7 @@ class SearchAnalyticsService:
             "average_lia_score": average_score
         }
     
-    def _calculate_contact_quality(self, candidates: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_contact_quality(self, candidates: list[dict[str, Any]]) -> dict[str, Any]:
         """Calculate contact quality metrics."""
         total = len(candidates)
         if total == 0:
@@ -157,7 +157,7 @@ class SearchAnalyticsService:
             "email_percentage": round((with_valid_email / total) * 100, 1)
         }
     
-    def _calculate_distributions(self, candidates: List[Dict[str, Any]]) -> Dict[str, Dict[str, int]]:
+    def _calculate_distributions(self, candidates: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
         """Calculate distributions for seniority, location, and work model."""
         seniority_counter: Counter = Counter()
         location_counter: Counter = Counter()
@@ -186,7 +186,7 @@ class SearchAnalyticsService:
             "work_model": dict(work_model_counter.most_common(5))
         }
     
-    def _extract_top_skills(self, candidates: List[Dict[str, Any]], limit: int = 10) -> List[Dict[str, Any]]:
+    def _extract_top_skills(self, candidates: list[dict[str, Any]], limit: int = 10) -> list[dict[str, Any]]:
         """Extract top skills from candidates."""
         total = len(candidates)
         if total == 0:
@@ -215,7 +215,7 @@ class SearchAnalyticsService:
         
         return top_skills
     
-    def _extract_top_companies(self, candidates: List[Dict[str, Any]], limit: int = 5) -> List[Dict[str, Any]]:
+    def _extract_top_companies(self, candidates: list[dict[str, Any]], limit: int = 5) -> list[dict[str, Any]]:
         """Extract top companies from candidates."""
         company_counter: Counter = Counter()
         
@@ -235,7 +235,7 @@ class SearchAnalyticsService:
         
         return top_companies
     
-    def _calculate_experience_range(self, candidates: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_experience_range(self, candidates: list[dict[str, Any]]) -> dict[str, Any]:
         """Calculate experience years statistics."""
         years_list = []
         
@@ -266,10 +266,10 @@ class SearchAnalyticsService:
     
     def _generate_alerts(
         self, 
-        candidates: List[Dict[str, Any]], 
-        distributions: Dict[str, Dict[str, int]],
-        contact_quality: Dict[str, Any]
-    ) -> List[Dict[str, str]]:
+        candidates: list[dict[str, Any]], 
+        distributions: dict[str, dict[str, int]],
+        contact_quality: dict[str, Any]
+    ) -> list[dict[str, str]]:
         """Generate contextual alerts based on analysis."""
         alerts = []
         total = len(candidates)
@@ -333,7 +333,7 @@ class SearchAnalyticsService:
         
         return alerts
     
-    def _get_suggested_actions(self, candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _get_suggested_actions(self, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Get list of suggested actions for the search results."""
         actions = [
             {
@@ -409,7 +409,7 @@ class SearchAnalyticsService:
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(email_pattern, email.strip()))
     
-    def _normalize_seniority(self, seniority: Optional[str]) -> Optional[str]:
+    def _normalize_seniority(self, seniority: str | None) -> str | None:
         """Normalize seniority level strings."""
         if not seniority:
             return None
@@ -442,7 +442,7 @@ class SearchAnalyticsService:
         
         return seniority_map.get(seniority_lower, seniority.title())
     
-    def _infer_seniority_from_title(self, title: str) -> Optional[str]:
+    def _infer_seniority_from_title(self, title: str) -> str | None:
         """Infer seniority level from job title."""
         if not title:
             return None
@@ -502,7 +502,7 @@ class SearchAnalyticsService:
         
         return location_normalized
     
-    def _extract_work_model(self, candidate: Dict[str, Any]) -> Optional[str]:
+    def _extract_work_model(self, candidate: dict[str, Any]) -> str | None:
         """Extract work model preference from candidate data."""
         work_model = candidate.get("work_model") or candidate.get("modelo_trabalho")
         if work_model:
@@ -527,7 +527,7 @@ class SearchAnalyticsService:
         
         return None
     
-    def generate_proactive_narrative(self, analytics: Dict[str, Any]) -> str:
+    def generate_proactive_narrative(self, analytics: dict[str, Any]) -> str:
         """
         Generate a proactive narrative description of the search results.
         

@@ -1,15 +1,12 @@
-import logging
 import asyncio
-from typing import Dict, Any, Optional, List, Callable, Awaitable
-from datetime import datetime
+import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from datetime import datetime
+from typing import Any
 
-from app.shared.execution.execution_plan import (
-    ExecutionPlan, AgentTask, TaskStatus, PlanStatus
-)
+from app.domains.base import DomainContext
+from app.shared.execution.execution_plan import ExecutionPlan, PlanStatus, TaskStatus
 from app.shared.execution.plan_executor import PlanExecutor
-from app.domains.base import DomainContext, DomainResponse
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +33,7 @@ class RollbackHook:
     task_id: str
     action_id: str
     domain_id: str
-    params: Dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
     description: str = ""
 
 
@@ -49,8 +46,8 @@ class ActionPlanner(PlanExecutor):
     def __init__(self, domain_registry=None, domain_workflow=None):
         super().__init__(domain_registry, domain_workflow)
         self.retry_policy = RetryPolicy()
-        self.rollback_hooks: Dict[str, RollbackHook] = {}
-        self._executed_rollbacks: List[str] = []
+        self.rollback_hooks: dict[str, RollbackHook] = {}
+        self._executed_rollbacks: list[str] = []
 
     def set_retry_policy(self, policy: RetryPolicy):
         self.retry_policy = policy
@@ -63,8 +60,8 @@ class ActionPlanner(PlanExecutor):
         plan: ExecutionPlan,
         user_id: str = "system",
         session_id: str = "",
-        tenant_id: Optional[str] = None,
-        base_context: Optional[Dict[str, Any]] = None,
+        tenant_id: str | None = None,
+        base_context: dict[str, Any] | None = None,
     ) -> ExecutionPlan:
         plan.status = PlanStatus.IN_PROGRESS
         logger.info(f"ActionPlanner executing plan {plan.plan_id} with {len(plan.tasks)} tasks "
@@ -180,7 +177,7 @@ class ActionPlanner(PlanExecutor):
                 except Exception as e:
                     logger.error(f"Rollback failed for task {task.task_id}: {e}")
 
-    def get_execution_report(self, plan: ExecutionPlan) -> Dict[str, Any]:
+    def get_execution_report(self, plan: ExecutionPlan) -> dict[str, Any]:
         report = plan.get_summary()
         report["retry_policy"] = {
             "max_retries": self.retry_policy.max_retries,

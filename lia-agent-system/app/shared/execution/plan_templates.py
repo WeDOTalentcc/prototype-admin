@@ -1,7 +1,8 @@
 import logging
-from typing import Dict, Any, List, Optional
-from app.shared.execution.execution_plan import ExecutionPlan, AgentTask
-from app.shared.execution.action_planner import ActionPlanner, RetryPolicy, RollbackHook
+from typing import Any
+
+from app.shared.execution.action_planner import ActionPlanner, RetryPolicy
+from app.shared.execution.execution_plan import AgentTask, ExecutionPlan
 
 logger = logging.getLogger(__name__)
 
@@ -58,20 +59,20 @@ class PlanTemplateRegistry:
     }
 
     @classmethod
-    def get_template_names(cls) -> List[str]:
+    def get_template_names(cls) -> list[str]:
         return list(cls.TEMPLATES.keys())
 
     @classmethod
-    def get_template(cls, template_name: str) -> Optional[Dict[str, Any]]:
+    def get_template(cls, template_name: str) -> dict[str, Any] | None:
         return cls.TEMPLATES.get(template_name)
 
     @classmethod
     def build_plan(
         cls,
         template_name: str,
-        params: Optional[Dict[str, Any]] = None,
-        plan_id: Optional[str] = None,
-    ) -> Optional[ExecutionPlan]:
+        params: dict[str, Any] | None = None,
+        plan_id: str | None = None,
+    ) -> ExecutionPlan | None:
         template = cls.get_template(template_name)
         if not template:
             logger.warning(f"Template '{template_name}' not found")
@@ -100,10 +101,10 @@ class PlanTemplateRegistry:
     def build_planner(
         cls,
         template_name: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         domain_registry=None,
         domain_workflow=None,
-    ) -> Optional[ActionPlanner]:
+    ) -> ActionPlanner | None:
         template = cls.get_template(template_name)
         if not template:
             return None

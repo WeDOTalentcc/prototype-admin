@@ -4,17 +4,17 @@ LIA Assistant — Vacancy search/reuse endpoints (Fast Track support).
 Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/vacancy-* URLs.
 """
-from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from uuid import UUID
 import logging
+from typing import Any
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 
 logger = logging.getLogger(__name__)
@@ -28,15 +28,15 @@ router = APIRouter(prefix="/lia", tags=["lia-vacancy"])
 
 class VacancySearchRequest(BaseModel):
     company_id: str
-    search_criteria: Dict[str, Any] = {}
+    search_criteria: dict[str, Any] = {}
     limit: int = 10
 
 
 class VacancySearchResponse(BaseModel):
-    vacancies: List[Dict[str, Any]]
+    vacancies: list[dict[str, Any]]
     total: int
-    criteria_used: Dict[str, Any] = {}
-    message: Optional[str] = None
+    criteria_used: dict[str, Any] = {}
+    message: str | None = None
 
 
 class VacancyCriteriaExtractionRequest(BaseModel):
@@ -45,7 +45,7 @@ class VacancyCriteriaExtractionRequest(BaseModel):
 
 
 class VacancyCriteriaExtractionResponse(BaseModel):
-    criteria: Dict[str, Any]
+    criteria: dict[str, Any]
     has_minimum_criteria: bool
     message: str
 
@@ -56,8 +56,8 @@ class VacancyAdjustmentsRequest(BaseModel):
 
 
 class VacancyAdjustmentsResponse(BaseModel):
-    adjustments: Dict[str, Any]
-    adjusted_vacancy: Optional[Dict[str, Any]] = None
+    adjustments: dict[str, Any]
+    adjusted_vacancy: dict[str, Any] | None = None
     message: str
 
 
@@ -105,7 +105,7 @@ async def get_vacancy_full_details(
     vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         company_id = current_user.company_id
         vacancy_details = await vacancy_search_service.get_vacancy_full_details(

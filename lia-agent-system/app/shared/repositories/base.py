@@ -1,10 +1,10 @@
 """
 Base Repository - Generic CRUD operations.
 """
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Optional, List, Dict, Any, Type
-from uuid import UUID
 import logging
+from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
+from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
@@ -19,24 +19,24 @@ class BaseRepository(ABC, Generic[T]):
     """
     
     @abstractmethod
-    async def get_by_id(self, id: UUID, db) -> Optional[T]:
+    async def get_by_id(self, id: UUID, db) -> T | None:
         """Find entity by primary key."""
         ...
     
     @abstractmethod
-    async def list(self, db, filters: Optional[Dict[str, Any]] = None, 
+    async def list(self, db, filters: dict[str, Any] | None = None, 
                    limit: int = 50, offset: int = 0,
-                   order_by: Optional[str] = None) -> List[T]:
+                   order_by: str | None = None) -> list[T]:
         """List entities with optional filtering and pagination."""
         ...
     
     @abstractmethod
-    async def create(self, db, data: Dict[str, Any]) -> T:
+    async def create(self, db, data: dict[str, Any]) -> T:
         """Create a new entity."""
         ...
     
     @abstractmethod
-    async def update(self, db, id: UUID, data: Dict[str, Any]) -> Optional[T]:
+    async def update(self, db, id: UUID, data: dict[str, Any]) -> T | None:
         """Update an existing entity."""
         ...
     
@@ -46,7 +46,7 @@ class BaseRepository(ABC, Generic[T]):
         ...
     
     @abstractmethod
-    async def count(self, db, filters: Optional[Dict[str, Any]] = None) -> int:
+    async def count(self, db, filters: dict[str, Any] | None = None) -> int:
         """Count entities matching filters."""
         ...
     

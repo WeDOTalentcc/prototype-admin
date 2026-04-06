@@ -4,12 +4,11 @@ Pipeline System Prompt — Contextual system prompt for the Pipeline ReAct Agent
 Defines the identity, scope, capabilities, guardrails, and few-shot examples
 for LIA during candidate stage transitions.
 """
-from typing import Any, Dict, Optional
 
 from app.domains.pipeline.agents.pipeline_stage_context import (
-    get_stage_capabilities,
     get_stage_context_prompt,
 )
+
 
 def _load_pipeline_identity() -> str:
     """Carrega identidade LIA do YAML canônico (shared/lia_persona)."""
@@ -332,8 +331,8 @@ def get_pipeline_system_prompt(
     job_title: str = "",
     from_stage: str = "",
     to_stage: str = "",
-    extra_context: Optional[str] = None,
-    company_type: Optional[str] = None,
+    extra_context: str | None = None,
+    company_type: str | None = None,
 ) -> str:
     stage_context = get_stage_context_prompt(
         action_behavior=action_behavior,

@@ -1,20 +1,21 @@
 """
 GET /lia/suggestions — Dynamic homepage suggestion cards.
 """
-from fastapi import APIRouter, Query, Depends
-from sqlalchemy import select, func, and_
-from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
-from app.core.database import get_db
-from app.models import JobVacancy, Candidate
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
+from app.models import Candidate, JobVacancy
 
 from ._shared import (
-    logger,
     SuggestionCard,
     SuggestionsResponse,
+    logger,
 )
 
 router = APIRouter()
@@ -37,7 +38,7 @@ async def get_dynamic_suggestions(
     - Report opportunities
     """
     company_id = current_user.company_id
-    user_id = str(current_user.id)
+    str(current_user.id)
     suggestions = []
 
     try:

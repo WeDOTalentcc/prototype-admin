@@ -5,10 +5,10 @@ Provides endpoints for:
 - Getting daily briefing
 - Refreshing briefing
 """
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
-import logging
 
 from app.core.database import get_db
 from app.services.briefing_service import briefing_service

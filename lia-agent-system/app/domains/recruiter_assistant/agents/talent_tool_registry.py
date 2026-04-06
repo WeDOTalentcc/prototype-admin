@@ -7,12 +7,12 @@ management.
 """
 import logging
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-async def _wrap_search_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates by skills, experience, location."""
     query = kwargs.get("query", "")
     filters = kwargs.get("filters", {})
-    company_id = kwargs.get("company_id", "")
+    kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
     logger.info(f"[talent_tools] search_candidates called: query={query} filters={filters}")
 
@@ -103,7 +103,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_list_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in the funnel with optional filters."""
     status = kwargs.get("status", "all")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -170,12 +170,12 @@ async def _wrap_list_candidates(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_view_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education and work history."""
     candidate_id = kwargs.get("candidate_id", "")
     logger.info(f"[talent_tools] view_candidate_profile called for candidate={candidate_id}")
 
-    profile: Dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
+    profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(
@@ -262,7 +262,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_compare_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare 2+ candidates side by side."""
     candidate_ids = kwargs.get("candidate_ids", [])
     logger.info(f"[talent_tools] compare_candidates called: candidates={len(candidate_ids)}")
@@ -282,7 +282,7 @@ async def _wrap_compare_candidates(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": "Erro ao comparar candidatos."}
 
 
-async def _wrap_rank_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates by fit score for a job."""
     vacancy_id = kwargs.get("vacancy_id", "")
     criteria = kwargs.get("criteria", "fit_score")
@@ -335,15 +335,15 @@ async def _wrap_rank_candidates(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_analyze_skills(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     """Analyze skill match between candidate and job requirements."""
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     logger.info(f"[talent_tools] analyze_skills called: candidate={candidate_id} vacancy={vacancy_id}")
 
-    matched_skills: List[str] = []
-    missing_skills: List[str] = []
-    extra_skills: List[str] = []
+    matched_skills: list[str] = []
+    missing_skills: list[str] = []
+    extra_skills: list[str] = []
     match_percentage = 0.0
 
     try:
@@ -400,7 +400,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_recommend_actions(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     """Generate action recommendations for candidates based on real scores and status."""
     candidate_ids = kwargs.get("candidate_ids", [])
     logger.info(f"[talent_tools] recommend_actions called: candidates={len(candidate_ids)}")
@@ -472,7 +472,7 @@ async def _wrap_recommend_actions(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_create_shortlist(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Create a shortlist (CandidateList) from selected candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -529,7 +529,7 @@ async def _wrap_create_shortlist(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": "Erro ao criar shortlist."}
 
 
-async def _wrap_export_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     """Export analysis report — generates a traceable report ID with candidate summary."""
     report_type = kwargs.get("report_type", "general")
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -537,7 +537,7 @@ async def _wrap_export_report(**kwargs: Any) -> Dict[str, Any]:
     logger.info(f"[talent_tools] export_report called: type={report_type} candidates={len(candidate_ids)}")
 
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {"count": len(candidate_ids)}
+    summary: dict[str, Any] = {"count": len(candidate_ids)}
 
     try:
         if candidate_ids:
@@ -576,9 +576,9 @@ async def _wrap_export_report(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_check_search_fairness(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
     search_criteria = kwargs.get("search_criteria", "")
-    context = kwargs.get("context", "talent_search")
+    kwargs.get("context", "talent_search")
     logger.info(f"[talent_tools] check_search_fairness called: criteria='{search_criteria[:60]}...'")
 
     if not search_criteria.strip():
@@ -642,7 +642,7 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> Dict[str, Any]:
         return {"success": True, "data": {"is_fair": True, "soft_warnings": []}, "error": str(e)}
 
 
-async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     logger.info(
@@ -652,7 +652,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> Dict[str, Any]:
 
     pool_size = 0
     avg_score = 0.0
-    stage_distribution: Dict[str, int] = {}
+    stage_distribution: dict[str, int] = {}
 
     try:
         async with AsyncSessionLocal() as session:
@@ -708,7 +708,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_check_pool_health(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     logger.info(
@@ -800,7 +800,7 @@ async def _wrap_check_pool_health(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-TOOL_DEFINITIONS: List[ToolDefinition] = [
+TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="search_candidates",
         description="Busca candidatos por skills, experiencia, localizacao e outros criterios. Retorna lista de candidatos encontrados.",
@@ -956,7 +956,7 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
     ),
 ]
 
-async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     """P3-B: Gera relatório de talentos com métricas do período."""
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
@@ -964,7 +964,7 @@ async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[talent_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {}
+    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(
@@ -1024,21 +1024,21 @@ TOOL_DEFINITIONS.append(
     )
 )
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
-STAGE_TOOLS: Dict[str, List[str]] = {
+STAGE_TOOLS: dict[str, list[str]] = {
     "discovery": ["search_candidates", "list_candidates", "view_candidate_profile", "check_search_fairness", "get_talent_pool_benchmarks", "check_pool_health"],
     "analysis": ["compare_candidates", "rank_candidates", "analyze_skills", "view_candidate_profile", "check_search_fairness", "get_talent_pool_benchmarks", "check_pool_health"],
     "action_planning": ["recommend_actions", "create_shortlist", "export_report", "generate_report", "view_candidate_profile", "check_search_fairness", "check_pool_health"],
 }
 
-GUARDRAIL_TOOLS: List[str] = [
+GUARDRAIL_TOOLS: list[str] = [
     "create_shortlist",   # cria shortlist — ação que afeta o funil
     "export_report",      # exporta dados de candidatos — sensível LGPD
 ]
 
 
-def get_talent_tools(stage: str = "") -> List[ToolDefinition]:
+def get_talent_tools(stage: str = "") -> list[ToolDefinition]:
     """Return talent funnel tools, optionally filtered by stage.
 
     Args:

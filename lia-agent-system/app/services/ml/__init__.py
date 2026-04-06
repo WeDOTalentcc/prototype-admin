@@ -9,8 +9,8 @@ This module provides predictive models for:
 """
 
 from .feature_engineering import OutcomeFeatureEngineer
-from .outcome_predictor import OutcomePredictor, PredictionResult
 from .model_registry import ModelRegistry, get_model_registry
+from .outcome_predictor import OutcomePredictor, PredictionResult
 
 __all__ = [
     "OutcomeFeatureEngineer",

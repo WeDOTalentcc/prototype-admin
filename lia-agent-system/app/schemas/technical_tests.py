@@ -2,10 +2,11 @@
 Pydantic schemas for Technical Tests API.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class TestCategoryEnum(str, Enum):
@@ -47,14 +48,14 @@ class TechnicalTestCreate(BaseModel):
     """Schema for creating a technical test."""
     name: str = Field(..., min_length=1, max_length=255, description="Test name")
     category: TestCategoryEnum = Field(..., description="Test category")
-    subcategory: Optional[TestSubcategoryEnum] = Field(None, description="Test subcategory/technology")
-    description: Optional[str] = Field(None, description="Test description")
+    subcategory: TestSubcategoryEnum | None = Field(None, description="Test subcategory/technology")
+    description: str | None = Field(None, description="Test description")
     duration_minutes: int = Field(30, ge=5, le=180, description="Test duration in minutes")
     difficulty: TestDifficultyEnum = Field(TestDifficultyEnum.MEDIUM, description="Difficulty level")
     passing_score: float = Field(70.0, ge=0, le=100, description="Minimum passing score")
     max_attempts: int = Field(3, ge=1, le=10, description="Maximum number of attempts")
-    instructions: Optional[str] = Field(None, description="Test instructions")
-    questions_config: Optional[Dict[str, Any]] = Field(None, description="Questions configuration")
+    instructions: str | None = Field(None, description="Test instructions")
+    questions_config: dict[str, Any] | None = Field(None, description="Questions configuration")
     is_global: bool = Field(True, description="Available to all clients")
 
     class Config:
@@ -76,18 +77,18 @@ class TechnicalTestCreate(BaseModel):
 
 class TechnicalTestUpdate(BaseModel):
     """Schema for updating a technical test."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    category: Optional[TestCategoryEnum] = None
-    subcategory: Optional[TestSubcategoryEnum] = None
-    description: Optional[str] = None
-    duration_minutes: Optional[int] = Field(None, ge=5, le=180)
-    difficulty: Optional[TestDifficultyEnum] = None
-    passing_score: Optional[float] = Field(None, ge=0, le=100)
-    max_attempts: Optional[int] = Field(None, ge=1, le=10)
-    instructions: Optional[str] = None
-    questions_config: Optional[Dict[str, Any]] = None
-    is_global: Optional[bool] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    category: TestCategoryEnum | None = None
+    subcategory: TestSubcategoryEnum | None = None
+    description: str | None = None
+    duration_minutes: int | None = Field(None, ge=5, le=180)
+    difficulty: TestDifficultyEnum | None = None
+    passing_score: float | None = Field(None, ge=0, le=100)
+    max_attempts: int | None = Field(None, ge=1, le=10)
+    instructions: str | None = None
+    questions_config: dict[str, Any] | None = None
+    is_global: bool | None = None
+    is_active: bool | None = None
 
     class Config:
         json_schema_extra = {
@@ -104,19 +105,19 @@ class TechnicalTestResponse(BaseModel):
     id: str
     name: str
     category: str
-    subcategory: Optional[str] = None
-    description: Optional[str] = None
+    subcategory: str | None = None
+    description: str | None = None
     duration_minutes: int
     difficulty: str
     passing_score: float
     max_attempts: int
-    instructions: Optional[str] = None
-    questions_config: Optional[Dict[str, Any]] = None
+    instructions: str | None = None
+    questions_config: dict[str, Any] | None = None
     is_global: bool
     is_active: bool
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_by: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -124,7 +125,7 @@ class TechnicalTestResponse(BaseModel):
 
 class TechnicalTestListResponse(BaseModel):
     """Schema for paginated test list response."""
-    tests: List[TechnicalTestResponse]
+    tests: list[TechnicalTestResponse]
     total: int
     limit: int
     offset: int
@@ -133,12 +134,12 @@ class TechnicalTestListResponse(BaseModel):
 class ClientTestConfigCreate(BaseModel):
     """Schema for creating/updating client test configuration."""
     is_enabled: bool = Field(True, description="Whether test is enabled for this client")
-    custom_time_limit: Optional[int] = Field(None, ge=5, le=180, description="Custom time limit in minutes")
-    custom_passing_score: Optional[float] = Field(None, ge=0, le=100, description="Custom passing score")
-    custom_instructions: Optional[str] = Field(None, description="Custom instructions for this client")
-    custom_max_attempts: Optional[int] = Field(None, ge=1, le=10, description="Custom max attempts")
+    custom_time_limit: int | None = Field(None, ge=5, le=180, description="Custom time limit in minutes")
+    custom_passing_score: float | None = Field(None, ge=0, le=100, description="Custom passing score")
+    custom_instructions: str | None = Field(None, description="Custom instructions for this client")
+    custom_max_attempts: int | None = Field(None, ge=1, le=10, description="Custom max attempts")
     priority: int = Field(0, description="Display priority (higher = more important)")
-    required_for_roles: Optional[List[str]] = Field(None, description="Roles that require this test")
+    required_for_roles: list[str] | None = Field(None, description="Roles that require this test")
 
     class Config:
         json_schema_extra = {
@@ -159,15 +160,15 @@ class ClientTestConfigResponse(BaseModel):
     client_id: str
     test_id: str
     is_enabled: bool
-    custom_time_limit: Optional[int] = None
-    custom_passing_score: Optional[float] = None
-    custom_instructions: Optional[str] = None
-    custom_max_attempts: Optional[int] = None
+    custom_time_limit: int | None = None
+    custom_passing_score: float | None = None
+    custom_instructions: str | None = None
+    custom_max_attempts: int | None = None
     priority: int = 0
-    required_for_roles: Optional[List[str]] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    test: Optional[TechnicalTestResponse] = None
+    required_for_roles: list[str] | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    test: TechnicalTestResponse | None = None
 
     class Config:
         from_attributes = True
@@ -175,7 +176,7 @@ class ClientTestConfigResponse(BaseModel):
 
 class ClientTestConfigListResponse(BaseModel):
     """Schema for paginated client test config list response."""
-    configs: List[ClientTestConfigResponse]
+    configs: list[ClientTestConfigResponse]
     total: int
     limit: int
     offset: int
@@ -185,13 +186,13 @@ class TestResultCreate(BaseModel):
     """Schema for creating a test result."""
     candidate_id: str = Field(..., description="Candidate ID")
     test_id: str = Field(..., description="Test ID")
-    started_at: Optional[datetime] = Field(None, description="When the test started")
-    completed_at: Optional[datetime] = Field(None, description="When the test completed")
-    score: Optional[float] = Field(None, ge=0, le=100, description="Test score")
-    passed: Optional[bool] = Field(None, description="Whether candidate passed")
+    started_at: datetime | None = Field(None, description="When the test started")
+    completed_at: datetime | None = Field(None, description="When the test completed")
+    score: float | None = Field(None, ge=0, le=100, description="Test score")
+    passed: bool | None = Field(None, description="Whether candidate passed")
     attempt_number: int = Field(1, ge=1, description="Attempt number")
-    answers: Optional[Dict[str, Any]] = Field(None, description="Candidate answers")
-    time_taken_seconds: Optional[int] = Field(None, ge=0, description="Time taken in seconds")
+    answers: dict[str, Any] | None = Field(None, description="Candidate answers")
+    time_taken_seconds: int | None = Field(None, ge=0, description="Time taken in seconds")
 
     class Config:
         json_schema_extra = {
@@ -208,12 +209,12 @@ class TestResultCreate(BaseModel):
 
 class TestResultUpdate(BaseModel):
     """Schema for updating a test result."""
-    completed_at: Optional[datetime] = None
-    score: Optional[float] = Field(None, ge=0, le=100)
-    passed: Optional[bool] = None
-    answers: Optional[Dict[str, Any]] = None
-    time_taken_seconds: Optional[int] = Field(None, ge=0)
-    feedback: Optional[str] = None
+    completed_at: datetime | None = None
+    score: float | None = Field(None, ge=0, le=100)
+    passed: bool | None = None
+    answers: dict[str, Any] | None = None
+    time_taken_seconds: int | None = Field(None, ge=0)
+    feedback: str | None = None
 
 
 class TestResultResponse(BaseModel):
@@ -222,18 +223,18 @@ class TestResultResponse(BaseModel):
     client_id: str
     test_id: str
     candidate_id: str
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    score: Optional[float] = None
-    passed: Optional[bool] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    score: float | None = None
+    passed: bool | None = None
     attempt_number: int
-    answers: Optional[Dict[str, Any]] = None
-    time_taken_seconds: Optional[int] = None
-    feedback: Optional[str] = None
-    reviewed_by: Optional[str] = None
-    reviewed_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    test: Optional[TechnicalTestResponse] = None
+    answers: dict[str, Any] | None = None
+    time_taken_seconds: int | None = None
+    feedback: str | None = None
+    reviewed_by: str | None = None
+    reviewed_at: datetime | None = None
+    created_at: datetime | None = None
+    test: TechnicalTestResponse | None = None
 
     class Config:
         from_attributes = True
@@ -241,7 +242,7 @@ class TestResultResponse(BaseModel):
 
 class TestResultListResponse(BaseModel):
     """Schema for paginated test result list response."""
-    results: List[TestResultResponse]
+    results: list[TestResultResponse]
     total: int
     limit: int
     offset: int
@@ -256,9 +257,9 @@ class TestStatsResponse(BaseModel):
     avg_score: float = 0.0
     completion_rate: float = 0.0
     pass_rate: float = 0.0
-    avg_time_seconds: Optional[float] = None
-    by_difficulty: Optional[Dict[str, Any]] = None
-    by_category: Optional[Dict[str, Any]] = None
+    avg_time_seconds: float | None = None
+    by_difficulty: dict[str, Any] | None = None
+    by_category: dict[str, Any] | None = None
 
 
 class ClientTestStatsResponse(BaseModel):
@@ -268,12 +269,12 @@ class ClientTestStatsResponse(BaseModel):
     total_results: int = 0
     overall_pass_rate: float = 0.0
     overall_avg_score: float = 0.0
-    stats_by_test: List[TestStatsResponse] = []
-    stats_by_category: Dict[str, Any] = {}
+    stats_by_test: list[TestStatsResponse] = []
+    stats_by_category: dict[str, Any] = {}
 
 
 class TestOptionsResponse(BaseModel):
     """Schema for test options (categories, difficulties, etc.)."""
-    categories: List[Dict[str, Any]]
-    subcategories: List[Dict[str, Any]]
-    difficulties: List[Dict[str, Any]]
+    categories: list[dict[str, Any]]
+    subcategories: list[dict[str, Any]]
+    difficulties: list[dict[str, Any]]

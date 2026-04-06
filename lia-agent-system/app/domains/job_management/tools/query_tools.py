@@ -11,8 +11,8 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
@@ -23,25 +23,25 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
 
 
 async def search_jobs(
-    status: Optional[str] = None,
-    department: Optional[str] = None,
-    seniority: Optional[str] = None,
-    work_model: Optional[str] = None,
-    created_after: Optional[str] = None,
-    created_before: Optional[str] = None,
-    has_candidates: Optional[bool] = None,
-    min_candidates: Optional[int] = None,
-    urgent: Optional[bool] = None,
-    recruiter_id: Optional[str] = None,
+    status: str | None = None,
+    department: str | None = None,
+    seniority: str | None = None,
+    work_model: str | None = None,
+    created_after: str | None = None,
+    created_before: str | None = None,
+    has_candidates: bool | None = None,
+    min_candidates: int | None = None,
+    urgent: bool | None = None,
+    recruiter_id: str | None = None,
     limit: int = 20,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Search job vacancies with various filters.
     
@@ -67,8 +67,9 @@ async def search_jobs(
     logger.info(f"🔍 Searching jobs with filters (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_, func
         from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
@@ -159,7 +160,7 @@ async def get_job_details(
     include_candidates: bool = True,
     include_funnel: bool = True,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get detailed information about a specific job vacancy.
     
@@ -177,10 +178,11 @@ async def get_job_details(
     logger.info(f"📋 Getting job details: {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate, Candidate
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -275,7 +277,7 @@ async def get_job_details(
 async def get_job_velocity(
     job_id: str,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get velocity metrics for a specific job.
     
@@ -292,10 +294,11 @@ async def get_job_velocity(
     logger.info(f"🚀 Getting job velocity: {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -415,7 +418,7 @@ async def get_job_velocity(
 async def get_job_quality_metrics(
     job_id: str,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get candidate quality metrics for a specific job.
     
@@ -432,10 +435,11 @@ async def get_job_quality_metrics(
     logger.info(f"⭐ Getting job quality metrics: {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate, Candidate
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -470,7 +474,7 @@ async def get_job_quality_metrics(
             if not vacancy_candidates:
                 return {
                     "success": True,
-                    "message": f"📊 Sem candidatos para análise de qualidade",
+                    "message": "📊 Sem candidatos para análise de qualidade",
                     "data": {
                         "job_id": job_id,
                         "job_title": job.title,
@@ -485,7 +489,7 @@ async def get_job_quality_metrics(
             lia_scores = []
             match_percentages = []
             top_candidates = []
-            scores_by_week: Dict[int, List[float]] = {}
+            scores_by_week: dict[int, list[float]] = {}
             
             now = datetime.utcnow()
             
@@ -570,7 +574,7 @@ async def get_job_quality_metrics(
 async def get_job_benchmark(
     job_id: str,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get job performance compared to historical similar jobs.
     
@@ -586,10 +590,11 @@ async def get_job_benchmark(
     logger.info(f"📊 Getting job benchmark for {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -641,7 +646,7 @@ async def get_job_benchmark(
             if not similar_jobs:
                 return {
                     "success": True,
-                    "message": f"✅ Benchmark: sem vagas similares para comparação",
+                    "message": "✅ Benchmark: sem vagas similares para comparação",
                     "data": {
                         "job_id": job_id,
                         "job_title": current_job.title,
@@ -699,7 +704,7 @@ async def get_job_benchmark(
                 key_differences.append(f"Tempo aberto acima da média (+{round(days_comparison - avg_days_to_close)} dias)")
                 better_than_avg = False
             elif avg_days_list and current_days_open < avg_days_to_close * 0.8:
-                key_differences.append(f"Progresso mais rápido que média")
+                key_differences.append("Progresso mais rápido que média")
             
             if not key_differences:
                 key_differences.append("Performance dentro da média")

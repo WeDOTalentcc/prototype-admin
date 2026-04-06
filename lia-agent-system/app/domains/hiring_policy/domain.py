@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import Dict, Any, List
-
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "política": "configure_policy",
     "politica": "configure_policy",
     "policy": "configure_policy",
@@ -111,7 +110,7 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
     domain_name = "Hiring Policy"
     description = "Configuração e gestão de políticas de contratação, pipeline, triagem e automação"
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         return HIRING_POLICY_ACTIONS
 
     def get_system_prompt(self) -> str:
@@ -142,7 +141,7 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
         )
 
     async def execute_action(
-        self, action_id: str, params: Dict[str, Any], context: DomainContext
+        self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
         action = self.get_action_by_id(action_id)
         if not action:

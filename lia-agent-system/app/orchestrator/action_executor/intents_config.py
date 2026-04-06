@@ -5,10 +5,9 @@ Configuration constants for ActionExecutor:
   - VALID_PIPELINE_STAGES / STAGE_ALIASES
   - MESSAGE_INTENT_PATTERNS: regex patterns for intent detection from raw message
 """
-from typing import Dict, Any, List
+from typing import Any
 
-
-ACTIONABLE_INTENTS: Dict[str, Dict[str, Any]] = {
+ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "mover_candidato": {
         "domain_id": "pipeline_transition",
         "action_id": "move_candidate",
@@ -376,7 +375,7 @@ STAGE_ALIASES = {
     "shortlist": "Shortlist",
 }
 
-MESSAGE_INTENT_PATTERNS: List[tuple] = [
+MESSAGE_INTENT_PATTERNS: list[tuple] = [
     # Atualizar campo candidato
     ("atualizar_campo_candidato", [
         r"atualiz[ae]r?\s+(o\s+)?(campo|telefone|email|linkedin|cargo|empresa|cidade|estado|salário|formação|idioma|disponibilidade)",

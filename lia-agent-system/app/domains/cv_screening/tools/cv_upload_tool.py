@@ -8,8 +8,8 @@ Provides tools for:
 """
 import logging
 import uuid
-from datetime import datetime, date
-from typing import Any, Dict, List, Optional
+from datetime import date, datetime
+from typing import Any
 from uuid import UUID
 
 logger = logging.getLogger(__name__)
@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _extract_context(kwargs: Dict[str, Any]):
+def _extract_context(kwargs: dict[str, Any]):
     return kwargs.get("context") or kwargs.get("_context")
 
 
-def _parse_date(raw: Optional[str]) -> Optional[date]:
+def _parse_date(raw: str | None) -> date | None:
     if not raw:
         return None
     for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%m/%Y", "%Y"):
@@ -39,11 +39,11 @@ def _parse_date(raw: Optional[str]) -> Optional[date]:
 
 async def parse_and_create_candidate(
     cv_text: str,
-    vacancy_title: Optional[str] = None,
-    vacancy_id: Optional[str] = None,
+    vacancy_title: str | None = None,
+    vacancy_id: str | None = None,
     source: str = "cv_upload",
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Parse raw CV text with AI and create a new Candidate record in the database.
 
@@ -63,10 +63,9 @@ async def parse_and_create_candidate(
     logger.info(f"📄 Parsing CV for create (company={company_id}, user={user_id})")
 
     try:
-        from app.domains.cv_screening.services.cv_parser import CVParserService
-
         # Build a mock UploadFile-compatible object
-        import io
+
+        from app.domains.cv_screening.services.cv_parser import CVParserService
 
         class _FakeUpload:
             filename = "cv_from_chat.txt"
@@ -82,9 +81,10 @@ async def parse_and_create_candidate(
         # ----------------------------------------------------------------
         # Create Candidate in DB
         # ----------------------------------------------------------------
+        from sqlalchemy import func, select
+
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import Candidate
-        from sqlalchemy import select, func
 
         async with AsyncSessionLocal() as db:
             # Duplicate check — skip creation if email already exists
@@ -197,12 +197,12 @@ async def parse_and_create_candidate(
 
 async def add_to_vacancy(
     candidate_id: str,
-    vacancy_id: Optional[str] = None,
-    vacancy_title: Optional[str] = None,
+    vacancy_id: str | None = None,
+    vacancy_title: str | None = None,
     initial_stage: str = "Triagem",
     source: str = "cv_upload",
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Add a candidate to a vacancy pipeline.
 
@@ -219,10 +219,11 @@ async def add_to_vacancy(
     )
 
     try:
+        from sqlalchemy import and_, func, select
+
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from sqlalchemy import select, and_, func
 
         async with AsyncSessionLocal() as db:
             # Resolve candidate
@@ -339,13 +340,13 @@ async def add_to_vacancy(
 
 async def create_and_screen_candidate(
     cv_text: str,
-    vacancy_title: Optional[str] = None,
-    vacancy_id: Optional[str] = None,
+    vacancy_title: str | None = None,
+    vacancy_id: str | None = None,
     run_bars: bool = True,
     run_wsi: bool = False,
     initial_stage: str = "Triagem",
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     End-to-end CV flow:
       1. AI-parse CV text → extract structured candidate data
@@ -357,7 +358,7 @@ async def create_and_screen_candidate(
     This is the single-call version for simple interactions.
     The multi-step PlanDetector flow calls the individual tools above.
     """
-    context = _extract_context(kwargs)
+    _extract_context(kwargs)
 
     # Step 1 + 2: Parse & create
     create_result = await parse_and_create_candidate(
@@ -454,7 +455,7 @@ async def create_and_screen_candidate(
 
 def register_cv_upload_tools() -> None:
     """Register CV upload tools with the global tool registry."""
-    from app.tools.registry import tool_registry, ToolDefinition
+    from app.tools.registry import ToolDefinition, tool_registry
 
     tool_registry.register(ToolDefinition(
         name="parse_and_create_candidate",

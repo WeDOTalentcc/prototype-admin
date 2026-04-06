@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class ActionRecord:
     """Single action record for history tracking."""
     domain: str
     action: str
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, Any] = field(default_factory=dict)
     success: bool = True
 
@@ -57,7 +57,7 @@ class MemoryResolver:
         self._intent_history: list[str] = []
         self._entity_cache: dict[str, Any] = {}
         self._user_preferences: dict[str, Any] = {}
-        self._created_at = datetime.now(timezone.utc)
+        self._created_at = datetime.now(UTC)
 
     # ------------------------------------------------------------------
     # Action history (LIA-R04 core feature)
@@ -131,7 +131,7 @@ class MemoryResolver:
         self._entity_cache[entity_type] = {
             "id": entity_id,
             "metadata": metadata or {},
-            "cached_at": datetime.now(timezone.utc).isoformat(),
+            "cached_at": datetime.now(UTC).isoformat(),
         }
 
     def get_entity(self, entity_type: str) -> dict[str, Any] | None:

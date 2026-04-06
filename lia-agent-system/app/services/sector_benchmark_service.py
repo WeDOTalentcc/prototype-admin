@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +39,11 @@ class BenchmarkProfile:
     score_p75: float       # 75º percentil
     min_expected: float    # mínimo esperado para aprovação
     approval_rate: float   # taxa de aprovação histórica no segmento
-    key_signals: Tuple[str, ...]  # sinais que o LLM deve verificar
+    key_signals: tuple[str, ...]  # sinais que o LLM deve verificar
     calibration_note: str  # instrução de anti-sycophancy para o LLM
 
 
-_BENCHMARKS: Dict[Tuple[str, str], BenchmarkProfile] = {
+_BENCHMARKS: dict[tuple[str, str], BenchmarkProfile] = {
     # -----------------------------------------------------------------------
     # Software Engineering
     # -----------------------------------------------------------------------
@@ -193,7 +192,7 @@ _BENCHMARKS: Dict[Tuple[str, str], BenchmarkProfile] = {
 }
 
 # Mapeamento de aliases comuns para área canônica
-_AREA_ALIASES: Dict[str, str] = {
+_AREA_ALIASES: dict[str, str] = {
     "software": "software_engineering",
     "engenharia_de_software": "software_engineering",
     "engineering": "software_engineering",
@@ -212,7 +211,7 @@ _AREA_ALIASES: Dict[str, str] = {
     "product": "product_management",
 }
 
-_SENIORITY_ALIASES: Dict[str, str] = {
+_SENIORITY_ALIASES: dict[str, str] = {
     "estagio": "junior",
     "estagiario": "junior",
     "trainee": "junior",
@@ -229,14 +228,14 @@ _SENIORITY_ALIASES: Dict[str, str] = {
 }
 
 
-def _normalize_area(raw: str) -> Optional[str]:
+def _normalize_area(raw: str) -> str | None:
     if not raw:
         return None
     key = raw.lower().strip().replace(" ", "_").replace("-", "_")
     return _AREA_ALIASES.get(key, key if key in {b.area for b in _BENCHMARKS.values()} else None)
 
 
-def _normalize_seniority(raw: str) -> Optional[str]:
+def _normalize_seniority(raw: str) -> str | None:
     if not raw:
         return None
     key = raw.lower().strip().replace(" ", "_").replace("-", "_")
@@ -286,7 +285,7 @@ class SectorBenchmarkService:
             logger.debug("SectorBenchmarkService.get_benchmark_context falhou: %s", exc)
             return ""
 
-    def get_profile(self, area: str, seniority: str) -> Optional[BenchmarkProfile]:
+    def get_profile(self, area: str, seniority: str) -> BenchmarkProfile | None:
         """Retorna o BenchmarkProfile para testes e auditoria."""
         norm_area = _normalize_area(area)
         norm_seniority = _normalize_seniority(seniority)

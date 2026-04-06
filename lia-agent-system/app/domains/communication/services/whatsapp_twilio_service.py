@@ -9,23 +9,20 @@ Environment Variables Required:
 - TWILIO_WHATSAPP_NUMBER: Twilio WhatsApp sender number (format: whatsapp:+1234567890)
 """
 
-import os
 import logging
-import hmac
-import hashlib
-from typing import Optional, Dict, Any, List
+import os
 from datetime import datetime
-from urllib.parse import urlencode
+from typing import Any
 
-from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from twilio.request_validator import RequestValidator
+from twilio.rest import Client
 
 from app.domains.communication.services.whatsapp_provider import (
-    WhatsAppProvider,
+    IncomingMessage,
     ProviderType,
     SendResult,
-    IncomingMessage
+    WhatsAppProvider,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,8 +50,8 @@ class TwilioWhatsAppService(WhatsAppProvider):
         self.whatsapp_number = os.getenv("TWILIO_WHATSAPP_NUMBER")
         self.environment = os.getenv("ENVIRONMENT", "development")
         
-        self._client: Optional[Client] = None
-        self._validator: Optional[RequestValidator] = None
+        self._client: Client | None = None
+        self._validator: RequestValidator | None = None
         
         if not self.is_configured:
             logger.warning("Twilio WhatsApp credentials not configured. Service will log messages only.")
@@ -74,14 +71,14 @@ class TwilioWhatsAppService(WhatsAppProvider):
         return bool(self.account_sid and self.auth_token and self.whatsapp_number)
     
     @property
-    def client(self) -> Optional[Client]:
+    def client(self) -> Client | None:
         """Get or create Twilio client."""
         if self._client is None and self.is_configured:
             self._client = Client(self.account_sid, self.auth_token)
         return self._client
     
     @property
-    def validator(self) -> Optional[RequestValidator]:
+    def validator(self) -> RequestValidator | None:
         """Get or create Twilio request validator."""
         if self._validator is None and self.auth_token:
             self._validator = RequestValidator(self.auth_token)
@@ -135,9 +132,9 @@ class TwilioWhatsAppService(WhatsAppProvider):
         self,
         to: str,
         body_text: str,
-        buttons: List[Dict[str, str]],
-        header_text: Optional[str] = None,
-        footer_text: Optional[str] = None
+        buttons: list[dict[str, str]],
+        header_text: str | None = None,
+        footer_text: str | None = None
     ) -> SendResult:
         """
         Send an interactive message with buttons.
@@ -193,8 +190,8 @@ class TwilioWhatsAppService(WhatsAppProvider):
         self,
         to: str,
         document_url: str,
-        caption: Optional[str] = None,
-        filename: Optional[str] = None
+        caption: str | None = None,
+        filename: str | None = None
     ) -> SendResult:
         """Send a document via Twilio WhatsApp API."""
         formatted_to = self._format_whatsapp_number(to)
@@ -266,7 +263,7 @@ class TwilioWhatsAppService(WhatsAppProvider):
         
         return True
     
-    def parse_webhook_message(self, payload: Dict[str, Any]) -> Optional[IncomingMessage]:
+    def parse_webhook_message(self, payload: dict[str, Any]) -> IncomingMessage | None:
         """
         Parse incoming Twilio webhook payload.
         
@@ -346,7 +343,7 @@ class TwilioWhatsAppService(WhatsAppProvider):
             logger.error(f"[TWILIO WHATSAPP] Error parsing webhook: {e}")
             return None
     
-    async def download_media(self, media_url: str) -> Dict[str, Any]:
+    async def download_media(self, media_url: str) -> dict[str, Any]:
         """
         Download media from Twilio.
         

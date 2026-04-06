@@ -7,9 +7,8 @@ to ensure tenant routing, PII stripping, and audit logging.
 Original direct Anthropic client preserved as _get_raw_client() for
 cases that truly need the raw SDK (e.g., migrations, admin tools).
 """
-import os
 import logging
-from typing import Optional, Dict, Any
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +41,11 @@ def is_llm_available() -> bool:
 
 async def llm_complete(
     prompt: str,
-    system: Optional[str] = None,
+    system: str | None = None,
     model: str = "claude-sonnet-4-20250514",
     max_tokens: int = 1024,
     temperature: float = 0.3,
-) -> Optional[str]:
+) -> str | None:
     """
     Completion wrapper — NOW routes through LLMService for PII + audit.
     Falls back to direct client if LLMService unavailable.

@@ -1,7 +1,7 @@
-import re
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Callable
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 
 class ParamType(str, Enum):
@@ -20,9 +20,9 @@ class ParamType(str, Enum):
 @dataclass
 class ParamPattern:
     name: str
-    patterns: List[str]
+    patterns: list[str]
     param_type: ParamType
-    transform_fn: Optional[Callable] = None
+    transform_fn: Callable | None = None
     group_index: int = 1
 
 
@@ -207,7 +207,7 @@ BOOLEAN_PATTERNS = ParamPattern(
     group_index=1,
 )
 
-DOMAIN_PARAM_PATTERNS: Dict[str, List[ParamPattern]] = {
+DOMAIN_PARAM_PATTERNS: dict[str, list[ParamPattern]] = {
     "sourcing": [QUANTITY_PATTERNS, SKILL_PATTERNS, SENIORITY_PATTERNS, LOCATION_PATTERNS, WORK_MODEL_PATTERNS, SCORE_PATTERNS],
     "job_management": [SALARY_PATTERNS, SENIORITY_PATTERNS, WORK_MODEL_PATTERNS, LOCATION_PATTERNS, SKILL_PATTERNS],
     "cv_screening": [SCORE_PATTERNS, SENIORITY_PATTERNS, SKILL_PATTERNS, QUANTITY_PATTERNS],
@@ -219,13 +219,13 @@ DOMAIN_PARAM_PATTERNS: Dict[str, List[ParamPattern]] = {
     "recruiter_assistant": [DATE_PATTERNS, QUANTITY_PATTERNS],
 }
 
-UNIVERSAL_PATTERNS: List[ParamPattern] = [
+UNIVERSAL_PATTERNS: list[ParamPattern] = [
     SALARY_PATTERNS, QUANTITY_PATTERNS, SCORE_PATTERNS, SENIORITY_PATTERNS,
     WORK_MODEL_PATTERNS, LOCATION_PATTERNS, DATE_PATTERNS, SKILL_PATTERNS, BOOLEAN_PATTERNS,
 ]
 
 
-def get_patterns_for_domain(domain_id: str) -> List[ParamPattern]:
+def get_patterns_for_domain(domain_id: str) -> list[ParamPattern]:
     domain_patterns = DOMAIN_PARAM_PATTERNS.get(domain_id, [])
     seen_names = set()
     result = []

@@ -14,8 +14,8 @@ Usage:
 import hashlib
 import json
 import logging
-from typing import Any, Dict, Optional, List
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class CacheDomain(str, Enum):
     ROUTING = "routing"
 
 
-DOMAIN_TTL_CONFIG: Dict[CacheDomain, Dict[str, Any]] = {
+DOMAIN_TTL_CONFIG: dict[CacheDomain, dict[str, Any]] = {
     CacheDomain.CANDIDATE_SEARCH: {
         "ttl_seconds": 300,
         "description": "Search results cache",
@@ -112,12 +112,12 @@ class CacheStrategy:
         return f"lia:{domain.value}:{param_hash}"
 
     @staticmethod
-    def get_invalidation_events(domain: CacheDomain) -> List[str]:
+    def get_invalidation_events(domain: CacheDomain) -> list[str]:
         config = DOMAIN_TTL_CONFIG.get(domain)
         return config.get("invalidate_on", []) if config else []
 
     @staticmethod
-    def get_domains_for_event(event: str) -> List[CacheDomain]:
+    def get_domains_for_event(event: str) -> list[CacheDomain]:
         affected = []
         for domain, config in DOMAIN_TTL_CONFIG.items():
             if event in config.get("invalidate_on", []):
@@ -125,7 +125,7 @@ class CacheStrategy:
         return affected
 
     @staticmethod
-    def get_all_ttls() -> Dict[str, Dict[str, Any]]:
+    def get_all_ttls() -> dict[str, dict[str, Any]]:
         return {
             domain.value: {
                 "ttl_seconds": config["ttl_seconds"],

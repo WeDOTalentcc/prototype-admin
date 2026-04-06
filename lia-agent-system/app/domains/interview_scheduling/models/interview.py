@@ -1,11 +1,11 @@
 """
 Interview scheduling models with Microsoft Graph Calendar integration.
 """
-from datetime import datetime
-from typing import Optional
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

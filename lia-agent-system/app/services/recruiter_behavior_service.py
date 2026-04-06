@@ -20,9 +20,9 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -45,36 +45,36 @@ class RecruiterBehaviorProfile:
     computed_at: str = ""
 
     # Padrão de horas ativas (hora→contagem de ações)
-    active_hours_distribution: Dict[str, int] = field(default_factory=dict)
+    active_hours_distribution: dict[str, int] = field(default_factory=dict)
 
     # Canais de sourcing preferidos (canal→frequência)
-    preferred_sourcing_channels: Dict[str, int] = field(default_factory=dict)
+    preferred_sourcing_channels: dict[str, int] = field(default_factory=dict)
 
     # Métricas de velocidade
-    avg_response_time_hours: Optional[float] = None   # tempo médio candidato→resposta
-    avg_hiring_velocity_days: Optional[float] = None  # criação da vaga→primeira contratação
+    avg_response_time_hours: float | None = None   # tempo médio candidato→resposta
+    avg_hiring_velocity_days: float | None = None  # criação da vaga→primeira contratação
 
     # Taxas de conversão por estágio
-    stage_conversion_rates: Dict[str, float] = field(default_factory=dict)
+    stage_conversion_rates: dict[str, float] = field(default_factory=dict)
 
     # Preferências de comunicação
     communication_style: str = "balanced"  # "high_volume" | "selective" | "balanced"
-    typical_batch_size: Optional[int] = None
+    typical_batch_size: int | None = None
 
     # Top razões de rejeição observadas
-    rejection_reasons_top: List[str] = field(default_factory=list)
+    rejection_reasons_top: list[str] = field(default_factory=list)
 
     # Score de risco de viés (derivado de bias_audit, se disponível)
-    bias_risk_score: Optional[float] = None
+    bias_risk_score: float | None = None
 
     # Nível de experiência inferido (de RecruiterProfile se disponível)
     experience_level: str = "intermediate"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "RecruiterBehaviorProfile":
+    def from_dict(cls, data: dict[str, Any]) -> RecruiterBehaviorProfile:
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
 
@@ -112,7 +112,7 @@ class RecruiterBehaviorService:
         recruiter_id: str,
         company_id: str,
         action_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Registra um sinal de comportamento (fail-safe).
 
@@ -125,7 +125,7 @@ class RecruiterBehaviorService:
                 return
             signal = {
                 "action_type": action_type,
-                "ts": datetime.now(timezone.utc).isoformat(),
+                "ts": datetime.now(UTC).isoformat(),
                 "metadata": metadata or {},
             }
             signals_key = f"{_BEHAVIOR_KEY_PREFIX}:signals:{company_id}:{recruiter_id}"
@@ -151,7 +151,7 @@ class RecruiterBehaviorService:
 
     async def _get_cached(
         self, recruiter_id: str, company_id: str
-    ) -> Optional[RecruiterBehaviorProfile]:
+    ) -> RecruiterBehaviorProfile | None:
         try:
             redis = await self._get_redis()
             if redis is None:
@@ -176,7 +176,7 @@ class RecruiterBehaviorService:
         profile = RecruiterBehaviorProfile(
             recruiter_id=recruiter_id,
             company_id=company_id,
-            computed_at=datetime.now(timezone.utc).isoformat(),
+            computed_at=datetime.now(UTC).isoformat(),
         )
 
         # 1. Hora de atividade a partir dos sinais Redis
@@ -213,7 +213,7 @@ class RecruiterBehaviorService:
             )
             async with redis:
                 raw_signals = await redis.lrange(signals_key, 0, 499)
-            hour_counts: Dict[str, int] = {}
+            hour_counts: dict[str, int] = {}
             for raw in raw_signals:
                 try:
                     sig = json.loads(raw)
@@ -238,7 +238,7 @@ class RecruiterBehaviorService:
             )
             async with redis:
                 raw_signals = await redis.lrange(signals_key, 0, 499)
-            channel_counts: Dict[str, int] = {}
+            channel_counts: dict[str, int] = {}
             for raw in raw_signals:
                 try:
                     sig = json.loads(raw)

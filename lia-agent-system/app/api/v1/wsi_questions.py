@@ -10,13 +10,12 @@ CBI + Bloom + Dreyfus + BigFive). This module handles:
 - Template fallback endpoint (/question-templates GET)
 """
 import logging
-from typing import List, Optional, Set
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, validator
 
-from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.fairness_guard_middleware import check_fairness
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
@@ -34,22 +33,22 @@ class WSIQuestion(BaseModel):
     question: str
     type: str = "open"
     required: bool = True
-    options: Optional[List[str]] = None
-    expected_answer: Optional[str] = None
-    competency_validated: Optional[str] = None
-    skill_type: Optional[str] = None
-    block_id: Optional[int] = None
+    options: list[str] | None = None
+    expected_answer: str | None = None
+    competency_validated: str | None = None
+    skill_type: str | None = None
+    block_id: int | None = None
 
 
 class GenerateQuestionsRequest(BaseModel):
     """Request to generate WSI questions."""
     company_id: str
     job_title: str
-    technical_skills: List[str] = Field(default_factory=list)
-    behavioral_competencies: List[str] = Field(default_factory=list)
-    responsibilities: List[str] = Field(default_factory=list)
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    technical_skills: list[str] = Field(default_factory=list)
+    behavioral_competencies: list[str] = Field(default_factory=list)
+    responsibilities: list[str] = Field(default_factory=list)
+    seniority: str | None = None
+    department: str | None = None
     max_questions: int = DEFAULT_MAX_QUESTIONS
 
     @validator('technical_skills', 'behavioral_competencies', pre=True, always=True)
@@ -63,10 +62,10 @@ class RegenerateQuestionsRequest(BaseModel):
     """Request to regenerate WSI questions based on full competency lists."""
     company_id: str
     job_title: str
-    current_questions: List[WSIQuestion] = Field(default_factory=list)
-    technical_skills: List[str] = Field(default_factory=list)
-    behavioral_competencies: List[str] = Field(default_factory=list)
-    seniority: Optional[str] = None
+    current_questions: list[WSIQuestion] = Field(default_factory=list)
+    technical_skills: list[str] = Field(default_factory=list)
+    behavioral_competencies: list[str] = Field(default_factory=list)
+    seniority: str | None = None
     max_questions: int = DEFAULT_MAX_QUESTIONS
 
     @validator('technical_skills', 'behavioral_competencies', pre=True, always=True)
@@ -79,12 +78,12 @@ class RegenerateQuestionsRequest(BaseModel):
 class QuestionsResponse(BaseModel):
     """Response with generated questions."""
     success: bool
-    questions: List[WSIQuestion]
-    changes_summary: Optional[str] = None
+    questions: list[WSIQuestion]
+    changes_summary: str | None = None
     questions_added: int = 0
     questions_removed: int = 0
-    quality_warnings: List[str] = Field(default_factory=list)
-    block_distribution: Optional[dict] = None
+    quality_warnings: list[str] = Field(default_factory=list)
+    block_distribution: dict | None = None
 
 
 ELIGIBILITY_TEMPLATES = [
@@ -148,10 +147,10 @@ def normalize_competency(comp: str) -> str:
 
 
 def validate_question_coverage(
-    questions: List[WSIQuestion],
-    technical_skills: List[str],
-    behavioral_competencies: List[str]
-) -> List[str]:
+    questions: list[WSIQuestion],
+    technical_skills: list[str],
+    behavioral_competencies: list[str]
+) -> list[str]:
     warnings = []
     tech_questions = [q for q in questions if q.skill_type == "technical"]
     behav_questions = [q for q in questions if q.skill_type == "behavioral"]
@@ -185,7 +184,7 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
             job_description=f"{request.job_title}. " + ", ".join(request.responsibilities) if request.responsibilities else request.job_title,
             mode="full" if request.max_questions >= 10 else "compact",
         )
-        questions: List[WSIQuestion] = []
+        questions: list[WSIQuestion] = []
         for wq in _raw:
             skill_type = "behavioral" if wq.framework == "BigFive" or wq.question_type == "situational" else "technical"
             block_id = 4 if skill_type == "behavioral" else 3
@@ -204,7 +203,7 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
         logger.info(f"Generated {len(questions)} WSI questions via canonical F6 pipeline for '{request.job_title}'")
 
         # A2/G1: FairnessGuard check on generated question texts
-        filtered_questions: List[WSIQuestion] = []
+        filtered_questions: list[WSIQuestion] = []
         fg_removed = 0
         for q in questions:
             fg_result = check_fairness(
@@ -284,12 +283,12 @@ async def regenerate_wsi_questions(request: RegenerateQuestionsRequest):
     try:
         current_questions = request.current_questions
 
-        current_tech_set: Set[str] = {normalize_competency(c) for c in request.technical_skills}
-        current_behav_set: Set[str] = {normalize_competency(c) for c in request.behavioral_competencies}
+        current_tech_set: set[str] = {normalize_competency(c) for c in request.technical_skills}
+        current_behav_set: set[str] = {normalize_competency(c) for c in request.behavioral_competencies}
         all_current_competencies = current_tech_set | current_behav_set
 
-        retained_questions: List[WSIQuestion] = []
-        covered_competencies: Set[str] = set()
+        retained_questions: list[WSIQuestion] = []
+        covered_competencies: set[str] = set()
         removed_count = 0
 
         for q in current_questions:

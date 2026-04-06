@@ -5,21 +5,21 @@ Handles incoming messages from WhatsApp Business API.
 Supports both Meta Cloud API and Twilio providers.
 """
 
-import logging
 import hashlib
 import hmac
+import logging
 import os
-from typing import Optional, Dict
-from fastapi import APIRouter, Request, Response, HTTPException, Depends, Query, Header, Form
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
-from app.domains.communication.services.whatsapp_twilio_service import twilio_whatsapp_service
 from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
+from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
 from app.domains.communication.services.whatsapp_provider import ProviderType
+from app.domains.communication.services.whatsapp_twilio_service import twilio_whatsapp_service
 from app.domains.recruiter_assistant.services.conversation_manager import ConversationManager
 
 logger = logging.getLogger(__name__)
@@ -37,10 +37,10 @@ class PhoneNumberMapping:
     each WhatsApp Business Phone Number to its owning company.
     """
     
-    _mapping_cache: Dict[str, str] = {}
+    _mapping_cache: dict[str, str] = {}
     
     @classmethod
-    async def get_company_id(cls, phone_number_id: str, db: AsyncSession) -> Optional[str]:
+    async def get_company_id(cls, phone_number_id: str, db: AsyncSession) -> str | None:
         """
         Get company_id for a given WhatsApp phone_number_id.
         
@@ -107,9 +107,9 @@ def verify_meta_webhook_signature(payload: bytes, signature: str) -> bool:
 
 class WebhookVerifyParams(BaseModel):
     """Query parameters for webhook verification."""
-    hub_mode: Optional[str] = Query(None, alias="hub.mode")
-    hub_verify_token: Optional[str] = Query(None, alias="hub.verify_token")
-    hub_challenge: Optional[str] = Query(None, alias="hub.challenge")
+    hub_mode: str | None = Query(None, alias="hub.mode")
+    hub_verify_token: str | None = Query(None, alias="hub.verify_token")
+    hub_challenge: str | None = Query(None, alias="hub.challenge")
 
 
 @router.get("/webhook")
@@ -142,7 +142,7 @@ async def verify_webhook(
     raise HTTPException(status_code=403, detail="Verification failed")
 
 
-def extract_phone_number_id(payload: dict) -> Optional[str]:
+def extract_phone_number_id(payload: dict) -> str | None:
     """Extract phone_number_id from Meta webhook payload."""
     try:
         entry = payload.get("entry", [{}])[0]
@@ -346,7 +346,7 @@ async def receive_twilio_webhook(
         return Response(content="", media_type="text/xml")
 
 
-async def _get_company_from_twilio_number(twilio_number: str, db: AsyncSession) -> Optional[str]:
+async def _get_company_from_twilio_number(twilio_number: str, db: AsyncSession) -> str | None:
     """Get company_id from Twilio WhatsApp number."""
     try:
         from app.models.company import Company
@@ -371,15 +371,15 @@ class SendMessageRequest(BaseModel):
     """Request to send a message to a WhatsApp number."""
     phone_number: str
     message: str
-    company_id: Optional[str] = None
-    provider: Optional[str] = None
+    company_id: str | None = None
+    provider: str | None = None
 
 
 class SendFeedbackRequest(BaseModel):
     """Request to send feedback to a candidate."""
     conversation_id: str
     approved: bool
-    recruiter_name: Optional[str] = None
+    recruiter_name: str | None = None
 
 
 @router.post("/send-message")
@@ -436,8 +436,8 @@ async def send_feedback(
 
 @router.get("/conversations")
 async def list_conversations(
-    company_id: Optional[str] = Query(default=None),
-    status: Optional[str] = Query(default=None),
+    company_id: str | None = Query(default=None),
+    status: str | None = Query(default=None),
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -449,9 +449,7 @@ async def list_conversations(
     - Admins can optionally specify a different company_id
     - Falls back to demo_company for unauthenticated requests in development
     """
-    from app.auth.dependencies import get_user_company_id
-    from app.auth.models import User, UserRole
-    from app.models.whatsapp_conversation import WhatsAppConversation, ConversationState
+    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
     
     if not company_id:
         raise HTTPException(status_code=400, detail="company_id is required")
@@ -475,8 +473,8 @@ async def list_conversations(
 
 @router.get("/conversations/authenticated")
 async def list_conversations_authenticated(
-    company_id: Optional[str] = Query(default=None),
-    status: Optional[str] = Query(default=None),
+    company_id: str | None = Query(default=None),
+    status: str | None = Query(default=None),
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -486,11 +484,10 @@ async def list_conversations_authenticated(
     Requires authentication. Users can only see conversations for their own company.
     Admins can optionally specify a different company_id to access other tenants.
     """
-    from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+
+    from app.auth.dependencies import get_user_company_id
     from app.auth.models import User, UserRole
-    from app.models.whatsapp_conversation import WhatsAppConversation, ConversationState
-    from app.auth.dependencies import optional_security
-    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
     
     result = await db.execute(
         select(User).where(User.email == "demo@wedotalent.com")

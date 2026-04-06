@@ -6,10 +6,9 @@ The policy configuration flow has 3 stages:
 2. review - Reviewing/editing existing policies
 3. consulting - Answering questions about policy impact
 """
-from typing import Any, Dict, List
+from typing import Any
 
-
-STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
     "onboarding": {
         "name": "Onboarding",
         "display_name": "Configuracao Inicial",
@@ -236,7 +235,7 @@ POLICY_BLOCKS = {
 }
 
 
-def get_stage_context(stage: str, policy_state: Dict[str, Any]) -> str:
+def get_stage_context(stage: str, policy_state: dict[str, Any]) -> str:
     stage_def = STAGE_DEFINITIONS.get(stage)
     if not stage_def:
         return f"Estagio desconhecido: {stage}. Tratando como onboarding."
@@ -301,7 +300,7 @@ def get_stage_context(stage: str, policy_state: Dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def get_transition_prompt(current_stage: str, policy_state: Dict[str, Any]) -> str:
+def get_transition_prompt(current_stage: str, policy_state: dict[str, Any]) -> str:
     stage_def = STAGE_DEFINITIONS.get(current_stage)
     if not stage_def:
         return "Estagio desconhecido."

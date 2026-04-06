@@ -3,14 +3,14 @@ Talent Funnel Phase 2 API (WDT-011/012/014/015)
 Endpoints for score analysis, gap analysis, WRF configuration, and pre-WRF filtering.
 """
 import logging
+
 from fastapi import APIRouter
-from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 
 from app.services.es_score_drop_analyzer import es_score_drop_analyzer
 from app.services.pgv_gap_analyzer import pgv_gap_analyzer
-from app.services.wrf_dynamic_k_service import wrf_dynamic_k_service
 from app.services.pre_wrf_filter_service import pre_wrf_filter_service
+from app.services.wrf_dynamic_k_service import wrf_dynamic_k_service
 
 logger = logging.getLogger(__name__)
 
@@ -19,34 +19,34 @@ router = APIRouter(prefix="/talent-funnel", tags=["talent-funnel"])
 
 class CandidateInput(BaseModel):
     id: str
-    name: Optional[str] = None
-    score: Optional[float] = None
-    es_score: Optional[float] = None
-    es_rank: Optional[int] = None
-    pgv_distance: Optional[float] = None
-    pgv_rank: Optional[int] = None
-    distance: Optional[float] = None
+    name: str | None = None
+    score: float | None = None
+    es_score: float | None = None
+    es_rank: int | None = None
+    pgv_distance: float | None = None
+    pgv_rank: int | None = None
+    distance: float | None = None
 
 
 class ScoreDropRequest(BaseModel):
-    candidates: List[CandidateInput]
-    qualification_level: Optional[str] = Field("media", pattern="^(alta|media|baixa)$")
+    candidates: list[CandidateInput]
+    qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
 class GapAnalysisRequest(BaseModel):
-    candidates: List[CandidateInput]
-    qualification_level: Optional[str] = Field("media", pattern="^(alta|media|baixa)$")
+    candidates: list[CandidateInput]
+    qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
 class WRFRankRequest(BaseModel):
-    candidates: List[CandidateInput]
-    qualification_level: Optional[str] = Field("media", pattern="^(alta|media|baixa)$")
+    candidates: list[CandidateInput]
+    qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
 class PreWRFRequest(BaseModel):
-    es_candidates: List[CandidateInput]
-    pgv_candidates: List[CandidateInput]
-    qualification_level: Optional[str] = Field("media", pattern="^(alta|media|baixa)$")
+    es_candidates: list[CandidateInput]
+    pgv_candidates: list[CandidateInput]
+    qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
 @router.post("/analyze-score-drop")

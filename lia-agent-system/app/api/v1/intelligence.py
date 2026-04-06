@@ -2,16 +2,17 @@
 Intelligence Layer API endpoints.
 Provides data quality assessment, pattern insights, and wizard enhancements.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List, Dict, Any
 import logging
+from typing import Any
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
 from app.services.intelligence_layer_service import intelligence_layer_service
-from pydantic import BaseModel, Field
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -25,25 +26,25 @@ class DataQualityResponse(BaseModel):
     correlation_analysis_ready: bool = False
     personalization_ready: bool = False
     has_minimum_data: bool = False
-    recommendations: List[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
 
 
 class IntelligenceContextRequest(BaseModel):
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    role: str | None = None
+    seniority: str | None = None
+    department: str | None = None
 
 
 class PatternAdjustmentRequest(BaseModel):
     field: str
     value: Any
-    seniority: Optional[str] = None
+    seniority: str | None = None
 
 
 class PatternAdjustmentResponse(BaseModel):
     original_value: Any
     adjusted_value: Any
-    adjustments_applied: List[str] = Field(default_factory=list)
+    adjustments_applied: list[str] = Field(default_factory=list)
     confidence_adjustment: float = 0.0
 
 
@@ -170,9 +171,9 @@ async def adjust_field_value(
 
 @router.get("/wizard-enhancements")
 async def get_wizard_enhancements(
-    seniority: Optional[str] = None,
-    department: Optional[str] = None,
-    role: Optional[str] = None,
+    seniority: str | None = None,
+    department: str | None = None,
+    role: str | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 
@@ -214,8 +215,8 @@ async def get_wizard_enhancements(
 
 @router.get("/success-profile")
 async def get_success_profile(
-    seniority: Optional[str] = None,
-    department: Optional[str] = None,
+    seniority: str | None = None,
+    department: str | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 
@@ -264,8 +265,8 @@ async def get_success_profile(
 
 @router.get("/correlations")
 async def get_correlations(
-    factor_field: Optional[str] = None,
-    outcome_type: Optional[str] = None,
+    factor_field: str | None = None,
+    outcome_type: str | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 

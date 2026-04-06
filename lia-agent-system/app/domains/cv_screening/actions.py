@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import List
 
 from app.domains.base import DomainAction
 
-CV_SCREENING_ACTIONS: List[DomainAction] = [
+CV_SCREENING_ACTIONS: list[DomainAction] = [
     DomainAction(action_id="parse_cv", name="Analisar CV", description="Analisar e extrair dados estruturados do CV"),
     DomainAction(action_id="auto_screen", name="Triagem automática", description="Triagem automática contra requisitos da vaga"),
     DomainAction(action_id="batch_screen", name="Triagem em lote", description="Triagem em lote de múltiplos candidatos"),

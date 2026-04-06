@@ -12,8 +12,8 @@ Prerequisites (configured in Azure AD):
 """
 import logging
 import os
-from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +36,14 @@ class TeamsCalendarService:
         title: str,
         recruiter_email: str,
         candidate_name: str,
-        candidate_email: Optional[str] = None,
+        candidate_email: str | None = None,
         start_time: datetime,
         duration_minutes: int = 60,
-        vacancy_title: Optional[str] = None,
-        candidate_id: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-        notes: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        vacancy_title: str | None = None,
+        candidate_id: str | None = None,
+        vacancy_id: str | None = None,
+        notes: str | None = None,
+    ) -> dict[str, Any]:
         """
         Create a Teams Meeting + Outlook calendar event.
 
@@ -59,8 +59,8 @@ class TeamsCalendarService:
         """
         try:
             from app.services.microsoft_graph_service import (
-                microsoft_graph_service,
                 CreateTeamsMeetingRequest,
+                microsoft_graph_service,
             )
 
             if not self.is_configured():
@@ -129,8 +129,8 @@ class TeamsCalendarService:
         self,
         event_id: str,
         organizer_email: str,
-        cancellation_message: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        cancellation_message: str | None = None,
+    ) -> dict[str, Any]:
         """Cancel an existing interview event."""
         try:
             from app.services.microsoft_graph_service import microsoft_graph_service
@@ -154,7 +154,7 @@ class TeamsCalendarService:
         organizer_email: str,
         new_start_time: datetime,
         duration_minutes: int = 60,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Reschedule an existing interview to a new time."""
         try:
             from app.services.microsoft_graph_service import microsoft_graph_service
@@ -186,14 +186,15 @@ class TeamsCalendarService:
         self,
         candidate_name: str,
         vacancy_title: str,
-        candidate_id: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        candidate_id: str | None = None,
+        vacancy_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Adaptive Card with a date/time picker for scheduling interviews.
         Submitted via Action.Submit → POST /api/v1/teams/calendar/schedule
         """
-        from datetime import date, timedelta as td
+        from datetime import date
+        from datetime import timedelta as td
         tomorrow = (date.today() + td(days=1)).isoformat()
 
         return {

@@ -2,15 +2,14 @@
 Automation Rules API
 CRUD endpoints for company-specific stage automation rules.
 """
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import List, Optional
 from pydantic import BaseModel
-from uuid import UUID
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.automation import StageAutomationRule, DEFAULT_STAGE_AUTOMATION_RULES
+from app.models.automation import DEFAULT_STAGE_AUTOMATION_RULES, StageAutomationRule
 
 router = APIRouter(prefix="/automation-rules", tags=["automation-rules"])
 
@@ -22,24 +21,24 @@ class AutomationRuleCreate(BaseModel):
     confidence_threshold: float = 0.8
     conditions: dict = {}
     actions: list = []
-    source_stage: Optional[str] = None
-    target_stage: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
+    source_stage: str | None = None
+    target_stage: str | None = None
+    name: str | None = None
+    description: str | None = None
     priority: str = "normal"
 
 
 class AutomationRuleUpdate(BaseModel):
-    is_active: Optional[bool] = None
-    auto_execute: Optional[bool] = None
-    confidence_threshold: Optional[float] = None
-    conditions: Optional[dict] = None
-    actions: Optional[list] = None
-    source_stage: Optional[str] = None
-    target_stage: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    priority: Optional[str] = None
+    is_active: bool | None = None
+    auto_execute: bool | None = None
+    confidence_threshold: float | None = None
+    conditions: dict | None = None
+    actions: list | None = None
+    source_stage: str | None = None
+    target_stage: str | None = None
+    name: str | None = None
+    description: str | None = None
+    priority: str | None = None
 
 
 class AutomationRuleResponse(BaseModel):
@@ -51,21 +50,21 @@ class AutomationRuleResponse(BaseModel):
     confidence_threshold: float
     conditions: dict
     actions: list
-    source_stage: Optional[str]
-    target_stage: Optional[str]
-    name: Optional[str]
-    description: Optional[str]
+    source_stage: str | None
+    target_stage: str | None
+    name: str | None
+    description: str | None
     priority: str
-    created_by: Optional[str]
-    created_at: Optional[str]
-    updated_at: Optional[str]
+    created_by: str | None
+    created_at: str | None
+    updated_at: str | None
 
 
 @router.get("/company/{company_id}")
 async def get_company_rules(
     company_id: str,
-    is_active: Optional[bool] = None,
-    trigger_type: Optional[str] = None,
+    is_active: bool | None = None,
+    trigger_type: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Get all automation rules for a company with optional filters."""

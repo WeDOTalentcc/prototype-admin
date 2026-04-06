@@ -26,7 +26,6 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional
 
 from fastapi import (
     APIRouter,
@@ -39,7 +38,7 @@ from fastapi import (
 from pydantic import BaseModel
 
 from app.shared.pii_masking import mask_pii
-from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT, CircuitBreakerError
+from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
 
 
 def _get_hmac_secret() -> str:
@@ -75,7 +74,7 @@ class StartSessionRequest(BaseModel):
     candidate_name: str
     job_title: str
     company_id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
     language: str = "pt-BR"
 
 
@@ -85,9 +84,9 @@ class StartSessionResponse(BaseModel):
     status: str
     voice_provider: str = "gemini_live"
     gemini_available: bool
-    ws_token: Optional[str] = None
-    error: Optional[str] = None
-    fallback_channel: Optional[str] = None
+    ws_token: str | None = None
+    error: str | None = None
+    fallback_channel: str | None = None
 
 
 @router.post("/gemini-voice/start-session", response_model=StartSessionResponse)
@@ -128,8 +127,8 @@ async def start_gemini_voice_session(
     try:
         from app.services.gemini_live_audio_service import get_gemini_live_service
         from app.services.voice_screening_orchestrator import (
-            voice_screening_orchestrator,
             ConsentNotGrantedError,
+            voice_screening_orchestrator,
         )
 
         try:
@@ -227,10 +226,10 @@ async def start_gemini_voice_session(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-_active_ws_sessions: Dict[str, bool] = {}
-_ws_ip_connections: Dict[str, int] = {}
+_active_ws_sessions: dict[str, bool] = {}
+_ws_ip_connections: dict[str, int] = {}
 MAX_WS_PER_IP = 3
-_session_creation_timestamps: Dict[str, List[float]] = {}
+_session_creation_timestamps: dict[str, list[float]] = {}
 MAX_SESSIONS_PER_IP_PER_MINUTE = 5
 
 
@@ -346,9 +345,10 @@ async def gemini_live_stream_websocket(
     try:
         config = await live_service.create_live_connection_config(session)
 
+        import os
+
         from google import genai
         from google.genai import types
-        import os
 
         api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
         base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
@@ -392,14 +392,14 @@ async def gemini_live_stream_websocket(
                 "status": "in_progress",
             })
 
-            turn_audio_buffer: List[bytes] = []
+            turn_audio_buffer: list[bytes] = []
 
             async def receive_from_gemini():
                 try:
                     while True:
                         turn_start = time.monotonic()
                         turn_audio_buffer.clear()
-                        turn_text_parts: List[str] = []
+                        turn_text_parts: list[str] = []
 
                         async for response in gemini_session.receive():
                             if response.data:
@@ -513,7 +513,7 @@ async def gemini_live_stream_websocket(
                             websocket.receive(),
                             timeout=300,
                         )
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         await websocket.send_json({
                             "type": "status",
                             "status": "timeout",
@@ -621,8 +621,8 @@ async def gemini_live_stream_websocket(
         )
 
         try:
-            from app.services.token_tracking_service import TokenTrackingService
             from app.core.database import AsyncSessionLocal
+            from app.services.token_tracking_service import TokenTrackingService
             async with AsyncSessionLocal() as tok_db:
                 token_svc = TokenTrackingService(db=tok_db)
                 total_latency = sum(session.turn_latencies_ms) if session.turn_latencies_ms else 0.0
@@ -650,8 +650,8 @@ async def gemini_live_stream_websocket(
             )
 
         try:
-            from app.services.voice_screening_orchestrator import voice_screening_orchestrator
             from app.core.database import AsyncSessionLocal
+            from app.services.voice_screening_orchestrator import voice_screening_orchestrator
 
             async with AsyncSessionLocal() as db:
                 orch_session = await voice_screening_orchestrator.get_or_restore_session(
@@ -701,8 +701,8 @@ async def get_gemini_session_status(session_id: str):
     session = live_service.get_session(session_id)
 
     if not session:
-        from app.services.voice_screening_orchestrator import voice_screening_orchestrator
         from app.core.database import AsyncSessionLocal
+        from app.services.voice_screening_orchestrator import voice_screening_orchestrator
 
         try:
             async with AsyncSessionLocal() as db:

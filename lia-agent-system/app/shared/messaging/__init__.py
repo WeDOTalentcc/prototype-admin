@@ -8,8 +8,8 @@ Componentes:
 - dispatchers: DomainDispatcher — mapeia domínio → fila Celery + publica
 - celery_config: DOMAIN_QUEUES centraliza configuração de filas/prioridades
 """
-from app.shared.messaging.message_schemas import AgentChatMessage, AgentResponseMessage
 from app.shared.messaging.dispatchers import DomainDispatcher, domain_dispatcher
+from app.shared.messaging.message_schemas import AgentChatMessage, AgentResponseMessage
 
 __all__ = [
     "AgentChatMessage",

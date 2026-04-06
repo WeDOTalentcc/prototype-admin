@@ -8,17 +8,16 @@ Este serviço consolida informações de:
 - Sessão atual (campos preenchidos, correções)
 """
 import logging
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime
-from uuid import UUID
+from typing import Any
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
-from app.models.job_vacancy import JobVacancy
 from app.models.company import CompanyProfile, Department
 from app.models.company_benefit import CompanyBenefit
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -28,19 +27,19 @@ class CompanyContext:
     """Contexto da empresa."""
     id: str
     name: str
-    industry: Optional[str] = None
-    size: Optional[str] = None
-    culture_insights: Optional[Dict[str, Any]] = None
+    industry: str | None = None
+    size: str | None = None
+    culture_insights: dict[str, Any] | None = None
     
-    departments: List[Dict[str, Any]] = field(default_factory=list)
-    benefits: List[Dict[str, Any]] = field(default_factory=list)
+    departments: list[dict[str, Any]] = field(default_factory=list)
+    benefits: list[dict[str, Any]] = field(default_factory=list)
     
-    common_skills: List[str] = field(default_factory=list)
-    common_responsibilities: List[str] = field(default_factory=list)
+    common_skills: list[str] = field(default_factory=list)
+    common_responsibilities: list[str] = field(default_factory=list)
     
-    avg_salary_by_level: Dict[str, float] = field(default_factory=dict)
-    common_work_models: List[str] = field(default_factory=list)
-    common_locations: List[str] = field(default_factory=list)
+    avg_salary_by_level: dict[str, float] = field(default_factory=dict)
+    common_work_models: list[str] = field(default_factory=list)
+    common_locations: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -48,13 +47,13 @@ class HistoricalContext:
     """Contexto histórico de vagas."""
     total_vacancies: int = 0
     vacancies_last_year: int = 0
-    avg_time_to_fill: Optional[float] = None
+    avg_time_to_fill: float | None = None
     
-    recent_vacancies: List[Dict[str, Any]] = field(default_factory=list)
-    successful_hires: List[Dict[str, Any]] = field(default_factory=list)
+    recent_vacancies: list[dict[str, Any]] = field(default_factory=list)
+    successful_hires: list[dict[str, Any]] = field(default_factory=list)
     
-    common_roles: List[str] = field(default_factory=list)
-    common_requirements: List[str] = field(default_factory=list)
+    common_roles: list[str] = field(default_factory=list)
+    common_requirements: list[str] = field(default_factory=list)
 
 
 @dataclass 
@@ -64,12 +63,12 @@ class SessionContext:
     stage: int = 1
     started_at: datetime = field(default_factory=datetime.utcnow)
     
-    filled_fields: Dict[str, Any] = field(default_factory=dict)
-    corrections_made: List[Dict[str, Any]] = field(default_factory=list)
-    questions_asked: List[str] = field(default_factory=list)
+    filled_fields: dict[str, Any] = field(default_factory=dict)
+    corrections_made: list[dict[str, Any]] = field(default_factory=list)
+    questions_asked: list[str] = field(default_factory=list)
     
-    current_cargo: Optional[str] = None
-    current_area: Optional[str] = None
+    current_cargo: str | None = None
+    current_area: str | None = None
 
 
 @dataclass
@@ -142,7 +141,7 @@ class ContextAggregatorService:
     Serviço que agrega contexto de múltiplas fontes para alimentar o LLM.
     """
     
-    _cache: Dict[str, AggregatedContext] = {}
+    _cache: dict[str, AggregatedContext] = {}
     _cache_ttl_seconds: int = 300
     
     async def get_full_context(
@@ -151,7 +150,7 @@ class ContextAggregatorService:
         session_id: str,
         db: AsyncSession,
         stage: int = 1,
-        filled_fields: Optional[Dict[str, Any]] = None
+        filled_fields: dict[str, Any] | None = None
     ) -> AggregatedContext:
         """
         Obtém contexto completo para uma sessão.
@@ -320,9 +319,9 @@ class ContextAggregatorService:
         self,
         company_id: str,
         session_id: str,
-        filled_fields: Optional[Dict[str, Any]] = None,
-        correction: Optional[Dict[str, Any]] = None,
-        question: Optional[str] = None
+        filled_fields: dict[str, Any] | None = None,
+        correction: dict[str, Any] | None = None,
+        question: str | None = None
     ):
         """Atualiza o contexto da sessão."""
         cache_key = f"{company_id}:{session_id}"
@@ -341,7 +340,7 @@ class ContextAggregatorService:
         if question:
             context.session.questions_asked.append(question)
 
-    def clear_cache(self, company_id: Optional[str] = None):
+    def clear_cache(self, company_id: str | None = None):
         """Limpa o cache de contexto."""
         if company_id:
             keys_to_remove = [k for k in self._cache.keys() if k.startswith(f"{company_id}:")]

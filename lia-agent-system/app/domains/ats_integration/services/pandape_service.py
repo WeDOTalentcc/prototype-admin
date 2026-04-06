@@ -3,9 +3,9 @@ Pandapé ATS Integration Service.
 Handles candidate synchronization and job posting for Pandapé platform.
 """
 import logging
+from typing import Any
+
 import httpx
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class PandapeService:
     API Docs: https://api-ats.pandape.com/index.html
     """
     
-    def __init__(self, api_key: Optional[str] = None, api_url: Optional[str] = None):
+    def __init__(self, api_key: str | None = None, api_url: str | None = None):
         self.api_key = api_key
         self.base_url = api_url or "https://api-ats.pandape.com/api/v2"
         self.headers = {
@@ -42,10 +42,10 @@ class PandapeService:
     
     async def get_jobs(
         self,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 50,
         offset: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get list of job postings from Pandapé.
         
@@ -85,10 +85,10 @@ class PandapeService:
     
     async def get_candidates(
         self,
-        job_id: Optional[str] = None,
-        status: Optional[str] = None,
+        job_id: str | None = None,
+        status: str | None = None,
         limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get candidates from Pandapé.
         
@@ -125,7 +125,7 @@ class PandapeService:
             logger.error(f"❌ Failed to fetch Pandapé candidates: {e}")
             return []
     
-    async def get_candidate_details(self, candidate_id: str) -> Optional[Dict[str, Any]]:
+    async def get_candidate_details(self, candidate_id: str) -> dict[str, Any] | None:
         """
         Get detailed candidate information.
         
@@ -160,9 +160,9 @@ class PandapeService:
     
     async def get_applications(
         self,
-        job_id: Optional[str] = None,
-        candidate_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        job_id: str | None = None,
+        candidate_id: str | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get applications/candidacies.
         
@@ -198,7 +198,7 @@ class PandapeService:
             logger.error(f"❌ Failed to fetch Pandapé applications: {e}")
             return []
     
-    def normalize_candidate(self, raw_candidate: Dict[str, Any]) -> Dict[str, Any]:
+    def normalize_candidate(self, raw_candidate: dict[str, Any]) -> dict[str, Any]:
         """
         Normalize Pandapé candidate data to LIA standard format.
         
@@ -227,7 +227,7 @@ class PandapeService:
             "ats_raw_data": raw_candidate
         }
     
-    def normalize_job(self, raw_job: Dict[str, Any]) -> Dict[str, Any]:
+    def normalize_job(self, raw_job: dict[str, Any]) -> dict[str, Any]:
         """
         Normalize Pandapé job data to LIA standard format.
         
@@ -253,7 +253,7 @@ class PandapeService:
 # Global instance
 pandape_service = None
 
-def init_pandape_service(api_key: str, api_url: Optional[str] = None) -> PandapeService:
+def init_pandape_service(api_key: str, api_url: str | None = None) -> PandapeService:
     """Initialize Pandapé service with API key."""
     global pandape_service
     pandape_service = PandapeService(api_key=api_key, api_url=api_url)

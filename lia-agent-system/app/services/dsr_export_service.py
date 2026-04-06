@@ -9,10 +9,11 @@ Resultado entregue via link de download (S3 presigned URL ou base64 no response)
 """
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +31,8 @@ class DsrExportService:
         db: AsyncSession,
         candidate_id: str,
         company_id: str,
-        requester_email: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        requester_email: str | None = None,
+    ) -> dict[str, Any]:
         """
         Exporta todos os dados do candidato em formato portável (JSON).
 
@@ -58,7 +59,7 @@ class DsrExportService:
         """
         export = {
             "metadata": {
-                "export_date": datetime.now(timezone.utc).isoformat(),
+                "export_date": datetime.now(UTC).isoformat(),
                 "candidate_id": candidate_id,
                 "company_id": company_id,
                 "format": "LIA DSR Export v1.0",
@@ -163,7 +164,7 @@ class DsrExportService:
         db: AsyncSession,
         candidate_id: str,
         company_id: str,
-        requester_email: Optional[str] = None,
+        requester_email: str | None = None,
     ) -> str:
         """
         Gera JSON portável para download.

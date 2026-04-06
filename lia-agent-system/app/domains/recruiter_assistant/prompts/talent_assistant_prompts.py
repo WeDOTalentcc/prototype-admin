@@ -4,7 +4,6 @@ Templates para análises inteligentes do funil de talentos (busca e análise de 
 """
 import json
 import logging
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ class TalentCommandType(str, Enum):
 
 TALENT_COMMAND_TYPES = {cmd.value: cmd for cmd in TalentCommandType}
 
-COMMAND_KEYWORDS: Dict[str, List[str]] = {
+COMMAND_KEYWORDS: dict[str, list[str]] = {
     "rankear_candidatos": [
         "rankear", "ranking", "ordenar", "classificar", "rank", "ranquear",
         "organize os candidatos", "organizar por prioridade", "por prioridade",
@@ -107,7 +106,7 @@ def _is_negated(msg_lower: str, keyword: str) -> bool:
     return any(neg in prefix_window for neg in NEGATION_PREFIXES)
 
 
-def detect_talent_command_type(message: str) -> Tuple[str, float]:
+def detect_talent_command_type(message: str) -> tuple[str, float]:
     msg_lower = message.lower().strip()
     best_match = "analise_geral"
     best_score = 0.0
@@ -139,7 +138,7 @@ _TALENT_CLASSIFY_PROMPT = (
 )
 
 
-async def detect_talent_command_type_enhanced(message: str) -> Tuple[str, float]:
+async def detect_talent_command_type_enhanced(message: str) -> tuple[str, float]:
     keyword_type, keyword_confidence = detect_talent_command_type(message)
 
     if keyword_confidence >= 0.7:
@@ -297,7 +296,7 @@ Se a pergunta nao for sobre candidatos, recrutamento ou talentos no funil:
 """
 
 
-PROMPT_TEMPLATES: Dict[str, str] = {
+PROMPT_TEMPLATES: dict[str, str] = {
     "rankear_candidatos": """Gere um ranking dos candidatos disponíveis:
 
 Critérios de avaliação:
@@ -487,10 +486,10 @@ def get_talent_prompt_template(command_type: str) -> str:
 def build_talent_prompt(
     command_type: str,
     user_query: str,
-    candidates: List[Dict],
-    selected_ids: Optional[List[str]] = None,
-    search_context: Optional[Dict] = None,
-    target_job: Optional[Dict] = None,
+    candidates: list[dict],
+    selected_ids: list[str] | None = None,
+    search_context: dict | None = None,
+    target_job: dict | None = None,
 ) -> str:
     context_lines = ["[CONTEXTO: FUNIL DE TALENTOS]", ""]
 
@@ -523,7 +522,7 @@ def build_talent_prompt(
     if selected_ids and candidates:
         selected_candidates = [c for c in candidates if c.get("id") in selected_ids]
 
-    def _fmt_candidate(c: Dict) -> str:
+    def _fmt_candidate(c: dict) -> str:
         name = c.get("name", "N/A")
         title = c.get("current_title") or c.get("position", "N/A")
         company = c.get("current_company") or "(sem empresa)"
@@ -587,15 +586,15 @@ def build_talent_prompt(
 
 
 def _compute_pool_metrics(
-    candidates: List[Dict], selected_ids: Optional[List[str]] = None
-) -> Optional[Dict]:
+    candidates: list[dict], selected_ids: list[str] | None = None
+) -> dict | None:
     if not candidates:
         return None
 
     total = len(candidates)
     scores = []
     experiences = []
-    skill_count: Dict[str, int] = {}
+    skill_count: dict[str, int] = {}
 
     for c in candidates:
         s = c.get("lia_score") or c.get("liaAnalysis", {}).get("score")

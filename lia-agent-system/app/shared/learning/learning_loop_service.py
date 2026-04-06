@@ -10,16 +10,15 @@ The learning loop operates invisibly - it captures data without
 requiring explicit UI feedback from users. Learning happens through
 observing what users accept, modify, or reject.
 """
-import hashlib
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
-from dataclasses import dataclass
-from enum import Enum
 import statistics
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
-from sqlalchemy import select, func, and_, or_, update, case
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.shared.tracing import trace_span
@@ -54,16 +53,16 @@ class FeedbackCapture:
     suggested_value: Any
     final_value: Any
     outcome: FeedbackOutcome
-    session_id: Optional[str] = None
-    job_id: Optional[str] = None
-    stage: Optional[str] = None
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    source: Optional[str] = None
-    source_confidence: Optional[float] = None
-    response_time_ms: Optional[int] = None
+    session_id: str | None = None
+    job_id: str | None = None
+    stage: str | None = None
+    role: str | None = None
+    seniority: str | None = None
+    department: str | None = None
+    location: str | None = None
+    source: str | None = None
+    source_confidence: float | None = None
+    response_time_ms: int | None = None
 
 
 @dataclass
@@ -76,7 +75,7 @@ class LearnedPattern:
     acceptance_rate: float
     confidence: str
     confidence_score: float
-    filters: Dict[str, Optional[str]]
+    filters: dict[str, str | None]
 
 
 class LearningLoopService:
@@ -142,7 +141,7 @@ class LearningLoopService:
         suggested_value: Any,
         final_value: Any,
         field_name: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Calculate the difference between suggested and final values."""
         if suggested_value is None or final_value is None:
             return None
@@ -182,7 +181,7 @@ class LearningLoopService:
         
         return delta if delta else None
     
-    def _calculate_confidence(self, sample_size: int, acceptance_rate: float) -> Tuple[str, float]:
+    def _calculate_confidence(self, sample_size: int, acceptance_rate: float) -> tuple[str, float]:
         """Calculate confidence level based on sample size and acceptance rate."""
         if sample_size >= self.CONFIDENCE_THRESHOLDS["high"]:
             base_conf = "high"
@@ -262,8 +261,9 @@ class LearningLoopService:
             # Conectar ao model drift quando há feedbacks negativos
             try:
                 if capture.outcome in (FeedbackOutcome.REJECTED, FeedbackOutcome.IGNORED):
-                    from app.services.model_drift_service import ModelDriftService
                     import asyncio
+
+                    from app.services.model_drift_service import ModelDriftService
                     asyncio.create_task(
                         ModelDriftService().check_drift_trigger(
                             company_id=capture.company_id,
@@ -285,14 +285,14 @@ class LearningLoopService:
         db: AsyncSession,
         company_id: str,
         session_id: str,
-        job_id: Optional[str],
+        job_id: str | None,
         field_name: str,
         suggested_value: Any,
         final_value: Any,
-        stage: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-        source: Optional[str] = None,
-        source_confidence: Optional[float] = None,
+        stage: str | None = None,
+        context: dict[str, Any] | None = None,
+        source: str | None = None,
+        source_confidence: float | None = None,
         explicitly_rejected: bool = False
     ) -> str:
         """
@@ -337,7 +337,7 @@ class LearningLoopService:
         Returns the number of events processed.
         """
         try:
-            from app.models.intelligent_cache import FeedbackEvent, LearningPattern
+            from app.models.intelligent_cache import FeedbackEvent
             
             result = await db.execute(
                 select(FeedbackEvent)
@@ -355,7 +355,7 @@ class LearningLoopService:
             if not events:
                 return 0
             
-            patterns_to_update: Dict[str, Dict] = {}
+            patterns_to_update: dict[str, dict] = {}
             
             for event in events:
                 pattern_key = self._generate_pattern_key(event)
@@ -473,7 +473,7 @@ class LearningLoopService:
         db: AsyncSession,
         company_id: str,
         pattern_key: str,
-        data: Dict
+        data: dict
     ) -> None:
         """Update or create a learning pattern."""
         from app.models.intelligent_cache import LearningPattern
@@ -539,10 +539,10 @@ class LearningLoopService:
     
     def _aggregate_pattern_value(
         self,
-        existing_value: Optional[Dict],
-        new_values: List[Any],
+        existing_value: dict | None,
+        new_values: list[Any],
         pattern_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Aggregate values into a pattern value structure."""
         result = existing_value or {}
         
@@ -591,12 +591,12 @@ class LearningLoopService:
         db: AsyncSession,
         company_id: str,
         field_name: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        location: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
         min_confidence: float = 0.5
-    ) -> List[LearnedPattern]:
+    ) -> list[LearnedPattern]:
         """
         Retrieve applicable learning patterns for a given context.
         
@@ -666,9 +666,9 @@ class LearningLoopService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None
-    ) -> Optional[Dict[str, float]]:
+        role: str | None = None,
+        seniority: str | None = None
+    ) -> dict[str, float] | None:
         """
         Get learned salary adjustment based on historical feedback.
         
@@ -700,10 +700,10 @@ class LearningLoopService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         limit: int = 10
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get skills that this company historically prefers.
         
@@ -734,7 +734,7 @@ class LearningLoopService:
         db: AsyncSession,
         company_id: str,
         days_back: int = 30
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get feedback statistics for analytics."""
         try:
             from app.models.intelligent_cache import FeedbackEvent
@@ -777,9 +777,9 @@ class LearningLoopService:
         self,
         db: AsyncSession,
         company_id: str,
-        suggested_skills: List[Dict[str, Any]],
-        final_skills: List[Dict[str, Any]],
-        job_context: Dict[str, Any]
+        suggested_skills: list[dict[str, Any]],
+        final_skills: list[dict[str, Any]],
+        job_context: dict[str, Any]
     ) -> None:
         """
         Capture feedback when skills are finalized.
@@ -938,10 +938,7 @@ class LearningLoopService:
             company_id: Company identifier
         """
         try:
-            from app.models.skills_catalog import (
-                SkillUsageAnalytics,
-                SkillSuggestionPattern
-            )
+            from app.models.skills_catalog import SkillSuggestionPattern, SkillUsageAnalytics
             
             # Get all analytics for the company
             result = await db.execute(
@@ -954,7 +951,7 @@ class LearningLoopService:
                 return
             
             # Group by skill and context
-            patterns_data: Dict[str, Dict[str, Any]] = {}
+            patterns_data: dict[str, dict[str, Any]] = {}
             
             for record in analytics_records:
                 # Create context key
@@ -1023,7 +1020,7 @@ class LearningLoopService:
                 # Determine suggested level (most common)
                 suggested_level = None
                 if data["levels"]:
-                    level_counts: Dict[str, int] = {}
+                    level_counts: dict[str, int] = {}
                     for level in data["levels"]:
                         level_counts[level] = level_counts.get(level, 0) + 1
                     suggested_level = max(level_counts, key=level_counts.get)
@@ -1116,7 +1113,7 @@ class LearningLoopService:
         query: str,
         success: bool,
         confidence: float,
-        response_metadata: Optional[Dict[str, Any]] = None,
+        response_metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Record a domain workflow interaction for learning purposes.

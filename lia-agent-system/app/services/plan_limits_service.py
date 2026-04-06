@@ -18,16 +18,15 @@ Usage:
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from fastapi import Depends, HTTPException, Request
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
-from app.core.database import get_db
 from app.auth.dependencies import get_current_active_user, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.config import settings
+from app.core.database import get_db
 from app.models.billing import Subscription, SubscriptionStatus
 from app.models.job_vacancy import JobVacancy
 
@@ -75,7 +74,7 @@ def _get_limits(plan_code: str, status: str) -> dict:
     }
 
 
-async def _get_subscription(db: AsyncSession, company_id: str) -> Optional[Subscription]:
+async def _get_subscription(db: AsyncSession, company_id: str) -> Subscription | None:
     result = await db.execute(
         select(Subscription)
         .where(Subscription.client_id == company_id)

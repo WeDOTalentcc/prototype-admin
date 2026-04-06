@@ -4,11 +4,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any, Optional
 import uuid
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from enum import Enum
+from typing import Any
 
 
 class PlanStepStatus(str, Enum):
@@ -28,9 +28,9 @@ class PlanStep:
     output_data: dict[str, Any] = field(default_factory=dict)
     status: PlanStepStatus = PlanStepStatus.PENDING
     depends_on: list[str] = field(default_factory=list)  # step_ids
-    error: Optional[str] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    error: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
 
 @dataclass
@@ -44,8 +44,8 @@ class MultiDomainPlan:
     user_id: str = ""
     original_intent: str = ""
     steps: list[PlanStep] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    completed_at: Optional[datetime] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    completed_at: datetime | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
     
     def add_step(
@@ -81,7 +81,7 @@ class MultiDomainPlan:
             if step.step_id == step_id:
                 step.status = PlanStepStatus.COMPLETED
                 step.output_data = output
-                step.completed_at = datetime.now(timezone.utc)
+                step.completed_at = datetime.now(UTC)
                 return
     
     def mark_step_failed(self, step_id: str, error: str) -> None:
@@ -89,7 +89,7 @@ class MultiDomainPlan:
             if step.step_id == step_id:
                 step.status = PlanStepStatus.FAILED
                 step.error = error
-                step.completed_at = datetime.now(timezone.utc)
+                step.completed_at = datetime.now(UTC)
                 return
     
     @property

@@ -5,26 +5,27 @@ All agents and services should use get_company_policy() to get the policy
 for a company. Returns defaults if no policy is configured.
 """
 import logging
-from typing import Optional, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company_hiring_policy import (
-    CompanyHiringPolicy,
     ALL_DEFAULTS,
+    AUTOMATION_RULES_DEFAULTS,
+    COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
-    COMMUNICATION_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
-    AUTOMATION_RULES_DEFAULTS,
+    CompanyHiringPolicy,
 )
 
 logger = logging.getLogger(__name__)
 
-_policy_cache: Dict[str, Dict[str, Any]] = {}
+_policy_cache: dict[str, dict[str, Any]] = {}
 
 
-def _get_defaults_dict() -> Dict[str, Any]:
+def _get_defaults_dict() -> dict[str, Any]:
     return {
         "id": None,
         "company_id": None,
@@ -42,9 +43,9 @@ def _get_defaults_dict() -> Dict[str, Any]:
 
 async def get_company_policy(
     company_id: str,
-    db: Optional[AsyncSession] = None,
+    db: AsyncSession | None = None,
     use_cache: bool = True
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get the hiring policy for a company.
     Returns defaults if no policy exists.
@@ -64,7 +65,7 @@ async def _fetch_policy(
     company_id: str,
     db: AsyncSession,
     use_cache: bool
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         result = await db.execute(
             select(CompanyHiringPolicy).where(
@@ -100,7 +101,7 @@ def invalidate_all_cache():
     _policy_cache.clear()
 
 
-def get_policy_rule(policy: Dict[str, Any], block: str, key: str, default=None):
+def get_policy_rule(policy: dict[str, Any], block: str, key: str, default=None):
     """Get a specific rule from a policy dict with fallback to defaults."""
     block_data = policy.get(block, {})
     if block_data and key in block_data:

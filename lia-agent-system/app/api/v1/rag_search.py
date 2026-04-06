@@ -10,7 +10,7 @@ Query params:
   alpha      (float, default=0.5) — blend weight: 0=BM25, 1=semântico
 """
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -38,13 +38,13 @@ _rag_service = RAGPipelineService()
 class RAGSearchResponse(BaseModel):
     """Resposta da busca RAG híbrida."""
 
-    results: List[Dict[str, Any]] = Field(description="Lista de candidatos encontrados")
+    results: list[dict[str, Any]] = Field(description="Lista de candidatos encontrados")
     query: str = Field(description="Query original")
     total: int = Field(description="Total de resultados retornados")
     source: str = Field(description="Fonte: 'semantic' | 'bm25' | 'hybrid'")
     fairness_ok: bool = Field(description="FairnessGuard: diversidade de gênero no top-10")
     search_time_ms: float = Field(description="Tempo de busca em milissegundos")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadados internos")
+    metadata: dict[str, Any] = Field(default_factory=dict, description="Metadados internos")
 
     model_config = {"from_attributes": True}
 

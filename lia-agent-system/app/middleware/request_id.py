@@ -1,9 +1,10 @@
 """
 Request ID Middleware - generates unique request ID per request for tracing.
 """
+import uuid
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-import uuid
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):

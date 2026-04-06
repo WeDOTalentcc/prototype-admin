@@ -5,12 +5,12 @@ Subset of kanban_tool_registry for KanbanActionAgent (8 tools).
 Focus: batch mutations, communications, fairness check, recruiter metrics.
 check_rejection_fairness is MANDATORY in this registry (compliance).
 """
-from typing import List
 
 from lia_agents_core.react_loop import ToolDefinition
+
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
 
-_ACTION_TOOL_NAMES: List[str] = [
+_ACTION_TOOL_NAMES: list[str] = [
     "batch_move_candidates",
     "send_batch_communication",
     "start_screening_batch",
@@ -21,13 +21,13 @@ _ACTION_TOOL_NAMES: List[str] = [
     "get_recruiter_benchmark",
 ]
 
-GUARDRAIL_TOOLS: List[str] = [
+GUARDRAIL_TOOLS: list[str] = [
     "batch_move_candidates",
     "send_batch_communication",
     "start_screening_batch",
 ]
 
 
-def get_kanban_action_tools() -> List[ToolDefinition]:
+def get_kanban_action_tools() -> list[ToolDefinition]:
     """Return the 8 action tools for KanbanActionAgent."""
     return [_TOOL_MAP[name] for name in _ACTION_TOOL_NAMES if name in _TOOL_MAP]

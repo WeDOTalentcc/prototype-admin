@@ -9,7 +9,7 @@ If top scores cluster high → reduce K for precision. If scores spread low → 
 import logging
 import os
 import statistics
-from typing import Optional, Dict, Any, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -45,20 +45,20 @@ class WRFDynamicKService:
         self.weights = SCORE_WEIGHTS.copy()
         self.adaptive_enabled = os.environ.get("WRF_ADAPTIVE_K", "true").lower() == "true"
 
-    def get_k(self, qualification_level: Optional[str] = None) -> int:
+    def get_k(self, qualification_level: str | None = None) -> int:
         level = (qualification_level or "media").lower()
         return self.k_values.get(level, self.k_values["media"])
 
-    def get_weights(self, qualification_level: Optional[str] = None) -> Dict[str, float]:
+    def get_weights(self, qualification_level: str | None = None) -> dict[str, float]:
         level = (qualification_level or "media").lower()
         return self.weights.get(level, self.weights["media"])
 
     def compute_adaptive_k(
         self,
         base_k: int,
-        es_scores: List[float],
-        pgv_scores: List[float],
-    ) -> Dict[str, Any]:
+        es_scores: list[float],
+        pgv_scores: list[float],
+    ) -> dict[str, Any]:
         if not self.adaptive_enabled or len(es_scores) < 3:
             return {"k": base_k, "adjusted": False, "reason": "adaptive_disabled_or_insufficient_data"}
 
@@ -101,7 +101,7 @@ class WRFDynamicKService:
             "score_spread": round(score_spread, 4) if score_spread else 0,
         }
 
-    def compute_wrf_score(self, es_rank: int, pgv_rank: int, qualification_level: Optional[str] = None, k_override: Optional[int] = None) -> float:
+    def compute_wrf_score(self, es_rank: int, pgv_rank: int, qualification_level: str | None = None, k_override: int | None = None) -> float:
         k = k_override if k_override is not None else self.get_k(qualification_level)
         weights = self.get_weights(qualification_level)
         es_rrf = 1.0 / (k + es_rank)
@@ -110,11 +110,11 @@ class WRFDynamicKService:
 
     def rank_candidates(
         self,
-        candidates: List[Dict[str, Any]],
-        qualification_level: Optional[str] = None,
-        es_scores: Optional[List[float]] = None,
-        pgv_scores: Optional[List[float]] = None,
-    ) -> List[Dict[str, Any]]:
+        candidates: list[dict[str, Any]],
+        qualification_level: str | None = None,
+        es_scores: list[float] | None = None,
+        pgv_scores: list[float] | None = None,
+    ) -> list[dict[str, Any]]:
         base_k = self.get_k(qualification_level)
         weights = self.get_weights(qualification_level)
 
@@ -153,7 +153,7 @@ class WRFDynamicKService:
         )
         return ranked
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         return {
             "k_values": self.k_values,
             "weights": self.weights,

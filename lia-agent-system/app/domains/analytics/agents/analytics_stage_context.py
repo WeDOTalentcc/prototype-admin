@@ -4,9 +4,9 @@ Defines execution stages for the analytics workflow and their associated tools.
 Each stage maps to a specific phase of an analytics inquiry:
   query-understanding → data-retrieval → synthesis
 """
-from typing import Any, Dict, List
+from typing import Any
 
-STAGE_DEFINITIONS: Dict[str, Any] = {
+STAGE_DEFINITIONS: dict[str, Any] = {
     "query-understanding": {
         "name": "query-understanding",
         "description": "Entender qual métrica, KPI ou relatório o recrutador está solicitando",
@@ -50,19 +50,19 @@ STAGE_DEFINITIONS: Dict[str, Any] = {
 }
 
 
-def get_stage_context(stage: str) -> Dict[str, Any]:
+def get_stage_context(stage: str) -> dict[str, Any]:
     """Return the stage definition dict for the given stage name."""
     return STAGE_DEFINITIONS.get(stage, STAGE_DEFINITIONS["query-understanding"])
 
 
-def get_stage_tools(stage: str) -> List[str]:
+def get_stage_tools(stage: str) -> list[str]:
     """Return the list of tool names available for the given stage."""
     return get_stage_context(stage).get("tools", [])
 
 
 def get_transition_prompt(from_stage: str, to_stage: str) -> str:
     """Return a human-readable message for stage transitions."""
-    prompts: Dict[tuple, str] = {
+    prompts: dict[tuple, str] = {
         ("query-understanding", "data-retrieval"): (
             "Consulta compreendida. Buscando dados analíticos no banco..."
         ),

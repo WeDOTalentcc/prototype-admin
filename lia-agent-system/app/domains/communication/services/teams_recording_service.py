@@ -6,12 +6,12 @@ Usa /communications/onlineMeetings/{meetingId}/transcripts endpoint.
 """
 import logging
 import re
+from datetime import datetime
+from typing import Any
+
 import httpx
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
 from pydantic import BaseModel
 
-from app.core.config import settings
 from app.services.graph_client import graph_client
 
 logger = logging.getLogger(__name__)
@@ -31,8 +31,8 @@ class TeamsRecording(BaseModel):
     meeting_id: str
     recording_id: str
     download_url: str
-    duration_seconds: Optional[float] = None
-    size_bytes: Optional[int] = None
+    duration_seconds: float | None = None
+    size_bytes: int | None = None
 
 
 class TeamsRecordingService:
@@ -58,10 +58,10 @@ class TeamsRecordingService:
         self,
         method: str,
         endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, str]] = None,
+        data: dict[str, Any] | None = None,
+        params: dict[str, str] | None = None,
         use_beta: bool = False,
-        accept_content_type: Optional[str] = None
+        accept_content_type: str | None = None
     ) -> Any:
         """
         Make authenticated request to Microsoft Graph API.
@@ -121,7 +121,7 @@ class TeamsRecordingService:
         self,
         meeting_id: str,
         organizer_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         List all available transcripts for a meeting.
         
@@ -163,7 +163,7 @@ class TeamsRecordingService:
         organizer_id: str,
         transcript_id: str,
         format: str = "text/vtt"
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get the actual transcript content.
         
@@ -197,7 +197,7 @@ class TeamsRecordingService:
         self,
         meeting_id: str,
         organizer_id: str
-    ) -> Optional[TeamsTranscript]:
+    ) -> TeamsTranscript | None:
         """
         Get transcript for a Teams meeting.
         
@@ -252,7 +252,7 @@ class TeamsRecordingService:
         self,
         meeting_id: str,
         organizer_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         List all available recordings for a meeting.
         
@@ -292,7 +292,7 @@ class TeamsRecordingService:
         meeting_id: str,
         organizer_id: str,
         recording_id: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get download URL for a recording.
         
@@ -339,7 +339,7 @@ class TeamsRecordingService:
         self,
         meeting_id: str,
         organizer_id: str
-    ) -> Optional[TeamsRecording]:
+    ) -> TeamsRecording | None:
         """
         Get recording download URL for a Teams meeting.
         
@@ -438,7 +438,7 @@ class TeamsRecordingService:
         
         return result
     
-    def extract_speaker_segments(self, vtt_content: str) -> List[Dict[str, Any]]:
+    def extract_speaker_segments(self, vtt_content: str) -> list[dict[str, Any]]:
         """
         Extract speaker segments from VTT transcript.
         
@@ -523,7 +523,7 @@ class TeamsRecordingService:
         self,
         join_url: str,
         user_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get online meeting details by join URL.
         
@@ -555,7 +555,7 @@ class TeamsRecordingService:
         self,
         meeting_id: str,
         organizer_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get attendance report for a meeting.
         

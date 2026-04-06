@@ -2,89 +2,33 @@
 Shared imports, constants, Pydantic models, and helper utilities used
 across all lia_assistant sub-modules.
 """
-from typing import Dict, Any, List, Optional, Tuple
-from enum import Enum
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, UploadFile, File, Response, WebSocket, WebSocketDisconnect, Form
-from pydantic import BaseModel
-import base64
-from datetime import datetime, timedelta
-from uuid import UUID, uuid4
+import json
 import logging
 import re
-import json
+from enum import Enum
+from typing import Any
+from uuid import UUID, uuid4
 
-from sqlalchemy import select, func, and_, or_, case, text
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models import JobVacancy, Candidate
-from app.models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
-from app.services.intent_classifier import (
-    IntentClassifierService, IntentType, ClassificationResult, intent_classifier_service
-)
 from app.domains.analytics.services.job_insights_service import JobInsightsService
-from app.services.market_benchmark_service import MarketBenchmarkService
-from app.services.feedback_learning_service import FeedbackLearningService
-from app.services.llm import LLMService
-from app.services.organization_catalog_service import OrganizationCatalogService
-from app.services.confidence_policy_service import ConfidencePolicyService
-from app.services.config_completeness_service import ConfigCompletenessService
-from app.services.skills_catalog_service import skills_catalog_service
-from app.services.responsibilities_catalog_service import responsibilities_catalog_service
-from app.domains.job_management.services.jd_generator_service import jd_generator_service
-from app.services.learning_hub_service import learning_hub_service
+
 # SourcingAgent and AvaliadorWSIAgent moved to lia_assistant_wizard_stages.py (Phase 6 deprecation)
-from app.domains.job_management.services.vacancy_search_service import (
-    vacancy_search_service, VacancySummary, VacancyFullDetails
-)
-from app.services.enhanced_intent_classifier import (
-    EnhancedIntentClassifierService,
-    EnhancedIntentType,
-    EnhancedClassificationResult,
-    enhanced_intent_classifier
-)
-from app.services.context_aggregator_service import (
-    ContextAggregatorService,
-    AggregatedContext,
-    context_aggregator
-)
-from app.services.knowledge_base_service import (
-    KnowledgeBaseService,
-    KnowledgeResponse,
-    knowledge_base
-)
+from app.models.job_draft import ChangeType, DraftFieldHistory, JobDraft
 from app.models.structured_responses import (
-    OrchestrationDecision,
     IntentClassification,
+    OrchestrationDecision,
     SalaryAnalysis,
-    JobFieldUpdate,
-    WizardOrchestrationResult,
 )
-from app.services.llm import llm_service
-from app.services.graph_runner import graph_runner_service, GraphRunnerService
-from app.services.feedback_service import feedback_service, FeedbackService
-from app.services.voice_service import voice_service, VoiceServiceError, TranscriptionError, SynthesisError
-from app.domains.automation.services.autonomous_agent_service import autonomous_agent_service
-from app.services.multimodal_service import (
-    multimodal_service,
-    MultimodalServiceError,
-    ImageAnalysisError,
-    VideoAnalysisError,
-    DocumentAnalysisError
+from app.services.config_completeness_service import ConfigCompletenessService
+from app.services.feedback_learning_service import FeedbackLearningService
+from app.services.intent_classifier import (
+    ClassificationResult,
 )
-from lia_agents_core.state_machine import WizardStage
-from app.domains.recruiter_assistant.services.wizard_analytics_service import (
-    wizard_analytics, detect_wizard_analytics_command,
-)
-from app.domains.recruiter_assistant.services.wizard_action_executor import (
-    wizard_action_executor, detect_wizard_action, WizardActionResult, robust_json_parse,
-    WIZARD_ACTIONABLE_INTENTS,
-)
-from app.orchestrator.pending_action import PendingActionState, pending_action_store
-from app.orchestrator.action_executor import is_confirmation, is_rejection
-from app.auth.dependencies import get_current_user_or_demo
-from app.auth.models import User
-from app.dependencies.token_budget import require_token_budget
+from app.services.llm import LLMService, llm_service
+from app.services.market_benchmark_service import MarketBenchmarkService
+from app.services.skills_catalog_service import skills_catalog_service
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +44,7 @@ feedback_learning_service = FeedbackLearningService()
 completeness_service = ConfigCompletenessService()
 
 # In-memory store for job drafts used by conversational routes
-_job_drafts: Dict[str, Any] = {}
+_job_drafts: dict[str, Any] = {}
 
 # ---------------------------------------------------------------------------
 # Wizard stage metadata
@@ -247,46 +191,46 @@ class SuggestionCard(BaseModel):
     action: str
     priority: str
     category: str
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 class SuggestionsResponse(BaseModel):
-    suggestions: List[SuggestionCard]
+    suggestions: list[SuggestionCard]
     generated_at: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class WizardStepRequest(BaseModel):
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
     stage: int
     user_input: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class WizardStepResponse(BaseModel):
     conversation_id: str
     current_stage: int
-    next_stage: Optional[int] = None
+    next_stage: int | None = None
     stage_name: str
     lia_message: str
-    detected_criteria: Optional[Dict[str, Any]] = None
+    detected_criteria: dict[str, Any] | None = None
     is_complete: bool
-    created_job: Optional[Dict[str, Any]] = None
-    intent_detected: Optional[str] = None
-    benchmarks: Optional[Dict[str, Any]] = None
-    suggestions: Optional[Dict[str, Any]] = None
-    field_origins: Optional[Dict[str, Dict[str, Any]]] = None
-    stage_skipped: Optional[bool] = None
-    skip_reason: Optional[str] = None
-    auto_filled_data: Optional[Dict[str, Any]] = None
-    stages_to_skip: Optional[List[int]] = None
+    created_job: dict[str, Any] | None = None
+    intent_detected: str | None = None
+    benchmarks: dict[str, Any] | None = None
+    suggestions: dict[str, Any] | None = None
+    field_origins: dict[str, dict[str, Any]] | None = None
+    stage_skipped: bool | None = None
+    skip_reason: str | None = None
+    auto_filled_data: dict[str, Any] | None = None
+    stages_to_skip: list[int] | None = None
 
 
 class WizardEvaluateRequest(BaseModel):
     """Request schema for job wizard evaluation endpoint."""
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
     user_input: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class WizardEvaluateSuggestion(BaseModel):
@@ -295,32 +239,32 @@ class WizardEvaluateSuggestion(BaseModel):
     value: Any
     source: str
     confidence: float
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class WizardEvaluateCompensation(BaseModel):
     """Compensation analysis result."""
-    salary: Optional[Dict[str, Any]] = None
-    bonus: Optional[Dict[str, Any]] = None
-    benefits: Optional[Dict[str, Any]] = None
-    total_comp: Optional[Dict[str, Any]] = None
-    overall_assessment: Optional[str] = None
-    summary: Optional[str] = None
+    salary: dict[str, Any] | None = None
+    bonus: dict[str, Any] | None = None
+    benefits: dict[str, Any] | None = None
+    total_comp: dict[str, Any] | None = None
+    overall_assessment: str | None = None
+    summary: str | None = None
 
 
 class WizardEvaluateResponse(BaseModel):
     """Response schema for job wizard evaluation endpoint."""
     conversation_id: str
-    detected_fields: Dict[str, Any]
-    compensation_analysis: Optional[WizardEvaluateCompensation] = None
-    suggestions: List[WizardEvaluateSuggestion] = []
+    detected_fields: dict[str, Any]
+    compensation_analysis: WizardEvaluateCompensation | None = None
+    suggestions: list[WizardEvaluateSuggestion] = []
     lia_message: str
     overall_confidence: float = 0.7
 
 
 class InsightsRequest(BaseModel):
-    job_ids: List[str]
-    insight_types: Optional[List[str]] = None
+    job_ids: list[str]
+    insight_types: list[str] | None = None
 
 
 class InsightItem(BaseModel):
@@ -328,28 +272,28 @@ class InsightItem(BaseModel):
     title: str
     description: str
     severity: str
-    recommendation: Optional[str] = None
-    data: Optional[Dict[str, Any]] = None
+    recommendation: str | None = None
+    data: dict[str, Any] | None = None
 
 
 class InsightsResponse(BaseModel):
-    insights: List[InsightItem]
-    summary: Dict[str, Any]
+    insights: list[InsightItem]
+    summary: dict[str, Any]
     generated_at: str
 
 
 class ExpandedPromptRequest(BaseModel):
     message: str
     context_type: str
-    context_ids: Optional[List[str]] = None
-    context: Optional[Dict[str, Any]] = None
+    context_ids: list[str] | None = None
+    context: dict[str, Any] | None = None
 
 
 class ExpandedPromptResponse(BaseModel):
     response: str
     agent_used: str
-    actions: Optional[List[Dict[str, Any]]] = None
-    follow_up_suggestions: Optional[List[str]] = None
+    actions: list[dict[str, Any]] | None = None
+    follow_up_suggestions: list[str] | None = None
 
 
 class InterpretMessageAction(str, Enum):
@@ -366,42 +310,42 @@ class InterpretMessageAction(str, Enum):
 class InterpretMessageRequest(BaseModel):
     message: str
     current_stage: str = "input-evaluation"
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class InterpretMessageResponse(BaseModel):
     action: InterpretMessageAction
     confidence: float = 0.5
-    extracted_entities: Optional[Dict[str, Any]] = None
-    lia_response: Optional[str] = None
+    extracted_entities: dict[str, Any] | None = None
+    lia_response: str | None = None
     should_advance: bool = False
-    target_stage: Optional[str] = None
+    target_stage: str | None = None
     clarification_needed: bool = False
-    clarification_question: Optional[str] = None
-    reasoning: Optional[str] = None
+    clarification_question: str | None = None
+    reasoning: str | None = None
 
 
 class ConversationalRequest(BaseModel):
     message: str
-    context: Optional[str] = None
-    mode: Optional[str] = "job_creation"
+    context: str | None = None
+    mode: str | None = "job_creation"
 
 
 class ConversationalResponse(BaseModel):
     response: str
     understood_intent: str
-    suggested_action: Optional[str] = None
+    suggested_action: str | None = None
     can_help: bool = True
 
 
 class WizardOrchestratorRequest(BaseModel):
     message: str
     current_stage: str
-    collected_data: Dict[str, Any]
-    conversation_history: Optional[List[Dict[str, str]]] = None
+    collected_data: dict[str, Any]
+    conversation_history: list[dict[str, str]] | None = None
     company_id: str
     use_structured_outputs: bool = False
-    llm_provider: Optional[str] = "gemini"
+    llm_provider: str | None = "gemini"
 
 
 class WizardOrchestratorAction(str, Enum):
@@ -416,24 +360,24 @@ class WizardOrchestratorAction(str, Enum):
 class WizardOrchestratorResponse(BaseModel):
     action: WizardOrchestratorAction
     response: str
-    updated_fields: Optional[Dict[str, Any]] = None
-    target_stage: Optional[str] = None
+    updated_fields: dict[str, Any] | None = None
+    target_stage: str | None = None
     confidence: float = 0.9
-    reasoning: Optional[str] = None
-    suggestions: Optional[List[Dict[str, Any]]] = None
-    validation_errors: Optional[List[str]] = None
+    reasoning: str | None = None
+    suggestions: list[dict[str, Any]] | None = None
+    validation_errors: list[str] | None = None
 
 
 class SalaryBenchmarkRequest(BaseModel):
     job_title: str
-    seniority: Optional[str] = None
-    location: Optional[str] = None
+    seniority: str | None = None
+    location: str | None = None
 
 
 class SalaryBenchmarkResponse(BaseModel):
-    internal: Optional[Dict[str, Any]] = None
-    market: Optional[Dict[str, Any]] = None
-    combined: Optional[Dict[str, Any]] = None
+    internal: dict[str, Any] | None = None
+    market: dict[str, Any] | None = None
+    combined: dict[str, Any] | None = None
 
 
 class ContextBadge(BaseModel):
@@ -441,7 +385,7 @@ class ContextBadge(BaseModel):
     label: str
     icon: str
     color: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class ContextSuggestion(BaseModel):
@@ -449,15 +393,15 @@ class ContextSuggestion(BaseModel):
     id: str
     label: str
     prompt: str
-    icon: Optional[str] = None
+    icon: str | None = None
     category: str = "action"
 
 
 class ContextSuggestionsResponse(BaseModel):
-    context_badge: Optional[ContextBadge] = None
-    suggestions: List[ContextSuggestion]
+    context_badge: ContextBadge | None = None
+    suggestions: list[ContextSuggestion]
     page: str
-    entity_id: Optional[str] = None
+    entity_id: str | None = None
     generated_at: str
 
 
@@ -465,7 +409,7 @@ class ContextSuggestionsResponse(BaseModel):
 # Context suggestion data tables
 # ---------------------------------------------------------------------------
 
-_CONTEXT_SUGGESTIONS: Dict[str, List[Dict[str, str]]] = {
+_CONTEXT_SUGGESTIONS: dict[str, list[dict[str, str]]] = {
     "home": [
         {"id": "h1", "label": "Resumo do dia", "prompt": "Me dê um resumo das atividades e alertas de hoje", "icon": "Sun", "category": "analysis"},
         {"id": "h2", "label": "Vagas críticas", "prompt": "Quais vagas estão em estado crítico ou com prazo vencendo?", "icon": "AlertTriangle", "category": "analysis"},
@@ -518,7 +462,7 @@ _CONTEXT_SUGGESTIONS: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-_PAGE_BADGES: Dict[str, Dict[str, str]] = {
+_PAGE_BADGES: dict[str, dict[str, str]] = {
     "home":          {"label": "Painel Principal",   "icon": "Home",           "color": "#6366F1"},
     "vaga":          {"label": "Vaga",               "icon": "Briefcase",      "color": "#8B5CF6"},
     "candidato":     {"label": "Candidato",          "icon": "User",           "color": "#0EA5E9"},
@@ -587,9 +531,9 @@ async def record_field_history(
     new_value: Any,
     change_type: ChangeType,
     recruiter_id: str,
-    confidence: Optional[float] = None,
-    source: Optional[str] = None,
-    reason: Optional[str] = None,
+    confidence: float | None = None,
+    source: str | None = None,
+    reason: str | None = None,
 ) -> None:
     """Record a field change in the DraftFieldHistory table."""
     if old_value == new_value:
@@ -620,9 +564,9 @@ async def record_field_history(
 async def get_learning_adjustments(
     db: AsyncSession,
     company_id: str,
-    role: Optional[str] = None,
-    seniority: Optional[str] = None,
-) -> Dict[str, Any]:
+    role: str | None = None,
+    seniority: str | None = None,
+) -> dict[str, Any]:
     """Fetch historical correction patterns to adjust suggestions."""
     adjustments = {}
     try:
@@ -661,7 +605,7 @@ async def get_learning_adjustments(
 async def handle_salary_question(
     db: AsyncSession,
     company_id: str,
-    job_draft: Dict[str, Any],
+    job_draft: dict[str, Any],
     user_input: str,
 ) -> str:
     """Handle salary-related questions using insights services."""
@@ -757,7 +701,7 @@ async def handle_salary_question(
 async def handle_skills_question(
     db: AsyncSession,
     company_id: str,
-    job_draft: Dict[str, Any],
+    job_draft: dict[str, Any],
     user_input: str,
 ) -> str:
     """Handle skills-related questions."""
@@ -806,7 +750,7 @@ async def handle_skills_question(
 async def handle_time_to_fill_question(
     db: AsyncSession,
     company_id: str,
-    job_draft: Dict[str, Any],
+    job_draft: dict[str, Any],
     user_input: str,
 ) -> str:
     """Handle time-to-fill related questions."""
@@ -887,9 +831,9 @@ Se tiver dúvidas específicas, me pergunte!"""
 async def analyze_competency_gaps(
     job_title: str,
     seniority: str,
-    detected_technical: List[str],
-    detected_behavioral: List[str],
-) -> Dict[str, Any]:
+    detected_technical: list[str],
+    detected_behavioral: list[str],
+) -> dict[str, Any]:
     """Analyze detected competencies against expected competencies for the role."""
     skill_suggestions = skills_catalog_service.suggest_skills(role=job_title, seniority=seniority)
 
@@ -930,9 +874,9 @@ async def analyze_competency_gaps(
 async def get_stage_benchmarks(
     db: AsyncSession,
     company_id: str,
-    job_draft: Dict[str, Any],
+    job_draft: dict[str, Any],
     stage: int,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get relevant benchmarks for the current stage."""
     benchmarks = {}
     role = job_draft.get("job_title", "")
@@ -1022,7 +966,7 @@ async def get_stage_benchmarks(
 async def handle_correction(
     db: AsyncSession,
     company_id: str,
-    job_draft: Dict[str, Any],
+    job_draft: dict[str, Any],
     classification: ClassificationResult,
     user_input: str,
     conversation_id: str,
@@ -1106,7 +1050,7 @@ async def handle_correction(
 
 async def get_structured_orchestration_decision(
     user_message: str,
-    context: Dict[str, Any],
+    context: dict[str, Any],
     provider: str = "gemini",
 ) -> OrchestrationDecision:
     system_prompt = """You are LIA, an intelligent assistant helping recruiters create job vacancies.
@@ -1175,8 +1119,8 @@ async def get_structured_salary_analysis(
     job_title: str,
     seniority: str,
     location: str,
-    current_min: Optional[int] = None,
-    current_max: Optional[int] = None,
+    current_min: int | None = None,
+    current_max: int | None = None,
     provider: str = "gemini",
 ) -> SalaryAnalysis:
     system_prompt = """You are a compensation analyst. Analyze the job details and provide

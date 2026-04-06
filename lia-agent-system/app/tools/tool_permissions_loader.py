@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 try:
     import yaml
@@ -41,10 +41,10 @@ class ToolPermissionsConfig:
 
     def __init__(
         self,
-        tenant_id: Optional[str],
-        scopes: Dict[str, Dict[str, Set[str]]],
+        tenant_id: str | None,
+        scopes: dict[str, dict[str, set[str]]],
         llm_provider: str,
-        llm_fallback_order: List[str],
+        llm_fallback_order: list[str],
     ) -> None:
         self._tenant_id = tenant_id
         self._scopes = scopes
@@ -52,7 +52,7 @@ class ToolPermissionsConfig:
         self._llm_fallback_order = llm_fallback_order
 
     @property
-    def tenant_id(self) -> Optional[str]:
+    def tenant_id(self) -> str | None:
         return self._tenant_id
 
     @property
@@ -60,10 +60,10 @@ class ToolPermissionsConfig:
         return self._llm_provider
 
     @property
-    def llm_fallback_order(self) -> List[str]:
+    def llm_fallback_order(self) -> list[str]:
         return list(self._llm_fallback_order)
 
-    def get_tools(self, scope: str, tool_type: str = "all") -> Set[str]:
+    def get_tools(self, scope: str, tool_type: str = "all") -> set[str]:
         """
         Return the allowed tool names for the given scope and type.
 
@@ -93,7 +93,7 @@ class ToolPermissionsConfig:
     def is_tool_allowed(self, tool_name: str, scope: str) -> bool:
         return tool_name in self.get_tools(scope, "all")
 
-    def filter_tools(self, tools: List[Dict[str, Any]], scope: str) -> List[Dict[str, Any]]:
+    def filter_tools(self, tools: list[dict[str, Any]], scope: str) -> list[dict[str, Any]]:
         """Filter a list of tool definition dicts to those allowed in scope."""
         allowed = self.get_tools(scope, "all")
         return [t for t in tools if t.get("name") in allowed]
@@ -113,18 +113,18 @@ class ToolPermissionsLoader:
     Call invalidate_cache() to reload config (e.g., in tests or hot-reload).
     """
 
-    _instance: Optional["ToolPermissionsLoader"] = None
-    _raw_config: Optional[Dict[str, Any]] = None
-    _config_path: Optional[Path] = None
+    _instance: ToolPermissionsLoader | None = None
+    _raw_config: dict[str, Any] | None = None
+    _config_path: Path | None = None
 
-    def __init__(self, path: Optional[Path] = None) -> None:
+    def __init__(self, path: Path | None = None) -> None:
         resolved = path or _DEFAULT_PERMISSIONS_PATH
         if self._config_path != resolved or self._raw_config is None:
             self.__class__._config_path = resolved
             self.__class__._raw_config = self._load_yaml(resolved)
 
     @classmethod
-    def get_instance(cls, path: Optional[Path] = None) -> "ToolPermissionsLoader":
+    def get_instance(cls, path: Path | None = None) -> ToolPermissionsLoader:
         if cls._instance is None:
             cls._instance = cls(path)
         return cls._instance
@@ -139,7 +139,7 @@ class ToolPermissionsLoader:
         logger.debug("[ToolPermissionsLoader] Cache invalidated")
 
     @staticmethod
-    def _load_yaml(path: Path) -> Dict[str, Any]:
+    def _load_yaml(path: Path) -> dict[str, Any]:
         if not _YAML_AVAILABLE:
             logger.warning("[ToolPermissionsLoader] PyYAML not available; using empty config")
             return {}
@@ -151,7 +151,7 @@ class ToolPermissionsLoader:
         logger.debug("[ToolPermissionsLoader] Loaded %s", path)
         return data
 
-    def get_config(self, tenant_id: Optional[str] = None) -> ToolPermissionsConfig:
+    def get_config(self, tenant_id: str | None = None) -> ToolPermissionsConfig:
         """
         Return the ToolPermissionsConfig for the given tenant (or global defaults).
 
@@ -179,7 +179,7 @@ def _freeze(d: Any) -> Any:
 
 @lru_cache(maxsize=256)
 def _build_tenant_config(
-    tenant_id: Optional[str],
+    tenant_id: str | None,
     frozen_raw: Any,
 ) -> ToolPermissionsConfig:
     """Build and cache a ToolPermissionsConfig from frozen raw YAML data."""
@@ -190,7 +190,7 @@ def _build_tenant_config(
     global_fallback = list(global_cfg.get("llm_fallback_order", ["claude", "gemini", "openai"]))
 
     # Build global scope sets
-    scopes: Dict[str, Dict[str, Set[str]]] = {}
+    scopes: dict[str, dict[str, set[str]]] = {}
     for scope_name, type_map in global_scopes_raw.items():
         scopes[scope_name] = {
             "query": set(type_map.get("query", [])),
@@ -246,7 +246,7 @@ def _unfreeze(d: Any) -> Any:
 # Convenience module-level functions
 # ---------------------------------------------------------------------------
 
-def get_permissions(tenant_id: Optional[str] = None) -> ToolPermissionsConfig:
+def get_permissions(tenant_id: str | None = None) -> ToolPermissionsConfig:
     """
     Return ToolPermissionsConfig for the given tenant (or global defaults).
 
@@ -258,8 +258,8 @@ def get_permissions(tenant_id: Optional[str] = None) -> ToolPermissionsConfig:
 def get_tools_for_scope(
     scope: str,
     tool_type: str = "all",
-    tenant_id: Optional[str] = None,
-) -> Set[str]:
+    tenant_id: str | None = None,
+) -> set[str]:
     """Convenience wrapper — returns allowed tool names for scope."""
     return get_permissions(tenant_id).get_tools(scope, tool_type)
 
@@ -267,7 +267,7 @@ def get_tools_for_scope(
 def is_tool_allowed(
     tool_name: str,
     scope: str,
-    tenant_id: Optional[str] = None,
+    tenant_id: str | None = None,
 ) -> bool:
     """Convenience wrapper — check single tool permission."""
     return get_permissions(tenant_id).is_tool_allowed(tool_name, scope)

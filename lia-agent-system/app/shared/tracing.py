@@ -33,14 +33,15 @@ Usage:
         span.set_attribute("key", "value")
         ...
 """
+import functools
+import logging
 import os
 import time
 import uuid
-import logging
-import functools
-from typing import Optional, Dict, Any, Callable
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +51,12 @@ class Span:
     name: str
     trace_id: str
     span_id: str
-    parent_span_id: Optional[str] = None
+    parent_span_id: str | None = None
     start_time: float = field(default_factory=time.time)
-    end_time: Optional[float] = None
-    attributes: Dict[str, Any] = field(default_factory=dict)
+    end_time: float | None = None
+    attributes: dict[str, Any] = field(default_factory=dict)
     status: str = "ok"
-    error: Optional[str] = None
+    error: str | None = None
 
     def set_attribute(self, key: str, value: Any) -> None:
         self.attributes[key] = value
@@ -74,7 +75,7 @@ class Span:
             return (self.end_time - self.start_time) * 1000
         return (time.time() - self.start_time) * 1000
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "trace_id": self.trace_id,
@@ -89,7 +90,7 @@ class Span:
         }
 
 
-_active_spans: Dict[str, Span] = {}
+_active_spans: dict[str, Span] = {}
 _completed_spans: list = []
 MAX_COMPLETED_SPANS = 1000
 
@@ -97,13 +98,13 @@ MAX_COMPLETED_SPANS = 1000
 class LightweightTracer:
     def __init__(self, service_name: str = "lia-agent-system"):
         self.service_name = service_name
-        self._current_trace_id: Optional[str] = None
+        self._current_trace_id: str | None = None
 
     def create_span(
         self,
         name: str,
-        parent_span_id: Optional[str] = None,
-        attributes: Optional[Dict[str, Any]] = None,
+        parent_span_id: str | None = None,
+        attributes: dict[str, Any] | None = None,
     ) -> Span:
         trace_id = self._current_trace_id or uuid.uuid4().hex[:16]
         span = Span(
@@ -121,8 +122,8 @@ class LightweightTracer:
     async def start_span(
         self,
         name: str,
-        parent_span_id: Optional[str] = None,
-        attributes: Optional[Dict[str, Any]] = None,
+        parent_span_id: str | None = None,
+        attributes: dict[str, Any] | None = None,
     ):
         span = self.create_span(name, parent_span_id, attributes)
         try:
@@ -146,7 +147,7 @@ class LightweightTracer:
         self._current_trace_id = trace_id
 
 
-_tracer: Optional[LightweightTracer] = None
+_tracer: LightweightTracer | None = None
 
 # Z6-02: flag global para desabilitar tracing (ex: testes)
 _TRACES_ENABLED = os.environ.get("OTEL_TRACES_ENABLED", "true").lower() == "true"
@@ -171,10 +172,10 @@ def _try_init_otlp() -> bool:
         return False
     try:
         from opentelemetry import trace as otel_trace
-        from opentelemetry.sdk.trace import TracerProvider
-        from opentelemetry.sdk.trace.export import BatchSpanProcessor
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
         from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
         service_name = os.environ.get("OTEL_SERVICE_NAME", "lia-agent-system")
         resource = Resource.create({"service.name": service_name})
@@ -217,7 +218,7 @@ def get_tracer(service_name: str = "lia-agent-system") -> LightweightTracer:
 
 def trace_span(
     name: str,
-    attributes: Optional[Dict[str, Any]] = None,
+    attributes: dict[str, Any] | None = None,
 ):
     """Decorador que cria um span para a função async decorada.
 
@@ -259,7 +260,7 @@ def get_recent_traces(limit: int = 50) -> list:
     return _completed_spans[-limit:]
 
 
-def get_trace_stats() -> Dict[str, Any]:
+def get_trace_stats() -> dict[str, Any]:
     if not _completed_spans:
         return {
             "total_spans": 0,

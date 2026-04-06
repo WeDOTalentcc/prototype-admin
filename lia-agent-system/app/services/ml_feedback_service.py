@@ -23,10 +23,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-from uuid import UUID, uuid4
 
-from sqlalchemy import and_, select, func
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -49,9 +47,9 @@ class FeedbackSignal:
     company_id: str
     ai_score: float                          # score do LIA
     recruiter_decision: str                  # "hire" | "reject" | "override_approve" | "override_reject"
-    recruiter_score: Optional[float] = None  # score manual se override
-    dimension_overrides: Dict[str, float] = field(default_factory=dict)
-    recorded_at: Optional[datetime] = None
+    recruiter_score: float | None = None  # score manual se override
+    dimension_overrides: dict[str, float] = field(default_factory=dict)
+    recorded_at: datetime | None = None
 
 
 @dataclass
@@ -59,14 +57,14 @@ class JobScoringWeights:
     """Pesos adaptativos por dimensão para uma vaga."""
     job_id: str
     company_id: str
-    weights: Dict[str, float] = field(default_factory=lambda: {
+    weights: dict[str, float] = field(default_factory=lambda: {
         "technical": 1.0,
         "experience": 1.0,
         "education": 1.0,
         "soft_skills": 1.0,
         "cultural_fit": 1.0,
     })
-    computed_at: Optional[datetime] = None
+    computed_at: datetime | None = None
     sample_count: int = 0
 
     def to_dict(self) -> dict:
@@ -172,7 +170,7 @@ class MLFeedbackService:
                 )
 
             # Agrega divergências por dimensão
-            dim_sums: Dict[str, List[float]] = {}
+            dim_sums: dict[str, list[float]] = {}
             for ev in events:
                 if hasattr(ev, "dimension_scores") and ev.dimension_scores:
                     for dim, override in ev.dimension_scores.items():
@@ -180,7 +178,7 @@ class MLFeedbackService:
                         dev = (override - ai_dim) / max(1.0, ai_dim)
                         dim_sums.setdefault(dim, []).append(dev)
 
-            weights: Dict[str, float] = {
+            weights: dict[str, float] = {
                 "technical": 1.0,
                 "experience": 1.0,
                 "education": 1.0,
@@ -231,7 +229,7 @@ class MLFeedbackService:
         candidate_id: str,
         lia_score: float,
         decision: str,
-        decision_by: Optional[str] = None,
+        decision_by: str | None = None,
     ) -> bool:
         """Helper para registrar decisão de recrutador (wiring simplificado)."""
         signal = FeedbackSignal(
@@ -247,7 +245,7 @@ class MLFeedbackService:
         self,
         db,
         company_id: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
     ) -> float:
         """
         Calcula ajuste de calibração baseado em feedback histórico.

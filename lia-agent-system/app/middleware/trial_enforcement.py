@@ -20,15 +20,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_active_user, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
 from app.models.billing import Subscription, SubscriptionStatus
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ _TRIAL_EXPIRED_STATUSES = {
 _UPGRADE_URL = "/upgrade"
 
 
-async def _get_subscription(db: AsyncSession, company_id: str) -> Optional[Subscription]:
+async def _get_subscription(db: AsyncSession, company_id: str) -> Subscription | None:
     """Fetch the most recent subscription for the company."""
     result = await db.execute(
         select(Subscription)

@@ -8,8 +8,8 @@ Provides:
 - Learning signal for future action mapping
 """
 import logging
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,9 @@ class DelegationFallbackHandler:
     def handle(
         action_id: str,
         domain_id: str,
-        params: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        params: dict[str, Any],
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         logger.warning(
             f"[DELEGATION-FALLBACK] Action '{action_id}' not found in "
             f"domain '{domain_id}' _ACTION_TOOL_MAP. Delegating to agent. "
@@ -55,7 +55,7 @@ class DelegationFallbackHandler:
         }
 
     @staticmethod
-    def get_unmapped_actions_stats() -> Dict[str, Any]:
+    def get_unmapped_actions_stats() -> dict[str, Any]:
         from collections import Counter
         if not _unmapped_actions_log:
             return {"total": 0, "by_domain": {}, "by_action": {}}

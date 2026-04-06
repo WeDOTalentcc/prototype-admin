@@ -4,44 +4,41 @@ LIA Agent System - Main FastAPI application.
 # === LLM Bootstrap: monkey-patch SDK constructors for PII + audit + tenant ===
 # MUST be first import — before anything instantiates Anthropic/OpenAI/GenAI
 from app.shared.llm_bootstrap import install_llm_guards
+
 install_llm_guards()
 
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 import logging
 import os
+from contextlib import asynccontextmanager
 
 import sentry_sdk
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.sentry import init_sentry
 
 init_sentry()
 
-from app.core.config import settings
-from app.core.database import init_db
-from app.domains.communication.services.communication_service import (
-    PendingApproval, CommunicationLog, CandidateOptOut, CandidateQuarantine
-)
-from app.domains.cv_screening.services.personalized_feedback_service import PersonalizedFeedbackRecord
 from app.api import orchestrator_routes
-from app.services.llm import LLMService
-from app.middleware.rate_limiter import RateLimitMiddleware, rate_limiter
-from app.middleware.auth_enforcement import AuthEnforcementMiddleware
-from app.api.v1.llm_config import router as llm_config_router
-from app.middleware.request_id import RequestIdMiddleware
-from app.core.logging_middleware import StructuredLoggingMiddleware
-from app.domains.automation.services.automation_scheduler import automation_scheduler
-from app.domains.automation.services.automation_handlers import register_all_handlers
 from app.config.langsmith import configure_langsmith
-from app.tools import initialize_tools
+from app.core.config import settings
+from app.core.database import AsyncSessionLocal, init_db
+from app.core.logging_middleware import StructuredLoggingMiddleware
+from app.domains.automation.services.automation_handlers import register_all_handlers
+from app.domains.automation.services.automation_scheduler import automation_scheduler
+from app.middleware.auth_enforcement import AuthEnforcementMiddleware
+from app.middleware.rate_limiter import RateLimitMiddleware
+from app.middleware.request_id import RequestIdMiddleware
 from app.services.embedding_cache_service import embedding_cache
-from app.core.database import AsyncSessionLocal
+from app.services.llm import LLMService
+from app.tools import initialize_tools
 
 # Configure LangSmith tracing BEFORE logging
 configure_langsmith()
 
 from app.core.logging_config import configure_logging
 from app.shared.pii_masking import install_global_pii_masking
+
 configure_logging()
 install_global_pii_masking()  # L7: LGPD — mascara CPF, e-mail, telefone e nomes em todos os logs
 logger = logging.getLogger(__name__)
@@ -398,11 +395,13 @@ async def request_validation_error_handler(request: FastAPIRequest, exc: Request
 
 # Register all API routers
 from app.api.routes import register_all_routes
+
 register_all_routes(app)
 
 
 # Root-level health check redirects to comprehensive system health
-from fastapi.responses import RedirectResponse, Response as FastAPIResponse
+from fastapi.responses import RedirectResponse
+
 
 @app.get("/health")
 async def app_health_check():

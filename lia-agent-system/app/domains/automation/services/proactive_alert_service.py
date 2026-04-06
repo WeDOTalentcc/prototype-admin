@@ -12,25 +12,24 @@ Alert Categories:
 - Predictive: dropout risk, time-to-fill, ideal candidate detection
 - System: ATS sync, agent health, credits, AI errors
 """
-from typing import Dict, Any, List, Optional, Callable
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
-from enum import Enum
 import logging
-import asyncio
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
+
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.models.candidate import Candidate
+from app.models.interview import Interview
+from app.models.task import Task, TaskStatus
 from app.services.notification_service import (
+    NotificationChannel,
     NotificationService,
     NotificationType,
-    NotificationChannel,
-    ProactiveNotificationType
+    ProactiveNotificationType,
 )
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate import Candidate
-from app.models.task import Task, TaskStatus, TaskPriority
-from app.models.interview import Interview
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +176,7 @@ class ThresholdConfig:
     }
     
     @classmethod
-    def get_threshold(cls, condition: AlertCondition) -> Dict[str, Any]:
+    def get_threshold(cls, condition: AlertCondition) -> dict[str, Any]:
         """Get threshold configuration for a condition."""
         return cls.DEFAULT_THRESHOLDS.get(condition, {})
 
@@ -192,12 +191,12 @@ class ProactiveAlertService:
     
     def __init__(self):
         self.notification_service = NotificationService()
-        self.alert_history: Dict[str, datetime] = {}
-        self.thresholds: Dict[AlertCondition, Dict[str, Any]] = {
+        self.alert_history: dict[str, datetime] = {}
+        self.thresholds: dict[AlertCondition, dict[str, Any]] = {
             k: v.copy() for k, v in ThresholdConfig.DEFAULT_THRESHOLDS.items()
         }
     
-    def get_threshold(self, condition: AlertCondition) -> Dict[str, Any]:
+    def get_threshold(self, condition: AlertCondition) -> dict[str, Any]:
         """Get threshold configuration for a condition from instance thresholds."""
         return self.thresholds.get(condition, {})
     
@@ -223,8 +222,8 @@ class ProactiveAlertService:
         self,
         user_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> list[dict[str, Any]]:
         """
         Check all alert conditions and return triggered alerts.
         
@@ -268,7 +267,7 @@ class ProactiveAlertService:
         user_id: str,
         company_id: str,
         db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Check pipeline-related alert conditions."""
         alerts = []
         
@@ -362,7 +361,7 @@ class ProactiveAlertService:
         self,
         user_id: str,
         db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Check productivity-related alert conditions."""
         alerts = []
         
@@ -462,7 +461,7 @@ class ProactiveAlertService:
         self,
         company_id: str,
         db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Check communication-related alert conditions."""
         alerts = []
         
@@ -576,7 +575,7 @@ class ProactiveAlertService:
         self,
         company_id: str,
         db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Check predictive alert conditions using AI."""
         alerts = []
         
@@ -614,7 +613,7 @@ class ProactiveAlertService:
         self,
         company_id: str,
         db: AsyncSession
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Check system health alert conditions."""
         alerts = []
         
@@ -720,7 +719,7 @@ class ProactiveAlertService:
         
         return alerts
     
-    async def _send_alert(self, alert: Dict[str, Any], user_id: str):
+    async def _send_alert(self, alert: dict[str, Any], user_id: str):
         """Send an alert through the notification service."""
         try:
             channels = [NotificationChannel.BELL, NotificationChannel.CHAT]
@@ -753,7 +752,7 @@ class ProactiveAlertService:
         except Exception as e:
             logger.error(f"Error sending alert: {e}")
     
-    async def get_alert_history(self, user_id: str) -> Dict[str, Any]:
+    async def get_alert_history(self, user_id: str) -> dict[str, Any]:
         """Get history of alerts sent to a user."""
         user_alerts = {
             k.split(":")[1]: v.isoformat()
@@ -765,7 +764,7 @@ class ProactiveAlertService:
     def update_threshold(
         self,
         condition: AlertCondition,
-        new_threshold: Dict[str, Any]
+        new_threshold: dict[str, Any]
     ):
         """Update threshold configuration for a condition."""
         if condition in self.thresholds:

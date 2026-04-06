@@ -1,9 +1,10 @@
 """
 Schemas for LIA Candidate Analysis.
 """
-from pydantic import BaseModel, Field
-from typing import List, Optional, Literal
 from enum import Enum
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 
 class AnalysisType(str, Enum):
@@ -25,14 +26,14 @@ class ArchetypeEnum(str, Enum):
 class CandidateInput(BaseModel):
     id: str
     name: str
-    position: Optional[str] = None
-    location: Optional[str] = None
-    company: Optional[str] = None
-    cv_text: Optional[str] = None
-    skills: Optional[List[str]] = []
-    experience_years: Optional[int] = None
-    education: Optional[str] = None
-    seniority_level: Optional[str] = None
+    position: str | None = None
+    location: str | None = None
+    company: str | None = None
+    cv_text: str | None = None
+    skills: list[str] | None = []
+    experience_years: int | None = None
+    education: str | None = None
+    seniority_level: str | None = None
 
 
 class ScoreBreakdown(BaseModel):
@@ -48,29 +49,29 @@ class CandidateAnalysisResult(BaseModel):
     lia_score: float = Field(..., ge=0, le=100, description="Overall LIA score")
     fit_score: float = Field(..., ge=0, le=100, description="Personality fit score")
     archetype: str = Field(..., description="Big Five archetype")
-    strengths: List[str] = Field(..., description="Top 3 strengths")
-    gaps: List[str] = Field(..., description="Areas to develop")
+    strengths: list[str] = Field(..., description="Top 3 strengths")
+    gaps: list[str] = Field(..., description="Areas to develop")
     recommendation: str = Field(..., description="Hiring recommendation")
     recommendation_level: Literal["highly_recommended", "recommended", "potential", "low_match", "not_recommended"]
     explanation: str = Field(..., description="Detailed explanation of the score")
-    score_breakdown: Optional[ScoreBreakdown] = None
-    potential_roles: Optional[List[str]] = None
+    score_breakdown: ScoreBreakdown | None = None
+    potential_roles: list[str] | None = None
 
 
 class AnalysisRequest(BaseModel):
-    candidates: List[CandidateInput]
-    job_vacancy_id: Optional[str] = None
+    candidates: list[CandidateInput]
+    job_vacancy_id: str | None = None
     analysis_type: AnalysisType = AnalysisType.GENERAL
-    job_title: Optional[str] = None
-    job_requirements: Optional[List[str]] = None
-    job_description: Optional[str] = None
+    job_title: str | None = None
+    job_requirements: list[str] | None = None
+    job_description: str | None = None
 
 
 class AnalysisResponse(BaseModel):
     success: bool
     total_analyzed: int
     average_score: float
-    results: List[CandidateAnalysisResult]
-    insights: Optional[dict] = None
-    recommendations: Optional[List[str]] = None
-    alerts: Optional[List[dict]] = None
+    results: list[CandidateAnalysisResult]
+    insights: dict | None = None
+    recommendations: list[str] | None = None
+    alerts: list[dict] | None = None

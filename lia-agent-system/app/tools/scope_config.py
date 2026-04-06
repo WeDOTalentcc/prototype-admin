@@ -11,13 +11,16 @@ Hardcoded Set[str] definitions remain as fallback constants for backward compati
 
 Task #125: Replaced hardcoded Sets with YAML-driven ToolPermissionsLoader.
 """
-from typing import Dict, List, Optional, Set
 from enum import Enum
 
 from app.tools.tool_permissions_loader import (
-    get_tools_for_scope as _yaml_get_tools,
-    is_tool_allowed as _yaml_is_tool_allowed,
     get_permissions,
+)
+from app.tools.tool_permissions_loader import (
+    get_tools_for_scope as _yaml_get_tools,
+)
+from app.tools.tool_permissions_loader import (
+    is_tool_allowed as _yaml_is_tool_allowed,
 )
 
 
@@ -34,23 +37,23 @@ class PromptScope(str, Enum):
 # These are computed once at import time from the declarative config.
 # ---------------------------------------------------------------------------
 
-def _load_global_set(scope: str, tool_type: str) -> Set[str]:
+def _load_global_set(scope: str, tool_type: str) -> set[str]:
     try:
         return _yaml_get_tools(scope, tool_type, tenant_id=None)
     except Exception:
         return set()
 
 
-FUNNEL_QUERY_TOOLS: Set[str] = _load_global_set("talent_funnel", "query")
-FUNNEL_ACTION_TOOLS: Set[str] = _load_global_set("talent_funnel", "action")
-VACANCY_QUERY_TOOLS: Set[str] = _load_global_set("job_table", "query")
-VACANCY_ACTION_TOOLS: Set[str] = _load_global_set("job_table", "action")
-IN_JOB_QUERY_TOOLS: Set[str] = _load_global_set("in_job", "query")
-IN_JOB_ACTION_TOOLS: Set[str] = _load_global_set("in_job", "action")
-GLOBAL_TOOLS: Set[str] = _load_global_set("global", "action")
+FUNNEL_QUERY_TOOLS: set[str] = _load_global_set("talent_funnel", "query")
+FUNNEL_ACTION_TOOLS: set[str] = _load_global_set("talent_funnel", "action")
+VACANCY_QUERY_TOOLS: set[str] = _load_global_set("job_table", "query")
+VACANCY_ACTION_TOOLS: set[str] = _load_global_set("job_table", "action")
+IN_JOB_QUERY_TOOLS: set[str] = _load_global_set("in_job", "query")
+IN_JOB_ACTION_TOOLS: set[str] = _load_global_set("in_job", "action")
+GLOBAL_TOOLS: set[str] = _load_global_set("global", "action")
 
 
-SCOPE_TOOL_MAPPING: Dict[PromptScope, Dict[str, Set[str]]] = {
+SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
     PromptScope.TALENT_FUNNEL: {
         "query": FUNNEL_QUERY_TOOLS,
         "action": FUNNEL_ACTION_TOOLS,
@@ -74,7 +77,7 @@ SCOPE_TOOL_MAPPING: Dict[PromptScope, Dict[str, Set[str]]] = {
 }
 
 
-SCOPE_DESCRIPTIONS: Dict[PromptScope, Dict[str, object]] = {
+SCOPE_DESCRIPTIONS: dict[PromptScope, dict[str, object]] = {
     PromptScope.TALENT_FUNNEL: {
         "name": "Funil de Talentos",
         "description": "Foco em candidatos: busca, avaliação, comparação e comunicação.",
@@ -135,8 +138,8 @@ SCOPE_DESCRIPTIONS: Dict[PromptScope, Dict[str, object]] = {
 def get_tools_for_scope(
     scope: PromptScope,
     tool_type: str = "all",
-    tenant_id: Optional[str] = None,
-) -> Set[str]:
+    tenant_id: str | None = None,
+) -> set[str]:
     """
     Get the set of tools available for a given scope.
 
@@ -153,10 +156,10 @@ def get_tools_for_scope(
 
 
 def filter_tools_by_scope(
-    tools: List[Dict],
+    tools: list[dict],
     scope: PromptScope,
-    tenant_id: Optional[str] = None,
-) -> List[Dict]:
+    tenant_id: str | None = None,
+) -> list[dict]:
     """
     Filter a list of tool definitions to only those allowed in the scope.
 
@@ -175,7 +178,7 @@ def filter_tools_by_scope(
 def is_tool_allowed_in_scope(
     tool_name: str,
     scope: PromptScope,
-    tenant_id: Optional[str] = None,
+    tenant_id: str | None = None,
 ) -> bool:
     """
     Check if a specific tool is allowed in the given scope.
@@ -225,7 +228,7 @@ Sempre respeite os limites do seu escopo atual. Se o usuário pedir algo fora do
 """
 
 
-SCOPE_INTENT_MAPPING: Dict[str, PromptScope] = {
+SCOPE_INTENT_MAPPING: dict[str, PromptScope] = {
     "search_candidates": PromptScope.TALENT_FUNNEL,
     "get_candidate_details": PromptScope.TALENT_FUNNEL,
     "get_candidate_stats": PromptScope.TALENT_FUNNEL,

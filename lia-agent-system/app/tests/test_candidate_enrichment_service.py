@@ -8,16 +8,14 @@ Tests cover:
 - URL normalization
 - Error handling
 """
-import pytest
-from datetime import datetime
-from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any
+from uuid import uuid4
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.candidate_enrichment_service import CandidateEnrichmentService
 from app.models.candidate import Candidate
+from app.services.candidate_enrichment_service import CandidateEnrichmentService
 
 
 class TestCandidateEnrichmentServiceHelpers:
@@ -321,7 +319,7 @@ class TestCandidateEnrichmentServiceIntegration:
         with patch.object(
             service, '_scrape_linkedin_profile',
             return_value=mock_profile_data
-        ) as mock_scrape:
+        ):
             mock_db = AsyncMock(spec=AsyncSession)
             
             mock_candidate = MagicMock(spec=Candidate)

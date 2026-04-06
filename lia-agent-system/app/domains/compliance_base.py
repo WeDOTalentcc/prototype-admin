@@ -20,7 +20,7 @@ import logging
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from app.domains.base import DomainContext, DomainPrompt, DomainResponse, IntentResult
 
@@ -92,15 +92,15 @@ class ComplianceDomainPrompt(DomainPrompt):
     """
 
     # Subclasses podem sobrescrever para customizar compliance por domínio
-    _compliance_config: Optional[Dict[str, Any]] = None
+    _compliance_config: dict[str, Any] | None = None
 
     @property
-    def compliance_config(self) -> Dict[str, Any]:
+    def compliance_config(self) -> dict[str, Any]:
         """
         Retorna configuração de compliance para este domínio.
         Subclasses podem sobrescrever _compliance_config para customizar.
         """
-        defaults: Dict[str, Any] = {
+        defaults: dict[str, Any] = {
             "fairness_guard_enabled": True,
             "pii_strip_enabled": True,
             "prompt_injection_guard_enabled": True,
@@ -116,11 +116,11 @@ class ComplianceDomainPrompt(DomainPrompt):
             defaults.update(self._compliance_config)
         return defaults
 
-    def get_compliance_config(self) -> Dict[str, Any]:
+    def get_compliance_config(self) -> dict[str, Any]:
         """Retorna a configuração de compliance deste domínio (API pública)."""
         return self.compliance_config
 
-    def get_required_prompt_blocks(self) -> List[str]:
+    def get_required_prompt_blocks(self) -> list[str]:
         """
         Retorna lista de blocos obrigatórios no system prompt deste domínio.
         Subclasses podem sobrescrever para adicionar blocos específicos.
@@ -200,7 +200,7 @@ class ComplianceDomainPrompt(DomainPrompt):
         query: str,
         context: DomainContext,
         stage_context: Optional["StageContext"] = None,
-    ) -> Optional[DomainResponse]:
+    ) -> DomainResponse | None:
         """
         Executa checks de compliance antes do processamento do intent.
 
@@ -273,7 +273,7 @@ class ComplianceDomainPrompt(DomainPrompt):
         query: str,
         context: DomainContext,
         stage_context: Optional["StageContext"] = None,
-    ) -> Optional[DomainResponse]:
+    ) -> DomainResponse | None:
         """Executa FairnessGuard. Retorna DomainResponse de bloqueio ou None.
 
         LIA-C07: stage_context overrides config defaults — more specific wins.
@@ -361,7 +361,7 @@ class ComplianceDomainPrompt(DomainPrompt):
 
     async def _check_prompt_injection(
         self, text: str, context: DomainContext
-    ) -> Optional[DomainResponse]:
+    ) -> DomainResponse | None:
         """
         Verifica prompt injection. Retorna DomainResponse de bloqueio ou None.
 
@@ -459,7 +459,7 @@ class ComplianceDomainPrompt(DomainPrompt):
 
     @abstractmethod
     async def execute_action(
-        self, action_id: str, params: Dict[str, Any], context: DomainContext
+        self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
         ...
 

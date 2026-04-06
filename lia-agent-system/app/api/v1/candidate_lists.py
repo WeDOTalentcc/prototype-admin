@@ -1,21 +1,21 @@
 """
 Candidate Lists API endpoints - manage custom collections of candidates.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional, List
-from sqlalchemy import select, and_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import insert
 import logging
-from datetime import datetime
 import uuid
+from datetime import datetime
 
-from app.models.candidate_list import CandidateList, CandidateListMember
-from app.models.candidate import Candidate, VacancyCandidate
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import and_, func, select
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from pydantic import BaseModel
+from app.core.database import get_db
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.candidate_list import CandidateList, CandidateListMember
 
 logger = logging.getLogger(__name__)
 
@@ -24,35 +24,35 @@ router = APIRouter()
 
 class CandidateListCreate(BaseModel):
     name: str
-    description: Optional[str] = None
-    color: Optional[str] = None
+    description: str | None = None
+    color: str | None = None
 
 
 class CandidateListUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    color: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
+    color: str | None = None
 
 
 class AddCandidatesRequest(BaseModel):
-    candidate_ids: List[str]
-    notes: Optional[str] = None
+    candidate_ids: list[str]
+    notes: str | None = None
 
 
 class RemoveCandidatesRequest(BaseModel):
-    candidate_ids: List[str]
+    candidate_ids: list[str]
 
 
 class AssignJobsRequest(BaseModel):
-    job_vacancy_ids: List[str]
-    candidate_ids: Optional[List[str]] = None
+    job_vacancy_ids: list[str]
+    candidate_ids: list[str] | None = None
 
 
 @router.get("")
 async def list_candidate_lists(
     skip: int = 0,
     limit: int = 50,
-    search: Optional[str] = None,
+    search: str | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):

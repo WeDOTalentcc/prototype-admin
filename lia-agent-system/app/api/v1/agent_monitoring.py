@@ -2,11 +2,10 @@
 Agent Monitoring API Endpoints
 Provides real-time metrics, health scores, and activity tracking for AI agents.
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List
 from pydantic import BaseModel
-from datetime import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.agent_monitoring_service import AgentMonitoringService
@@ -33,9 +32,9 @@ class AgentSummaryResponse(BaseModel):
     daily_goal: int
     progress: int
     delta: int
-    sparkline: List[int]
-    last_action: Optional[str] = None
-    last_action_time: Optional[str] = None
+    sparkline: list[int]
+    last_action: str | None = None
+    last_action_time: str | None = None
 
 
 class HealthDriverResponse(BaseModel):
@@ -49,25 +48,25 @@ class AgentHealthResponse(BaseModel):
     agent_id: str
     score: int
     tier: str
-    drivers: List[HealthDriverResponse]
-    recommendations: List[str]
+    drivers: list[HealthDriverResponse]
+    recommendations: list[str]
 
 
 class ActivityResponse(BaseModel):
     id: str
     agent_id: str
     agent_name: str
-    agent_icon: Optional[str] = None
+    agent_icon: str | None = None
     type: str
     title: str
-    description: Optional[str] = None
-    status: Optional[str] = None
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
-    duration_seconds: Optional[float] = None
-    sla_breach: Optional[bool] = None
-    related_job_id: Optional[str] = None
-    related_candidate_id: Optional[str] = None
+    description: str | None = None
+    status: str | None = None
+    started_at: str | None = None
+    completed_at: str | None = None
+    duration_seconds: float | None = None
+    sla_breach: bool | None = None
+    related_job_id: str | None = None
+    related_candidate_id: str | None = None
 
 
 class AlertResponse(BaseModel):
@@ -77,7 +76,7 @@ class AlertResponse(BaseModel):
     agent_name: str
     title: str
     description: str
-    created_at: Optional[str] = None
+    created_at: str | None = None
     severity: str
 
 
@@ -85,13 +84,13 @@ class LogActivityRequest(BaseModel):
     agent_id: str
     activity_type: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     status: str = "success"
-    duration_seconds: Optional[float] = None
-    related_job_id: Optional[str] = None
-    related_candidate_id: Optional[str] = None
-    metadata: Optional[dict] = None
-    error_message: Optional[str] = None
+    duration_seconds: float | None = None
+    related_job_id: str | None = None
+    related_candidate_id: str | None = None
+    metadata: dict | None = None
+    error_message: str | None = None
     sla_breach: bool = False
 
 
@@ -103,7 +102,7 @@ async def get_global_metrics(db: AsyncSession = Depends(get_db)):
     return GlobalMetricsResponse(**metrics)
 
 
-@router.get("/agents", response_model=List[AgentSummaryResponse])
+@router.get("/agents", response_model=list[AgentSummaryResponse])
 async def get_all_agents_summary(db: AsyncSession = Depends(get_db)):
     """Get summary for all agents."""
     service = AgentMonitoringService(db)
@@ -131,10 +130,10 @@ async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db)):
     return AgentHealthResponse(**health)
 
 
-@router.get("/agents/{agent_id}/activities", response_model=List[ActivityResponse])
+@router.get("/agents/{agent_id}/activities", response_model=list[ActivityResponse])
 async def get_agent_activities(
     agent_id: str,
-    status: Optional[str] = Query(None, description="Filter by status"),
+    status: str | None = Query(None, description="Filter by status"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
@@ -150,10 +149,10 @@ async def get_agent_activities(
     return [ActivityResponse(**a) for a in activities]
 
 
-@router.get("/activity-feed", response_model=List[ActivityResponse])
+@router.get("/activity-feed", response_model=list[ActivityResponse])
 async def get_activity_feed(
-    agent_id: Optional[str] = Query(None, description="Filter by agent"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    agent_id: str | None = Query(None, description="Filter by agent"),
+    status: str | None = Query(None, description="Filter by status"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
@@ -169,7 +168,7 @@ async def get_activity_feed(
     return [ActivityResponse(**a) for a in activities]
 
 
-@router.get("/alerts", response_model=List[AlertResponse])
+@router.get("/alerts", response_model=list[AlertResponse])
 async def get_proactive_alerts(db: AsyncSession = Depends(get_db)):
     """Get current proactive alerts requiring attention."""
     service = AgentMonitoringService(db)

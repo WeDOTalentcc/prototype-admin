@@ -5,10 +5,9 @@ Each stage in the talent sourcing flow has different requirements, expected fiel
 and conversation goals. This module injects the right context so the agent knows
 what to focus on during candidate search and screening.
 """
-from typing import Any, Dict, List
+from typing import Any
 
-
-STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
     "search-criteria": {
         "name": "Criterios de Busca",
         "display_name": "Criterios de Busca",
@@ -103,7 +102,7 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
 }
 
 
-def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
+def get_stage_context(stage: str, collected_fields: dict[str, Any]) -> str:
     """Build a formatted context string for the current sourcing stage.
 
     Args:
@@ -121,9 +120,9 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     optional = stage_def["optional_fields"]
     all_fields = required + optional
 
-    filled: List[str] = []
-    missing_required: List[str] = []
-    missing_optional: List[str] = []
+    filled: list[str] = []
+    missing_required: list[str] = []
+    missing_optional: list[str] = []
 
     for field in required:
         value = collected_fields.get(field)
@@ -143,13 +142,13 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     completion = (len(filled) / total * 100) if total > 0 else 100.0
 
     parts = [
-        f"=== CONTEXTO DO ESTAGIO ===",
+        "=== CONTEXTO DO ESTAGIO ===",
         f"Estagio atual: {stage_def['name']} ({stage})",
         f"Fase: {stage_def['phase']}",
         f"Descricao: {stage_def['description']}",
         f"Proximo estagio: {stage_def['next_stage']}",
-        f"",
-        f"--- Progresso ---",
+        "",
+        "--- Progresso ---",
         f"Completude: {completion:.0f}%",
     ]
 
@@ -208,7 +207,7 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def get_transition_prompt(current_stage: str, collected_fields: Dict[str, Any]) -> str:
+def get_transition_prompt(current_stage: str, collected_fields: dict[str, Any]) -> str:
     """Generate a prompt for checking whether transition criteria are met.
 
     Args:

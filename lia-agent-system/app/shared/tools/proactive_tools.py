@@ -11,17 +11,17 @@ All functions are async, connect to PostgreSQL via AsyncSessionLocal,
 and return Dict[str, Any] with 'success', 'data', and 'message' keys.
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
 
-async def check_stagnant_candidates(company_id: str, threshold_days: int = 7) -> Dict[str, Any]:
+async def check_stagnant_candidates(company_id: str, threshold_days: int = 7) -> dict[str, Any]:
     """Find candidates stuck in same stage for more than threshold days.
 
     Identifies candidates who have not progressed in the recruitment pipeline
@@ -37,7 +37,7 @@ async def check_stagnant_candidates(company_id: str, threshold_days: int = 7) ->
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "company_id": company_id,
                 "threshold_days": threshold_days,
             }
@@ -62,8 +62,8 @@ async def check_stagnant_candidates(company_id: str, threshold_days: int = 7) ->
             )
             rows = result.mappings().all()
 
-            stagnant_candidates_list: List[Dict[str, Any]] = []
-            affected_stages: Dict[str, int] = {}
+            stagnant_candidates_list: list[dict[str, Any]] = []
+            affected_stages: dict[str, int] = {}
 
             for row in rows:
                 stagnant_candidates_list.append({
@@ -94,7 +94,7 @@ async def check_stagnant_candidates(company_id: str, threshold_days: int = 7) ->
         return {"success": False, "error": str(e)}
 
 
-async def check_pending_offers(company_id: str, threshold_hours: int = 72) -> Dict[str, Any]:
+async def check_pending_offers(company_id: str, threshold_hours: int = 72) -> dict[str, Any]:
     """Find offers awaiting candidate response for more than threshold hours.
 
     Identifies offers that have been pending response for an extended period,
@@ -110,7 +110,7 @@ async def check_pending_offers(company_id: str, threshold_hours: int = 72) -> Di
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "company_id": company_id,
                 "threshold_hours": threshold_hours,
             }
@@ -136,7 +136,7 @@ async def check_pending_offers(company_id: str, threshold_hours: int = 72) -> Di
             )
             rows = result.mappings().all()
 
-            pending_offers_list: List[Dict[str, Any]] = []
+            pending_offers_list: list[dict[str, Any]] = []
 
             for row in rows:
                 hours_pending = float(row["hours_pending"])
@@ -168,7 +168,7 @@ async def check_pending_offers(company_id: str, threshold_hours: int = 72) -> Di
         return {"success": False, "error": str(e)}
 
 
-async def check_overdue_tasks(company_id: str, user_id: str) -> Dict[str, Any]:
+async def check_overdue_tasks(company_id: str, user_id: str) -> dict[str, Any]:
     """Find overdue tasks for a recruiter.
 
     Identifies tasks assigned to a recruiter that have passed their due date,
@@ -184,7 +184,7 @@ async def check_overdue_tasks(company_id: str, user_id: str) -> Dict[str, Any]:
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "company_id": company_id,
                 "user_id": user_id,
             }
@@ -210,8 +210,8 @@ async def check_overdue_tasks(company_id: str, user_id: str) -> Dict[str, Any]:
             )
             rows = result.mappings().all()
 
-            overdue_tasks_list: List[Dict[str, Any]] = []
-            priority_summary: Dict[str, int] = {}
+            overdue_tasks_list: list[dict[str, Any]] = []
+            priority_summary: dict[str, int] = {}
 
             for row in rows:
                 priority = row["priority"] or "medium"
@@ -242,7 +242,7 @@ async def check_overdue_tasks(company_id: str, user_id: str) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def check_pipeline_risks(company_id: str) -> Dict[str, Any]:
+async def check_pipeline_risks(company_id: str) -> dict[str, Any]:
     """Comprehensive risk scan: stagnant candidates, empty pipelines, low conversion.
 
     Performs a holistic health check on the entire recruitment pipeline,
@@ -257,7 +257,7 @@ async def check_pipeline_risks(company_id: str) -> Dict[str, Any]:
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
 
             stagnant_result = await session.execute(
                 text("""
@@ -291,7 +291,7 @@ async def check_pipeline_risks(company_id: str) -> Dict[str, Any]:
             )
             empty_pipelines_rows = empty_pipelines_result.mappings().all()
 
-            empty_pipelines: List[Dict[str, Any]] = []
+            empty_pipelines: list[dict[str, Any]] = []
             for row in empty_pipelines_rows:
                 empty_pipelines.append({
                     "job_id": str(row["id"]),
@@ -318,7 +318,7 @@ async def check_pipeline_risks(company_id: str) -> Dict[str, Any]:
             )
             low_conversion_rows = low_conversion_result.mappings().all()
 
-            low_conversion_jobs: List[Dict[str, Any]] = []
+            low_conversion_jobs: list[dict[str, Any]] = []
             for row in low_conversion_rows:
                 applied = int(row["applied_count"])
                 progressed = int(row["progressed_count"])
@@ -341,7 +341,7 @@ async def check_pipeline_risks(company_id: str) -> Dict[str, Any]:
             else:
                 overall_risk_level = "low"
 
-            recommendations: List[str] = []
+            recommendations: list[str] = []
             if stagnant_candidates_count > 0:
                 recommendations.append(f"Review {stagnant_candidates_count} stagnant candidates for intervention.")
             if len(empty_pipelines) > 0:
@@ -370,7 +370,7 @@ async def check_pipeline_risks(company_id: str) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-def get_proactive_tools() -> List[ToolDefinition]:
+def get_proactive_tools() -> list[ToolDefinition]:
     """Return all proactive tools as ToolDefinition objects for the ReAct loop.
 
     Each ToolDefinition includes the tool name, description, JSON Schema

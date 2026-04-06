@@ -5,10 +5,9 @@ Each kanban analysis phase has different requirements, available tools, and goal
 This module injects the right context so the agent knows what to focus on
 when providing strategic pipeline analysis and recommendations.
 """
-from typing import Any, Dict, List
+from typing import Any
 
-
-STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
     "pipeline_overview": {
         "name": "Visao Geral do Pipeline",
         "display_name": "Visão Geral do Pipeline",
@@ -66,7 +65,7 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
 }
 
 
-def get_journey_insight_block(journey_data: Dict[str, Any]) -> str:
+def get_journey_insight_block(journey_data: dict[str, Any]) -> str:
     """
     Gera um bloco de insight de saúde do pipeline para injeção no contexto do agente.
     Só é chamado quando health_score < 50 (warning/critical) e vacancy_id está presente.
@@ -102,7 +101,7 @@ def get_journey_insight_block(journey_data: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def get_pipeline_prediction_block(prediction: Dict[str, Any]) -> str:
+def get_pipeline_prediction_block(prediction: dict[str, Any]) -> str:
     """
     Gera bloco de previsão de fechamento para injeção no contexto do agente.
     Sempre retorna bloco (positivo ou negativo) — ao contrário do journey
@@ -150,7 +149,7 @@ def get_pipeline_prediction_block(prediction: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
+def get_stage_context(stage: str, collected_fields: dict[str, Any]) -> str:
     """Build a formatted context string for the current kanban analysis phase.
 
     Includes phase information, field completion status, percentage and
@@ -171,9 +170,9 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     optional = stage_def["optional_fields"]
     all_fields = required + optional
 
-    filled: List[str] = []
-    missing_required: List[str] = []
-    missing_optional: List[str] = []
+    filled: list[str] = []
+    missing_required: list[str] = []
+    missing_optional: list[str] = []
 
     for field in required:
         value = collected_fields.get(field)
@@ -193,13 +192,13 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     completion = (len(filled) / total * 100) if total > 0 else 100.0
 
     parts = [
-        f"=== CONTEXTO DO ESTAGIO ===",
+        "=== CONTEXTO DO ESTAGIO ===",
         f"Estagio atual: {stage_def['display_name']} ({stage})",
         f"Fase: {stage_def['phase']}",
         f"Descricao: {stage_def['description']}",
         f"Proximo estagio: {stage_def['next_stage']}",
-        f"",
-        f"--- Progresso ---",
+        "",
+        "--- Progresso ---",
         f"Completude: {completion:.0f}%",
     ]
 
@@ -251,7 +250,7 @@ def get_stage_context(stage: str, collected_fields: Dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def get_transition_prompt(current_stage: str, collected_fields: Dict[str, Any]) -> str:
+def get_transition_prompt(current_stage: str, collected_fields: dict[str, Any]) -> str:
     """Generate a prompt for checking whether transition criteria are met.
 
     Args:

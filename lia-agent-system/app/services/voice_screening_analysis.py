@@ -4,25 +4,25 @@ Voice Screening Analysis — standalone LLM function.
 Extracted from app/shared/agents/conversation.py (Phase 7).
 Does NOT depend on ConversationGraph or any LangGraph state machine.
 """
-from typing import List, Optional
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
 import logging
 
-from app.services.llm import llm_service
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+
 from app.core.config import settings
+from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 
 
 async def analyze_voice_screening(
     transcript: str,
-    transcript_object: Optional[List[dict]],
+    transcript_object: list[dict] | None,
     job_title: str,
-    required_skills: Optional[List[str]] = None,
-    job_description: Optional[str] = None,
-    candidate_name: Optional[str] = None,
-    duration_seconds: Optional[int] = None
+    required_skills: list[str] | None = None,
+    job_description: str | None = None,
+    candidate_name: str | None = None,
+    duration_seconds: int | None = None
 ) -> dict:
     """
     Analyze voice screening call transcript using LIA's AI (Claude/Gemini/GPT).

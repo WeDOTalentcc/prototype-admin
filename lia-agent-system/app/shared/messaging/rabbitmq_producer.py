@@ -10,7 +10,6 @@ Configuração:
 """
 import json
 import logging
-from typing import Optional
 from uuid import uuid4
 
 from app.core.config import settings

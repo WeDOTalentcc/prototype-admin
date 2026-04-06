@@ -2,10 +2,11 @@
 Pydantic schemas for LIA Opinion (Parecer) API.
 """
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
-from uuid import UUID
 from enum import Enum
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class OpinionTypeEnum(str, Enum):
@@ -30,36 +31,36 @@ class RecommendationEnum(str, Enum):
 
 class ScoreBreakdown(BaseModel):
     """Detailed score breakdown."""
-    skills_match: Optional[float] = None
-    experience_match: Optional[float] = None
-    seniority_match: Optional[float] = None
-    location_match: Optional[float] = None
-    title_match: Optional[float] = None
-    cultural_fit: Optional[float] = None
-    personality_fit: Optional[float] = None
+    skills_match: float | None = None
+    experience_match: float | None = None
+    seniority_match: float | None = None
+    location_match: float | None = None
+    title_match: float | None = None
+    cultural_fit: float | None = None
+    personality_fit: float | None = None
 
 
 class TechnicalAnalysis(BaseModel):
     """Technical competency analysis."""
-    strengths: List[Dict[str, Any]] = Field(default_factory=list)
-    gaps: List[Dict[str, Any]] = Field(default_factory=list)
-    evidence: List[str] = Field(default_factory=list)
+    strengths: list[dict[str, Any]] = Field(default_factory=list)
+    gaps: list[dict[str, Any]] = Field(default_factory=list)
+    evidence: list[str] = Field(default_factory=list)
 
 
 class BehavioralAnalysis(BaseModel):
     """Behavioral/Big Five analysis."""
-    collaboration_score: Optional[float] = None
-    innovation_score: Optional[float] = None
-    organization_score: Optional[float] = None
-    resilience_score: Optional[float] = None
-    observations: List[str] = Field(default_factory=list)
+    collaboration_score: float | None = None
+    innovation_score: float | None = None
+    organization_score: float | None = None
+    resilience_score: float | None = None
+    observations: list[str] = Field(default_factory=list)
 
 
 class CulturalFitAnalysis(BaseModel):
     """Cultural fit analysis."""
-    score: Optional[float] = None
-    aligned_values: List[str] = Field(default_factory=list)
-    attention_points: List[str] = Field(default_factory=list)
+    score: float | None = None
+    aligned_values: list[str] = Field(default_factory=list)
+    attention_points: list[str] = Field(default_factory=list)
 
 
 class LiaOpinionCreate(BaseModel):
@@ -67,42 +68,42 @@ class LiaOpinionCreate(BaseModel):
     candidate_id: UUID
     opinion_type: OpinionTypeEnum = OpinionTypeEnum.GENERAL
     source: OpinionSourceEnum = OpinionSourceEnum.CV_ANALYSIS
-    job_vacancy_id: Optional[UUID] = None
-    wsi_screening_id: Optional[UUID] = None
+    job_vacancy_id: UUID | None = None
+    wsi_screening_id: UUID | None = None
     
-    score: Optional[float] = Field(None, ge=0, le=100)
-    wsi_score: Optional[float] = Field(None, ge=0, le=5)
-    recommendation: Optional[RecommendationEnum] = None
+    score: float | None = Field(None, ge=0, le=100)
+    wsi_score: float | None = Field(None, ge=0, le=5)
+    recommendation: RecommendationEnum | None = None
     
-    summary: Optional[str] = None
-    archetype: Optional[str] = None
-    archetype_match_score: Optional[float] = None
+    summary: str | None = None
+    archetype: str | None = None
+    archetype_match_score: float | None = None
     
-    score_breakdown: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    technical_analysis: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    behavioral_analysis: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    cultural_fit: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    score_breakdown: dict[str, Any] | None = Field(default_factory=dict)
+    technical_analysis: dict[str, Any] | None = Field(default_factory=dict)
+    behavioral_analysis: dict[str, Any] | None = Field(default_factory=dict)
+    cultural_fit: dict[str, Any] | None = Field(default_factory=dict)
     
-    strengths: List[str] = Field(default_factory=list)
-    concerns: List[str] = Field(default_factory=list)
-    gaps: List[str] = Field(default_factory=list)
-    matched_skills: List[str] = Field(default_factory=list)
-    missing_skills: List[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    concerns: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    matched_skills: list[str] = Field(default_factory=list)
+    missing_skills: list[str] = Field(default_factory=list)
     
-    next_steps: Optional[str] = None
-    recruiter_notes: Optional[str] = None
+    next_steps: str | None = None
+    recruiter_notes: str | None = None
 
 
 class LiaOpinionUpdate(BaseModel):
     """Schema for updating a LIA opinion."""
-    score: Optional[float] = Field(None, ge=0, le=100)
-    wsi_score: Optional[float] = Field(None, ge=0, le=5)
-    recommendation: Optional[RecommendationEnum] = None
-    summary: Optional[str] = None
+    score: float | None = Field(None, ge=0, le=100)
+    wsi_score: float | None = Field(None, ge=0, le=5)
+    recommendation: RecommendationEnum | None = None
+    summary: str | None = None
     
-    recruiter_notes: Optional[str] = None
-    recruiter_override: Optional[RecommendationEnum] = None
-    recruiter_override_reason: Optional[str] = None
+    recruiter_notes: str | None = None
+    recruiter_override: RecommendationEnum | None = None
+    recruiter_override_reason: str | None = None
 
 
 class LiaOpinionCompact(BaseModel):
@@ -110,14 +111,14 @@ class LiaOpinionCompact(BaseModel):
     id: UUID
     opinion_type: str
     source: str
-    score: Optional[float] = None
-    wsi_score: Optional[float] = None
-    recommendation: Optional[str] = None
-    summary: Optional[str] = None
-    archetype: Optional[str] = None
-    job_vacancy_id: Optional[UUID] = None
-    job_vacancy_title: Optional[str] = None
-    created_at: Optional[datetime] = None
+    score: float | None = None
+    wsi_score: float | None = None
+    recommendation: str | None = None
+    summary: str | None = None
+    archetype: str | None = None
+    job_vacancy_id: UUID | None = None
+    job_vacancy_title: str | None = None
+    created_at: datetime | None = None
     is_current: bool = True
     
     class Config:
@@ -130,42 +131,42 @@ class LiaOpinionFull(BaseModel):
     candidate_id: UUID
     opinion_type: str
     source: str
-    job_vacancy_id: Optional[UUID] = None
-    job_vacancy_title: Optional[str] = None
-    wsi_screening_id: Optional[UUID] = None
+    job_vacancy_id: UUID | None = None
+    job_vacancy_title: str | None = None
+    wsi_screening_id: UUID | None = None
     
-    score: Optional[float] = None
-    wsi_score: Optional[float] = None
-    recommendation: Optional[str] = None
+    score: float | None = None
+    wsi_score: float | None = None
+    recommendation: str | None = None
     
-    summary: Optional[str] = None
-    archetype: Optional[str] = None
-    archetype_match_score: Optional[float] = None
+    summary: str | None = None
+    archetype: str | None = None
+    archetype_match_score: float | None = None
     
-    score_breakdown: Dict[str, Any] = Field(default_factory=dict)
-    technical_analysis: Dict[str, Any] = Field(default_factory=dict)
-    behavioral_analysis: Dict[str, Any] = Field(default_factory=dict)
-    cultural_fit: Dict[str, Any] = Field(default_factory=dict)
+    score_breakdown: dict[str, Any] = Field(default_factory=dict)
+    technical_analysis: dict[str, Any] = Field(default_factory=dict)
+    behavioral_analysis: dict[str, Any] = Field(default_factory=dict)
+    cultural_fit: dict[str, Any] = Field(default_factory=dict)
     
-    strengths: List[str] = Field(default_factory=list)
-    concerns: List[str] = Field(default_factory=list)
-    gaps: List[str] = Field(default_factory=list)
-    matched_skills: List[str] = Field(default_factory=list)
-    missing_skills: List[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    concerns: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    matched_skills: list[str] = Field(default_factory=list)
+    missing_skills: list[str] = Field(default_factory=list)
     
-    next_steps: Optional[str] = None
+    next_steps: str | None = None
     
-    recruiter_notes: Optional[str] = None
-    recruiter_override: Optional[str] = None
-    recruiter_override_reason: Optional[str] = None
-    recruiter_override_by: Optional[str] = None
-    recruiter_override_at: Optional[datetime] = None
+    recruiter_notes: str | None = None
+    recruiter_override: str | None = None
+    recruiter_override_reason: str | None = None
+    recruiter_override_by: str | None = None
+    recruiter_override_at: datetime | None = None
     
     is_current: bool = True
     version: int = 1
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    created_by: Optional[str] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    created_by: str | None = None
     
     class Config:
         from_attributes = True
@@ -175,14 +176,14 @@ class CandidateOpinionsSummary(BaseModel):
     """Summary of all opinions for a candidate."""
     candidate_id: UUID
     total_opinions: int = 0
-    current_general_opinion: Optional[LiaOpinionCompact] = None
-    vacancy_opinions: List[LiaOpinionCompact] = Field(default_factory=list)
+    current_general_opinion: LiaOpinionCompact | None = None
+    vacancy_opinions: list[LiaOpinionCompact] = Field(default_factory=list)
     has_pending_review: bool = False
 
 
 class LiaOpinionListResponse(BaseModel):
     """Response for listing opinions."""
-    items: List[LiaOpinionFull]
+    items: list[LiaOpinionFull]
     total: int
     page: int = 1
     page_size: int = 20

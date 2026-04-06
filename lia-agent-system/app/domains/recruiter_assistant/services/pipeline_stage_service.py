@@ -10,27 +10,26 @@ This service handles all stage transitions for candidates:
 All agents and UI components should use this service for stage changes.
 Never update stage/sub-status directly in the database.
 """
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
-from sqlalchemy.orm import selectinload
 import logging
 import uuid
+from datetime import datetime
+from typing import Any
 
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import derive_company_from_context
+from app.core.database import AsyncSessionLocal
+from app.domains.ats_integration.services.ats_sync_service import ats_sync_service
+from app.models.candidate import VacancyCandidate
 from app.models.recruitment_stages import (
-    RecruitmentStage,
-    RecruitmentSubStatus,
-    ATSStageMapping,
-    CandidateStageHistory,
     DEFAULT_RECRUITMENT_STAGES,
     DEFAULT_SUB_STATUSES,
-    STANDARD_STAGE_CATALOG,
+    ATSStageMapping,
+    CandidateStageHistory,
+    RecruitmentStage,
+    RecruitmentSubStatus,
 )
-from app.models.candidate import VacancyCandidate
-from app.domains.ats_integration.services.ats_sync_service import ats_sync_service, ATSSyncTrigger
-from app.core.database import AsyncSessionLocal
-from app.auth.dependencies import derive_company_from_context
 
 logger = logging.getLogger(__name__)
 
@@ -77,8 +76,8 @@ class PipelineStageService:
     """
     
     def __init__(self):
-        self._stage_cache: Dict[str, List[RecruitmentStage]] = {}
-        self._sub_status_cache: Dict[str, List[RecruitmentSubStatus]] = {}
+        self._stage_cache: dict[str, list[RecruitmentStage]] = {}
+        self._sub_status_cache: dict[str, list[RecruitmentSubStatus]] = {}
         self._automation_service = None
         self._data_request_service = None
     
@@ -102,16 +101,16 @@ class PipelineStageService:
         self,
         vacancy_candidate_id: str,
         to_stage: str,
-        to_sub_status: Optional[str] = None,
+        to_sub_status: str | None = None,
         triggered_by: str = "system",
-        triggered_by_user_id: Optional[str] = None,
-        source_agent: Optional[str] = None,
-        reason: Optional[str] = None,
-        notes: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        triggered_by_user_id: str | None = None,
+        source_agent: str | None = None,
+        reason: str | None = None,
+        notes: str | None = None,
+        context: dict[str, Any] | None = None,
         force: bool = False,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Transition a candidate to a new stage/sub-status.
         
@@ -361,11 +360,11 @@ class PipelineStageService:
         vacancy_candidate_id: str,
         to_sub_status: str,
         triggered_by: str = "system",
-        source_agent: Optional[str] = None,
-        reason: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        source_agent: str | None = None,
+        reason: str | None = None,
+        context: dict[str, Any] | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Update only the sub-status without changing the main stage.
         
@@ -403,9 +402,9 @@ class PipelineStageService:
     async def get_candidate_stage_info(
         self,
         vacancy_candidate_id: str,
-        company_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        company_id: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get current stage/sub-status info for a candidate.
         
@@ -463,10 +462,10 @@ class PipelineStageService:
     async def get_candidate_history(
         self,
         vacancy_candidate_id: str,
-        company_id: Optional[str] = None,
+        company_id: str | None = None,
         limit: int = 50,
-        db: Optional[AsyncSession] = None
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get stage transition history for a candidate.
         
@@ -507,8 +506,8 @@ class PipelineStageService:
         company_id: str,
         ats_type: str,
         ats_stage_name: str,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """
         Map an ATS stage to the corresponding WedoTalent stage.
         
@@ -547,8 +546,8 @@ class PipelineStageService:
         company_id: str,
         ats_type: str,
         wedotalent_stage: str,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[str]:
+        db: AsyncSession | None = None
+    ) -> str | None:
         """
         Map a WedoTalent stage to the corresponding ATS stage for sync.
         
@@ -601,8 +600,8 @@ class PipelineStageService:
     async def initialize_company_stages(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> list[dict[str, Any]]:
         """
         Initialize default stages for a new company.
         
@@ -660,7 +659,7 @@ class PipelineStageService:
         self,
         db: AsyncSession,
         company_id: str
-    ) -> List[RecruitmentStage]:
+    ) -> list[RecruitmentStage]:
         """Get stages for a company, with caching."""
         result = await db.execute(
             select(RecruitmentStage)
@@ -676,7 +675,7 @@ class PipelineStageService:
         self,
         db: AsyncSession,
         stage_id: str
-    ) -> List[RecruitmentSubStatus]:
+    ) -> list[RecruitmentSubStatus]:
         """Get sub-statuses for a stage."""
         result = await db.execute(
             select(RecruitmentSubStatus)
@@ -692,9 +691,9 @@ class PipelineStageService:
         self,
         db: AsyncSession,
         company_id: str,
-        from_stage: Optional[str],
+        from_stage: str | None,
         to_stage: str
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Validate if a stage transition is allowed.
         
@@ -717,8 +716,8 @@ class PipelineStageService:
     
     def _format_display_status(
         self,
-        stage: Optional[RecruitmentStage],
-        sub_status: Optional[RecruitmentSubStatus]
+        stage: RecruitmentStage | None,
+        sub_status: RecruitmentSubStatus | None
     ) -> str:
         """Format display status for UI (e.g., "Triagem › Aguardando Retorno")."""
         if not stage:
@@ -733,11 +732,11 @@ class PipelineStageService:
         self,
         candidate_id: str,
         new_stage: str,
-        vacancy_id: Optional[str],
+        vacancy_id: str | None,
         company_id: str,
         triggered_by: str = "system",
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """
         Check if the new stage has automatic data request triggers configured.
         

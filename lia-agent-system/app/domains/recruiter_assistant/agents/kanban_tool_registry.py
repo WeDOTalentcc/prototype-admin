@@ -7,12 +7,12 @@ pipeline analysis and optimization.
 """
 import logging
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-async def _wrap_check_rejection_fairness(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     """Check rejection reason against FairnessGuard for discriminatory bias."""
     rejection_reason = kwargs.get("rejection_reason", "")
     candidate_name = kwargs.get("candidate_name", "")
@@ -77,7 +77,7 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> Dict[str, Any]:
         return {"is_fair": True, "warnings": [], "error": str(e)}
 
 
-async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(
@@ -170,7 +170,7 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_recruiter_backlog(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_recruiter_backlog(**kwargs: Any) -> dict[str, Any]:
     """Return the recruiter's prioritized action backlog — candidates waiting beyond stage thresholds."""
     from app.services.recruiter_metrics_service import recruiter_metrics_service
 
@@ -206,7 +206,7 @@ async def _wrap_get_recruiter_backlog(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_recruiter_benchmark(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_recruiter_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Compare recruiter metrics against anonymised company median (Sprint 2D)."""
     from app.services.recruiter_metrics_service import recruiter_metrics_service
 
@@ -255,7 +255,7 @@ async def _wrap_get_recruiter_benchmark(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_journey_metrics(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_journey_metrics(**kwargs: Any) -> dict[str, Any]:
     """Return funnel metrics, health score and risk patterns for a vacancy."""
     from app.services.journey_intelligence_service import journey_intelligence_service
 
@@ -295,7 +295,7 @@ async def _wrap_get_journey_metrics(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_pipeline_prediction(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_pipeline_prediction(**kwargs: Any) -> dict[str, Any]:
     """Return closure probability prediction for a vacancy or company overview."""
     from app.services.pipeline_prediction_service import pipeline_prediction_service
 
@@ -348,7 +348,7 @@ async def _wrap_get_pipeline_prediction(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_at_risk_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
     """Return candidates at risk of ghosting ranked by EWS score."""
     from app.services.early_warning_service import early_warning_service
 
@@ -384,7 +384,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_find_silver_medalists(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     """Find warm candidates from past processes to re-surface for current vacancies."""
     from app.services.silver_medalist_service import silver_medalist_service
 
@@ -420,7 +420,7 @@ async def _wrap_find_silver_medalists(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_pipeline_velocity(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
     """Return per-stage velocity metrics using precise stage_entered_at timestamps."""
     from app.services.pipeline_velocity_service import pipeline_velocity_service
 
@@ -440,12 +440,12 @@ async def _wrap_get_pipeline_velocity(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-async def _wrap_get_pipeline_summary(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     """Get overall pipeline summary with candidate counts per stage."""
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[kanban_tools] get_pipeline_summary called for vacancy={vacancy_id or 'all'}")
-    stages: Dict[str, int] = {}
+    stages: dict[str, int] = {}
     total = 0
     try:
         async with AsyncSessionLocal() as session:
@@ -487,13 +487,13 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_stage_metrics(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     """Get metrics for a specific pipeline stage."""
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[kanban_tools] get_stage_metrics called: stage={stage} vacancy={vacancy_id or 'all'}")
-    metrics: Dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
+    metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(
@@ -530,7 +530,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_list_stage_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in a specific stage."""
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -587,7 +587,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_analyze_stage(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_analyze_stage(**kwargs: Any) -> dict[str, Any]:
     """Deep analysis of a pipeline stage."""
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -632,7 +632,7 @@ async def _wrap_analyze_stage(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": f"Erro ao analisar etapa {stage}."}
 
 
-async def _wrap_identify_bottlenecks(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     """Identify bottlenecks across the pipeline."""
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -680,7 +680,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_get_candidate_aging(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     """Get aging report for candidates stuck in stages."""
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -731,7 +731,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_compare_stages(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
     """Compare metrics between pipeline stages."""
     stages = kwargs.get("stages", [])
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -753,7 +753,7 @@ async def _wrap_compare_stages(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_suggest_movements(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     """Suggest candidate movements based on score and aging."""
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -808,7 +808,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_batch_move_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     """Move multiple candidates to a target stage (real DB UPDATE)."""
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "")
@@ -844,7 +844,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-async def _wrap_send_batch_communication(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     """Send communication to multiple candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
     channel = kwargs.get("channel", "email")
@@ -869,7 +869,7 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": "Erro ao enviar comunicacao em lote."}
 
 
-async def _wrap_start_screening_batch(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_start_screening_batch(**kwargs: Any) -> dict[str, Any]:
     """Start WSI screening for multiple candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "unknown")
@@ -893,14 +893,14 @@ async def _wrap_start_screening_batch(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": "Erro ao iniciar screening em lote."}
 
 
-async def _wrap_generate_pipeline_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
     """Generate pipeline analytics report with real data."""
     report_type = kwargs.get("report_type", "summary")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[kanban_tools] generate_pipeline_report called: type={report_type} vacancy={vacancy_id or 'all'}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {}
+    summary: dict[str, Any] = {}
     try:
         summary_result = await _wrap_get_pipeline_summary(
             vacancy_id=vacancy_id, company_id=company_id)
@@ -924,12 +924,12 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "error": str(e), "message": f"Erro ao gerar relatorio {report_type}."}
 
 
-async def _wrap_view_candidate_full_profile(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education, work history and scores."""
     candidate_id = kwargs.get("candidate_id", "")
     logger.info(f"[kanban_tools] view_candidate_full_profile called for candidate={candidate_id}")
 
-    profile: Dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
+    profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(
@@ -1014,7 +1014,7 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> Dict[str, Any]:
     }
 
 
-TOOL_DEFINITIONS: List[ToolDefinition] = [
+TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="view_candidate_full_profile",
         description="Visualiza o perfil completo do candidato: dados pessoais, formacao academica, historico de trabalho, skills, scores LIA/WSI, pretensao salarial, idiomas e preferencias. Use para perguntas sobre um candidato especifico como 'formacao de Joao', 'experiencia de Maria', 'perfil completo de [nome]'.",
@@ -1376,18 +1376,18 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
     ),
 ]
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
-STAGE_TOOLS: Dict[str, List[str]] = {
+STAGE_TOOLS: dict[str, list[str]] = {
     "pipeline_overview": ["get_pipeline_summary", "get_stage_metrics", "list_stage_candidates", "view_candidate_full_profile", "check_rejection_fairness", "get_pipeline_benchmarks", "get_pipeline_velocity", "find_silver_medalists", "get_recruiter_backlog", "get_at_risk_candidates", "get_journey_metrics", "get_recruiter_benchmark", "get_pipeline_prediction"],
     "stage_analysis": ["analyze_stage", "identify_bottlenecks", "get_candidate_aging", "compare_stages", "get_stage_metrics", "view_candidate_full_profile", "check_rejection_fairness", "get_pipeline_benchmarks", "get_pipeline_velocity", "find_silver_medalists", "get_recruiter_backlog", "get_at_risk_candidates", "get_journey_metrics", "get_recruiter_benchmark", "get_pipeline_prediction"],
     "pipeline_actions": ["suggest_movements", "batch_move_candidates", "send_batch_communication", "start_screening_batch", "generate_pipeline_report", "view_candidate_full_profile", "check_rejection_fairness", "get_pipeline_benchmarks", "get_pipeline_velocity", "find_silver_medalists", "get_recruiter_backlog", "get_at_risk_candidates", "get_journey_metrics", "get_recruiter_benchmark", "get_pipeline_prediction"],
 }
 
-GUARDRAIL_TOOLS: List[str] = ["batch_move_candidates", "send_batch_communication", "start_screening_batch"]
+GUARDRAIL_TOOLS: list[str] = ["batch_move_candidates", "send_batch_communication", "start_screening_batch"]
 
 
-def get_kanban_tools(stage: str = "") -> List[ToolDefinition]:
+def get_kanban_tools(stage: str = "") -> list[ToolDefinition]:
     """Return kanban analysis tools, optionally filtered by stage.
 
     Args:

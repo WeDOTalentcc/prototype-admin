@@ -3,10 +3,10 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.screening_question_set import ScreeningQuestionSet
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
@@ -23,8 +23,8 @@ class ScreeningQuestionSetService:
         self,
         db: AsyncSession,
         company_id: str,
-        questions: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        questions: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         try:
             policy = await get_policy_for_company(company_id, db)
             default_questions = resolve_policy_value(
@@ -64,12 +64,12 @@ class ScreeningQuestionSetService:
         self,
         db: AsyncSession,
         job_vacancy_id: str,
-        questions: List[Dict[str, Any]],
+        questions: list[dict[str, Any]],
         source: str,
-        created_by: Optional[str] = None,
-        block_distribution: Optional[Dict] = None,
-        metadata: Optional[Dict] = None,
-        company_id: Optional[str] = None,
+        created_by: str | None = None,
+        block_distribution: dict | None = None,
+        metadata: dict | None = None,
+        company_id: str | None = None,
     ) -> ScreeningQuestionSet:
         questions_hash = self._calculate_questions_hash(questions)
 
@@ -185,7 +185,7 @@ class ScreeningQuestionSetService:
 
     async def get_active_version(
         self, db: AsyncSession, job_vacancy_id: str
-    ) -> Optional[ScreeningQuestionSet]:
+    ) -> ScreeningQuestionSet | None:
         result = await db.execute(text("""
             SELECT id, job_vacancy_id, version, questions_hash, questions_snapshot,
                    questions_count, block_distribution, metadata, source, created_by,
@@ -218,7 +218,7 @@ class ScreeningQuestionSetService:
 
     async def get_by_version(
         self, db: AsyncSession, job_vacancy_id: str, version: int
-    ) -> Optional[ScreeningQuestionSet]:
+    ) -> ScreeningQuestionSet | None:
         result = await db.execute(text("""
             SELECT id, job_vacancy_id, version, questions_hash, questions_snapshot,
                    questions_count, block_distribution, metadata, source, created_by,
@@ -251,7 +251,7 @@ class ScreeningQuestionSetService:
 
     async def list_versions(
         self, db: AsyncSession, job_vacancy_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         result = await db.execute(text("""
             SELECT id, version, source, questions_count, is_active, created_by, created_at
             FROM screening_question_sets
@@ -275,7 +275,7 @@ class ScreeningQuestionSetService:
 
     async def check_version_consistency(
         self, db: AsyncSession, job_vacancy_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         active_result = await db.execute(text("""
             SELECT version FROM screening_question_sets
             WHERE job_vacancy_id = :job_vacancy_id AND is_active = TRUE
@@ -335,15 +335,15 @@ class ScreeningQuestionSetService:
             "has_inconsistency": screened_with_older > 0,
         }
 
-    def _calculate_questions_hash(self, questions: List[Dict[str, Any]]) -> str:
-        def sort_key(q: Dict[str, Any]) -> str:
+    def _calculate_questions_hash(self, questions: list[dict[str, Any]]) -> str:
+        def sort_key(q: dict[str, Any]) -> str:
             return q.get("text", q.get("question", ""))
 
         sorted_questions = sorted(questions, key=sort_key)
         serialized = json.dumps(sorted_questions, sort_keys=True, ensure_ascii=False)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-    def _calculate_difficulty_coefficient(self, questions: List[Dict[str, Any]]) -> float:
+    def _calculate_difficulty_coefficient(self, questions: list[dict[str, Any]]) -> float:
         if not questions:
             return 0.0
 

@@ -1,28 +1,28 @@
 """
 Admin Settings API endpoints for RBAC, notifications, and security.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Request
+import logging
+import uuid
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, or_, func, desc
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-import logging
-from datetime import datetime
-import uuid
 
+from app.core.database import get_db
 from app.models.admin_settings import (
+    AVAILABLE_PERMISSIONS,
+    DEFAULT_ROLES,
+    NOTIFICATION_EVENT_TYPES,
+    AdminAuditLog,
     AdminRole,
     AdminUserRole,
     NotificationPolicy,
+    PermissionLevel,
     SecuritySetting,
-    AdminAuditLog,
-    DEFAULT_ROLES,
-    AVAILABLE_PERMISSIONS,
-    NOTIFICATION_EVENT_TYPES,
-    PermissionLevel
 )
-from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -39,60 +39,60 @@ def verify_ownership(resource, company_id: uuid.UUID, resource_name: str = "Reso
 
 class RoleCreate(BaseModel):
     name: str
-    description: Optional[str] = None
-    permissions: Dict[str, str] = {}
+    description: str | None = None
+    permissions: dict[str, str] = {}
 
 
 class RoleUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    permissions: Optional[Dict[str, str]] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    permissions: dict[str, str] | None = None
+    is_active: bool | None = None
 
 
 class UserRoleAssign(BaseModel):
     user_id: str
     role_id: str
-    assigned_by: Optional[str] = None
+    assigned_by: str | None = None
 
 
 class NotificationPolicyCreate(BaseModel):
     name: str
     event_type: str
-    channels: List[str] = []
-    recipient_type: Optional[str] = None
-    recipients: List[str] = []
-    subject_template: Optional[str] = None
-    body_template: Optional[str] = None
+    channels: list[str] = []
+    recipient_type: str | None = None
+    recipients: list[str] = []
+    subject_template: str | None = None
+    body_template: str | None = None
     is_enabled: bool = True
 
 
 class NotificationPolicyUpdate(BaseModel):
-    name: Optional[str] = None
-    event_type: Optional[str] = None
-    channels: Optional[List[str]] = None
-    recipient_type: Optional[str] = None
-    recipients: Optional[List[str]] = None
-    subject_template: Optional[str] = None
-    body_template: Optional[str] = None
-    is_enabled: Optional[bool] = None
+    name: str | None = None
+    event_type: str | None = None
+    channels: list[str] | None = None
+    recipient_type: str | None = None
+    recipients: list[str] | None = None
+    subject_template: str | None = None
+    body_template: str | None = None
+    is_enabled: bool | None = None
 
 
 class SecuritySettingUpdate(BaseModel):
-    require_2fa: Optional[bool] = None
-    session_timeout_minutes: Optional[int] = None
-    max_login_attempts: Optional[int] = None
-    password_min_length: Optional[int] = None
-    password_require_uppercase: Optional[bool] = None
-    password_require_numbers: Optional[bool] = None
-    password_require_special: Optional[bool] = None
-    password_expiry_days: Optional[int] = None
-    ip_whitelist: Optional[List[str]] = None
-    ip_blacklist: Optional[List[str]] = None
-    audit_logging_enabled: Optional[bool] = None
-    audit_retention_days: Optional[int] = None
-    data_export_allowed: Optional[bool] = None
-    data_retention_days: Optional[int] = None
+    require_2fa: bool | None = None
+    session_timeout_minutes: int | None = None
+    max_login_attempts: int | None = None
+    password_min_length: int | None = None
+    password_require_uppercase: bool | None = None
+    password_require_numbers: bool | None = None
+    password_require_special: bool | None = None
+    password_expiry_days: int | None = None
+    ip_whitelist: list[str] | None = None
+    ip_blacklist: list[str] | None = None
+    audit_logging_enabled: bool | None = None
+    audit_retention_days: int | None = None
+    data_export_allowed: bool | None = None
+    data_retention_days: int | None = None
 
 
 @router.get("/roles")
@@ -268,7 +268,7 @@ async def initialize_default_roles(
 @router.get("/user-roles")
 async def list_user_roles(
     company_id: str = Query(..., description="Company ID"),
-    user_id: Optional[str] = Query(None, description="Filter by user ID"),
+    user_id: str | None = Query(None, description="Filter by user ID"),
     db: AsyncSession = Depends(get_db)
 ):
     """List user role assignments."""
@@ -374,7 +374,7 @@ async def remove_role_assignment(
 @router.get("/notification-policies")
 async def list_notification_policies(
     company_id: str = Query(..., description="Company ID"),
-    event_type: Optional[str] = Query(None, description="Filter by event type"),
+    event_type: str | None = Query(None, description="Filter by event type"),
     db: AsyncSession = Depends(get_db)
 ):
     """List notification policies."""
@@ -597,11 +597,11 @@ async def update_security_settings(
 @router.get("/audit-logs")
 async def get_audit_logs(
     company_id: str = Query(..., description="Company ID"),
-    action: Optional[str] = Query(None, description="Filter by action"),
-    resource_type: Optional[str] = Query(None, description="Filter by resource type"),
-    user_id: Optional[str] = Query(None, description="Filter by user ID"),
-    start_date: Optional[str] = Query(None, description="Start date (ISO format)"),
-    end_date: Optional[str] = Query(None, description="End date (ISO format)"),
+    action: str | None = Query(None, description="Filter by action"),
+    resource_type: str | None = Query(None, description="Filter by resource type"),
+    user_id: str | None = Query(None, description="Filter by user ID"),
+    start_date: str | None = Query(None, description="Start date (ISO format)"),
+    end_date: str | None = Query(None, description="End date (ISO format)"),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)

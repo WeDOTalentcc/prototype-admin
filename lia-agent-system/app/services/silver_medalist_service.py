@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -90,8 +90,8 @@ class SilverMedalistService:
         company_id: str,
         limit: int = 20,
         max_days_lookback: int = 180,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Find silver medalists relevant to the target vacancy.
 
@@ -205,8 +205,8 @@ class SilverMedalistService:
         company_id: str,
         limit: int = 50,
         max_days_lookback: int = 90,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Return all silver medalists in the company pool (not vacancy-specific).
 

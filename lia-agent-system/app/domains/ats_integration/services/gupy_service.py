@@ -3,9 +3,9 @@ Gupy ATS Integration Service.
 Handles candidate synchronization, job posting, and webhook processing.
 """
 import logging
+from typing import Any
+
 import httpx
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class GupyService:
     API Docs: https://developers.gupy.io/reference/introduction
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         self.api_key = api_key
         self.base_url = "https://api.gupy.io/api/v1"
         self.headers = {
@@ -41,10 +41,10 @@ class GupyService:
     
     async def get_jobs(
         self,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 50,
         offset: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get list of job postings from Gupy.
         
@@ -84,8 +84,8 @@ class GupyService:
     async def get_job_applications(
         self,
         job_id: str,
-        status: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        status: str | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get applications for a specific job.
         
@@ -119,7 +119,7 @@ class GupyService:
             logger.error(f"❌ Failed to fetch applications for job {job_id}: {e}")
             return []
     
-    async def get_candidate_details(self, candidate_id: str) -> Optional[Dict[str, Any]]:
+    async def get_candidate_details(self, candidate_id: str) -> dict[str, Any] | None:
         """
         Get detailed candidate information.
         
@@ -158,8 +158,8 @@ class GupyService:
         postback_url: str,
         tech_owner_email: str,
         tech_owner_name: str,
-        custom_headers: Optional[Dict[str, str]] = None
-    ) -> Optional[Dict[str, Any]]:
+        custom_headers: dict[str, str] | None = None
+    ) -> dict[str, Any] | None:
         """
         Create a webhook for Gupy events.
         
@@ -202,7 +202,7 @@ class GupyService:
             logger.error(f"❌ Failed to create Gupy webhook: {e}")
             return None
     
-    async def list_webhooks(self) -> List[Dict[str, Any]]:
+    async def list_webhooks(self) -> list[dict[str, Any]]:
         """Get all configured webhooks."""
         try:
             async with httpx.AsyncClient() as client:
@@ -240,7 +240,7 @@ class GupyService:
             logger.error(f"❌ Failed to delete Gupy webhook {webhook_id}: {e}")
             return False
     
-    def process_webhook_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def process_webhook_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
         """
         Process and normalize webhook payload.
         

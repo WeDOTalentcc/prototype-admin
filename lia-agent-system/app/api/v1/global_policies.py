@@ -9,20 +9,25 @@ Provides endpoints for:
 - Listing categories with counts
 - Seeding default policies
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc
-from typing import Optional
-from datetime import datetime
 import logging
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.global_policies import PlatformPolicy, PlatformPolicyAuditLog, DEFAULT_POLICIES
+from app.models.global_policies import DEFAULT_POLICIES, PlatformPolicy, PlatformPolicyAuditLog
 from app.schemas.global_policies import (
-    PolicyResponse, PolicyListResponse, PolicyWithHistoryResponse,
-    PolicyUpdate, PolicyAuditLogResponse, PolicyAuditLogListResponse,
-    CategoryCount, CategoryListResponse, SeedPoliciesResponse
+    CategoryCount,
+    CategoryListResponse,
+    PolicyAuditLogListResponse,
+    PolicyAuditLogResponse,
+    PolicyListResponse,
+    PolicyResponse,
+    PolicyUpdate,
+    PolicyWithHistoryResponse,
+    SeedPoliciesResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,8 +36,8 @@ router = APIRouter(prefix="/global-policies", tags=["global-policies"])
 
 
 def get_user_id_from_header(
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID")
-) -> Optional[str]:
+    x_user_id: str | None = Header(None, alias="X-User-ID")
+) -> str | None:
     """Extract user ID from header if present."""
     if x_user_id:
         try:
@@ -45,9 +50,9 @@ def get_user_id_from_header(
 
 @router.get("", response_model=PolicyListResponse, summary="List all policies")
 async def list_policies(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    search: Optional[str] = Query(None, description="Search in name/description"),
+    category: str | None = Query(None, description="Filter by category"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    search: str | None = Query(None, description="Search in name/description"),
     limit: int = Query(100, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db)
@@ -174,7 +179,7 @@ async def get_policy(
 async def update_policy(
     policy_id: str,
     data: PolicyUpdate,
-    user_id: Optional[str] = Depends(get_user_id_from_header),
+    user_id: str | None = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a policy value and create an audit log entry."""

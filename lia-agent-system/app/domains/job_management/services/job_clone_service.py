@@ -5,17 +5,17 @@ Two modes:
 1. DUPLICATE: Full clone including candidates and their statuses
 2. TEMPLATE: Clone job data only (no candidates)
 """
-import uuid
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-import logging
 import copy
+import logging
+import uuid
+from datetime import datetime
+from typing import Any
 
-from app.models.job_vacancy import JobVacancy, JobVacancyInterviewStage
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.candidate import VacancyCandidate
-from app.core.database import AsyncSessionLocal
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class JobCloneService:
         db: AsyncSession,
         identifier: str,
         company_id: str
-    ) -> Optional[JobVacancy]:
+    ) -> JobVacancy | None:
         """
         Find a job vacancy by ID, job_id, or title (partial match).
         """
@@ -108,7 +108,7 @@ class JobCloneService:
         self,
         db: AsyncSession,
         vacancy_id: uuid.UUID
-    ) -> List[VacancyCandidate]:
+    ) -> list[VacancyCandidate]:
         """Get all candidates linked to a vacancy."""
         result = await db.execute(
             select(VacancyCandidate).where(VacancyCandidate.vacancy_id == vacancy_id)
@@ -140,11 +140,11 @@ class JobCloneService:
         company_id: str,
         copies: int = 1,
         include_candidates: bool = True,
-        candidate_filter: Optional[str] = None,
-        candidate_status_override: Optional[str] = None,
-        overrides: Optional[Dict[str, Any]] = None,
-        created_by: Optional[str] = None
-    ) -> Dict[str, Any]:
+        candidate_filter: str | None = None,
+        candidate_status_override: str | None = None,
+        overrides: dict[str, Any] | None = None,
+        created_by: str | None = None
+    ) -> dict[str, Any]:
         """
         Duplicate a job vacancy with all its data.
         
@@ -299,10 +299,10 @@ class JobCloneService:
         db: AsyncSession,
         source_job_id: uuid.UUID,
         company_id: str,
-        new_title: Optional[str] = None,
-        overrides: Optional[Dict[str, Any]] = None,
-        created_by: Optional[str] = None
-    ) -> Dict[str, Any]:
+        new_title: str | None = None,
+        overrides: dict[str, Any] | None = None,
+        created_by: str | None = None
+    ) -> dict[str, Any]:
         """
         Create a new job using an existing job as a template.
         Does NOT clone candidates - only job data.
@@ -420,7 +420,7 @@ class JobCloneService:
         self,
         db: AsyncSession,
         job_id: uuid.UUID
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get a summary of a job for displaying to the user before cloning.
         """

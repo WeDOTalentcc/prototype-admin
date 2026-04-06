@@ -13,15 +13,14 @@ Referência: docs/analises/PLANO_IMPLEMENTACAO_GAPS_IA.md → Sprint J2
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass
 
 
 @dataclass
 class FewShotExample:
     message: str
     intent: str
-    domain: Optional[str]
+    domain: str | None
     confidence: float           # Score esperado pelo avaliador humano
     notes: str = ""             # Anotações do especialista de RH
 
@@ -30,7 +29,7 @@ class FewShotExample:
 # Casos CLAROS — confiança esperada ≥ 0.85
 # ---------------------------------------------------------------------------
 
-CLEAR_EXAMPLES: List[FewShotExample] = [
+CLEAR_EXAMPLES: list[FewShotExample] = [
     FewShotExample(
         message="preciso criar uma nova vaga de desenvolvedor backend sênior para o time de plataforma",
         intent="job_wizard",
@@ -108,7 +107,7 @@ CLEAR_EXAMPLES: List[FewShotExample] = [
 # Casos AMBÍGUOS — confiança esperada ≤ 0.55 → deve pedir esclarecimento
 # ---------------------------------------------------------------------------
 
-AMBIGUOUS_EXAMPLES: List[FewShotExample] = [
+AMBIGUOUS_EXAMPLES: list[FewShotExample] = [
     FewShotExample(
         message="vou precisar contratar alguém",
         intent="clarification_needed",
@@ -186,7 +185,7 @@ AMBIGUOUS_EXAMPLES: List[FewShotExample] = [
 # Export consolidado
 # ---------------------------------------------------------------------------
 
-FEW_SHOT_EXAMPLES: List[FewShotExample] = CLEAR_EXAMPLES + AMBIGUOUS_EXAMPLES
+FEW_SHOT_EXAMPLES: list[FewShotExample] = CLEAR_EXAMPLES + AMBIGUOUS_EXAMPLES
 
 CLEAR_INTENTS = {e.intent for e in CLEAR_EXAMPLES if e.intent != "clarification_needed"}
 COVERED_DOMAINS = {e.domain for e in FEW_SHOT_EXAMPLES if e.domain is not None}

@@ -1,10 +1,10 @@
 """
 Pydantic schemas for Trust Center API.
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class SubprocessorCategoryEnum(str, Enum):
@@ -42,18 +42,18 @@ class TrustCenterSettingsBase(BaseModel):
     """Base schema for trust center settings."""
     company_slug: str = Field(..., min_length=2, max_length=100)
     company_name: str = Field(..., min_length=1, max_length=255)
-    company_description: Optional[str] = None
-    logo_url: Optional[str] = None
-    primary_color: Optional[str] = "#6366F1"
+    company_description: str | None = None
+    logo_url: str | None = None
+    primary_color: str | None = "#6366F1"
     is_public: bool = False
-    custom_domain: Optional[str] = None
+    custom_domain: str | None = None
     show_certifications: bool = True
     show_controls: bool = True
     show_bias_audits: bool = True
     show_subprocessors: bool = True
-    contact_email: Optional[str] = None
-    privacy_policy_url: Optional[str] = None
-    terms_url: Optional[str] = None
+    contact_email: str | None = None
+    privacy_policy_url: str | None = None
+    terms_url: str | None = None
 
 
 class TrustCenterSettingsCreate(TrustCenterSettingsBase):
@@ -63,28 +63,28 @@ class TrustCenterSettingsCreate(TrustCenterSettingsBase):
 
 class TrustCenterSettingsUpdate(BaseModel):
     """Schema for updating trust center settings."""
-    company_slug: Optional[str] = Field(None, min_length=2, max_length=100)
-    company_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    company_description: Optional[str] = None
-    logo_url: Optional[str] = None
-    primary_color: Optional[str] = None
-    is_public: Optional[bool] = None
-    custom_domain: Optional[str] = None
-    show_certifications: Optional[bool] = None
-    show_controls: Optional[bool] = None
-    show_bias_audits: Optional[bool] = None
-    show_subprocessors: Optional[bool] = None
-    contact_email: Optional[str] = None
-    privacy_policy_url: Optional[str] = None
-    terms_url: Optional[str] = None
+    company_slug: str | None = Field(None, min_length=2, max_length=100)
+    company_name: str | None = Field(None, min_length=1, max_length=255)
+    company_description: str | None = None
+    logo_url: str | None = None
+    primary_color: str | None = None
+    is_public: bool | None = None
+    custom_domain: str | None = None
+    show_certifications: bool | None = None
+    show_controls: bool | None = None
+    show_bias_audits: bool | None = None
+    show_subprocessors: bool | None = None
+    contact_email: str | None = None
+    privacy_policy_url: str | None = None
+    terms_url: str | None = None
 
 
 class TrustCenterSettingsResponse(TrustCenterSettingsBase):
     """Schema for trust center settings response."""
     id: str
     company_id: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -94,9 +94,9 @@ class SubprocessorBase(BaseModel):
     """Base schema for subprocessor."""
     name: str = Field(..., min_length=1, max_length=255)
     category: SubprocessorCategoryEnum = SubprocessorCategoryEnum.OTHER
-    description: Optional[str] = None
-    country: Optional[str] = None
-    data_processed: Optional[str] = None
+    description: str | None = None
+    country: str | None = None
+    data_processed: str | None = None
     is_public: bool = True
 
 
@@ -109,7 +109,7 @@ class SubprocessorResponse(SubprocessorBase):
     """Schema for subprocessor response."""
     id: str
     company_id: str
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -117,14 +117,14 @@ class SubprocessorResponse(SubprocessorBase):
 
 class SubprocessorListResponse(BaseModel):
     """Schema for list of subprocessors."""
-    subprocessors: List[SubprocessorResponse]
+    subprocessors: list[SubprocessorResponse]
     total: int
 
 
 class TrustCenterResourceBase(BaseModel):
     """Base schema for trust center resource."""
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     category: ResourceCategoryEnum = ResourceCategoryEnum.OTHER
     file_url: str
     is_public: bool = True
@@ -141,7 +141,7 @@ class TrustCenterResourceResponse(TrustCenterResourceBase):
     id: str
     company_id: str
     download_count: int = 0
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -149,7 +149,7 @@ class TrustCenterResourceResponse(TrustCenterResourceBase):
 
 class TrustCenterResourceListResponse(BaseModel):
     """Schema for list of resources."""
-    resources: List[TrustCenterResourceResponse]
+    resources: list[TrustCenterResourceResponse]
     total: int
 
 
@@ -170,8 +170,8 @@ class TrustCenterUpdateResponse(TrustCenterUpdateBase):
     """Schema for update response."""
     id: str
     company_id: str
-    published_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    published_at: datetime | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -179,7 +179,7 @@ class TrustCenterUpdateResponse(TrustCenterUpdateBase):
 
 class TrustCenterUpdateListResponse(BaseModel):
     """Schema for list of updates."""
-    updates: List[TrustCenterUpdateResponse]
+    updates: list[TrustCenterUpdateResponse]
     total: int
 
 
@@ -187,10 +187,10 @@ class CertificationInfo(BaseModel):
     """Schema for certification information."""
     name: str
     status: str
-    issued_date: Optional[datetime] = None
-    expires_date: Optional[datetime] = None
-    description: Optional[str] = None
-    badge_url: Optional[str] = None
+    issued_date: datetime | None = None
+    expires_date: datetime | None = None
+    description: str | None = None
+    badge_url: str | None = None
 
 
 class ControlSummary(BaseModel):
@@ -208,39 +208,39 @@ class BiasAuditSummary(BaseModel):
     audit_period: str
     audit_type: str
     status: str
-    categories_evaluated: List[str]
+    categories_evaluated: list[str]
     overall_result: str
-    published_at: Optional[datetime] = None
+    published_at: datetime | None = None
 
 
 class TrustCenterOverviewResponse(BaseModel):
     """Schema for trust center overview."""
     company_name: str
-    company_description: Optional[str] = None
-    logo_url: Optional[str] = None
-    primary_color: Optional[str] = None
-    contact_email: Optional[str] = None
-    privacy_policy_url: Optional[str] = None
-    terms_url: Optional[str] = None
+    company_description: str | None = None
+    logo_url: str | None = None
+    primary_color: str | None = None
+    contact_email: str | None = None
+    privacy_policy_url: str | None = None
+    terms_url: str | None = None
     certifications_count: int = 0
-    controls_summary: Optional[dict] = None
-    last_updated: Optional[datetime] = None
+    controls_summary: dict | None = None
+    last_updated: datetime | None = None
 
 
 class TrustCenterCertificationsResponse(BaseModel):
     """Schema for certifications listing."""
-    certifications: List[CertificationInfo]
+    certifications: list[CertificationInfo]
     total: int
 
 
 class TrustCenterControlsResponse(BaseModel):
     """Schema for controls summary."""
-    frameworks: List[ControlSummary]
+    frameworks: list[ControlSummary]
     overall_compliance: float
 
 
 class TrustCenterBiasAuditsResponse(BaseModel):
     """Schema for bias audits listing."""
-    audits: List[BiasAuditSummary]
+    audits: list[BiasAuditSummary]
     total: int
-    latest_audit_date: Optional[datetime] = None
+    latest_audit_date: datetime | None = None

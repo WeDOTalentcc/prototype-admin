@@ -3,28 +3,27 @@ HubSpot CRM Integration Service.
 
 Syncs client accounts to HubSpot CRM for sales and onboarding tracking.
 """
-import os
 import logging
+import os
 from datetime import datetime
-from typing import Optional, Dict, Any
-
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from typing import Any
 
 from hubspot import HubSpot
 from hubspot.crm.companies import SimplePublicObjectInputForCreate as CompanyInput
-from hubspot.crm.contacts import SimplePublicObjectInputForCreate as ContactInput
-from hubspot.crm.deals import SimplePublicObjectInputForCreate as DealInput
 from hubspot.crm.companies.exceptions import ApiException as CompanyApiException
+from hubspot.crm.contacts import SimplePublicObjectInputForCreate as ContactInput
 from hubspot.crm.contacts.exceptions import ApiException as ContactApiException
+from hubspot.crm.deals import SimplePublicObjectInputForCreate as DealInput
 from hubspot.crm.deals.exceptions import ApiException as DealApiException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
 
 
-def extract_domain_from_email(email: Optional[str]) -> Optional[str]:
+def extract_domain_from_email(email: str | None) -> str | None:
     """
     Extract domain from an email address.
     
@@ -56,13 +55,13 @@ class HubSpotService:
     def __init__(self):
         """Initialize the HubSpot service."""
         self.access_token = os.getenv("HUBSPOT_ACCESS_TOKEN")
-        self._client: Optional[HubSpot] = None
+        self._client: HubSpot | None = None
         
         if not self.access_token:
             logger.warning("⚠️ HUBSPOT_ACCESS_TOKEN not configured - HubSpot sync will be skipped")
     
     @property
-    def client(self) -> Optional[HubSpot]:
+    def client(self) -> HubSpot | None:
         """Get or create HubSpot client instance."""
         if not self.access_token:
             return None
@@ -81,7 +80,7 @@ class HubSpotService:
         self,
         client: ClientAccount,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Sync a client account to HubSpot CRM.
         
@@ -143,7 +142,7 @@ class HubSpotService:
         
         return result
     
-    async def _create_or_update_company(self, client: ClientAccount) -> Optional[str]:
+    async def _create_or_update_company(self, client: ClientAccount) -> str | None:
         """
         Create or update a Company in HubSpot.
         
@@ -211,7 +210,7 @@ class HubSpotService:
             logger.error(f"❌ HubSpot Company API error: {e.body}", exc_info=True)
             raise
     
-    async def _find_company_by_domain(self, domain: str) -> Optional[str]:
+    async def _find_company_by_domain(self, domain: str) -> str | None:
         """
         Search for an existing company by domain.
         
@@ -259,8 +258,8 @@ class HubSpotService:
     async def _create_or_update_contact(
         self,
         client: ClientAccount,
-        company_id: Optional[str]
-    ) -> Optional[str]:
+        company_id: str | None
+    ) -> str | None:
         """
         Create or update a Contact for the primary admin.
         
@@ -317,7 +316,7 @@ class HubSpotService:
             logger.error(f"❌ HubSpot Contact API error: {e.body}", exc_info=True)
             return None
     
-    async def _find_contact_by_email(self, email: str) -> Optional[str]:
+    async def _find_contact_by_email(self, email: str) -> str | None:
         """
         Search for an existing contact by email.
         
@@ -396,8 +395,8 @@ class HubSpotService:
     async def _create_deal(
         self,
         client: ClientAccount,
-        company_id: Optional[str]
-    ) -> Optional[str]:
+        company_id: str | None
+    ) -> str | None:
         """
         Create a Deal in HubSpot associated with the Company.
         
@@ -491,7 +490,7 @@ class HubSpotService:
             logger.warning(f"⚠️ Failed to associate deal to company: {str(e)}")
             return False
     
-    async def _find_deal_by_client_id(self, client_id: str) -> Optional[str]:
+    async def _find_deal_by_client_id(self, client_id: str) -> str | None:
         """
         Search for an existing deal by lia_client_id property.
         
@@ -536,8 +535,8 @@ class HubSpotService:
     async def _update_client_hubspot_info(
         self,
         client_id: str,
-        hubspot_company_id: Optional[str],
-        hubspot_deal_id: Optional[str],
+        hubspot_company_id: str | None,
+        hubspot_deal_id: str | None,
         db: AsyncSession
     ) -> None:
         """
@@ -577,9 +576,9 @@ class HubSpotService:
     async def update_onboarding_status(
         self,
         client_id: str,
-        status: Dict[str, Any],
+        status: dict[str, Any],
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Update onboarding status on HubSpot Company/Deal.
         
@@ -673,7 +672,7 @@ class HubSpotService:
         self,
         client_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get HubSpot sync status for a client.
         
@@ -730,7 +729,7 @@ hubspot_service = HubSpotService()
 async def sync_client_to_hubspot(
     client: ClientAccount,
     db: AsyncSession
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Convenience function to sync a client to HubSpot.
     

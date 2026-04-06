@@ -13,18 +13,19 @@ Environment Variables:
 - TWILIO_WHATSAPP_FROM: WhatsApp sender number (default: sandbox number)
 - ENVIRONMENT: 'development' for logging only, 'production' for real sending
 """
-import os
-import uuid
 import asyncio
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+import os
+import uuid
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 try:
-    from twilio.rest import Client as TwilioClient
     from twilio.base.exceptions import TwilioRestException
+    from twilio.rest import Client as TwilioClient
     TWILIO_SDK_AVAILABLE = True
 except ImportError:
     TWILIO_SDK_AVAILABLE = False
@@ -49,10 +50,10 @@ class SendWhatsAppRequest(BaseModel):
     """Request model for sending WhatsApp messages."""
     to_phone: str = Field(..., description="Recipient phone number (with country code)")
     message: str = Field(..., description="Message text")
-    media_url: Optional[str] = Field(None, description="URL of media to attach")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata")
-    company_id: Optional[str] = Field(None, description="Company ID for multi-tenancy")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID for tracking")
+    media_url: str | None = Field(None, description="URL of media to attach")
+    metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
+    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
+    candidate_id: str | None = Field(None, description="Candidate ID for tracking")
     
     class Config:
         json_schema_extra = {
@@ -68,11 +69,11 @@ class SendWhatsAppTemplateRequest(BaseModel):
     """Request model for sending template-based WhatsApp messages."""
     to_phone: str = Field(..., description="Recipient phone number")
     template_name: str = Field(..., description="Template name from WhatsAppTemplates")
-    template_data: Dict[str, Any] = Field(..., description="Template variables")
-    media_url: Optional[str] = Field(None, description="URL of media to attach")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata")
-    company_id: Optional[str] = Field(None, description="Company ID")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID")
+    template_data: dict[str, Any] = Field(..., description="Template variables")
+    media_url: str | None = Field(None, description="URL of media to attach")
+    metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
+    company_id: str | None = Field(None, description="Company ID")
+    candidate_id: str | None = Field(None, description="Candidate ID")
     
     class Config:
         json_schema_extra = {
@@ -96,13 +97,13 @@ class InteractiveButton(BaseModel):
 class SendInteractiveRequest(BaseModel):
     """Request model for interactive WhatsApp messages with buttons."""
     to_phone: str = Field(..., description="Recipient phone number")
-    header: Optional[str] = Field(None, description="Message header")
+    header: str | None = Field(None, description="Message header")
     body: str = Field(..., description="Message body")
-    footer: Optional[str] = Field(None, description="Message footer")
-    buttons: List[InteractiveButton] = Field(..., description="List of buttons (max 3)")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata")
-    company_id: Optional[str] = Field(None, description="Company ID")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID")
+    footer: str | None = Field(None, description="Message footer")
+    buttons: list[InteractiveButton] = Field(..., description="List of buttons (max 3)")
+    metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
+    company_id: str | None = Field(None, description="Company ID")
+    candidate_id: str | None = Field(None, description="Candidate ID")
     
     class Config:
         json_schema_extra = {
@@ -122,13 +123,13 @@ class SendInteractiveRequest(BaseModel):
 class WhatsAppSendResult(BaseModel):
     """Result of a WhatsApp send operation."""
     success: bool
-    message_id: Optional[str] = None
+    message_id: str | None = None
     status: WhatsAppStatus = WhatsAppStatus.PENDING
     provider: str = "twilio"
-    error: Optional[str] = None
-    error_code: Optional[str] = None
-    sent_at: Optional[datetime] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
+    error_code: str | None = None
+    sent_at: datetime | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class WhatsAppService:
@@ -203,8 +204,8 @@ class WhatsAppService:
         self,
         to_phone: str,
         message: str,
-        media_url: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        media_url: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> WhatsAppSendResult:
         """
         Send a WhatsApp message.
@@ -240,9 +241,9 @@ class WhatsAppService:
         self,
         to_phone: str,
         template_name: str,
-        template_data: Dict[str, Any],
-        media_url: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        template_data: dict[str, Any],
+        media_url: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> WhatsAppSendResult:
         """
         Send a WhatsApp message using a predefined template.
@@ -307,10 +308,10 @@ class WhatsAppService:
         self,
         to_phone: str,
         body: str,
-        buttons: List[InteractiveButton],
-        header: Optional[str] = None,
-        footer: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        buttons: list[InteractiveButton],
+        header: str | None = None,
+        footer: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> WhatsAppSendResult:
         """
         Send an interactive WhatsApp message with buttons.
@@ -365,8 +366,8 @@ class WhatsAppService:
         self,
         to_phone: str,
         message: str,
-        media_url: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        media_url: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> WhatsAppSendResult:
         """Send WhatsApp message in development mode (logging only)."""
         message_id = f"dev_wa_{uuid.uuid4().hex[:12]}"
@@ -403,8 +404,8 @@ class WhatsAppService:
         self,
         to_phone: str,
         message: str,
-        media_url: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        media_url: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> WhatsAppSendResult:
         """Send WhatsApp message via Twilio API in production mode."""
         if not TWILIO_SDK_AVAILABLE:
@@ -483,7 +484,7 @@ class WhatsAppService:
                 error_code=type(e).__name__
             )
     
-    async def check_status(self, message_id: str) -> Tuple[WhatsAppStatus, Dict[str, Any]]:
+    async def check_status(self, message_id: str) -> tuple[WhatsAppStatus, dict[str, Any]]:
         """
         Check WhatsApp message delivery status.
         

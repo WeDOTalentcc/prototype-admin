@@ -10,7 +10,7 @@ Acesso restrito a admins (require_admin).
 Referência: app/shared/resilience/circuit_breaker.py
 """
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/circuit-breakers", tags=["Admin - Circuit Breakers"])
 
 
-def _get_combined_status() -> Dict[str, Any]:
+def _get_combined_status() -> dict[str, Any]:
     """
     Combina status da instância de classes (ALL_CIRCUITS) e
     da instância funcional (_circuits) em um único dict.
@@ -39,7 +39,7 @@ def _get_combined_status() -> Dict[str, Any]:
     class_stats = get_all_circuit_stats()
     functional_status = get_all_circuits_status()
 
-    combined: Dict[str, Any] = {}
+    combined: dict[str, Any] = {}
 
     # Instâncias baseadas em classe
     for name, stats in class_stats.items():
@@ -67,7 +67,7 @@ def _get_combined_status() -> Dict[str, Any]:
     return combined
 
 
-def _compute_slo_status(name: str, stats: dict, slo: Optional[dict]) -> str:
+def _compute_slo_status(name: str, stats: dict, slo: dict | None) -> str:
     """
     Calcula se o circuit está dentro do SLO definido.
     Retorna: 'ok' | 'breached' | 'unknown'
@@ -89,7 +89,7 @@ def _compute_slo_status(name: str, stats: dict, slo: Optional[dict]) -> str:
 
 
 @router.get("", summary="Status de todos os circuit breakers")
-async def list_circuit_breakers(_user=Depends(require_admin)) -> Dict[str, Any]:
+async def list_circuit_breakers(_user=Depends(require_admin)) -> dict[str, Any]:
     """
     Retorna estado atual (CLOSED / OPEN / HALF_OPEN), contadores de falha
     e estatísticas de cada circuit breaker registrado na plataforma.
@@ -116,7 +116,7 @@ async def list_circuit_breakers(_user=Depends(require_admin)) -> Dict[str, Any]:
 async def reset_circuit_breaker(
     circuit_name: str = Path(..., description="Nome do circuit breaker"),
     _user=Depends(require_admin),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Força transição para CLOSED e zera o failure_count do circuit especificado.
 
@@ -145,7 +145,7 @@ async def reset_circuit_breaker(
 
 
 @router.post("/reset-all", summary="Reset de todos os circuit breakers")
-async def reset_all_circuit_breakers(_user=Depends(require_admin)) -> Dict[str, Any]:
+async def reset_all_circuit_breakers(_user=Depends(require_admin)) -> dict[str, Any]:
     """
     Força CLOSED em todos os circuit breakers (classe + funcionais).
 

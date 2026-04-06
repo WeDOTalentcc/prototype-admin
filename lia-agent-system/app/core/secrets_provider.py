@@ -14,7 +14,6 @@ Uso:
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class SecretsProvider(ABC):
     """Interface abstrata para provedores de secrets."""
 
     @abstractmethod
-    def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get(self, key: str, default: str | None = None) -> str | None:
         """Retorna o valor do secret ou default se não encontrado."""
 
     def get_required(self, key: str) -> str:
@@ -37,7 +36,7 @@ class SecretsProvider(ABC):
 class EnvProvider(SecretsProvider):
     """Lê secrets das variáveis de ambiente (desenvolvimento)."""
 
-    def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get(self, key: str, default: str | None = None) -> str | None:
         return os.environ.get(key, default)
 
 
@@ -49,7 +48,7 @@ class DopplerProvider(SecretsProvider):
     Fallback para env vars se Doppler indisponível.
     """
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: str | None = None):
         self._token = token or os.environ.get("DOPPLER_TOKEN")
         self._cache: dict = {}
         self._loaded = False
@@ -84,7 +83,7 @@ class DopplerProvider(SecretsProvider):
         except Exception as exc:
             logger.warning("[DopplerProvider] Falha ao carregar secrets: %s", exc)
 
-    def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get(self, key: str, default: str | None = None) -> str | None:
         if self._loaded and key in self._cache:
             return self._cache[key]
         return os.environ.get(key, default)
@@ -102,7 +101,7 @@ def get_secrets_provider() -> SecretsProvider:
 
 
 # Singleton — inicializado lazily na primeira chamada
-_provider: Optional[SecretsProvider] = None
+_provider: SecretsProvider | None = None
 
 
 def secrets() -> SecretsProvider:

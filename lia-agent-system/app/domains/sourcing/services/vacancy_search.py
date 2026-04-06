@@ -9,16 +9,16 @@ Provides functionality to:
 import json
 import logging
 import re
-from typing import Optional, Dict, Any, List
-from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, Field
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, and_, or_, func
+from pydantic import BaseModel
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.llm import llm_service, LLMService
 from app.models.job_vacancy import JobVacancy
+from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -27,40 +27,40 @@ class VacancySummary(BaseModel):
     """Summary of a vacancy for Fast Track selection."""
     id: UUID
     title: str
-    department: Optional[str] = None
-    manager: Optional[str] = None
-    hired_candidate: Optional[str] = None
-    date_closed: Optional[datetime] = None
-    salary_range: Optional[Dict[str, Any]] = None
-    work_model: Optional[str] = None
+    department: str | None = None
+    manager: str | None = None
+    hired_candidate: str | None = None
+    date_closed: datetime | None = None
+    salary_range: dict[str, Any] | None = None
+    work_model: str | None = None
     status: str
-    seniority_level: Optional[str] = None
-    location: Optional[str] = None
+    seniority_level: str | None = None
+    location: str | None = None
 
 
 class VacancyFullDetails(BaseModel):
     """Full details of a vacancy for Fast Track reuse."""
     id: UUID
     title: str
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    job_description: Optional[str] = None
-    salary_range: Optional[Dict[str, Any]] = None
-    benefits: Optional[List[str]] = None
-    technical_skills: Optional[List[Dict[str, Any]]] = None
-    behavioral_competencies: Optional[List[Dict[str, Any]]] = None
-    screening_questions: Optional[List[Dict[str, Any]]] = None
-    languages: Optional[List[Dict[str, Any]]] = None
-    manager: Optional[str] = None
-    manager_email: Optional[str] = None
-    hired_candidate: Optional[str] = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    seniority_level: str | None = None
+    job_description: str | None = None
+    salary_range: dict[str, Any] | None = None
+    benefits: list[str] | None = None
+    technical_skills: list[dict[str, Any]] | None = None
+    behavioral_competencies: list[dict[str, Any]] | None = None
+    screening_questions: list[dict[str, Any]] | None = None
+    languages: list[dict[str, Any]] | None = None
+    manager: str | None = None
+    manager_email: str | None = None
+    hired_candidate: str | None = None
     status: str
-    closed_at: Optional[datetime] = None
-    interview_stages: Optional[List[Dict[str, Any]]] = None
-    eligibility_questions: Optional[List[Dict[str, Any]]] = None
+    closed_at: datetime | None = None
+    interview_stages: list[dict[str, Any]] | None = None
+    eligibility_questions: list[dict[str, Any]] | None = None
 
 
 class VacancySearchService:
@@ -110,7 +110,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
     def __init__(self):
         self._llm_service = llm_service
 
-    async def extract_search_criteria(self, message: str) -> Dict[str, Any]:
+    async def extract_search_criteria(self, message: str) -> dict[str, Any]:
         """
         Extract search criteria from a natural language message using LLM.
         
@@ -146,7 +146,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             logger.error(f"Error extracting search criteria: {e}")
             return self._extract_criteria_fallback(message)
 
-    def _extract_criteria_fallback(self, message: str) -> Dict[str, Any]:
+    def _extract_criteria_fallback(self, message: str) -> dict[str, Any]:
         """Fallback regex-based criteria extraction."""
         criteria = {}
         message_lower = message.lower()
@@ -187,7 +187,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
         
         return criteria
 
-    def validate_minimum_criteria(self, criteria: Dict[str, Any]) -> bool:
+    def validate_minimum_criteria(self, criteria: dict[str, Any]) -> bool:
         """
         Validate that at least 2 search criteria are provided.
         
@@ -202,11 +202,11 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
 
     async def search_vacancies(
         self,
-        criteria: Dict[str, Any],
+        criteria: dict[str, Any],
         company_id: str,
         db: AsyncSession,
         limit: int = 10
-    ) -> List[VacancySummary]:
+    ) -> list[VacancySummary]:
         """
         Search previous vacancies based on criteria.
         
@@ -307,7 +307,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
         vacancy_id: UUID,
         db: AsyncSession,
         company_id: str
-    ) -> Optional[VacancyFullDetails]:
+    ) -> VacancyFullDetails | None:
         """
         Get full details of a vacancy for reuse.
         
@@ -360,7 +360,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             logger.error(f"Error getting vacancy details: {e}")
             return None
 
-    async def extract_adjustments(self, message: str) -> Dict[str, Any]:
+    async def extract_adjustments(self, message: str) -> dict[str, Any]:
         """
         Extract adjustments from a natural language message.
         
@@ -396,7 +396,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             logger.error(f"Error extracting adjustments: {e}")
             return self._extract_adjustments_fallback(message)
 
-    def _extract_adjustments_fallback(self, message: str) -> Dict[str, Any]:
+    def _extract_adjustments_fallback(self, message: str) -> dict[str, Any]:
         """Fallback regex-based adjustments extraction. Only extracts allowed fields."""
         adjustments = {}
         message_lower = message.lower()
@@ -443,7 +443,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
     def apply_adjustments(
         self,
         vacancy: VacancyFullDetails,
-        adjustments: Dict[str, Any]
+        adjustments: dict[str, Any]
     ) -> VacancyFullDetails:
         """
         Apply adjustments to a vacancy. Only applies allowed fields.

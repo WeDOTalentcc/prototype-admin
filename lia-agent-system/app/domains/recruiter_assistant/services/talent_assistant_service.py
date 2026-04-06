@@ -2,19 +2,20 @@
 LIA Talent Assistant Service - AI-powered analysis for talent funnel.
 Uses Replit AI Integrations for Anthropic access.
 """
-import os
 import json
 import logging
+import os
 import re
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.domains.recruiter_assistant.prompts.talent_assistant_prompts import (
-    get_talent_system_prompt,
-    detect_talent_command_type,
-    build_talent_prompt,
     TalentCommandType,
+    build_talent_prompt,
+    detect_talent_command_type,
+    get_talent_system_prompt,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class TalentAssistantService:
     """Service for AI-powered talent funnel analysis using Claude."""
 
     def __init__(self):
-        self._client: Optional[Anthropic] = None
+        self._client: Anthropic | None = None
 
     @property
     def client(self) -> Anthropic:
@@ -50,12 +51,12 @@ class TalentAssistantService:
     async def process_command(
         self,
         command: str,
-        command_type: Optional[str],
-        candidates: List[Dict[str, Any]],
-        selected_candidate_ids: Optional[List[str]] = None,
-        search_context: Optional[Dict[str, Any]] = None,
-        target_job: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        command_type: str | None,
+        candidates: list[dict[str, Any]],
+        selected_candidate_ids: list[str] | None = None,
+        search_context: dict[str, Any] | None = None,
+        target_job: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         detected_type, confidence = detect_talent_command_type(command)
         final_type = (
             command_type
@@ -99,7 +100,7 @@ class TalentAssistantService:
             logger.error(f"Talent Assistant LLM error: {e}")
             return self._build_fallback(command, final_type, candidates, confidence)
 
-    def _parse_json_response(self, text: str) -> Optional[Dict[str, Any]]:
+    def _parse_json_response(self, text: str) -> dict[str, Any] | None:
         try:
             return json.loads(text)
         except json.JSONDecodeError:
@@ -119,7 +120,7 @@ class TalentAssistantService:
                     continue
         return None
 
-    def _extract_content(self, raw_text: str, structured: Optional[Dict]) -> str:
+    def _extract_content(self, raw_text: str, structured: dict | None) -> str:
         if structured and structured.get("resposta"):
             return structured["resposta"]
         cleaned = raw_text
@@ -128,7 +129,7 @@ class TalentAssistantService:
         cleaned = cleaned.strip()
         return cleaned if cleaned else raw_text
 
-    def _extract_suggestions(self, structured: Optional[Dict], cmd_type: str) -> List[str]:
+    def _extract_suggestions(self, structured: dict | None, cmd_type: str) -> list[str]:
         if structured and structured.get("sugestoes"):
             return structured["sugestoes"][:6]
 
@@ -161,8 +162,8 @@ class TalentAssistantService:
         ])
 
     def _build_fallback(
-        self, command: str, cmd_type: str, candidates: List[Dict], confidence: float
-    ) -> Dict[str, Any]:
+        self, command: str, cmd_type: str, candidates: list[dict], confidence: float
+    ) -> dict[str, Any]:
         total = len(candidates)
         content = (
             f"## 🔍 Análise do Pool\n\n"

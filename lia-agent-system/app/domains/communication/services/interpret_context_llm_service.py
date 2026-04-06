@@ -4,12 +4,12 @@ Layer 2: Uses Claude to understand natural language instructions during candidat
 Falls back to rule-based logic on failure.
 """
 import json
-import re
 import logging
-from typing import Dict, Any, Optional
+import re
+from typing import Any
 
-from app.shared.providers.llm_client import llm_complete, is_llm_available
 from app.core.config import settings
+from app.shared.providers.llm_client import is_llm_available, llm_complete
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ Sua resposta (lia_message) deve ser ACIONÁVEL — confirme exatamente o que ser
 
 def _build_interpret_prompt(
     prompt: str,
-    candidate_name: Optional[str],
-    job_title: Optional[str],
+    candidate_name: str | None,
+    job_title: str | None,
     from_stage: str,
     to_stage: str,
     action_behavior: str,
@@ -73,12 +73,12 @@ REGRAS:
 
 async def interpret_with_llm(
     prompt: str,
-    candidate_name: Optional[str] = None,
-    job_title: Optional[str] = None,
+    candidate_name: str | None = None,
+    job_title: str | None = None,
     from_stage: str = "",
     to_stage: str = "",
     action_behavior: str = "",
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     """
     Interpret recruiter mini-prompt using Claude LLM.
     Returns structured interpretation or None on failure.

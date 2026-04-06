@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class SearchResult:
     score: float
     source: str  # "postgres" | "elasticsearch"
     data: dict[str, Any]
-    highlights: Optional[dict[str, list[str]]] = None
+    highlights: dict[str, list[str]] | None = None
 
 
 class SearchBackend(ABC):
@@ -39,7 +39,7 @@ class SearchBackend(ABC):
         self,
         query: str,
         company_id: str,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
         limit: int = 20,
         semantic: bool = True,
     ) -> list[SearchResult]:
@@ -51,7 +51,7 @@ class SearchBackend(ABC):
         self,
         query: str,
         company_id: str,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
         limit: int = 20,
     ) -> list[SearchResult]:
         """Busca vagas por texto livre."""
@@ -92,14 +92,15 @@ class PostgresSearchBackend(SearchBackend):
         self,
         query: str,
         company_id: str,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
         limit: int = 20,
         semantic: bool = True,
     ) -> list[SearchResult]:
         """Busca candidatos usando pgvector + tsvector."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             params: dict[str, Any] = {
                 "company_id": company_id,
@@ -171,13 +172,14 @@ class PostgresSearchBackend(SearchBackend):
         self,
         query: str,
         company_id: str,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
         limit: int = 20,
     ) -> list[SearchResult]:
         """Busca vagas por full-text (tsvector)."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             params: dict[str, Any] = {
                 "company_id": company_id,
@@ -239,8 +241,9 @@ class PostgresSearchBackend(SearchBackend):
     async def health(self) -> dict:
         """Verifica conectividade com o banco."""
         try:
-            from app.core.database import AsyncSessionLocal
             from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
 
             async with AsyncSessionLocal() as session:
                 await session.execute(text("SELECT 1"))
@@ -272,6 +275,7 @@ class ElasticsearchSearchBackend(SearchBackend):
             return self._client
         try:
             from elasticsearch import AsyncElasticsearch
+
             from app.core.config import settings
             es_url = getattr(settings, "ELASTICSEARCH_URL", None)
             if not es_url:
@@ -288,7 +292,7 @@ class ElasticsearchSearchBackend(SearchBackend):
         self,
         query: str,
         company_id: str,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
         limit: int = 20,
         semantic: bool = True,
     ) -> list[SearchResult]:
@@ -328,7 +332,7 @@ class ElasticsearchSearchBackend(SearchBackend):
         self,
         query: str,
         company_id: str,
-        filters: Optional[dict] = None,
+        filters: dict | None = None,
         limit: int = 20,
     ) -> list[SearchResult]:
         """Busca vagas no Elasticsearch."""
@@ -400,7 +404,7 @@ class ElasticsearchSearchBackend(SearchBackend):
 # Factory — singleton lazy
 # ---------------------------------------------------------------------------
 
-_backend: Optional[SearchBackend] = None
+_backend: SearchBackend | None = None
 
 
 def get_search_backend() -> SearchBackend:

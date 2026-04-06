@@ -5,9 +5,8 @@ Endpoints que disparam tarefas Celery de longa duração e retornam AsyncJobResp
 O cliente acompanha progresso via WebSocket /ws/jobs/{job_id}.
 """
 import logging
-from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.celery_app import celery_app
@@ -35,7 +34,7 @@ def _build_response(task_result, domain: str, company_id: str, estimate: int) ->
 # ---------------------------------------------------------------------------
 
 class TriagemBatchRequest(BaseModel):
-    candidate_ids: List[str] = Field(..., min_items=1, description="IDs dos candidatos a triar")
+    candidate_ids: list[str] = Field(..., min_items=1, description="IDs dos candidatos a triar")
     job_id: str = Field(..., description="ID da vaga")
     company_id: str = Field(..., description="ID da empresa")
 
@@ -131,8 +130,8 @@ async def search_candidates_async(req: SourcingSearchRequest):
 # ---------------------------------------------------------------------------
 
 class BulkEmailRequest(BaseModel):
-    recipients: List[str] = Field(..., min_items=1)
-    template_id: Optional[str] = None
+    recipients: list[str] = Field(..., min_items=1)
+    template_id: str | None = None
     subject: str = ""
     body: str = ""
     variables: dict = Field(default_factory=dict)

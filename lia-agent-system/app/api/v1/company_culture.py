@@ -3,26 +3,26 @@ Company Culture Profile API endpoints.
 Manages automatic website analysis for extracting organizational culture profiles.
 Enhanced with multi-source extraction (Website + LinkedIn).
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks
-from typing import Optional, List
+import logging
+import uuid
+from datetime import datetime, timedelta
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import logging
-from datetime import datetime, timedelta
-import uuid
 
 from app.core.database import get_db
 from app.models.company import CompanyProfile
 from app.models.company_culture import CompanyCultureProfile, CultureAnalysisJob
 from app.schemas.company_culture import (
+    BigFiveOrgProfile,
     CompanyCultureProfileResponse,
     CompanyCultureProfileUpdate,
-    CultureAnalysisRequest,
     CultureAnalysisDirectRequest,
     CultureAnalysisJobResponse,
     CultureAnalysisJobStatus,
+    CultureAnalysisRequest,
     CultureAnalysisResult,
-    BigFiveOrgProfile
 )
 from app.services.company_scraper_service import company_scraper_service
 from app.services.culture_analyzer_service import culture_analyzer_service
@@ -39,7 +39,7 @@ async def run_culture_analysis(
     company_id: uuid.UUID,
     website_url: str,
     db_session_factory,
-    linkedin_url: Optional[str] = None
+    linkedin_url: str | None = None
 ):
     """
     Background task to run culture analysis with multi-source extraction.
@@ -560,7 +560,7 @@ async def delete_culture_profile(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=List[CompanyCultureProfileResponse])
+@router.get("/", response_model=list[CompanyCultureProfileResponse])
 async def list_culture_profiles(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),

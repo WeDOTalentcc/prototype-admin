@@ -1,16 +1,16 @@
-import uuid
+import base64
 import json
 import logging
 import random
-import base64
+import uuid
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, text
-
-from app.models.triagem import TriagemSession, TriagemMessage
 from lia_models.job_vacancy import JobVacancy
+from sqlalchemy import and_, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.triagem import TriagemMessage, TriagemSession
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def _get_event_dispatcher():
     return _event_dispatcher_cache
 
 
-async def _generate_tts_audio(text: str) -> Optional[str]:
+async def _generate_tts_audio(text: str) -> str | None:
     try:
         from app.services.voice_service import voice_service
         availability = voice_service.is_available()
@@ -77,7 +77,7 @@ WSI_BLOCKS_FALLBACK = [
 WSI_BLOCKS = WSI_BLOCKS_FALLBACK
 
 
-def _build_wsi_blocks_from_question_set(questions_snapshot: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Build WSI blocks structure from a question set snapshot.
     Maps questions to canonical WSI blocks (0-5) based on block_id or category.
@@ -85,8 +85,8 @@ def _build_wsi_blocks_from_question_set(questions_snapshot: List[Dict[str, Any]]
     """
     from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES
 
-    block_map: Dict[int, List[str]] = {i: [] for i in range(6)}
-    block_meta: Dict[int, Dict[str, str]] = {
+    block_map: dict[int, list[str]] = {i: [] for i in range(6)}
+    block_meta: dict[int, dict[str, str]] = {
         0: {"block_type": "behavioral", "competency": "initial_approach"},
         1: {"block_type": "behavioral", "competency": "motivation"},
         2: {"block_type": "behavioral", "competency": "cultural_fit"},
@@ -187,8 +187,8 @@ TOTAL_QUESTIONS = sum(len(b["questions"]) for b in WSI_BLOCKS)
 def _build_progress(
     current_block: int,
     questions_answered: int,
-    blocks: Optional[List[Dict[str, Any]]] = None,
-) -> Dict[str, Any]:
+    blocks: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     active_blocks = blocks if blocks is not None else WSI_BLOCKS
     total_questions = sum(len(b["questions"]) for b in active_blocks)
     block_name = "Concluído"
@@ -209,8 +209,8 @@ def _build_progress(
 async def _load_or_generate_blocks(
     db: AsyncSession,
     job_id: str,
-    job: Optional[Any] = None,
-) -> Tuple[List[Dict[str, Any]], Optional[str], Optional[str]]:
+    job: Any | None = None,
+) -> tuple[list[dict[str, Any]], str | None, str | None]:
     """
     Load WSI blocks for a job from:
     1. Active question set version (preferred)
@@ -238,7 +238,7 @@ async def _load_or_generate_blocks(
         logger.warning(f"[Triagem] Could not load question set for job {job_id}: {exc}")
 
     try:
-        from app.domains.cv_screening.services.wsi_service import wsi_service, Competency
+        from app.domains.cv_screening.services.wsi_service import Competency, wsi_service
         competencies = []
         if job and getattr(job, "screening_config", None):
             skills = job.screening_config.get("skills") or {}
@@ -291,7 +291,7 @@ def _map_question_type_to_category(question_type: str) -> str:
     return mapping.get(question_type, "behavioral")
 
 
-def _get_session_blocks(session: Any) -> List[Dict[str, Any]]:
+def _get_session_blocks(session: Any) -> list[dict[str, Any]]:
     """
     Retrieve the WSI blocks for a session from its metadata_json cache.
     Falls back to global WSI_BLOCKS if not cached.
@@ -303,7 +303,7 @@ def _get_session_blocks(session: Any) -> List[Dict[str, Any]]:
     return WSI_BLOCKS_FALLBACK
 
 
-def _get_screening_config(session: Any) -> Dict[str, Any]:
+def _get_screening_config(session: Any) -> dict[str, Any]:
     """Get the screening_config stored in session metadata, or empty dict."""
     meta = session.metadata_json or {}
     return meta.get("screening_config", {}) or {}
@@ -364,7 +364,7 @@ Responda APENAS com uma das seguintes classificações:
 Responda com apenas uma palavra: ANSWER, QUESTION, GREETING ou UNCLEAR"""
 
 
-async def _call_llm(prompt: str) -> Optional[str]:
+async def _call_llm(prompt: str) -> str | None:
     try:
         from app.services.llm import llm_service
         result = await llm_service.generate(prompt, provider="gemini")
@@ -392,7 +392,7 @@ async def _generate_off_script_response(
     block_name: str,
     company_name: str,
     job_title: str,
-) -> Optional[str]:
+) -> str | None:
     prompt = OFF_SCRIPT_SYSTEM_PROMPT.format(
         company_name=company_name or "a empresa",
         job_title=job_title or "a vaga",
@@ -412,7 +412,7 @@ async def _generate_contextual_question(
     competency: str,
     company_name: str,
     job_title: str,
-) -> Optional[str]:
+) -> str | None:
     prompt = CONTEXTUAL_QUESTION_PROMPT.format(
         job_title=job_title or "a vaga",
         company_name=company_name or "a empresa",
@@ -426,7 +426,7 @@ async def _generate_contextual_question(
     return await _call_llm(prompt)
 
 
-def _score_response_deterministic(response_text: str, block_type: str, competency: str) -> Dict[str, Any]:
+def _score_response_deterministic(response_text: str, block_type: str, competency: str) -> dict[str, Any]:
     try:
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_wsi_deterministic,
@@ -457,7 +457,7 @@ def _score_response_deterministic(response_text: str, block_type: str, competenc
         }
 
 
-def _calculate_final_score(response_scores: List[Dict[str, Any]]) -> Tuple[float, str]:
+def _calculate_final_score(response_scores: list[dict[str, Any]]) -> tuple[float, str]:
     if not response_scores:
         return 3.0, "aguardando"
 
@@ -512,7 +512,7 @@ def _calculate_final_score(response_scores: List[Dict[str, Any]]) -> Tuple[float
 
 
 class TriagemSessionService:
-    async def validate_token(self, db: AsyncSession, token: str) -> Dict[str, Any]:
+    async def validate_token(self, db: AsyncSession, token: str) -> dict[str, Any]:
         result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
@@ -529,7 +529,7 @@ class TriagemSessionService:
 
         return {"valid": True, "completed": False, "session": session.to_dict()}
 
-    async def get_session_config(self, db: AsyncSession, token: str) -> Optional[Dict[str, Any]]:
+    async def get_session_config(self, db: AsyncSession, token: str) -> dict[str, Any] | None:
         validation = await self.validate_token(db, token)
         if not validation["valid"]:
             return validation
@@ -538,7 +538,7 @@ class TriagemSessionService:
         session_result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
-        session_orm: Optional[TriagemSession] = session_result.scalar_one_or_none()
+        session_orm: TriagemSession | None = session_result.scalar_one_or_none()
         msg_result = await db.execute(
             select(TriagemMessage).where(
                 TriagemMessage.session_id == uuid.UUID(session_data["id"])
@@ -546,7 +546,7 @@ class TriagemSessionService:
         )
         messages = msg_result.scalars().all()
 
-        job_info: Dict[str, Any] = {}
+        job_info: dict[str, Any] = {}
         job_id = session_data.get("job_id")
         company_id = session_data.get("company_id")
         if job_id:
@@ -602,7 +602,7 @@ class TriagemSessionService:
 
         messages_data = [m.to_dict() for m in messages]
 
-        response: Dict[str, Any] = {
+        response: dict[str, Any] = {
             "valid": True,
             "completed": validation.get("completed", False),
             "session": session_data,
@@ -646,18 +646,18 @@ class TriagemSessionService:
         candidate_id: str,
         job_id: str,
         company_id: str,
-        candidate_name: Optional[str] = None,
-        candidate_email: Optional[str] = None,
-        job_title: Optional[str] = None,
-        company_name: Optional[str] = None,
-        company_logo_url: Optional[str] = None,
+        candidate_name: str | None = None,
+        candidate_email: str | None = None,
+        job_title: str | None = None,
+        company_name: str | None = None,
+        company_logo_url: str | None = None,
         invite_channel: str = "email",
-        created_by: Optional[str] = None,
+        created_by: str | None = None,
         expires_days: int = 7,
         voice_mode: bool = False,
     ) -> TriagemSession:
         job = None
-        screening_config: Dict[str, Any] = {}
+        screening_config: dict[str, Any] = {}
         try:
             q = select(JobVacancy).where(JobVacancy.job_id == job_id)
             if company_id and hasattr(JobVacancy, "company_id"):
@@ -685,7 +685,7 @@ class TriagemSessionService:
         seniority_level = None
         is_affirmative = False
         affirmative_criteria = None
-        eliminatory_keywords: List[str] = []
+        eliminatory_keywords: list[str] = []
         if job:
             seniority_level = getattr(job, "seniority_level", None)
             is_affirmative = bool(getattr(job, "is_affirmative", False))
@@ -701,7 +701,7 @@ class TriagemSessionService:
         show_salary = settings.get("show_salary", False)
         show_benefits = settings.get("show_benefits", False)
 
-        session_meta: Dict[str, Any] = {
+        session_meta: dict[str, Any] = {
             "wsi_blocks_cache": blocks,
             "wsi_question_set_id": qs_id,
             "wsi_question_set_version": qs_version,
@@ -762,7 +762,7 @@ class TriagemSessionService:
 
         return session
 
-    async def start_session(self, db: AsyncSession, token: str, voice_mode: Optional[bool] = None) -> Dict[str, Any]:
+    async def start_session(self, db: AsyncSession, token: str, voice_mode: bool | None = None) -> dict[str, Any]:
         result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
@@ -813,8 +813,8 @@ class TriagemSessionService:
         token: str,
         content: str,
         message_type: str = "text",
-        voice_mode: Optional[bool] = None,
-    ) -> Dict[str, Any]:
+        voice_mode: bool | None = None,
+    ) -> dict[str, Any]:
         result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
@@ -883,7 +883,7 @@ class TriagemSessionService:
 
     async def _generate_lia_response(
         self, db: AsyncSession, session: TriagemSession, candidate_content: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         msg_result = await db.execute(
             select(TriagemMessage).where(
                 and_(
@@ -1025,7 +1025,7 @@ class TriagemSessionService:
             "score": score_result["score"],
         }
 
-    def _pre_completion_response(self, session: TriagemSession, total_questions: int) -> Dict[str, Any]:
+    def _pre_completion_response(self, session: TriagemSession, total_questions: int) -> dict[str, Any]:
         duration = 0
         if session.started_at:
             duration = int((datetime.utcnow() - session.started_at).total_seconds() / 60)
@@ -1040,7 +1040,7 @@ class TriagemSessionService:
             "is_pre_completion": True,
         }
 
-    async def get_history(self, db: AsyncSession, token: str) -> Dict[str, Any]:
+    async def get_history(self, db: AsyncSession, token: str) -> dict[str, Any]:
         result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
@@ -1061,7 +1061,7 @@ class TriagemSessionService:
             "total": len(messages),
         }
 
-    async def complete_session(self, db: AsyncSession, token: str) -> Dict[str, Any]:
+    async def complete_session(self, db: AsyncSession, token: str) -> dict[str, Any]:
         result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
@@ -1095,18 +1095,18 @@ class TriagemSessionService:
             ).order_by(TriagemMessage.created_at)
         )
         lia_question_msgs = lia_msgs_result.scalars().all()
-        lia_by_block: Dict[int, List[TriagemMessage]] = {}
+        lia_by_block: dict[int, list[TriagemMessage]] = {}
         for lm in lia_question_msgs:
             bidx = lm.wsi_block if lm.wsi_block is not None else 0
             lia_by_block.setdefault(bidx, []).append(lm)
 
         active_blocks = _get_session_blocks(session)
         session_meta_for_scoring = session.metadata_json or {}
-        eliminatory_keywords: List[str] = [
+        eliminatory_keywords: list[str] = [
             str(k).lower() for k in (session_meta_for_scoring.get("eliminatory_keywords") or [])
         ]
 
-        candidate_by_block: Dict[int, List[TriagemMessage]] = {}
+        candidate_by_block: dict[int, list[TriagemMessage]] = {}
         for msg in candidate_msgs:
             bidx = msg.wsi_block if msg.wsi_block is not None else 0
             candidate_by_block.setdefault(bidx, []).append(msg)
@@ -1178,7 +1178,7 @@ class TriagemSessionService:
             "post_actions": post_actions,
         }
 
-    async def _trigger_post_completion(self, db: AsyncSession, session: TriagemSession, response_scores: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def _trigger_post_completion(self, db: AsyncSession, session: TriagemSession, response_scores: list[dict[str, Any]] = None) -> dict[str, Any]:
         actions = {
             "email_confirmation": "queued",
             "recruiter_notification": "queued",
@@ -1194,12 +1194,13 @@ class TriagemSessionService:
         )
 
         try:
-            from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-            from app.domains.cv_screening.services.wsi_feedback_generator import get_feedback_generator
-            from app.models.job_vacancy import JobVacancy
-            from app.models.candidate import Candidate
             import json as _json
             import os as _os
+
+            from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+            from app.domains.cv_screening.services.wsi_feedback_generator import get_feedback_generator
+            from app.models.candidate import Candidate
+            from app.models.job_vacancy import JobVacancy
 
             comm_dispatcher = CommunicationDispatcher()
             response_scores = response_scores or []
@@ -1421,8 +1422,8 @@ class TriagemSessionService:
 
         try:
             from app.services.notification_service import (
-                notification_service,
                 NotificationType,
+                notification_service,
             )
             score_val = session.wsi_final_score or 0.0
             recommendation = session.recommendation or "pendente"
@@ -1459,7 +1460,7 @@ class TriagemSessionService:
             logger.warning(f"[Triagem] Failed to send recruiter notification via notification_service: {e}")
             actions["recruiter_notification"] = "failed"
 
-        wsi_session_id: Optional[str] = None
+        wsi_session_id: str | None = None
         try:
             wsi_session_id = await self._persist_wsi_results(db, session, response_scores)
             if wsi_session_id:
@@ -1477,8 +1478,8 @@ class TriagemSessionService:
 
         if not wsi_session_id:
             logger.warning(
-                f"[Triagem] Skipping screening-completed event dispatch — "
-                f"wsi_session_id not available (persistence failed or was skipped)"
+                "[Triagem] Skipping screening-completed event dispatch — "
+                "wsi_session_id not available (persistence failed or was skipped)"
             )
             actions["pipeline_update"] = "skipped_no_wsi_session"
         else:
@@ -1494,7 +1495,7 @@ class TriagemSessionService:
                 }
                 classification = classification_map.get(recommendation, "pending_review")
 
-                wsi_scores: Dict[str, Any] = {
+                wsi_scores: dict[str, Any] = {
                     "overall_wsi": score_val,
                 }
                 for rs in (response_scores or []):
@@ -1537,8 +1538,8 @@ class TriagemSessionService:
         self,
         db: AsyncSession,
         session: TriagemSession,
-        response_scores: List[Dict[str, Any]],
-    ) -> Optional[str]:
+        response_scores: list[dict[str, Any]],
+    ) -> str | None:
         """
         Persist screening results to WSI tables (wsi_sessions, wsi_questions,
         wsi_response_analyses, wsi_results) following the canonical WSI schema.
@@ -1592,8 +1593,8 @@ class TriagemSessionService:
             logger.error(f"[Triagem] wsi_sessions insert failed — aborting WSI persistence: {exc}")
             return None
 
-        technical_scores: List[float] = []
-        behavioral_scores: List[float] = []
+        technical_scores: list[float] = []
+        behavioral_scores: list[float] = []
 
         for seq, rs in enumerate(response_scores or [], start=1):
             block_type = rs.get("block_type", "behavioral")
@@ -1676,7 +1677,6 @@ class TriagemSessionService:
         beh_wsi = max(1.0, min(5.0, round(sum(behavioral_scores) / len(behavioral_scores), 2))) if behavioral_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
         overall_wsi = max(1.0, min(5.0, round(score_val / 2.0, 2)))
 
-        recommendation = session.recommendation or "aguardando"
         if overall_wsi >= 4.5:
             wsi_classification = "excelente"
         elif overall_wsi >= 3.75:
@@ -1722,7 +1722,7 @@ class TriagemSessionService:
 
     async def generate_tts_for_message(
         self, db: AsyncSession, token: str, message_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             msg_uuid = uuid.UUID(message_id)
         except (ValueError, AttributeError):
@@ -1765,7 +1765,7 @@ class TriagemSessionService:
 
     async def request_phone_call(
         self, db: AsyncSession, token: str, candidate_phone: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         result = await db.execute(
             select(TriagemSession).where(TriagemSession.token == token)
         )
@@ -1816,13 +1816,13 @@ class TriagemSessionService:
                     pass
 
         try:
-            from app.domains.cv_screening.services.wsi_voice_orchestrator import wsi_voice_orchestrator
             from app.domains.cv_screening.services.wsi_service import Competency
+            from app.domains.cv_screening.services.wsi_voice_orchestrator import wsi_voice_orchestrator
 
             job_title = session.job_title or "a vaga"
             job_description = (job.description or "")[:1000] if job and job.description else ""
 
-            competencies: List[Competency] = []
+            competencies: list[Competency] = []
             if job and getattr(job, "screening_config", None):
                 skills = job.screening_config.get("skills") or {}
                 for skill_name, skill_data in list(skills.items())[:10]:

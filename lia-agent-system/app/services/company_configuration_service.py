@@ -13,26 +13,27 @@ Features:
 - Async database operations
 - Formatted output for AI prompts
 """
-from typing import Dict, Any, List, Optional, Union
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from uuid import UUID as UUID_type
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm import selectinload
 import logging
 import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+from uuid import UUID as UUID_type
+
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.database import AsyncSessionLocal
-from app.models.company import CompanyProfile, Benefit, CultureValue
+from app.models.communication_settings import CommunicationSettings
+from app.models.company import Benefit, CompanyProfile
 from app.models.pipeline_template import PipelineTemplate
 from app.models.screening_question import CompanyScreeningQuestion
-from app.models.communication_settings import CommunicationSettings
 
 logger = logging.getLogger(__name__)
 
 
-def _to_uuid(company_id: str) -> Optional[UUID_type]:
+def _to_uuid(company_id: str) -> UUID_type | None:
     """Convert string to UUID, returns None if invalid."""
     try:
         return UUID_type(company_id)
@@ -45,15 +46,15 @@ class CompanyConfiguration:
     """Complete company configuration for AI agents."""
     company_id: str
     company_name: str
-    industry: Optional[str] = None
-    company_size: Optional[str] = None
-    description: Optional[str] = None
-    culture_values: List[Dict[str, Any]] = field(default_factory=list)
-    benefits: List[Dict[str, Any]] = field(default_factory=list)
-    pipeline_templates: List[Dict[str, Any]] = field(default_factory=list)
-    default_pipeline: Optional[Dict[str, Any]] = None
-    screening_questions: List[Dict[str, Any]] = field(default_factory=list)
-    communication_settings: Optional[Dict[str, Any]] = None
+    industry: str | None = None
+    company_size: str | None = None
+    description: str | None = None
+    culture_values: list[dict[str, Any]] = field(default_factory=list)
+    benefits: list[dict[str, Any]] = field(default_factory=list)
+    pipeline_templates: list[dict[str, Any]] = field(default_factory=list)
+    default_pipeline: dict[str, Any] | None = None
+    screening_questions: list[dict[str, Any]] = field(default_factory=list)
+    communication_settings: dict[str, Any] | None = None
     loaded_at: datetime = field(default_factory=datetime.utcnow)
     
     def to_ai_context(self) -> str:
@@ -99,7 +100,7 @@ class CompanyConfiguration:
         
         return "\n".join(lines)
     
-    def get_benefits_for_seniority(self, seniority: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_benefits_for_seniority(self, seniority: str | None = None) -> list[dict[str, Any]]:
         """Get benefits filtered by seniority level."""
         if not seniority:
             return self.benefits
@@ -111,7 +112,7 @@ class CompanyConfiguration:
                 filtered.append(benefit)
         return filtered
     
-    def get_eliminatory_questions(self) -> List[Dict[str, Any]]:
+    def get_eliminatory_questions(self) -> list[dict[str, Any]]:
         """Get only eliminatory screening questions."""
         return [q for q in self.screening_questions if q.get('is_eliminatory')]
 
@@ -133,10 +134,10 @@ class ConfigurationCache:
     """In-memory cache for company configurations."""
     
     def __init__(self, default_ttl: int = 600):
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry] = {}
         self.default_ttl = default_ttl
     
-    def get(self, company_id: str) -> Optional[CompanyConfiguration]:
+    def get(self, company_id: str) -> CompanyConfiguration | None:
         """Get cached configuration if not expired."""
         if company_id in self._cache:
             entry = self._cache[company_id]
@@ -148,7 +149,7 @@ class ConfigurationCache:
                 logger.debug(f"Cache expired for company {company_id}")
         return None
     
-    def set(self, company_id: str, config: CompanyConfiguration, ttl: Optional[int] = None) -> None:
+    def set(self, company_id: str, config: CompanyConfiguration, ttl: int | None = None) -> None:
         """Set cache entry with TTL."""
         ttl = ttl or self.default_ttl
         self._cache[company_id] = CacheEntry(config, ttl)
@@ -184,7 +185,7 @@ class CompanyConfigurationService:
     async def get_configuration(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
         force_refresh: bool = False,
         allow_default_fallback: bool = True
     ) -> CompanyConfiguration:
@@ -261,7 +262,7 @@ class CompanyConfigurationService:
         db: AsyncSession,
         company_id: str,
         allow_default_fallback: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Load company profile."""
         try:
             company_uuid = _to_uuid(company_id)
@@ -325,7 +326,7 @@ class CompanyConfigurationService:
         self,
         db: AsyncSession,
         company_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Load company benefits."""
         try:
             company_uuid = _to_uuid(company_id)
@@ -366,7 +367,7 @@ class CompanyConfigurationService:
         self,
         db: AsyncSession,
         company_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Load pipeline templates."""
         try:
             result = await db.execute(
@@ -400,7 +401,7 @@ class CompanyConfigurationService:
         self,
         db: AsyncSession,
         company_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Load default screening questions."""
         try:
             result = await db.execute(
@@ -436,7 +437,7 @@ class CompanyConfigurationService:
         self,
         db: AsyncSession,
         company_id: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Load communication settings."""
         try:
             result = await db.execute(
@@ -471,8 +472,8 @@ class CompanyConfigurationService:
     async def get_benefits_formatted(
         self,
         company_id: str,
-        seniority: Optional[str] = None,
-        db: Optional[AsyncSession] = None
+        seniority: str | None = None,
+        db: AsyncSession | None = None
     ) -> str:
         """
         Get formatted benefits for AI prompts.
@@ -493,7 +494,7 @@ class CompanyConfigurationService:
         
         lines = [f"## Benefícios Disponíveis ({len(benefits)}):\n"]
         
-        categories: Dict[str, List[Dict]] = {}
+        categories: dict[str, list[dict]] = {}
         for b in benefits:
             cat = b.get('category', 'outros')
             if cat not in categories:
@@ -529,9 +530,9 @@ class CompanyConfigurationService:
     async def get_pipeline_for_job_type(
         self,
         company_id: str,
-        job_type: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[Dict[str, Any]]:
+        job_type: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any] | None:
         """
         Get recommended pipeline template based on job type.
         
@@ -561,8 +562,8 @@ class CompanyConfigurationService:
     async def get_catalog_status(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get the maturity status of company's catalog data.
         
@@ -579,10 +580,9 @@ class CompanyConfigurationService:
         Returns:
             Dictionary with catalog status and counts
         """
-        from app.services.skills_catalog_service import skills_catalog_service
-        from app.services.benefits_service import benefits_service
         from app.models.company import Department, DepartmentMember
         from app.models.company_learning import CompanySkill
+        from app.services.skills_catalog_service import skills_catalog_service
         
         config = await self.get_configuration(company_id, db)
         
@@ -596,8 +596,9 @@ class CompanyConfigurationService:
         
         if db:
             try:
-                from sqlalchemy import select, func
                 from uuid import UUID
+
+                from sqlalchemy import func, select
                 
                 try:
                     company_uuid = UUID(company_id)
@@ -622,8 +623,9 @@ class CompanyConfigurationService:
         company_skills_count = 0
         if db:
             try:
-                from sqlalchemy import select, func
                 from uuid import UUID
+
+                from sqlalchemy import func, select
                 try:
                     company_uuid = UUID(company_id)
                     skills_result = await db.execute(
@@ -639,7 +641,7 @@ class CompanyConfigurationService:
         behavioral_skills_count = len(skills_catalog_service.get_all_behavioral_competencies())
         
         # Total skills = company-specific + standard behavioral
-        total_skills_count = company_skills_count + behavioral_skills_count
+        company_skills_count + behavioral_skills_count
         
         # Calculate maturity score (0-100) based on available data
         # Weights: benefits=30, departments=30, skills=25, screening=15
@@ -749,13 +751,13 @@ class CompanyConfigurationService:
     def _get_catalog_recommendations(
         self,
         maturity_score: int,
-        maturity_factors: List[str],
+        maturity_factors: list[str],
         benefits: int,
         departments: int,
         managers: int,
         skills: int,
         screening: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate recommendations for improving catalog completeness."""
         if maturity_score >= 75:
             return ["Catálogo completo! O Smart Start está habilitado para suas vagas."]

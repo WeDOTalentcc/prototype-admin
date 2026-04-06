@@ -3,16 +3,15 @@ Job Board Integration Service - LinkedIn and Indeed job posting.
 Handles publishing jobs to external job boards.
 For MVP: Prepare infrastructure, actual posting may require OAuth approval.
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 import logging
-import uuid
 import os
+import uuid
 import xml.etree.ElementTree as ET
+from datetime import datetime
 from xml.dom import minidom
 
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
 
 from app.models.job_vacancy import JobVacancy
 
@@ -35,7 +34,7 @@ class JobBoardService:
         self, 
         job: JobVacancy, 
         db: AsyncSession,
-        company_page_id: Optional[str] = None
+        company_page_id: str | None = None
     ) -> dict:
         """
         LinkedIn Job Posting API integration.
@@ -77,7 +76,7 @@ class JobBoardService:
             }
         
         try:
-            linkedin_job_data = self._prepare_linkedin_job_data(job)
+            self._prepare_linkedin_job_data(job)
             
             post_id = f"li_{uuid.uuid4().hex[:12]}"
             
@@ -419,7 +418,7 @@ class JobBoardService:
             return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         return text
     
-    def _map_employment_type(self, employment_type: Optional[str]) -> str:
+    def _map_employment_type(self, employment_type: str | None) -> str:
         """Map internal employment type to Indeed format."""
         mapping = {
             "CLT": "fulltime",
@@ -431,7 +430,7 @@ class JobBoardService:
         }
         return mapping.get(employment_type or "", "fulltime")
     
-    def _map_work_model(self, work_model: Optional[str]) -> str:
+    def _map_work_model(self, work_model: str | None) -> str:
         """Map internal work model to Indeed format."""
         mapping = {
             "remoto": "remote",
@@ -464,7 +463,7 @@ class JobBoardService:
             "externalApplyUrl": f"{self.base_url}/vagas/{job.public_slug or job.id}",
         }
     
-    def _map_employment_type_linkedin(self, employment_type: Optional[str]) -> str:
+    def _map_employment_type_linkedin(self, employment_type: str | None) -> str:
         """Map internal employment type to LinkedIn format."""
         mapping = {
             "CLT": "FULL_TIME",
@@ -475,7 +474,7 @@ class JobBoardService:
         }
         return mapping.get(employment_type or "", "FULL_TIME")
     
-    def _map_work_model_linkedin(self, work_model: Optional[str]) -> str:
+    def _map_work_model_linkedin(self, work_model: str | None) -> str:
         """Map internal work model to LinkedIn format."""
         mapping = {
             "remoto": "REMOTE",
@@ -484,7 +483,7 @@ class JobBoardService:
         }
         return mapping.get((work_model or "").lower(), "ON_SITE")
     
-    def _map_seniority_linkedin(self, seniority: Optional[str]) -> str:
+    def _map_seniority_linkedin(self, seniority: str | None) -> str:
         """Map internal seniority to LinkedIn format."""
         mapping = {
             "Júnior": "ENTRY_LEVEL",

@@ -5,35 +5,29 @@ Handles communication history for candidates - emails, WhatsApp, screening invit
 Also provides direct email and WhatsApp sending via Mailgun and Twilio integrations.
 """
 
-from fastapi import APIRouter, HTTPException, Query, status, Header, Depends
-from typing import Optional, Dict, Any, List
 import logging
+from typing import Any
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from app.domains.communication.services.communication_history_service import communication_history_service
-
-
-from app.schemas.communication import (
-    CommunicationCreate,
-    CommunicationResponse,
-    CommunicationListResponse,
-    CommunicationStatusUpdate,
-)
 from app.domains.communication.services.email_service import (
-    mailgun_email_service,
+    SendBulkEmailRequest,
     SendEmailRequest,
     SendTemplateEmailRequest,
-    SendBulkEmailRequest,
-    BulkEmailRecipient,
-    EmailSendResult,
-    BulkEmailResult,
+    mailgun_email_service,
 )
 from app.domains.communication.services.whatsapp_service import (
-    whatsapp_service,
+    SendInteractiveRequest,
     SendWhatsAppRequest,
     SendWhatsAppTemplateRequest,
-    SendInteractiveRequest,
-    InteractiveButton,
-    WhatsAppSendResult,
+    whatsapp_service,
+)
+from app.schemas.communication import (
+    CommunicationCreate,
+    CommunicationListResponse,
+    CommunicationResponse,
+    CommunicationStatusUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,7 +36,7 @@ router = APIRouter(prefix="/communications", tags=["communications"])
 candidate_communications_router = APIRouter(prefix="/candidates", tags=["candidates"])
 
 
-def require_company_id(x_company_id: Optional[str] = Header(None, alias="X-Company-ID")) -> str:
+def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-ID")) -> str:
     """Dependency to require and validate X-Company-ID header for multi-tenant security."""
     if not x_company_id:
         raise HTTPException(
@@ -97,11 +91,11 @@ async def create_communication(data: CommunicationCreate):
 @router.get("", response_model=CommunicationListResponse)
 async def list_communications(
     company_id: str = Query(..., description="Company ID (required)"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Filter by vacancy ID"),
-    communication_type: Optional[str] = Query(None, description="Filter by type: email, whatsapp, triagem_invite, etc."),
-    channel: Optional[str] = Query(None, description="Filter by channel: email, whatsapp"),
-    status: Optional[str] = Query(None, description="Filter by status: pending, sent, delivered, read, failed"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    vacancy_id: str | None = Query(None, description="Filter by vacancy ID"),
+    communication_type: str | None = Query(None, description="Filter by type: email, whatsapp, triagem_invite, etc."),
+    channel: str | None = Query(None, description="Filter by channel: email, whatsapp"),
+    status: str | None = Query(None, description="Filter by status: pending, sent, delivered, read, failed"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
 ):
@@ -137,10 +131,10 @@ async def list_communications(
 @router.get("/history", response_model=CommunicationListResponse)
 async def get_communication_history(
     company_id: str = Query(..., description="Company ID (required)"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Filter by vacancy ID"),
-    channel: Optional[str] = Query(None, description="Filter by channel: email, whatsapp"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status: pending, sent, delivered, read, failed"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    vacancy_id: str | None = Query(None, description="Filter by vacancy ID"),
+    channel: str | None = Query(None, description="Filter by channel: email, whatsapp"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status: pending, sent, delivered, read, failed"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
 ):
@@ -285,7 +279,7 @@ async def get_candidate_communications(
         )
 
 
-@router.post("/email/send", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+@router.post("/email/send", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
     company_id: str = Depends(require_company_id)
@@ -349,7 +343,7 @@ async def send_email(
         )
 
 
-@router.post("/email/send-template", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+@router.post("/email/send-template", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_template_email(
     request: SendTemplateEmailRequest,
     company_id: str = Depends(require_company_id)
@@ -401,7 +395,7 @@ async def send_template_email(
         )
 
 
-@router.post("/email/send-bulk", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+@router.post("/email/send-bulk", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_bulk_email(
     request: SendBulkEmailRequest,
     company_id: str = Depends(require_company_id)
@@ -446,7 +440,7 @@ async def send_bulk_email(
         )
 
 
-@router.post("/whatsapp/send", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+@router.post("/whatsapp/send", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
     company_id: str = Depends(require_company_id)
@@ -499,7 +493,7 @@ async def send_whatsapp(
         )
 
 
-@router.post("/whatsapp/send-template", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+@router.post("/whatsapp/send-template", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp_template(
     request: SendWhatsAppTemplateRequest,
     company_id: str = Depends(require_company_id)
@@ -546,7 +540,7 @@ async def send_whatsapp_template(
         )
 
 
-@router.post("/whatsapp/send-interactive", response_model=Dict[str, Any], status_code=status.HTTP_200_OK)
+@router.post("/whatsapp/send-interactive", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp_interactive(
     request: SendInteractiveRequest,
     company_id: str = Depends(require_company_id)
@@ -598,10 +592,11 @@ async def send_whatsapp_interactive(
 
 from pydantic import BaseModel
 
+
 class TransferCommunicationsRequest(BaseModel):
     """Request model for transferring communications between recruiters."""
-    job_ids: List[str]
-    from_recruiter_ids: List[str]
+    job_ids: list[str]
+    from_recruiter_ids: list[str]
     to_recruiter_id: str
 
 

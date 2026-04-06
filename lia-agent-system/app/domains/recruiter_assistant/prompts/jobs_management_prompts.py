@@ -9,7 +9,6 @@ For WIZARD CREATION flow prompts (field extraction, JD generation), see:
 """
 import json
 import logging
-from typing import Dict, List, Optional, Tuple
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ class JobsManagementCommandType(str, Enum):
 
 JOBS_MANAGEMENT_COMMAND_TYPES = {cmd.value: cmd for cmd in JobsManagementCommandType}
 
-COMMAND_KEYWORDS: Dict[str, List[str]] = {
+COMMAND_KEYWORDS: dict[str, list[str]] = {
     "visao_geral": ["visão geral", "overview", "resumo", "dashboard", "como estão as vagas", "status geral", "panorama"],
     "vagas_urgentes": ["urgente", "prioridade alta", "crítica", "atenção", "urgentes", "prioritárias"],
     "vagas_paradas": ["parada", "sem movimentação", "estagnada", "inativa", "paradas", "sem progresso"],
@@ -66,7 +65,7 @@ def _is_negated(msg_lower: str, keyword: str) -> bool:
     return any(neg in prefix_window for neg in NEGATION_PREFIXES)
 
 
-def detect_jobs_command_type(message: str) -> Tuple[str, float]:
+def detect_jobs_command_type(message: str) -> tuple[str, float]:
     msg_lower = message.lower().strip()
 
     best_match = "analise_geral"
@@ -99,7 +98,7 @@ _JOBS_CLASSIFY_PROMPT = (
 )
 
 
-async def detect_jobs_command_type_enhanced(message: str) -> Tuple[str, float]:
+async def detect_jobs_command_type_enhanced(message: str) -> tuple[str, float]:
     keyword_type, keyword_confidence = detect_jobs_command_type(message)
 
     if keyword_confidence >= 0.7:
@@ -232,7 +231,7 @@ Use markdown estruturado no campo "resposta":
 """
 
 
-PROMPT_TEMPLATES: Dict[str, str] = {
+PROMPT_TEMPLATES: dict[str, str] = {
     "visao_geral": """Analise o portfólio completo de vagas e forneça um dashboard executivo:
 
 1. **Números gerais**: total, ativas, pausadas, concluídas
@@ -416,9 +415,9 @@ def get_jobs_management_prompt_template(command_type: str) -> str:
 def build_jobs_management_prompt(
     command_type: str,
     user_query: str,
-    jobs_context: Dict,
-    selected_jobs: Optional[List[Dict]] = None,
-    top_jobs: Optional[List[Dict]] = None,
+    jobs_context: dict,
+    selected_jobs: list[dict] | None = None,
+    top_jobs: list[dict] | None = None,
 ) -> str:
     context_lines = ["[CONTEXTO: GESTÃO DE VAGAS]", ""]
 
@@ -460,7 +459,7 @@ def build_jobs_management_prompt(
     return template.format(context=context_str, query=user_query)
 
 
-def resolve_jobs_ui_action(intent: str) -> Optional[str]:
+def resolve_jobs_ui_action(intent: str) -> str | None:
     action_map = {
         "criar_vaga": "start_job_wizard",
         "create_job": "start_job_wizard",

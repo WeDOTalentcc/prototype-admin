@@ -4,10 +4,11 @@ Communication Settings Model - Company-level communication configurations.
 Stores settings for email signatures, LGPD sending hours, message limits,
 and candidate consent tracking.
 """
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, Index, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

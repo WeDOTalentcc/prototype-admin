@@ -9,7 +9,7 @@ Sub-modules:
 """
 from fastapi import APIRouter
 
-from . import questions, evaluation, sessions, reports
+from . import evaluation, questions, reports, sessions
 
 router = APIRouter(prefix="/api/v1/wsi", tags=["WSI Text Screening"])
 

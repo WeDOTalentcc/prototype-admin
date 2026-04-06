@@ -17,7 +17,7 @@ Estratégia de embedding:
 Tabela: routing_cache_vectors (criada em 028_add_routing_cache_vectors.py)
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class VectorSemanticCache:
 
     def __init__(
         self,
-        similarity_threshold: Optional[float] = None,
+        similarity_threshold: float | None = None,
         embedding_model: str = _EMBED_MODEL_OPENAI,
     ):
         if similarity_threshold is None:
@@ -55,13 +55,13 @@ class VectorSemanticCache:
                 similarity_threshold = 0.85  # fallback se settings indisponível
         self.threshold = similarity_threshold
         self.embedding_model = embedding_model
-        self._db_available: Optional[bool] = None  # None = não testado ainda
+        self._db_available: bool | None = None  # None = não testado ainda
 
     # ------------------------------------------------------------------
     # Operações públicas
     # ------------------------------------------------------------------
 
-    async def get(self, message: str) -> Optional[Dict[str, Any]]:
+    async def get(self, message: str) -> dict[str, Any] | None:
         """
         Busca por entrada semanticamente similar no pgvector.
 
@@ -81,7 +81,7 @@ class VectorSemanticCache:
             logger.debug("[VectorSemanticCache] get falhou (gracioso): %s", exc)
             return None
 
-    async def set(self, message: str, result: Dict[str, Any]) -> None:
+    async def set(self, message: str, result: dict[str, Any]) -> None:
         """
         Armazena resultado de roteamento com embedding da mensagem.
 
@@ -100,7 +100,7 @@ class VectorSemanticCache:
     # Embedding
     # ------------------------------------------------------------------
 
-    async def _get_embedding(self, text: str) -> Optional[List[float]]:
+    async def _get_embedding(self, text: str) -> list[float] | None:
         """
         Gera embedding com cache Redis via EmbeddingCacheService.
 
@@ -125,7 +125,7 @@ class VectorSemanticCache:
             logger.debug("[VectorSemanticCache] _get_embedding falhou: %s", exc)
             return None
 
-    async def _generate_embedding(self, text: str) -> Optional[List[float]]:
+    async def _generate_embedding(self, text: str) -> list[float] | None:
         """Gera embedding via OpenAI (primário) ou Gemini (fallback)."""
         # Tentativa 1: OpenAI text-embedding-3-small
         try:
@@ -140,7 +140,7 @@ class VectorSemanticCache:
             if api_key:
                 import openai
 
-                client_kwargs: Dict[str, Any] = {"api_key": api_key}
+                client_kwargs: dict[str, Any] = {"api_key": api_key}
                 if base_url:
                     client_kwargs["base_url"] = base_url
 
@@ -175,12 +175,11 @@ class VectorSemanticCache:
         from app.core.database import AsyncSessionLocal
         return AsyncSessionLocal()
 
-    async def _query_similar(self, embedding: List[float]) -> Optional[Dict[str, Any]]:
+    async def _query_similar(self, embedding: list[float]) -> dict[str, Any] | None:
         """
         Busca entrada com cosine similarity >= threshold no pgvector.
         Incrementa hit_count e last_hit_at ao encontrar.
         """
-        import json
 
         # Formata o vetor para a sintaxe pgvector
         vec_str = "[" + ",".join(str(v) for v in embedding) + "]"
@@ -261,8 +260,8 @@ class VectorSemanticCache:
     async def _insert_cache(
         self,
         message: str,
-        embedding: List[float],
-        result: Dict[str, Any],
+        embedding: list[float],
+        result: dict[str, Any],
     ) -> None:
         """Insere novo registro no routing_cache_vectors."""
         vec_str = "[" + ",".join(str(v) for v in embedding) + "]"

@@ -7,23 +7,20 @@ Enables LIA to:
 - Generate proactive suggestions
 - Execute automatic actions
 """
-import logging
 import asyncio
+import logging
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, and_, or_, update, text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, or_, select, text, update
 
 from app.core.database import AsyncSessionLocal
 from app.models.background_jobs import (
+    ActionStatus,
     BackgroundJob,
-    ProactiveAction,
     JobStatus,
     JobType,
-    ActionStatus,
-    ActionPriority,
+    ProactiveAction,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,9 +48,9 @@ class AutonomousAgentService:
         job_type: str,
         name: str,
         config: dict,
-        schedule: Optional[str] = None,
+        schedule: str | None = None,
         created_by: str = "system",
-        description: Optional[str] = None
+        description: str | None = None
     ) -> BackgroundJob:
         """
         Create a new background job.
@@ -104,7 +101,7 @@ class AutonomousAgentService:
             self.logger.info(f"Created job {job.id} with status {job.status}")
             return job
     
-    async def get_job(self, job_id: str) -> Optional[BackgroundJob]:
+    async def get_job(self, job_id: str) -> BackgroundJob | None:
         """Get a job by ID."""
         async with AsyncSessionLocal() as db:
             try:
@@ -120,10 +117,10 @@ class AutonomousAgentService:
     async def list_jobs(
         self,
         company_id: str,
-        status: Optional[str] = None,
-        job_type: Optional[str] = None,
+        status: str | None = None,
+        job_type: str | None = None,
         limit: int = 50
-    ) -> List[BackgroundJob]:
+    ) -> list[BackgroundJob]:
         """List jobs with optional filters."""
         async with AsyncSessionLocal() as db:
             try:
@@ -260,7 +257,7 @@ class AutonomousAgentService:
             
             return {"success": True, "job_id": str(job_id)}
     
-    async def check_and_execute_scheduled_jobs(self) -> List[str]:
+    async def check_and_execute_scheduled_jobs(self) -> list[str]:
         """
         Check for scheduled jobs ready to run and execute them.
         
@@ -301,11 +298,11 @@ class AutonomousAgentService:
         description: str,
         suggested_action: dict,
         priority: str = "normal",
-        related_job_id: Optional[str] = None,
-        related_candidate_id: Optional[str] = None,
-        trigger_reason: Optional[str] = None,
+        related_job_id: str | None = None,
+        related_candidate_id: str | None = None,
+        trigger_reason: str | None = None,
         auto_executable: bool = False,
-        expires_in_hours: Optional[int] = 24
+        expires_in_hours: int | None = 24
     ) -> ProactiveAction:
         """
         Create a proactive action suggestion.
@@ -375,7 +372,7 @@ class AutonomousAgentService:
         company_id: str,
         limit: int = 10,
         include_expired: bool = False
-    ) -> List[ProactiveAction]:
+    ) -> list[ProactiveAction]:
         """Get pending proactive actions for a company."""
         async with AsyncSessionLocal() as db:
             try:
@@ -413,7 +410,7 @@ class AutonomousAgentService:
         company_id: str,
         status: str,
         limit: int = 50
-    ) -> List[ProactiveAction]:
+    ) -> list[ProactiveAction]:
         """Get proactive actions by status."""
         async with AsyncSessionLocal() as db:
             try:
@@ -553,7 +550,7 @@ class AutonomousAgentService:
             self.logger.error(f"Failed to execute action {action.id}: {e}")
             return {"success": False, "error": str(e)}
     
-    async def _get_candidate_lia_score(self, candidate_id: str, vacancy_id: Optional[str]) -> float:
+    async def _get_candidate_lia_score(self, candidate_id: str, vacancy_id: str | None) -> float:
         """Fetch real LIA score from vacancy_candidates; falls back to 0.5 if not found."""
         if not candidate_id:
             return 0.5
@@ -590,7 +587,7 @@ class AutonomousAgentService:
         config = job.config or {}
         vacancy_id = config.get("vacancy_id")
         candidate_ids = config.get("candidate_ids", [])
-        criteria = config.get("criteria", {})
+        config.get("criteria", {})
         
         await self._update_job_progress(job.id, 10)
         
@@ -770,7 +767,6 @@ class AutonomousAgentService:
         """Execute a pattern learning job."""
         self.logger.info(f"Executing pattern learning job: {job.name}")
         
-        config = job.config or {}
         
         await self._update_job_progress(job.id, 40)
         await asyncio.sleep(0.2)

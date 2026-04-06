@@ -9,36 +9,35 @@ Provides CRUD operations for company hiring policies:
 - GET /company-hiring-policy/{company_id}/progress — Setup progress
 - POST /company-hiring-policy/chat — Policy setup chat with LIA
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text
-from datetime import datetime
-from typing import Optional, Dict, Any, List
 import logging
 import uuid
+from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
 from app.models.company_hiring_policy import (
-    CompanyHiringPolicy,
-    ALL_DEFAULTS,
+    AUTOMATION_RULES_DEFAULTS,
+    COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
-    COMMUNICATION_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
-    AUTOMATION_RULES_DEFAULTS,
+    CompanyHiringPolicy,
 )
 from app.schemas.company_hiring_policy import (
-    CompanyHiringPolicyCreate,
-    CompanyHiringPolicyUpdate,
     CompanyHiringPolicyBlockUpdate,
     CompanyHiringPolicyResponse,
-    PolicyProgressResponse,
+    CompanyHiringPolicyUpdate,
     PolicyChatMessage,
     PolicyChatResponse,
+    PolicyProgressResponse,
 )
-from app.shared.policy_helper import invalidate_policy_cache, get_company_policy
+from app.shared.policy_helper import get_company_policy, invalidate_policy_cache
 from app.shared.policy_sync_service import sync_policy_to_models
-from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ def _calculate_progress(policy: CompanyHiringPolicy) -> int:
     return min(int((filled / total) * 100), 100)
 
 
-def _blocks_completed(policy: CompanyHiringPolicy) -> Dict[str, bool]:
+def _blocks_completed(policy: CompanyHiringPolicy) -> dict[str, bool]:
     """Check which blocks have been completed based on answered questions."""
     answered = set(policy.answered_questions or [])
 
@@ -131,7 +130,7 @@ async def get_policy(
 async def upsert_policy(
     company_id: str,
     payload: CompanyHiringPolicyUpdate,
-    user_id: Optional[str] = Query(None),
+    user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Create or update full hiring policy for a company."""
@@ -190,7 +189,7 @@ async def upsert_policy(
 async def update_policy_partial(
     company_id: str,
     payload: CompanyHiringPolicyUpdate,
-    user_id: Optional[str] = Query(None),
+    user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Partially update hiring policy — merges provided blocks."""
@@ -240,7 +239,7 @@ async def update_policy_partial(
 async def update_policy_block(
     company_id: str,
     payload: CompanyHiringPolicyBlockUpdate,
-    user_id: Optional[str] = Query(None),
+    user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a single block of the hiring policy."""
@@ -327,7 +326,7 @@ async def get_policy_progress(
 
 async def _fetch_conversation_history(
     db: AsyncSession, company_id: str, session_id: str, limit: int = 10
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Fetch recent conversation history from the DB for policy chat."""
     try:
         query = text("""
@@ -355,7 +354,7 @@ async def _fetch_conversation_history(
 
 async def _persist_chat_messages(
     db: AsyncSession, company_id: str, session_id: str,
-    user_message: str, assistant_reply: str, user_id: Optional[str] = None,
+    user_message: str, assistant_reply: str, user_id: str | None = None,
 ) -> None:
     """Persist user and assistant messages to the DB."""
     try:

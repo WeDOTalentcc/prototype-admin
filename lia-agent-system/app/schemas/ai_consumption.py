@@ -2,10 +2,11 @@
 Pydantic schemas for AI Consumption API.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime, date
+from datetime import date
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class AgentTypeEnum(str, Enum):
@@ -37,19 +38,19 @@ class AiConsumptionRecord(BaseModel):
     model: str = Field(..., description="AI model used")
     input_tokens: int = Field(default=0, ge=0, description="Input tokens used")
     output_tokens: int = Field(default=0, ge=0, description="Output tokens generated")
-    total_tokens: Optional[int] = Field(default=None, description="Total tokens (calculated if not provided)")
-    cost_cents: Optional[int] = Field(default=0, ge=0, description="Cost in cents")
-    user_id: Optional[str] = Field(default=None, description="User who triggered the operation")
-    candidate_id: Optional[str] = Field(default=None, description="Related candidate ID")
-    vacancy_id: Optional[str] = Field(default=None, description="Related vacancy ID")
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional metadata")
+    total_tokens: int | None = Field(default=None, description="Total tokens (calculated if not provided)")
+    cost_cents: int | None = Field(default=0, ge=0, description="Cost in cents")
+    user_id: str | None = Field(default=None, description="User who triggered the operation")
+    candidate_id: str | None = Field(default=None, description="Related candidate ID")
+    vacancy_id: str | None = Field(default=None, description="Related vacancy ID")
+    metadata: dict[str, Any] | None = Field(default_factory=dict, description="Additional metadata")
 
 
 class AiConsumptionResponse(BaseModel):
     """Response schema for AI consumption record."""
     id: str
     company_id: str
-    user_id: Optional[str] = None
+    user_id: str | None = None
     agent_type: str
     operation: str
     model: str
@@ -57,15 +58,15 @@ class AiConsumptionResponse(BaseModel):
     output_tokens: int
     total_tokens: int
     cost_cents: int
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    metadata: Dict[str, Any] = {}
-    created_at: Optional[str] = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    metadata: dict[str, Any] = {}
+    created_at: str | None = None
 
 
 class AiConsumptionListResponse(BaseModel):
     """Response schema for list of AI consumption records."""
-    records: List[AiConsumptionResponse]
+    records: list[AiConsumptionResponse]
     total: int
     limit: int
     offset: int
@@ -98,7 +99,7 @@ class UsageByAgentResponse(BaseModel):
 
 class UsageByAgentListResponse(BaseModel):
     """List of usage by agent type."""
-    data: List[UsageByAgentResponse]
+    data: list[UsageByAgentResponse]
     total_tokens: int
     total_operations: int
 
@@ -122,7 +123,7 @@ class UsageByDayResponse(BaseModel):
 
 class UsageByDayListResponse(BaseModel):
     """List of daily usage."""
-    data: List[UsageByDayResponse]
+    data: list[UsageByDayResponse]
     total_tokens: int
     total_days: int
 
@@ -139,27 +140,27 @@ class BalanceResponse(BaseModel):
     overage_rate_cents: int
     usage_percentage: float
     remaining_tokens: int
-    updated_at: Optional[str] = None
+    updated_at: str | None = None
 
 
 class UpdateLimitsRequest(BaseModel):
     """Request to update client AI limits."""
-    monthly_limit: Optional[int] = Field(default=None, ge=0, description="Monthly token limit")
-    overage_allowed: Optional[bool] = Field(default=None, description="Allow overage usage")
-    overage_rate_cents: Optional[int] = Field(default=None, ge=0, description="Cost per 1000 tokens overage in cents")
-    period_start: Optional[date] = Field(default=None, description="Billing period start")
-    period_end: Optional[date] = Field(default=None, description="Billing period end")
-    reset_usage: Optional[bool] = Field(default=False, description="Reset current usage to 0")
+    monthly_limit: int | None = Field(default=None, ge=0, description="Monthly token limit")
+    overage_allowed: bool | None = Field(default=None, description="Allow overage usage")
+    overage_rate_cents: int | None = Field(default=None, ge=0, description="Cost per 1000 tokens overage in cents")
+    period_start: date | None = Field(default=None, description="Billing period start")
+    period_end: date | None = Field(default=None, description="Billing period end")
+    reset_usage: bool | None = Field(default=False, description="Reset current usage to 0")
 
 
 class UsageHistoryResponse(BaseModel):
     """Historical usage data."""
-    records: List[AiConsumptionResponse]
+    records: list[AiConsumptionResponse]
     total: int
     limit: int
     offset: int
-    period_start: Optional[str] = None
-    period_end: Optional[str] = None
+    period_start: str | None = None
+    period_end: str | None = None
 
 
 class ConsumptionStatsResponse(BaseModel):
@@ -170,8 +171,8 @@ class ConsumptionStatsResponse(BaseModel):
     total_tokens: int
     total_cost_cents: int
     total_operations: int
-    by_agent_type: Dict[str, int]
-    by_model: Dict[str, int]
+    by_agent_type: dict[str, int]
+    by_model: dict[str, int]
     avg_tokens_per_operation: float
-    peak_usage_day: Optional[str] = None
+    peak_usage_day: str | None = None
     peak_usage_tokens: int = 0

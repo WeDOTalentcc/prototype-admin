@@ -3,15 +3,15 @@ Agent Monitoring Service
 Handles metrics calculation, health scores, and activity tracking for AI agents.
 Compatible with SQLAlchemy 2.0 AsyncSession.
 """
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, and_, or_, select
 import random
+from datetime import datetime, timedelta
+from typing import Any
 
-from app.models.agent_activity import AgentActivity, AgentMetricsSnapshot, ActivityStatus
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.agent_activity import ActivityStatus, AgentActivity
 from app.models.task import Task, TaskStatus
-
 
 AGENT_DEFINITIONS = {
     "job_intake": {
@@ -72,7 +72,7 @@ class AgentMonitoringService:
     def __init__(self, db: AsyncSession):
         self.db = db
     
-    async def get_global_metrics(self) -> Dict[str, Any]:
+    async def get_global_metrics(self) -> dict[str, Any]:
         """Get global metrics across all agents for today."""
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         yesterday_start = today_start - timedelta(days=1)
@@ -151,7 +151,7 @@ class AgentMonitoringService:
             "proactive_alerts": proactive_alerts,
         }
     
-    async def get_agent_summary(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    async def get_agent_summary(self, agent_id: str) -> dict[str, Any] | None:
         """Get summary metrics for a specific agent."""
         if agent_id not in AGENT_DEFINITIONS:
             return None
@@ -209,7 +209,7 @@ class AgentMonitoringService:
             "last_action_time": last_activity.started_at.isoformat() if last_activity else None,
         }
     
-    async def get_all_agents_summary(self) -> List[Dict[str, Any]]:
+    async def get_all_agents_summary(self) -> list[dict[str, Any]]:
         """Get summary for all agents."""
         summaries = []
         for agent_id in AGENT_DEFINITIONS:
@@ -218,7 +218,7 @@ class AgentMonitoringService:
                 summaries.append(summary)
         return summaries
     
-    async def get_agent_health(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    async def get_agent_health(self, agent_id: str) -> dict[str, Any] | None:
         """Calculate health score and details for an agent."""
         if agent_id not in AGENT_DEFINITIONS:
             return None
@@ -336,11 +336,11 @@ class AgentMonitoringService:
     
     async def get_activity_feed(
         self,
-        agent_id: Optional[str] = None,
-        status: Optional[str] = None,
+        agent_id: str | None = None,
+        status: str | None = None,
         limit: int = 50,
         offset: int = 0
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get activity feed with optional filters."""
         stmt = select(AgentActivity).order_by(AgentActivity.started_at.desc())
         
@@ -360,7 +360,7 @@ class AgentMonitoringService:
         
         return [activity.to_dict() for activity in activities]
     
-    async def get_proactive_alerts(self) -> List[Dict[str, Any]]:
+    async def get_proactive_alerts(self) -> list[dict[str, Any]]:
         """Get current proactive alerts requiring attention."""
         alerts = []
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -430,7 +430,7 @@ class AgentMonitoringService:
         
         return alerts
     
-    async def _get_sparkline_data(self, agent_id: str, hours: int = 24) -> List[int]:
+    async def _get_sparkline_data(self, agent_id: str, hours: int = 24) -> list[int]:
         """Get hourly activity counts for sparkline visualization."""
         now = datetime.utcnow()
         data = []
@@ -458,14 +458,14 @@ class AgentMonitoringService:
         agent_id: str,
         activity_type: str,
         title: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         status: ActivityStatus = ActivityStatus.SUCCESS,
-        duration_seconds: Optional[float] = None,
-        related_job_id: Optional[str] = None,
-        related_candidate_id: Optional[str] = None,
-        metadata: Optional[Dict] = None,
-        result_data: Optional[Dict] = None,
-        error_message: Optional[str] = None,
+        duration_seconds: float | None = None,
+        related_job_id: str | None = None,
+        related_candidate_id: str | None = None,
+        metadata: dict | None = None,
+        result_data: dict | None = None,
+        error_message: str | None = None,
         sla_breach: bool = False,
     ) -> AgentActivity:
         """Log a new agent activity."""
@@ -498,7 +498,7 @@ class AgentMonitoringService:
         
         return activity
     
-    async def seed_demo_data(self) -> Dict[str, int]:
+    async def seed_demo_data(self) -> dict[str, int]:
         """Seed demo data for testing the Agent Control Center."""
         now = datetime.utcnow()
         created_count = 0

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +38,7 @@ async def get_redis_connection():
     """
     try:
         import redis.asyncio as aioredis
+
         from app.core.config import settings
         return await aioredis.from_url(
             settings.REDIS_URL,
@@ -49,6 +49,7 @@ async def get_redis_connection():
     except Exception:
         try:
             import aioredis as _aioredis  # type: ignore[import]
+
             from app.core.config import settings
             return await _aioredis.from_url(settings.REDIS_URL, decode_responses=True)
         except Exception:

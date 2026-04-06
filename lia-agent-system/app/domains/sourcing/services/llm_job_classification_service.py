@@ -13,11 +13,11 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_CLASSIFICATION_CACHE: Dict[str, Tuple[Dict[str, Any], float]] = {}
+_CLASSIFICATION_CACHE: dict[str, tuple[dict[str, Any], float]] = {}
 _CACHE_TTL_SECONDS = 300
 _CACHE_MAX_SIZE = 500
 
@@ -52,7 +52,7 @@ INCOMPATIBLE_AREAS = {
 }
 
 
-def _detect_area(text: str) -> Optional[str]:
+def _detect_area(text: str) -> str | None:
     text_lower = (text or "").lower()
     area_keywords = {
         "saude": ["médico", "medico", "enfermeiro", "hospital", "clínica", "clinica", "saúde", "saude", "cirurgião", "cirurgiao", "farmacêutico", "farmaceutico", "fisioterapeuta", "nutricionista", "psicólogo", "psicologo", "dentista", "odontolog"],
@@ -86,7 +86,7 @@ def _cache_key(
     return hashlib.md5(raw.encode()).hexdigest()
 
 
-def _cache_get(key: str) -> Optional[Dict[str, Any]]:
+def _cache_get(key: str) -> dict[str, Any] | None:
     entry = _CLASSIFICATION_CACHE.get(key)
     if entry is None:
         return None
@@ -97,7 +97,7 @@ def _cache_get(key: str) -> Optional[Dict[str, Any]]:
     return result
 
 
-def _cache_put(key: str, result: Dict[str, Any]) -> None:
+def _cache_put(key: str, result: dict[str, Any]) -> None:
     if len(_CLASSIFICATION_CACHE) >= _CACHE_MAX_SIZE:
         oldest_key = min(_CLASSIFICATION_CACHE, key=lambda k: _CLASSIFICATION_CACHE[k][1])
         _CLASSIFICATION_CACHE.pop(oldest_key, None)
@@ -124,9 +124,9 @@ class LLMJobClassificationService:
 
     def _heuristic_check(
         self,
-        job_info: Dict[str, Any],
-        candidate: Dict[str, Any],
-    ) -> Tuple[bool, float, str]:
+        job_info: dict[str, Any],
+        candidate: dict[str, Any],
+    ) -> tuple[bool, float, str]:
         job_text = f"{job_info.get('title', '')} {job_info.get('area', '')} {job_info.get('requirements', '')}"
         candidate_text = f"{candidate.get('title', '')} {candidate.get('experience', '')} {candidate.get('skills', '')}"
 
@@ -140,9 +140,9 @@ class LLMJobClassificationService:
 
     async def classify_candidate(
         self,
-        job_info: Dict[str, Any],
-        candidate: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        job_info: dict[str, Any],
+        candidate: dict[str, Any],
+    ) -> dict[str, Any]:
         ck = _cache_key(
             job_info.get("title", ""),
             job_info.get("area", ""),
@@ -203,10 +203,10 @@ class LLMJobClassificationService:
 
     async def filter_candidates(
         self,
-        job_info: Dict[str, Any],
-        candidates: List[Dict[str, Any]],
+        job_info: dict[str, Any],
+        candidates: list[dict[str, Any]],
         min_confidence: float = 0.6,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         compatible = []
         filtered_out = []
 

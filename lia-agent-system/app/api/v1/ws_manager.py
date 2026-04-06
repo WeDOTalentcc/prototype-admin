@@ -1,6 +1,7 @@
 """WebSocket connection manager for agent chat."""
 import logging
-from typing import Any, Dict, Set
+from typing import Any
+
 from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
@@ -8,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 class WSManager:
     def __init__(self):
-        self._sessions: Dict[str, WebSocket] = {}
-        self._user_sessions: Dict[str, Set[str]] = {}
+        self._sessions: dict[str, WebSocket] = {}
+        self._user_sessions: dict[str, set[str]] = {}
 
     async def connect(self, websocket: WebSocket, session_id: str, company_id: str, user_id: str = "anonymous") -> bool:
         try:
@@ -40,7 +41,7 @@ class WSManager:
                 logger.warning(f"[WS] Send failed session={session_id}: {e}")
                 self.disconnect(session_id)
 
-    def get_user_sessions(self, user_id: str) -> Set[str]:
+    def get_user_sessions(self, user_id: str) -> set[str]:
         return self._user_sessions.get(user_id, set())
 
 

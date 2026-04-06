@@ -5,8 +5,9 @@ Defines the contract for LLM provider implementations.
 Allows swapping between Claude, Gemini, OpenAI without changing business logic.
 """
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Type, TypeVar
 from dataclasses import dataclass, field
+from typing import Any, TypeVar
+
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
@@ -18,8 +19,8 @@ class LLMResponse:
     text: str
     provider: str
     model: str
-    usage: Dict[str, int] = field(default_factory=dict)
-    raw_response: Optional[Any] = None
+    usage: dict[str, int] = field(default_factory=dict)
+    raw_response: Any | None = None
 
 
 @dataclass 
@@ -27,18 +28,18 @@ class LLMToolCall:
     """Standardized tool call from any LLM provider."""
     id: str
     name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
 
 
 @dataclass
 class LLMToolResponse:
     """Standardized tool response from any LLM provider."""
-    text: Optional[str] = None
-    tool_calls: List[LLMToolCall] = field(default_factory=list)
+    text: str | None = None
+    tool_calls: list[LLMToolCall] = field(default_factory=list)
     is_tool_call: bool = False
     provider: str = ""
     model: str = ""
-    raw_response: Optional[Any] = None
+    raw_response: Any | None = None
 
 
 class LLMProviderABC(ABC):
@@ -64,7 +65,7 @@ class LLMProviderABC(ABC):
     async def generate(
         self,
         prompt: str,
-        model: Optional[str] = None,
+        model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 4096,
         **kwargs
@@ -77,7 +78,7 @@ class LLMProviderABC(ABC):
         self,
         system_prompt: str,
         user_message: str,
-        model: Optional[str] = None,
+        model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 4096,
         **kwargs
@@ -88,9 +89,9 @@ class LLMProviderABC(ABC):
     @abstractmethod
     async def generate_with_tools(
         self,
-        messages: List[Dict[str, Any]],
-        tools: List[Dict[str, Any]],
-        system_prompt: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
         **kwargs
     ) -> LLMToolResponse:
@@ -100,11 +101,11 @@ class LLMProviderABC(ABC):
     @abstractmethod
     async def generate_structured(
         self,
-        messages: List[Dict[str, Any]],
-        output_schema: Dict[str, Any],
-        system_prompt: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        output_schema: dict[str, Any],
+        system_prompt: str | None = None,
         max_tokens: int = 4096,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate structured output matching a JSON schema."""
         ...

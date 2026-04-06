@@ -6,21 +6,21 @@ import logging
 import re
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import VacancyCandidate, Candidate
-from app.models.job_vacancy import JobVacancy
-from app.domains.communication.models.email_template import EmailTemplate, EmailLog
 from app.domains.communication.models.communication_matrix import CommunicationMatrixEntry
+from app.domains.communication.models.email_template import EmailLog, EmailTemplate
 from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 from app.services.candidate_channel_selector import CandidateChannelSelector
 
 logger = logging.getLogger(__name__)
 
-ACTION_BEHAVIOR_SITUATION_MAP: Dict[str, Optional[str]] = {
+ACTION_BEHAVIOR_SITUATION_MAP: dict[str, str | None] = {
     "screening": "triagem",
     "scheduling": "agendamento",
     "evaluation": "avaliacao_tecnica",
@@ -34,7 +34,7 @@ ACTION_BEHAVIOR_SITUATION_MAP: Dict[str, Optional[str]] = {
     "standby": "standby",
 }
 
-ACTION_BEHAVIOR_TRIGGER_MAP: Dict[str, Optional[str]] = {
+ACTION_BEHAVIOR_TRIGGER_MAP: dict[str, str | None] = {
     "screening": "triagem_aprovado",
     "scheduling": "entrevista_agendada",
     "evaluation": "avaliacao_enviada",
@@ -65,11 +65,11 @@ class TransitionDispatchService:
         to_stage: str,
         action_behavior: str,
         channel: str = "email",
-        company_id: Optional[str] = None,
-        triggered_by: Optional[str] = None,
-        extra_variables: Optional[Dict[str, Any]] = None,
-        personalized_content: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        company_id: str | None = None,
+        triggered_by: str | None = None,
+        extra_variables: dict[str, Any] | None = None,
+        personalized_content: str | None = None,
+    ) -> dict[str, Any]:
         """Main entry point for dispatching messages on transition."""
         try:
             if action_behavior not in ACTION_BEHAVIOR_SITUATION_MAP:
@@ -176,7 +176,7 @@ class TransitionDispatchService:
             variables = self._build_variables(candidate_data, extra_variables)
 
             # Dispatch per channel; collect all results
-            channel_results: List[Dict[str, Any]] = []
+            channel_results: list[dict[str, Any]] = []
             for ch in effective_channels:
                 result = await self._dispatch_single_channel(
                     channel=ch,
@@ -213,8 +213,8 @@ class TransitionDispatchService:
             }
 
     async def _get_matrix_entry(
-        self, trigger_name: Optional[str], company_id: Optional[str]
-    ) -> Optional[CommunicationMatrixEntry]:
+        self, trigger_name: str | None, company_id: str | None
+    ) -> CommunicationMatrixEntry | None:
         """Query CommunicationMatrixEntry by trigger_name.
         Priority: company-specific → platform default (company_id IS NULL).
         """
@@ -250,12 +250,12 @@ class TransitionDispatchService:
         self,
         channel: str,
         situation: str,
-        candidate_data: Dict[str, Any],
-        variables: Dict[str, str],
-        company_id: Optional[str],
-        triggered_by: Optional[str],
-        personalized_content: Optional[str],
-    ) -> Dict[str, Any]:
+        candidate_data: dict[str, Any],
+        variables: dict[str, str],
+        company_id: str | None,
+        triggered_by: str | None,
+        personalized_content: str | None,
+    ) -> dict[str, Any]:
         """Dispatch a message through a single channel. Returns a result dict."""
         template = await self._find_template(situation, channel, company_id)
         if not template:
@@ -283,7 +283,7 @@ class TransitionDispatchService:
             rendered_html = personalized_content
             rendered_text = re.sub(r"<[^>]+>", "", personalized_content)
             ai_personalized = True
-            logger.info(f"[DISPATCH] Using AI-personalized content instead of template")
+            logger.info("[DISPATCH] Using AI-personalized content instead of template")
 
         if channel == "whatsapp":
             phone = candidate_data.get("mobile_phone") or candidate_data.get("phone")
@@ -403,7 +403,7 @@ class TransitionDispatchService:
                 "error": result.get("error"),
             }
 
-    async def _load_candidate_data(self, vacancy_candidate_id: str) -> Optional[Dict[str, Any]]:
+    async def _load_candidate_data(self, vacancy_candidate_id: str) -> dict[str, Any] | None:
         """Load candidate and vacancy info for template variables."""
         try:
             vc_result = await self.db.execute(
@@ -464,8 +464,8 @@ class TransitionDispatchService:
             return None
 
     async def _find_template(
-        self, situation: str, channel: str, company_id: Optional[str] = None
-    ) -> Optional[EmailTemplate]:
+        self, situation: str, channel: str, company_id: str | None = None
+    ) -> EmailTemplate | None:
         """Find best matching template. Priority: company-specific > system template."""
         try:
             if company_id:
@@ -524,10 +524,10 @@ class TransitionDispatchService:
             return None
 
     def _build_variables(
-        self, candidate_data: Dict, extra_variables: Optional[Dict] = None
-    ) -> Dict[str, str]:
+        self, candidate_data: dict, extra_variables: dict | None = None
+    ) -> dict[str, str]:
         """Build template variables dict from candidate/vacancy data."""
-        variables: Dict[str, str] = {
+        variables: dict[str, str] = {
             "candidate_name": candidate_data.get("candidate_name", ""),
             "job_title": candidate_data.get("job_title", ""),
             "company_name": candidate_data.get("company_name", ""),
@@ -545,7 +545,7 @@ class TransitionDispatchService:
 
         return variables
 
-    def _render_template(self, template_text: str, variables: Dict[str, str]) -> str:
+    def _render_template(self, template_text: str, variables: dict[str, str]) -> str:
         """Simple {{variable}} substitution."""
         if not template_text:
             return ""
@@ -565,9 +565,9 @@ class TransitionDispatchService:
         body_html: str,
         body_text: str,
         status: str,
-        error: Optional[str] = None,
-        variables: Optional[Dict] = None,
-        created_by: Optional[str] = None,
+        error: str | None = None,
+        variables: dict | None = None,
+        created_by: str | None = None,
     ):
         """Create EmailLog record."""
         try:

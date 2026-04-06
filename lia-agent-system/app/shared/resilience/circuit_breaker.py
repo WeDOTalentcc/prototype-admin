@@ -18,14 +18,15 @@ Usage (class-based):
     circuit = CircuitBreaker("anthropic", CircuitBreakerConfig(...))
     result = await circuit.call(my_func, arg1, arg2)
 """
-from enum import Enum
-from dataclasses import dataclass, field
-from typing import Callable, Any, Optional, Dict
 import asyncio
-import time
-import logging
 import functools
+import logging
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from enum import Enum
 from functools import wraps
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,9 @@ _CB_STATE_VALUES = {"closed": 0, "half_open": 1, "open": 2}
 async def _notify_circuit_open(service_name: str) -> None:
     """Notifica Bell + Teams quando circuit breaker abre. Redis dedup: 1 alerta/circuit/hora."""
     try:
-        from app.core.database import AsyncSessionLocal
         import time  # noqa: F401 — usado implicitamente
+
+        from app.core.database import AsyncSessionLocal
 
         # Redis dedup: evitar flood de alertas
         try:
@@ -98,8 +100,8 @@ class CircuitBreakerStats:
     failed_calls: int = 0
     rejected_calls: int = 0
     state_changes: int = 0
-    last_failure_time: Optional[float] = None
-    last_success_time: Optional[float] = None
+    last_failure_time: float | None = None
+    last_success_time: float | None = None
 
 
 class CircuitBreakerError(Exception):
@@ -120,13 +122,13 @@ class CircuitBreaker:
     - HALF_OPEN: Testing if service recovered, allow limited requests
     """
     
-    def __init__(self, name: str, config: Optional[CircuitBreakerConfig] = None):
+    def __init__(self, name: str, config: CircuitBreakerConfig | None = None):
         self.name = name
         self.config = config or CircuitBreakerConfig()
         self._state = CircuitState.CLOSED
         self._failure_count = 0
         self._success_count = 0
-        self._last_failure_time: Optional[float] = None
+        self._last_failure_time: float | None = None
         self._last_state_change: float = time.time()
         self._lock = asyncio.Lock()
         self._stats = CircuitBreakerStats()
@@ -151,7 +153,7 @@ class CircuitBreaker:
         return self._success_count
     
     @property
-    def last_failure_time(self) -> Optional[float]:
+    def last_failure_time(self) -> float | None:
         return self._last_failure_time
     
     def _should_attempt_reset(self) -> bool:
@@ -208,7 +210,7 @@ class CircuitBreaker:
             await self.record_success()
             return result
             
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.error(f"Circuit breaker '{self.name}': Request timed out after {self.config.timeout}s")
             await self.record_failure()
             raise
@@ -295,7 +297,7 @@ class CircuitBreaker:
         self._last_state_change = time.time()
         logger.info(f"Circuit breaker '{self.name}' manually reset to CLOSED")
     
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get circuit breaker statistics."""
         return {
             "name": self.name,
@@ -471,7 +473,7 @@ GEMINI_LIVE_CIRCUIT = CircuitBreaker(
     )
 )
 
-ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
+ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
     "gemini": GEMINI_CIRCUIT,
@@ -491,7 +493,7 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
 
 
 # F1-03: SLOs documentados por serviço — usados no admin endpoint e para error budget tracking
-CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
+CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
     "anthropic": {
         "availability_target": 0.999,   # 99.9% → ~43 min downtime/mês
         "latency_p95_ms": 8000,
@@ -601,7 +603,7 @@ CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
 
 # F1-03: respostas de modo degradado — retornadas quando o circuit está OPEN
 # e nenhum fallback específico está disponível
-DEGRADED_MODE_RESPONSES: Dict[str, str] = {
+DEGRADED_MODE_RESPONSES: dict[str, str] = {
     "anthropic": (
         "A assistente LIA está temporariamente indisponível. "
         "O serviço de IA principal (Anthropic) está com instabilidades. "
@@ -675,7 +677,7 @@ def get_degraded_response(service_name: str) -> str:
     return DEGRADED_MODE_RESPONSES.get(service_name, _DEGRADED_FALLBACK)
 
 
-def get_slo(service_name: str) -> Optional[Dict[str, Any]]:
+def get_slo(service_name: str) -> dict[str, Any] | None:
     """Retorna a configuração de SLO para o serviço, ou None se não definido (F1-03)."""
     return CIRCUIT_BREAKER_SLOS.get(service_name)
 
@@ -717,7 +719,7 @@ def circuit_breaker_decorator(circuit: CircuitBreaker):
     return decorator
 
 
-def get_all_circuit_stats() -> Dict[str, Dict]:
+def get_all_circuit_stats() -> dict[str, dict]:
     """Get statistics for all registered circuit breakers."""
     return {name: circuit.get_stats() for name, circuit in ALL_CIRCUITS.items()}
 
@@ -747,7 +749,7 @@ class CircuitBreakerState:
     total_circuit_opens: int = 0
 
 
-_circuits: Dict[str, CircuitBreakerState] = {}
+_circuits: dict[str, CircuitBreakerState] = {}
 
 
 def _get_circuit(
@@ -847,7 +849,7 @@ def circuit_breaker(
     failure_threshold: int = 5,
     recovery_timeout: float = 60.0,
     half_open_max_calls: int = 3,
-    fallback: Optional[Callable] = None,
+    fallback: Callable | None = None,
 ):
     def decorator(func):
         @functools.wraps(func)
@@ -874,7 +876,7 @@ def circuit_breaker(
     return decorator
 
 
-def get_circuit_status(service_name: str) -> Optional[Dict[str, Any]]:
+def get_circuit_status(service_name: str) -> dict[str, Any] | None:
     cb = _circuits.get(service_name)
     if not cb:
         return None
@@ -889,7 +891,7 @@ def get_circuit_status(service_name: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def get_all_circuits_status() -> Dict[str, Any]:
+def get_all_circuits_status() -> dict[str, Any]:
     return {name: get_circuit_status(name) for name in _circuits}
 
 

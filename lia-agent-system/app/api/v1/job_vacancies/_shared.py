@@ -2,38 +2,16 @@
 Shared imports, constants, helpers, and Pydantic schemas
 for the job_vacancies sub-package.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, File, UploadFile, Form
-from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete, func, and_, or_, not_
-from typing import Optional, List, Dict, Any
-from uuid import UUID
-from datetime import datetime, timedelta
 import logging
-import uuid as uuid_lib
+from datetime import datetime
+from uuid import UUID
 
-from app.core.database import get_db
-from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
-from app.services.sourcing_pipeline_service import sourcing_pipeline_service
+from pydantic import BaseModel, Field
+
 from app.domains.communication.services.teams_service import TeamsService
-from app.services.notification_service import NotificationService, NotificationType, NotificationChannel
-from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
-from app.domains.analytics.services.job_report_service import job_report_service
-from app.schemas.job_vacancy_state import JobVacancyState
 from app.models.job_vacancy import JobVacancy
-from app.models.candidate import VacancyCandidate, Candidate
-from app.models.company import CompanyProfile
-from app.models.recruitment_stages import CandidateStageHistory
-from app.auth.dependencies import (
-    get_current_user,
-    get_current_active_user,
-    get_current_user_or_demo,
-    get_user_company_id
-)
-from app.auth.models import User, UserRole
-from app.services.plan_limits_service import check_active_jobs_limit, check_active_jobs_limit_or_demo
-from app.middleware.trial_enforcement import require_active_subscription, require_active_subscription_or_demo
-from pydantic import BaseModel, Field, EmailStr
+from app.schemas.job_vacancy_state import JobVacancyState
+from app.services.notification_service import NotificationService
 
 teams_service = TeamsService()
 notification_service = NotificationService()
@@ -64,7 +42,7 @@ VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused",
 # HELPER FUNCTIONS
 # =============================================
 
-def generate_lia_metrics(funnel_data: Optional[dict]) -> dict:
+def generate_lia_metrics(funnel_data: dict | None) -> dict:
     """Generate LIA performance metrics based on funnel data."""
     import random
 
@@ -96,7 +74,7 @@ def generate_lia_metrics(funnel_data: Optional[dict]) -> dict:
     }
 
 
-def _calculate_days_between(start_date: Optional[datetime], end_date: Optional[datetime]) -> int:
+def _calculate_days_between(start_date: datetime | None, end_date: datetime | None) -> int:
     """Calculate days between two dates, handling None values."""
     if not start_date or not end_date:
         return 0
@@ -148,8 +126,8 @@ def derive_screening_status(screening_config: dict) -> str:
     return "not_configured"
 
 
-import secrets
 import re
+import secrets
 
 
 def generate_slug(title: str, company_name: str = "") -> str:
@@ -176,147 +154,147 @@ def generate_slug(title: str, company_name: str = "") -> str:
 class JobVacancyCreate(BaseModel):
     """Schema for creating a job vacancy directly (not via conversation)."""
     title: str = Field(..., min_length=1, max_length=255)
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    description: Optional[str] = None
-    requirements: Optional[List[str]] = []
-    technical_requirements: Optional[List[dict]] = []
-    languages: Optional[List[dict]] = []
-    behavioral_competencies: Optional[List[dict]] = []
-    salary: Optional[str] = None
-    salary_range: Optional[dict] = None
-    benefits: Optional[List[str]] = []
-    manager: Optional[str] = None
-    manager_email: Optional[str] = None
-    recruiter: Optional[str] = None
-    recruiter_email: Optional[str] = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    seniority_level: str | None = None
+    description: str | None = None
+    requirements: list[str] | None = []
+    technical_requirements: list[dict] | None = []
+    languages: list[dict] | None = []
+    behavioral_competencies: list[dict] | None = []
+    salary: str | None = None
+    salary_range: dict | None = None
+    benefits: list[str] | None = []
+    manager: str | None = None
+    manager_email: str | None = None
+    recruiter: str | None = None
+    recruiter_email: str | None = None
     is_confidential: bool = False
     visibility: str = "public"
-    access_list: Optional[List[str]] = []
-    masked_company_name: Optional[str] = None
+    access_list: list[str] | None = []
+    masked_company_name: str | None = None
     exclude_from_sync: bool = False
     status: str = "Rascunho"
     priority: str = "média"
-    screening_questions: Optional[List[dict]] = []
-    interview_stages: Optional[List[dict]] = []
-    eligibility_questions: Optional[List[dict]] = []
-    disabled_eligibility_question_ids: Optional[List[str]] = []
-    confidentiality_config: Optional[dict] = None
+    screening_questions: list[dict] | None = []
+    interview_stages: list[dict] | None = []
+    eligibility_questions: list[dict] | None = []
+    disabled_eligibility_question_ids: list[str] | None = []
+    confidentiality_config: dict | None = None
     is_affirmative: bool = False
-    affirmative_criteria_primary: Optional[str] = None
-    affirmative_criteria_secondary: Optional[str] = None
-    affirmative_description: Optional[str] = None
+    affirmative_criteria_primary: str | None = None
+    affirmative_criteria_secondary: str | None = None
+    affirmative_description: str | None = None
     affirmative_document_required: bool = False
-    affirmative_document_types: Optional[List[str]] = []
-    bonus_range: Optional[dict] = None
-    conversation_id: Optional[str] = None
+    affirmative_document_types: list[str] | None = []
+    bonus_range: dict | None = None
+    conversation_id: str | None = None
 
 
 class JobVacancyUpdate(BaseModel):
     """Schema for updating a job vacancy."""
-    title: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    description: Optional[str] = None
-    requirements: Optional[List[str]] = None
-    technical_requirements: Optional[List[dict]] = None
-    languages: Optional[List[dict]] = None
-    behavioral_competencies: Optional[List[dict]] = None
-    salary: Optional[str] = None
-    salary_range: Optional[dict] = None
-    bonus_range: Optional[dict] = None
-    benefits: Optional[List[str]] = None
-    manager: Optional[str] = None
-    manager_email: Optional[str] = None
-    recruiter: Optional[str] = None
-    recruiter_email: Optional[str] = None
-    is_confidential: Optional[bool] = None
-    visibility: Optional[str] = None
-    access_list: Optional[List[str]] = None
-    masked_company_name: Optional[str] = None
-    exclude_from_sync: Optional[bool] = None
-    status: Optional[str] = None
-    stage: Optional[str] = None
-    priority: Optional[str] = None
-    screening_questions: Optional[List[dict]] = None
-    interview_stages: Optional[List[dict]] = None
-    eligibility_questions: Optional[List[dict]] = None
-    disabled_eligibility_question_ids: Optional[List[str]] = None
-    confidentiality_config: Optional[dict] = None
-    is_affirmative: Optional[bool] = None
-    affirmative_criteria_primary: Optional[str] = None
-    affirmative_criteria_secondary: Optional[str] = None
-    affirmative_description: Optional[str] = None
-    affirmative_document_required: Optional[bool] = None
-    affirmative_document_types: Optional[List[str]] = None
-    enriched_jd: Optional[dict] = None
+    title: str | None = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    seniority_level: str | None = None
+    description: str | None = None
+    requirements: list[str] | None = None
+    technical_requirements: list[dict] | None = None
+    languages: list[dict] | None = None
+    behavioral_competencies: list[dict] | None = None
+    salary: str | None = None
+    salary_range: dict | None = None
+    bonus_range: dict | None = None
+    benefits: list[str] | None = None
+    manager: str | None = None
+    manager_email: str | None = None
+    recruiter: str | None = None
+    recruiter_email: str | None = None
+    is_confidential: bool | None = None
+    visibility: str | None = None
+    access_list: list[str] | None = None
+    masked_company_name: str | None = None
+    exclude_from_sync: bool | None = None
+    status: str | None = None
+    stage: str | None = None
+    priority: str | None = None
+    screening_questions: list[dict] | None = None
+    interview_stages: list[dict] | None = None
+    eligibility_questions: list[dict] | None = None
+    disabled_eligibility_question_ids: list[str] | None = None
+    confidentiality_config: dict | None = None
+    is_affirmative: bool | None = None
+    affirmative_criteria_primary: str | None = None
+    affirmative_criteria_secondary: str | None = None
+    affirmative_description: str | None = None
+    affirmative_document_required: bool | None = None
+    affirmative_document_types: list[str] | None = None
+    enriched_jd: dict | None = None
 
 
 class JobVacancyResponse(BaseModel):
     """Response schema for job vacancy."""
     id: str
     title: str
-    department: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    description: Optional[str] = None
-    requirements: Optional[List[str]] = []
-    technical_requirements: Optional[List[dict]] = []
-    languages: Optional[List[dict]] = []
-    behavioral_competencies: Optional[List[dict]] = []
-    salary: Optional[str] = None
-    salary_range: Optional[dict] = None
-    bonus_range: Optional[dict] = None
-    benefits: Optional[List[str]] = []
-    manager: Optional[str] = None
-    manager_email: Optional[str] = None
-    recruiter: Optional[str] = None
-    recruiter_email: Optional[str] = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    seniority_level: str | None = None
+    description: str | None = None
+    requirements: list[str] | None = []
+    technical_requirements: list[dict] | None = []
+    languages: list[dict] | None = []
+    behavioral_competencies: list[dict] | None = []
+    salary: str | None = None
+    salary_range: dict | None = None
+    bonus_range: dict | None = None
+    benefits: list[str] | None = []
+    manager: str | None = None
+    manager_email: str | None = None
+    recruiter: str | None = None
+    recruiter_email: str | None = None
     is_confidential: bool = False
     visibility: str = "public"
-    access_list: Optional[List[str]] = []
-    masked_company_name: Optional[str] = None
+    access_list: list[str] | None = []
+    masked_company_name: str | None = None
     exclude_from_sync: bool = False
-    created_by: Optional[str] = None
+    created_by: str | None = None
     status: str = "Rascunho"
-    stage: Optional[str] = None
+    stage: str | None = None
     priority: str = "média"
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
-    deadline: Optional[str] = None
-    funnel_data: Optional[dict] = None
-    lia_metrics: Optional[dict] = None
-    nps: Optional[int] = None
-    budget: Optional[float] = None
-    budget_used: Optional[float] = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    deadline: str | None = None
+    funnel_data: dict | None = None
+    lia_metrics: dict | None = None
+    nps: int | None = None
+    budget: float | None = None
+    budget_used: float | None = None
     published_linkedin: bool = False
     published_website: bool = False
-    next_actions: Optional[List[str]] = []
-    urgency_level: Optional[int] = None
-    approval_status: Optional[str] = None
-    tags: Optional[List[str]] = []
-    screening_questions: Optional[List[dict]] = []
-    interview_stages: Optional[List[dict]] = []
-    eligibility_questions: Optional[List[dict]] = []
-    disabled_eligibility_question_ids: Optional[List[str]] = []
-    confidentiality_config: Optional[dict] = None
+    next_actions: list[str] | None = []
+    urgency_level: int | None = None
+    approval_status: str | None = None
+    tags: list[str] | None = []
+    screening_questions: list[dict] | None = []
+    interview_stages: list[dict] | None = []
+    eligibility_questions: list[dict] | None = []
+    disabled_eligibility_question_ids: list[str] | None = []
+    confidentiality_config: dict | None = None
     is_affirmative: bool = False
-    affirmative_criteria_primary: Optional[str] = None
-    affirmative_criteria_secondary: Optional[str] = None
-    affirmative_description: Optional[str] = None
+    affirmative_criteria_primary: str | None = None
+    affirmative_criteria_secondary: str | None = None
+    affirmative_description: str | None = None
     affirmative_document_required: bool = False
-    affirmative_document_types: Optional[List[str]] = []
-    conversation_id: Optional[str] = None
-    screening_config: Optional[dict] = None
-    enriched_jd: Optional[dict] = None
+    affirmative_document_types: list[str] | None = []
+    conversation_id: str | None = None
+    screening_config: dict | None = None
+    enriched_jd: dict | None = None
 
 
 class FinalizeJobVacancyRequest(BaseModel):
@@ -342,19 +320,19 @@ class BulkActionResponse(BaseModel):
     total_requested: int
     successful: int
     failed: int
-    errors: List[BulkActionError] = []
+    errors: list[BulkActionError] = []
 
 
 class BulkActionRequest(BaseModel):
-    job_ids: List[UUID] = Field(..., min_length=1, max_length=100)
+    job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
 
 
 class BulkAssignRecruiterRequest(BaseModel):
-    job_ids: List[UUID] = Field(..., min_length=1, max_length=100)
+    job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     recruiter_email: str = Field(..., min_length=1)
     recruiter_name: str = Field(..., min_length=1)
 
 
 class BulkChangeStatusRequest(BaseModel):
-    job_ids: List[UUID] = Field(..., min_length=1, max_length=100)
+    job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     new_status: str = Field(..., min_length=1)

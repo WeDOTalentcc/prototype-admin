@@ -7,8 +7,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC
 from enum import IntEnum
-from typing import Any
 
 
 class BARSLevel(IntEnum):
@@ -95,7 +95,7 @@ class BARSRubric:
         justifications: dict[str, str] | None = None,
     ) -> BARSEvaluation:
         """Create a BARSEvaluation from raw scores."""
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         overall = BARSEvaluation.compute_overall(scores, self.criteria)
         recommendation = "advance" if overall >= self.pass_threshold else "review"
@@ -111,7 +111,7 @@ class BARSRubric:
             justifications=justifications or {},
             overall_score=overall,
             recommendation=recommendation,
-            evaluated_at=datetime.now(timezone.utc).isoformat(),
+            evaluated_at=datetime.now(UTC).isoformat(),
         )
 
     def get_explanation(self, evaluation: BARSEvaluation) -> str:

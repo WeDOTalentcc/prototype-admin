@@ -7,13 +7,13 @@ Enables model improvement by:
 - Generating DPO preference pairs from corrections
 - Providing statistics for training data management
 """
-from datetime import datetime
-from typing import List, Dict, Any, Optional
-from uuid import UUID
 import json
 import logging
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.feedback import InteractionFeedback
@@ -97,7 +97,7 @@ class TrainingDataService:
         min_rating: int = 4,
         limit: int = 1000,
         require_correction: bool = False
-    ) -> List[InteractionFeedback]:
+    ) -> list[InteractionFeedback]:
         """Get feedback entries that meet quality criteria."""
         try:
             company_uuid = UUID(company_id)
@@ -144,7 +144,7 @@ class TrainingDataService:
         min_rating: int = 4,
         min_thumbs_ratio: float = 0.8,
         limit: int = 1000
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Export training data in OpenAI fine-tuning format.
         
@@ -195,7 +195,7 @@ class TrainingDataService:
         company_id: str,
         min_rating: int = 4,
         limit: int = 1000
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Export training data in Anthropic format.
         
@@ -239,7 +239,7 @@ class TrainingDataService:
         self,
         company_id: str,
         limit: int = 500
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Export DPO (Direct Preference Optimization) training pairs.
         Uses corrections to create chosen/rejected pairs.
@@ -285,7 +285,7 @@ class TrainingDataService:
     async def get_export_statistics(
         self,
         company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get statistics about available training data.
         
@@ -387,7 +387,7 @@ class TrainingDataService:
         self,
         company_id: str,
         target_count: int = 500
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Automatically curate the best samples for training.
         Returns list of feedback IDs that meet quality criteria.
@@ -489,7 +489,7 @@ class TrainingDataService:
         self.logger.info(f"Curated {len(curated_ids)} samples for company {company_id}")
         return curated_ids[:target_count]
     
-    def to_jsonl(self, data: List[Dict[str, Any]]) -> str:
+    def to_jsonl(self, data: list[dict[str, Any]]) -> str:
         """
         Convert a list of dictionaries to JSONL format.
         

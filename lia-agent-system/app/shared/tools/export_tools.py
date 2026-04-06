@@ -6,10 +6,9 @@ Provides function calling capabilities for:
 - Generating recruitment reports
 """
 import logging
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from typing import Any
 from uuid import UUID, uuid4
-import json
 
 from app.tools.registry import ToolDefinition, tool_registry
 
@@ -17,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 async def export_candidates(
-    candidate_ids: Optional[List[str]] = None,
-    job_id: Optional[str] = None,
-    filters: Optional[Dict[str, Any]] = None,
+    candidate_ids: list[str] | None = None,
+    job_id: str | None = None,
+    filters: dict[str, Any] | None = None,
     format: str = "csv",
-    include_fields: Optional[List[str]] = None,
-    filename: Optional[str] = None
-) -> Dict[str, Any]:
+    include_fields: list[str] | None = None,
+    filename: str | None = None
+) -> dict[str, Any]:
     """
     Export a list of candidates to a file.
     
@@ -105,12 +104,12 @@ async def export_candidates(
 
 async def generate_report(
     report_type: str,
-    job_id: Optional[str] = None,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
+    job_id: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
     include_charts: bool = True,
     format: str = "pdf"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Generate a recruitment report.
     
@@ -232,7 +231,7 @@ async def export_job_analytics(
     include_funnel_metrics: bool = True,
     include_source_breakdown: bool = True,
     format: str = "xlsx"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Export comprehensive analytics for a specific job vacancy.
     
@@ -249,8 +248,9 @@ async def export_job_analytics(
     logger.info(f"📊 Exporting analytics for job: {job_id}")
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -309,11 +309,11 @@ async def export_job_analytics(
 async def schedule_report(
     report_type: str,
     frequency: str,
-    recipients: List[str],
-    job_ids: Optional[List[str]] = None,
+    recipients: list[str],
+    job_ids: list[str] | None = None,
     time_of_day: str = "08:00",
     format: str = "pdf"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Schedule a recurring report to be sent automatically.
     

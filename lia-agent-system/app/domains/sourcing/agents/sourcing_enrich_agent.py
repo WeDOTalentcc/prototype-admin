@@ -10,8 +10,9 @@ Tools (7): analyze_profile, compare_candidates, score_candidate,
 Modelo: Sonnet (análise e raciocínio mais complexos)
 """
 import logging
-from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+
 from app.domains.sourcing.agents.sourcing_enrich_tool_registry import get_enrich_tools
+from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 
 logger = logging.getLogger(__name__)
 

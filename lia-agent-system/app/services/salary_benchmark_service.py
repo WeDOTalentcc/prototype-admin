@@ -9,8 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class SalaryBenchmark:
     p75: float  # 75th percentile
     currency: str = "BRL"
     source: str = "fallback"  # "external" | "internal" | "fallback"
-    fetched_at: Optional[datetime] = None
+    fetched_at: datetime | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -130,7 +129,7 @@ class SalaryBenchmarkService:
 
     async def _fetch_from_apify(
         self, job_title: str, seniority: str, location: str
-    ) -> Optional[SalaryBenchmark]:
+    ) -> SalaryBenchmark | None:
         """Scrapes salary data via Apify Glassdoor actor."""
         try:
             from app.domains.sourcing.services.apify_service import ApifyService

@@ -5,26 +5,20 @@ Usa LangGraph nativo (create_react_agent) com PostgresSaver para persistência.
 Migração completa concluída — path legado ReActLoop removido.
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
     NavigationCommand,
 )
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
-from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
+from lia_agents_core.working_memory import WorkingMemoryService
 
 from app.domains.cv_screening.agents.pipeline_stage_context import (
     STAGE_DEFINITIONS,
     get_stage_context,
-    get_transition_prompt,
 )
 from app.domains.cv_screening.agents.pipeline_system_prompt import get_pipeline_system_prompt
 from app.domains.cv_screening.agents.pipeline_tool_registry import (
@@ -55,7 +49,7 @@ class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "pipeline"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:

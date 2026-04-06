@@ -3,16 +3,17 @@ Global Policies API Endpoints.
 
 Provides CRUD operations for global and company-level policy management.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
 import logging
+from typing import Any
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.global_policy import GlobalPolicy, PolicyType, PolicyScope, POLICY_TYPES
+from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +21,10 @@ router = APIRouter(prefix="/policies", tags=["policies"])
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """
     Get user context from request headers.
     Used for development and internal API calls.
@@ -45,22 +46,22 @@ def get_user_from_headers(
 class PolicyCreate(BaseModel):
     """Request model for creating a policy."""
     name: str = Field(..., min_length=1, max_length=255, description="Policy name")
-    description: Optional[str] = Field(None, max_length=1000, description="Policy description")
+    description: str | None = Field(None, max_length=1000, description="Policy description")
     policy_type: str = Field(..., description="Policy type")
-    value: Dict[str, Any] = Field(..., description="Policy value (flexible JSON)")
+    value: dict[str, Any] = Field(..., description="Policy value (flexible JSON)")
     scope: str = Field(default="company", description="Policy scope: platform or company")
     is_active: bool = Field(default=True, description="Whether policy is active")
-    company_id: Optional[str] = Field(None, description="Company ID (null for platform policies)")
+    company_id: str | None = Field(None, description="Company ID (null for platform policies)")
 
 
 class PolicyUpdate(BaseModel):
     """Request model for updating a policy."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = Field(None, max_length=1000)
-    policy_type: Optional[str] = None
-    value: Optional[Dict[str, Any]] = None
-    scope: Optional[str] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = Field(None, max_length=1000)
+    policy_type: str | None = None
+    value: dict[str, Any] | None = None
+    scope: str | None = None
+    is_active: bool | None = None
 
 
 @router.get("/types", summary="List policy types")
@@ -82,13 +83,13 @@ async def list_policy_types():
 
 @router.get("", summary="List policies")
 async def list_policies(
-    policy_type: Optional[str] = Query(None, description="Filter by policy type"),
-    scope: Optional[str] = Query(None, description="Filter by scope (platform, company)"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    company_id: Optional[str] = Query(None, description="Filter by company ID"),
+    policy_type: str | None = Query(None, description="Filter by policy type"),
+    scope: str | None = Query(None, description="Filter by scope (platform, company)"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    company_id: str | None = Query(None, description="Filter by company ID"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -159,7 +160,7 @@ async def list_policies(
 @router.get("/{policy_id}", summary="Get policy by ID")
 async def get_policy(
     policy_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -211,7 +212,7 @@ async def get_policy(
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Create policy")
 async def create_policy(
     data: PolicyCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -287,7 +288,7 @@ async def create_policy(
 async def update_policy(
     policy_id: str,
     data: PolicyUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -381,7 +382,7 @@ async def update_policy(
 @router.delete("/{policy_id}", summary="Delete policy")
 async def delete_policy(
     policy_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

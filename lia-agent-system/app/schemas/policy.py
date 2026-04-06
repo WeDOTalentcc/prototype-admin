@@ -1,10 +1,10 @@
 """
 Pydantic schemas for Policy Engine API.
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class RuleTypeEnum(str, Enum):
@@ -47,46 +47,46 @@ class PolicyEvaluationResultEnum(str, Enum):
 class BusinessRuleCreate(BaseModel):
     """Schema for creating a business rule."""
     name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     rule_type: RuleTypeEnum = RuleTypeEnum.ALLOW
-    conditions: Dict[str, Any] = Field(default_factory=dict)
-    actions: List[str] = Field(default_factory=list)
+    conditions: dict[str, Any] = Field(default_factory=dict)
+    actions: list[str] = Field(default_factory=list)
     priority: int = Field(default=100, ge=1, le=1000)
-    approval_config: Optional[Dict[str, Any]] = None
+    approval_config: dict[str, Any] | None = None
     is_active: bool = True
-    rule_metadata: Optional[Dict[str, Any]] = None
-    company_id: Optional[str] = None
+    rule_metadata: dict[str, Any] | None = None
+    company_id: str | None = None
 
 
 class BusinessRuleUpdate(BaseModel):
     """Schema for updating a business rule."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    rule_type: Optional[RuleTypeEnum] = None
-    conditions: Optional[Dict[str, Any]] = None
-    actions: Optional[List[str]] = None
-    priority: Optional[int] = Field(None, ge=1, le=1000)
-    approval_config: Optional[Dict[str, Any]] = None
-    is_active: Optional[bool] = None
-    rule_metadata: Optional[Dict[str, Any]] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    rule_type: RuleTypeEnum | None = None
+    conditions: dict[str, Any] | None = None
+    actions: list[str] | None = None
+    priority: int | None = Field(None, ge=1, le=1000)
+    approval_config: dict[str, Any] | None = None
+    is_active: bool | None = None
+    rule_metadata: dict[str, Any] | None = None
 
 
 class BusinessRuleResponse(BaseModel):
     """Schema for business rule response."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     rule_type: str
-    conditions: Dict[str, Any]
-    actions: List[str]
+    conditions: dict[str, Any]
+    actions: list[str]
     priority: int
-    approval_config: Optional[Dict[str, Any]] = None
+    approval_config: dict[str, Any] | None = None
     is_active: bool
-    rule_metadata: Optional[Dict[str, Any]] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
-    created_by: Optional[str] = None
+    rule_metadata: dict[str, Any] | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    created_by: str | None = None
 
     class Config:
         from_attributes = True
@@ -95,47 +95,47 @@ class BusinessRuleResponse(BaseModel):
 class RateLimitRuleCreate(BaseModel):
     """Schema for creating a rate limit rule."""
     name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     target_type: TargetTypeEnum
-    target_id: Optional[str] = None
-    action_pattern: Optional[str] = None
+    target_id: str | None = None
+    action_pattern: str | None = None
     limit_value: int = Field(..., ge=1)
     window_seconds: int = Field(..., ge=1)
-    burst_limit: Optional[int] = None
+    burst_limit: int | None = None
     is_active: bool = True
-    company_id: Optional[str] = None
+    company_id: str | None = None
 
 
 class RateLimitRuleUpdate(BaseModel):
     """Schema for updating a rate limit rule."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    target_type: Optional[TargetTypeEnum] = None
-    target_id: Optional[str] = None
-    action_pattern: Optional[str] = None
-    limit_value: Optional[int] = Field(None, ge=1)
-    window_seconds: Optional[int] = Field(None, ge=1)
-    burst_limit: Optional[int] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    target_type: TargetTypeEnum | None = None
+    target_id: str | None = None
+    action_pattern: str | None = None
+    limit_value: int | None = Field(None, ge=1)
+    window_seconds: int | None = Field(None, ge=1)
+    burst_limit: int | None = None
+    is_active: bool | None = None
 
 
 class RateLimitRuleResponse(BaseModel):
     """Schema for rate limit rule response."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     target_type: str
-    target_id: Optional[str] = None
-    action_pattern: Optional[str] = None
+    target_id: str | None = None
+    action_pattern: str | None = None
     limit_value: int
     window_seconds: int
     current_count: int
-    window_start: Optional[str] = None
-    burst_limit: Optional[int] = None
+    window_start: str | None = None
+    burst_limit: int | None = None
     is_active: bool
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -144,49 +144,49 @@ class RateLimitRuleResponse(BaseModel):
 class EscalationRuleCreate(BaseModel):
     """Schema for creating an escalation rule."""
     name: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     trigger_type: TriggerTypeEnum
-    condition: Dict[str, Any] = Field(default_factory=dict)
-    escalate_to: List[str] = Field(default_factory=list)
+    condition: dict[str, Any] = Field(default_factory=dict)
+    escalate_to: list[str] = Field(default_factory=list)
     escalation_action: EscalationActionEnum = EscalationActionEnum.NOTIFY_MANAGER
-    notification_template: Optional[str] = None
+    notification_template: str | None = None
     cooldown_seconds: int = Field(default=3600, ge=0)
     priority: int = Field(default=100, ge=1, le=1000)
     is_active: bool = True
-    company_id: Optional[str] = None
+    company_id: str | None = None
 
 
 class EscalationRuleUpdate(BaseModel):
     """Schema for updating an escalation rule."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = None
-    trigger_type: Optional[TriggerTypeEnum] = None
-    condition: Optional[Dict[str, Any]] = None
-    escalate_to: Optional[List[str]] = None
-    escalation_action: Optional[EscalationActionEnum] = None
-    notification_template: Optional[str] = None
-    cooldown_seconds: Optional[int] = Field(None, ge=0)
-    priority: Optional[int] = Field(None, ge=1, le=1000)
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    trigger_type: TriggerTypeEnum | None = None
+    condition: dict[str, Any] | None = None
+    escalate_to: list[str] | None = None
+    escalation_action: EscalationActionEnum | None = None
+    notification_template: str | None = None
+    cooldown_seconds: int | None = Field(None, ge=0)
+    priority: int | None = Field(None, ge=1, le=1000)
+    is_active: bool | None = None
 
 
 class EscalationRuleResponse(BaseModel):
     """Schema for escalation rule response."""
     id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     trigger_type: str
-    condition: Dict[str, Any]
-    escalate_to: List[str]
+    condition: dict[str, Any]
+    escalate_to: list[str]
     escalation_action: str
-    notification_template: Optional[str] = None
+    notification_template: str | None = None
     cooldown_seconds: int
-    last_triggered: Optional[str] = None
+    last_triggered: str | None = None
     is_active: bool
     priority: int
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -195,10 +195,10 @@ class EscalationRuleResponse(BaseModel):
 class PolicyEvaluateRequest(BaseModel):
     """Schema for policy evaluation request."""
     action: str = Field(..., min_length=1)
-    context: Dict[str, Any] = Field(default_factory=dict)
-    agent_name: Optional[str] = None
-    company_id: Optional[str] = None
-    user_id: Optional[str] = None
+    context: dict[str, Any] = Field(default_factory=dict)
+    agent_name: str | None = None
+    company_id: str | None = None
+    user_id: str | None = None
     check_rate_limit: bool = True
     dry_run: bool = False
 
@@ -207,11 +207,11 @@ class PolicyEvaluateResponse(BaseModel):
     """Schema for policy evaluation response."""
     result: PolicyEvaluationResultEnum
     allowed: bool
-    reason: Optional[str] = None
-    matching_rule: Optional[BusinessRuleResponse] = None
-    rate_limit_status: Optional[Dict[str, Any]] = None
+    reason: str | None = None
+    matching_rule: BusinessRuleResponse | None = None
+    rate_limit_status: dict[str, Any] | None = None
     requires_approval: bool = False
-    approval_config: Optional[Dict[str, Any]] = None
+    approval_config: dict[str, Any] | None = None
     evaluation_time_ms: float
     rules_evaluated: int
 
@@ -221,7 +221,7 @@ class RateLimitCheckRequest(BaseModel):
     target_type: TargetTypeEnum
     target_id: str
     action: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     increment: bool = True
 
 
@@ -232,32 +232,32 @@ class RateLimitCheckResponse(BaseModel):
     limit_value: int
     window_seconds: int
     remaining: int
-    reset_at: Optional[str] = None
-    rule_name: Optional[str] = None
+    reset_at: str | None = None
+    rule_name: str | None = None
 
 
 class EscalationTriggerRequest(BaseModel):
     """Schema for escalation trigger request."""
-    rule_id: Optional[str] = None
-    trigger_type: Optional[TriggerTypeEnum] = None
-    context: Dict[str, Any] = Field(default_factory=dict)
-    company_id: Optional[str] = None
+    rule_id: str | None = None
+    trigger_type: TriggerTypeEnum | None = None
+    context: dict[str, Any] = Field(default_factory=dict)
+    company_id: str | None = None
 
 
 class EscalationTriggerResponse(BaseModel):
     """Schema for escalation trigger response."""
     success: bool
-    escalation_log_id: Optional[str] = None
-    action_taken: Optional[str] = None
-    notifications_sent: List[str] = Field(default_factory=list)
-    message: Optional[str] = None
+    escalation_log_id: str | None = None
+    action_taken: str | None = None
+    notifications_sent: list[str] = Field(default_factory=list)
+    message: str | None = None
 
 
 class PolicyListResponse(BaseModel):
     """Schema for listing policies."""
-    business_rules: List[BusinessRuleResponse] = Field(default_factory=list)
-    rate_limit_rules: List[RateLimitRuleResponse] = Field(default_factory=list)
-    escalation_rules: List[EscalationRuleResponse] = Field(default_factory=list)
+    business_rules: list[BusinessRuleResponse] = Field(default_factory=list)
+    rate_limit_rules: list[RateLimitRuleResponse] = Field(default_factory=list)
+    escalation_rules: list[EscalationRuleResponse] = Field(default_factory=list)
     total_business_rules: int = 0
     total_rate_limit_rules: int = 0
     total_escalation_rules: int = 0
@@ -277,21 +277,21 @@ class PolicySeedResponse(BaseModel):
 class PolicyEvaluationLogResponse(BaseModel):
     """Schema for policy evaluation log."""
     id: str
-    company_id: Optional[str] = None
-    agent_name: Optional[str] = None
+    company_id: str | None = None
+    agent_name: str | None = None
     action: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
     result: str
-    rules_evaluated: List[Dict[str, Any]] = Field(default_factory=list)
-    matching_rule_id: Optional[str] = None
-    matching_rule_name: Optional[str] = None
+    rules_evaluated: list[dict[str, Any]] = Field(default_factory=list)
+    matching_rule_id: str | None = None
+    matching_rule_name: str | None = None
     rate_limit_checked: bool
-    rate_limit_result: Optional[bool] = None
+    rate_limit_result: bool | None = None
     escalation_triggered: bool
-    escalation_rule_id: Optional[str] = None
-    evaluation_time_ms: Optional[float] = None
-    user_id: Optional[str] = None
-    created_at: Optional[str] = None
+    escalation_rule_id: str | None = None
+    evaluation_time_ms: float | None = None
+    user_id: str | None = None
+    created_at: str | None = None
 
     class Config:
         from_attributes = True
@@ -300,19 +300,19 @@ class PolicyEvaluationLogResponse(BaseModel):
 class EscalationLogResponse(BaseModel):
     """Schema for escalation log."""
     id: str
-    company_id: Optional[str] = None
-    escalation_rule_id: Optional[str] = None
+    company_id: str | None = None
+    escalation_rule_id: str | None = None
     trigger_reason: str
-    trigger_context: Optional[Dict[str, Any]] = None
+    trigger_context: dict[str, Any] | None = None
     action_taken: str
-    action_result: Optional[Dict[str, Any]] = None
-    escalated_to: List[str] = Field(default_factory=list)
+    action_result: dict[str, Any] | None = None
+    escalated_to: list[str] = Field(default_factory=list)
     notification_sent: bool
     resolved: bool
-    resolved_at: Optional[str] = None
-    resolved_by: Optional[str] = None
-    resolution_notes: Optional[str] = None
-    created_at: Optional[str] = None
+    resolved_at: str | None = None
+    resolved_by: str | None = None
+    resolution_notes: str | None = None
+    created_at: str | None = None
 
     class Config:
         from_attributes = True

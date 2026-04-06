@@ -12,12 +12,12 @@ Sub-modules:
 """
 from fastapi import APIRouter
 
+from .archetypes import router as archetypes_router
+from .calibration import router as calibration_router
+from .contact import router as contact_router
 from .core_search import router as core_search_router
 from .jd_search import router as jd_search_router
-from .contact import router as contact_router
-from .archetypes import router as archetypes_router
 from .misc_search import router as misc_search_router
-from .calibration import router as calibration_router
 
 router = APIRouter(prefix='/search', tags=['candidate-search'])
 

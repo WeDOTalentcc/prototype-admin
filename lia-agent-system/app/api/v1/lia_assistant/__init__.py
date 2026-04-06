@@ -14,17 +14,19 @@ main.py only needs to import from this package:
 """
 from fastapi import APIRouter
 
-# --- Previously-extracted Sprint-E sub-routers ---
-from app.api.v1.lia_voice import voice_router
-from app.api.v1.lia_multimodal import multimodal_router
 from app.api.v1.lia_autonomous import autonomous_router
 from app.api.v1.lia_feedback import feedback_router
+from app.api.v1.lia_multimodal import multimodal_router
+
+# --- Previously-extracted Sprint-E sub-routers ---
+from app.api.v1.lia_voice import voice_router
+
+from .conversational import router as _conversational_router
+from .insights import router as _insights_router
 
 # --- This package's sub-routers ---
 from .suggestions import router as _suggestions_router
 from .wizard import router as _wizard_router
-from .insights import router as _insights_router
-from .conversational import router as _conversational_router
 
 # Main router exposed to main.py (same prefix as before)
 router = APIRouter(prefix="/lia", tags=["lia-assistant"])
@@ -44,10 +46,10 @@ router.include_router(_conversational_router)
 # Re-export shared graph types for backwards compatibility
 # (graph routes live in lia_assistant_graph.py, registered separately in main.py)
 from app.api.v1.lia_assistant_graph import (
+    GraphInfoResponse,
     GraphOrchestratorRequest,
     GraphOrchestratorResponse,
     SessionStateResponse,
-    GraphInfoResponse,
 )
 
 __all__ = [

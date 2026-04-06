@@ -4,8 +4,8 @@ Orchestrates ES score drop analysis and PGVector gap analysis before WRF fusion.
 Applies adaptive filtering based on job qualification level.
 """
 import logging
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
 from app.services.es_score_drop_analyzer import es_score_drop_analyzer
 from app.services.pgv_gap_analyzer import pgv_gap_analyzer
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class PreWRFFilterService:
-    def orchestrate(self, es_candidates: List[Dict[str, Any]], pgv_candidates: List[Dict[str, Any]],
-                    qualification_level: Optional[str] = None) -> Dict[str, Any]:
+    def orchestrate(self, es_candidates: list[dict[str, Any]], pgv_candidates: list[dict[str, Any]],
+                    qualification_level: str | None = None) -> dict[str, Any]:
         level = (qualification_level or "media").lower()
         started_at = datetime.utcnow()
 

@@ -11,12 +11,11 @@ Run with: python -m app.scripts.seed_job_patterns
 """
 import asyncio
 import logging
-from uuid import uuid4
-from datetime import datetime, timedelta
 import random
+from uuid import uuid4
 
 from app.core.database import AsyncSessionLocal
-from app.models.job_pattern import JobPattern, SalaryBenchmark, SkillCluster, JobEmbedding
+from app.models.job_pattern import JobEmbedding, JobPattern, SalaryBenchmark, SkillCluster
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

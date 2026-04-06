@@ -12,24 +12,25 @@ Conversation Flow:
 5. For each document received: save, send documentReceived, ask for next
 6. When complete: send allComplete
 """
-from datetime import datetime
-from typing import Optional, Dict, Any, List
-from uuid import UUID
 import logging
-import re
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
+from app.models.candidate import Candidate
 from app.models.data_request import (
+    DataFieldType,
     DataRequest,
-    DataRequestResponse as DataRequestResponseModel,
     DataRequestConfig,
     DataRequestStatus,
-    DataFieldType,
 )
-from app.models.candidate import Candidate
-from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
+from app.models.data_request import (
+    DataRequestResponse as DataRequestResponseModel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +73,8 @@ class DataRequestWhatsAppService:
         company_name: str = "",
         field_label: str = "",
         next_field_label: str = "",
-        pending_fields: List[str] = None,
-        received_fields: List[str] = None,
+        pending_fields: list[str] = None,
+        received_fields: list[str] = None,
         portal_url: str = "",
         help_text: str = "",
         allowed_formats: str = "",
@@ -209,7 +210,7 @@ class DataRequestWhatsAppService:
         db: AsyncSession,
         data_request_id: UUID,
         response: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process consent response from candidate.
         
@@ -303,7 +304,7 @@ class DataRequestWhatsAppService:
         db: AsyncSession,
         data_request_id: UUID,
         response: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process collection method choice from candidate.
         
@@ -383,11 +384,11 @@ class DataRequestWhatsAppService:
         db: AsyncSession,
         data_request_id: UUID,
         message_content: str,
-        file_url: Optional[str] = None,
-        file_name: Optional[str] = None,
-        file_mime_type: Optional[str] = None,
-        file_size: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        file_url: str | None = None,
+        file_name: str | None = None,
+        file_mime_type: str | None = None,
+        file_size: int | None = None,
+    ) -> dict[str, Any]:
         """
         Process document/text response for current field.
         
@@ -549,8 +550,8 @@ class DataRequestWhatsAppService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-        exclude: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+        exclude: str | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get the next pending field to collect.
         
@@ -585,8 +586,8 @@ class DataRequestWhatsAppService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-        exclude: Optional[str] = None,
-    ) -> List[str]:
+        exclude: str | None = None,
+    ) -> list[str]:
         """Get labels of all pending fields."""
         data_request = await db.get(DataRequest, data_request_id)
         if not data_request:
@@ -607,8 +608,8 @@ class DataRequestWhatsAppService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-        field: Dict[str, Any],
-        phone: Optional[str] = None,
+        field: dict[str, Any],
+        phone: str | None = None,
     ) -> bool:
         """
         Send request message for a specific field.
@@ -668,7 +669,7 @@ class DataRequestWhatsAppService:
         config: DataRequestConfig,
         phone: str,
         candidate_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send status message showing pending and completed fields."""
         completed = [f.get("label", f.get("name", "")) for f in (data_request.fields_completed or [])]
         pending = await self._get_pending_field_labels(db, data_request.id)
@@ -697,7 +698,7 @@ class DataRequestWhatsAppService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get current conversation status.
         
@@ -738,11 +739,11 @@ class DataRequestWhatsAppService:
         db: AsyncSession,
         data_request_id: UUID,
         message_content: str,
-        file_url: Optional[str] = None,
-        file_name: Optional[str] = None,
-        file_mime_type: Optional[str] = None,
-        file_size: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        file_url: str | None = None,
+        file_name: str | None = None,
+        file_mime_type: str | None = None,
+        file_size: int | None = None,
+    ) -> dict[str, Any]:
         """
         Main entry point for processing incoming WhatsApp messages.
         

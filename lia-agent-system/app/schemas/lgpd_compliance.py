@@ -7,10 +7,11 @@ Includes schemas for:
 - Automated Decision Explanations (Article 20 compliance)
 """
 
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class BreachSeverityEnum(str, Enum):
@@ -42,12 +43,12 @@ class DPORegistryResponse(BaseModel):
     company_id: str
     dpo_name: str
     dpo_email: str
-    dpo_phone: Optional[str] = None
-    appointment_date: Optional[date] = None
+    dpo_phone: str | None = None
+    appointment_date: date | None = None
     is_active: bool = True
-    public_contact_url: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    public_contact_url: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -55,7 +56,7 @@ class DPORegistryResponse(BaseModel):
 
 class DPORegistryListResponse(BaseModel):
     """Paginated list of DPO registry entries."""
-    dpos: List[DPORegistryResponse]
+    dpos: list[DPORegistryResponse]
     total: int
     limit: int
     offset: int
@@ -65,9 +66,9 @@ class DPORegistryCreate(BaseModel):
     """Schema for creating/updating a DPO registry entry."""
     dpo_name: str = Field(..., min_length=2, max_length=255, description="Full name of the DPO")
     dpo_email: str = Field(..., description="DPO contact email")
-    dpo_phone: Optional[str] = Field(None, max_length=50, description="DPO contact phone")
+    dpo_phone: str | None = Field(None, max_length=50, description="DPO contact phone")
     appointment_date: date = Field(..., description="Date of DPO appointment")
-    public_contact_url: Optional[str] = Field(None, max_length=500, description="Public URL for data subject contact")
+    public_contact_url: str | None = Field(None, max_length=500, description="Public URL for data subject contact")
 
     class Config:
         json_schema_extra = {
@@ -83,34 +84,34 @@ class DPORegistryCreate(BaseModel):
 
 class DPORegistryUpdate(BaseModel):
     """Schema for updating a DPO registry entry."""
-    dpo_name: Optional[str] = Field(None, min_length=2, max_length=255)
-    dpo_email: Optional[str] = None
-    dpo_phone: Optional[str] = Field(None, max_length=50)
-    is_active: Optional[bool] = None
-    public_contact_url: Optional[str] = Field(None, max_length=500)
+    dpo_name: str | None = Field(None, min_length=2, max_length=255)
+    dpo_email: str | None = None
+    dpo_phone: str | None = Field(None, max_length=50)
+    is_active: bool | None = None
+    public_contact_url: str | None = Field(None, max_length=500)
 
 
 class BreachNotificationResponse(BaseModel):
     """Response schema for breach notification."""
     id: str
     company_id: str
-    breach_detected_at: Optional[datetime] = None
+    breach_detected_at: datetime | None = None
     breach_description: str
-    affected_data_types: List[str] = []
-    affected_count: Optional[int] = None
+    affected_data_types: list[str] = []
+    affected_count: int | None = None
     severity: str
     notification_sent_to_anpd: bool = False
-    anpd_notification_at: Optional[datetime] = None
+    anpd_notification_at: datetime | None = None
     notification_sent_to_subjects: bool = False
-    subjects_notification_at: Optional[datetime] = None
-    remediation_actions: List[str] = []
+    subjects_notification_at: datetime | None = None
+    remediation_actions: list[str] = []
     status: str
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    resolved_at: Optional[datetime] = None
-    hours_since_detection: Optional[float] = None
-    anpd_deadline_exceeded: Optional[bool] = None
+    created_by: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    resolved_at: datetime | None = None
+    hours_since_detection: float | None = None
+    anpd_deadline_exceeded: bool | None = None
 
     class Config:
         from_attributes = True
@@ -118,7 +119,7 @@ class BreachNotificationResponse(BaseModel):
 
 class BreachNotificationListResponse(BaseModel):
     """Paginated list of breach notifications."""
-    breaches: List[BreachNotificationResponse]
+    breaches: list[BreachNotificationResponse]
     total: int
     limit: int
     offset: int
@@ -128,8 +129,8 @@ class BreachNotificationCreate(BaseModel):
     """Schema for creating a breach notification."""
     breach_detected_at: datetime = Field(..., description="When the breach was detected")
     breach_description: str = Field(..., min_length=10, description="Description of the breach")
-    affected_data_types: List[str] = Field(default=[], description="Types of data affected (e.g., 'personal_info', 'cv', 'contact_info')")
-    affected_count: Optional[int] = Field(None, ge=0, description="Number of data subjects affected")
+    affected_data_types: list[str] = Field(default=[], description="Types of data affected (e.g., 'personal_info', 'cv', 'contact_info')")
+    affected_count: int | None = Field(None, ge=0, description="Number of data subjects affected")
     severity: BreachSeverityEnum = Field(default=BreachSeverityEnum.MEDIUM, description="Severity level")
 
     class Config:
@@ -146,18 +147,18 @@ class BreachNotificationCreate(BaseModel):
 
 class BreachNotificationUpdate(BaseModel):
     """Schema for updating a breach notification."""
-    breach_description: Optional[str] = Field(None, min_length=10)
-    affected_data_types: Optional[List[str]] = None
-    affected_count: Optional[int] = Field(None, ge=0)
-    severity: Optional[BreachSeverityEnum] = None
-    remediation_actions: Optional[List[str]] = None
-    status: Optional[BreachStatusEnum] = None
+    breach_description: str | None = Field(None, min_length=10)
+    affected_data_types: list[str] | None = None
+    affected_count: int | None = Field(None, ge=0)
+    severity: BreachSeverityEnum | None = None
+    remediation_actions: list[str] | None = None
+    status: BreachStatusEnum | None = None
 
 
 class ANPDNotification(BaseModel):
     """Schema for marking ANPD notification."""
-    notification_details: Optional[str] = Field(None, description="Details about the ANPD notification")
-    protocol_number: Optional[str] = Field(None, description="ANPD protocol number if available")
+    notification_details: str | None = Field(None, description="Details about the ANPD notification")
+    protocol_number: str | None = Field(None, description="ANPD protocol number if available")
 
     class Config:
         json_schema_extra = {
@@ -170,8 +171,8 @@ class ANPDNotification(BaseModel):
 
 class SubjectsNotification(BaseModel):
     """Schema for marking data subjects notification."""
-    notification_method: Optional[str] = Field(None, description="Method used to notify subjects")
-    subjects_notified_count: Optional[int] = Field(None, ge=0, description="Number of subjects notified")
+    notification_method: str | None = Field(None, description="Method used to notify subjects")
+    subjects_notified_count: int | None = Field(None, ge=0, description="Number of subjects notified")
 
     class Config:
         json_schema_extra = {
@@ -184,8 +185,8 @@ class SubjectsNotification(BaseModel):
 
 class BreachResolution(BaseModel):
     """Schema for resolving a breach notification."""
-    resolution_notes: Optional[str] = Field(None, description="Notes about the resolution")
-    remediation_actions: Optional[List[str]] = Field(None, description="Final remediation actions taken")
+    resolution_notes: str | None = Field(None, description="Notes about the resolution")
+    remediation_actions: list[str] | None = Field(None, description="Final remediation actions taken")
 
     class Config:
         json_schema_extra = {
@@ -206,19 +207,19 @@ class AutomatedDecisionResponse(BaseModel):
     id: str
     company_id: str
     decision_type: str
-    candidate_id: Optional[str] = None
-    vacancy_id: Optional[str] = None
-    ai_model_used: Optional[str] = None
-    input_criteria: Dict[str, Any] = {}
-    decision_criteria: Dict[str, Any] = {}
-    explanation_text: Optional[str] = None
-    explanation_requested_at: Optional[datetime] = None
-    explanation_provided_at: Optional[datetime] = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    ai_model_used: str | None = None
+    input_criteria: dict[str, Any] = {}
+    decision_criteria: dict[str, Any] = {}
+    explanation_text: str | None = None
+    explanation_requested_at: datetime | None = None
+    explanation_provided_at: datetime | None = None
     human_review_requested: bool = False
-    human_review_completed_at: Optional[datetime] = None
-    human_review_decision: Optional[str] = None
-    human_reviewer_id: Optional[str] = None
-    created_at: Optional[datetime] = None
+    human_review_completed_at: datetime | None = None
+    human_review_decision: str | None = None
+    human_reviewer_id: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -226,7 +227,7 @@ class AutomatedDecisionResponse(BaseModel):
 
 class AutomatedDecisionListResponse(BaseModel):
     """Paginated list of automated decision explanations."""
-    decisions: List[AutomatedDecisionResponse]
+    decisions: list[AutomatedDecisionResponse]
     total: int
     limit: int
     offset: int
@@ -235,12 +236,12 @@ class AutomatedDecisionListResponse(BaseModel):
 class AutomatedDecisionCreate(BaseModel):
     """Schema for creating an automated decision record."""
     decision_type: DecisionTypeEnum = Field(..., description="Type of decision")
-    candidate_id: Optional[str] = Field(None, description="Candidate ID")
-    vacancy_id: Optional[str] = Field(None, description="Vacancy ID")
-    ai_model_used: Optional[str] = Field(None, description="AI model version used")
-    input_criteria: Dict[str, Any] = Field(default={}, description="Input data criteria used")
-    decision_criteria: Dict[str, Any] = Field(default={}, description="Decision criteria and weights")
-    explanation_text: Optional[str] = Field(None, description="Human-readable explanation")
+    candidate_id: str | None = Field(None, description="Candidate ID")
+    vacancy_id: str | None = Field(None, description="Vacancy ID")
+    ai_model_used: str | None = Field(None, description="AI model version used")
+    input_criteria: dict[str, Any] = Field(default={}, description="Input data criteria used")
+    decision_criteria: dict[str, Any] = Field(default={}, description="Decision criteria and weights")
+    explanation_text: str | None = Field(None, description="Human-readable explanation")
 
     class Config:
         json_schema_extra = {
@@ -266,8 +267,8 @@ class AutomatedDecisionCreate(BaseModel):
 
 class HumanReviewRequest(BaseModel):
     """Schema for requesting human review of an automated decision."""
-    reason: Optional[str] = Field(None, description="Reason for requesting human review")
-    requested_by: Optional[str] = Field(None, description="ID of the data subject requesting review")
+    reason: str | None = Field(None, description="Reason for requesting human review")
+    requested_by: str | None = Field(None, description="ID of the data subject requesting review")
 
     class Config:
         json_schema_extra = {
@@ -282,7 +283,7 @@ class HumanReviewComplete(BaseModel):
     """Schema for completing a human review."""
     decision: str = Field(..., description="Human review decision")
     reviewer_id: str = Field(..., description="ID of the human reviewer")
-    notes: Optional[str] = Field(None, description="Additional notes")
+    notes: str | None = Field(None, description="Additional notes")
 
     class Config:
         json_schema_extra = {

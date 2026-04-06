@@ -12,7 +12,6 @@ Referências:
 """
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
@@ -21,14 +20,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.bias_audit_service import (
-    bias_audit_service,
     BiasAuditReport,
-    DemographicAuditResult,
+    bias_audit_service,
 )
 
 
 def _require_company_id(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
     """Exige header X-Company-ID para isolamento multi-tenant."""
     if not x_company_id:
@@ -56,11 +54,11 @@ router = APIRouter(prefix="/bias-audit", tags=["bias-audit"])
 
 class DemographicAuditResultResponse(BaseModel):
     dimension: str
-    groups: Dict[str, Dict]
+    groups: dict[str, dict]
     adverse_impact_ratio: float
     below_threshold: bool
     alert_level: str
-    disparate_impact: Dict = {}   # D3: {"chi2", "p_value", "significant", "available"}
+    disparate_impact: dict = {}   # D3: {"chi2", "p_value", "significant", "available"}
     eeoc_compliant: bool = True   # D3: Four-Fifths ok AND p >= 0.05
 
 
@@ -68,7 +66,7 @@ class BiasAuditReportResponse(BaseModel):
     job_id: str
     evaluated_at: datetime
     total_candidates: int
-    dimensions: List[DemographicAuditResultResponse]
+    dimensions: list[DemographicAuditResultResponse]
     has_alerts: bool
 
 

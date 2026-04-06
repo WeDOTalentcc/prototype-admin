@@ -1,15 +1,16 @@
 """
 Admin API endpoints - Administrative operations including seed data.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import logging
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.task import TaskTemplate, TaskType, TaskPriority
-from app.models.alert import AlertRule, AlertType, AlertSeverity
-from app.services.seed_service import seed_demo_data, clear_demo_data
+from app.models.alert import AlertRule, AlertSeverity, AlertType
+from app.models.task import TaskPriority, TaskTemplate, TaskType
+from app.services.seed_service import clear_demo_data, seed_demo_data
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)

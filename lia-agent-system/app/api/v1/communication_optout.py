@@ -1,8 +1,3 @@
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from app.core.database import get_db
 import base64
 import hashlib
 import hmac
@@ -11,6 +6,13 @@ import logging
 import os
 import uuid
 from datetime import datetime
+
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
 
 
 def _get_consent_event_model():

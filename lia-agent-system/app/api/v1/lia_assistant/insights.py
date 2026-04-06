@@ -3,36 +3,36 @@ Insights and expanded-prompt routes:
   POST /lia/job-insights
   POST /lia/expanded-prompt
 """
-from typing import Dict, Any, List, Optional
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models.job_vacancy import JobVacancy
-from app.services.llm import LLMService
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 from app.dependencies.token_budget import require_token_budget
+from app.models.job_vacancy import JobVacancy
+from app.services.llm import LLMService
 
 from ._shared import (
-    logger,
+    ExpandedPromptRequest,
+    ExpandedPromptResponse,
+    InsightItem,
     # models
     InsightsRequest,
     InsightsResponse,
-    InsightItem,
-    ExpandedPromptRequest,
-    ExpandedPromptResponse,
     QuestionType,
     # helpers
     detect_question_type,
+    handle_process_question,
     handle_salary_question,
     handle_skills_question,
     handle_time_to_fill_question,
-    handle_process_question,
+    logger,
 )
 
 router = APIRouter()
@@ -48,9 +48,8 @@ async def generate_job_insights(
     Generate dynamic insights for selected jobs.
     Uses Analytics and JobIntake agents for intelligent analysis.
     """
-    company_id = current_user.company_id
-    insights: List[InsightItem] = []
-    summary: Dict[str, Any] = {
+    insights: list[InsightItem] = []
+    summary: dict[str, Any] = {
         "total_jobs": len(request.job_ids),
         "total_candidates": 0,
         "avg_time_to_fill": 0,
@@ -181,12 +180,13 @@ async def _handle_jobs_management_query(
     db,
     company_id: str,
     message: str,
-    context_ids: Optional[List[str]],
+    context_ids: list[str] | None,
     llm_svc,
 ) -> str:
     """Handler for job management panel queries with real job data injected."""
-    from sqlalchemy import select
     from datetime import datetime
+
+    from sqlalchemy import select
 
     try:
         query = select(JobVacancy).where(JobVacancy.company_id == company_id)

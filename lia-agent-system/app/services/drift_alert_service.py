@@ -12,16 +12,15 @@ Referências:
 from __future__ import annotations
 
 import logging
-from typing import Optional
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.model_drift_service import model_drift_service, DriftStatus
+from app.services.model_drift_service import DriftStatus, model_drift_service
 from app.services.notification_service import (
-    notification_service,
-    NotificationType,
     NotificationChannel,
+    NotificationType,
+    notification_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ class DriftAlertService:
         self,
         db: AsyncSession,
         company_id: UUID,
-        notify_user_id: Optional[str] = None,
+        notify_user_id: str | None = None,
     ) -> DriftStatus:
         """
         Avalia drift para a empresa e, se detectado, envia notificação Bell + Teams.
@@ -97,7 +96,7 @@ class DriftAlertService:
     async def check_agent_health(
         self,
         company_id: str,
-        notify_user_id: Optional[str] = None,
+        notify_user_id: str | None = None,
         days: int = 30,
     ) -> dict:
         """

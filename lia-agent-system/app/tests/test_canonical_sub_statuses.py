@@ -10,9 +10,8 @@ Cobre:
 - 'offer_declined' contém todos os motivos canônicos
 - Campos obrigatórios presentes em cada sub-status
 """
-import pytest
-from app.models.recruitment_stages import CANONICAL_SUB_STATUSES, DEFAULT_SUB_STATUSES
 
+from app.models.recruitment_stages import CANONICAL_SUB_STATUSES, DEFAULT_SUB_STATUSES
 
 REQUIRED_STAGES = [
     "sourcing", "screening", "long_list", "short_list",

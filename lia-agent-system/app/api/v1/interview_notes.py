@@ -8,35 +8,40 @@ Question generation uses REAL data from:
 - VacancyCandidate: lia_score, match_percentage, stage
 - LiaOpinion: previous screening results, strengths, concerns, gaps
 """
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
-from typing import Optional, List, Union
-from uuid import UUID, uuid4
+import logging
 from datetime import datetime
 from enum import Enum
-import logging
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
 
-from app.core.database import get_db
-from app.services.llm import llm_service
-from app.services.interview_notes_service import (
-    create_interview_note as db_create_interview_note,
-    get_interview_note as db_get_interview_note,
-    get_notes_for_candidate,
-    update_interview_note as db_update_interview_note,
-)
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.lia_opinion import LiaOpinion
-from app.shared.compliance.fairness_guard import FairnessGuard
+from app.core.database import get_db
 from app.domains.cv_screening.constants.wsi_constants import (
     WSI_DIMENSION_LABELS,
     WSI_DIMENSION_WEIGHTS_DEFAULT,
 )
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.job_vacancy import JobVacancy
+from app.models.lia_opinion import LiaOpinion
+from app.services.interview_notes_service import (
+    create_interview_note as db_create_interview_note,
+)
+from app.services.interview_notes_service import (
+    get_interview_note as db_get_interview_note,
+)
+from app.services.interview_notes_service import (
+    get_notes_for_candidate,
+)
+from app.services.interview_notes_service import (
+    update_interview_note as db_update_interview_note,
+)
+from app.services.llm import llm_service
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 fairness_guard = FairnessGuard()
@@ -67,12 +72,12 @@ class GenerateQuestionsRequest(BaseModel):
     If jobId is provided, questions are generated based on job requirements + candidate profile.
     If jobId is None, questions are generated based only on candidate CV (exploratory interview).
     """
-    jobId: Optional[UUID] = Field(None, description="ID of the job vacancy (optional - if None, generates CV-based questions)")
+    jobId: UUID | None = Field(None, description="ID of the job vacancy (optional - if None, generates CV-based questions)")
     candidateId: UUID = Field(..., description="ID of the candidate")
     includeVagaQuestions: bool = Field(True, description="Include job-specific questions")
     includeGapQuestions: bool = Field(True, description="Include questions about experience gaps")
     includeFitCultural: bool = Field(True, description="Include cultural fit questions")
-    wsiLevel: Optional[str] = Field("intermediate", description="WSI complexity level")
+    wsiLevel: str | None = Field("intermediate", description="WSI complexity level")
 
 
 class InterviewQuestion(BaseModel):
@@ -80,13 +85,13 @@ class InterviewQuestion(BaseModel):
     id: str
     text: str
     category: str
-    subcategory: Optional[str] = None
-    rationale: Optional[str] = None
-    expectedResponse: Optional[str] = None
-    wsiLevel: Optional[str] = None
-    blockType: Optional[str] = None
-    skillId: Optional[str] = None
-    skillName: Optional[str] = None
+    subcategory: str | None = None
+    rationale: str | None = None
+    expectedResponse: str | None = None
+    wsiLevel: str | None = None
+    blockType: str | None = None
+    skillId: str | None = None
+    skillName: str | None = None
 
 
 class QuestionBlock(BaseModel):
@@ -94,8 +99,8 @@ class QuestionBlock(BaseModel):
     type: QuestionBlockType
     label: str
     weight: float
-    questions: Union[List[InterviewQuestion], List[dict]]
-    subtotalScore: Optional[float] = None
+    questions: list[InterviewQuestion] | list[dict]
+    subtotalScore: float | None = None
 
 
 class WSIScore(BaseModel):
@@ -111,8 +116,8 @@ class WSIScore(BaseModel):
 
 class GenerateQuestionsResponse(BaseModel):
     """Response with generated interview questions."""
-    questions: List[InterviewQuestion]
-    blocks: List[QuestionBlock]
+    questions: list[InterviewQuestion]
+    blocks: list[QuestionBlock]
     totalCount: int
     generatedAt: datetime
 
@@ -123,19 +128,19 @@ class QuestionWithAnswer(BaseModel):
     Accepts both backend format (questionId, questionText, rating) and
     frontend format (id, text, starRating, likertRating, skipped).
     """
-    questionId: Optional[str] = Field(None, alias="id", description="Question ID")
-    questionText: Optional[str] = Field(None, alias="text", description="Question text")
-    answer: Optional[str] = None
-    notes: Optional[str] = Field(None, description="Interviewer notes")
-    rating: Optional[int] = Field(None, ge=1, le=5, description="Star rating 1-5")
-    category: Optional[str] = None
-    starRating: Optional[int] = Field(None, ge=1, le=5, description="Frontend star rating")
-    likertRating: Optional[str] = Field(None, description="Likert scale rating")
-    skipped: Optional[bool] = Field(False, description="Whether question was skipped")
-    source: Optional[str] = Field(None, description="Source of the question")
-    blockType: Optional[str] = Field(None, description="WSI block type")
-    skillId: Optional[str] = Field(None, description="Skill ID")
-    skillName: Optional[str] = Field(None, description="Skill name")
+    questionId: str | None = Field(None, alias="id", description="Question ID")
+    questionText: str | None = Field(None, alias="text", description="Question text")
+    answer: str | None = None
+    notes: str | None = Field(None, description="Interviewer notes")
+    rating: int | None = Field(None, ge=1, le=5, description="Star rating 1-5")
+    category: str | None = None
+    starRating: int | None = Field(None, ge=1, le=5, description="Frontend star rating")
+    likertRating: str | None = Field(None, description="Likert scale rating")
+    skipped: bool | None = Field(False, description="Whether question was skipped")
+    source: str | None = Field(None, description="Source of the question")
+    blockType: str | None = Field(None, description="WSI block type")
+    skillId: str | None = Field(None, description="Skill ID")
+    skillName: str | None = Field(None, description="Skill name")
     
     class Config:
         populate_by_name = True
@@ -151,35 +156,35 @@ class QuestionWithAnswer(BaseModel):
         return self.questionText or ""
     
     @property
-    def effective_rating(self) -> Optional[int]:
+    def effective_rating(self) -> int | None:
         """Get the rating from either field."""
         return self.rating or self.starRating
 
 
 class CalculateWSIRequest(BaseModel):
     """Request for calculating WSI score."""
-    blocks: List[QuestionBlock]
+    blocks: list[QuestionBlock]
 
 
 class GenerateParecerRequest(BaseModel):
     """Request for generating interview parecer."""
     interviewNoteId: UUID = Field(..., description="ID of the interview note")
-    questions: List[QuestionWithAnswer] = Field(..., description="Questions with answers and notes")
-    generalNotes: Optional[str] = Field(None, description="General notes from the interview")
-    transcription: Optional[str] = Field(None, description="Interview transcription")
-    candidateId: Optional[UUID] = None
-    jobId: Optional[UUID] = None
+    questions: list[QuestionWithAnswer] = Field(..., description="Questions with answers and notes")
+    generalNotes: str | None = Field(None, description="General notes from the interview")
+    transcription: str | None = Field(None, description="Interview transcription")
+    candidateId: UUID | None = None
+    jobId: UUID | None = None
 
 
 class GenerateParecerResponse(BaseModel):
     """Response with generated parecer."""
     parecer: str
     recommendation: str
-    strengths: List[str]
-    concerns: List[str]
-    overallScore: Optional[float] = None
+    strengths: list[str]
+    concerns: list[str]
+    overallScore: float | None = None
     generatedAt: datetime
-    fairness_warnings: List[str] = Field(default_factory=list, description="Alertas de possível viés detectado no parecer")
+    fairness_warnings: list[str] = Field(default_factory=list, description="Alertas de possível viés detectado no parecer")
 
 
 class InterviewNoteCreate(BaseModel):
@@ -188,26 +193,26 @@ class InterviewNoteCreate(BaseModel):
     Accepts the rich frontend format with additional metadata fields.
     """
     candidateId: UUID
-    jobId: Optional[UUID] = None
-    candidateName: Optional[str] = Field(None, description="Candidate name")
-    jobTitle: Optional[str] = Field(None, description="Job title")
-    interviewerId: Optional[UUID] = None
-    recruiterId: Optional[str] = Field(None, description="Recruiter ID")
-    recruiterName: Optional[str] = Field(None, description="Recruiter name")
-    scheduledInterviewId: Optional[str] = Field(None, description="Scheduled interview ID")
-    interviewDate: Optional[datetime] = None
-    interviewType: Optional[str] = Field("structured", description="Type of interview")
-    questions: Optional[List[QuestionWithAnswer]] = None
-    generalNotes: Optional[str] = None
-    transcription: Optional[str] = None
-    transcriptionSource: Optional[str] = Field(None, description="Source: teams, meet, manual")
-    parecer: Optional[str] = Field(None, alias="liaParecer", description="LIA generated parecer")
-    liaParecerEditado: Optional[bool] = Field(False, description="Whether parecer was edited")
-    recommendation: Optional[str] = None
-    nextStage: Optional[str] = Field(None, description="Suggested next stage")
-    feedbackSent: Optional[bool] = Field(False, description="Whether feedback was sent")
-    feedbackScheduledFor: Optional[datetime] = Field(None, description="Scheduled feedback date")
-    status: Optional[str] = Field("draft", description="Status: draft or completed")
+    jobId: UUID | None = None
+    candidateName: str | None = Field(None, description="Candidate name")
+    jobTitle: str | None = Field(None, description="Job title")
+    interviewerId: UUID | None = None
+    recruiterId: str | None = Field(None, description="Recruiter ID")
+    recruiterName: str | None = Field(None, description="Recruiter name")
+    scheduledInterviewId: str | None = Field(None, description="Scheduled interview ID")
+    interviewDate: datetime | None = None
+    interviewType: str | None = Field("structured", description="Type of interview")
+    questions: list[QuestionWithAnswer] | None = None
+    generalNotes: str | None = None
+    transcription: str | None = None
+    transcriptionSource: str | None = Field(None, description="Source: teams, meet, manual")
+    parecer: str | None = Field(None, alias="liaParecer", description="LIA generated parecer")
+    liaParecerEditado: bool | None = Field(False, description="Whether parecer was edited")
+    recommendation: str | None = None
+    nextStage: str | None = Field(None, description="Suggested next stage")
+    feedbackSent: bool | None = Field(False, description="Whether feedback was sent")
+    feedbackScheduledFor: datetime | None = Field(None, description="Scheduled feedback date")
+    status: str | None = Field("draft", description="Status: draft or completed")
     
     class Config:
         populate_by_name = True
@@ -224,26 +229,26 @@ class InterviewNoteResponse(BaseModel):
     """Full interview note detail response."""
     id: str
     candidateId: str
-    candidateName: Optional[str] = None
-    jobId: Optional[str] = None
-    jobTitle: Optional[str] = None
-    scheduledInterviewId: Optional[str] = None
-    interviewType: Optional[str] = None
-    interviewDate: Optional[str] = None
-    recruiterId: Optional[str] = None
-    recruiterName: Optional[str] = None
+    candidateName: str | None = None
+    jobId: str | None = None
+    jobTitle: str | None = None
+    scheduledInterviewId: str | None = None
+    interviewType: str | None = None
+    interviewDate: str | None = None
+    recruiterId: str | None = None
+    recruiterName: str | None = None
     questions: list = []
     blocks: list = []
-    generalNotes: Optional[str] = None
-    transcription: Optional[str] = None
-    transcriptionSource: Optional[str] = None
-    liaParecer: Optional[str] = None
-    liaParecerEditado: Optional[bool] = None
-    wsiScore: Optional[dict] = None
-    recommendation: Optional[str] = None
-    nextStage: Optional[str] = None
-    feedbackSent: Optional[bool] = None
-    feedbackScheduledFor: Optional[str] = None
+    generalNotes: str | None = None
+    transcription: str | None = None
+    transcriptionSource: str | None = None
+    liaParecer: str | None = None
+    liaParecerEditado: bool | None = None
+    wsiScore: dict | None = None
+    recommendation: str | None = None
+    nextStage: str | None = None
+    feedbackSent: bool | None = None
+    feedbackScheduledFor: str | None = None
     status: str
     createdAt: str
     updatedAt: str
@@ -253,12 +258,12 @@ class InterviewNoteSummary(BaseModel):
     """Summary of an interview note for list endpoints."""
     id: str
     candidateId: str
-    jobId: Optional[str] = None
-    jobTitle: Optional[str] = None
+    jobId: str | None = None
+    jobTitle: str | None = None
     status: str
-    recommendation: Optional[str] = None
-    wsiScore: Optional[dict] = None
-    interviewDate: Optional[str] = None
+    recommendation: str | None = None
+    wsiScore: dict | None = None
+    interviewDate: str | None = None
     createdAt: str
 
 
@@ -272,7 +277,7 @@ class InterviewNoteUpdateResponse(BaseModel):
 # in-memory dict removed — persistence moved to interview_notes table via interview_notes_service.py
 
 
-def _calculate_block_subtotal(questions: Union[List[dict], List]) -> Optional[float]:
+def _calculate_block_subtotal(questions: list[dict] | list) -> float | None:
     """Calculate the average score for a block of questions.
     
     Args:
@@ -441,7 +446,7 @@ async def generate_interview_questions(
             if not vacancy_candidate_link:
                 raise HTTPException(
                     status_code=403,
-                    detail=f"Candidate not linked to this job vacancy. Add candidate to the vacancy first."
+                    detail="Candidate not linked to this job vacancy. Add candidate to the vacancy first."
                 )
             
             # Build job context
@@ -639,8 +644,8 @@ Responda em formato JSON com a estrutura:
         import re
         
         json_match = re.search(r'\{[\s\S]*\}', response)
-        blocks: List[QuestionBlock] = []
-        all_questions: List[InterviewQuestion] = []
+        blocks: list[QuestionBlock] = []
+        all_questions: list[InterviewQuestion] = []
         
         if json_match:
             try:
@@ -702,7 +707,7 @@ Responda em formato JSON com a estrutura:
         )
 
 
-def _create_default_blocks(wsi_level: Optional[str] = None) -> List[QuestionBlock]:
+def _create_default_blocks(wsi_level: str | None = None) -> list[QuestionBlock]:
     """Create default question blocks when LLM fails."""
     return [
         QuestionBlock(
@@ -1112,13 +1117,13 @@ async def get_interview_note(
     }
 
 
-@router.get("/candidate/{candidate_id}", response_model=List[InterviewNoteSummary])
+@router.get("/candidate/{candidate_id}", response_model=list[InterviewNoteSummary])
 async def list_notes_for_candidate(
     candidate_id: str,
-    job_id: Optional[str] = Query(None),
+    job_id: str | None = Query(None),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
-) -> List[InterviewNoteSummary]:
+) -> list[InterviewNoteSummary]:
     """List all interview notes for a candidate (optionally filtered by job)."""
     company_id = get_user_company_id(current_user)
     notes = await get_notes_for_candidate(db, candidate_id, company_id, job_id)
@@ -1139,17 +1144,17 @@ async def list_notes_for_candidate(
 
 
 class InterviewNoteUpdateRequest(BaseModel):
-    questions: Optional[list] = None
-    blocks: Optional[list] = None
-    generalNotes: Optional[str] = None
-    transcription: Optional[str] = None
-    liaParecer: Optional[str] = None
-    liaParecerEditado: Optional[bool] = None
-    wsiScore: Optional[dict] = None
-    recommendation: Optional[str] = None
-    nextStage: Optional[str] = None
-    feedbackSent: Optional[bool] = None
-    status: Optional[str] = None
+    questions: list | None = None
+    blocks: list | None = None
+    generalNotes: str | None = None
+    transcription: str | None = None
+    liaParecer: str | None = None
+    liaParecerEditado: bool | None = None
+    wsiScore: dict | None = None
+    recommendation: str | None = None
+    nextStage: str | None = None
+    feedbackSent: bool | None = None
+    status: str | None = None
 
 
 @router.patch("/{note_id}", response_model=InterviewNoteUpdateResponse)

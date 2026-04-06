@@ -4,9 +4,9 @@ Job Stage Config — Stage definitions and helper functions for the Job Creation
 Extracted from job_intake_agent.py (Sprint 5) so non-agent code can import these
 without triggering the DeprecationWarning on the legacy agent module.
 """
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-JOB_CREATION_STAGES: List[Dict[str, Any]] = [
+JOB_CREATION_STAGES: list[dict[str, Any]] = [
     {
         "stage": 1,
         "name": "criteria_detection",
@@ -78,7 +78,7 @@ JOB_CREATION_STAGES: List[Dict[str, Any]] = [
 ]
 
 
-def get_stage_config(stage_number: int) -> Dict[str, Any]:
+def get_stage_config(stage_number: int) -> dict[str, Any]:
     """Return the stage configuration dict for *stage_number*, or {} if not found."""
     for stage in JOB_CREATION_STAGES:
         if stage["stage"] == stage_number:
@@ -88,9 +88,9 @@ def get_stage_config(stage_number: int) -> Dict[str, Any]:
 
 def should_skip_stage(
     stage_number: int,
-    detected_criteria: Dict[str, Any],
-    already_confirmed: Optional[Dict[str, Any]] = None,
-) -> Tuple[bool, str]:
+    detected_criteria: dict[str, Any],
+    already_confirmed: dict[str, Any] | None = None,
+) -> tuple[bool, str]:
     """
     Determine if a stage can be auto-skipped based on confidence thresholds.
 

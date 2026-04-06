@@ -9,16 +9,15 @@ Provides:
 - User preference tracking across sessions
 """
 import logging
-from typing import Optional, List, Dict, Any
 from datetime import datetime
+from typing import Any
 from uuid import UUID
-import uuid
 
-from sqlalchemy import select, update, delete, func, and_, desc
+from sqlalchemy import and_, delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.conversation import Conversation, Message, ConversationSummary
+from app.models.conversation import Conversation, ConversationSummary, Message
 
 logger = logging.getLogger(__name__)
 
@@ -53,17 +52,17 @@ class ConversationMemory:
             llm_service: Optional LLM service for summary generation
         """
         self.llm_service = llm_service
-        self._cache: Dict[str, Dict[str, Any]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
     
     async def get_or_create_conversation(
         self,
         db: AsyncSession,
         user_id: str,
         context_type: str = "general",
-        context_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        title: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        context_id: str | None = None,
+        session_id: str | None = None,
+        title: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Conversation:
         """
         Get existing active conversation or create a new one.
@@ -123,7 +122,7 @@ class ConversationMemory:
         conversation_id: str,
         include_messages: bool = False,
         include_summaries: bool = False,
-    ) -> Optional[Conversation]:
+    ) -> Conversation | None:
         """
         Get a conversation by ID.
         
@@ -158,9 +157,9 @@ class ConversationMemory:
         conversation_id: str,
         role: str,
         content: str,
-        intent: Optional[str] = None,
-        tool_calls: Optional[List[Dict]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        intent: str | None = None,
+        tool_calls: list[dict] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Message:
         """
         Add a message to a conversation.
@@ -216,7 +215,7 @@ class ConversationMemory:
         db: AsyncSession,
         conversation_id: str,
         limit: int = MAX_CONTEXT_MESSAGES,
-    ) -> List[Message]:
+    ) -> list[Message]:
         """
         Get recent messages from a conversation.
         
@@ -251,7 +250,7 @@ class ConversationMemory:
         conversation_id: str,
         max_messages: int = MAX_CONTEXT_MESSAGES,
         include_summary: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Build context for LLM prompt from conversation history.
         
@@ -308,7 +307,7 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         conversation_id: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get the latest summary for a conversation.
         
@@ -337,7 +336,7 @@ class ConversationMemory:
         db: AsyncSession,
         conversation_id: str,
         force: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Generate and update conversation summary using LLM.
         
@@ -394,11 +393,11 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         user_id: str,
-        context_type: Optional[str] = None,
+        context_type: str | None = None,
         include_archived: bool = False,
         limit: int = 10,
         offset: int = 0,
-    ) -> List[Conversation]:
+    ) -> list[Conversation]:
         """
         Get conversations for a user.
         
@@ -570,7 +569,7 @@ class ConversationMemory:
         except Exception as e:
             logger.warning(f"Summary generation failed: {e}")
     
-    async def _generate_summary(self, messages: List[Message]) -> Optional[str]:
+    async def _generate_summary(self, messages: list[Message]) -> str | None:
         """
         Generate a summary of messages using LLM.
         
@@ -606,7 +605,7 @@ Resumo (máximo 200 palavras):"""
             logger.error(f"LLM summary generation failed: {e}")
             return self._generate_simple_summary(messages)
     
-    def _generate_simple_summary(self, messages: List[Message]) -> str:
+    def _generate_simple_summary(self, messages: list[Message]) -> str:
         """Generate a simple summary without LLM."""
         user_messages = [m for m in messages if m.role in ("user", "human")]
         
@@ -628,9 +627,9 @@ Resumo (máximo 200 palavras):"""
     
     async def summarize_history(
         self,
-        messages: List[Dict],
+        messages: list[dict],
         max_messages: int = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Summariza histórico longo mantendo últimas N mensagens.
         
@@ -672,7 +671,7 @@ Resumo (máximo 200 palavras):"""
             "summarized_count": summarized_count
         }
     
-    async def _generate_summary_from_dicts(self, messages: List[Dict]) -> str:
+    async def _generate_summary_from_dicts(self, messages: list[dict]) -> str:
         """
         Generate summary from dict-format messages.
         
@@ -714,7 +713,7 @@ Resumo conciso:"""
             logger.error(f"LLM summary generation from dicts failed: {e}")
             return self._generate_simple_summary_from_dicts(messages)
     
-    def _generate_simple_summary_from_dicts(self, messages: List[Dict]) -> str:
+    def _generate_simple_summary_from_dicts(self, messages: list[dict]) -> str:
         """Generate a simple summary from dict-format messages without LLM."""
         user_messages = [
             m for m in messages 

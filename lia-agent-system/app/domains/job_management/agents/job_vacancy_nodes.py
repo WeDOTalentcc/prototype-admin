@@ -2,31 +2,30 @@
 Job Vacancy Creation Nodes for LangGraph workflow.
 Contains specialized collectors, router, validator, frame generator, etc.
 """
-from typing import Dict, Any, Optional, List
-from langchain_core.messages import AIMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
 import logging
+from typing import Any
 
-from app.services.llm import llm_service
-from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
-from app.services.benefits_service import benefits_service
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+
 from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
-from app.schemas.screening import WSIScreeningPipelineRequest
+from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.schemas.job_vacancy_state import (
-    JobVacancyState,
-    SalaryRange,
-    TechnicalRequirement,
-    InterviewStage,
-    OrganizationalStructure,
-    TeamComposition,
+    BiasAnalysis,
     GovernanceRules,
+    InterviewStage,
+    JobVacancyState,
+    MarketBenchmark,
+    OrganizationalStructure,
+    SalaryRange,
     SourcingStrategy,
     TalentPoolEstimate,
-    MarketBenchmark,
+    TechnicalRequirement,
     WSICompetencySuggestion,
-    BiasAnalysis
 )
+from app.schemas.screening import WSIScreeningPipelineRequest
+from app.services.benefits_service import benefits_service
+from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ logger = logging.getLogger(__name__)
 # STATE LOADER & PERSISTENCE
 # =============================================
 
-async def job_state_loader(state: Dict[str, Any]) -> Dict[str, Any]:
+async def job_state_loader(state: dict[str, Any]) -> dict[str, Any]:
     """
     Load or initialize JobVacancyState from workflow_data.
     """
@@ -60,7 +59,7 @@ async def job_state_loader(state: Dict[str, Any]) -> Dict[str, Any]:
 # JOB ROUTER
 # =============================================
 
-async def job_router(state: Dict[str, Any]) -> Dict[str, Any]:
+async def job_router(state: dict[str, Any]) -> dict[str, Any]:
     """
     Route to appropriate collector based on pending fields.
     Resets attempt counter when field changes.
@@ -98,7 +97,7 @@ async def job_router(state: Dict[str, Any]) -> Dict[str, Any]:
 # STEP 1: ONBOARDING NODE
 # =============================================
 
-async def onboarding_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def onboarding_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 1: Present visual journey of 13-step job creation process.
     Shows welcome message, default process, and ATS field mapping.
@@ -157,7 +156,7 @@ async def onboarding_node(state: Dict[str, Any]) -> Dict[str, Any]:
 # FIELD COLLECTORS
 # =============================================
 
-async def basics_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def basics_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Collect basic job information (title, seniority, confidentiality, etc).
     """
@@ -211,7 +210,7 @@ async def basics_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def remuneration_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def remuneration_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Collect salary range and benefits.
     Can be triggered by side panel completion.
@@ -306,7 +305,7 @@ async def remuneration_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def technical_matrix_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def technical_matrix_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Collect technical requirements matrix.
     """
@@ -342,7 +341,7 @@ async def technical_matrix_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def interview_flow_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_flow_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Collect interview stages.
     """
@@ -384,7 +383,7 @@ async def interview_flow_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def screening_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def screening_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate screening questions based on job requirements.
     """
@@ -483,7 +482,7 @@ async def screening_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def governance_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def governance_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Collect governance rules (LIA autonomy levels).
     """
@@ -525,7 +524,7 @@ async def governance_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     # Save updated state
     state["workflow_data"] = job_vacancy_service.save_to_workflow_data(job_state, workflow_data)
     
-    logger.info(f"⚙️ Governance rules collected")
+    logger.info("⚙️ Governance rules collected")
     
     return state
 
@@ -534,7 +533,7 @@ async def governance_collector(state: Dict[str, Any]) -> Dict[str, Any]:
 # STEP 4: ORG STRUCTURE COLLECTOR
 # =============================================
 
-async def org_structure_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def org_structure_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 4: Collect organizational structure - direct manager, team size, composition.
     """
@@ -590,7 +589,7 @@ async def org_structure_collector(state: Dict[str, Any]) -> Dict[str, Any]:
 # STEP 6: SOURCING STRATEGY COLLECTOR
 # =============================================
 
-async def sourcing_strategy_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def sourcing_strategy_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 6: Define sourcing strategy - target sectors, segments, pool estimation.
     Integrates with Pearch AI for talent pool estimation.
@@ -653,7 +652,7 @@ async def sourcing_strategy_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     return state
 
 
-async def _suggest_sectors_for_job(job_title: str) -> List[str]:
+async def _suggest_sectors_for_job(job_title: str) -> list[str]:
     """Auto-suggest target sectors based on job title using LLM."""
     try:
         prompt = ChatPromptTemplate.from_template("""
@@ -728,7 +727,7 @@ async def _estimate_talent_pool(job_state: JobVacancyState) -> TalentPoolEstimat
 # STEP 7: WSI COMPETENCIES COLLECTOR
 # =============================================
 
-async def wsi_competencies_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def wsi_competencies_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 7: Auto-suggest WSI competencies based on job description.
     Integrates with WSIService.analyze_jd_and_suggest_competencies().
@@ -851,7 +850,7 @@ def _build_jd_for_wsi_analysis(job_state: JobVacancyState) -> str:
     return "\n".join(parts)
 
 
-def _get_default_wsi_competencies(seniority: Optional[str]) -> List[WSICompetencySuggestion]:
+def _get_default_wsi_competencies(seniority: str | None) -> list[WSICompetencySuggestion]:
     """Get default WSI competencies based on seniority."""
     competencies = [
         WSICompetencySuggestion(
@@ -897,7 +896,7 @@ def _get_default_wsi_competencies(seniority: Optional[str]) -> List[WSICompetenc
 # STEP 11: COMMUNICATION TEMPLATES COLLECTOR
 # =============================================
 
-async def communication_templates_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def communication_templates_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 11: Select communication templates for WhatsApp and email.
     Templates: cold outreach, reengagement, confidential.
@@ -943,7 +942,7 @@ async def communication_templates_collector(state: Dict[str, Any]) -> Dict[str, 
     return state
 
 
-def _get_communication_templates(template_type: str, job_state: JobVacancyState) -> List[Dict[str, Any]]:
+def _get_communication_templates(template_type: str, job_state: JobVacancyState) -> list[dict[str, Any]]:
     """Get communication templates based on type."""
     job_title = job_state.job_title or "a posição"
     
@@ -999,7 +998,7 @@ def _get_communication_templates(template_type: str, job_state: JobVacancyState)
 # STEP 12: JOB DESCRIPTION GENERATOR
 # =============================================
 
-async def job_description_generator(state: Dict[str, Any]) -> Dict[str, Any]:
+async def job_description_generator(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 12: Generate complete job description with inclusive bias analysis.
     Analyzes for gendered language and suggests neutral alternatives.
@@ -1181,7 +1180,7 @@ Retorne JSON:
 # STEP 13: PUBLICATION NODE
 # =============================================
 
-async def publication_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def publication_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     Step 13: Publish job vacancy with dashboard summary.
     Persists job to PostgreSQL database and transitions to sourcing workflow.
@@ -1291,7 +1290,7 @@ async def publication_node(state: Dict[str, Any]) -> Dict[str, Any]:
 # MARKET BENCHMARK TOOL
 # =============================================
 
-async def get_market_salary_benchmark(state: Dict[str, Any]) -> Dict[str, Any]:
+async def get_market_salary_benchmark(state: dict[str, Any]) -> dict[str, Any]:
     """
     Tool: Get market salary benchmark for the position.
     Provides competitive analysis of salary range.
@@ -1354,9 +1353,9 @@ async def get_market_salary_benchmark(state: Dict[str, Any]) -> Dict[str, Any]:
 
 
 async def _fetch_market_benchmark(
-    job_title: Optional[str],
-    seniority: Optional[str],
-    location: Optional[str]
+    job_title: str | None,
+    seniority: str | None,
+    location: str | None
 ) -> MarketBenchmark:
     """Fetch market salary benchmark data."""
     # TODO: Integrate with real market data API
@@ -1387,7 +1386,7 @@ async def _fetch_market_benchmark(
 # CHANGE REQUEST PROCESSOR
 # =============================================
 
-async def change_request_processor(state: Dict[str, Any]) -> Dict[str, Any]:
+async def change_request_processor(state: dict[str, Any]) -> dict[str, Any]:
     """
     Process change requests like "remova Docker", "mude salário para R$15k".
     """
@@ -1452,7 +1451,7 @@ Identifique o que deve ser alterado e retorne JSON:
 # VALIDATOR
 # =============================================
 
-async def validator(state: Dict[str, Any]) -> Dict[str, Any]:
+async def validator(state: dict[str, Any]) -> dict[str, Any]:
     """
     Validate job vacancy completeness and constraints.
     """
@@ -1482,7 +1481,7 @@ async def validator(state: Dict[str, Any]) -> Dict[str, Any]:
 # FRAME GENERATOR
 # =============================================
 
-async def frame_generator(state: Dict[str, Any]) -> Dict[str, Any]:
+async def frame_generator(state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate visual frames for validation (matriz técnica, cronograma, etc).
     """
@@ -1521,7 +1520,7 @@ async def frame_generator(state: Dict[str, Any]) -> Dict[str, Any]:
 # RESPONSE PLANNER
 # =============================================
 
-async def response_planner(state: Dict[str, Any]) -> Dict[str, Any]:
+async def response_planner(state: dict[str, Any]) -> dict[str, Any]:
     """
     Plan LIA's response: next question, panels to open, frames to show, confirmations.
     """

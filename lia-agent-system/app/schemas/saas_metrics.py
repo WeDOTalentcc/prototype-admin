@@ -4,10 +4,10 @@ Pydantic schemas for SaaS Metrics API.
 All schemas use camelCase aliases for frontend compatibility.
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class ChurnRiskEnum(str, Enum):
@@ -52,12 +52,12 @@ class ClientSaasMetricsBase(BaseModel):
     """Base schema for SaaS metrics."""
     mrr: float = Field(0, description="Monthly Recurring Revenue", alias="mrr")
     arr: float = Field(0, description="Annual Recurring Revenue", alias="arr")
-    ltv: Optional[float] = Field(None, description="Lifetime Value", alias="ltv")
-    cac: Optional[float] = Field(None, description="Customer Acquisition Cost", alias="cac")
-    payback_months: Optional[float] = Field(None, description="CAC payback period in months", alias="paybackMonths")
-    contract_start: Optional[date] = Field(None, description="Contract start date", alias="contractStart")
-    contract_end: Optional[date] = Field(None, description="Contract end date", alias="contractEnd")
-    plan_name: Optional[str] = Field(None, description="Plan name", alias="planName")
+    ltv: float | None = Field(None, description="Lifetime Value", alias="ltv")
+    cac: float | None = Field(None, description="Customer Acquisition Cost", alias="cac")
+    payback_months: float | None = Field(None, description="CAC payback period in months", alias="paybackMonths")
+    contract_start: date | None = Field(None, description="Contract start date", alias="contractStart")
+    contract_end: date | None = Field(None, description="Contract end date", alias="contractEnd")
+    plan_name: str | None = Field(None, description="Plan name", alias="planName")
     billing_cycle: str = Field("monthly", description="Billing cycle", alias="billingCycle")
     discount_percent: float = Field(0, description="Discount percentage", alias="discountPercent")
     currency: str = Field("BRL", description="Currency code")
@@ -87,8 +87,8 @@ class ClientSaasMetricsResponse(ClientSaasMetricsBase):
     """Schema for SaaS metrics response."""
     id: str
     client_id: str = Field(..., alias="clientId")
-    created_at: Optional[datetime] = Field(None, alias="createdAt")
-    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    created_at: datetime | None = Field(None, alias="createdAt")
+    updated_at: datetime | None = Field(None, alias="updatedAt")
 
     class Config:
         from_attributes = True
@@ -107,8 +107,8 @@ class ClientUsageMetricsBase(BaseModel):
     storage_limit_mb: float = Field(5120, description="Storage limit in MB", alias="storageLimitMb")
     api_calls_month: int = Field(0, description="API calls this month", alias="apiCallsMonth")
     api_calls_limit: int = Field(10000, description="API calls limit", alias="apiCallsLimit")
-    period_start: Optional[date] = Field(None, description="Period start date", alias="periodStart")
-    period_end: Optional[date] = Field(None, description="Period end date", alias="periodEnd")
+    period_start: date | None = Field(None, description="Period start date", alias="periodStart")
+    period_end: date | None = Field(None, description="Period end date", alias="periodEnd")
 
     class Config:
         populate_by_name = True
@@ -126,10 +126,10 @@ class ClientUsageMetricsResponse(ClientUsageMetricsBase):
     """Schema for usage metrics response."""
     id: str
     client_id: str = Field(..., alias="clientId")
-    ai_credits_usage_percent: Optional[float] = Field(None, alias="aiCreditsUsagePercent")
-    storage_usage_percent: Optional[float] = Field(None, alias="storageUsagePercent")
-    created_at: Optional[datetime] = Field(None, alias="createdAt")
-    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    ai_credits_usage_percent: float | None = Field(None, alias="aiCreditsUsagePercent")
+    storage_usage_percent: float | None = Field(None, alias="storageUsagePercent")
+    created_at: datetime | None = Field(None, alias="createdAt")
+    updated_at: datetime | None = Field(None, alias="updatedAt")
 
     class Config:
         from_attributes = True
@@ -140,17 +140,17 @@ class ClientHealthMetricsBase(BaseModel):
     """Base schema for health metrics."""
     churn_risk: str = Field("low", description="Churn risk level", alias="churnRisk")
     health_score: int = Field(100, ge=0, le=100, description="Health score (0-100)", alias="healthScore")
-    last_login: Optional[datetime] = Field(None, description="Last login timestamp", alias="lastLogin")
+    last_login: datetime | None = Field(None, description="Last login timestamp", alias="lastLogin")
     days_since_login: int = Field(0, description="Days since last login", alias="daysSinceLogin")
-    nps_score: Optional[int] = Field(None, ge=-100, le=100, description="NPS score", alias="npsScore")
-    csat_score: Optional[float] = Field(None, ge=0, le=5, description="CSAT score", alias="csatScore")
+    nps_score: int | None = Field(None, ge=-100, le=100, description="NPS score", alias="npsScore")
+    csat_score: float | None = Field(None, ge=0, le=5, description="CSAT score", alias="csatScore")
     support_tickets_open: int = Field(0, description="Open support tickets", alias="supportTicketsOpen")
     support_tickets_total: int = Field(0, description="Total support tickets", alias="supportTicketsTotal")
     engagement_level: str = Field("medium", description="Engagement level", alias="engagementLevel")
     feature_adoption_rate: float = Field(0, description="Feature adoption rate", alias="featureAdoptionRate")
     logins_last_30_days: int = Field(0, description="Logins in last 30 days", alias="loginsLast30Days")
     actions_last_30_days: int = Field(0, description="Actions in last 30 days", alias="actionsLast30Days")
-    risk_factors: Optional[str] = Field(None, description="Risk factors description", alias="riskFactors")
+    risk_factors: str | None = Field(None, description="Risk factors description", alias="riskFactors")
 
     class Config:
         populate_by_name = True
@@ -168,8 +168,8 @@ class ClientHealthMetricsResponse(ClientHealthMetricsBase):
     """Schema for health metrics response."""
     id: str
     client_id: str = Field(..., alias="clientId")
-    created_at: Optional[datetime] = Field(None, alias="createdAt")
-    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    created_at: datetime | None = Field(None, alias="createdAt")
+    updated_at: datetime | None = Field(None, alias="updatedAt")
 
     class Config:
         from_attributes = True
@@ -183,10 +183,10 @@ class PaymentHistoryBase(BaseModel):
     currency: str = Field("BRL", description="Currency code")
     status: str = Field("pending", description="Payment status")
     method: str = Field("card", description="Payment method")
-    invoice_id: Optional[str] = Field(None, description="Invoice ID", alias="invoiceId")
-    external_transaction_id: Optional[str] = Field(None, description="External transaction ID", alias="externalTransactionId")
-    description: Optional[str] = Field(None, description="Payment description")
-    notes: Optional[str] = Field(None, description="Additional notes")
+    invoice_id: str | None = Field(None, description="Invoice ID", alias="invoiceId")
+    external_transaction_id: str | None = Field(None, description="External transaction ID", alias="externalTransactionId")
+    description: str | None = Field(None, description="Payment description")
+    notes: str | None = Field(None, description="Additional notes")
 
     class Config:
         populate_by_name = True
@@ -214,11 +214,11 @@ class PaymentHistoryResponse(PaymentHistoryBase):
     """Schema for payment history response."""
     id: str
     client_id: str = Field(..., alias="clientId")
-    failure_reason: Optional[str] = Field(None, alias="failureReason")
+    failure_reason: str | None = Field(None, alias="failureReason")
     retry_count: int = Field(0, alias="retryCount")
-    paid_at: Optional[datetime] = Field(None, alias="paidAt")
-    created_at: Optional[datetime] = Field(None, alias="createdAt")
-    updated_at: Optional[datetime] = Field(None, alias="updatedAt")
+    paid_at: datetime | None = Field(None, alias="paidAt")
+    created_at: datetime | None = Field(None, alias="createdAt")
+    updated_at: datetime | None = Field(None, alias="updatedAt")
 
     class Config:
         from_attributes = True
@@ -227,7 +227,7 @@ class PaymentHistoryResponse(PaymentHistoryBase):
 
 class PaymentHistoryListResponse(BaseModel):
     """Schema for paginated payment history list."""
-    payments: List[PaymentHistoryResponse]
+    payments: list[PaymentHistoryResponse]
     total: int
     limit: int
     offset: int
@@ -238,10 +238,10 @@ class PaymentHistoryListResponse(BaseModel):
 
 class ClientAllMetricsResponse(BaseModel):
     """Schema for all metrics combined response."""
-    revenue: Optional[ClientSaasMetricsResponse] = None
-    usage: Optional[ClientUsageMetricsResponse] = None
-    health: Optional[ClientHealthMetricsResponse] = None
-    recent_payments: List[PaymentHistoryResponse] = Field(default=[], alias="recentPayments")
+    revenue: ClientSaasMetricsResponse | None = None
+    usage: ClientUsageMetricsResponse | None = None
+    health: ClientHealthMetricsResponse | None = None
+    recent_payments: list[PaymentHistoryResponse] = Field(default=[], alias="recentPayments")
 
     class Config:
         populate_by_name = True
@@ -255,8 +255,8 @@ class PlatformAggregateMetrics(BaseModel):
     active_clients: int = Field(0, description="Number of active clients", alias="activeClients")
     churned_clients: int = Field(0, description="Number of churned clients", alias="churnedClients")
     avg_mrr: float = Field(0, description="Average MRR per client", alias="avgMrr")
-    avg_ltv: Optional[float] = Field(None, description="Average LTV", alias="avgLtv")
-    avg_cac: Optional[float] = Field(None, description="Average CAC", alias="avgCac")
+    avg_ltv: float | None = Field(None, description="Average LTV", alias="avgLtv")
+    avg_cac: float | None = Field(None, description="Average CAC", alias="avgCac")
     avg_health_score: float = Field(0, description="Average health score", alias="avgHealthScore")
     avg_churn_risk: str = Field("low", description="Average churn risk", alias="avgChurnRisk")
     churn_rate: float = Field(0, description="Churn rate percentage", alias="churnRate")
@@ -292,15 +292,15 @@ class PlatformAggregateMetrics(BaseModel):
 
 class SaasMetricsUpdate(BaseModel):
     """Schema for updating SaaS metrics."""
-    mrr: Optional[float] = Field(None, alias="mrr")
-    arr: Optional[float] = Field(None, alias="arr")
-    ltv: Optional[float] = Field(None, alias="ltv")
-    cac: Optional[float] = Field(None, alias="cac")
-    payback_months: Optional[float] = Field(None, alias="paybackMonths")
-    contract_start: Optional[date] = Field(None, alias="contractStart")
-    contract_end: Optional[date] = Field(None, alias="contractEnd")
-    plan_name: Optional[str] = Field(None, alias="planName")
-    billing_cycle: Optional[str] = Field(None, alias="billingCycle")
+    mrr: float | None = Field(None, alias="mrr")
+    arr: float | None = Field(None, alias="arr")
+    ltv: float | None = Field(None, alias="ltv")
+    cac: float | None = Field(None, alias="cac")
+    payback_months: float | None = Field(None, alias="paybackMonths")
+    contract_start: date | None = Field(None, alias="contractStart")
+    contract_end: date | None = Field(None, alias="contractEnd")
+    plan_name: str | None = Field(None, alias="planName")
+    billing_cycle: str | None = Field(None, alias="billingCycle")
 
     class Config:
         populate_by_name = True
@@ -308,14 +308,14 @@ class SaasMetricsUpdate(BaseModel):
 
 class UsageMetricsUpdate(BaseModel):
     """Schema for updating usage metrics."""
-    ai_credits_used: Optional[int] = Field(None, alias="aiCreditsUsed")
-    ai_credits_limit: Optional[int] = Field(None, alias="aiCreditsLimit")
-    users_active: Optional[int] = Field(None, alias="usersActive")
-    users_limit: Optional[int] = Field(None, alias="usersLimit")
-    jobs_active: Optional[int] = Field(None, alias="jobsActive")
-    jobs_limit: Optional[int] = Field(None, alias="jobsLimit")
-    storage_used_mb: Optional[float] = Field(None, alias="storageUsedMb")
-    storage_limit_mb: Optional[float] = Field(None, alias="storageLimitMb")
+    ai_credits_used: int | None = Field(None, alias="aiCreditsUsed")
+    ai_credits_limit: int | None = Field(None, alias="aiCreditsLimit")
+    users_active: int | None = Field(None, alias="usersActive")
+    users_limit: int | None = Field(None, alias="usersLimit")
+    jobs_active: int | None = Field(None, alias="jobsActive")
+    jobs_limit: int | None = Field(None, alias="jobsLimit")
+    storage_used_mb: float | None = Field(None, alias="storageUsedMb")
+    storage_limit_mb: float | None = Field(None, alias="storageLimitMb")
 
     class Config:
         populate_by_name = True
@@ -323,11 +323,11 @@ class UsageMetricsUpdate(BaseModel):
 
 class HealthMetricsUpdate(BaseModel):
     """Schema for updating health metrics."""
-    churn_risk: Optional[str] = Field(None, alias="churnRisk")
-    health_score: Optional[int] = Field(None, ge=0, le=100, alias="healthScore")
-    nps_score: Optional[int] = Field(None, ge=-100, le=100, alias="npsScore")
-    support_tickets_open: Optional[int] = Field(None, alias="supportTicketsOpen")
-    engagement_level: Optional[str] = Field(None, alias="engagementLevel")
+    churn_risk: str | None = Field(None, alias="churnRisk")
+    health_score: int | None = Field(None, ge=0, le=100, alias="healthScore")
+    nps_score: int | None = Field(None, ge=-100, le=100, alias="npsScore")
+    support_tickets_open: int | None = Field(None, alias="supportTicketsOpen")
+    engagement_level: str | None = Field(None, alias="engagementLevel")
 
     class Config:
         populate_by_name = True
@@ -360,7 +360,7 @@ class ClientMetrics(BaseModel):
     client_id: str = Field(..., alias="clientId")
     client_name: str = Field(..., alias="clientName")
     status: str
-    plan_id: Optional[str] = Field(None, alias="planId")
+    plan_id: str | None = Field(None, alias="planId")
     mrr: float = Field(default=0, description="Monthly revenue from this client")
     total_users: int = Field(default=0, description="Total users for this client", alias="totalUsers")
     active_users: int = Field(default=0, description="Active users in last 30 days", alias="activeUsers")
@@ -370,8 +370,8 @@ class ClientMetrics(BaseModel):
     ai_tokens_limit: int = Field(default=0, description="AI tokens limit", alias="aiTokensLimit")
     ai_usage_percentage: float = Field(default=0, description="AI usage percentage", alias="aiUsagePercentage")
     days_since_signup: int = Field(default=0, description="Days since client signup", alias="daysSinceSignup")
-    contract_start: Optional[str] = Field(None, alias="contractStart")
-    contract_end: Optional[str] = Field(None, alias="contractEnd")
+    contract_start: str | None = Field(None, alias="contractStart")
+    contract_end: str | None = Field(None, alias="contractEnd")
     health_score: float = Field(default=0, description="Client health score 0-100", alias="healthScore")
     timestamp: str = Field(default="", description="Timestamp of the metrics")
     
@@ -382,7 +382,7 @@ class ClientMetrics(BaseModel):
 
 class ClientMetricsList(BaseModel):
     """List of client metrics."""
-    clients: List[ClientMetrics]
+    clients: list[ClientMetrics]
     total: int
     limit: int
     offset: int
@@ -392,7 +392,7 @@ class MetricsTrend(BaseModel):
     """Trend data point for metrics over time."""
     date: str
     value: float
-    label: Optional[str] = None
+    label: str | None = None
 
 
 class MetricsTrendResponse(BaseModel):
@@ -400,7 +400,7 @@ class MetricsTrendResponse(BaseModel):
     metric_name: str = Field(..., alias="metricName")
     period_start: str = Field(..., alias="periodStart")
     period_end: str = Field(..., alias="periodEnd")
-    data_points: List[MetricsTrend] = Field(..., alias="dataPoints")
+    data_points: list[MetricsTrend] = Field(..., alias="dataPoints")
     total_change: float = Field(..., alias="totalChange")
     percentage_change: float = Field(..., alias="percentageChange")
 
@@ -414,7 +414,7 @@ class ChurnAnalysis(BaseModel):
     previous_month_churned: int = Field(..., alias="previousMonthChurned")
     churn_rate: float = Field(..., alias="churnRate")
     at_risk_clients: int = Field(..., alias="atRiskClients")
-    reasons: Dict[str, int] = Field(default_factory=dict)
+    reasons: dict[str, int] = Field(default_factory=dict)
 
     class Config:
         populate_by_name = True
@@ -435,8 +435,8 @@ class RevenueAnalysis(BaseModel):
     """Revenue analysis response."""
     total_mrr: float = Field(..., alias="totalMrr")
     total_arr: float = Field(..., alias="totalArr")
-    by_plan: List[RevenueBreakdown] = Field(..., alias="byPlan")
-    by_company_size: List[RevenueBreakdown] = Field(..., alias="byCompanySize")
+    by_plan: list[RevenueBreakdown] = Field(..., alias="byPlan")
+    by_company_size: list[RevenueBreakdown] = Field(..., alias="byCompanySize")
     growth_rate: float = Field(..., alias="growthRate")
 
     class Config:

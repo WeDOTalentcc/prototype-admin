@@ -12,7 +12,7 @@ Fail-safe: exceções por candidato são logadas e não interrompem o batch.
 LGPD: stoplist opt-out verificada antes de cada reenvio.
 """
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import text
@@ -34,7 +34,7 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
     sent = skipped = errors = marked_no_response = 0
 
     try:
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=FOLLOWUP_INTERVAL_HOURS)
+        cutoff = datetime.now(UTC) - timedelta(hours=FOLLOWUP_INTERVAL_HOURS)
         result = await db.execute(text("""
             SELECT
                 n.id           AS notification_id,
@@ -118,7 +118,7 @@ async def process_email_followups(db: AsyncSession) -> dict[str, int]:
                 )
 
             # Atualiza followup_count na notificação original
-            new_extra = {**extra_data, "followup_count": followup_count + 1, "last_followup_at": datetime.now(timezone.utc).isoformat()}
+            new_extra = {**extra_data, "followup_count": followup_count + 1, "last_followup_at": datetime.now(UTC).isoformat()}
             await db.execute(text("""
                 UPDATE notifications
                 SET extra_data = :extra_data

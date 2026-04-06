@@ -8,21 +8,15 @@ Provides endpoints for:
 - AI-powered stage transition suggestions
 - Executing specific automation actions
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, Dict, Any, Literal, List
-from pydantic import BaseModel, Field
-from datetime import datetime
 import logging
-import uuid
+from datetime import datetime
+from typing import Any, Literal
 
-from app.core.database import get_db
-from app.domains.automation.services.automation_trigger_service import automation_trigger_service
-from app.domains.automation.services.automation_service import automation_service
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 from app.services.audit_service import audit_service
-from app.domains.communication.services.communication_service import communication_service
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +140,7 @@ ATS_STAGE_MAPPING = {
 }
 
 
-def map_lia_stage_to_ats(lia_stage: str, ats_platform: str, company_id: Optional[str] = None) -> tuple:
+def map_lia_stage_to_ats(lia_stage: str, ats_platform: str, company_id: str | None = None) -> tuple:
     """
     Map LIA stage name to ATS-specific stage identifier.
     
@@ -179,8 +173,8 @@ async def notify_unmapped_stage(
     company_id: str,
     lia_stage: str,
     ats_platform: str,
-    candidate_id: Optional[str] = None,
-    vacancy_id: Optional[str] = None
+    candidate_id: str | None = None,
+    vacancy_id: str | None = None
 ) -> None:
     """
     Create notification and audit log for unmapped ATS stage.
@@ -238,7 +232,7 @@ async def notify_unmapped_stage(
         logger.error(f"❌ [ATS_STAGE_MAPPING] Failed to create notification: {e}")
 
 
-from typing import Tuple
+
 from sqlalchemy import select
 
 
@@ -247,7 +241,7 @@ async def validate_multi_tenancy(
     candidate_id: str,
     vacancy_id: str,
     company_id: str
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Validate that candidate and vacancy belong to the specified company.
     Returns (is_valid, error_message).
@@ -293,13 +287,13 @@ class ExecuteActionRequest(BaseModel):
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
-    channel: Optional[Literal['email', 'whatsapp']] = Field(
+    channel: Literal['email', 'whatsapp'] | None = Field(
         None, description="Communication channel (for triagem_wsi)"
     )
-    template_id: Optional[str] = Field(None, description="Template ID to use")
-    subject: Optional[str] = Field(None, description="Email subject (for email actions)")
-    message: Optional[str] = Field(None, description="Custom message content")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+    template_id: str | None = Field(None, description="Template ID to use")
+    subject: str | None = Field(None, description="Email subject (for email actions)")
+    message: str | None = Field(None, description="Custom message content")
+    metadata: dict[str, Any] | None = Field(default=None, description="Additional metadata")
 
     class Config:
         json_schema_extra = {
@@ -321,17 +315,17 @@ class InterviewScheduledRequest(BaseModel):
     vacancy_id: str = Field(..., description="ID of the vacancy")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
     interview_datetime: datetime = Field(..., description="Interview date and time")
-    interview_link: Optional[str] = Field(None, description="Video call link for the interview")
-    interviewer_name: Optional[str] = Field("Equipe", description="Name of the interviewer")
-    interviewer_email: Optional[str] = Field(None, description="Email of the interviewer")
+    interview_link: str | None = Field(None, description="Video call link for the interview")
+    interviewer_name: str | None = Field("Equipe", description="Name of the interviewer")
+    interviewer_email: str | None = Field(None, description="Email of the interviewer")
     interview_type: str = Field("behavioral", description="Type: technical, behavioral, cultural")
     duration_minutes: int = Field(60, description="Interview duration in minutes")
-    notes: Optional[str] = Field(None, description="Additional notes for the interview")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    candidate_phone: Optional[str] = Field(None, description="Phone number of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
-    organizer_email: Optional[str] = Field(None, description="Email of the meeting organizer (recruiter)")
+    notes: str | None = Field(None, description="Additional notes for the interview")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    candidate_phone: str | None = Field(None, description="Phone number of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
+    organizer_email: str | None = Field(None, description="Email of the meeting organizer (recruiter)")
 
     class Config:
         json_schema_extra = {
@@ -359,13 +353,13 @@ class InterviewCompletedRequest(BaseModel):
     company_id: str = Field(..., description="Company ID for multi-tenancy")
     interview_id: str = Field(..., description="ID of the completed interview")
     interview_type: str = Field("behavioral", description="Type: technical, behavioral, cultural")
-    interviewer_notes: Optional[str] = Field(None, description="Notes from the interviewer")
-    competency_ratings: Optional[Dict[str, float]] = Field(None, description="Ratings per competency (1-5)")
-    overall_impression: Optional[str] = Field(None, description="Overall impression from interviewer")
-    transcript: Optional[str] = Field(None, description="Interview transcript if recorded")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
-    interviewer_name: Optional[str] = Field(None, description="Name of the interviewer")
+    interviewer_notes: str | None = Field(None, description="Notes from the interviewer")
+    competency_ratings: dict[str, float] | None = Field(None, description="Ratings per competency (1-5)")
+    overall_impression: str | None = Field(None, description="Overall impression from interviewer")
+    transcript: str | None = Field(None, description="Interview transcript if recorded")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
+    interviewer_name: str | None = Field(None, description="Name of the interviewer")
 
     class Config:
         json_schema_extra = {
@@ -396,12 +390,12 @@ class CandidateInactiveRequest(BaseModel):
     vacancy_id: str = Field(..., description="ID of the vacancy")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
     days_inactive: int = Field(7, description="Number of days the candidate has been inactive")
-    last_activity_date: Optional[datetime] = Field(None, description="Date of last activity")
-    current_stage: Optional[str] = Field(None, description="Current pipeline stage: Triagem, Entrevista, Proposta")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    candidate_phone: Optional[str] = Field(None, description="Phone number of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
+    last_activity_date: datetime | None = Field(None, description="Date of last activity")
+    current_stage: str | None = Field(None, description="Current pipeline stage: Triagem, Entrevista, Proposta")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    candidate_phone: str | None = Field(None, description="Phone number of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
 
     class Config:
         json_schema_extra = {
@@ -426,15 +420,15 @@ class ATSSyncRequest(BaseModel):
     vacancy_id: str = Field(..., description="ID of the vacancy in LIA")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
     new_stage: str = Field(..., description="New stage name in LIA (e.g., Triagem, Entrevista)")
-    previous_stage: Optional[str] = Field(None, description="Previous stage name in LIA")
+    previous_stage: str | None = Field(None, description="Previous stage name in LIA")
     ats_platform: str = Field("gupy", description="Target ATS platform: gupy, pandape, merge")
-    ats_candidate_id: Optional[str] = Field(None, description="External ATS candidate ID (if known)")
-    ats_vacancy_id: Optional[str] = Field(None, description="External ATS vacancy/job ID (if known)")
+    ats_candidate_id: str | None = Field(None, description="External ATS candidate ID (if known)")
+    ats_vacancy_id: str | None = Field(None, description="External ATS vacancy/job ID (if known)")
     sync_direction: str = Field("outbound", description="Sync direction: outbound (LIA→ATS) or inbound (ATS→LIA)")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
-    sync_reason: Optional[str] = Field(None, description="Reason for the sync (e.g., stage_change, manual_sync)")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
+    sync_reason: str | None = Field(None, description="Reason for the sync (e.g., stage_change, manual_sync)")
 
     class Config:
         json_schema_extra = {
@@ -483,7 +477,7 @@ class TriggerEventRequest(BaseModel):
     entity_id: str = Field(..., description="ID of the related entity (job, candidate, etc)")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
     entity_type: str = Field(default="job", description="Type of entity (job, candidate, interview)")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional event context data")
+    metadata: dict[str, Any] | None = Field(default=None, description="Additional event context data")
 
     class Config:
         json_schema_extra = {
@@ -509,16 +503,16 @@ class ScreeningCompletedRequest(BaseModel):
     screening_type: Literal['voice', 'chat', 'whatsapp'] = Field(
         ..., description="Type of conversational screening completed"
     )
-    transcript: Optional[str] = Field(None, description="Full conversation transcript")
-    responses: Optional[List[Dict[str, Any]]] = Field(
+    transcript: str | None = Field(None, description="Full conversation transcript")
+    responses: list[dict[str, Any]] | None = Field(
         default=None, 
         description="Structured responses from the screening conversation"
     )
-    competency_weights: Optional[Dict[str, float]] = Field(
+    competency_weights: dict[str, float] | None = Field(
         default=None,
         description="Optional custom competency weights for WSI calculation"
     )
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional screening metadata")
+    metadata: dict[str, Any] | None = Field(default=None, description="Additional screening metadata")
 
     class Config:
         json_schema_extra = {
@@ -547,10 +541,10 @@ WSI_REVIEW_THRESHOLD = 3.0  # review_min ≥ 3.0/5 (= 6.0/10)
 
 class BulkSuggestionRequest(BaseModel):
     """Request model for bulk suggestion operations."""
-    suggestion_ids: List[str] = Field(..., description="List of suggestion IDs to process")
+    suggestion_ids: list[str] = Field(..., description="List of suggestion IDs to process")
     company_id: str = Field(..., description="Company ID for multi-tenancy validation")
-    reviewer_id: Optional[str] = Field(None, description="ID of the user reviewing suggestions")
-    reason: Optional[str] = Field(None, description="Reason for rejection (bulk reject only)")
+    reviewer_id: str | None = Field(None, description="ID of the user reviewing suggestions")
+    reason: str | None = Field(None, description="Reason for rejection (bulk reject only)")
 
 
 
@@ -563,11 +557,11 @@ class CandidateNoShowRequest(BaseModel):
     interview_datetime: datetime = Field(..., description="Interview date and time that was missed")
     interview_type: str = Field("technical", description="Type: technical, behavioral, cultural")
     no_show_count: int = Field(1, description="How many times candidate didn't show")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    candidate_phone: Optional[str] = Field(None, description="Phone number of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
-    interviewer_name: Optional[str] = Field(None, description="Name of the interviewer")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    candidate_phone: str | None = Field(None, description="Phone number of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
+    interviewer_name: str | None = Field(None, description="Name of the interviewer")
 
     class Config:
         json_schema_extra = {
@@ -594,13 +588,13 @@ class OfferSentPayload(BaseModel):
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
-    offer_details: Optional[Dict[str, Any]] = Field(None, description="Details of the offer")
-    salary_offered: Optional[float] = Field(None, description="Salary amount offered")
-    start_date: Optional[str] = Field(None, description="Proposed start date")
-    response_deadline: Optional[str] = Field(None, description="Date by which candidate should respond")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
+    offer_details: dict[str, Any] | None = Field(None, description="Details of the offer")
+    salary_offered: float | None = Field(None, description="Salary amount offered")
+    start_date: str | None = Field(None, description="Proposed start date")
+    response_deadline: str | None = Field(None, description="Date by which candidate should respond")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
 
     class Config:
         json_schema_extra = {
@@ -625,13 +619,13 @@ class CandidateHiredPayload(BaseModel):
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
-    hire_date: Optional[str] = Field(None, description="Official hire date")
-    final_salary: Optional[float] = Field(None, description="Final agreed salary")
-    department: Optional[str] = Field(None, description="Department the candidate will join")
-    manager_id: Optional[str] = Field(None, description="ID of the direct manager")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
+    hire_date: str | None = Field(None, description="Official hire date")
+    final_salary: float | None = Field(None, description="Final agreed salary")
+    department: str | None = Field(None, description="Department the candidate will join")
+    manager_id: str | None = Field(None, description="ID of the direct manager")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
 
     class Config:
         json_schema_extra = {
@@ -656,14 +650,14 @@ class CandidateRejectedPayload(BaseModel):
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
     company_id: str = Field(..., description="Company ID for multi-tenancy")
-    rejection_reason: Optional[str] = Field(None, description="Reason for rejection")
-    rejection_stage: Optional[str] = Field(None, description="Stage at which rejected")
+    rejection_reason: str | None = Field(None, description="Reason for rejection")
+    rejection_stage: str | None = Field(None, description="Stage at which rejected")
     add_to_talent_pool: bool = Field(True, description="Whether to add to talent pool")
     send_feedback: bool = Field(True, description="Whether to send feedback email")
-    candidate_name: Optional[str] = Field(None, description="Name of the candidate")
-    candidate_email: Optional[str] = Field(None, description="Email of the candidate")
-    job_title: Optional[str] = Field(None, description="Title of the job vacancy")
-    reviewer_id: Optional[str] = Field(None, description="ID do usuário humano que autorizou a rejeição (obrigatório — LGPD art. 20 / EU AI Act art. 14)")
+    candidate_name: str | None = Field(None, description="Name of the candidate")
+    candidate_email: str | None = Field(None, description="Email of the candidate")
+    job_title: str | None = Field(None, description="Title of the job vacancy")
+    reviewer_id: str | None = Field(None, description="ID do usuário humano que autorizou a rejeição (obrigatório — LGPD art. 20 / EU AI Act art. 14)")
 
     class Config:
         json_schema_extra = {
@@ -685,7 +679,7 @@ class CandidateRejectedPayload(BaseModel):
 
 class RejectSuggestionRequest(BaseModel):
     """Request model for rejecting an AI suggestion."""
-    reason: Optional[str] = Field(None, description="Reason for rejecting the suggestion")
+    reason: str | None = Field(None, description="Reason for rejecting the suggestion")
 
 
 

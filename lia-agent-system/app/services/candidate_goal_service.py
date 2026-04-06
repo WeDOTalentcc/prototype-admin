@@ -7,7 +7,7 @@ Covers:
 """
 from collections import Counter
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 
 class CandidateGoalService:
@@ -23,7 +23,7 @@ class CandidateGoalService:
         current_count: int,
         target_min: int = 50,
         target_max: int = 70,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Return goal-progress assessment for a vacancy."""
         if current_count < target_min:
             status = "below_target"
@@ -71,7 +71,7 @@ class CandidateGoalService:
 
         progress_percentage = min(100, int((current_count / target_min) * 100))
 
-        suggested_actions: List[Dict[str, str]] = []
+        suggested_actions: list[dict[str, str]] = []
         if status == "below_target":
             suggested_actions = [
                 {"id": "expand_search", "label": "Expandir busca", "priority": "high"},
@@ -108,8 +108,8 @@ class CandidateGoalService:
     # ------------------------------------------------------------------
 
     def _analyze_calibration_patterns(
-        self, feedbacks: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, feedbacks: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Extract skill/company/experience patterns from like/dislike feedbacks."""
         if not feedbacks:
             return {}
@@ -117,7 +117,7 @@ class CandidateGoalService:
         liked = [f for f in feedbacks if f["feedback"] == "like"]
         disliked = [f for f in feedbacks if f["feedback"] == "dislike"]
 
-        patterns: Dict[str, Any] = {
+        patterns: dict[str, Any] = {
             "preferred_skills": [],
             "avoided_skills": [],
             "preferred_companies": [],
@@ -127,10 +127,10 @@ class CandidateGoalService:
             "location_preference": None,
         }
 
-        liked_skills: List[str] = []
-        disliked_skills: List[str] = []
-        liked_companies: List[str] = []
-        liked_experience: List[float] = []
+        liked_skills: list[str] = []
+        disliked_skills: list[str] = []
+        liked_companies: list[str] = []
+        liked_experience: list[float] = []
 
         for f in liked:
             snapshot = f.get("candidate_snapshot", {}) or {}
@@ -171,8 +171,8 @@ class CandidateGoalService:
     async def analyze_calibration_patterns_for_session(
         self,
         session_id: str,
-        feedbacks: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        feedbacks: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """
         Analyse calibration feedbacks and return patterns + confidence + message.
 

@@ -24,7 +24,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +34,7 @@ logger = logging.getLogger(__name__)
 # Mapeamento granular: finalidade → consent_type único
 # ---------------------------------------------------------------------------
 
-GRANULAR_PURPOSE_MAP: Dict[str, str] = {
+GRANULAR_PURPOSE_MAP: dict[str, str] = {
     "ai_screening": "SCREENING",
     "ai_scoring": "AI_SCORING",
     "ai_video_analysis": "AI_VIDEO_ANALYSIS",
@@ -63,9 +62,9 @@ class GranularConsentStatus:
     consent_type: str
     given: bool
     revoked: bool
-    consent_date: Optional[datetime] = None
-    revoked_at: Optional[datetime] = None
-    source: Optional[str] = None
+    consent_date: datetime | None = None
+    revoked_at: datetime | None = None
+    source: str | None = None
 
 
 @dataclass
@@ -73,7 +72,7 @@ class GranularConsentSummary:
     """Resumo de todos os consentimentos de um candidato."""
     candidate_id: str
     company_id: str
-    consents: List[GranularConsentStatus] = field(default_factory=list)
+    consents: list[GranularConsentStatus] = field(default_factory=list)
     all_blocking_given: bool = False  # True se todas as finalidades BLOCKING_PURPOSES estão ok
 
     def to_dict(self) -> dict:
@@ -139,7 +138,7 @@ class GranularConsentService:
         )
         db_consents = {c.consent_type: c for c in result.scalars().all()}
 
-        statuses: List[GranularConsentStatus] = []
+        statuses: list[GranularConsentStatus] = []
         for purpose, ctype in GRANULAR_PURPOSE_MAP.items():
             record = db_consents.get(ctype)
             if record is None:
@@ -178,10 +177,10 @@ class GranularConsentService:
         self,
         candidate_id: str,
         company_id: str,
-        updates: Dict[str, bool],
+        updates: dict[str, bool],
         source: str = "api",
-        ip_address: Optional[str] = None,
-    ) -> List[GranularConsentStatus]:
+        ip_address: str | None = None,
+    ) -> list[GranularConsentStatus]:
         """
         Atualiza múltiplos consentimentos em lote.
 
@@ -198,7 +197,7 @@ class GranularConsentService:
         from app.models.communication_settings import LGPDConsent
 
         now = datetime.utcnow()
-        updated: List[GranularConsentStatus] = []
+        updated: list[GranularConsentStatus] = []
 
         for purpose, given in updates.items():
             ctype = self._consent_type_for(purpose)

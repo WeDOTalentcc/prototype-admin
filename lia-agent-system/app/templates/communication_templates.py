@@ -2,8 +2,8 @@
 Communication Templates for LIA Platform.
 Contains email and WhatsApp templates for candidate outreach and feedback.
 """
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # LGPD — Aviso de sub-processadores de dados (K1 — Sprint K)
@@ -42,12 +42,12 @@ class EmailTemplates:
     def initial_contact(
         candidate_name: str,
         job_title: str,
-        company_name: Optional[str],
+        company_name: str | None,
         is_confidential: bool,
         job_challenge: str = "",
         recruiter_name: str = "Equipe de Recrutamento",
         privacy_policy_url: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate initial contact email."""
         
         if is_confidential:
@@ -106,7 +106,7 @@ Atenciosamente,
         candidate_name: str,
         job_title: str,
         hours_remaining: int = 12
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate screening reminder email."""
         
         subject = f"Lembrete: Triagem pendente - {job_title}"
@@ -131,8 +131,8 @@ LIA - Assistente de Recrutamento"""
         candidate_name: str,
         job_title: str,
         strengths: list,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate screening passed email."""
         
         subject = f"Parabéns! Você avançou no processo - {job_title}"
@@ -166,7 +166,7 @@ Atenciosamente,
         job_title: str,
         strengths: list,
         development_areas: list
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate screening failed email."""
         
         subject = f"Resultado da triagem - {job_title}"
@@ -202,7 +202,7 @@ LIA - Assistente de Recrutamento"""
         interview_date: datetime,
         interview_link: str,
         interviewer_name: str = "Equipe"
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate interview scheduled email."""
         
         date_formatted = interview_date.strftime("%d/%m/%Y às %H:%M")
@@ -235,7 +235,7 @@ LIA - Assistente de Recrutamento"""
         candidate_name: str,
         job_title: str,
         feedback: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate rejection email after interview."""
         
         subject = f"Resultado do processo - {job_title}"
@@ -261,7 +261,7 @@ Equipe de Recrutamento"""
     def process_closed(
         candidate_name: str,
         job_title: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate process closed email for remaining candidates."""
         
         subject = f"Encerramento do processo - {job_title}"
@@ -289,7 +289,7 @@ LIA - Assistente de Recrutamento"""
         match_score: float,
         key_matches: list,
         candidate_profile_link: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Notify recruiter about high-match candidate."""
         
         subject = f"🎯 Match Alto Encontrado: {candidate_name} para {job_title}"
@@ -320,8 +320,8 @@ LIA - Assistente de Recrutamento"""
     def job_paused(
         candidate_name: str,
         job_title: str,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Notify candidates that job was paused."""
         
         subject = f"Atualização do processo - {job_title}"
@@ -345,9 +345,9 @@ Atenciosamente,
     def job_reactivated(
         candidate_name: str,
         job_title: str,
-        company_name: Optional[str] = None,
+        company_name: str | None = None,
         next_steps: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Notify candidates that job was reactivated."""
         
         subject = f"Boas notícias! Processo reativado - {job_title}"
@@ -378,7 +378,7 @@ Atenciosamente,
         actual_time: str,
         candidates_affected: int,
         action_required: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert for SLA violation."""
         
         subject = f"⚠️ Alerta de SLA Violado - {job_title}"
@@ -411,7 +411,7 @@ LIA - Assistente de Recrutamento"""
         target: float,
         deadline: str,
         suggestions: list
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert for goal at risk."""
         
         subject = f"⚠️ Meta em Risco: {goal_name}"
@@ -445,7 +445,7 @@ LIA - Assistente de Recrutamento"""
         target: float,
         analysis: str = "",
         next_steps: list = None
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert for missed goal."""
         
         subject = f"📊 Resultado da Meta: {goal_name}"
@@ -485,7 +485,7 @@ LIA - Assistente de Recrutamento"""
         hires_completed: int,
         highlights: list,
         areas_attention: list
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Weekly performance summary."""
         
         subject = f"📊 Resumo Semanal de Performance ({week_start} - {week_end})"
@@ -527,7 +527,7 @@ LIA - Assistente de Recrutamento"""
         error_details: str,
         affected_records: int,
         action_required: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert for ATS sync failure."""
         
         subject = f"🔴 Falha na Sincronização com {ats_name}"
@@ -559,7 +559,7 @@ LIA - Assistente de Recrutamento"""
         credits_limit: int,
         estimated_days_remaining: int,
         upgrade_link: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert for low Pearch credits."""
         
         subject = f"⚠️ Créditos Pearch Baixos - {credits_remaining} restantes"
@@ -590,10 +590,10 @@ LIA - Assistente de Recrutamento"""
         role: str,
         login_link: str,
         quick_start_tips: list
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Welcome email for new user."""
         
-        subject = f"Bem-vindo(a) à plataforma LIA! 🎉"
+        subject = "Bem-vindo(a) à plataforma LIA! 🎉"
         
         tips_text = "\n".join([f"• {t}" for t in quick_start_tips[:5]]) if quick_start_tips else "• Explore o dashboard para conhecer suas métricas"
         
@@ -624,7 +624,7 @@ LIA - Sua Assistente de Recrutamento"""
         change_date: str,
         ip_address: str = "",
         support_link: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Password changed confirmation."""
         
         subject = "🔐 Sua senha foi alterada"
@@ -653,7 +653,7 @@ Equipe de Segurança LIA"""
         request_details: str,
         deadline: str,
         approval_link: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Approval pending notification."""
         
         subject = f"⏳ Aprovação Pendente: {request_type}"
@@ -684,7 +684,7 @@ LIA - Assistente de Recrutamento"""
         requester_name: str,
         original_deadline: str,
         consequence: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Approval expired notification."""
         
         subject = f"⚠️ Aprovação Expirada: {request_type}"
@@ -712,10 +712,10 @@ LIA - Assistente de Recrutamento"""
     def feedback_request(
         candidate_name: str,
         job_title: str,
-        company_name: Optional[str] = None,
+        company_name: str | None = None,
         feedback_link: str = "",
         incentive: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Feedback request email."""
         
         subject = f"Sua opinião é importante - Processo {job_title}"
@@ -745,12 +745,12 @@ Atenciosamente,
     def offer_sent(
         candidate_name: str,
         job_title: str,
-        salary_offered: Optional[float] = None,
-        start_date: Optional[str] = None,
-        response_deadline: Optional[str] = None,
-        offer_details: Optional[Dict[str, Any]] = None,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        salary_offered: float | None = None,
+        start_date: str | None = None,
+        response_deadline: str | None = None,
+        offer_details: dict[str, Any] | None = None,
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate offer sent email to candidate."""
         
         subject = f"🎉 Proposta de Emprego - {job_title}"
@@ -793,10 +793,10 @@ Atenciosamente,
     def candidate_hired_welcome(
         candidate_name: str,
         job_title: str,
-        hire_date: Optional[str] = None,
-        department: Optional[str] = None,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        hire_date: str | None = None,
+        department: str | None = None,
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate welcome email for newly hired candidate."""
         
         subject = f"🎉 Bem-vindo(a) à equipe! - {job_title}"
@@ -833,10 +833,10 @@ Atenciosamente,
     def candidate_rejected(
         candidate_name: str,
         job_title: str,
-        rejection_reason: Optional[str] = None,
-        rejection_stage: Optional[str] = None,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        rejection_reason: str | None = None,
+        rejection_stage: str | None = None,
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate rejection email for candidate."""
         
         subject = f"Resultado do processo seletivo - {job_title}"
@@ -882,7 +882,7 @@ Atenciosamente,
         variance: int,
         variance_reasons: list,
         recommendations: list
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Workforce variance notification."""
         
         subject = f"📊 Variância de Workforce - {department}"
@@ -918,7 +918,7 @@ LIA - Assistente de Recrutamento"""
         hires: list,
         total_hires: int,
         onboarding_checklist: list
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Upcoming hires notification."""
         
         subject = f"📅 Próximas Contratações - {period}"
@@ -952,8 +952,8 @@ LIA - Assistente de Recrutamento"""
         days_inactive: int,
         current_stage: str,
         follow_up_type: str = "general",
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate follow-up email for inactive candidates based on their current stage."""
         
         stage_messages = {
@@ -1013,7 +1013,7 @@ LIA - Assistente de Recrutamento
         current_stage: str,
         last_activity: str = "",
         candidate_profile_link: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert recruiter about inactive candidate."""
         
         subject = f"⏰ Candidato Inativo: {candidate_name} - {job_title}"
@@ -1049,8 +1049,8 @@ LIA - Assistente de Recrutamento"""
         interview_datetime: datetime,
         interviewer_name: str = "Equipe",
         reschedule_link: str = "",
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate email for first no-show - polite reschedule offer."""
         
         date_formatted = interview_datetime.strftime("%d/%m/%Y às %H:%M")
@@ -1084,8 +1084,8 @@ Atenciosamente,
         candidate_name: str,
         job_title: str,
         no_show_count: int,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Generate email for final no-show notice - before rejection."""
         
         subject = f"Aviso importante sobre seu processo - {job_title}"
@@ -1119,7 +1119,7 @@ Atenciosamente,
         no_show_count: int,
         recommendation: str,
         candidate_profile_link: str = ""
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Alert recruiter about candidate no-show."""
         
         date_formatted = interview_datetime.strftime("%d/%m/%Y às %H:%M")
@@ -1153,8 +1153,8 @@ LIA - Assistente de Recrutamento"""
     def job_cancelled(
         candidate_name: str,
         job_title: str,
-        company_name: Optional[str] = None
-    ) -> Dict[str, str]:
+        company_name: str | None = None
+    ) -> dict[str, str]:
         """Notify candidates that job was cancelled."""
 
         subject = f"Atualização do processo - {job_title}"
@@ -1182,7 +1182,7 @@ class WhatsAppTemplates:
     def initial_contact(
         candidate_name: str,
         job_title: str,
-        company_name: Optional[str],
+        company_name: str | None,
         is_confidential: bool,
         privacy_policy_url: str = ""
     ) -> str:

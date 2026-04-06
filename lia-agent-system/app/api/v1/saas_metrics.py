@@ -9,44 +9,42 @@ Provides endpoints for platform-wide and client-specific SaaS metrics:
 - Usage metrics (AI credits, users, jobs, storage)
 - Payment history
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
-from typing import Optional, Dict, Any
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
+from app.models.ai_consumption import AiConsumption, AiCreditsBalance
 from app.models.client_account import ClientAccount, ClientStatus
 from app.models.client_user import ClientUser, ClientUserStatus
-from app.models.ai_consumption import AiConsumption, AiCreditsBalance
-from app.models.billing import Subscription, SubscriptionStatus
 from app.models.saas_metrics import (
+    ChurnRisk,
+    ClientHealthMetrics,
     ClientSaasMetrics,
     ClientUsageMetrics,
-    ClientHealthMetrics,
     PaymentHistory,
     PaymentStatus,
-    ChurnRisk,
 )
 from app.schemas.saas_metrics import (
-    PlatformMetricsSummary,
+    ChurnAnalysis,
+    ClientAllMetricsResponse,
+    ClientHealthMetricsResponse,
     ClientMetrics,
     ClientMetricsList,
-    MetricsTrendResponse,
-    MetricsTrend,
-    ChurnAnalysis,
-    RevenueAnalysis,
-    RevenueBreakdown,
     ClientSaasMetricsResponse,
     ClientUsageMetricsResponse,
-    ClientHealthMetricsResponse,
-    PaymentHistoryResponse,
     PaymentHistoryCreate,
     PaymentHistoryListResponse,
-    ClientAllMetricsResponse,
+    PaymentHistoryResponse,
     PlatformAggregateMetrics,
+    PlatformMetricsSummary,
+    RevenueAnalysis,
+    RevenueBreakdown,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,10 +60,10 @@ PLAN_PRICES = {
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """Get user context from request headers."""
     if not x_company_id:
         raise HTTPException(
@@ -89,7 +87,7 @@ def get_user_from_headers(
     }
 
 
-def require_admin(current_user: Dict[str, Any]) -> None:
+def require_admin(current_user: dict[str, Any]) -> None:
     """Raise exception if user is not admin."""
     if not current_user.get("is_admin", False):
         raise HTTPException(
@@ -99,7 +97,7 @@ def require_admin(current_user: Dict[str, Any]) -> None:
 
 
 def verify_company_ownership(
-    current_user: Dict[str, Any],
+    current_user: dict[str, Any],
     target_client_id: str,
     resource_type: str = "metrics"
 ) -> None:
@@ -146,7 +144,7 @@ def _build_usage_response(usage: ClientUsageMetrics) -> ClientUsageMetricsRespon
 
 @router.get("/aggregate", response_model=PlatformAggregateMetrics, summary="Get platform-wide aggregated metrics")
 async def get_aggregate_metrics(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> PlatformAggregateMetrics:
     """
@@ -281,7 +279,7 @@ async def get_aggregate_metrics(
 
 @router.get("/summary", response_model=PlatformMetricsSummary, summary="Get platform metrics summary")
 async def get_platform_summary(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -429,7 +427,7 @@ async def get_platform_summary(
 @router.get("/{client_id}", response_model=ClientAllMetricsResponse, summary="Get all metrics for a client")
 async def get_all_client_metrics(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> ClientAllMetricsResponse:
     """
@@ -488,7 +486,7 @@ async def get_all_client_metrics(
 @router.get("/{client_id}/revenue", response_model=ClientSaasMetricsResponse, summary="Get revenue metrics for a client")
 async def get_revenue_metrics(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> ClientSaasMetricsResponse:
     """
@@ -528,7 +526,7 @@ async def get_revenue_metrics(
 @router.get("/{client_id}/usage", response_model=ClientUsageMetricsResponse, summary="Get usage metrics for a client")
 async def get_usage_metrics(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> ClientUsageMetricsResponse:
     """
@@ -568,7 +566,7 @@ async def get_usage_metrics(
 @router.get("/{client_id}/health", response_model=ClientHealthMetricsResponse, summary="Get health metrics for a client")
 async def get_health_metrics(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> ClientHealthMetricsResponse:
     """
@@ -608,10 +606,10 @@ async def get_health_metrics(
 @router.get("/{client_id}/payments", response_model=PaymentHistoryListResponse, summary="Get payment history for a client")
 async def get_payment_history(
     client_id: str,
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> PaymentHistoryListResponse:
     """
@@ -660,7 +658,7 @@ async def get_payment_history(
 async def create_payment(
     client_id: str,
     payment_data: PaymentHistoryCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> PaymentHistoryResponse:
     """
@@ -725,7 +723,7 @@ async def create_payment(
 @router.get("/client/{client_id}", response_model=ClientMetrics, summary="Get client-specific metrics")
 async def get_client_metrics(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -775,7 +773,7 @@ async def get_client_metrics(
         users_result = await db.execute(users_query)
         total_users = users_result.scalar() or 0
         
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        datetime.utcnow() - timedelta(days=30)
         active_users_query = select(func.count(ClientUser.id)).where(
             and_(
                 ClientUser.company_id == client_uuid,
@@ -857,11 +855,11 @@ async def get_client_metrics(
 
 @router.get("/clients", response_model=ClientMetricsList, summary="List all client metrics")
 async def list_client_metrics(
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    plan: Optional[str] = Query(None, description="Filter by plan"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    plan: str | None = Query(None, description="Filter by plan"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -949,7 +947,7 @@ async def list_client_metrics(
 
 @router.get("/churn-analysis", response_model=ChurnAnalysis, summary="Get churn analysis")
 async def get_churn_analysis(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1022,7 +1020,7 @@ async def get_churn_analysis(
 
 @router.get("/revenue", response_model=RevenueAnalysis, summary="Get revenue analysis")
 async def get_revenue_analysis(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

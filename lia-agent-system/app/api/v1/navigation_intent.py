@@ -7,9 +7,9 @@ POST /api/v1/navigation-intent
 
 Used by the LIA Float panel to suggest contextual navigation.
 """
+
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import Optional
 
 from app.orchestrator.navigation_intent import detect_navigation_intent
 
@@ -21,10 +21,10 @@ class NavigationIntentRequest(BaseModel):
 
 
 class NavigationIntentResponse(BaseModel):
-    page: Optional[str] = None
+    page: str | None = None
     confidence: float
-    hint: Optional[str] = None
-    matched_pattern: Optional[str] = None
+    hint: str | None = None
+    matched_pattern: str | None = None
 
 
 @router.post("", response_model=NavigationIntentResponse)

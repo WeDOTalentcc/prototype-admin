@@ -2,15 +2,14 @@
 Affirmative Action Service for managing diversity criteria in job vacancies.
 """
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
+from typing import Any
 from uuid import UUID
+
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from app.models.job_vacancy import JobVacancy
-from app.models.candidate import Candidate
 from app.models.affirmative_audit import AffirmativeAuditLog, CandidateAffirmativeDocument
-
+from app.models.candidate import Candidate
+from app.models.job_vacancy import JobVacancy
 
 AFFIRMATIVE_CRITERIA = {
     "gender": {
@@ -64,7 +63,7 @@ class AffirmativeService:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_criteria_options(self) -> Dict[str, Any]:
+    def get_criteria_options(self) -> dict[str, Any]:
         """Return all available affirmative action criteria."""
         return AFFIRMATIVE_CRITERIA
     
@@ -72,7 +71,7 @@ class AffirmativeService:
         self,
         candidate: Candidate,
         vacancy: JobVacancy
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Check if candidate meets affirmative action criteria for vacancy."""
         if not vacancy.is_affirmative:
             return {"eligible": True, "reason": "Vaga não é afirmativa"}
@@ -99,7 +98,7 @@ class AffirmativeService:
             "document_types": self._get_required_document_types(criteria_primary, criteria_secondary)
         }
     
-    def _check_single_criterion(self, candidate: Candidate, criterion: str) -> Dict[str, Any]:
+    def _check_single_criterion(self, candidate: Candidate, criterion: str) -> dict[str, Any]:
         """Check if candidate meets a single criterion."""
         check_map = {
             "gender": lambda c: c.gender and c.gender.lower() in ["feminino", "mulher", "female", "trans"],
@@ -122,7 +121,7 @@ class AffirmativeService:
             "self_declared": meets
         }
     
-    def _get_required_document_types(self, primary: str, secondary: str = None) -> List[str]:
+    def _get_required_document_types(self, primary: str, secondary: str = None) -> list[str]:
         """Get required document types for criteria."""
         doc_types = []
         if primary and primary in AFFIRMATIVE_CRITERIA:
@@ -209,7 +208,7 @@ class AffirmativeService:
     def verify_document_lia(
         self,
         document_id: UUID,
-        verification_result: Dict[str, Any]
+        verification_result: dict[str, Any]
     ) -> CandidateAffirmativeDocument:
         """LIA automated verification of document."""
         document = self.db.query(CandidateAffirmativeDocument).filter(
@@ -279,7 +278,7 @@ class AffirmativeService:
         self,
         company_id: str,
         vacancy_id: UUID = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get all pending document uploads for a company/vacancy."""
         query = self.db.query(CandidateAffirmativeDocument).filter(
             CandidateAffirmativeDocument.company_id == company_id,
@@ -351,7 +350,7 @@ class AffirmativeService:
         reason: str = None,
         performed_by: str = None,
         performed_by_type: str = "system",
-        metadata: Dict[str, Any] = None
+        metadata: dict[str, Any] = None
     ):
         """Log an affirmative action event."""
         log = AffirmativeAuditLog(

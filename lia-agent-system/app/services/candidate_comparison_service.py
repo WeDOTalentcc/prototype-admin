@@ -6,23 +6,23 @@ This service compares candidates using scenario-based weights:
 - Scenario B: Non-screened candidates (CV only) - Rubricas 60%, Pre-req 25%, Historico 15%
 - Scenario C: General comparison without job - Historico 50%, Completude 30%, Recency 20%
 """
-from typing import Dict, Any, List, Optional, Literal
-from datetime import datetime
-from dataclasses import dataclass
-from enum import Enum
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text
 import logging
-import json
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any, Literal
 
-from app.services.llm import llm_service
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.domains.cv_screening.services.score_normalization_service import score_normalization_service
 from app.domains.cv_screening.services.seniority_utils import normalize_seniority
 from app.models.candidate import Candidate, VacancyCandidate
 from app.models.job_vacancy import JobVacancy
-from app.models.voice_screening import VoiceScreeningCall, VoiceScreeningAnalysis
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
+from app.models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
+from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class ScenarioWeights:
             recency=0.20
         )
     
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert weights to dictionary with non-zero values only."""
         weights = {
             "rubricas": self.rubricas,
@@ -95,28 +95,28 @@ class DimensionScore:
     score: float
     weight: float
     weighted_score: float
-    details: Optional[str] = None
+    details: str | None = None
 
 
 @dataclass
 class CandidateComparisonResult:
     """Result of comparing candidates."""
     comparison_id: str
-    winner: Optional[str]
-    winner_name: Optional[str]
+    winner: str | None
+    winner_name: str | None
     confidence: float
     scenario: ComparisonScenario
     scenario_description: str
-    methodology_used: List[str]
-    data_completeness: Dict[str, Dict[str, bool]]
-    weights_used: Dict[str, float]
-    dimension_comparison: Dict[str, Dict[str, Any]]
-    candidate_scores: Dict[str, float]
+    methodology_used: list[str]
+    data_completeness: dict[str, dict[str, bool]]
+    weights_used: dict[str, float]
+    dimension_comparison: dict[str, dict[str, Any]]
+    candidate_scores: dict[str, float]
     analysis: str
-    scenarios_recommendation: List[Dict[str, Any]]
+    scenarios_recommendation: list[dict[str, Any]]
     generated_at: str
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert result to dictionary."""
         return {
             "comparison_id": self.comparison_id,
@@ -149,10 +149,10 @@ class CandidateComparisonService:
     async def compare_candidates(
         self,
         db: AsyncSession,
-        candidate_ids: List[str],
-        job_id: Optional[str] = None,
-        force_scenario: Optional[Literal["A", "B", "C"]] = None
-    ) -> Dict[str, Any]:
+        candidate_ids: list[str],
+        job_id: str | None = None,
+        force_scenario: Literal["A", "B", "C"] | None = None
+    ) -> dict[str, Any]:
         """
         Compare multiple candidates and determine the best fit.
         
@@ -268,8 +268,8 @@ class CandidateComparisonService:
     async def _get_candidates(
         self, 
         db: AsyncSession, 
-        candidate_ids: List[str]
-    ) -> List[Candidate]:
+        candidate_ids: list[str]
+    ) -> list[Candidate]:
         """Fetch candidates by IDs."""
         result = await db.execute(
             select(Candidate).where(Candidate.id.in_(candidate_ids))
@@ -280,7 +280,7 @@ class CandidateComparisonService:
         self, 
         db: AsyncSession, 
         job_id: str
-    ) -> Optional[JobVacancy]:
+    ) -> JobVacancy | None:
         """Fetch job vacancy by ID."""
         result = await db.execute(
             select(JobVacancy).where(JobVacancy.id == job_id)
@@ -292,7 +292,7 @@ class CandidateComparisonService:
         db: AsyncSession,
         candidate_id: str,
         vacancy_id: str
-    ) -> Optional[VacancyCandidate]:
+    ) -> VacancyCandidate | None:
         """Get VacancyCandidate record if exists."""
         result = await db.execute(
             select(VacancyCandidate).where(
@@ -306,9 +306,9 @@ class CandidateComparisonService:
         self, 
         db: AsyncSession, 
         candidate_id: str,
-        job: Optional[JobVacancy] = None,
-        vacancy_candidate: Optional[VacancyCandidate] = None
-    ) -> Optional[Dict[str, Any]]:
+        job: JobVacancy | None = None,
+        vacancy_candidate: VacancyCandidate | None = None
+    ) -> dict[str, Any] | None:
         """
         Get WSI data for a candidate, prioritizing job-scoped data.
         
@@ -390,8 +390,8 @@ class CandidateComparisonService:
     
     def _parse_wsi_result(
         self, 
-        row: Optional[tuple]
-    ) -> Optional[Dict[str, Any]]:
+        row: tuple | None
+    ) -> dict[str, Any] | None:
         """
         Parse a WSI query result row into a structured dictionary.
         
@@ -424,11 +424,11 @@ class CandidateComparisonService:
     
     async def _detect_scenario(
         self,
-        candidates: List[Candidate],
-        job: Optional[JobVacancy],
-        wsi_data: Dict[str, Any],
-        vacancy_candidates: Dict[str, Any],
-        force_scenario: Optional[str] = None
+        candidates: list[Candidate],
+        job: JobVacancy | None,
+        wsi_data: dict[str, Any],
+        vacancy_candidates: dict[str, Any],
+        force_scenario: str | None = None
     ) -> ComparisonScenario:
         """
         Auto-detect comparison scenario based on available data.
@@ -490,7 +490,7 @@ class CandidateComparisonService:
         }
         return descriptions.get(scenario, "Cenário não identificado")
     
-    def _get_methodology_for_scenario(self, scenario: ComparisonScenario) -> List[str]:
+    def _get_methodology_for_scenario(self, scenario: ComparisonScenario) -> list[str]:
         """Get list of methodologies used for the scenario."""
         if scenario == ComparisonScenario.SCENARIO_A:
             return ["rubricas_bars", "wsi", "big_five", "pre_requisitos", "historico"]
@@ -501,9 +501,9 @@ class CandidateComparisonService:
     
     def _build_data_completeness(
         self,
-        candidates: List[Candidate],
-        wsi_data: Dict[str, Any]
-    ) -> Dict[str, Dict[str, bool]]:
+        candidates: list[Candidate],
+        wsi_data: dict[str, Any]
+    ) -> dict[str, dict[str, bool]]:
         """Build data completeness map for each candidate."""
         completeness = {}
         for candidate in candidates:
@@ -521,12 +521,12 @@ class CandidateComparisonService:
     
     async def _calculate_dimension_scores(
         self,
-        candidates: List[Candidate],
-        job: Optional[JobVacancy],
-        wsi_data: Dict[str, Any],
+        candidates: list[Candidate],
+        job: JobVacancy | None,
+        wsi_data: dict[str, Any],
         scenario: ComparisonScenario,
         weights: ScenarioWeights
-    ) -> Dict[str, Dict[str, Any]]:
+    ) -> dict[str, dict[str, Any]]:
         """Calculate scores for each dimension per candidate."""
         dimension_scores = {}
         
@@ -566,7 +566,7 @@ class CandidateComparisonService:
     def _calculate_rubricas_score(
         self, 
         candidate: Candidate, 
-        job: Optional[JobVacancy]
+        job: JobVacancy | None
     ) -> float:
         """
         Calculate BARS rubrics score (CV vs job requirements).
@@ -622,8 +622,8 @@ class CandidateComparisonService:
         self,
         db: AsyncSession,
         job_id: str,
-        wsi_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        wsi_data: dict[str, Any]
+    ) -> dict[str, Any]:
         try:
             candidate_versions = {}
             for cid in wsi_data.keys():
@@ -670,7 +670,7 @@ class CandidateComparisonService:
 
         return wsi_data
 
-    def _calculate_wsi_score(self, wsi_data: Optional[Dict]) -> float:
+    def _calculate_wsi_score(self, wsi_data: dict | None) -> float:
         """Calculate WSI (voice screening) score."""
         if not wsi_data:
             return 0.0
@@ -710,7 +710,7 @@ class CandidateComparisonService:
     def _calculate_prereq_score(
         self, 
         candidate: Candidate, 
-        job: Optional[JobVacancy]
+        job: JobVacancy | None
     ) -> float:
         """Calculate pre-requisites compliance score."""
         if not job:
@@ -725,7 +725,7 @@ class CandidateComparisonService:
             for lang_req in job_languages:
                 if isinstance(lang_req, dict):
                     required_lang = lang_req.get("language", "").lower()
-                    required_level = lang_req.get("level", "").lower()
+                    lang_req.get("level", "").lower()
                     is_required = lang_req.get("required", False)
                     
                     candidate_level = None
@@ -771,7 +771,6 @@ class CandidateComparisonService:
     def _calculate_completude_score(self, candidate: Candidate) -> float:
         """Calculate profile completeness score."""
         score = 0.0
-        total_fields = 10
         
         if candidate.name:
             score += 10
@@ -819,8 +818,8 @@ class CandidateComparisonService:
     
     def _calculate_total_scores(
         self, 
-        dimension_scores: Dict[str, Dict[str, Any]]
-    ) -> Dict[str, float]:
+        dimension_scores: dict[str, dict[str, Any]]
+    ) -> dict[str, float]:
         """Calculate weighted total score for each candidate."""
         totals = {}
         
@@ -834,8 +833,8 @@ class CandidateComparisonService:
     
     def _determine_winner(
         self, 
-        candidate_totals: Dict[str, float]
-    ) -> tuple[Optional[str], float]:
+        candidate_totals: dict[str, float]
+    ) -> tuple[str | None, float]:
         """Determine winner and confidence level."""
         if not candidate_totals:
             return None, 0.0
@@ -869,13 +868,13 @@ class CandidateComparisonService:
     
     async def _generate_llm_analysis(
         self,
-        candidates: List[Candidate],
-        job: Optional[JobVacancy],
-        wsi_data: Dict[str, Any],
+        candidates: list[Candidate],
+        job: JobVacancy | None,
+        wsi_data: dict[str, Any],
         scenario: ComparisonScenario,
-        dimension_scores: Dict[str, Dict[str, Any]],
-        candidate_totals: Dict[str, float]
-    ) -> Dict[str, Any]:
+        dimension_scores: dict[str, dict[str, Any]],
+        candidate_totals: dict[str, float]
+    ) -> dict[str, Any]:
         """Generate LLM-powered comparative analysis."""
         try:
             prompt = ChatPromptTemplate.from_messages([

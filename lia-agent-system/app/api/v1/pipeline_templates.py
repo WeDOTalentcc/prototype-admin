@@ -2,19 +2,20 @@
 Pipeline Templates API endpoints.
 Manages reusable recruitment process stage templates for job creation.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
 import logging
-from datetime import datetime
 import uuid
+from datetime import datetime
+from typing import Any
 
-from app.models.pipeline_template import PipelineTemplate, DEFAULT_PIPELINE_TEMPLATES
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
+from app.models.pipeline_template import DEFAULT_PIPELINE_TEMPLATES, PipelineTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -26,34 +27,34 @@ class PipelineStage(BaseModel):
     order: int
     type: str = "manual"
     sla_days: int = 3
-    instructions: Optional[str] = None
+    instructions: str | None = None
 
 
 class PipelineTemplateCreate(BaseModel):
     name: str
-    description: Optional[str] = None
-    stages: List[PipelineStage]
+    description: str | None = None
+    stages: list[PipelineStage]
     is_default: bool = False
 
 
 class PipelineTemplateUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    stages: Optional[List[PipelineStage]] = None
-    is_default: Optional[bool] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    stages: list[PipelineStage] | None = None
+    is_default: bool | None = None
+    is_active: bool | None = None
 
 
 class PipelineTemplateResponse(BaseModel):
     id: str
     company_id: str
     name: str
-    description: Optional[str] = None
-    stages: List[Dict[str, Any]]
+    description: str | None = None
+    stages: list[dict[str, Any]]
     is_default: bool
     is_active: bool
     usage_count: int
-    created_by: Optional[str] = None
+    created_by: str | None = None
     created_at: str
     updated_at: str
 
@@ -62,7 +63,7 @@ class PipelineTemplateResponse(BaseModel):
 
 
 class PipelineTemplateListResponse(BaseModel):
-    items: List[PipelineTemplateResponse]
+    items: list[PipelineTemplateResponse]
     total: int
     page: int
     size: int
@@ -72,8 +73,8 @@ class PipelineTemplateListResponse(BaseModel):
 async def list_pipeline_templates(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
-    search: Optional[str] = None,
-    is_active: Optional[bool] = True,
+    search: str | None = None,
+    is_active: bool | None = True,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -343,7 +344,7 @@ async def delete_pipeline_template(
 @router.post("/{template_id}/clone", response_model=PipelineTemplateResponse)
 async def clone_pipeline_template(
     template_id: str,
-    new_name: Optional[str] = Query(None),
+    new_name: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):

@@ -7,11 +7,8 @@ Runs periodically to:
 3. Cache results for efficient retrieval
 """
 import logging
-from datetime import datetime
-from typing import List, Optional
 
-from sqlalchemy import select, update, func, and_
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, update
 
 from app.core.database import async_session_factory
 

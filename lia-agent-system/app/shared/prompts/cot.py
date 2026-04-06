@@ -6,7 +6,6 @@ instructions that improve LLM output quality and consistency.
 
 Moved from app/prompts/cot.py (I3b cleanup).
 """
-from typing import List, Optional, Dict, Any
 from enum import Enum
 
 
@@ -46,7 +45,7 @@ class ChainOfThoughtBuilder:
     @staticmethod
     def wrap_with_cot(
         prompt: str,
-        steps: Optional[List[str]] = None,
+        steps: list[str] | None = None,
         language: str = "pt"
     ) -> str:
         """
@@ -79,7 +78,7 @@ class ChainOfThoughtBuilder:
 
     @staticmethod
     def build_cot_section(
-        steps: Optional[List[str]] = None,
+        steps: list[str] | None = None,
         language: str = "pt",
         include_examples: bool = False
     ) -> str:

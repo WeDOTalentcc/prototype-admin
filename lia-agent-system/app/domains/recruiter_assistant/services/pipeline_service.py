@@ -6,15 +6,16 @@ This service identifies candidates that need attention:
 - Suggests actions based on current stage
 - Groups candidates by job vacancy
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 
+from sqlalchemy import and_, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import AsyncSessionLocal
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
-from app.core.database import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -78,10 +79,10 @@ class PipelineService:
     
     async def get_stale_candidates(
         self,
-        db: Optional[AsyncSession] = None,
-        stale_days: Optional[int] = None,
+        db: AsyncSession | None = None,
+        stale_days: int | None = None,
         limit: int = 50
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get candidates that have been inactive for X days.
         
@@ -189,7 +190,7 @@ class PipelineService:
             return delta.days
         return 0
     
-    def _format_candidate(self, candidate: Candidate, days_stale: int) -> Dict[str, Any]:
+    def _format_candidate(self, candidate: Candidate, days_stale: int) -> dict[str, Any]:
         """Format candidate data for the pipeline report."""
         status = candidate.status or "new"
         actions = STAGE_ACTIONS.get(status, DEFAULT_ACTIONS)
@@ -243,8 +244,8 @@ class PipelineService:
         self,
         candidate_id: str,
         action_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Execute a pipeline action on a candidate.
         

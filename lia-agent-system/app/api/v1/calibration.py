@@ -6,78 +6,78 @@ Endpoints for managing the calibration loop:
 - Get divergences and stats
 - Manage calibration suggestions
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional, List, Any, Dict
 from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.calibration_service import CalibrationService
-
 
 router = APIRouter(prefix="/calibration", tags=["Calibration"])
 
 
 class ExplicitFeedbackRequest(BaseModel):
     candidate_id: str
-    job_id: Optional[str] = None
+    job_id: str | None = None
     agrees_with_lia: bool
-    lia_score: Optional[float] = None
-    lia_recommendation: Optional[str] = None
-    feedback_reason: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    lia_score: float | None = None
+    lia_recommendation: str | None = None
+    feedback_reason: str | None = None
+    context: dict[str, Any] | None = None
 
 
 class ImplicitFeedbackRequest(BaseModel):
     candidate_id: str
     job_id: str
     action: str
-    stage_from: Optional[str] = None
-    stage_to: Optional[str] = None
-    lia_score: Optional[float] = None
-    lia_ranking: Optional[int] = None
-    context: Optional[Dict[str, Any]] = None
+    stage_from: str | None = None
+    stage_to: str | None = None
+    lia_score: float | None = None
+    lia_ranking: int | None = None
+    context: dict[str, Any] | None = None
 
 
 class PostHireFeedbackRequest(BaseModel):
     candidate_id: str
     job_id: str
     success: bool
-    lia_score: Optional[float] = None
-    feedback_reason: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    lia_score: float | None = None
+    feedback_reason: str | None = None
+    context: dict[str, Any] | None = None
 
 
 class SuggestionActionRequest(BaseModel):
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class StartCalibrationSessionRequest(BaseModel):
     job_vacancy_id: str
     job_description: str
-    technical_skills: List[str] = []
-    behavioral_competencies: List[str] = []
-    location: Optional[str] = None
+    technical_skills: list[str] = []
+    behavioral_competencies: list[str] = []
+    location: str | None = None
     limit: int = 5
 
 
 class CalibrationCandidate(BaseModel):
     id: str
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    title: Optional[str] = None
-    experience_years: Optional[int] = None
-    location: Optional[str] = None
-    skills: List[str] = []
+    email: str | None = None
+    phone: str | None = None
+    title: str | None = None
+    experience_years: int | None = None
+    location: str | None = None
+    skills: list[str] = []
     match_score: float = 0.0
-    source: Optional[str] = None
+    source: str | None = None
 
 
 class StartCalibrationSessionResponse(BaseModel):
     session_id: str
-    candidates: List[CalibrationCandidate]
+    candidates: list[CalibrationCandidate]
     total_found: int
 
 
@@ -91,6 +91,7 @@ async def start_calibration_session(
     Returns candidates for the recruiter to approve/reject for LIA calibration.
     """
     import uuid
+
     from app.models.candidate import Candidate
     
     session_id = str(uuid.uuid4())
@@ -358,7 +359,7 @@ async def reject_suggestion(
 @router.get("/events")
 async def get_recent_events(
     limit: int = 50,
-    feedback_types: Optional[str] = None,
+    feedback_types: str | None = None,
     db: Session = Depends(get_db)
 ):
     """Get recent calibration events."""
@@ -380,7 +381,7 @@ async def get_recent_events(
 
 @router.get("/weights")
 async def get_weights(
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     db: Session = Depends(get_db)
 ):
     """Get current calibration weights."""

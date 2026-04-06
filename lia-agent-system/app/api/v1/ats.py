@@ -1,28 +1,25 @@
 """
 ATS Integration API endpoints (Gupy + Pandapé).
 """
-from fastapi import APIRouter, HTTPException, Depends, Query, Body
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc
-from typing import List, Optional
-from datetime import datetime
-from pydantic import BaseModel, EmailStr
 import logging
-import os
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.ats_integration import (
-    ATSConnection,
-    ATSSyncJob,
-    ATSCandidate,
-    ATSWebhookLog,
-    ATSJobMapping,
-    ATSProvider,
-    SyncStatus
-)
 from app.domains.ats_integration.services.gupy_service import GupyService
 from app.domains.ats_integration.services.pandape_service import PandapeService
-from app.shared.encryption import encrypt_value, decrypt_value
+from app.models.ats_integration import (
+    ATSCandidate,
+    ATSConnection,
+    ATSProvider,
+    ATSSyncJob,
+    ATSWebhookLog,
+    SyncStatus,
+)
+from app.shared.encryption import encrypt_value
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +31,9 @@ class CreateATSConnectionRequest(BaseModel):
     provider: str  # "gupy" or "pandape"
     provider_name: str
     api_key: str
-    api_secret: Optional[str] = None
-    api_endpoint: Optional[str] = None
-    company_id: Optional[str] = None
+    api_secret: str | None = None
+    api_endpoint: str | None = None
+    company_id: str | None = None
     auto_sync_enabled: bool = True
     sync_frequency_hours: int = 24
 
@@ -113,7 +110,7 @@ async def create_ats_connection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ats/connections", response_model=List[dict])
+@router.get("/ats/connections", response_model=list[dict])
 async def list_ats_connections(db: AsyncSession = Depends(get_db)):
     """
     List all ATS connections.
@@ -198,10 +195,10 @@ async def trigger_ats_sync(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ats/sync-jobs", response_model=List[dict])
+@router.get("/ats/sync-jobs", response_model=list[dict])
 async def list_sync_jobs(
-    connection_id: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
+    connection_id: str | None = Query(None),
+    status: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
 ):
@@ -249,10 +246,10 @@ async def list_sync_jobs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ats/candidates", response_model=List[dict])
+@router.get("/ats/candidates", response_model=list[dict])
 async def list_ats_candidates(
-    provider: Optional[str] = Query(None, description="Filter by provider (gupy/pandape)"),
-    connection_id: Optional[str] = Query(None),
+    provider: str | None = Query(None, description="Filter by provider (gupy/pandape)"),
+    connection_id: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db)
 ):
@@ -341,10 +338,10 @@ async def receive_ats_webhook(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ats/webhooks", response_model=List[dict])
+@router.get("/ats/webhooks", response_model=list[dict])
 async def list_webhook_logs(
-    provider: Optional[str] = Query(None),
-    processed: Optional[bool] = Query(None),
+    provider: str | None = Query(None),
+    processed: bool | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db)
 ):

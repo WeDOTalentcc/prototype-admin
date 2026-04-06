@@ -7,17 +7,16 @@ Provides:
 - Telemetry for misroutes
 - Intent schema integration
 """
-from typing import Dict, List, Optional, Tuple, Any
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
+from typing import Any
 
-from app.agents.base_agent import BaseAgent, AgentType, AgentResponse
+from app.agents.base_agent import AgentType, BaseAgent
 from app.shared.robustness.intent_schemas import (
-    IntentSchema,
     ALL_INTENT_SCHEMAS,
+    IntentSchema,
     get_intent_schema,
-    find_best_matching_intent
 )
 
 logger = logging.getLogger(__name__)
@@ -26,17 +25,17 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RoutingDecision:
     """Represents a routing decision with metadata."""
-    agent: Optional[BaseAgent]
-    agent_type: Optional[AgentType]
+    agent: BaseAgent | None
+    agent_type: AgentType | None
     confidence: float
     intent: str
     routing_method: str
     fallback_used: bool = False
     fallback_reason: str = ""
-    alternatives: List[Tuple[AgentType, float]] = field(default_factory=list)
+    alternatives: list[tuple[AgentType, float]] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "agent_type": self.agent_type.value if self.agent_type else None,
             "confidence": self.confidence,
@@ -83,7 +82,7 @@ class RoutingTelemetry:
         """Record a detected misroute."""
         self.misroutes_detected += 1
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "total_routes": self.total_routes,
             "direct_matches": self.direct_matches,
@@ -97,7 +96,7 @@ class RoutingTelemetry:
         }
 
 
-FALLBACK_CHAINS: Dict[AgentType, List[AgentType]] = {
+FALLBACK_CHAINS: dict[AgentType, list[AgentType]] = {
     AgentType.JOB_PLANNER: [AgentType.RECRUITER_ASSISTANT],
     AgentType.SOURCING: [AgentType.CV_SCREENING, AgentType.RECRUITER_ASSISTANT],
     AgentType.CV_SCREENING: [AgentType.WSI_EVALUATOR, AgentType.RECRUITER_ASSISTANT],
@@ -127,8 +126,8 @@ class EnhancedAgentRegistry:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._agents: Dict[AgentType, BaseAgent] = {}
-            cls._instance._intent_mapping: Dict[str, AgentType] = {}
+            cls._instance._agents: dict[AgentType, BaseAgent] = {}
+            cls._instance._intent_mapping: dict[str, AgentType] = {}
             cls._instance._telemetry = RoutingTelemetry()
             cls._instance._initialize_intent_mapping()
         return cls._instance
@@ -151,19 +150,19 @@ class EnhancedAgentRegistry:
             return True
         return False
     
-    def get_agent(self, agent_type: AgentType) -> Optional[BaseAgent]:
+    def get_agent(self, agent_type: AgentType) -> BaseAgent | None:
         """Get an agent by type."""
         return self._agents.get(agent_type)
     
-    def get_all_agents(self) -> List[BaseAgent]:
+    def get_all_agents(self) -> list[BaseAgent]:
         """Get all registered agents."""
         return list(self._agents.values())
     
     def route(
         self,
         intent: str,
-        entities: Dict[str, Any],
-        context: Dict[str, Any],
+        entities: dict[str, Any],
+        context: dict[str, Any],
         message: str = ""
     ) -> RoutingDecision:
         """
@@ -192,7 +191,7 @@ class EnhancedAgentRegistry:
         
         best_agent = None
         best_confidence = 0.0
-        alternatives: List[Tuple[AgentType, float]] = []
+        alternatives: list[tuple[AgentType, float]] = []
         
         for agent_type, agent in self._agents.items():
             confidence = agent.can_handle(intent, entities)
@@ -223,9 +222,9 @@ class EnhancedAgentRegistry:
     def _try_fallback_chain(
         self,
         intent: str,
-        entities: Dict[str, Any],
-        context: Dict[str, Any],
-        alternatives: List[Tuple[AgentType, float]]
+        entities: dict[str, Any],
+        context: dict[str, Any],
+        alternatives: list[tuple[AgentType, float]]
     ) -> RoutingDecision:
         """Try fallback chain when primary routing fails."""
         if alternatives:
@@ -278,9 +277,9 @@ class EnhancedAgentRegistry:
     def find_best_agent(
         self,
         intent: str,
-        entities: Dict[str, Any],
-        context: Dict[str, Any]
-    ) -> Tuple[Optional[BaseAgent], float]:
+        entities: dict[str, Any],
+        context: dict[str, Any]
+    ) -> tuple[BaseAgent | None, float]:
         """
         Legacy interface for find_best_agent.
         Returns tuple of (agent, confidence).
@@ -301,18 +300,18 @@ class EnhancedAgentRegistry:
             f"assigned={assigned_agent.value} correct={correct_agent.value}"
         )
     
-    def get_telemetry(self) -> Dict[str, Any]:
+    def get_telemetry(self) -> dict[str, Any]:
         """Get routing telemetry data."""
         return self._telemetry.to_dict()
     
-    def get_agent_for_intent(self, intent: str) -> Optional[BaseAgent]:
+    def get_agent_for_intent(self, intent: str) -> BaseAgent | None:
         """Get agent directly from intent mapping."""
         agent_type = self._intent_mapping.get(intent)
         if agent_type:
             return self._agents.get(agent_type)
         return None
     
-    def get_intent_schema(self, intent: str) -> Optional[IntentSchema]:
+    def get_intent_schema(self, intent: str) -> IntentSchema | None:
         """Get the schema for an intent."""
         return get_intent_schema(intent)
 

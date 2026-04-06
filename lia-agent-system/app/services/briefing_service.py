@@ -8,18 +8,19 @@ This service generates personalized daily briefings including:
 - AI-powered insights
 - Anomaly detection
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta, time
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, case
 import logging
+from datetime import datetime, time, timedelta
+from typing import Any
 
-from app.models.task import Task, TaskStatus, TaskPriority, TaskType
-from app.models.alert import Alert, AlertStatus, AlertSeverity
-from app.models.job_vacancy import JobVacancy
+from sqlalchemy import and_, case, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import AsyncSessionLocal
+from app.models.alert import Alert, AlertSeverity, AlertStatus
 from app.models.candidate import Candidate
 from app.models.interview import Interview
-from app.core.database import AsyncSessionLocal
+from app.models.job_vacancy import JobVacancy
+from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.services.recruiter_metrics_service import recruiter_metrics_service
 
 logger = logging.getLogger(__name__)
@@ -33,8 +34,8 @@ class BriefingService:
     async def generate_daily_briefing(
         self,
         user_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Generate a comprehensive daily briefing for a recruiter.
         
@@ -112,10 +113,10 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get urgent actions requiring immediate attention."""
         now = datetime.utcnow()
-        yesterday = now - timedelta(days=1)
+        now - timedelta(days=1)
         two_days_ago = now - timedelta(days=2)
         
         urgent_items = []
@@ -211,7 +212,7 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get summary of recruitment pipeline."""
         try:
             active_jobs = await db.execute(
@@ -269,7 +270,7 @@ class BriefingService:
         user_id: str,
         today_start: datetime,
         today_end: datetime
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get today's scheduled activities."""
         schedule = []
         
@@ -370,7 +371,7 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get pending tasks for user."""
         tasks = []
         
@@ -415,7 +416,7 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get active alerts."""
         alerts = []
         
@@ -455,7 +456,7 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Retorna resumo de produtividade do recrutador para o Daily Briefing.
         Requer company_id — tenta extrair de vagas ativas do user. Degrada silenciosamente.
@@ -496,8 +497,8 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str,
-        recruiter_metrics: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        recruiter_metrics: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Retorna comparação do recrutador com a mediana da empresa.
         Degrada silenciosamente — nunca lança exceção.
@@ -519,8 +520,8 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str,
-        recruiter_metrics: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        recruiter_metrics: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Retorna previsão de fechamento das vagas do recrutador.
         Degrada silenciosamente — nunca lança exceção.
@@ -550,11 +551,11 @@ class BriefingService:
         self,
         db: AsyncSession,
         user_id: str,
-        pipeline: Dict[str, Any],
-        recruiter_metrics: Optional[Dict[str, Any]] = None,
-        recruiter_benchmark: Optional[Dict[str, Any]] = None,
-        pipeline_prediction: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
+        pipeline: dict[str, Any],
+        recruiter_metrics: dict[str, Any] | None = None,
+        recruiter_benchmark: dict[str, Any] | None = None,
+        pipeline_prediction: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         """Generate AI-powered insights based on data patterns."""
         insights = []
 
@@ -663,7 +664,7 @@ class BriefingService:
             overall = recruiter_benchmark.get("overall_performance", "unknown")
 
             rt = cmp.get("response_time", {})
-            adv = cmp.get("advanced_per_week", {})
+            cmp.get("advanced_per_week", {})
 
             if overall == "above_average":
                 insights.append({

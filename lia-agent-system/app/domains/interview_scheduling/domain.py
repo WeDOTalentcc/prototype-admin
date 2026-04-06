@@ -1,12 +1,11 @@
 """Interview & Scheduling Domain - Interview management and WSI methodology."""
-from typing import Dict, Any, Optional, List
-import re
 import logging
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
-from app.domains.registry import register_domain
 from app.domains.interview_scheduling.agents.interview_graph import interview_graph
+from app.domains.registry import register_domain
 from app.services.interview_session_store import interview_session_store
 
 # Prefixo separado do WSIInterviewGraph para evitar colisão de chaves no Redis
@@ -17,7 +16,7 @@ _GRAPH_ACTIONS = {"schedule_interview"}
 
 logger = logging.getLogger(__name__)
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "agendar entrevista": "schedule_interview",
     "marcar entrevista": "schedule_interview",
     "schedule interview": "schedule_interview",
@@ -140,7 +139,7 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
         from app.domains.interview_scheduling.actions import INTERVIEW_SCHEDULING_ACTIONS
         self._actions = INTERVIEW_SCHEDULING_ACTIONS
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.interview_scheduling.actions import INTERVIEW_SCHEDULING_ACTIONS
         return INTERVIEW_SCHEDULING_ACTIONS
 
@@ -170,7 +169,7 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
             reasoning=f"Keyword heuristic matched action '{best_action}'",
         )
 
-    _ACTION_TOOL_MAP: Dict[str, str] = {
+    _ACTION_TOOL_MAP: dict[str, str] = {
         "schedule_interview": "scheduling_schedule_interview",
         "reschedule_interview": "scheduling_reschedule",
         "cancel_interview": "scheduling_cancel",
@@ -183,7 +182,7 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
         "analyze_voice": "scheduling_analyze_voice",
     }
 
-    async def execute_action(self, action_id: str, params: Dict[str, Any], context: DomainContext) -> DomainResponse:
+    async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = None
         for a in self.get_allowed_actions():
             if a.action_id == action_id:
@@ -225,7 +224,7 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
     async def _run_interview_graph(
         self,
         action_id: str,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         context: DomainContext,
     ) -> DomainResponse:
         """Delega agendamento conversacional ao InterviewGraph (LangGraph).
@@ -245,7 +244,7 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
         stored_workflow = await interview_session_store.get(session_key) or {}
         workflow_data = {**stored_workflow, **params.get("workflow_data", {})}
 
-        state: Dict[str, Any] = {
+        state: dict[str, Any] = {
             "messages": [_Msg(raw_query)],
             "workflow_data": workflow_data,
             "entities": {k: v for k, v in params.items() if k not in ("raw_query", "workflow_data")},

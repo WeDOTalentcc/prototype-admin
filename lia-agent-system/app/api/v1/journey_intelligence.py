@@ -5,13 +5,12 @@ GET /api/v1/journey/metrics?vacancy_id=<uuid>&company_id=<uuid>
 GET /api/v1/journey/company-overview?company_id=<uuid>
 """
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.core.auth import get_current_user_or_demo
+from app.core.database import get_db
 from app.services.journey_intelligence_service import journey_intelligence_service
 
 logger = logging.getLogger(__name__)

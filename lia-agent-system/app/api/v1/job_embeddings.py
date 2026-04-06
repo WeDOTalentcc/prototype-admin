@@ -8,10 +8,8 @@ Provides:
 - Batch processing
 """
 import logging
-from typing import List, Optional
-from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.job_management.services.job_embedding_service import job_embedding_service
@@ -25,46 +23,46 @@ class CreateEmbeddingRequest(BaseModel):
     company_id: str
     job_id: str
     job_title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    skills: Optional[List[str]] = Field(default_factory=list)
-    behavioral_competencies: Optional[List[str]] = Field(default_factory=list)
-    description: Optional[str] = None
-    outcome_status: Optional[str] = None
-    time_to_fill_days: Optional[int] = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    skills: list[str] | None = Field(default_factory=list)
+    behavioral_competencies: list[str] | None = Field(default_factory=list)
+    description: str | None = None
+    outcome_status: str | None = None
+    time_to_fill_days: int | None = None
     is_template: bool = False
-    draft_id: Optional[str] = None
+    draft_id: str | None = None
 
 
 class SimilarJobsRequest(BaseModel):
     """Request to find similar jobs."""
     company_id: str
     job_title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    skills: Optional[List[str]] = Field(default_factory=list)
-    behavioral: Optional[List[str]] = Field(default_factory=list)
-    description: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    skills: list[str] | None = Field(default_factory=list)
+    behavioral: list[str] | None = Field(default_factory=list)
+    description: str | None = None
     limit: int = 5
     min_similarity: float = 0.5
-    exclude_job_ids: Optional[List[str]] = Field(default_factory=list)
+    exclude_job_ids: list[str] | None = Field(default_factory=list)
 
 
 class FastTrackRequest(BaseModel):
     """Request for Fast Track suggestions."""
     company_id: str
     job_title: str
-    department: Optional[str] = None
+    department: str | None = None
     limit: int = 3
 
 
 class BatchProcessRequest(BaseModel):
     """Request for batch embedding processing."""
     company_id: str
-    job_ids: Optional[List[str]] = Field(default_factory=list)
+    job_ids: list[str] | None = Field(default_factory=list)
     limit: int = 100
 
 
@@ -246,7 +244,7 @@ class FastTrackUsageRequest(BaseModel):
     company_id: str
     source_job_id: str
     new_job_id: str
-    modified_fields: List[str] = Field(default_factory=list)
+    modified_fields: list[str] = Field(default_factory=list)
     was_published: bool = False
 
 
@@ -255,8 +253,8 @@ class OutcomeUpdateRequest(BaseModel):
     company_id: str
     job_id: str
     outcome_status: str
-    time_to_fill_days: Optional[int] = None
-    hire_quality_score: Optional[float] = None
+    time_to_fill_days: int | None = None
+    hire_quality_score: float | None = None
 
 
 @router.post("/fast-track/record-usage")

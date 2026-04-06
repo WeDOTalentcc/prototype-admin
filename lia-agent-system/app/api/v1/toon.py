@@ -11,7 +11,6 @@ LGPD: anonymize=true masks all PII fields.
 Cache: served from Redis (TTL=1h) when available.
 """
 import logging
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
@@ -32,11 +31,11 @@ router = APIRouter(tags=["toon"])
 
 class TOONCardResponse(BaseModel):
     candidate_id: str
-    job_id: Optional[str]
+    job_id: str | None
     generated_at: str
     headline: str
     highlights: list[str]
-    match_score: Optional[int]
+    match_score: int | None
     skills_match: list[str]
     name_display: str
     location: str
@@ -70,8 +69,8 @@ class TOONCardResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 def _get_company_id(
-    company_id_query: Optional[str] = Query(None, alias="company_id"),
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    company_id_query: str | None = Query(None, alias="company_id"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
     """
     Resolve company_id from either query param or X-Company-ID header.
@@ -110,7 +109,7 @@ def _get_company_id(
 )
 async def get_toon_card(
     candidate_id: str,
-    job_id: Optional[str] = Query(None, description="Job opening UUID for match scoring"),
+    job_id: str | None = Query(None, description="Job opening UUID for match scoring"),
     anonymize: bool = Query(False, description="When true, masks all PII (LGPD-safe)"),
     company_id: str = Depends(_get_company_id),
     db: AsyncSession = Depends(get_db),

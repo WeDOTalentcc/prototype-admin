@@ -15,13 +15,13 @@ Features:
 import hashlib
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, TypeVar, Generic
-from dataclasses import dataclass, field
-from enum import Enum
 import os
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Generic, TypeVar
 
-from sqlalchemy import select, delete, and_
+from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class CacheConfig:
     similarity_threshold: float = 0.85
 
 
-DEFAULT_CACHE_CONFIGS: Dict[CacheNamespace, CacheConfig] = {
+DEFAULT_CACHE_CONFIGS: dict[CacheNamespace, CacheConfig] = {
     CacheNamespace.SALARY_BENCHMARK: CacheConfig(
         namespace=CacheNamespace.SALARY_BENCHMARK,
         redis_ttl=CacheTTL.STANDARD,
@@ -117,11 +117,11 @@ DEFAULT_CACHE_CONFIGS: Dict[CacheNamespace, CacheConfig] = {
 class CacheResult(Generic[T]):
     """Result from cache lookup."""
     hit: bool
-    value: Optional[T]
-    source: Optional[str] = None
-    key: Optional[str] = None
-    age_seconds: Optional[int] = None
-    confidence: Optional[float] = None
+    value: T | None
+    source: str | None = None
+    key: str | None = None
+    age_seconds: int | None = None
+    confidence: float | None = None
 
 
 class SessionCache:
@@ -133,7 +133,7 @@ class SessionCache:
     """
     
     def __init__(self):
-        self._cache: Dict[str, Dict[str, Any]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
     
     def get(self, session_id: str, key: str) -> CacheResult:
         """Get value from session cache."""
@@ -215,7 +215,7 @@ class RedisCache:
     Falls back gracefully if Redis is unavailable.
     """
     
-    def __init__(self, redis_url: Optional[str] = None):
+    def __init__(self, redis_url: str | None = None):
         self.redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
         self._client = None
         self._available = False
@@ -272,8 +272,8 @@ class RedisCache:
         key: str, 
         value: Any, 
         ttl_seconds: int = CacheTTL.STANDARD,
-        confidence: Optional[float] = None,
-        source: Optional[str] = None
+        confidence: float | None = None,
+        source: str | None = None
     ) -> bool:
         """Store value in Redis cache."""
         if not await self.is_available():
@@ -362,11 +362,11 @@ class PostgresCache:
         key: str,
         namespace: str,
         value: Any,
-        company_id: Optional[str] = None,
+        company_id: str | None = None,
         ttl_seconds: int = CacheTTL.STABLE,
-        confidence: Optional[float] = None,
-        source: Optional[str] = None,
-        tags: Optional[List[str]] = None
+        confidence: float | None = None,
+        source: str | None = None,
+        tags: list[str] | None = None
     ) -> bool:
         """Store value in PostgreSQL cache."""
         try:
@@ -453,7 +453,7 @@ class CacheManagerService:
     - Semantic similarity matching (optional)
     """
     
-    def __init__(self, redis_url: Optional[str] = None):
+    def __init__(self, redis_url: str | None = None):
         self.session_cache = SessionCache()
         self.redis_cache = RedisCache(redis_url)
         self.postgres_cache = PostgresCache()
@@ -463,8 +463,8 @@ class CacheManagerService:
     def _generate_key(
         self,
         namespace: CacheNamespace,
-        company_id: Optional[str],
-        identifiers: Dict[str, Any]
+        company_id: str | None,
+        identifiers: dict[str, Any]
     ) -> str:
         """Generate a unique cache key from namespace and identifiers."""
         parts = [namespace.value]
@@ -486,10 +486,10 @@ class CacheManagerService:
     async def get(
         self,
         namespace: CacheNamespace,
-        company_id: Optional[str],
-        identifiers: Dict[str, Any],
-        session_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None
+        company_id: str | None,
+        identifiers: dict[str, Any],
+        session_id: str | None = None,
+        db: AsyncSession | None = None
     ) -> CacheResult:
         """
         Look up a value in the cache hierarchy.
@@ -541,14 +541,14 @@ class CacheManagerService:
     async def set(
         self,
         namespace: CacheNamespace,
-        company_id: Optional[str],
-        identifiers: Dict[str, Any],
+        company_id: str | None,
+        identifiers: dict[str, Any],
         value: Any,
-        session_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None,
-        confidence: Optional[float] = None,
-        source: Optional[str] = None,
-        tags: Optional[List[str]] = None
+        session_id: str | None = None,
+        db: AsyncSession | None = None,
+        confidence: float | None = None,
+        source: str | None = None,
+        tags: list[str] | None = None
     ) -> str:
         """
         Store a value in all appropriate cache layers.
@@ -582,10 +582,10 @@ class CacheManagerService:
     async def invalidate(
         self,
         namespace: CacheNamespace,
-        company_id: Optional[str],
-        identifiers: Dict[str, Any],
-        session_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None
+        company_id: str | None,
+        identifiers: dict[str, Any],
+        session_id: str | None = None,
+        db: AsyncSession | None = None
     ) -> None:
         """Invalidate a cached value across all layers."""
         config = self.configs.get(namespace, CacheConfig(namespace=namespace))
@@ -606,7 +606,7 @@ class CacheManagerService:
         """Clear all session-level cache for a session."""
         self.session_cache.clear_session(session_id)
     
-    async def cleanup_expired(self, db: Optional[AsyncSession] = None) -> Dict[str, int]:
+    async def cleanup_expired(self, db: AsyncSession | None = None) -> dict[str, int]:
         """Clean up expired entries from all layers."""
         results = {
             "session": self.session_cache.cleanup_expired()
@@ -620,13 +620,13 @@ class CacheManagerService:
     async def get_or_compute(
         self,
         namespace: CacheNamespace,
-        company_id: Optional[str],
-        identifiers: Dict[str, Any],
+        company_id: str | None,
+        identifiers: dict[str, Any],
         compute_fn,
-        session_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None,
-        confidence: Optional[float] = None,
-        source: Optional[str] = None
+        session_id: str | None = None,
+        db: AsyncSession | None = None,
+        confidence: float | None = None,
+        source: str | None = None
     ) -> CacheResult:
         """
         Get from cache or compute and cache the result.

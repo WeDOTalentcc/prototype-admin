@@ -9,33 +9,39 @@ Security:
 - OTP verification (6 digits, 10 min expiry)
 - Session token for authenticated access (24 hour expiry)
 """
-from fastapi import APIRouter, HTTPException, Depends, Header, Request
-from pydantic import BaseModel
-from typing import Optional, List
-from uuid import UUID
-from datetime import datetime, timedelta
-import logging
-import secrets
 import hashlib
-
-from app.middleware.rate_limiter import rate_limiter as _otp_rate_limiter
-import jwt
+import logging
 import os
+import secrets
+from datetime import datetime, timedelta
+from uuid import UUID
 
-from sqlalchemy import select, and_
+import jwt
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.middleware.rate_limiter import rate_limiter as _otp_rate_limiter
 from app.models.shared_search import (
-    SharedSearch, SharedSearchAccess, SharedSearchFeedback,
-    SharedSearchStatus, FeedbackDecision
+    FeedbackDecision,
+    SharedSearch,
+    SharedSearchAccess,
+    SharedSearchFeedback,
+    SharedSearchStatus,
 )
-from app.services.notification_service import notification_service, NotificationType
 from app.schemas.shared_search import (
-    RequestOTPRequest, VerifyOTPRequest, SubmitFeedbackRequest,
-    PublicSharedSearchResponse, OTPResponse, SessionResponse,
-    FeedbackResponse, CandidateSnapshot, FeedbackDecision as SchemaFeedbackDecision
+    CandidateSnapshot,
+    FeedbackResponse,
+    OTPResponse,
+    PublicSharedSearchResponse,
+    RequestOTPRequest,
+    SessionResponse,
+    SubmitFeedbackRequest,
+    VerifyOTPRequest,
 )
+from app.schemas.shared_search import FeedbackDecision as SchemaFeedbackDecision
+from app.services.notification_service import NotificationType, notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +93,7 @@ def create_session_token(email: str, shared_search_id: str, access_id: str) -> t
     return token, expires_at
 
 
-def decode_session_token(token: str) -> Optional[dict]:
+def decode_session_token(token: str) -> dict | None:
     """Decode and validate a session token."""
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
@@ -132,9 +138,9 @@ async def get_shared_search_by_token(
 
 
 async def get_session_from_header(
-    authorization: Optional[str] = Header(None, alias="X-Session-Token"),
+    authorization: str | None = Header(None, alias="X-Session-Token"),
     db: AsyncSession = Depends(get_db)
-) -> Optional[dict]:
+) -> dict | None:
     """Extract and validate session from header."""
     if not authorization:
         return None
@@ -149,7 +155,7 @@ async def get_session_from_header(
 
 
 async def require_session(
-    authorization: Optional[str] = Header(None, alias="X-Session-Token"),
+    authorization: str | None = Header(None, alias="X-Session-Token"),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
     """Require valid session token."""
@@ -165,7 +171,7 @@ async def require_session(
     return payload
 
 
-def build_candidate_snapshots(snapshot_data: List[dict], limit: Optional[int] = None) -> List[CandidateSnapshot]:
+def build_candidate_snapshots(snapshot_data: list[dict], limit: int | None = None) -> list[CandidateSnapshot]:
     """Build candidate snapshot objects from raw data."""
     candidates = snapshot_data[:limit] if limit else snapshot_data
     result = []
@@ -192,7 +198,7 @@ def build_candidate_snapshots(snapshot_data: List[dict], limit: Optional[int] = 
 async def get_public_shared_search(
     token: str,
     db: AsyncSession = Depends(get_db),
-    session: Optional[dict] = Depends(get_session_from_header)
+    session: dict | None = Depends(get_session_from_header)
 ) -> PublicSharedSearchResponse:
     """
     Get public shared search preview.
@@ -502,7 +508,7 @@ async def submit_feedback(
                 ),
                 notification_type=NotificationType.INFO,
                 category="shortlist_feedback",
-                action_url=f"/funil-de-talentos",
+                action_url="/funil-de-talentos",
                 channels=["bell"],
                 db=db,
             )
@@ -527,7 +533,7 @@ async def get_my_feedbacks(
     token: str,
     db: AsyncSession = Depends(get_db),
     session: dict = Depends(require_session)
-) -> List[FeedbackResponse]:
+) -> list[FeedbackResponse]:
     """
     Get all feedbacks submitted by the current user.
     

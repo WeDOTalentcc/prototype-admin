@@ -4,6 +4,7 @@ bulk operations (pause, resume, archive, assign-recruiter, change-status),
 close vacancy, duplicate/clone helpers.
 """
 from fastapi import APIRouter
+
 from ._shared import *
 
 router = APIRouter()
@@ -532,7 +533,11 @@ async def close_vacancy(
         if not vacancy:
             raise HTTPException(status_code=404, detail="Vacancy not found")
 
-        from app.domains.communication.services.communication_service import CommunicationService, MessageType, MessageChannel
+        from app.domains.communication.services.communication_service import (
+            CommunicationService,
+            MessageChannel,
+            MessageType,
+        )
         communication_service = CommunicationService()
 
         notifications_sent = {"hired": None, "others": []}

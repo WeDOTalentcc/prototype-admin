@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Request, HTTPException
-from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-from lia_agents_core.agent_interface import AgentInput
 import logging
 import os
+
+from fastapi import APIRouter, HTTPException, Request
+from lia_agents_core.agent_interface import AgentInput
+
+from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 
 logger = logging.getLogger("lia.sourcing_orchestrator")
 router = APIRouter(prefix="/sourcing", tags=["Sourcing Agent"])

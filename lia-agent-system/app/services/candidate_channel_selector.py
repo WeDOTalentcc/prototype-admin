@@ -11,9 +11,9 @@ Retorna a intersecção dos canais válidos, respeitando as preferências do can
 Fallback: ["email"] se a lista resultante for vazia.
 """
 import logging
-from typing import List, Optional
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
 
 from app.models.candidate import Candidate
 from app.models.communication_settings import LGPDConsent
@@ -54,9 +54,9 @@ class CandidateChannelSelector:
         self,
         candidate_id: str,
         company_id: str,
-        requested_channels: List[str],
+        requested_channels: list[str],
         message_type: str = "transactional",  # "transactional" | "marketing"
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Retorna os canais efetivos para enviar mensagem a um candidato.
 
@@ -118,7 +118,7 @@ class CandidateChannelSelector:
 
         return valid_channels
 
-    async def _get_candidate(self, candidate_id: str) -> Optional[Candidate]:
+    async def _get_candidate(self, candidate_id: str) -> Candidate | None:
         """Busca candidato por ID."""
         try:
             from uuid import UUID

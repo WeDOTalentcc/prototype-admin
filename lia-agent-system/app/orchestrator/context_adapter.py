@@ -8,13 +8,13 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
 ChannelType = Literal["rest", "ws", "rabbitmq", "cli"]
 
-PAGE_TO_CONTEXT_TYPE: Dict[str, str] = {
+PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
     "sourcing": "talent_funnel",
     "talent": "talent_funnel",
     "pipeline": "pipeline",
@@ -37,27 +37,27 @@ class UniversalContext:
     user_id: str
     company_id: str
     channel: ChannelType = "rest"
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
     # Contexto de página (de onde o usuário está enviando a mensagem)
     context_page: str = "general"
     context_type: str = "general"  # mapeado de context_page
 
     # Entidade em foco na página atual
-    entity_id: Optional[str] = None
-    entity_type: Optional[str] = None  # "sourcing", "job", "candidate"
+    entity_id: str | None = None
+    entity_type: str | None = None  # "sourcing", "job", "candidate"
 
     # Dados ricos de contexto (repassados para o DomainWorkflow)
-    candidates: List[Dict[str, Any]] = field(default_factory=list)
-    selected_candidate_ids: Optional[List[str]] = None
-    job_context: Optional[Dict[str, Any]] = None
-    search_context: Optional[Dict[str, Any]] = None
-    target_job: Optional[Dict[str, Any]] = None
-    extra: Dict[str, Any] = field(default_factory=dict)
+    candidates: list[dict[str, Any]] = field(default_factory=list)
+    selected_candidate_ids: list[str] | None = None
+    job_context: dict[str, Any] | None = None
+    search_context: dict[str, Any] | None = None
+    target_job: dict[str, Any] | None = None
+    extra: dict[str, Any] = field(default_factory=dict)
 
-    def to_orchestrator_context(self) -> Dict[str, Any]:
+    def to_orchestrator_context(self) -> dict[str, Any]:
         """Converte para o formato que Orchestrator.process_request_with_memory() espera."""
-        ctx: Dict[str, Any] = {
+        ctx: dict[str, Any] = {
             "context_type": self.context_type,
             "context_id": self.entity_id,
             "candidates": self.candidates,
@@ -91,15 +91,15 @@ class ContextAdapter:
         message: str,
         user_id: str,
         company_id: str,
-        conversation_id: Optional[str] = None,
+        conversation_id: str | None = None,
         context_page: str = "general",
-        entity_id: Optional[str] = None,
-        entity_type: Optional[str] = None,
-        candidates: Optional[List[Dict[str, Any]]] = None,
-        selected_candidate_ids: Optional[List[str]] = None,
-        job_context: Optional[Dict[str, Any]] = None,
-        search_context: Optional[Dict[str, Any]] = None,
-        target_job: Optional[Dict[str, Any]] = None,
+        entity_id: str | None = None,
+        entity_type: str | None = None,
+        candidates: list[dict[str, Any]] | None = None,
+        selected_candidate_ids: list[str] | None = None,
+        job_context: dict[str, Any] | None = None,
+        search_context: dict[str, Any] | None = None,
+        target_job: dict[str, Any] | None = None,
         **extra: Any,
     ) -> UniversalContext:
         context_type = PAGE_TO_CONTEXT_TYPE.get(context_page, "general")
@@ -178,8 +178,8 @@ class ContextAdapter:
     def from_ws(
         *,
         session_id: str,
-        message_frame: Dict[str, Any],
-        jwt_payload: Dict[str, Any],
+        message_frame: dict[str, Any],
+        jwt_payload: dict[str, Any],
     ) -> UniversalContext:
         """Adapta frame WS para UniversalContext."""
         user_id = str(jwt_payload.get("sub", ""))
@@ -211,7 +211,7 @@ class ContextAdapter:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def from_rabbitmq(message: Dict[str, Any]) -> UniversalContext:
+    def from_rabbitmq(message: dict[str, Any]) -> UniversalContext:
         """
         Adapta mensagem RabbitMQ para UniversalContext.
         Compatível com o formato do recruiter_agent_v5:

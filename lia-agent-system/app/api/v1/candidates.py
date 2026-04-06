@@ -3,32 +3,41 @@ Candidates API endpoints - 2-tier search architecture:
 1. Local search (proprietary PostgreSQL database) - FREE
 2. Global search (Pearch AI 190M+ profiles) - PAID (credits required)
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, BackgroundTasks, Header
-from typing import Optional, List
-from sqlalchemy import select, or_, and_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
 import uuid
-import asyncio
+from datetime import datetime
 
-from app.shared.pii_masking import get_masked_logger
-from app.shared.compliance.audit_service import audit_service
-from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
-from app.domains.sourcing.services.pearch_service import pearch_service
-from app.models.pearch import PearchSearchRequest, PearchSearchResponse
-from app.models.candidate import Candidate, CandidateSearch, ViewedCandidate, CandidateFavorite, CandidateHidden, VacancyCandidate
-from app.models.communication_settings import LGPDConsent
-from app.schemas.candidate import (
-    CandidateCreate, CandidateResponse, CandidateUpdate, CandidateStageUpdate,
-    CandidateSearchFilters, CandidateSearchRequest, CandidateSearchResponse
-)
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 from app.core.database import get_db
+from app.domains.sourcing.services.pearch_service import pearch_service
+from app.models.candidate import (
+    Candidate,
+    CandidateFavorite,
+    CandidateHidden,
+    CandidateSearch,
+    VacancyCandidate,
+    ViewedCandidate,
+)
+from app.models.pearch import PearchSearchRequest, PearchSearchResponse
+from app.schemas.candidate import (
+    CandidateCreate,
+    CandidateResponse,
+    CandidateSearchRequest,
+    CandidateSearchResponse,
+    CandidateStageUpdate,
+    CandidateUpdate,
+)
 from app.services.activity_service import ActivityService
 from app.services.calibration_service import CalibrationService
 from app.services.consent_checker_service import ConsentCheckerService
-from app.auth.dependencies import get_current_user_or_demo
-from app.auth.models import User
-from pydantic import BaseModel, Field
+from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
@@ -101,10 +110,10 @@ def determine_feedback_action(stage_from: str, stage_to: str) -> str:
 
 class ScreeningDecisionRequest(BaseModel):
     """Request model for screening decision endpoint."""
-    job_id: Optional[str] = None
+    job_id: str | None = None
     decision: str  # "approved" or "rejected"
-    reason: Optional[str] = None
-    reviewer_id: Optional[str] = Field(None, description="ID do usuário que tomou a decisão (obrigatório para rejeições)")
+    reason: str | None = None
+    reviewer_id: str | None = Field(None, description="ID do usuário que tomou a decisão (obrigatório para rejeições)")
 
 router = APIRouter()
 
@@ -226,10 +235,10 @@ def parse_pg_array_string(array_str: str) -> list:
 
 @router.get("")
 async def list_candidates(
-    search: Optional[str] = None,
-    status: Optional[str] = None,
-    source: Optional[str] = None,
-    ids: Optional[str] = None,
+    search: str | None = None,
+    status: str | None = None,
+    source: str | None = None,
+    ids: str | None = None,
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db)
@@ -851,8 +860,9 @@ async def update_candidate_stage(
                 # evaluations for this job reflect recruiter approval/rejection patterns.
                 # approve → nudge score up; reject → nudge score down.
                 if lia_score_at_transition is not None:
-                    from app.domains.cv_screening.services.rubric_evaluation_service import calibration_feedback
                     from uuid import uuid4
+
+                    from app.domains.cv_screening.services.rubric_evaluation_service import calibration_feedback
                     adjusted_score: float
                     if feedback_action == "advance":
                         adjusted_score = min(99.0, lia_score_at_transition + 10.0)
@@ -877,6 +887,7 @@ async def update_candidate_stage(
                 # Best-effort: não bloqueia o fluxo principal
                 try:
                     import asyncio as _asyncio
+
                     from app.services.ml_feedback_service import ml_feedback_service as _ml_fb
                     _decision_map = {"advance": "hire", "reject": "reject"}
                     _ml_decision = _decision_map.get(feedback_action)
@@ -956,7 +967,7 @@ async def delete_candidate(
 # ==================== ENRICHMENT (APIFY LINKEDIN SCRAPER) ====================
 
 class EnrichmentRequest(BaseModel):
-    linkedin_url: Optional[str] = None
+    linkedin_url: str | None = None
     include_experiences: bool = True
     include_education: bool = True
     include_email_discovery: bool = True
@@ -1290,7 +1301,7 @@ async def search_candidates_get(
 @router.post("/search/by-job-description", response_model=PearchSearchResponse)
 async def search_by_job_description(
     job_description: str,
-    location: Optional[str] = None,
+    location: str | None = None,
     limit: int = Query(20, ge=1, le=100)
 ):
     """
@@ -1330,7 +1341,7 @@ async def health_check():
 # ==================== VIEWED CANDIDATES ENDPOINTS ====================
 
 class ViewedCandidateCreate(BaseModel):
-    source: Optional[str] = None
+    source: str | None = None
 
 
 class ViewedCandidateResponse(BaseModel):
@@ -1338,7 +1349,7 @@ class ViewedCandidateResponse(BaseModel):
     candidate_id: str
     user_id: str
     viewed_at: str
-    source: Optional[str] = None
+    source: str | None = None
 
 
 @router.post("/{candidate_id}/viewed")
@@ -1490,14 +1501,14 @@ async def unmark_candidate_viewed(
 # ==================== FAVORITES ENDPOINTS ====================
 
 class FavoriteCreate(BaseModel):
-    note: Optional[str] = None
+    note: str | None = None
     is_pinned: bool = False
-    source: Optional[str] = None
+    source: str | None = None
 
 
 class FavoriteUpdate(BaseModel):
-    note: Optional[str] = None
-    is_pinned: Optional[bool] = None
+    note: str | None = None
+    is_pinned: bool | None = None
 
 
 @router.post("/{candidate_id}/favorite")
@@ -1707,8 +1718,8 @@ async def remove_favorite(
 # ==================== HIDDEN CANDIDATES ENDPOINTS ====================
 
 class HiddenCreate(BaseModel):
-    reason: Optional[str] = None
-    source: Optional[str] = None
+    reason: str | None = None
+    source: str | None = None
 
 
 @router.post("/{candidate_id}/hide")
@@ -1962,7 +1973,6 @@ async def screening_decision(
         if vacancy_candidate:
             current_stage = vacancy_candidate.stage
         
-        awaiting_stages = ["applied", "novo", "aplicado"]
         is_awaiting_screening = (
             vacancy_candidate
             and vacancy_candidate.status == "awaiting_screening"
@@ -1998,13 +2008,13 @@ async def screening_decision(
         if request.decision == "approved":
             if current_stage and current_stage.lower() in [s.lower() for s in early_stages]:
                 new_stage = "Triagem"
-                activity_description = f"Candidato aprovado e movido para Triagem"
+                activity_description = "Candidato aprovado e movido para Triagem"
             elif current_stage and current_stage.lower() in [s.lower() for s in screening_stages]:
                 new_stage = "Entrevista"
-                activity_description = f"Candidato aprovado na triagem e movido para Entrevista"
+                activity_description = "Candidato aprovado na triagem e movido para Entrevista"
             else:
                 new_stage = "Triagem"
-                activity_description = f"Candidato aprovado e movido para Triagem"
+                activity_description = "Candidato aprovado e movido para Triagem"
             
             new_status = "approved_screening"
             activity_type = "screening_approved"
@@ -2014,7 +2024,7 @@ async def screening_decision(
             new_status = "rejected_screening"
             activity_type = "screening_rejected"
             activity_title = f"Triagem Reprovada - {candidate.name}"
-            activity_description = f"Candidato reprovado na triagem"
+            activity_description = "Candidato reprovado na triagem"
             if request.reason:
                 activity_description += f". Motivo: {request.reason}"
         
@@ -2078,7 +2088,7 @@ async def screening_decision(
                     f"Stage transition: {new_stage}",
                     f"WSI score: {_vc_score}" if _vc_score else "WSI score: N/A",
                     f"Ranking: {_vc_ranking}" if _vc_ranking else "Ranking: N/A",
-                    f"Recruiter rationale: provided" if getattr(request, "reason", None) else "Recruiter rationale: none",
+                    "Recruiter rationale: provided" if getattr(request, "reason", None) else "Recruiter rationale: none",
                 ],
                 criteria_used=["screening_evaluation", "recruiter_review", "wsi_score", "ranking_position"],
                 candidate_id=str(candidate_id),
@@ -2091,7 +2101,11 @@ async def screening_decision(
 
         if request.decision == "rejected" and vacancy_candidate and request.job_id:
             try:
-                from app.domains.automation.services.stage_automation_engine import StageAutomationEngine, AutomationEvent, TriggerType
+                from app.domains.automation.services.stage_automation_engine import (
+                    AutomationEvent,
+                    StageAutomationEngine,
+                    TriggerType,
+                )
                 engine = StageAutomationEngine()
                 slot_event = AutomationEvent(
                     trigger_type=TriggerType.SLOT_OPENED,
@@ -2129,14 +2143,14 @@ class ConsentCreateRequest(BaseModel):
     consent_type: str
     consent_given: bool
     consent_source: str = "api"
-    consent_text: Optional[str] = None
-    ip_address: Optional[str] = None
+    consent_text: str | None = None
+    ip_address: str | None = None
 
 
 @router.get("/{candidate_id}/consents")
 async def get_candidate_consents(
     candidate_id: uuid.UUID,
-    x_company_id: Optional[str] = Header(None),
+    x_company_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Lista todos os consentimentos LGPD de um candidato."""
@@ -2150,7 +2164,7 @@ async def get_candidate_consents(
 async def create_or_update_candidate_consent(
     candidate_id: uuid.UUID,
     request: ConsentCreateRequest,
-    x_company_id: Optional[str] = Header(None),
+    x_company_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Registra ou atualiza consentimento LGPD de um candidato por finalidade."""
@@ -2173,7 +2187,7 @@ async def create_or_update_candidate_consent(
 async def revoke_candidate_consent(
     candidate_id: uuid.UUID,
     consent_type: str,
-    x_company_id: Optional[str] = Header(None),
+    x_company_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Revoga consentimento LGPD de um candidato para uma finalidade específica."""
@@ -2193,8 +2207,8 @@ async def revoke_candidate_consent(
 # ==================== COMMUNICATION PREFERENCES ENDPOINTS ====================
 
 class CommunicationPreferencesUpdate(BaseModel):
-    preferred_channels: Optional[List[str]] = None  # ["email", "whatsapp", "sms"]
-    channel_opt_out: Optional[List[str]] = None      # ["marketing_email", "whatsapp"]
+    preferred_channels: list[str] | None = None  # ["email", "whatsapp", "sms"]
+    channel_opt_out: list[str] | None = None      # ["marketing_email", "whatsapp"]
 
 
 @router.get("/{candidate_id}/communication-preferences")

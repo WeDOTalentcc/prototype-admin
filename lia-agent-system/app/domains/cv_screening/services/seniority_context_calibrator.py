@@ -26,8 +26,8 @@ Versão: 1.0
 """
 
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 from app.domains.cv_screening.services.calibration_profiles import (
     AREA_MATURITY_PROFILES,
@@ -43,8 +43,10 @@ logger = logging.getLogger(__name__)
 WSI_CONTEXTUAL_CALIBRATION_ENABLED = True
 
 from app.domains.cv_screening.constants.wsi_constants import (
-    SENIORITY_TO_DREYFUS as BASE_SENIORITY_TO_DREYFUS,
     SENIORITY_TO_BLOOM as BASE_SENIORITY_TO_BLOOM,
+)
+from app.domains.cv_screening.constants.wsi_constants import (
+    SENIORITY_TO_DREYFUS as BASE_SENIORITY_TO_DREYFUS,
 )
 
 _TECH_AGE_YEARS_MULTIPLIERS = {
@@ -77,14 +79,14 @@ class CalibrationContext:
     """
     seniority: str
     job_title: str
-    department: Optional[str] = None
-    industry: Optional[str] = None
-    country: Optional[str] = None
-    location: Optional[str] = None
-    required_skills: Optional[List[str]] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    company_size: Optional[str] = None
+    department: str | None = None
+    industry: str | None = None
+    country: str | None = None
+    location: str | None = None
+    required_skills: list[str] | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    company_size: str | None = None
 
 
 @dataclass
@@ -106,21 +108,21 @@ class CalibrationResult:
         calibration_offsets: Breakdown detalhado de todos os offsets aplicados.
     """
     dreyfus_target: int
-    bloom_levels: List[int]
-    years_reference: Tuple[float, float]
+    bloom_levels: list[int]
+    years_reference: tuple[float, float]
     area_maturity: str
     area_profile_id: str
     confidence: float
     rationale: str
-    calibration_offsets: Dict[str, Any]
+    calibration_offsets: dict[str, Any]
 
 
 def _detect_area_profile(
     title: str,
-    department: Optional[str],
-    industry: Optional[str],
-    skills: Optional[List[str]],
-) -> Tuple[Dict[str, Any], str]:
+    department: str | None,
+    industry: str | None,
+    skills: list[str] | None,
+) -> tuple[dict[str, Any], str]:
     """Detecta o perfil de área profissional com base em keywords.
 
     Realiza matching de keywords dos AREA_MATURITY_PROFILES contra o título,
@@ -175,8 +177,8 @@ def _detect_area_profile(
 
 
 def _get_geographic_multiplier(
-    country: Optional[str],
-    location: Optional[str],
+    country: str | None,
+    location: str | None,
 ) -> float:
     """Obtém o multiplicador geográfico de progressão de carreira.
 
@@ -218,8 +220,8 @@ def _get_geographic_multiplier(
 
 
 def _calculate_tech_age_factor(
-    skills: Optional[List[str]],
-) -> Dict[str, Any]:
+    skills: list[str] | None,
+) -> dict[str, Any]:
     """Calcula o fator de idade tecnológica com base nas habilidades requeridas.
 
     Realiza matching das habilidades contra TECHNOLOGY_AGE_PROFILES e determina
@@ -246,7 +248,7 @@ def _calculate_tech_age_factor(
         }
 
     skills_lower = [s.lower() for s in skills]
-    match_counts: Dict[str, int] = {}
+    match_counts: dict[str, int] = {}
 
     for category, profile in TECHNOLOGY_AGE_PROFILES.items():
         count = 0
@@ -285,9 +287,9 @@ def _calculate_tech_age_factor(
 
 def _validate_salary_signal(
     seniority: str,
-    salary_min: Optional[float],
-    salary_max: Optional[float],
-) -> Dict[str, Any]:
+    salary_min: float | None,
+    salary_max: float | None,
+) -> dict[str, Any]:
     """Valida o sinal salarial contra os ranges de referência do mercado.
 
     Compara o ponto médio salarial da vaga com os ranges de referência em
@@ -412,7 +414,7 @@ def calibrate(context: CalibrationContext) -> CalibrationResult:
     logger.info(f"Senioridade normalizada: '{context.seniority}' -> '{seniority}'")
 
     signals_used = 0
-    rationale_parts: List[str] = []
+    rationale_parts: list[str] = []
 
     rationale_parts.append(
         f"Senioridade normalizada: '{context.seniority}' → '{seniority}'"

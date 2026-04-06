@@ -4,15 +4,15 @@ Implements per-user and per-company rate limiting using Redis sliding window.
 
 Falls back to in-memory dict if Redis is unavailable (graceful degradation).
 """
-from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
 import asyncio
 import logging
 import os
 import time
+from datetime import datetime, timedelta
+
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +41,10 @@ class RateLimiter:
         self._redis_lock = asyncio.Lock()
         self._redis_last_attempt: float = 0.0  # timestamp da última tentativa de conexão
         # Fallback in-memory state (used only when Redis is down)
-        self._fallback_user_requests: Dict[str, List[datetime]] = {}
-        self._fallback_company_requests: Dict[str, List[datetime]] = {}
-        self._fallback_blocked_users: Dict[str, datetime] = {}
-        self._fallback_blocked_companies: Dict[str, datetime] = {}
+        self._fallback_user_requests: dict[str, list[datetime]] = {}
+        self._fallback_company_requests: dict[str, list[datetime]] = {}
+        self._fallback_blocked_users: dict[str, datetime] = {}
+        self._fallback_blocked_companies: dict[str, datetime] = {}
         self._fallback_lock = asyncio.Lock()
 
     async def _get_redis(self):
@@ -87,7 +87,7 @@ class RateLimiter:
 
     async def _redis_sliding_window(
         self, key: str, limit: int, window_sec: int
-    ) -> Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         """
         Atomic Redis ZSET sliding window check.
 
@@ -108,7 +108,7 @@ class RateLimiter:
         count = results[2]
         return count <= limit, count
 
-    async def check_rate_limit(self, user_id: str, company_id: str) -> Tuple[bool, Optional[int]]:
+    async def check_rate_limit(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
         """
         Check if request is allowed based on rate limits.
 
@@ -124,7 +124,7 @@ class RateLimiter:
         # Fallback to in-memory
         return await self._check_memory(user_id, company_id)
 
-    async def _check_redis(self, user_id: str, company_id: str) -> Tuple[bool, Optional[int]]:
+    async def _check_redis(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
         """Redis-backed sliding window check."""
         try:
             prefix = "rl"
@@ -170,7 +170,7 @@ class RateLimiter:
             self._redis_available = False
             return True, None
 
-    async def _check_memory(self, user_id: str, company_id: str) -> Tuple[bool, Optional[int]]:
+    async def _check_memory(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
         """In-memory fallback rate limiting."""
         async with self._fallback_lock:
             now = datetime.utcnow()
@@ -240,7 +240,7 @@ class RateLimiter:
                 self._fallback_user_requests[user_id].append(now)
                 self._fallback_company_requests[company_id].append(now)
 
-    def get_remaining(self, user_id: str) -> Dict:
+    def get_remaining(self, user_id: str) -> dict:
         """Get remaining rate limits for a user (best-effort for response headers)."""
         return {
             "remaining_per_minute": self.LIMITS["per_minute_per_user"],
@@ -251,7 +251,7 @@ class RateLimiter:
             "reset_hour": None,
         }
 
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """Get overall rate limiter statistics."""
         return {
             "backend": "redis" if self._redis_available else "memory",
@@ -326,7 +326,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         return response
 
-    def _get_user_id(self, request: Request) -> Optional[str]:
+    def _get_user_id(self, request: Request) -> str | None:
         """Extract user ID from request (JWT token or header)."""
         if hasattr(request.state, "user") and request.state.user:
             return str(getattr(request.state.user, "id", None) or request.state.user.get("id"))
@@ -342,7 +342,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         return None
 
-    def _get_company_id(self, request: Request) -> Optional[str]:
+    def _get_company_id(self, request: Request) -> str | None:
         """Extract company ID from request."""
         if hasattr(request.state, "user") and request.state.user:
             return str(

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import List
 
 from app.domains.base import DomainAction
 
-SOURCING_ACTIONS: List[DomainAction] = [
+SOURCING_ACTIONS: list[DomainAction] = [
     DomainAction(action_id="search_candidates", name="Buscar candidatos", description="Busca candidatos com filtros"),
     DomainAction(action_id="global_search", name="Busca global", description="Busca em todas as fontes"),
     DomainAction(action_id="semantic_search", name="Busca semântica", description="Busca por embeddings"),

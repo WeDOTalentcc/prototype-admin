@@ -10,14 +10,15 @@ Changes from original:
   - get_provider_for_tenant() returns a container scoped to tenant config.
   - TenantProviderRegistry: singleton mapping tenant_id → ProviderContainer.
 """
-import os
 import logging
-from typing import Dict, List, Optional
+import os
+from typing import Optional
+
 from app.shared.providers.llm_provider import LLMProviderABC
 
 logger = logging.getLogger(__name__)
 
-FALLBACK_ORDER: List[str] = ["gemini", "claude", "openai"]
+FALLBACK_ORDER: list[str] = ["gemini", "claude", "openai"]
 
 
 # ---------------------------------------------------------------------------
@@ -32,8 +33,8 @@ class LLMProviderFactory:
     via TenantProviderRegistry.
     """
 
-    _providers: Dict[str, type] = {}
-    _instances: Dict[str, LLMProviderABC] = {}
+    _providers: dict[str, type] = {}
+    _instances: dict[str, LLMProviderABC] = {}
 
     @classmethod
     def register(cls, provider_class: type):
@@ -76,7 +77,7 @@ class LLMProviderFactory:
 
     @classmethod
     async def generate_with_fallback(
-        cls, prompt: str, system: Optional[str] = None, **kwargs
+        cls, prompt: str, system: str | None = None, **kwargs
     ) -> str:
         """Try providers in fallback order; return first success.
 
@@ -107,7 +108,7 @@ class LLMProviderFactory:
         )
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
-        errors: List[str] = []
+        errors: list[str] = []
         for provider_name in FALLBACK_ORDER:
             try:
                 provider = cls.get(provider_name)
@@ -159,9 +160,9 @@ class ProviderContainer:
 
     def __init__(
         self,
-        tenant_id: Optional[str] = None,
-        primary_provider: Optional[str] = None,
-        fallback_order: Optional[List[str]] = None,
+        tenant_id: str | None = None,
+        primary_provider: str | None = None,
+        fallback_order: list[str] | None = None,
     ) -> None:
         self._tenant_id = tenant_id
         self._primary = primary_provider or os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
@@ -171,10 +172,10 @@ class ProviderContainer:
         self._fallback_order = [self._primary] + [
             p for p in raw_order if p != self._primary
         ]
-        self._instances: Dict[str, LLMProviderABC] = {}
+        self._instances: dict[str, LLMProviderABC] = {}
 
     @property
-    def tenant_id(self) -> Optional[str]:
+    def tenant_id(self) -> str | None:
         return self._tenant_id
 
     @property
@@ -182,7 +183,7 @@ class ProviderContainer:
         return self._primary
 
     @property
-    def fallback_order(self) -> List[str]:
+    def fallback_order(self) -> list[str]:
         return list(self._fallback_order)
 
     def get(self, provider_name: str) -> LLMProviderABC:
@@ -211,12 +212,12 @@ class ProviderContainer:
         self._instances.clear()
 
     async def generate_with_fallback(
-        self, prompt: str, system: Optional[str] = None, **kwargs
+        self, prompt: str, system: str | None = None, **kwargs
     ) -> str:
         """Try providers in tenant fallback order; return first success."""
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
-        errors: List[str] = []
+        errors: list[str] = []
         for provider_name in self._fallback_order:
             try:
                 provider = self.get(provider_name)
@@ -281,7 +282,7 @@ class TenantProviderRegistry:
     _instance: Optional["TenantProviderRegistry"] = None
 
     def __init__(self) -> None:
-        self._containers: Dict[str, ProviderContainer] = {}
+        self._containers: dict[str, ProviderContainer] = {}
 
     @classmethod
     def get_instance(cls) -> "TenantProviderRegistry":
@@ -291,9 +292,9 @@ class TenantProviderRegistry:
 
     def get_container(
         self,
-        tenant_id: Optional[str],
-        primary_provider: Optional[str] = None,
-        fallback_order: Optional[List[str]] = None,
+        tenant_id: str | None,
+        primary_provider: str | None = None,
+        fallback_order: list[str] | None = None,
     ) -> ProviderContainer:
         """
         Get or create a ProviderContainer for the given tenant.
@@ -343,10 +344,10 @@ class TenantProviderRegistry:
 
     @staticmethod
     def _load_from_permissions(
-        tenant_id: Optional[str],
-        primary_override: Optional[str],
-        fallback_override: Optional[List[str]],
-    ) -> tuple[str, List[str]]:
+        tenant_id: str | None,
+        primary_override: str | None,
+        fallback_override: list[str] | None,
+    ) -> tuple[str, list[str]]:
         """Load provider config from ToolPermissionsLoader (YAML)."""
         try:
             from app.tools.tool_permissions_loader import get_permissions
@@ -392,7 +393,7 @@ class TenantProviderRegistry:
             cls._instance.clear()
         cls._instance = None
 
-    def list_tenants(self) -> List[str]:
+    def list_tenants(self) -> list[str]:
         """Return list of tenant IDs with active containers."""
         return [k for k in self._containers if k != "__global__"]
 
@@ -407,9 +408,9 @@ class TenantProviderRegistry:
 # ---------------------------------------------------------------------------
 
 def get_provider_for_tenant(
-    tenant_id: Optional[str] = None,
-    primary_provider: Optional[str] = None,
-    fallback_order: Optional[List[str]] = None,
+    tenant_id: str | None = None,
+    primary_provider: str | None = None,
+    fallback_order: list[str] | None = None,
 ) -> ProviderContainer:
     """
     Get a ProviderContainer for the given tenant.

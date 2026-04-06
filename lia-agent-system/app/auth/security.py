@@ -3,11 +3,9 @@ Security utilities for password hashing and JWT token handling.
 """
 import secrets
 from datetime import datetime, timedelta
-from typing import Optional
 
 import bcrypt
 import jwt
-from jwt.exceptions import InvalidTokenError as JWTError
 
 from app.core.config import settings
 
@@ -63,9 +61,9 @@ def generate_secure_token() -> str:
 
 def create_access_token(
     subject: str,
-    role: Optional[str] = None,
-    company_id: Optional[str] = None,
-    expires_delta: Optional[timedelta] = None
+    role: str | None = None,
+    company_id: str | None = None,
+    expires_delta: timedelta | None = None
 ) -> str:
     """
     Create a JWT access token.
@@ -102,7 +100,7 @@ def create_access_token(
 
 def create_refresh_token(
     subject: str,
-    expires_delta: Optional[timedelta] = None
+    expires_delta: timedelta | None = None
 ) -> str:
     """
     Create a JWT refresh token.

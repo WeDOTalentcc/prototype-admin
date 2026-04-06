@@ -8,8 +8,8 @@ Architecture v2.2: 9 agents (1 orchestrator + 8 specialized)
 """
 
 import logging
-from typing import Dict, Any, Optional
-from langchain_core.output_parsers import JsonOutputParser
+from typing import Any
+
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.agents.base_agent import AgentType
@@ -180,7 +180,7 @@ Contexto adicional: {context}
 Classifique o intent e retorne JSON válido.""")
         ])
     
-    async def route(self, message: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def route(self, message: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Route user message to appropriate agent using confidence cascade.
 
@@ -197,6 +197,7 @@ Classifique o intent e retorne JSON válido.""")
                        requires_planning, model_used
         """
         import json as _json
+
         from app.core.config import settings
 
         context_str = ""
@@ -278,7 +279,7 @@ Classifique o intent e retorne JSON válido.""")
             logger.error(f"❌ Intent routing failed: {e}")
             return self._fallback_response(context, reason=str(e))
 
-    def _fallback_response(self, context: Optional[Dict[str, Any]], reason: str = "") -> Dict[str, Any]:
+    def _fallback_response(self, context: dict[str, Any] | None, reason: str = "") -> dict[str, Any]:
         return {
             "intent": "recruiter_assistant",
             "target_agent": "Recruiter Assistant",

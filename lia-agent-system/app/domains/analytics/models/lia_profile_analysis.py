@@ -6,12 +6,12 @@ Supports three analysis types:
 2. Short Paragraph - Flowing paragraph summary  
 3. Detailed Bullets - Comprehensive sectioned summary
 """
-from datetime import datetime
-from typing import Optional
-from sqlalchemy import Column, String, DateTime, Text, Boolean
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 import enum
+import uuid
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

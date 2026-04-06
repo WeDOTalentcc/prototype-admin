@@ -2,51 +2,48 @@
 Workforce Planning API endpoints.
 Manages hiring plans, planned headcounts, and import functionality.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, UploadFile, File
+import csv
+import io
+import logging
+import uuid
+from datetime import date, datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, or_, func, and_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-import logging
-from datetime import datetime, date
-import uuid
-import io
-import csv
 
-from app.models.workforce import HiringPlan, PlannedHeadcount, ImportJob, WorkforceEntry
-from app.models.company import Department
+from app.core.database import get_db
+from app.models.workforce import HiringPlan, ImportJob, PlannedHeadcount, WorkforceEntry
 from app.schemas.workforce import (
     HiringPlanCreate,
-    HiringPlanUpdate,
     HiringPlanResponse,
+    HiringPlanUpdate,
     HiringPlanWithDetails,
-    HiringPlanSummary,
-    PlannedHeadcountCreate,
-    PlannedHeadcountUpdate,
-    PlannedHeadcountResponse,
-    ImportJobCreate,
+    ImportConfirm,
     ImportJobResponse,
     ImportPreview,
-    ImportConfirm,
     ImportResult,
     ImportRowValidation,
-    WorkforcePlanningStats,
     MonthlyHeadcountStats,
-    DepartmentHeadcountSummary,
+    PlannedHeadcountCreate,
+    PlannedHeadcountResponse,
+    PlannedHeadcountUpdate,
+    WorkforcePlanningStats,
 )
-from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/workforce", tags=["workforce"])
 
 
-@router.get("/plans", response_model=List[HiringPlanResponse])
+@router.get("/plans", response_model=list[HiringPlanResponse])
 async def list_hiring_plans(
-    company_id: Optional[uuid.UUID] = Query(None),
-    fiscal_year: Optional[int] = Query(None),
-    status: Optional[str] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    fiscal_year: int | None = Query(None),
+    status: str | None = Query(None),
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
@@ -199,14 +196,14 @@ async def delete_hiring_plan(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/plans/{plan_id}/headcounts", response_model=List[PlannedHeadcountResponse])
+@router.get("/plans/{plan_id}/headcounts", response_model=list[PlannedHeadcountResponse])
 async def list_plan_headcounts(
     plan_id: uuid.UUID,
-    status: Optional[str] = Query(None),
-    priority: Optional[str] = Query(None),
-    department_id: Optional[uuid.UUID] = Query(None),
-    target_month: Optional[int] = Query(None, ge=1, le=12),
-    target_year: Optional[int] = Query(None),
+    status: str | None = Query(None),
+    priority: str | None = Query(None),
+    department_id: uuid.UUID | None = Query(None),
+    target_month: int | None = Query(None, ge=1, le=12),
+    target_year: int | None = Query(None),
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=200),
@@ -404,10 +401,10 @@ async def delete_headcount(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/plans/{plan_id}/headcounts/bulk", response_model=List[PlannedHeadcountResponse])
+@router.post("/plans/{plan_id}/headcounts/bulk", response_model=list[PlannedHeadcountResponse])
 async def create_headcounts_bulk(
     plan_id: uuid.UUID,
-    headcounts: List[PlannedHeadcountCreate],
+    headcounts: list[PlannedHeadcountCreate],
     db: AsyncSession = Depends(get_db)
 ):
     """Create multiple headcounts at once."""
@@ -642,9 +639,9 @@ async def download_import_template():
 
 @router.get("/stats", response_model=WorkforcePlanningStats)
 async def get_workforce_stats(
-    company_id: Optional[uuid.UUID] = Query(None),
-    fiscal_year: Optional[int] = Query(None),
-    plan_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
+    fiscal_year: int | None = Query(None),
+    plan_id: uuid.UUID | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Get workforce planning statistics."""
@@ -782,7 +779,7 @@ async def get_workforce_stats(
 
 @router.get("/timeline")
 async def get_hiring_timeline(
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     months_ahead: int = Query(6, ge=1, le=24),
     db: AsyncSession = Depends(get_db)
 ):
@@ -844,14 +841,12 @@ async def get_hiring_timeline(
 
 @router.get("/alerts")
 async def get_workforce_alerts(
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Get alerts for upcoming or overdue hires."""
     try:
         today = date.today()
-        current_month = today.month
-        current_year = today.year
         
         query = select(PlannedHeadcount).where(
             PlannedHeadcount.is_active == True,
@@ -931,6 +926,7 @@ async def get_workforce_alerts(
 
 from pydantic import BaseModel
 
+
 class WorkforceEntryItem(BaseModel):
     """Individual workforce entry for simple planning."""
     month: str
@@ -942,7 +938,7 @@ class WorkforceEntryItem(BaseModel):
 class WorkforceEntriesRequest(BaseModel):
     """Request for saving workforce entries."""
     year: int
-    entries: List[WorkforceEntryItem]
+    entries: list[WorkforceEntryItem]
 
 
 DEFAULT_WORKFORCE = [
@@ -960,7 +956,7 @@ DEFAULT_WORKFORCE = [
 
 @router.get("/entries")
 async def get_workforce_entries(
-    year: Optional[int] = Query(None),
+    year: int | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Get simple workforce entries for admin panel."""
@@ -1044,18 +1040,18 @@ class WorkforceEntryImportResponse(BaseModel):
     success: bool
     imported_count: int
     error_count: int
-    errors: List[Dict[str, Any]]
-    items: List[Dict[str, Any]]
+    errors: list[dict[str, Any]]
+    items: list[dict[str, Any]]
 
 
-def parse_csv_file_workforce(content: bytes) -> List[Dict[str, str]]:
+def parse_csv_file_workforce(content: bytes) -> list[dict[str, str]]:
     """Parse CSV file content and return list of dictionaries."""
     text = content.decode('utf-8-sig')
     reader = csv.DictReader(io.StringIO(text))
     return list(reader)
 
 
-def parse_excel_file_workforce(content: bytes) -> List[Dict[str, str]]:
+def parse_excel_file_workforce(content: bytes) -> list[dict[str, str]]:
     """Parse Excel file content and return list of dictionaries."""
     try:
         from openpyxl import load_workbook
@@ -1086,7 +1082,7 @@ def parse_excel_file_workforce(content: bytes) -> List[Dict[str, str]]:
         )
 
 
-async def parse_workforce_import_file(file: UploadFile) -> List[Dict[str, str]]:
+async def parse_workforce_import_file(file: UploadFile) -> list[dict[str, str]]:
     """Parse uploaded file (CSV or Excel) and return data."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
@@ -1136,7 +1132,7 @@ async def download_workforce_entries_import_template():
 @router.post("/entries/import", response_model=WorkforceEntryImportResponse)
 async def import_workforce_entries(
     file: UploadFile = File(...),
-    company_id: Optional[uuid.UUID] = Query(None),
+    company_id: uuid.UUID | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """

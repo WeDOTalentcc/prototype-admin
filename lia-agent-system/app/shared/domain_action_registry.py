@@ -13,8 +13,8 @@ Usage:
     is_alias = registry.is_alias("compare_candidates", "sourcing")  # True
 """
 import logging
-from typing import Dict, Set, Optional, List, Any
 from dataclasses import dataclass, field
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class ActionRegistration:
     action_id: str
     owner_domain: str
-    alias_domains: Set[str] = field(default_factory=set)
+    alias_domains: set[str] = field(default_factory=set)
     description: str = ""
 
 
@@ -33,8 +33,8 @@ class DomainActionRegistry:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._registry: Dict[str, ActionRegistration] = {}
-            cls._instance._domain_actions: Dict[str, Set[str]] = {}
+            cls._instance._registry: dict[str, ActionRegistration] = {}
+            cls._instance._domain_actions: dict[str, set[str]] = {}
             cls._instance._initialized = False
         return cls._instance
 
@@ -72,7 +72,7 @@ class DomainActionRegistry:
         self._registry[action_id].alias_domains.add(alias_domain)
         logger.debug(f"[ACTION-REGISTRY] Alias '{action_id}' ← '{alias_domain}'")
 
-    def get_owner(self, action_id: str) -> Optional[str]:
+    def get_owner(self, action_id: str) -> str | None:
         reg = self._registry.get(action_id)
         return reg.owner_domain if reg else None
 
@@ -82,7 +82,7 @@ class DomainActionRegistry:
             return False
         return domain_id in reg.alias_domains
 
-    def should_delegate(self, action_id: str, calling_domain: str) -> Optional[str]:
+    def should_delegate(self, action_id: str, calling_domain: str) -> str | None:
         reg = self._registry.get(action_id)
         if not reg:
             return None
@@ -92,10 +92,10 @@ class DomainActionRegistry:
             return reg.owner_domain
         return None
 
-    def get_domain_actions(self, domain_id: str) -> Set[str]:
+    def get_domain_actions(self, domain_id: str) -> set[str]:
         return self._domain_actions.get(domain_id, set())
 
-    def get_conflicts(self) -> List[Dict[str, Any]]:
+    def get_conflicts(self) -> list[dict[str, Any]]:
         conflicts = []
         for action_id, reg in self._registry.items():
             if reg.alias_domains:
@@ -106,7 +106,7 @@ class DomainActionRegistry:
                 })
         return conflicts
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         return {
             "total_actions": len(self._registry),
             "total_domains": len(self._domain_actions),

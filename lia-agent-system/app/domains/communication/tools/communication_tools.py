@@ -7,8 +7,8 @@ Provides function calling capabilities for:
 - Scheduling interviews
 """
 import logging
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 async def send_email(
     candidate_id: str,
-    template_id: Optional[str] = None,
-    subject: Optional[str] = None,
-    body: Optional[str] = None,
-    job_id: Optional[str] = None,
-    cc: Optional[List[str]] = None,
-    attachments: Optional[List[str]] = None
-) -> Dict[str, Any]:
+    template_id: str | None = None,
+    subject: str | None = None,
+    body: str | None = None,
+    job_id: str | None = None,
+    cc: list[str] | None = None,
+    attachments: list[str] | None = None
+) -> dict[str, Any]:
     """
     Send an email to a candidate.
     
@@ -43,8 +43,9 @@ async def send_email(
     logger.info(f"📧 Sending email to candidate {candidate_id}")
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -93,7 +94,7 @@ async def send_email(
                 
                 return {
                     "success": True,
-                    "message": f"📧 Email enviado para o candidato.",
+                    "message": "📧 Email enviado para o candidato.",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
                     "data": {
@@ -116,9 +117,9 @@ async def send_email(
 async def send_whatsapp(
     candidate_id: str,
     message: str,
-    template_id: Optional[str] = None,
-    job_id: Optional[str] = None
-) -> Dict[str, Any]:
+    template_id: str | None = None,
+    job_id: str | None = None
+) -> dict[str, Any]:
     """
     Send a WhatsApp message to a candidate.
     
@@ -134,8 +135,9 @@ async def send_whatsapp(
     logger.info(f"📱 Sending WhatsApp to candidate {candidate_id}")
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -184,7 +186,7 @@ async def send_whatsapp(
                 
                 return {
                     "success": True,
-                    "message": f"📱 WhatsApp enviado para o candidato.",
+                    "message": "📱 WhatsApp enviado para o candidato.",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
                     "data": {
@@ -209,12 +211,12 @@ async def schedule_interview(
     interview_type: str,
     datetime_str: str,
     duration_minutes: int = 60,
-    interviewers: Optional[List[str]] = None,
-    location: Optional[str] = None,
-    meeting_link: Optional[str] = None,
-    notes: Optional[str] = None,
+    interviewers: list[str] | None = None,
+    location: str | None = None,
+    meeting_link: str | None = None,
+    notes: str | None = None,
     send_invite: bool = True
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Schedule an interview with a candidate.
     
@@ -255,8 +257,9 @@ async def schedule_interview(
     interview_type_display = interview_types_pt.get(interview_type, interview_type)
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -329,11 +332,11 @@ async def schedule_interview(
 
 
 async def send_bulk_email(
-    candidate_ids: List[str],
+    candidate_ids: list[str],
     template_id: str,
-    job_id: Optional[str] = None,
-    custom_variables: Optional[Dict[str, str]] = None
-) -> Dict[str, Any]:
+    job_id: str | None = None,
+    custom_variables: dict[str, str] | None = None
+) -> dict[str, Any]:
     """
     Send bulk emails to multiple candidates using a template.
     
@@ -381,9 +384,9 @@ async def send_feedback(
     candidate_id: str,
     job_id: str,
     feedback_type: str,
-    feedback_message: Optional[str] = None,
-    template_id: Optional[str] = None
-) -> Dict[str, Any]:
+    feedback_message: str | None = None,
+    template_id: str | None = None
+) -> dict[str, Any]:
     """
     Send feedback to a candidate about their application.
     
@@ -438,8 +441,9 @@ async def send_feedback(
     }
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:

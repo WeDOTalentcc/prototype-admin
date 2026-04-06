@@ -7,17 +7,17 @@ and screening.
 """
 import logging
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
 
-async def _wrap_set_search_criteria(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_set_search_criteria(**kwargs: Any) -> dict[str, Any]:
     """Define search parameters for talent sourcing."""
     logger.info(f"[sourcing_tools] set_search_criteria called with: {list(kwargs.keys())}")
     try:
@@ -45,7 +45,7 @@ async def _wrap_set_search_criteria(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_suggest_skills(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     """Suggest relevant skills based on role and context."""
     logger.info(f"[sourcing_tools] suggest_skills called with: {list(kwargs.keys())}")
     try:
@@ -89,7 +89,7 @@ async def _wrap_suggest_skills(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_search_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Execute talent search based on defined criteria."""
     logger.info(f"[sourcing_tools] search_candidates called with: {list(kwargs.keys())}")
     try:
@@ -104,7 +104,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> Dict[str, Any]:
         offset = (max(1, page) - 1) * limit
 
         conditions = ["is_active = true"]
-        params: Dict[str, Any] = {"lim": limit, "off": offset}
+        params: dict[str, Any] = {"lim": limit, "off": offset}
 
         if role:
             conditions.append("current_title ILIKE :role_pattern")
@@ -179,7 +179,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_filter_results(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
     """Apply filters to search results."""
     logger.info(f"[sourcing_tools] filter_results called with: {list(kwargs.keys())}")
     try:
@@ -191,7 +191,7 @@ async def _wrap_filter_results(**kwargs: Any) -> Dict[str, Any]:
         offset = (max(1, page) - 1) * limit
 
         conditions = ["is_active = true"]
-        params: Dict[str, Any] = {"lim": limit, "off": offset}
+        params: dict[str, Any] = {"lim": limit, "off": offset}
 
         if filters.get("min_experience"):
             conditions.append("years_of_experience >= :min_exp")
@@ -276,7 +276,7 @@ async def _wrap_filter_results(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_analyze_profile(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     """Perform AI analysis of a candidate profile."""
     logger.info(f"[sourcing_tools] analyze_profile called with: {list(kwargs.keys())}")
     try:
@@ -353,7 +353,7 @@ async def _wrap_analyze_profile(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_compare_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare multiple candidate profiles."""
     logger.info(f"[sourcing_tools] compare_candidates called with: {list(kwargs.keys())}")
     try:
@@ -416,7 +416,7 @@ async def _wrap_compare_candidates(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_score_candidate(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
     """Apply WSI scoring to a candidate."""
     logger.info(f"[sourcing_tools] score_candidate called with: {list(kwargs.keys())}")
     try:
@@ -492,7 +492,7 @@ async def _wrap_score_candidate(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_add_to_shortlist(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Add a candidate to the shortlist."""
     logger.info(f"[sourcing_tools] add_to_shortlist called with: {list(kwargs.keys())}")
     try:
@@ -562,7 +562,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_remove_from_shortlist(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Remove a candidate from the shortlist."""
     logger.info(f"[sourcing_tools] remove_from_shortlist called with: {list(kwargs.keys())}")
     try:
@@ -604,7 +604,7 @@ async def _wrap_remove_from_shortlist(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_rank_candidates(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates in the shortlist."""
     logger.info(f"[sourcing_tools] rank_candidates called with: {list(kwargs.keys())}")
     try:
@@ -683,7 +683,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_send_outreach(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
     """Send recruitment outreach message to a candidate."""
     logger.info(f"[sourcing_tools] send_outreach called with: {list(kwargs.keys())}")
     try:
@@ -741,7 +741,7 @@ async def _wrap_send_outreach(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_generate_message(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
     """Generate a personalized outreach message."""
     logger.info(f"[sourcing_tools] generate_message called with: {list(kwargs.keys())}")
     try:
@@ -817,7 +817,7 @@ async def _wrap_generate_message(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_track_response(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_track_response(**kwargs: Any) -> dict[str, Any]:
     """Track candidate response to outreach."""
     logger.info(f"[sourcing_tools] track_response called with: {list(kwargs.keys())}")
     try:
@@ -877,7 +877,7 @@ async def _wrap_track_response(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-async def _wrap_view_candidate(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_view_candidate(**kwargs: Any) -> dict[str, Any]:
     """View detailed candidate profile."""
     logger.info(f"[sourcing_tools] view_candidate called with: {list(kwargs.keys())}")
     try:
@@ -966,7 +966,7 @@ async def _wrap_view_candidate(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "data": {}, "message": str(e)}
 
 
-TOOL_DEFINITIONS: List[ToolDefinition] = [
+TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="set_search_criteria",
         description="Define os parametros de busca de talentos: cargo, skills, localizacao, nivel de experiencia e faixa salarial.",
@@ -1160,14 +1160,14 @@ TOOL_DEFINITIONS: List[ToolDefinition] = [
 ]
 
 
-async def _wrap_generate_report(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[sourcing_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: Dict[str, Any] = {}
+    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
             row = await session.execute(text("""
@@ -1216,7 +1216,7 @@ TOOL_DEFINITIONS.append(
     )
 )
 
-async def _wrap_enrich_candidate_profile(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_enrich_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """Enrich a candidate profile with Apify (LinkedIn person + email discovery)."""
     logger.info(f"[sourcing_tools] enrich_candidate_profile called with: {list(kwargs.keys())}")
     try:
@@ -1274,9 +1274,9 @@ TOOL_DEFINITIONS.append(
     )
 )
 
-_TOOL_MAP: Dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
+_TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
-STAGE_TOOLS: Dict[str, List[str]] = {
+STAGE_TOOLS: dict[str, list[str]] = {
     "search-criteria": ["set_search_criteria", "suggest_skills"],
     "talent-search": ["search_candidates", "filter_results", "view_candidate", "enrich_candidate_profile"],
     "profile-analysis": ["analyze_profile", "compare_candidates", "score_candidate", "enrich_candidate_profile"],
@@ -1285,12 +1285,12 @@ STAGE_TOOLS: Dict[str, List[str]] = {
 }
 
 
-def get_sourcing_tools() -> List[ToolDefinition]:
+def get_sourcing_tools() -> list[ToolDefinition]:
     """Return all sourcing tool definitions."""
     return list(TOOL_DEFINITIONS)
 
 
-def get_stage_tools(stage: str) -> List[ToolDefinition]:
+def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """Return only tools relevant to the current sourcing stage.
 
     Args:

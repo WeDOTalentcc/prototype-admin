@@ -1,11 +1,11 @@
 """
 API endpoints for affirmative action management.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import Optional, List
 from uuid import UUID
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.affirmative_service import AffirmativeService
@@ -28,7 +28,7 @@ class DocumentUploadRequest(BaseModel):
 class DocumentVerificationRequest(BaseModel):
     document_id: str
     approved: bool
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 @router.get("/criteria")
@@ -44,14 +44,14 @@ async def check_eligibility(
     db: Session = Depends(get_db)
 ):
     """Check if candidate is eligible for affirmative vacancy."""
-    service = AffirmativeService(db)
+    AffirmativeService(db)
     return {"status": "pending", "message": "Eligibility check requires candidate and vacancy data"}
 
 
 @router.get("/pending-documents/{company_id}")
 async def get_pending_documents(
     company_id: str,
-    vacancy_id: Optional[str] = None,
+    vacancy_id: str | None = None,
     db: Session = Depends(get_db)
 ):
     """Get all pending document uploads for a company."""

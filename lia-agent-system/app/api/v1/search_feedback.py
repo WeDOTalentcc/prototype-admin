@@ -1,9 +1,9 @@
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, func, and_
-from typing import Optional
 from pydantic import BaseModel, Field
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.search_feedback import SearchFeedback
@@ -16,11 +16,11 @@ router = APIRouter(prefix="/search/feedback", tags=["search-feedback"])
 class SubmitFeedbackRequest(BaseModel):
     candidate_id: str
     feedback_type: str = Field(..., pattern="^(like|dislike)$")
-    job_id: Optional[str] = None
-    search_query: Optional[str] = None
-    candidate_score: Optional[float] = None
-    candidate_name: Optional[str] = None
-    reason: Optional[str] = None
+    job_id: str | None = None
+    search_query: str | None = None
+    candidate_score: float | None = None
+    candidate_name: str | None = None
+    reason: str | None = None
 
 
 @router.post("/")
@@ -71,7 +71,7 @@ async def submit_feedback(request: Request, body: SubmitFeedbackRequest, db: Asy
 
 
 @router.get("/user/all")
-async def get_user_feedbacks(request: Request, job_id: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+async def get_user_feedbacks(request: Request, job_id: str | None = None, db: AsyncSession = Depends(get_db)):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")

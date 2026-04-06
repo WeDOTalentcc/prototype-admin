@@ -1,9 +1,9 @@
-import re
 import logging
-from typing import Optional, List, Dict, Any
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
+from typing import Any
 
-from app.shared.execution.execution_plan import ExecutionPlan, AgentTask
+from app.shared.execution.execution_plan import AgentTask, ExecutionPlan
 
 logger = logging.getLogger(__name__)
 
@@ -12,18 +12,18 @@ logger = logging.getLogger(__name__)
 class PipelineStep:
     domain_id: str
     action_id: str
-    context_from: Optional[str] = None
+    context_from: str | None = None
 
 
 @dataclass
 class PlanPattern:
     name: str
-    patterns: List[str]
-    pipeline: List[PipelineStep]
+    patterns: list[str]
+    pipeline: list[PipelineStep]
     description: str = ""
 
 
-PLAN_PATTERNS: List[PlanPattern] = [
+PLAN_PATTERNS: list[PlanPattern] = [
     PlanPattern(
         name="buscar_e_comparar",
         patterns=[
@@ -203,12 +203,12 @@ PLAN_PATTERNS: List[PlanPattern] = [
 
 
 class PlanDetector:
-    def __init__(self, custom_patterns: Optional[List[PlanPattern]] = None):
+    def __init__(self, custom_patterns: list[PlanPattern] | None = None):
         self._patterns = custom_patterns or PLAN_PATTERNS
         self._detection_count = 0
         self._match_count = 0
 
-    def detect(self, query: str) -> Optional[ExecutionPlan]:
+    def detect(self, query: str) -> ExecutionPlan | None:
         self._detection_count += 1
         normalized = query.lower().strip()
 
@@ -237,7 +237,7 @@ class PlanDetector:
             task_id = f"task_{i}"
             depends_on = [f"task_{i-1}"] if i > 0 else []
 
-            context_mappings: Dict[str, str] = {}
+            context_mappings: dict[str, str] = {}
             if step.context_from:
                 parts = step.context_from.split(".", 1)
                 if len(parts) == 2:
@@ -254,7 +254,7 @@ class PlanDetector:
 
         return plan
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         return {
             "total_detections": self._detection_count,
             "total_matches": self._match_count,
@@ -262,5 +262,5 @@ class PlanDetector:
             "pattern_count": len(self._patterns),
         }
 
-    def list_patterns(self) -> List[Dict[str, str]]:
+    def list_patterns(self) -> list[dict[str, str]]:
         return [{"name": p.name, "description": p.description} for p in self._patterns]

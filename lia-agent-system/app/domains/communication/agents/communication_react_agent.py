@@ -7,34 +7,23 @@ Migração completa concluída — path legado ReActLoop removido.
 Domain: communication
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
-from app.services.confidence_policy_service import confidence_policy_service
 
-from app.domains.communication.agents.communication_stage_context import (
-    STAGE_DEFINITIONS,
-    get_stage_context,
-    get_transition_prompt,
-)
 from app.domains.communication.agents.communication_system_prompt import (
     get_communication_system_prompt,
 )
 from app.domains.communication.agents.communication_tool_registry import (
     get_communication_tools,
-    get_stage_tools,
 )
+from app.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +46,7 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "communication"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:
@@ -117,7 +106,7 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
         # SEG-5: AuditService
         try:
-            from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+            from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
             stage = input.context.get("current_stage", "intent-detection")
             await audit_service.log_decision(
                 company_id=str(input.company_id or ""),
@@ -169,7 +158,7 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         if not _hitl_approved and _msg_type in self._HITL_MESSAGE_TYPES:
             try:
                 from app.services.hitl_service import hitl_service
-                from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                 thread_id = str(input.session_id)
                 candidate_id = input.context.get("candidate_id", "")
                 pending_id = await hitl_service.request_approval(

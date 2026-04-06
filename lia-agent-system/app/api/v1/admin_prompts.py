@@ -7,7 +7,6 @@ GET /api/v1/admin/prompts/versions/{name}   → versões de um nome específico
 Requer autenticação de admin.
 """
 import logging
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -34,7 +33,7 @@ class PromptVersionResponse(BaseModel):
 
 class PromptVersionListResponse(BaseModel):
     total: int
-    versions: List[PromptVersionResponse]
+    versions: list[PromptVersionResponse]
 
 
 # ---------------------------------------------------------------------------

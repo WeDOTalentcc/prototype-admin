@@ -11,21 +11,15 @@ These tests validate:
 - Learning context retrieval
 - Multi-tenant isolation
 """
-import pytest
 from uuid import uuid4
-from datetime import datetime
 
+import pytest
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
-from app.services.learning_hub_service import LearningHubService, learning_hub_service
+from app.models.company_learning import AgentFeedback, CompanyResponsibility, CompanySkill
+from app.services.learning_hub_service import LearningHubService
 from app.services.skills_catalog_service import skills_catalog_service
-from app.models.company_learning import (
-    CompanySkill,
-    CompanyResponsibility,
-    AgentFeedback,
-    LearningSource
-)
 
 
 @pytest.fixture

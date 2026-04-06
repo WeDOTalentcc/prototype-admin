@@ -7,25 +7,20 @@ This service handles:
 3. Executing actions (email, whatsapp, tasks, notifications)
 4. Logging execution history for auditing
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, desc, func
-from sqlalchemy.dialects.postgresql import UUID
 import logging
-import uuid
-import time
 import os
+import time
+import uuid
+from datetime import datetime, timedelta
+from typing import Any
+
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.automation import (
-    CommunicationAutomation, 
-    AutomationExecutionLog,
-    TriggerType,
-    ActionType
-)
-from app.models.task import Task, TaskStatus, TaskPriority, TaskType
-from app.services.notification_service import NotificationService, NotificationType
+from app.models.automation import ActionType, AutomationExecutionLog, CommunicationAutomation
+from app.models.task import Task, TaskPriority, TaskType
+from app.services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +56,7 @@ class AutomationService:
     
     async def _validate_candidate_exists(
         self,
-        candidate_id: Optional[str],
+        candidate_id: str | None,
         db: AsyncSession
     ) -> bool:
         """Validate that a candidate exists before executing actions."""
@@ -84,7 +79,7 @@ class AutomationService:
     
     async def _validate_vacancy_exists(
         self,
-        vacancy_id: Optional[str],
+        vacancy_id: str | None,
         db: AsyncSession
     ) -> bool:
         """Validate that a vacancy exists before executing actions."""
@@ -108,10 +103,10 @@ class AutomationService:
     async def trigger_automation(
         self,
         trigger_type: str,
-        trigger_data: Dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Execute automations based on a trigger event.
         
@@ -246,8 +241,8 @@ class AutomationService:
     
     async def evaluate_conditions(
         self,
-        conditions: List[Dict[str, Any]],
-        trigger_data: Dict[str, Any]
+        conditions: list[dict[str, Any]],
+        trigger_data: dict[str, Any]
     ) -> bool:
         """
         Evaluate if all conditions are satisfied for automation execution.
@@ -314,11 +309,11 @@ class AutomationService:
     async def execute_action(
         self,
         action_type: str,
-        action_config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        action_config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute an automation action.
         
@@ -388,11 +383,11 @@ class AutomationService:
     
     async def _execute_send_email(
         self,
-        config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute send email action using EmailService."""
         template_id = config.get("template_id")
         recipient_email = trigger_data.get("candidate_email") or config.get("to_email")
@@ -446,7 +441,7 @@ class AutomationService:
                 )
             
             if result.get("success"):
-                logger.info(f"✅ [AUTOMATION] Email sent successfully")
+                logger.info("✅ [AUTOMATION] Email sent successfully")
                 return {
                     "action": "send_email",
                     "status": "sent",
@@ -475,11 +470,11 @@ class AutomationService:
     
     async def _execute_send_whatsapp(
         self,
-        config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute send WhatsApp action using WhatsAppService."""
         template_name = config.get("template_name")
         recipient_phone = trigger_data.get("candidate_phone") or config.get("to_phone")
@@ -563,11 +558,11 @@ class AutomationService:
     
     async def _execute_create_task(
         self,
-        config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute create task action."""
         task_title = config.get("title", "Tarefa automática")
         task_description = config.get("description", "")
@@ -616,11 +611,11 @@ class AutomationService:
     
     async def _execute_notify_recruiter(
         self,
-        config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute notify recruiter action."""
         notification_title = config.get("title", "Notificação automática")
         notification_message = config.get("message", "")
@@ -642,11 +637,11 @@ class AutomationService:
     
     async def _execute_notify_manager(
         self,
-        config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute notify manager action."""
         notification_title = config.get("title", "Notificação automática")
         notification_message = config.get("message", "")
@@ -665,10 +660,10 @@ class AutomationService:
     
     async def _execute_log_activity(
         self,
-        config: Dict[str, Any],
-        trigger_data: Dict[str, Any],
+        config: dict[str, Any],
+        trigger_data: dict[str, Any],
         company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute log activity action."""
         activity_type = config.get("activity_type", "automation")
         activity_description = config.get("description", "Ação automática executada")
@@ -704,9 +699,9 @@ class AutomationService:
         automation_id: uuid.UUID,
         company_id: str,
         trigger_event: str,
-        trigger_data: Dict[str, Any],
+        trigger_data: dict[str, Any],
         action_executed: str,
-        action_result: Dict[str, Any],
+        action_result: dict[str, Any],
         status: str,
         execution_time_ms: int = 0,
         error_message: str = None,
@@ -735,12 +730,12 @@ class AutomationService:
     async def list_automations(
         self,
         company_id: str,
-        is_active: Optional[bool] = None,
-        trigger_type: Optional[str] = None,
+        is_active: bool | None = None,
+        trigger_type: str | None = None,
         limit: int = 50,
         offset: int = 0,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """List automations for a company."""
         should_close = False
         if db is None:
@@ -784,8 +779,8 @@ class AutomationService:
         self,
         automation_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[CommunicationAutomation]:
+        db: AsyncSession | None = None
+    ) -> CommunicationAutomation | None:
         """Get a single automation by ID."""
         should_close = False
         if db is None:
@@ -813,15 +808,15 @@ class AutomationService:
         name: str,
         trigger_type: str,
         action_type: str,
-        trigger_config: Dict[str, Any] = None,
-        action_config: Dict[str, Any] = None,
-        conditions: List[Dict[str, Any]] = None,
+        trigger_config: dict[str, Any] = None,
+        action_config: dict[str, Any] = None,
+        conditions: list[dict[str, Any]] = None,
         description: str = None,
         is_active: bool = True,
         priority: str = "normal",
         cooldown_minutes: int = 0,
         created_by: str = None,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> CommunicationAutomation:
         """Create a new automation."""
         should_close = False
@@ -861,10 +856,10 @@ class AutomationService:
         self,
         automation_id: str,
         company_id: str,
-        updates: Dict[str, Any],
+        updates: dict[str, Any],
         updated_by: str = None,
-        db: Optional[AsyncSession] = None
-    ) -> Optional[CommunicationAutomation]:
+        db: AsyncSession | None = None
+    ) -> CommunicationAutomation | None:
         """Update an existing automation."""
         should_close = False
         if db is None:
@@ -908,7 +903,7 @@ class AutomationService:
         self,
         automation_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> bool:
         """Delete an automation."""
         should_close = False
@@ -937,9 +932,9 @@ class AutomationService:
         self,
         automation_id: str,
         company_id: str,
-        test_data: Dict[str, Any] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        test_data: dict[str, Any] = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Test an automation without actually executing actions."""
         should_close = False
         if db is None:
@@ -998,11 +993,11 @@ class AutomationService:
     async def get_execution_logs(
         self,
         company_id: str,
-        automation_id: Optional[str] = None,
+        automation_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get execution logs for automations."""
         should_close = False
         if db is None:
@@ -1041,8 +1036,8 @@ class AutomationService:
     
     def get_ai_suggestions(
         self,
-        transition_data: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        transition_data: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Get AI-powered suggestions for actions based on stage transition.
         
@@ -1065,7 +1060,7 @@ class AutomationService:
         """
         to_stage = (transition_data.get("to_stage") or "").lower()
         from_stage = (transition_data.get("from_stage") or "").lower()
-        to_sub_status = (transition_data.get("to_sub_status") or "").lower()
+        (transition_data.get("to_sub_status") or "").lower()
         
         suggestions = []
         

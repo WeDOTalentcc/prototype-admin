@@ -2,29 +2,26 @@
 Job Report Service - PDF and Excel export functionality for job vacancy reports.
 """
 import io
-from datetime import datetime
-from typing import Optional, Dict, Any, List, Literal
-from uuid import UUID
 import logging
-
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
-
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch, cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
-from reportlab.graphics.shapes import Drawing
-from reportlab.graphics.charts.piecharts import Pie
-from reportlab.graphics.charts.barcharts import VerticalBarChart
+from datetime import datetime
+from typing import Any, Literal
+from uuid import UUID
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from reportlab.graphics.charts.piecharts import Pie
+from reportlab.graphics.shapes import Drawing
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.candidate import Candidate, VacancyCandidate
 from app.models.job_vacancy import JobVacancy
-from app.models.candidate import VacancyCandidate, Candidate
 from app.models.recruitment_stages import CandidateStageHistory
 
 logger = logging.getLogger(__name__)
@@ -63,7 +60,7 @@ class JobReportService:
             textColor=colors.HexColor('#0f3460')
         ))
     
-    async def _get_job_vacancy(self, job_id: UUID, company_id: str, db: AsyncSession) -> Optional[JobVacancy]:
+    async def _get_job_vacancy(self, job_id: UUID, company_id: str, db: AsyncSession) -> JobVacancy | None:
         """Get job vacancy with multi-tenancy check."""
         result = await db.execute(
             select(JobVacancy).where(
@@ -72,7 +69,7 @@ class JobReportService:
         )
         return result.scalar_one_or_none()
     
-    async def _get_funnel_data(self, job_id: UUID, db: AsyncSession) -> Dict[str, Any]:
+    async def _get_funnel_data(self, job_id: UUID, db: AsyncSession) -> dict[str, Any]:
         """Get funnel metrics for a job vacancy."""
         stage_counts_result = await db.execute(
             select(
@@ -110,7 +107,7 @@ class JobReportService:
             'conversion_rates': self._calculate_conversion_rates(funnel, total)
         }
     
-    def _calculate_conversion_rates(self, funnel: Dict[str, int], total: int) -> Dict[str, float]:
+    def _calculate_conversion_rates(self, funnel: dict[str, int], total: int) -> dict[str, float]:
         """Calculate conversion rates for each stage."""
         if total == 0:
             return {stage: 0.0 for stage in funnel}
@@ -124,7 +121,7 @@ class JobReportService:
                 previous = count
         return rates
     
-    async def _get_source_analysis(self, job_id: UUID, db: AsyncSession) -> List[Dict[str, Any]]:
+    async def _get_source_analysis(self, job_id: UUID, db: AsyncSession) -> list[dict[str, Any]]:
         """Get source distribution for candidates."""
         result = await db.execute(
             select(
@@ -137,7 +134,7 @@ class JobReportService:
         )
         return [{"source": row.source or "Unknown", "count": row.count} for row in result.all()]
     
-    async def _get_time_metrics(self, job_id: UUID, db: AsyncSession) -> Dict[str, float]:
+    async def _get_time_metrics(self, job_id: UUID, db: AsyncSession) -> dict[str, float]:
         """Get average time in each stage."""
         result = await db.execute(
             select(
@@ -154,7 +151,7 @@ class JobReportService:
                 time_metrics[row.from_stage_name] = round(row.avg_hours / 24, 1)
         return time_metrics
     
-    async def _get_candidates_list(self, job_id: UUID, db: AsyncSession) -> List[Dict[str, Any]]:
+    async def _get_candidates_list(self, job_id: UUID, db: AsyncSession) -> list[dict[str, Any]]:
         """Get list of candidates for a job vacancy."""
         result = await db.execute(
             select(VacancyCandidate, Candidate)
@@ -178,7 +175,7 @@ class JobReportService:
             })
         return candidates
     
-    def _create_pie_chart(self, data: List[Dict[str, Any]], width: int = 300, height: int = 200) -> Drawing:
+    def _create_pie_chart(self, data: list[dict[str, Any]], width: int = 300, height: int = 200) -> Drawing:
         """Create a pie chart for source distribution."""
         drawing = Drawing(width, height)
         pie = Pie()
@@ -205,7 +202,7 @@ class JobReportService:
         drawing.add(pie)
         return drawing
     
-    def _create_pdf_table(self, data: List[List[str]], col_widths: Optional[List[float]] = None) -> Table:
+    def _create_pdf_table(self, data: list[list[str]], col_widths: list[float] | None = None) -> Table:
         """Create a styled PDF table."""
         table = Table(data, colWidths=col_widths)
         table.setStyle(TableStyle([
@@ -251,9 +248,9 @@ class JobReportService:
     def _generate_funnel_pdf(
         self,
         job: JobVacancy,
-        funnel_data: Dict[str, Any],
-        source_data: List[Dict[str, Any]],
-        time_metrics: Dict[str, float]
+        funnel_data: dict[str, Any],
+        source_data: list[dict[str, Any]],
+        time_metrics: dict[str, float]
     ) -> io.BytesIO:
         """Generate PDF funnel report."""
         buffer = io.BytesIO()
@@ -326,9 +323,9 @@ class JobReportService:
     def _generate_funnel_excel(
         self,
         job: JobVacancy,
-        funnel_data: Dict[str, Any],
-        source_data: List[Dict[str, Any]],
-        time_metrics: Dict[str, float]
+        funnel_data: dict[str, Any],
+        source_data: list[dict[str, Any]],
+        time_metrics: dict[str, float]
     ) -> io.BytesIO:
         """Generate Excel funnel report."""
         wb = Workbook()
@@ -453,10 +450,10 @@ class JobReportService:
     def _generate_analytics_pdf(
         self,
         job: JobVacancy,
-        funnel_data: Dict[str, Any],
-        source_data: List[Dict[str, Any]],
-        time_metrics: Dict[str, float],
-        candidates: List[Dict[str, Any]]
+        funnel_data: dict[str, Any],
+        source_data: list[dict[str, Any]],
+        time_metrics: dict[str, float],
+        candidates: list[dict[str, Any]]
     ) -> io.BytesIO:
         """Generate PDF analytics report."""
         buffer = io.BytesIO()
@@ -563,10 +560,10 @@ class JobReportService:
     def _generate_analytics_excel(
         self,
         job: JobVacancy,
-        funnel_data: Dict[str, Any],
-        source_data: List[Dict[str, Any]],
-        time_metrics: Dict[str, float],
-        candidates: List[Dict[str, Any]]
+        funnel_data: dict[str, Any],
+        source_data: list[dict[str, Any]],
+        time_metrics: dict[str, float],
+        candidates: list[dict[str, Any]]
     ) -> io.BytesIO:
         """Generate Excel analytics report."""
         wb = Workbook()
@@ -712,7 +709,7 @@ class JobReportService:
         else:
             return self._generate_candidates_excel(job, candidates)
     
-    def _generate_candidates_pdf(self, job: JobVacancy, candidates: List[Dict[str, Any]]) -> io.BytesIO:
+    def _generate_candidates_pdf(self, job: JobVacancy, candidates: list[dict[str, Any]]) -> io.BytesIO:
         """Generate PDF candidate list."""
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*cm, bottomMargin=1*cm)
@@ -744,7 +741,7 @@ class JobReportService:
         buffer.seek(0)
         return buffer
     
-    def _generate_candidates_excel(self, job: JobVacancy, candidates: List[Dict[str, Any]]) -> io.BytesIO:
+    def _generate_candidates_excel(self, job: JobVacancy, candidates: list[dict[str, Any]]) -> io.BytesIO:
         """Generate Excel candidate list."""
         wb = Workbook()
         ws = wb.active

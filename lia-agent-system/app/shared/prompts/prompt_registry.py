@@ -5,10 +5,10 @@ This module provides a centralized registry for managing prompts with version co
 allowing tracking of changes, comparing versions, and retrieving specific versions.
 """
 
-from typing import Dict, List, Optional, Any
-from datetime import datetime
-from dataclasses import dataclass, field
 import difflib
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -20,7 +20,7 @@ class PromptVersion:
     author: str
     changelog: str
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return {
             "version": self.version,
@@ -36,11 +36,11 @@ class PromptMetadata:
     """Metadata for a prompt across all versions."""
     name: str
     description: str = ""
-    agent_number: Optional[int] = None
-    versions: Dict[str, PromptVersion] = field(default_factory=dict)
+    agent_number: int | None = None
+    versions: dict[str, PromptVersion] = field(default_factory=dict)
     
     @property
-    def latest_version(self) -> Optional[str]:
+    def latest_version(self) -> str | None:
         """Get the latest version string."""
         if not self.versions:
             return None
@@ -60,7 +60,7 @@ class PromptRegistry:
     """Registro centralizado de prompts com versionamento."""
     
     def __init__(self):
-        self._prompts: Dict[str, PromptMetadata] = {}
+        self._prompts: dict[str, PromptMetadata] = {}
         self._initialized: bool = False
     
     def register_prompt(
@@ -71,7 +71,7 @@ class PromptRegistry:
         author: str = "system",
         changelog: str = "Initial version",
         description: str = "",
-        agent_number: Optional[int] = None
+        agent_number: int | None = None
     ) -> None:
         """
         Registra nova versão de prompt.
@@ -107,7 +107,7 @@ class PromptRegistry:
         if agent_number is not None:
             self._prompts[name].agent_number = agent_number
     
-    def get_prompt(self, name: str, version: str = "latest") -> Optional[str]:
+    def get_prompt(self, name: str, version: str = "latest") -> str | None:
         """
         Retorna prompt por nome e versão.
         
@@ -131,7 +131,7 @@ class PromptRegistry:
         prompt_version = metadata.versions.get(version)
         return prompt_version.content if prompt_version else None
     
-    def get_prompt_version(self, name: str, version: str = "latest") -> Optional[PromptVersion]:
+    def get_prompt_version(self, name: str, version: str = "latest") -> PromptVersion | None:
         """
         Retorna objeto PromptVersion completo.
         
@@ -154,7 +154,7 @@ class PromptRegistry:
         
         return metadata.versions.get(version)
     
-    def get_all_versions(self, name: str) -> List[str]:
+    def get_all_versions(self, name: str) -> list[str]:
         """
         Lista todas as versões de um prompt.
         
@@ -170,7 +170,7 @@ class PromptRegistry:
         versions = list(self._prompts[name].versions.keys())
         return sorted(versions, key=PromptMetadata._parse_version)
     
-    def get_catalog(self) -> Dict[str, Any]:
+    def get_catalog(self) -> dict[str, Any]:
         """
         Retorna catálogo completo de prompts.
         
@@ -194,7 +194,7 @@ class PromptRegistry:
         
         return catalog
     
-    def compare_versions(self, name: str, v1: str, v2: str) -> Dict[str, Any]:
+    def compare_versions(self, name: str, v1: str, v2: str) -> dict[str, Any]:
         """
         Compara duas versões de um prompt.
         
@@ -255,7 +255,7 @@ class PromptRegistry:
             }
         }
     
-    def list_prompts(self) -> List[str]:
+    def list_prompts(self) -> list[str]:
         """
         Lista todos os nomes de prompts registrados.
         
@@ -264,7 +264,7 @@ class PromptRegistry:
         """
         return list(self._prompts.keys())
     
-    def get_prompt_metadata(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_prompt_metadata(self, name: str) -> dict[str, Any] | None:
         """
         Retorna metadata de um prompt específico.
         
@@ -308,21 +308,21 @@ def init_prompts() -> None:
         return
     
     from app.shared.prompts.agent_prompts import (
-        ORCHESTRATOR_PROMPT,
-        JOB_PLANNER_PROMPT,
-        SOURCING_PROMPT,
-        CV_SCREENING_PROMPT,
-        INTERVIEWER_PROMPT,
-        WSI_EVALUATOR_PROMPT,
-        SCHEDULING_PROMPT,
         ANALYST_FEEDBACK_PROMPT,
         ATS_INTEGRATOR_PROMPT,
-        RECRUITER_ASSISTANT_PROMPT,
-        PROACTIVE_INSIGHTS_PROMPT,
-        LIA_PERSONA,
-        HR_VOCABULARY,
+        CV_SCREENING_PROMPT,
         DATA_PERSISTENCE_GUIDELINES,
         ETHICAL_GUIDELINES,
+        HR_VOCABULARY,
+        INTERVIEWER_PROMPT,
+        JOB_PLANNER_PROMPT,
+        LIA_PERSONA,
+        ORCHESTRATOR_PROMPT,
+        PROACTIVE_INSIGHTS_PROMPT,
+        RECRUITER_ASSISTANT_PROMPT,
+        SCHEDULING_PROMPT,
+        SOURCING_PROMPT,
+        WSI_EVALUATOR_PROMPT,
     )
     
     prompt_registry.register_prompt(
@@ -474,7 +474,7 @@ def init_prompts() -> None:
     prompt_registry.mark_initialized()
 
 
-def get_prompt_from_registry(name: str, version: str = "latest", context: str = "") -> Optional[str]:
+def get_prompt_from_registry(name: str, version: str = "latest", context: str = "") -> str | None:
     """
     Convenience function to get a prompt with context substitution.
     

@@ -1,9 +1,9 @@
 """ATS Integration Tools — LIA Sprint 3 T03
 Bidirectional sync with external ATS platforms (Gupy, Greenhouse, Workday, Lever, etc.)
 """
-import uuid
 import logging
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 
 from langchain_core.tools import tool
 
@@ -64,7 +64,7 @@ def export_decision_to_ats(
         "candidate_id": external_candidate_id,
         "decision": decision,
         "notes": notes,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -132,7 +132,7 @@ def create_candidate_in_ats(ats_name: str, candidate_data: str) -> dict:
         "external_id": external_id,
         "ats_name": ats_name,
         "status": "created",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -154,7 +154,7 @@ def get_ats_sync_status(ats_name: str) -> dict:
     return {
         "ats_name": ats_name,
         "status": "connected",
-        "last_sync": datetime.now(timezone.utc).isoformat(),
+        "last_sync": datetime.now(UTC).isoformat(),
         "records_synced": 142,
         "simulation_stub": True,
     }
@@ -183,5 +183,5 @@ def bulk_sync_applications(ats_name: str, job_id: str) -> dict:
         "errors": [],
         "status": "completed",
         "simulation_stub": True,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }

@@ -7,15 +7,15 @@ GET  /api/v1/ml-feedback/weights    — retorna pesos adaptativos por vaga
 Requer X-Company-ID header.
 """
 import logging
-from typing import Dict, Literal, Optional
+from typing import Literal
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
 
 from app.core.database import get_db
-from app.services.ml_feedback_service import MLFeedbackService, FeedbackSignal
+from app.services.ml_feedback_service import FeedbackSignal, MLFeedbackService
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/ml-feedback", tags=["ml-feedback"])
 
 
 def _require_company_id(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
     if not x_company_id:
         raise HTTPException(
@@ -49,8 +49,8 @@ class FeedbackSignalRequest(BaseModel):
     job_id: str
     ai_score: float = Field(..., ge=0, le=100)
     recruiter_decision: Literal["hire", "reject", "override_approve", "override_reject"]
-    recruiter_score: Optional[float] = Field(None, ge=0, le=100)
-    dimension_overrides: Dict[str, float] = Field(default_factory=dict)
+    recruiter_score: float | None = Field(None, ge=0, le=100)
+    dimension_overrides: dict[str, float] = Field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------

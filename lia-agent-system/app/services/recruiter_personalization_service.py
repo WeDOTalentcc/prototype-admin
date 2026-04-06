@@ -10,23 +10,24 @@ This service enables personalized wizard experience based on:
 When a recruiter has 10+ jobs created, personalization becomes available
 with custom defaults, thresholds, and flow adaptations.
 """
-from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field as dataclass_field
 import logging
 import statistics
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
+from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, func, and_, update
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.feedback_learning import WizardFeedback
 from app.models.recruiter_profile import (
-    RecruiterProfile,
-    RecruiterFieldPreference,
-    ProfileCalculationLog,
     PersonalizationSettings,
+    ProfileCalculationLog,
+    RecruiterFieldPreference,
+    RecruiterProfile,
 )
-from app.models.feedback_learning import WizardFeedback, JobOutcome
 from app.services.confidence_policy_service import ConfidenceThresholds
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ PROFILE_RECALCULATION_HOURS = 24
 class PersonalizedThresholds:
     """Personalized confidence thresholds for a recruiter."""
     base_thresholds: ConfidenceThresholds
-    field_overrides: Dict[str, float] = dataclass_field(default_factory=dict)
+    field_overrides: dict[str, float] = dataclass_field(default_factory=dict)
     reason: str = "default"
 
 
@@ -58,11 +59,11 @@ class WizardFlowConfig:
 @dataclass
 class PersonalizedDefaults:
     """Personalized default values for wizard."""
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    work_model: Optional[str] = None
+    seniority: str | None = None
+    department: str | None = None
+    work_model: str | None = None
     salary_adjustment: float = 1.0
-    suggested_skills: List[str] = dataclass_field(default_factory=list)
+    suggested_skills: list[str] = dataclass_field(default_factory=list)
 
 
 @dataclass
@@ -71,14 +72,14 @@ class PersonalizationContext:
     recruiter_id: str
     is_new_user: bool = True
     personalization_level: str = "none"
-    profile: Optional[RecruiterProfile] = None
-    settings: Optional[PersonalizationSettings] = None
+    profile: RecruiterProfile | None = None
+    settings: PersonalizationSettings | None = None
     flow_config: WizardFlowConfig = dataclass_field(default_factory=WizardFlowConfig)
     thresholds: PersonalizedThresholds = dataclass_field(
         default_factory=lambda: PersonalizedThresholds(base_thresholds=ConfidenceThresholds())
     )
     defaults: PersonalizedDefaults = dataclass_field(default_factory=PersonalizedDefaults)
-    field_preferences: Dict[str, RecruiterFieldPreference] = dataclass_field(default_factory=dict)
+    field_preferences: dict[str, RecruiterFieldPreference] = dataclass_field(default_factory=dict)
 
 
 class RecruiterPersonalizationService:
@@ -187,7 +188,7 @@ class RecruiterPersonalizationService:
     def _build_thresholds(
         self,
         profile: RecruiterProfile,
-        field_preferences: Dict[str, RecruiterFieldPreference]
+        field_preferences: dict[str, RecruiterFieldPreference]
     ) -> PersonalizedThresholds:
         """Build personalized thresholds from profile and field preferences."""
         base = ConfidenceThresholds()
@@ -252,13 +253,13 @@ class RecruiterPersonalizationService:
         recruiter_id: str,
         company_id: str,
         event_type: str,
-        field_name: Optional[str] = None,
-        job_id: Optional[UUID] = None,
+        field_name: str | None = None,
+        job_id: UUID | None = None,
         suggested_value: Any = None,
         final_value: Any = None,
-        context: Optional[Dict[str, Any]] = None,
-        time_to_decision_ms: Optional[int] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        time_to_decision_ms: int | None = None
+    ) -> dict[str, Any]:
         """
         Record a personalization event for learning.
         
@@ -357,7 +358,7 @@ class RecruiterPersonalizationService:
         self,
         db: AsyncSession,
         recruiter_id: str
-    ) -> Optional[RecruiterProfile]:
+    ) -> RecruiterProfile | None:
         """
         Recalculate recruiter profile from events and feedback.
         
@@ -387,10 +388,10 @@ class RecruiterPersonalizationService:
             feedbacks = list(feedback_result.scalars().all())
             
             job_ids = set()
-            seniorities: Dict[str, int] = {}
-            departments: Dict[str, int] = {}
-            field_corrections: Dict[str, int] = {}
-            field_totals: Dict[str, int] = {}
+            seniorities: dict[str, int] = {}
+            departments: dict[str, int] = {}
+            field_corrections: dict[str, int] = {}
+            field_totals: dict[str, int] = {}
             creation_times = []
             
             for fb in feedbacks:
@@ -437,7 +438,7 @@ class RecruiterPersonalizationService:
             profile.correction_patterns = correction_rates
             
             total_corrections = sum(field_corrections.values())
-            total_interactions = sum(field_totals.values())
+            sum(field_totals.values())
             profile.total_corrections_made = total_corrections
             
             quick_decisions = sum(
@@ -483,11 +484,11 @@ class RecruiterPersonalizationService:
         self,
         db: AsyncSession,
         recruiter_id: str,
-        enable_personalization: Optional[bool] = None,
-        enable_learning: Optional[bool] = None,
-        learn_from_corrections: Optional[bool] = None,
-        show_personalization_indicators: Optional[bool] = None,
-        consent_version: Optional[str] = None
+        enable_personalization: bool | None = None,
+        enable_learning: bool | None = None,
+        learn_from_corrections: bool | None = None,
+        show_personalization_indicators: bool | None = None,
+        consent_version: str | None = None
     ) -> PersonalizationSettings:
         """Update personalization settings for a recruiter."""
         query = select(PersonalizationSettings).where(
@@ -519,7 +520,7 @@ class RecruiterPersonalizationService:
         self,
         db: AsyncSession,
         recruiter_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get a summary of personalization status for a recruiter."""
         query = select(RecruiterProfile).where(
             RecruiterProfile.recruiter_id == recruiter_id

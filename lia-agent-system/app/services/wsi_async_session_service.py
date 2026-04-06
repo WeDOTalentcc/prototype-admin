@@ -4,11 +4,12 @@ O candidato acessa o chat web e responde no seu próprio ritmo (sem pressão de 
 Timeout padrão: 48h. Re-engajamento automático via followup_service.
 """
 from __future__ import annotations
+
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ class WSIAsyncSessionService:
         # Persistir no Redis com TTL
         try:
             import json
+
             import redis
             from lia_config.config import settings
             _r = redis.from_url(settings.REDIS_URL)
@@ -70,8 +72,9 @@ class WSIAsyncSessionService:
 
         # Persistir no banco (via wsi_sessions model se existir)
         try:
-            from app.models.wsi_session import WSISession
             from sqlalchemy import insert
+
+            from app.models.wsi_session import WSISession
             await db.execute(
                 insert(WSISession).values(
                     id=session_id,
@@ -93,10 +96,11 @@ class WSIAsyncSessionService:
         )
         return session_id
 
-    async def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+    async def get_session(self, session_id: str) -> dict[str, Any] | None:
         """Busca sessão no Redis. Retorna None se expirada ou não encontrada."""
         try:
             import json
+
             import redis
             from lia_config.config import settings
             _r = redis.from_url(settings.REDIS_URL)
@@ -130,6 +134,7 @@ class WSIAsyncSessionService:
 
         try:
             import json
+
             import redis
             from lia_config.config import settings
             _r = redis.from_url(settings.REDIS_URL)
@@ -147,9 +152,9 @@ class WSIAsyncSessionService:
     async def check_expired_sessions(self, db: Any) -> int:
         """Verifica e marca sessões expiradas. Retorna count de sessões processadas."""
         try:
+            from sqlalchemy import and_, update
+
             from app.models.wsi_session import WSISession
-            from sqlalchemy import update
-            from sqlalchemy import and_
 
             expired_at = datetime.utcnow() - timedelta(hours=WSI_SESSION_TIMEOUT_HOURS)
             result = await db.execute(

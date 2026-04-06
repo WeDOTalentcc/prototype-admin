@@ -4,12 +4,17 @@ RecruiterDecisionFeedback — D6 (ML Feedback Loop)
 Armazena decisões dos recrutadores sobre candidatos para calibração adaptativa.
 """
 from __future__ import annotations
+
 import enum
-from datetime import datetime
-from sqlalchemy import Column, String, Float, DateTime, Enum as SAEnum, Index
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Float, Index, String
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import UUID
+
 from app.core.database import Base
+
 
 class RecruiterDecision(str, enum.Enum):
     approved = "approved"

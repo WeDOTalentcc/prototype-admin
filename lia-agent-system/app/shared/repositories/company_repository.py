@@ -1,14 +1,12 @@
 """
 Company Repository - Database access for CompanyProfile model.
 """
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 import logging
 
 from sqlalchemy import select
 
-from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 from app.models.company import CompanyProfile
+from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +16,7 @@ class CompanyRepository(SQLAlchemyRepository[CompanyProfile]):
     
     model_class = CompanyProfile
     
-    async def get_default(self, db) -> Optional[CompanyProfile]:
+    async def get_default(self, db) -> CompanyProfile | None:
         """Get the default company profile."""
         query = select(self.model_class).where(
             self.model_class.is_default == True
@@ -30,7 +28,7 @@ class CompanyRepository(SQLAlchemyRepository[CompanyProfile]):
             self.model_class.is_default == True
         ).first()
     
-    async def find_by_name(self, db, name: str) -> Optional[CompanyProfile]:
+    async def find_by_name(self, db, name: str) -> CompanyProfile | None:
         """Find a company profile by name."""
         query = select(self.model_class).where(
             self.model_class.name == name

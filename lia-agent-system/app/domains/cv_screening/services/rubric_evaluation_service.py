@@ -10,30 +10,28 @@ Enhanced Features (v2.0):
 - Variation logging to detect LLM inconsistencies
 - Calibration system with recruiter feedback
 """
-import logging
-import json
 import asyncio
 import hashlib
+import json
+import logging
 import os
 import time
-from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timedelta
-from uuid import UUID
+from typing import Any
 
-from app.services.llm import LLMService
-from app.services.notification_service import NotificationService, NotificationType, NotificationChannel
-from app.models.rubric import RequirementPriority, EvaluationLevel
 from app.schemas.rubric import (
-    RequirementEvaluation,
-    RubricEvaluationResult,
-    JobRequirementCreate,
     EvaluationLevelEnum,
-    RequirementPriorityEnum,
-    LegacyScoreWrapper,
     EvidenceType,
+    JobRequirementCreate,
+    LegacyScoreWrapper,
+    RequirementEvaluation,
+    RequirementPriorityEnum,
+    RubricEvaluationResult,
 )
-from app.shared.compliance.fairness_guard import FairnessGuard
+from app.services.llm import LLMService
+from app.services.notification_service import NotificationChannel, NotificationService, NotificationType
 from app.services.sector_benchmark_service import sector_benchmark_service
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
@@ -53,12 +51,12 @@ class RubricEvaluationCache:
     """
     
     def __init__(self, ttl_hours: int = CACHE_TTL_HOURS):
-        self._cache: Dict[str, Tuple[RubricEvaluationResult, datetime]] = {}
+        self._cache: dict[str, tuple[RubricEvaluationResult, datetime]] = {}
         self._ttl = timedelta(hours=ttl_hours)
-        self._variation_log: List[Dict[str, Any]] = []
+        self._variation_log: list[dict[str, Any]] = []
         self._lock = threading.RLock()
     
-    def _extract_stable_candidate_fields(self, candidate_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_stable_candidate_fields(self, candidate_data: dict[str, Any]) -> dict[str, Any]:
         """Extract only stable fields from candidate data for cache key generation."""
         stable_fields = [
             "id", "candidate_id", "name", "email",
@@ -71,10 +69,10 @@ class RubricEvaluationCache:
     
     def _generate_cache_key(
         self, 
-        candidate_data: Dict[str, Any], 
-        requirements: List[Any],
-        job_id: Optional[str] = None,
-        calibration_version: Optional[int] = None
+        candidate_data: dict[str, Any], 
+        requirements: list[Any],
+        job_id: str | None = None,
+        calibration_version: int | None = None
     ) -> str:
         """Generate a unique hash key for candidate + requirements + job + calibration version."""
         stable_data = self._extract_stable_candidate_fields(candidate_data)
@@ -100,10 +98,10 @@ class RubricEvaluationCache:
     
     def get(
         self, 
-        candidate_data: Dict[str, Any], 
-        requirements: List[Any],
-        calibration_version: Optional[int] = None
-    ) -> Optional[RubricEvaluationResult]:
+        candidate_data: dict[str, Any], 
+        requirements: list[Any],
+        calibration_version: int | None = None
+    ) -> RubricEvaluationResult | None:
         """Get cached evaluation if exists and not expired. Thread-safe.
         
         Args:
@@ -128,10 +126,10 @@ class RubricEvaluationCache:
     
     def set(
         self, 
-        candidate_data: Dict[str, Any], 
-        requirements: List[Any],
+        candidate_data: dict[str, Any], 
+        requirements: list[Any],
         result: RubricEvaluationResult,
-        calibration_version: Optional[int] = None
+        calibration_version: int | None = None
     ) -> None:
         """Cache an evaluation result. Thread-safe.
         
@@ -179,7 +177,7 @@ class RubricEvaluationCache:
                 f"for candidate={candidate_id}, job={job_id}"
             )
     
-    def get_variation_log(self) -> List[Dict[str, Any]]:
+    def get_variation_log(self) -> list[dict[str, Any]]:
         """Get the variation log for analysis. Thread-safe."""
         with self._lock:
             return self._variation_log.copy()
@@ -207,8 +205,8 @@ class CalibrationFeedback:
     """
     
     def __init__(self):
-        self._feedback_log: List[Dict[str, Any]] = []
-        self._calibration_adjustments: Dict[str, Dict[str, Any]] = {}
+        self._feedback_log: list[dict[str, Any]] = []
+        self._calibration_adjustments: dict[str, dict[str, Any]] = {}
         self._lock = threading.RLock()
     
     def get_calibration_version(self, job_id: str) -> int:
@@ -224,9 +222,9 @@ class CalibrationFeedback:
         candidate_id: str,
         job_id: str,
         original_score: float,
-        recruiter_adjusted_score: Optional[float],
+        recruiter_adjusted_score: float | None,
         recruiter_decision: str,
-        feedback_notes: Optional[str] = None
+        feedback_notes: str | None = None
     ) -> None:
         """
         Record recruiter feedback on an evaluation. Thread-safe.
@@ -294,7 +292,7 @@ class CalibrationFeedback:
             data = self._calibration_adjustments.get(key)
             return data["avg"] if data else 0.0
     
-    def get_feedback_stats(self, job_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_feedback_stats(self, job_id: str | None = None) -> dict[str, Any]:
         """Get statistics about feedback for analysis. Thread-safe."""
         with self._lock:
             filtered = self._feedback_log.copy()
@@ -421,10 +419,10 @@ class RubricEvaluationService:
         "likely", "presumably", "it seems", "one could infer",
     ]
 
-    def __init__(self, llm_service: Optional[LLMService] = None):
+    def __init__(self, llm_service: LLMService | None = None):
         self.llm_service = llm_service or LLMService()
     
-    def _format_requirements_for_prompt(self, requirements: List[JobRequirementCreate]) -> str:
+    def _format_requirements_for_prompt(self, requirements: list[JobRequirementCreate]) -> str:
         """Format requirements for the LLM prompt."""
         lines = []
         for i, req in enumerate(requirements, 1):
@@ -440,7 +438,7 @@ class RubricEvaluationService:
         
         return "\n".join(lines)
     
-    def _extract_cv_content(self, candidate_data: Dict[str, Any]) -> str:
+    def _extract_cv_content(self, candidate_data: dict[str, Any]) -> str:
         """Extract relevant CV content from candidate data."""
         parts = []
         
@@ -522,7 +520,7 @@ class RubricEvaluationService:
         
         return "\n".join(parts)
 
-    async def _format_criteria_examples(self, requirements: List[JobRequirementCreate]) -> str:
+    async def _format_criteria_examples(self, requirements: list[JobRequirementCreate]) -> str:
         """Format evaluation criteria examples for prompt injection."""
         try:
             from app.core.database import AsyncSessionLocal
@@ -561,7 +559,7 @@ class RubricEvaluationService:
         evidence_lower = evidence.lower()
         return any(indicator in evidence_lower for indicator in self.VAGUE_LANGUAGE_INDICATORS)
 
-    def _detect_anomalies(self, evaluations: List[RequirementEvaluation], candidate_data: Dict[str, Any]) -> List[str]:
+    def _detect_anomalies(self, evaluations: list[RequirementEvaluation], candidate_data: dict[str, Any]) -> list[str]:
         """Check for logical inconsistencies in evaluations."""
         anomalies = []
         skills = candidate_data.get("technical_skills") or candidate_data.get("skills", [])
@@ -590,7 +588,7 @@ class RubricEvaluationService:
 
         return anomalies
 
-    def _check_essential_exclusion(self, evaluations: List[RequirementEvaluation]) -> Tuple[bool, List[str]]:
+    def _check_essential_exclusion(self, evaluations: list[RequirementEvaluation]) -> tuple[bool, list[str]]:
         """Check if candidate should be auto-excluded based on essential requirements."""
         exclusion_reasons = []
 
@@ -611,8 +609,8 @@ class RubricEvaluationService:
     def _parse_llm_response(
         self, 
         response: str, 
-        requirements: List[JobRequirementCreate]
-    ) -> Tuple[List[RequirementEvaluation], List[str], List[str], str]:
+        requirements: list[JobRequirementCreate]
+    ) -> tuple[list[RequirementEvaluation], list[str], list[str], str]:
         """Parse LLM response into structured evaluation data."""
         try:
             response = response.strip()
@@ -626,7 +624,7 @@ class RubricEvaluationService:
             data = json.loads(response.strip())
             
             evaluations = []
-            req_map = {req.requirement.lower(): req for req in requirements}
+            {req.requirement.lower(): req for req in requirements}
             
             for eval_data in data.get("evaluations", []):
                 req_text = eval_data.get("requirement", "")
@@ -709,8 +707,8 @@ class RubricEvaluationService:
     
     def _fallback_evaluation(
         self, 
-        requirements: List[JobRequirementCreate]
-    ) -> Tuple[List[RequirementEvaluation], List[str], List[str], str]:
+        requirements: list[JobRequirementCreate]
+    ) -> tuple[list[RequirementEvaluation], list[str], list[str], str]:
         """Generate fallback evaluation when LLM fails."""
         evaluations = []
         
@@ -749,7 +747,7 @@ class RubricEvaluationService:
         EvidenceType.INFERRED: 0.3,
     }
 
-    def _calculate_score(self, evaluations: List[RequirementEvaluation]) -> Tuple[float, float, float, float]:
+    def _calculate_score(self, evaluations: list[RequirementEvaluation]) -> tuple[float, float, float, float]:
         """Calculate the rubric score from evaluations using André's methodology.
         
         André's Formula:
@@ -790,7 +788,7 @@ class RubricEvaluationService:
         prompt: str,
         max_retries: int = 3,
         initial_delay: float = 1.0,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Call LLM with retry logic and fallback to different providers.
         
@@ -833,8 +831,8 @@ class RubricEvaluationService:
 
     async def evaluate_candidate(
         self,
-        candidate_data: Dict[str, Any],
-        requirements: List[JobRequirementCreate],
+        candidate_data: dict[str, Any],
+        requirements: list[JobRequirementCreate],
         use_cache: bool = True,
         force_refresh: bool = False,
     ) -> RubricEvaluationResult:
@@ -1060,10 +1058,10 @@ class RubricEvaluationService:
     
     async def batch_evaluate(
         self,
-        candidates: List[Dict[str, Any]],
-        requirements: List[JobRequirementCreate],
+        candidates: list[dict[str, Any]],
+        requirements: list[JobRequirementCreate],
         sort_by_score: bool = True,
-    ) -> List[Tuple[Dict[str, Any], RubricEvaluationResult]]:
+    ) -> list[tuple[dict[str, Any], RubricEvaluationResult]]:
         """
         Evaluate multiple candidates against the same job requirements.
         
@@ -1136,15 +1134,15 @@ class RubricEvaluationService:
         self,
         candidate_id: str,
         candidate_name: str,
-        candidate_data: Dict[str, Any],
+        candidate_data: dict[str, Any],
         job_id: str,
         job_title: str,
-        job_code: Optional[str],
-        requirements: List[JobRequirementCreate],
+        job_code: str | None,
+        requirements: list[JobRequirementCreate],
         company_id: str,
-        created_by: Optional[str] = None,
+        created_by: str | None = None,
         db=None,
-    ) -> Optional[RubricEvaluationResult]:
+    ) -> RubricEvaluationResult | None:
         """
         Evaluate a candidate against job requirements and create an activity feed entry.
 
@@ -1306,9 +1304,9 @@ class RubricEvaluationService:
         candidate_id: str,
         job_id: str,
         original_score: float,
-        recruiter_adjusted_score: Optional[float] = None,
+        recruiter_adjusted_score: float | None = None,
         recruiter_decision: str = "needs_review",
-        feedback_notes: Optional[str] = None
+        feedback_notes: str | None = None
     ) -> None:
         """
         Record recruiter feedback for calibration.
@@ -1332,15 +1330,15 @@ class RubricEvaluationService:
             feedback_notes=feedback_notes
         )
     
-    def get_calibration_stats(self, job_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_calibration_stats(self, job_id: str | None = None) -> dict[str, Any]:
         """Get calibration statistics for analysis."""
         return calibration_feedback.get_feedback_stats(job_id)
     
-    def get_variation_log(self) -> List[Dict[str, Any]]:
+    def get_variation_log(self) -> list[dict[str, Any]]:
         """Get the log of score variations for analysis."""
         return evaluation_cache.get_variation_log()
     
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         return {
             "cached_evaluations": len(evaluation_cache._cache),
@@ -1356,8 +1354,8 @@ class RubricEvaluationService:
     async def evaluate_candidate_cv(
         self,
         cv_content: str,
-        requirements: List[JobRequirementCreate],
-        job_id: Optional[str] = None,
+        requirements: list[JobRequirementCreate],
+        job_id: str | None = None,
     ) -> RubricEvaluationResult:
         """
         Evaluate raw CV text against job requirements.
@@ -1376,7 +1374,7 @@ class RubricEvaluationService:
             RubricEvaluationResult with score, evaluations, reasoning and
             fairness_warnings populated by FairnessGuard.
         """
-        candidate_data: Dict[str, Any] = {"cv_content": cv_content}
+        candidate_data: dict[str, Any] = {"cv_content": cv_content}
         if job_id:
             candidate_data["job_id"] = job_id
         return await self.evaluate_candidate(candidate_data, requirements, use_cache=False)

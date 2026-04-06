@@ -12,14 +12,15 @@ Includes:
 - POST /ai-suggestions/{suggestion_id}/approve
 - POST /ai-suggestions/{suggestion_id}/reject
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import Optional, List
-from datetime import datetime
 import logging
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+
 from ._shared import (
     BulkSuggestionRequest,
     RejectSuggestionRequest,
@@ -32,9 +33,9 @@ router = APIRouter()
 @router.get("/pending-suggestions")
 async def get_pending_suggestions(
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    vacancy_id: Optional[str] = Query(None, description="Filter by vacancy ID"),
-    suggestion_type: Optional[str] = Query(None, description="Filter by suggestion type"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    vacancy_id: str | None = Query(None, description="Filter by vacancy ID"),
+    suggestion_type: str | None = Query(None, description="Filter by suggestion type"),
     limit: int = Query(50, le=100, description="Maximum number of suggestions to return"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -82,7 +83,7 @@ async def get_pending_suggestions(
 async def approve_suggestion(
     suggestion_id: str,
     company_id: str = Query(..., description="Company ID for validation"),
-    reviewer_id: Optional[str] = Query(None, description="ID of the reviewer"),
+    reviewer_id: str | None = Query(None, description="ID of the reviewer"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -143,8 +144,8 @@ async def approve_suggestion(
 async def reject_suggestion(
     suggestion_id: str,
     company_id: str = Query(..., description="Company ID for validation"),
-    reviewer_id: Optional[str] = Query(None, description="ID of the reviewer"),
-    reason: Optional[str] = Query(None, description="Reason for rejection"),
+    reviewer_id: str | None = Query(None, description="ID of the reviewer"),
+    reason: str | None = Query(None, description="Reason for rejection"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -326,7 +327,7 @@ async def bulk_reject_suggestions(
 @router.get("/ai-suggestions/vacancy/{vacancy_id}")
 async def get_ai_suggestions_by_vacancy(
     vacancy_id: str,
-    status: Optional[str] = Query(None, description="Filter by status: pending, approved, rejected"),
+    status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -359,7 +360,7 @@ async def get_ai_suggestions_by_vacancy(
 @router.get("/ai-suggestions/candidate/{candidate_id}")
 async def get_ai_suggestions_by_candidate(
     candidate_id: str,
-    status: Optional[str] = Query(None, description="Filter by status: pending, approved, rejected"),
+    status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
     db: AsyncSession = Depends(get_db)
 ):
     """

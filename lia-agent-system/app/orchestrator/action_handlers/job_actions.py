@@ -5,15 +5,15 @@ Handles: pause_job, close_job, duplicate_job, reopen_job
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 async def execute_job_action(
     action_id: str,
-    params: Dict[str, Any],
-    context: Dict[str, Any],
+    params: dict[str, Any],
+    context: dict[str, Any],
 ):
     """Route job actions to specific handler."""
     if action_id == "pause_job":
@@ -27,11 +27,12 @@ async def execute_job_action(
     return None
 
 
-async def _pause_job(params: Dict[str, Any], context: Dict[str, Any]):
+async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id", "")
         job_title = params.get("job_title", "a vaga")
@@ -66,11 +67,12 @@ async def _pause_job(params: Dict[str, Any], context: Dict[str, Any]):
         return None
 
 
-async def _close_job(params: Dict[str, Any], context: Dict[str, Any]):
+async def _close_job(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id", "")
         job_title = params.get("job_title", "a vaga")
@@ -105,12 +107,14 @@ async def _close_job(params: Dict[str, Any], context: Dict[str, Any]):
         return None
 
 
-async def _duplicate_job(params: Dict[str, Any], context: Dict[str, Any]):
+async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import text
         import uuid as uuid_mod
+
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id", "")
         new_title = params.get("new_title", "")
@@ -182,11 +186,12 @@ async def _duplicate_job(params: Dict[str, Any], context: Dict[str, Any]):
         return None
 
 
-async def _reopen_job(params: Dict[str, Any], context: Dict[str, Any]):
+async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id", "")
         job_title = params.get("job_title", "a vaga")

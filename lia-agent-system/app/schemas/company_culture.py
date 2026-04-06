@@ -2,46 +2,46 @@
 Pydantic schemas for Company Culture Profile endpoints.
 """
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
 from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class CompanyCultureProfileBase(BaseModel):
-    mission: Optional[str] = None
-    vision: Optional[str] = None
-    values: List[str] = []
-    evp_bullets: List[str] = []
-    core_competencies: List[str] = []
-    culture_description: Optional[str] = None
+    mission: str | None = None
+    vision: str | None = None
+    values: list[str] = []
+    evp_bullets: list[str] = []
+    core_competencies: list[str] = []
+    culture_description: str | None = None
     website_url: str
-    linkedin_url: Optional[str] = None
-    analyzed_pages: List[str] = []
+    linkedin_url: str | None = None
+    analyzed_pages: list[str] = []
     openness_score: int = Field(default=50, ge=0, le=100)
     conscientiousness_score: int = Field(default=50, ge=0, le=100)
     extraversion_score: int = Field(default=50, ge=0, le=100)
     agreeableness_score: int = Field(default=50, ge=0, le=100)
     stability_score: int = Field(default=50, ge=0, le=100)
     
-    industry: Optional[str] = None
-    employee_count: Optional[str] = None  # e.g., "501-1000"
-    company_size: Optional[str] = None
-    headquarters: Optional[str] = None
-    locations: List[str] = []
-    founded_year: Optional[int] = None
+    industry: str | None = None
+    employee_count: str | None = None  # e.g., "501-1000"
+    company_size: str | None = None
+    headquarters: str | None = None
+    locations: list[str] = []
+    founded_year: int | None = None
     
-    work_model: Optional[str] = None
-    growth_opportunities: Optional[str] = None
-    team_dynamics: Optional[str] = None
-    leadership_style: Optional[str] = None
+    work_model: str | None = None
+    growth_opportunities: str | None = None
+    team_dynamics: str | None = None
+    leadership_style: str | None = None
     
-    dei_initiatives: Optional[str] = None
-    sustainability: Optional[str] = None
-    social_impact: Optional[str] = None
+    dei_initiatives: str | None = None
+    sustainability: str | None = None
+    social_impact: str | None = None
     
-    tech_stack: List[str] = []
-    engineering_culture: Optional[str] = None
-    default_languages: List[str] = []
+    tech_stack: list[str] = []
+    engineering_culture: str | None = None
+    default_languages: list[str] = []
 
 
 class CompanyCultureProfileCreate(CompanyCultureProfileBase):
@@ -51,38 +51,38 @@ class CompanyCultureProfileCreate(CompanyCultureProfileBase):
 
 
 class CompanyCultureProfileUpdate(BaseModel):
-    mission: Optional[str] = None
-    vision: Optional[str] = None
-    values: Optional[List[str]] = None
-    evp_bullets: Optional[List[str]] = None
-    core_competencies: Optional[List[str]] = None
-    culture_description: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    openness_score: Optional[int] = Field(default=None, ge=0, le=100)
-    conscientiousness_score: Optional[int] = Field(default=None, ge=0, le=100)
-    extraversion_score: Optional[int] = Field(default=None, ge=0, le=100)
-    agreeableness_score: Optional[int] = Field(default=None, ge=0, le=100)
-    stability_score: Optional[int] = Field(default=None, ge=0, le=100)
+    mission: str | None = None
+    vision: str | None = None
+    values: list[str] | None = None
+    evp_bullets: list[str] | None = None
+    core_competencies: list[str] | None = None
+    culture_description: str | None = None
+    linkedin_url: str | None = None
+    openness_score: int | None = Field(default=None, ge=0, le=100)
+    conscientiousness_score: int | None = Field(default=None, ge=0, le=100)
+    extraversion_score: int | None = Field(default=None, ge=0, le=100)
+    agreeableness_score: int | None = Field(default=None, ge=0, le=100)
+    stability_score: int | None = Field(default=None, ge=0, le=100)
     
-    industry: Optional[str] = None
-    employee_count: Optional[str] = None  # e.g., "501-1000"
-    company_size: Optional[str] = None
-    headquarters: Optional[str] = None
-    locations: Optional[List[str]] = None
-    founded_year: Optional[int] = None
+    industry: str | None = None
+    employee_count: str | None = None  # e.g., "501-1000"
+    company_size: str | None = None
+    headquarters: str | None = None
+    locations: list[str] | None = None
+    founded_year: int | None = None
     
-    work_model: Optional[str] = None
-    growth_opportunities: Optional[str] = None
-    team_dynamics: Optional[str] = None
-    leadership_style: Optional[str] = None
+    work_model: str | None = None
+    growth_opportunities: str | None = None
+    team_dynamics: str | None = None
+    leadership_style: str | None = None
     
-    dei_initiatives: Optional[str] = None
-    sustainability: Optional[str] = None
-    social_impact: Optional[str] = None
+    dei_initiatives: str | None = None
+    sustainability: str | None = None
+    social_impact: str | None = None
     
-    tech_stack: Optional[List[str]] = None
-    engineering_culture: Optional[str] = None
-    default_languages: Optional[List[str]] = None
+    tech_stack: list[str] | None = None
+    engineering_culture: str | None = None
+    default_languages: list[str] | None = None
 
 
 class CompanyCultureProfileResponse(CompanyCultureProfileBase):
@@ -107,15 +107,15 @@ class CultureAnalysisRequest(BaseModel):
 class CultureAnalysisDirectRequest(BaseModel):
     """Request for direct culture analysis without requiring company_id in database."""
     website_url: str
-    linkedin_url: Optional[str] = None
-    company_id: Optional[str] = None
+    linkedin_url: str | None = None
+    company_id: str | None = None
 
 
 class CultureAnalysisJobResponse(BaseModel):
     job_id: UUID
     status: str
     progress: int
-    current_step: Optional[str] = None
+    current_step: str | None = None
     message: str
 
 
@@ -123,13 +123,13 @@ class CultureAnalysisJobStatus(BaseModel):
     job_id: UUID
     status: str
     progress: int
-    current_step: Optional[str] = None
+    current_step: str | None = None
     pages_discovered: int = 0
     pages_scraped: int = 0
-    error_message: Optional[str] = None
-    result_profile_id: Optional[UUID] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    error_message: str | None = None
+    result_profile_id: UUID | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     created_at: datetime
     
     class Config:
@@ -145,39 +145,39 @@ class BigFiveOrgProfile(BaseModel):
 
 
 class CultureAnalysisResult(BaseModel):
-    mission: Optional[str] = None
-    vision: Optional[str] = None
-    values: List[str] = []
-    evp_bullets: List[str] = []
-    core_competencies: List[str] = []
-    culture_description: Optional[str] = None
+    mission: str | None = None
+    vision: str | None = None
+    values: list[str] = []
+    evp_bullets: list[str] = []
+    core_competencies: list[str] = []
+    culture_description: str | None = None
     big_five: BigFiveOrgProfile
-    linkedin_url: Optional[str] = None
-    analyzed_pages: List[str] = []
+    linkedin_url: str | None = None
+    analyzed_pages: list[str] = []
     confidence_score: float = Field(default=0.5, ge=0, le=1)
     
-    industry: Optional[str] = None
-    employee_count: Optional[str] = None  # e.g., "501-1000"
-    company_size: Optional[str] = None
-    headquarters: Optional[str] = None
-    locations: List[str] = []
-    founded_year: Optional[int] = None
+    industry: str | None = None
+    employee_count: str | None = None  # e.g., "501-1000"
+    company_size: str | None = None
+    headquarters: str | None = None
+    locations: list[str] = []
+    founded_year: int | None = None
     
-    work_model: Optional[str] = None
-    growth_opportunities: Optional[str] = None
-    team_dynamics: Optional[str] = None
-    leadership_style: Optional[str] = None
+    work_model: str | None = None
+    growth_opportunities: str | None = None
+    team_dynamics: str | None = None
+    leadership_style: str | None = None
     
-    dei_initiatives: Optional[str] = None
-    sustainability: Optional[str] = None
-    social_impact: Optional[str] = None
+    dei_initiatives: str | None = None
+    sustainability: str | None = None
+    social_impact: str | None = None
     
-    tech_stack: List[str] = []
-    engineering_culture: Optional[str] = None
+    tech_stack: list[str] = []
+    engineering_culture: str | None = None
 
 
 class ScrapedPageContent(BaseModel):
     url: str
-    title: Optional[str] = None
+    title: str | None = None
     content: str
     page_type: str

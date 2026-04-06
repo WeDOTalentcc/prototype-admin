@@ -3,23 +3,24 @@ Clients API Endpoints.
 
 Provides CRUD operations for client account management.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, text
-from sqlalchemy.orm.attributes import flag_modified
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
 
-from app.core.database import get_db
-from app.models.client_account import ClientAccount, ClientStatus, CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS
-from app.domains.job_management.services.template_seeder import clone_templates_for_client
-from app.services.workos_provisioning_service import provision_workos_organization
-from app.domains.communication.services.email_service import EmailService
-from app.services.hubspot_service import hubspot_service, sync_client_to_hubspot
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, func, or_, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
+
 from app.auth.workos_models import CompanyWorkOSConfig
+from app.core.database import get_db
+from app.domains.communication.services.email_service import EmailService
+from app.domains.job_management.services.template_seeder import clone_templates_for_client
+from app.models.client_account import CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS, ClientAccount, ClientStatus
+from app.services.hubspot_service import hubspot_service, sync_client_to_hubspot
+from app.services.workos_provisioning_service import provision_workos_organization
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,10 @@ router = APIRouter(prefix="/clients", tags=["clients"])
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """
     Get user context from request headers.
     Used for development and internal API calls.
@@ -51,67 +52,67 @@ def get_user_from_headers(
 
 class AddressSchema(BaseModel):
     """Address schema."""
-    street: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    zip: Optional[str] = None
-    country: Optional[str] = "Brasil"
+    street: str | None = None
+    city: str | None = None
+    state: str | None = None
+    zip: str | None = None
+    country: str | None = "Brasil"
 
 
 class ClientCreate(BaseModel):
     """Request model for creating a client."""
     name: str = Field(..., min_length=1, max_length=255, description="Company name")
-    trade_name: Optional[str] = Field(None, max_length=255, description="Trade name")
-    cnpj: Optional[str] = Field(None, max_length=20, description="CNPJ")
-    primary_email: Optional[str] = Field(None, max_length=255)
-    primary_phone: Optional[str] = Field(None, max_length=50)
-    website: Optional[str] = Field(None, max_length=500)
-    address: Optional[AddressSchema] = None
+    trade_name: str | None = Field(None, max_length=255, description="Trade name")
+    cnpj: str | None = Field(None, max_length=20, description="CNPJ")
+    primary_email: str | None = Field(None, max_length=255)
+    primary_phone: str | None = Field(None, max_length=50)
+    website: str | None = Field(None, max_length=500)
+    address: AddressSchema | None = None
     status: str = Field(default="pending_setup")
-    plan_id: Optional[str] = Field(None, max_length=100)
-    contract_start_date: Optional[datetime] = None
-    contract_end_date: Optional[datetime] = None
+    plan_id: str | None = Field(None, max_length=100)
+    contract_start_date: datetime | None = None
+    contract_end_date: datetime | None = None
     user_limit: int = Field(default=10, ge=1)
     job_limit: int = Field(default=50, ge=1)
     ai_credits_monthly: int = Field(default=1000, ge=0)
-    settings: Optional[Dict[str, Any]] = None
-    features_enabled: Optional[List[str]] = None
-    account_manager_id: Optional[str] = None
-    implementation_manager_id: Optional[str] = None
-    logo_url: Optional[str] = Field(None, max_length=500)
-    industry: Optional[str] = Field(None, max_length=100)
-    company_size: Optional[str] = Field(None, max_length=50)
+    settings: dict[str, Any] | None = None
+    features_enabled: list[str] | None = None
+    account_manager_id: str | None = None
+    implementation_manager_id: str | None = None
+    logo_url: str | None = Field(None, max_length=500)
+    industry: str | None = Field(None, max_length=100)
+    company_size: str | None = Field(None, max_length=50)
 
 
 class ClientUpdate(BaseModel):
     """Request model for updating a client."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    trade_name: Optional[str] = Field(None, max_length=255)
-    cnpj: Optional[str] = Field(None, max_length=20)
-    primary_email: Optional[str] = Field(None, max_length=255)
-    primary_phone: Optional[str] = Field(None, max_length=50)
-    website: Optional[str] = Field(None, max_length=500)
-    address: Optional[AddressSchema] = None
-    plan_id: Optional[str] = Field(None, max_length=100)
-    contract_start_date: Optional[datetime] = None
-    contract_end_date: Optional[datetime] = None
-    user_limit: Optional[int] = Field(None, ge=1)
-    job_limit: Optional[int] = Field(None, ge=1)
-    ai_credits_monthly: Optional[int] = Field(None, ge=0)
-    settings: Optional[Dict[str, Any]] = None
-    features_enabled: Optional[List[str]] = None
-    account_manager_id: Optional[str] = None
-    implementation_manager_id: Optional[str] = None
-    logo_url: Optional[str] = Field(None, max_length=500)
-    industry: Optional[str] = Field(None, max_length=100)
-    company_size: Optional[str] = Field(None, max_length=50)
-    onboarding_completed_at: Optional[datetime] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    trade_name: str | None = Field(None, max_length=255)
+    cnpj: str | None = Field(None, max_length=20)
+    primary_email: str | None = Field(None, max_length=255)
+    primary_phone: str | None = Field(None, max_length=50)
+    website: str | None = Field(None, max_length=500)
+    address: AddressSchema | None = None
+    plan_id: str | None = Field(None, max_length=100)
+    contract_start_date: datetime | None = None
+    contract_end_date: datetime | None = None
+    user_limit: int | None = Field(None, ge=1)
+    job_limit: int | None = Field(None, ge=1)
+    ai_credits_monthly: int | None = Field(None, ge=0)
+    settings: dict[str, Any] | None = None
+    features_enabled: list[str] | None = None
+    account_manager_id: str | None = None
+    implementation_manager_id: str | None = None
+    logo_url: str | None = Field(None, max_length=500)
+    industry: str | None = Field(None, max_length=100)
+    company_size: str | None = Field(None, max_length=50)
+    onboarding_completed_at: datetime | None = None
 
 
 class StatusUpdate(BaseModel):
     """Request model for updating client status."""
     status: str = Field(..., description="New status")
-    reason: Optional[str] = Field(None, description="Reason for status change")
+    reason: str | None = Field(None, description="Reason for status change")
 
 
 @router.get("/status-options", summary="List available status options")
@@ -136,9 +137,9 @@ PLAN_PRICES = {
 
 @router.get("/dashboard-summary", summary="Dashboard summary with KPIs and client lists")
 async def get_dashboard_summary(
-    start_date: Optional[datetime] = Query(None, description="Start date for period filter"),
-    end_date: Optional[datetime] = Query(None, description="End date for period filter"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    start_date: datetime | None = Query(None, description="Start date for period filter"),
+    end_date: datetime | None = Query(None, description="End date for period filter"),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -322,7 +323,7 @@ async def get_dashboard_summary(
 
 @router.get("/stats/overview", summary="Platform statistics overview")
 async def get_platform_stats(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -400,14 +401,14 @@ async def get_platform_stats(
 
 @router.get("", summary="List clients")
 async def list_clients(
-    status: Optional[str] = Query(None, description="Filter by status"),
-    plan_id: Optional[str] = Query(None, description="Filter by plan ID"),
-    search: Optional[str] = Query(None, description="Search by name, trade_name or CNPJ"),
-    industry: Optional[str] = Query(None, description="Filter by industry"),
-    company_size: Optional[str] = Query(None, description="Filter by company size"),
+    status: str | None = Query(None, description="Filter by status"),
+    plan_id: str | None = Query(None, description="Filter by plan ID"),
+    search: str | None = Query(None, description="Search by name, trade_name or CNPJ"),
+    industry: str | None = Query(None, description="Filter by industry"),
+    company_size: str | None = Query(None, description="Filter by company size"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -480,7 +481,7 @@ async def list_clients(
 @router.get("/{client_id}", summary="Get client by ID")
 async def get_client(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -537,7 +538,7 @@ async def get_client(
 @router.get("/{client_id}/stats", summary="Get client statistics")
 async def get_client_stats(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -619,7 +620,7 @@ async def get_client_stats(
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Create client")
 async def create_client(
     data: ClientCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -774,7 +775,7 @@ async def create_client(
 async def update_client(
     client_id: str,
     data: ClientUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -849,7 +850,7 @@ async def update_client(
 async def update_client_status(
     client_id: str,
     data: StatusUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -929,7 +930,7 @@ async def update_client_status(
 @router.delete("/{client_id}", summary="Delete client (soft delete)")
 async def delete_client(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1002,22 +1003,22 @@ VALID_INTEGRATION_STATUSES = ["connected", "disconnected", "pending"]
 class IntegrationCreate(BaseModel):
     """Request model for creating an integration."""
     name: str = Field(..., description="Integration name (gupy, linkedin, greenhouse, slack, whatsapp, email)")
-    description: Optional[str] = Field(None, description="Integration description")
+    description: str | None = Field(None, description="Integration description")
     status: str = Field(default="pending", description="Integration status")
-    config: Optional[Dict[str, Any]] = Field(None, description="Non-sensitive configuration")
+    config: dict[str, Any] | None = Field(None, description="Non-sensitive configuration")
 
 
 class IntegrationUpdate(BaseModel):
     """Request model for updating an integration."""
-    name: Optional[str] = Field(None, description="Integration name")
-    description: Optional[str] = Field(None, description="Integration description")
-    status: Optional[str] = Field(None, description="Integration status")
-    config: Optional[Dict[str, Any]] = Field(None, description="Non-sensitive configuration")
+    name: str | None = Field(None, description="Integration name")
+    description: str | None = Field(None, description="Integration description")
+    status: str | None = Field(None, description="Integration status")
+    config: dict[str, Any] | None = Field(None, description="Non-sensitive configuration")
 
 
 async def get_client_for_integrations(
     client_id: str,
-    current_user: Dict[str, Any],
+    current_user: dict[str, Any],
     db: AsyncSession
 ) -> ClientAccount:
     """Helper to get client and validate access for integration endpoints."""
@@ -1059,7 +1060,7 @@ async def get_client_for_integrations(
 @router.get("/{client_id}/integrations", summary="List client integrations")
 async def list_client_integrations(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1097,7 +1098,7 @@ async def list_client_integrations(
 async def add_client_integration(
     client_id: str,
     data: IntegrationCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1167,7 +1168,7 @@ async def update_client_integration(
     client_id: str,
     integration_id: str,
     data: IntegrationUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1248,7 +1249,7 @@ async def update_client_integration(
 async def delete_client_integration(
     client_id: str,
     integration_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1303,7 +1304,7 @@ async def delete_client_integration(
 async def sync_client_integration(
     client_id: str,
     integration_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1371,7 +1372,7 @@ async def sync_client_integration(
 @router.post("/{client_id}/integrations/sync-all", summary="Sync all integrations")
 async def sync_all_client_integrations(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1428,26 +1429,26 @@ async def sync_all_client_integrations(
 class AutomationCreate(BaseModel):
     """Request model for creating an automation."""
     name: str = Field(..., min_length=1, max_length=255, description="Automation name")
-    description: Optional[str] = Field(None, max_length=500)
+    description: str | None = Field(None, max_length=500)
     trigger: str = Field(..., description="Trigger type: screening_reminder, interview_completed, offer_sent, candidate_applied, etc")
     action: str = Field(..., description="Action type: send_email, send_whatsapp, send_notification, webhook")
     is_active: bool = Field(default=True)
-    config: Optional[Dict[str, Any]] = Field(None, description="Additional config like template_id, delay_hours, etc")
+    config: dict[str, Any] | None = Field(None, description="Additional config like template_id, delay_hours, etc")
 
 
 class AutomationUpdate(BaseModel):
     """Request model for updating an automation."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = Field(None, max_length=500)
-    trigger: Optional[str] = None
-    action: Optional[str] = None
-    is_active: Optional[bool] = None
-    config: Optional[Dict[str, Any]] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = Field(None, max_length=500)
+    trigger: str | None = None
+    action: str | None = None
+    is_active: bool | None = None
+    config: dict[str, Any] | None = None
 
 
 async def get_client_for_automations(
     client_id: str,
-    current_user: Dict[str, Any],
+    current_user: dict[str, Any],
     db: AsyncSession
 ) -> ClientAccount:
     """Helper to get and validate client access for automations."""
@@ -1489,7 +1490,7 @@ async def get_client_for_automations(
 @router.get("/{client_id}/automations", summary="List client automations")
 async def list_client_automations(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1527,7 +1528,7 @@ async def list_client_automations(
 async def create_client_automation(
     client_id: str,
     data: AutomationCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1588,7 +1589,7 @@ async def update_client_automation(
     client_id: str,
     automation_id: str,
     data: AutomationUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1653,7 +1654,7 @@ async def update_client_automation(
 async def delete_client_automation(
     client_id: str,
     automation_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1705,7 +1706,7 @@ async def delete_client_automation(
 async def toggle_client_automation(
     client_id: str,
     automation_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1811,14 +1812,14 @@ DEFAULT_SETUP_SECTIONS = [
 
 class SetupSectionUpdate(BaseModel):
     """Request model for updating a setup section."""
-    status: Optional[str] = Field(None, description="Section status: complete, partial, pending")
-    progress: Optional[int] = Field(None, ge=0, le=100, description="Progress percentage 0-100")
+    status: str | None = Field(None, description="Section status: complete, partial, pending")
+    progress: int | None = Field(None, ge=0, le=100, description="Progress percentage 0-100")
 
 
 @router.get("/{client_id}/setup", summary="Get client setup status")
 async def get_client_setup(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1887,7 +1888,7 @@ async def update_client_setup_section(
     client_id: str,
     section_id: str,
     data: SetupSectionUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -2009,7 +2010,7 @@ async def update_client_setup_section(
 @router.get("/{client_id}/hubspot/status", summary="Get HubSpot sync status")
 async def get_hubspot_sync_status(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -2052,7 +2053,7 @@ async def get_hubspot_sync_status(
 @router.post("/{client_id}/hubspot/sync", summary="Sync client to HubSpot")
 async def sync_client_hubspot(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -2128,17 +2129,17 @@ async def sync_client_hubspot(
 
 class HubSpotOnboardingUpdate(BaseModel):
     """Request model for updating HubSpot onboarding status."""
-    welcome_email_sent: Optional[bool] = None
-    workos_configured: Optional[bool] = None
-    sso_enabled: Optional[bool] = None
-    users_count: Optional[int] = None
+    welcome_email_sent: bool | None = None
+    workos_configured: bool | None = None
+    sso_enabled: bool | None = None
+    users_count: int | None = None
 
 
 @router.put("/{client_id}/hubspot/onboarding", summary="Update HubSpot onboarding status")
 async def update_hubspot_onboarding(
     client_id: str,
     data: HubSpotOnboardingUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

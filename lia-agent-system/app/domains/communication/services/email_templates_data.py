@@ -4,8 +4,8 @@ email_templates_data.py — Compatibility stub.
 DEFAULT_TEMPLATES is now loaded from app/data/fixtures/email_default_templates.json.
 """
 import json
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
 _FIXTURES = Path(__file__).parent.parent.parent.parent / "data/fixtures"
 

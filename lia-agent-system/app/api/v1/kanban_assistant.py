@@ -2,10 +2,11 @@
 LIA Kanban Assistant API endpoints.
 Provides AI-powered analysis for recruitment pipelines.
 """
+import logging
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-import logging
 
 from app.domains.recruiter_assistant.services.kanban_assistant_service import kanban_assistant_service
 
@@ -17,16 +18,16 @@ router = APIRouter()
 class KanbanAssistantRequest(BaseModel):
     """Request model for Kanban Assistant."""
     command: str = Field(..., description="User's natural language command")
-    command_type: Optional[str] = Field(None, description="Pre-detected command type (rankear, funil, etc.)")
-    job_context: Dict[str, Any] = Field(
+    command_type: str | None = Field(None, description="Pre-detected command type (rankear, funil, etc.)")
+    job_context: dict[str, Any] = Field(
         ..., 
         description="Job vacancy context: title, department, level, requirements, skills, etc."
     )
-    candidates: List[Dict[str, Any]] = Field(
+    candidates: list[dict[str, Any]] = Field(
         default_factory=list,
         description="List of candidates in the pipeline with their data"
     )
-    selected_candidate_ids: Optional[List[str]] = Field(
+    selected_candidate_ids: list[str] | None = Field(
         None,
         description="IDs of selected candidates for comparison operations"
     )
@@ -37,20 +38,20 @@ class KanbanAssistantResponse(BaseModel):
     success: bool = Field(..., description="Whether the request was successful")
     response_type: str = Field(..., description="Type of analysis performed")
     content: str = Field(..., description="Formatted markdown response")
-    structured_data: Optional[Dict[str, Any]] = Field(
+    structured_data: dict[str, Any] | None = Field(
         None,
         description="Structured data from the analysis (ranking, metrics, etc.)"
     )
-    suggested_actions: List[str] = Field(
+    suggested_actions: list[str] = Field(
         default_factory=list,
         description="List of suggested next actions"
     )
-    follow_up_prompts: List[str] = Field(
+    follow_up_prompts: list[str] = Field(
         default_factory=list,
         description="Suggested follow-up questions"
     )
-    ui_action: Optional[str] = Field(None, description="Frontend action trigger")
-    ui_action_params: Optional[Dict[str, Any]] = Field(None, description="Parameters for UI action")
+    ui_action: str | None = Field(None, description="Frontend action trigger")
+    ui_action_params: dict[str, Any] | None = Field(None, description="Parameters for UI action")
 
 
 @router.post("/lia/kanban-assistant", response_model=KanbanAssistantResponse)

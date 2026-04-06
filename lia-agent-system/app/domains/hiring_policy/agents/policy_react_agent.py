@@ -5,23 +5,16 @@ Usa LangGraph nativo (create_react_agent) com PostgresSaver para persistência.
 Migração completa concluída — path legado ReActLoop removido.
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
-    NavigationCommand,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
-from app.shared.compliance.fairness_guard import FairnessGuard
-from app.services.confidence_policy_service import confidence_policy_service
 
 from app.domains.hiring_policy.agents.policy_stage_context import (
     STAGE_DEFINITIONS,
@@ -29,6 +22,8 @@ from app.domains.hiring_policy.agents.policy_stage_context import (
 )
 from app.domains.hiring_policy.agents.policy_system_prompt import get_policy_system_prompt
 from app.domains.hiring_policy.agents.policy_tool_registry import get_policy_tools
+from app.services.confidence_policy_service import confidence_policy_service
+from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +51,7 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "policy"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:
@@ -118,10 +113,10 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         company_id: str,
         session_id: str,
         current_policy: Any = None,
-        conversation_history: Optional[List[Dict[str, Any]]] = None,
-    ) -> Dict[str, Any]:
+        conversation_history: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
         """Compatibility wrapper: builds AgentInput, calls process(), maps AgentOutput to legacy dict."""
-        policy_state: Dict[str, Any] = {}
+        policy_state: dict[str, Any] = {}
         if current_policy is not None:
             try:
                 policy_state = {
@@ -142,7 +137,7 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             conversation_history=conversation_history or [],
         )
         output = await self.process(agent_input)
-        updated_fields: Dict[str, Any] = {}
+        updated_fields: dict[str, Any] = {}
         for action in (output.actions or []):
             if action.action_type == "update_policy" and action.params:
                 updated_fields.update(action.params)

@@ -15,8 +15,9 @@ REGRAS DE FAIRNESS (imutáveis):
   - Aviso de geração por IA no rodapé de todos os canais
 """
 from __future__ import annotations
-from typing import Dict, Any, List, Optional
+
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 # Language tables
 # ---------------------------------------------------------------------------
 
-BLOOM_STRENGTH_PHRASES: Dict[int, str] = {
+BLOOM_STRENGTH_PHRASES: dict[int, str] = {
     1: "demonstrou familiaridade com conceitos fundamentais da área",
     2: "explicou com clareza os princípios envolvidos em suas experiências",
     3: "aplicou o conhecimento de forma concreta em situações reais",
@@ -33,7 +34,7 @@ BLOOM_STRENGTH_PHRASES: Dict[int, str] = {
     6: "propôs abordagens originais e demonstrou pensamento sistêmico avançado",
 }
 
-BLOOM_DEVELOPMENT_PHRASES: Dict[int, str] = {
+BLOOM_DEVELOPMENT_PHRASES: dict[int, str] = {
     1: "aprofundar a compreensão teórica para além do nível introdutório",
     2: "buscar mais oportunidades de aplicação prática dos conceitos",
     3: "desenvolver análise crítica para comparar abordagens e identificar trade-offs",
@@ -42,7 +43,7 @@ BLOOM_DEVELOPMENT_PHRASES: Dict[int, str] = {
     6: "continuar liderando iniciativas de impacto crescente e compartilhar o aprendizado",
 }
 
-DREYFUS_DEVELOPMENT_PHRASES: Dict[int, str] = {
+DREYFUS_DEVELOPMENT_PHRASES: dict[int, str] = {
     1: "construir base prática com projetos guiados (primeiros 6–12 meses)",
     2: "ampliar repertório com projetos reais de complexidade crescente",
     3: "assumir responsabilidades com maior autonomia e menos supervisão direta",
@@ -50,7 +51,7 @@ DREYFUS_DEVELOPMENT_PHRASES: Dict[int, str] = {
     5: "atuar como referência técnica e mentor na área",
 }
 
-SENIORITY_TONE: Dict[str, Dict[str, Any]] = {
+SENIORITY_TONE: dict[str, dict[str, Any]] = {
     "estagiario": {
         "tone": "encorajador",
         "intro_opener": "Ficamos muito felizes com sua participação!",
@@ -101,7 +102,7 @@ SENIORITY_TONE: Dict[str, Dict[str, Any]] = {
     },
 }
 
-DIMENSION_META: Dict[str, Dict[str, str]] = {
+DIMENSION_META: dict[str, dict[str, str]] = {
     "technical_skills": {
         "title": "Conhecimento Técnico",
         "icon": "💡",
@@ -132,7 +133,7 @@ DIMENSION_META: Dict[str, Dict[str, str]] = {
     },
 }
 
-PRACTICAL_SUGGESTIONS: Dict[str, Dict[int, str]] = {
+PRACTICAL_SUGGESTIONS: dict[str, dict[int, str]] = {
     "technical_skills": {
         1: "Explore cursos práticos em plataformas como Alura, Coursera ou Udemy para ganhar experiência hands-on com as ferramentas da área.",
         2: "Desenvolva projetos pessoais ou contribua para projetos open source — transformar teoria em prática é o caminho mais eficaz.",
@@ -189,11 +190,11 @@ class WSIFeedbackGenerator:
 
     def generate(
         self,
-        response_scores: List[Dict[str, Any]],
+        response_scores: list[dict[str, Any]],
         job_title: str,
         seniority_level: str,
         candidate_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         seniority = (seniority_level or "junior").lower().strip()
         if seniority not in SENIORITY_TONE:
             # Fuzzy match fallbacks
@@ -209,7 +210,7 @@ class WSIFeedbackGenerator:
 
         groups = self._group_by_competency(response_scores)
 
-        dimensions: List[Dict[str, Any]] = []
+        dimensions: list[dict[str, Any]] = []
 
         # 1 — Clareza da Comunicação (meta: todos os blocos)
         dimensions.append(
@@ -239,7 +240,7 @@ class WSIFeedbackGenerator:
         intro = self._intro(first_name, job_title, tone_cfg)
         closing = self._closing(first_name)
 
-        report: Dict[str, Any] = {
+        report: dict[str, Any] = {
             "candidate_name": candidate_name,
             "first_name": first_name,
             "job_title": job_title,
@@ -264,8 +265,8 @@ class WSIFeedbackGenerator:
     # Grouping
     # ------------------------------------------------------------------
 
-    def _group_by_competency(self, scores: List[Dict]) -> Dict[str, List[Dict]]:
-        groups: Dict[str, List[Dict]] = {}
+    def _group_by_competency(self, scores: list[dict]) -> dict[str, list[dict]]:
+        groups: dict[str, list[dict]] = {}
         for s in scores:
             key = s.get("competency", "general")
             groups.setdefault(key, []).append(s)
@@ -275,7 +276,7 @@ class WSIFeedbackGenerator:
     # Dimension builders
     # ------------------------------------------------------------------
 
-    def _make_dim(self, competency: str, scores: List[Dict], tone_cfg: Dict) -> Dict[str, Any]:
+    def _make_dim(self, competency: str, scores: list[dict], tone_cfg: dict) -> dict[str, Any]:
         meta = DIMENSION_META.get(competency, DIMENSION_META["_communication"])
         bloom = self._avg(scores, "bloom_level", default=2)
         dreyfus = self._avg(scores, "dreyfus_level", default=2)
@@ -291,7 +292,7 @@ class WSIFeedbackGenerator:
             "suggestion": self._suggestion(competency, bloom),
         }
 
-    def _make_communication_dim(self, all_scores: List[Dict], tone_cfg: Dict) -> Dict[str, Any]:
+    def _make_communication_dim(self, all_scores: list[dict], tone_cfg: dict) -> dict[str, Any]:
         meta = DIMENSION_META["_communication"]
         bloom = self._avg(all_scores, "bloom_level", default=2)
         dreyfus = self._avg(all_scores, "dreyfus_level", default=2)
@@ -309,7 +310,7 @@ class WSIFeedbackGenerator:
     # Phrase builders
     # ------------------------------------------------------------------
 
-    def _strength_phrase(self, bloom: int, dreyfus: int, evidences: List[str]) -> str:
+    def _strength_phrase(self, bloom: int, dreyfus: int, evidences: list[str]) -> str:
         base = BLOOM_STRENGTH_PHRASES.get(bloom, BLOOM_STRENGTH_PHRASES[2])
 
         if dreyfus >= 4:
@@ -348,7 +349,7 @@ class WSIFeedbackGenerator:
     # Intros / closings
     # ------------------------------------------------------------------
 
-    def _intro(self, first_name: str, job_title: str, tone_cfg: Dict) -> str:
+    def _intro(self, first_name: str, job_title: str, tone_cfg: dict) -> str:
         opener = tone_cfg["intro_opener"]
         return (
             f"Olá, {first_name}! {opener}\n\n"
@@ -370,7 +371,7 @@ class WSIFeedbackGenerator:
     # Text renderers
     # ------------------------------------------------------------------
 
-    def _plain_text(self, r: Dict) -> str:
+    def _plain_text(self, r: dict) -> str:
         parts = [r["intro"], ""]
         for d in r["dimensions"]:
             parts += [
@@ -384,13 +385,13 @@ class WSIFeedbackGenerator:
                   "Este feedback foi gerado por IA e pode ser revisado mediante solicitação."]
         return "\n".join(parts)
 
-    def _whatsapp_text(self, r: Dict) -> str:
+    def _whatsapp_text(self, r: dict) -> str:
         """Condensed (~600 chars) para WhatsApp — referencia o e-mail para detalhes."""
         lines = [
             f"Olá, {r['first_name']}! 👋",
-            f"",
+            "",
             f"Aqui está um resumo do seu feedback da triagem para *{r['job_title']}*:",
-            f"",
+            "",
         ]
         for d in r["dimensions"][:3]:
             short_strength = d["strength"][:90].rstrip(".,") + ("…" if len(d["strength"]) > 90 else ".")
@@ -403,7 +404,7 @@ class WSIFeedbackGenerator:
         ]
         return "\n".join(lines)
 
-    def _chat_text(self, r: Dict) -> str:
+    def _chat_text(self, r: dict) -> str:
         """Markdown para última mensagem da LIA no chat web."""
         lines = [
             "---",
@@ -430,13 +431,13 @@ class WSIFeedbackGenerator:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _avg(scores: List[Dict], key: str, default: int = 2) -> int:
+    def _avg(scores: list[dict], key: str, default: int = 2) -> int:
         vals = [s[key] for s in scores if key in s]
         return round(sum(vals) / len(vals)) if vals else default
 
 
 # Module-level singleton
-_feedback_generator: Optional[WSIFeedbackGenerator] = None
+_feedback_generator: WSIFeedbackGenerator | None = None
 
 
 def get_feedback_generator() -> WSIFeedbackGenerator:

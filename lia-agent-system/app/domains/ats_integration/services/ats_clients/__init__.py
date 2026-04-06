@@ -4,10 +4,10 @@ Fonte canônica: app/services/ats_clients/
 Este pacote re-exporta de lá para evitar duplicação de código.
 """
 # Z6-01: re-export do path canônico em app.services.ats_clients
-from app.services.ats_clients.base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
+from app.services.ats_clients.base import ATSCandidate, ATSClient, ATSClientConfig, ATSJob
 from app.services.ats_clients.gupy import GupyClient
-from app.services.ats_clients.pandape import PandapeClient
 from app.services.ats_clients.merge import MergeClient
+from app.services.ats_clients.pandape import PandapeClient
 
 __all__ = [
     "ATSClient",

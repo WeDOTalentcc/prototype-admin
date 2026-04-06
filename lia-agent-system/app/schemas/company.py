@@ -2,25 +2,26 @@
 Pydantic schemas for Company Setup endpoints.
 """
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, field_validator
+from typing import Any
 from uuid import UUID
+
+from pydantic import BaseModel, field_validator
 
 
 class DepartmentBase(BaseModel):
     name: str
-    code: Optional[str] = None
-    description: Optional[str] = None
-    parent_id: Optional[UUID] = None
-    manager_name: Optional[str] = None
-    manager_email: Optional[str] = None
-    manager_title: Optional[str] = None
-    manager_phone: Optional[str] = None
-    headcount: Optional[int] = 0
-    cost_center: Optional[str] = None
-    location: Optional[str] = None
-    hiring_priority: Optional[str] = "normal"
-    order: Optional[int] = 0
+    code: str | None = None
+    description: str | None = None
+    parent_id: UUID | None = None
+    manager_name: str | None = None
+    manager_email: str | None = None
+    manager_title: str | None = None
+    manager_phone: str | None = None
+    headcount: int | None = 0
+    cost_center: str | None = None
+    location: str | None = None
+    hiring_priority: str | None = "normal"
+    order: int | None = 0
 
 
 class DepartmentCreate(DepartmentBase):
@@ -28,20 +29,20 @@ class DepartmentCreate(DepartmentBase):
 
 
 class DepartmentUpdate(BaseModel):
-    name: Optional[str] = None
-    code: Optional[str] = None
-    description: Optional[str] = None
-    parent_id: Optional[UUID] = None
-    manager_name: Optional[str] = None
-    manager_email: Optional[str] = None
-    manager_title: Optional[str] = None
-    manager_phone: Optional[str] = None
-    headcount: Optional[int] = None
-    cost_center: Optional[str] = None
-    location: Optional[str] = None
-    hiring_priority: Optional[str] = None
-    is_active: Optional[bool] = None
-    order: Optional[int] = None
+    name: str | None = None
+    code: str | None = None
+    description: str | None = None
+    parent_id: UUID | None = None
+    manager_name: str | None = None
+    manager_email: str | None = None
+    manager_title: str | None = None
+    manager_phone: str | None = None
+    headcount: int | None = None
+    cost_center: str | None = None
+    location: str | None = None
+    hiring_priority: str | None = None
+    is_active: bool | None = None
+    order: int | None = None
 
 
 class DepartmentResponse(DepartmentBase):
@@ -57,37 +58,37 @@ class DepartmentResponse(DepartmentBase):
 
 class DepartmentMemberBase(BaseModel):
     name: str
-    title: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    avatar_url: Optional[str] = None
-    level: Optional[str] = "outros"
-    order: Optional[int] = 0
+    title: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    linkedin_url: str | None = None
+    avatar_url: str | None = None
+    level: str | None = "outros"
+    order: int | None = 0
 
 
 class DepartmentMemberCreate(DepartmentMemberBase):
-    department_id: Optional[UUID] = None  # Optional because it comes from URL path
+    department_id: UUID | None = None  # Optional because it comes from URL path
 
 
 class DepartmentMemberUpdate(BaseModel):
-    name: Optional[str] = None
-    title: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    avatar_url: Optional[str] = None
-    level: Optional[str] = None
-    is_active: Optional[bool] = None
-    order: Optional[int] = None
+    name: str | None = None
+    title: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    linkedin_url: str | None = None
+    avatar_url: str | None = None
+    level: str | None = None
+    is_active: bool | None = None
+    order: int | None = None
 
 
 class DepartmentMemberResponse(DepartmentMemberBase):
     id: UUID
     department_id: UUID
     company_id: UUID
-    linkedin_url: Optional[str] = None
-    avatar_url: Optional[str] = None
+    linkedin_url: str | None = None
+    avatar_url: str | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -98,23 +99,23 @@ class DepartmentMemberResponse(DepartmentMemberBase):
 
 class BenefitBase(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     category: str
-    icon: Optional[str] = None
-    value: Optional[float] = None
-    value_type: Optional[str] = "monetary"
-    value_details: Optional[str] = None
-    percentage_value: Optional[float] = None
-    applicable_to: Optional[List[str]] = []
-    seniority_levels: Optional[List[str]] = []
-    contract_types: Optional[List[str]] = []
-    departments: Optional[List[str]] = []
-    waiting_period_days: Optional[int] = 0
-    is_mandatory: Optional[bool] = False
-    is_highlighted: Optional[bool] = False
-    is_discount: Optional[bool] = False
-    provider: Optional[str] = None
-    order: Optional[int] = 0
+    icon: str | None = None
+    value: float | None = None
+    value_type: str | None = "monetary"
+    value_details: str | None = None
+    percentage_value: float | None = None
+    applicable_to: list[str] | None = []
+    seniority_levels: list[str] | None = []
+    contract_types: list[str] | None = []
+    departments: list[str] | None = []
+    waiting_period_days: int | None = 0
+    is_mandatory: bool | None = False
+    is_highlighted: bool | None = False
+    is_discount: bool | None = False
+    provider: str | None = None
+    order: int | None = 0
 
 
 class BenefitCreate(BenefitBase):
@@ -122,25 +123,25 @@ class BenefitCreate(BenefitBase):
 
 
 class BenefitUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    category: Optional[str] = None
-    icon: Optional[str] = None
-    value: Optional[float] = None
-    value_type: Optional[str] = None
-    value_details: Optional[str] = None
-    percentage_value: Optional[float] = None
-    applicable_to: Optional[List[str]] = None
-    seniority_levels: Optional[List[str]] = None
-    contract_types: Optional[List[str]] = None
-    departments: Optional[List[str]] = None
-    waiting_period_days: Optional[int] = None
-    is_mandatory: Optional[bool] = None
-    is_highlighted: Optional[bool] = None
-    is_discount: Optional[bool] = None
-    is_active: Optional[bool] = None
-    provider: Optional[str] = None
-    order: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    category: str | None = None
+    icon: str | None = None
+    value: float | None = None
+    value_type: str | None = None
+    value_details: str | None = None
+    percentage_value: float | None = None
+    applicable_to: list[str] | None = None
+    seniority_levels: list[str] | None = None
+    contract_types: list[str] | None = None
+    departments: list[str] | None = None
+    waiting_period_days: int | None = None
+    is_mandatory: bool | None = None
+    is_highlighted: bool | None = None
+    is_discount: bool | None = None
+    is_active: bool | None = None
+    provider: str | None = None
+    order: int | None = None
 
 
 class BenefitResponse(BenefitBase):
@@ -156,14 +157,14 @@ class BenefitResponse(BenefitBase):
 
 class CultureValueBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    category: Optional[str] = "value"
-    icon: Optional[str] = None
-    color: Optional[str] = None
-    behavioral_indicators: Optional[List[str]] = []
-    interview_questions: Optional[List[str]] = []
-    weight: Optional[float] = 1.0
-    order: Optional[int] = 0
+    description: str | None = None
+    category: str | None = "value"
+    icon: str | None = None
+    color: str | None = None
+    behavioral_indicators: list[str] | None = []
+    interview_questions: list[str] | None = []
+    weight: float | None = 1.0
+    order: int | None = 0
 
 
 class CultureValueCreate(CultureValueBase):
@@ -171,16 +172,16 @@ class CultureValueCreate(CultureValueBase):
 
 
 class CultureValueUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    category: Optional[str] = None
-    icon: Optional[str] = None
-    color: Optional[str] = None
-    behavioral_indicators: Optional[List[str]] = None
-    interview_questions: Optional[List[str]] = None
-    weight: Optional[float] = None
-    is_active: Optional[bool] = None
-    order: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    category: str | None = None
+    icon: str | None = None
+    color: str | None = None
+    behavioral_indicators: list[str] | None = None
+    interview_questions: list[str] | None = None
+    weight: float | None = None
+    is_active: bool | None = None
+    order: int | None = None
 
 
 class CultureValueResponse(CultureValueBase):
@@ -188,7 +189,7 @@ class CultureValueResponse(CultureValueBase):
     company_id: UUID
     is_active: bool
     ai_generated: bool
-    source: Optional[str]
+    source: str | None
     created_at: datetime
     updated_at: datetime
     
@@ -198,28 +199,28 @@ class CultureValueResponse(CultureValueBase):
 
 class CompanyProfileBase(BaseModel):
     name: str
-    trading_name: Optional[str] = None
-    website: Optional[str] = None
-    logo_url: Optional[str] = None
-    cnpj: Optional[str] = None
-    industry: Optional[str] = None
-    sector: Optional[str] = None
-    company_size: Optional[str] = None
-    founded_year: Optional[int] = None
-    description: Optional[str] = None
-    short_description: Optional[str] = None
-    headquarters_city: Optional[str] = None
-    headquarters_state: Optional[str] = None
-    headquarters_country: Optional[str] = "Brasil"
-    address: Optional[str] = None
-    main_phone: Optional[str] = None
-    hr_phone: Optional[str] = None
-    main_email: Optional[str] = None
-    hr_email: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    glassdoor_url: Optional[str] = None
-    employee_count: Optional[int] = None
-    revenue_range: Optional[str] = None
+    trading_name: str | None = None
+    website: str | None = None
+    logo_url: str | None = None
+    cnpj: str | None = None
+    industry: str | None = None
+    sector: str | None = None
+    company_size: str | None = None
+    founded_year: int | None = None
+    description: str | None = None
+    short_description: str | None = None
+    headquarters_city: str | None = None
+    headquarters_state: str | None = None
+    headquarters_country: str | None = "Brasil"
+    address: str | None = None
+    main_phone: str | None = None
+    hr_phone: str | None = None
+    main_email: str | None = None
+    hr_email: str | None = None
+    linkedin_url: str | None = None
+    glassdoor_url: str | None = None
+    employee_count: int | None = None
+    revenue_range: str | None = None
 
 
 class CompanyProfileCreate(CompanyProfileBase):
@@ -227,47 +228,47 @@ class CompanyProfileCreate(CompanyProfileBase):
 
 
 class CompanyProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    trading_name: Optional[str] = None
-    website: Optional[str] = None
-    logo_url: Optional[str] = None
-    cnpj: Optional[str] = None
-    industry: Optional[str] = None
-    sector: Optional[str] = None
-    company_size: Optional[str] = None
-    founded_year: Optional[int] = None
-    description: Optional[str] = None
-    short_description: Optional[str] = None
-    headquarters_city: Optional[str] = None
-    headquarters_state: Optional[str] = None
-    headquarters_country: Optional[str] = None
-    address: Optional[str] = None
-    main_phone: Optional[str] = None
-    hr_phone: Optional[str] = None
-    main_email: Optional[str] = None
-    hr_email: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    glassdoor_url: Optional[str] = None
-    employee_count: Optional[int] = None
-    revenue_range: Optional[str] = None
-    is_active: Optional[bool] = None
-    additional_data: Optional[Dict[str, Any]] = None
+    name: str | None = None
+    trading_name: str | None = None
+    website: str | None = None
+    logo_url: str | None = None
+    cnpj: str | None = None
+    industry: str | None = None
+    sector: str | None = None
+    company_size: str | None = None
+    founded_year: int | None = None
+    description: str | None = None
+    short_description: str | None = None
+    headquarters_city: str | None = None
+    headquarters_state: str | None = None
+    headquarters_country: str | None = None
+    address: str | None = None
+    main_phone: str | None = None
+    hr_phone: str | None = None
+    main_email: str | None = None
+    hr_email: str | None = None
+    linkedin_url: str | None = None
+    glassdoor_url: str | None = None
+    employee_count: int | None = None
+    revenue_range: str | None = None
+    is_active: bool | None = None
+    additional_data: dict[str, Any] | None = None
 
 
 class CompanyProfileResponse(CompanyProfileBase):
     id: UUID
     is_active: bool
     is_default: bool
-    culture_analyzed: Optional[bool] = False
-    culture_analysis_date: Optional[datetime] = None
-    culture_insights: Optional[Dict[str, Any]] = None
-    ats_history_analyzed: Optional[bool] = False
-    ats_analysis_date: Optional[datetime] = None
-    ats_insights: Optional[Dict[str, Any]] = None
-    additional_data: Optional[Dict[str, Any]] = None
+    culture_analyzed: bool | None = False
+    culture_analysis_date: datetime | None = None
+    culture_insights: dict[str, Any] | None = None
+    ats_history_analyzed: bool | None = False
+    ats_analysis_date: datetime | None = None
+    ats_insights: dict[str, Any] | None = None
+    additional_data: dict[str, Any] | None = None
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str] = None
+    created_by: str | None = None
     
     @field_validator('culture_analyzed', 'ats_history_analyzed', mode='before')
     @classmethod
@@ -279,29 +280,29 @@ class CompanyProfileResponse(CompanyProfileBase):
 
 
 class CompanyProfileWithRelations(CompanyProfileResponse):
-    departments: List[DepartmentResponse] = []
-    benefits: List[BenefitResponse] = []
-    culture_values: List[CultureValueResponse] = []
+    departments: list[DepartmentResponse] = []
+    benefits: list[BenefitResponse] = []
+    culture_values: list[CultureValueResponse] = []
 
 
 class IdealProfileBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    department_id: Optional[UUID] = None
-    role_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    technical_requirements: Optional[Dict[str, Any]] = {}
-    behavioral_requirements: Optional[Dict[str, Any]] = {}
-    experience_requirements: Optional[Dict[str, Any]] = {}
-    education_requirements: Optional[Dict[str, Any]] = {}
-    big_five_ideal: Optional[Dict[str, Any]] = {}
-    evaluation_weights: Optional[Dict[str, Any]] = {}
-    mandatory_skills: Optional[List[str]] = []
-    preferred_skills: Optional[List[str]] = []
-    languages: Optional[Dict[str, str]] = {}
-    salary_range_min: Optional[float] = None
-    salary_range_max: Optional[float] = None
-    culture_fit_criteria: Optional[Dict[str, Any]] = {}
+    description: str | None = None
+    department_id: UUID | None = None
+    role_type: str | None = None
+    seniority_level: str | None = None
+    technical_requirements: dict[str, Any] | None = {}
+    behavioral_requirements: dict[str, Any] | None = {}
+    experience_requirements: dict[str, Any] | None = {}
+    education_requirements: dict[str, Any] | None = {}
+    big_five_ideal: dict[str, Any] | None = {}
+    evaluation_weights: dict[str, Any] | None = {}
+    mandatory_skills: list[str] | None = []
+    preferred_skills: list[str] | None = []
+    languages: dict[str, str] | None = {}
+    salary_range_min: float | None = None
+    salary_range_max: float | None = None
+    culture_fit_criteria: dict[str, Any] | None = {}
 
 
 class IdealProfileCreate(IdealProfileBase):
@@ -309,44 +310,44 @@ class IdealProfileCreate(IdealProfileBase):
 
 
 class IdealProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    department_id: Optional[UUID] = None
-    role_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    technical_requirements: Optional[Dict[str, Any]] = None
-    behavioral_requirements: Optional[Dict[str, Any]] = None
-    experience_requirements: Optional[Dict[str, Any]] = None
-    education_requirements: Optional[Dict[str, Any]] = None
-    big_five_ideal: Optional[Dict[str, Any]] = None
-    evaluation_weights: Optional[Dict[str, Any]] = None
-    mandatory_skills: Optional[List[str]] = None
-    preferred_skills: Optional[List[str]] = None
-    languages: Optional[Dict[str, str]] = None
-    salary_range_min: Optional[float] = None
-    salary_range_max: Optional[float] = None
-    culture_fit_criteria: Optional[Dict[str, Any]] = None
-    is_active: Optional[bool] = None
-    validated: Optional[bool] = None
-    validated_by: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
+    department_id: UUID | None = None
+    role_type: str | None = None
+    seniority_level: str | None = None
+    technical_requirements: dict[str, Any] | None = None
+    behavioral_requirements: dict[str, Any] | None = None
+    experience_requirements: dict[str, Any] | None = None
+    education_requirements: dict[str, Any] | None = None
+    big_five_ideal: dict[str, Any] | None = None
+    evaluation_weights: dict[str, Any] | None = None
+    mandatory_skills: list[str] | None = None
+    preferred_skills: list[str] | None = None
+    languages: dict[str, str] | None = None
+    salary_range_min: float | None = None
+    salary_range_max: float | None = None
+    culture_fit_criteria: dict[str, Any] | None = None
+    is_active: bool | None = None
+    validated: bool | None = None
+    validated_by: str | None = None
 
 
 class IdealProfileResponse(IdealProfileBase):
     id: UUID
     company_id: UUID
     ai_generated: bool
-    ai_analysis_date: Optional[datetime]
-    ai_confidence: Optional[float]
+    ai_analysis_date: datetime | None
+    ai_confidence: float | None
     validated: bool
-    validated_by: Optional[str]
-    validated_at: Optional[datetime]
+    validated_by: str | None
+    validated_at: datetime | None
     is_active: bool
     is_template: bool
     usage_count: int
-    success_rate: Optional[float]
+    success_rate: float | None
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
+    created_by: str | None
     
     class Config:
         from_attributes = True
@@ -354,18 +355,18 @@ class IdealProfileResponse(IdealProfileBase):
 
 class BigFiveQuestionBase(BaseModel):
     text: str
-    text_en: Optional[str] = None
+    text_en: str | None = None
     trait: str
-    facet: Optional[str] = None
-    polarity: Optional[str] = "positive"
-    scale_min: Optional[int] = 1
-    scale_max: Optional[int] = 5
-    scale_labels: Optional[Dict[str, str]] = {}
-    category: Optional[str] = "general"
-    role_specific: Optional[List[str]] = []
-    weight: Optional[float] = 1.0
-    is_core: Optional[bool] = False
-    order: Optional[int] = 0
+    facet: str | None = None
+    polarity: str | None = "positive"
+    scale_min: int | None = 1
+    scale_max: int | None = 5
+    scale_labels: dict[str, str] | None = {}
+    category: str | None = "general"
+    role_specific: list[str] | None = []
+    weight: float | None = 1.0
+    is_core: bool | None = False
+    order: int | None = 0
 
 
 class BigFiveQuestionCreate(BigFiveQuestionBase):
@@ -373,27 +374,27 @@ class BigFiveQuestionCreate(BigFiveQuestionBase):
 
 
 class BigFiveQuestionUpdate(BaseModel):
-    text: Optional[str] = None
-    text_en: Optional[str] = None
-    trait: Optional[str] = None
-    facet: Optional[str] = None
-    polarity: Optional[str] = None
-    scale_min: Optional[int] = None
-    scale_max: Optional[int] = None
-    scale_labels: Optional[Dict[str, str]] = None
-    category: Optional[str] = None
-    role_specific: Optional[List[str]] = None
-    weight: Optional[float] = None
-    is_core: Optional[bool] = None
-    is_active: Optional[bool] = None
-    order: Optional[int] = None
+    text: str | None = None
+    text_en: str | None = None
+    trait: str | None = None
+    facet: str | None = None
+    polarity: str | None = None
+    scale_min: int | None = None
+    scale_max: int | None = None
+    scale_labels: dict[str, str] | None = None
+    category: str | None = None
+    role_specific: list[str] | None = None
+    weight: float | None = None
+    is_core: bool | None = None
+    is_active: bool | None = None
+    order: int | None = None
 
 
 class BigFiveQuestionResponse(BigFiveQuestionBase):
     id: UUID
     is_active: bool
     ai_generated: bool
-    validation_stats: Dict[str, Any]
+    validation_stats: dict[str, Any]
     created_at: datetime
     updated_at: datetime
     
@@ -403,74 +404,74 @@ class BigFiveQuestionResponse(BigFiveQuestionBase):
 
 class BigFiveRoleProfileBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    role_category: Optional[str] = None
-    seniority_level: Optional[str] = None
-    openness_min: Optional[float] = 1.0
-    openness_max: Optional[float] = 5.0
-    openness_ideal: Optional[float] = 3.0
-    openness_weight: Optional[float] = 1.0
-    conscientiousness_min: Optional[float] = 1.0
-    conscientiousness_max: Optional[float] = 5.0
-    conscientiousness_ideal: Optional[float] = 3.0
-    conscientiousness_weight: Optional[float] = 1.0
-    extroversion_min: Optional[float] = 1.0
-    extroversion_max: Optional[float] = 5.0
-    extroversion_ideal: Optional[float] = 3.0
-    extroversion_weight: Optional[float] = 1.0
-    agreeableness_min: Optional[float] = 1.0
-    agreeableness_max: Optional[float] = 5.0
-    agreeableness_ideal: Optional[float] = 3.0
-    agreeableness_weight: Optional[float] = 1.0
-    neuroticism_min: Optional[float] = 1.0
-    neuroticism_max: Optional[float] = 5.0
-    neuroticism_ideal: Optional[float] = 3.0
-    neuroticism_weight: Optional[float] = 1.0
-    facet_requirements: Optional[Dict[str, Any]] = {}
+    description: str | None = None
+    role_category: str | None = None
+    seniority_level: str | None = None
+    openness_min: float | None = 1.0
+    openness_max: float | None = 5.0
+    openness_ideal: float | None = 3.0
+    openness_weight: float | None = 1.0
+    conscientiousness_min: float | None = 1.0
+    conscientiousness_max: float | None = 5.0
+    conscientiousness_ideal: float | None = 3.0
+    conscientiousness_weight: float | None = 1.0
+    extroversion_min: float | None = 1.0
+    extroversion_max: float | None = 5.0
+    extroversion_ideal: float | None = 3.0
+    extroversion_weight: float | None = 1.0
+    agreeableness_min: float | None = 1.0
+    agreeableness_max: float | None = 5.0
+    agreeableness_ideal: float | None = 3.0
+    agreeableness_weight: float | None = 1.0
+    neuroticism_min: float | None = 1.0
+    neuroticism_max: float | None = 5.0
+    neuroticism_ideal: float | None = 3.0
+    neuroticism_weight: float | None = 1.0
+    facet_requirements: dict[str, Any] | None = {}
 
 
 class BigFiveRoleProfileCreate(BigFiveRoleProfileBase):
-    company_id: Optional[UUID] = None
+    company_id: UUID | None = None
 
 
 class BigFiveRoleProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    role_category: Optional[str] = None
-    seniority_level: Optional[str] = None
-    openness_min: Optional[float] = None
-    openness_max: Optional[float] = None
-    openness_ideal: Optional[float] = None
-    openness_weight: Optional[float] = None
-    conscientiousness_min: Optional[float] = None
-    conscientiousness_max: Optional[float] = None
-    conscientiousness_ideal: Optional[float] = None
-    conscientiousness_weight: Optional[float] = None
-    extroversion_min: Optional[float] = None
-    extroversion_max: Optional[float] = None
-    extroversion_ideal: Optional[float] = None
-    extroversion_weight: Optional[float] = None
-    agreeableness_min: Optional[float] = None
-    agreeableness_max: Optional[float] = None
-    agreeableness_ideal: Optional[float] = None
-    agreeableness_weight: Optional[float] = None
-    neuroticism_min: Optional[float] = None
-    neuroticism_max: Optional[float] = None
-    neuroticism_ideal: Optional[float] = None
-    neuroticism_weight: Optional[float] = None
-    facet_requirements: Optional[Dict[str, Any]] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    role_category: str | None = None
+    seniority_level: str | None = None
+    openness_min: float | None = None
+    openness_max: float | None = None
+    openness_ideal: float | None = None
+    openness_weight: float | None = None
+    conscientiousness_min: float | None = None
+    conscientiousness_max: float | None = None
+    conscientiousness_ideal: float | None = None
+    conscientiousness_weight: float | None = None
+    extroversion_min: float | None = None
+    extroversion_max: float | None = None
+    extroversion_ideal: float | None = None
+    extroversion_weight: float | None = None
+    agreeableness_min: float | None = None
+    agreeableness_max: float | None = None
+    agreeableness_ideal: float | None = None
+    agreeableness_weight: float | None = None
+    neuroticism_min: float | None = None
+    neuroticism_max: float | None = None
+    neuroticism_ideal: float | None = None
+    neuroticism_weight: float | None = None
+    facet_requirements: dict[str, Any] | None = None
+    is_active: bool | None = None
 
 
 class BigFiveRoleProfileResponse(BigFiveRoleProfileBase):
     id: UUID
-    company_id: Optional[UUID]
+    company_id: UUID | None
     is_active: bool
     is_template: bool
     usage_count: int
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
+    created_by: str | None
     
     class Config:
         from_attributes = True
@@ -478,21 +479,21 @@ class BigFiveRoleProfileResponse(BigFiveRoleProfileBase):
 
 class TechnicalQuestionBase(BaseModel):
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     question_type: str
-    difficulty: Optional[str] = "medium"
-    estimated_time: Optional[int] = 5
+    difficulty: str | None = "medium"
+    estimated_time: int | None = 5
     area: str
-    tags: Optional[List[str]] = []
-    options: Optional[List[Dict[str, Any]]] = []
-    correct_answer: Optional[Dict[str, Any]] = None
-    explanation: Optional[str] = None
-    code_template: Optional[str] = None
-    code_solution: Optional[str] = None
-    code_language: Optional[str] = None
-    test_cases: Optional[List[Dict[str, Any]]] = []
-    rubric: Optional[Dict[str, Any]] = {}
-    ai_correction_enabled: Optional[bool] = True
+    tags: list[str] | None = []
+    options: list[dict[str, Any]] | None = []
+    correct_answer: dict[str, Any] | None = None
+    explanation: str | None = None
+    code_template: str | None = None
+    code_solution: str | None = None
+    code_language: str | None = None
+    test_cases: list[dict[str, Any]] | None = []
+    rubric: dict[str, Any] | None = {}
+    ai_correction_enabled: bool | None = True
 
 
 class TechnicalQuestionCreate(TechnicalQuestionBase):
@@ -500,24 +501,24 @@ class TechnicalQuestionCreate(TechnicalQuestionBase):
 
 
 class TechnicalQuestionUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    question_type: Optional[str] = None
-    difficulty: Optional[str] = None
-    estimated_time: Optional[int] = None
-    area: Optional[str] = None
-    tags: Optional[List[str]] = None
-    options: Optional[List[Dict[str, Any]]] = None
-    correct_answer: Optional[Dict[str, Any]] = None
-    explanation: Optional[str] = None
-    code_template: Optional[str] = None
-    code_solution: Optional[str] = None
-    code_language: Optional[str] = None
-    test_cases: Optional[List[Dict[str, Any]]] = None
-    rubric: Optional[Dict[str, Any]] = None
-    ai_correction_enabled: Optional[bool] = None
-    is_active: Optional[bool] = None
-    is_public: Optional[bool] = None
+    title: str | None = None
+    description: str | None = None
+    question_type: str | None = None
+    difficulty: str | None = None
+    estimated_time: int | None = None
+    area: str | None = None
+    tags: list[str] | None = None
+    options: list[dict[str, Any]] | None = None
+    correct_answer: dict[str, Any] | None = None
+    explanation: str | None = None
+    code_template: str | None = None
+    code_solution: str | None = None
+    code_language: str | None = None
+    test_cases: list[dict[str, Any]] | None = None
+    rubric: dict[str, Any] | None = None
+    ai_correction_enabled: bool | None = None
+    is_active: bool | None = None
+    is_public: bool | None = None
 
 
 class TechnicalQuestionResponse(TechnicalQuestionBase):
@@ -526,11 +527,11 @@ class TechnicalQuestionResponse(TechnicalQuestionBase):
     is_active: bool
     is_public: bool
     usage_count: int
-    avg_score: Optional[float]
-    avg_time: Optional[float]
+    avg_score: float | None
+    avg_time: float | None
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
+    created_by: str | None
     
     class Config:
         from_attributes = True
@@ -538,89 +539,89 @@ class TechnicalQuestionResponse(TechnicalQuestionBase):
 
 class TechnicalTestTemplateBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    area: Optional[str] = None
-    role_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    question_ids: Optional[List[UUID]] = []
-    question_config: Optional[Dict[str, Any]] = {}
-    total_time: Optional[int] = 60
-    passing_score: Optional[float] = 70.0
-    instructions: Optional[str] = None
-    instructions_en: Optional[str] = None
-    randomize_questions: Optional[bool] = True
-    randomize_options: Optional[bool] = True
-    show_score: Optional[bool] = True
-    proctoring_enabled: Optional[bool] = False
-    webcam_required: Optional[bool] = False
-    ai_correction_enabled: Optional[bool] = True
-    ai_correction_prompt: Optional[str] = None
+    description: str | None = None
+    area: str | None = None
+    role_type: str | None = None
+    seniority_level: str | None = None
+    question_ids: list[UUID] | None = []
+    question_config: dict[str, Any] | None = {}
+    total_time: int | None = 60
+    passing_score: float | None = 70.0
+    instructions: str | None = None
+    instructions_en: str | None = None
+    randomize_questions: bool | None = True
+    randomize_options: bool | None = True
+    show_score: bool | None = True
+    proctoring_enabled: bool | None = False
+    webcam_required: bool | None = False
+    ai_correction_enabled: bool | None = True
+    ai_correction_prompt: str | None = None
 
 
 class TechnicalTestTemplateCreate(TechnicalTestTemplateBase):
-    company_id: Optional[UUID] = None
+    company_id: UUID | None = None
 
 
 class TechnicalTestTemplateUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    area: Optional[str] = None
-    role_type: Optional[str] = None
-    seniority_level: Optional[str] = None
-    question_ids: Optional[List[UUID]] = None
-    question_config: Optional[Dict[str, Any]] = None
-    total_time: Optional[int] = None
-    passing_score: Optional[float] = None
-    instructions: Optional[str] = None
-    instructions_en: Optional[str] = None
-    randomize_questions: Optional[bool] = None
-    randomize_options: Optional[bool] = None
-    show_score: Optional[bool] = None
-    proctoring_enabled: Optional[bool] = None
-    webcam_required: Optional[bool] = None
-    ai_correction_enabled: Optional[bool] = None
-    ai_correction_prompt: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_public: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    area: str | None = None
+    role_type: str | None = None
+    seniority_level: str | None = None
+    question_ids: list[UUID] | None = None
+    question_config: dict[str, Any] | None = None
+    total_time: int | None = None
+    passing_score: float | None = None
+    instructions: str | None = None
+    instructions_en: str | None = None
+    randomize_questions: bool | None = None
+    randomize_options: bool | None = None
+    show_score: bool | None = None
+    proctoring_enabled: bool | None = None
+    webcam_required: bool | None = None
+    ai_correction_enabled: bool | None = None
+    ai_correction_prompt: str | None = None
+    is_active: bool | None = None
+    is_public: bool | None = None
 
 
 class TechnicalTestTemplateResponse(TechnicalTestTemplateBase):
     id: UUID
-    company_id: Optional[UUID]
+    company_id: UUID | None
     is_active: bool
     is_public: bool
     usage_count: int
-    avg_score: Optional[float]
-    completion_rate: Optional[float]
+    avg_score: float | None
+    completion_rate: float | None
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
+    created_by: str | None
     
     class Config:
         from_attributes = True
 
 
 class CultureAnalysisRequest(BaseModel):
-    website_url: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    glassdoor_url: Optional[str] = None
-    additional_context: Optional[str] = None
+    website_url: str | None = None
+    linkedin_url: str | None = None
+    glassdoor_url: str | None = None
+    additional_context: str | None = None
 
 
 class CultureAnalysisResponse(BaseModel):
     success: bool
-    analysis: Dict[str, Any]
-    suggested_values: List[CultureValueBase]
+    analysis: dict[str, Any]
+    suggested_values: list[CultureValueBase]
     confidence: float
-    sources_analyzed: List[str]
+    sources_analyzed: list[str]
 
 
 class IdealProfileGenerateRequest(BaseModel):
     role_type: str
     seniority_level: str
-    department_id: Optional[UUID] = None
-    job_description: Optional[str] = None
-    additional_requirements: Optional[str] = None
+    department_id: UUID | None = None
+    job_description: str | None = None
+    additional_requirements: str | None = None
 
 
 class IdealProfileGenerateResponse(BaseModel):
@@ -632,13 +633,13 @@ class IdealProfileGenerateResponse(BaseModel):
 
 class BigFiveGenerateRequest(BaseModel):
     trait: str
-    count: Optional[int] = 5
-    role_specific: Optional[List[str]] = None
+    count: int | None = 5
+    role_specific: list[str] | None = None
 
 
 class BigFiveGenerateResponse(BaseModel):
     success: bool
-    questions: List[BigFiveQuestionBase]
+    questions: list[BigFiveQuestionBase]
     trait: str
 
 
@@ -646,13 +647,13 @@ class TechnicalQuestionsGenerateRequest(BaseModel):
     area: str
     difficulty: str
     question_type: str
-    count: Optional[int] = 5
-    context: Optional[str] = None
+    count: int | None = 5
+    context: str | None = None
 
 
 class TechnicalQuestionsGenerateResponse(BaseModel):
     success: bool
-    questions: List[TechnicalQuestionBase]
+    questions: list[TechnicalQuestionBase]
     area: str
     difficulty: str
 
@@ -669,19 +670,19 @@ class GlobalSearchSettingsBase(BaseModel):
 
 
 class GlobalSearchSettingsUpdate(BaseModel):
-    default_limit: Optional[int] = None
-    search_type: Optional[str] = None
-    show_emails: Optional[bool] = None
-    show_phone_numbers: Optional[bool] = None
-    high_freshness: Optional[bool] = None
-    auto_expand_global: Optional[bool] = None
-    confirm_before_search: Optional[bool] = None
-    global_search_enabled: Optional[bool] = None
+    default_limit: int | None = None
+    search_type: str | None = None
+    show_emails: bool | None = None
+    show_phone_numbers: bool | None = None
+    high_freshness: bool | None = None
+    auto_expand_global: bool | None = None
+    confirm_before_search: bool | None = None
+    global_search_enabled: bool | None = None
 
 
 class GlobalSearchSettingsResponse(GlobalSearchSettingsBase):
     id: UUID
-    company_id: Optional[str] = None
+    company_id: str | None = None
     created_at: datetime
     updated_at: datetime
     
@@ -692,9 +693,9 @@ class GlobalSearchSettingsResponse(GlobalSearchSettingsBase):
 class ApproverBase(BaseModel):
     user_name: str
     email: str
-    role: Optional[str] = None
+    role: str | None = None
     level: int = 1
-    user_id: Optional[UUID] = None
+    user_id: UUID | None = None
 
 
 class ApproverCreate(ApproverBase):
@@ -702,12 +703,12 @@ class ApproverCreate(ApproverBase):
 
 
 class ApproverUpdate(BaseModel):
-    user_name: Optional[str] = None
-    email: Optional[str] = None
-    role: Optional[str] = None
-    level: Optional[int] = None
-    user_id: Optional[UUID] = None
-    is_active: Optional[bool] = None
+    user_name: str | None = None
+    email: str | None = None
+    role: str | None = None
+    level: int | None = None
+    user_id: UUID | None = None
+    is_active: bool | None = None
 
 
 class ApproverResponse(ApproverBase):

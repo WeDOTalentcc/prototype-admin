@@ -1,10 +1,10 @@
 """
 Structured JSON logging configuration for production.
 """
-import logging
 import json
-import sys
+import logging
 import os
+import sys
 from datetime import datetime
 
 

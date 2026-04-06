@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +9,7 @@ _INVALID_TENANT_VALUES = frozenset({
 })
 
 
-def resolve_tenant_id(company_id: Optional[str], *, context: str = "") -> str:
+def resolve_tenant_id(company_id: str | None, *, context: str = "") -> str:
     if not company_id or company_id in _INVALID_TENANT_VALUES:
         raise ValueError(
             f"Valid company_id is required{' for ' + context if context else ''}. "
@@ -19,7 +18,7 @@ def resolve_tenant_id(company_id: Optional[str], *, context: str = "") -> str:
     return company_id
 
 
-def resolve_tenant_id_lenient(company_id: Optional[str], *, fallback: str = "unknown") -> str:
+def resolve_tenant_id_lenient(company_id: str | None, *, fallback: str = "unknown") -> str:
     if not company_id or company_id in _INVALID_TENANT_VALUES:
         logger.warning(
             "Invalid or missing company_id %r in non-critical path, using fallback %r",

@@ -7,33 +7,35 @@ Orchestrates:
 - Block 4: Behavioral/Situational (Big Five/CBI via WSIService)
 """
 import logging
-from typing import List, Optional, Dict, Any
 from difflib import SequenceMatcher
+from typing import Any
 
-from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
-from app.schemas.screening import (
-    UnifiedScreeningQuestion,
-    WSIScreeningPipelineRequest,
-    WSIScreeningPipelineResponse,
-    WSIBlockSummary,
-    ScreeningQuestionRequest,
-    BigFiveProfile,
-)
 from app.domains.cv_screening.constants.wsi_constants import (
     BLOOM_LEVEL_LABELS as BLOOM_LEVELS,
+)
+from app.domains.cv_screening.constants.wsi_constants import (
     DREYFUS_STAGE_LABELS as DREYFUS_STAGES,
-    SENIORITY_TO_DREYFUS,
+)
+from app.domains.cv_screening.constants.wsi_constants import (
+    SENIORITY_DISTRIBUTIONS,
     SENIORITY_TO_BLOOM,
+    SENIORITY_TO_DREYFUS,
+    WSI_BLOCK_NAMES,
 )
 from app.domains.cv_screening.services.seniority_context_calibrator import (
-    calibrate_or_fallback,
-    CalibrationContext,
-    CalibrationResult,
     WSI_CONTEXTUAL_CALIBRATION_ENABLED,
+    CalibrationContext,
+    calibrate_or_fallback,
 )
-from app.domains.cv_screening.services.seniority_resolver import resolve_seniority_full, SENIORITY_RESOLVER_ENABLED
+from app.domains.cv_screening.services.seniority_resolver import SENIORITY_RESOLVER_ENABLED, resolve_seniority_full
 from app.domains.cv_screening.services.seniority_utils import normalize_seniority
-from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES, SENIORITY_DISTRIBUTIONS
+from app.schemas.screening import (
+    UnifiedScreeningQuestion,
+    WSIBlockSummary,
+    WSIScreeningPipelineRequest,
+    WSIScreeningPipelineResponse,
+)
+from app.shared.policy_middleware import get_policy_for_company
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,7 @@ def _text_similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, a.lower().strip(), b.lower().strip()).ratio()
 
 
-def _is_duplicate(question_text: str, existing_texts: List[str], threshold: float = 0.65) -> bool:
+def _is_duplicate(question_text: str, existing_texts: list[str], threshold: float = 0.65) -> bool:
     for existing in existing_texts:
         if _text_similarity(question_text, existing) >= threshold:
             return True
@@ -95,7 +97,7 @@ class WSIScreeningPipeline:
     async def build_pipeline(
         self,
         request: WSIScreeningPipelineRequest,
-        company_questions_raw: List[Dict[str, Any]],
+        company_questions_raw: list[dict[str, Any]],
     ) -> WSIScreeningPipelineResponse:
         seniority_resolution_meta = None
         if SENIORITY_RESOLVER_ENABLED:
@@ -158,9 +160,8 @@ class WSIScreeningPipeline:
             }
             self.logger.info(f"Seniority defaulted to: {effective_seniority}")
 
-        all_questions: List[UnifiedScreeningQuestion] = []
-        quality_warnings: List[str] = []
-        company_texts: List[str] = []
+        all_questions: list[UnifiedScreeningQuestion] = []
+        quality_warnings: list[str] = []
 
         seniority_dist = SENIORITY_DISTRIBUTIONS.get(request.format, SENIORITY_DISTRIBUTIONS["full"])
         model = seniority_dist.get(effective_seniority, MODEL_DISTRIBUTIONS.get(request.format, MODEL_DISTRIBUTIONS["full"]))
@@ -333,10 +334,10 @@ class WSIScreeningPipeline:
 
     def _build_company_block(
         self,
-        raw_questions: List[Dict[str, Any]],
-        category_filter: Optional[List[str]],
-    ) -> List[UnifiedScreeningQuestion]:
-        questions: List[UnifiedScreeningQuestion] = []
+        raw_questions: list[dict[str, Any]],
+        category_filter: list[str] | None,
+    ) -> list[UnifiedScreeningQuestion]:
+        questions: list[UnifiedScreeningQuestion] = []
         for q in raw_questions:
             if not q.get("is_active", True):
                 continue
@@ -382,7 +383,7 @@ class WSIScreeningPipeline:
         request: WSIScreeningPipelineRequest,
         target_count: int,
         effective_seniority: str = "pleno",
-    ) -> List[UnifiedScreeningQuestion]:
+    ) -> list[UnifiedScreeningQuestion]:
         available_skills = request.technical_skills or []
 
         if not available_skills:
@@ -400,7 +401,7 @@ class WSIScreeningPipeline:
 
         tech_questions = [q for q in wsi_questions if q.question_type != "situational"]
 
-        questions: List[UnifiedScreeningQuestion] = []
+        questions: list[UnifiedScreeningQuestion] = []
         dreyfus_stage = SENIORITY_TO_DREYFUS.get(effective_seniority, 3)
         dreyfus_label = DREYFUS_STAGES.get(dreyfus_stage, "Competente")
         for wq in tech_questions[:target_count]:
@@ -439,7 +440,7 @@ class WSIScreeningPipeline:
         request: WSIScreeningPipelineRequest,
         target_count: int,
         effective_seniority: str = "pleno",
-    ) -> List[UnifiedScreeningQuestion]:
+    ) -> list[UnifiedScreeningQuestion]:
         BIG_FIVE_TRAITS = [
             "Abertura a mudanças",
             "Organização e disciplina",
@@ -471,7 +472,7 @@ class WSIScreeningPipeline:
 
         dreyfus_stage = SENIORITY_TO_DREYFUS.get(effective_seniority, 3)
         dreyfus_label = DREYFUS_STAGES.get(dreyfus_stage, "Competente")
-        questions: List[UnifiedScreeningQuestion] = []
+        questions: list[UnifiedScreeningQuestion] = []
         selected = behav_questions[:target_count]
         for idx, wq in enumerate(selected):
             bloom_level = wq.scoring_criteria.get("bloom_level", 3) if isinstance(wq.scoring_criteria, dict) else 3
@@ -505,13 +506,13 @@ class WSIScreeningPipeline:
         return questions
 
     def _group_into_blocks(
-        self, questions: List[UnifiedScreeningQuestion]
-    ) -> List[WSIBlockSummary]:
-        block_map: Dict[int, List[UnifiedScreeningQuestion]] = {}
+        self, questions: list[UnifiedScreeningQuestion]
+    ) -> list[WSIBlockSummary]:
+        block_map: dict[int, list[UnifiedScreeningQuestion]] = {}
         for q in questions:
             block_map.setdefault(q.block_id, []).append(q)
 
-        blocks: List[WSIBlockSummary] = []
+        blocks: list[WSIBlockSummary] = []
         for bid in sorted(block_map.keys()):
             qs = block_map[bid]
             blocks.append(
@@ -527,9 +528,9 @@ class WSIScreeningPipeline:
     async def apply_screening_policy(
         self,
         company_id: str,
-        questions: List[UnifiedScreeningQuestion],
+        questions: list[UnifiedScreeningQuestion],
         db=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Apply company screening_rules to screening results.
         
@@ -589,7 +590,7 @@ class WSIScreeningPipeline:
         self,
         company_id: str,
         db=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get effective screening configuration for a company."""
         try:
             if db:

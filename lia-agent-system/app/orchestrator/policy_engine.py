@@ -8,10 +8,9 @@ Validates requests against:
 - Business rule constraints
 """
 
-import os
 import logging
-from typing import Dict, Any, Optional
-from datetime import datetime
+import os
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +61,8 @@ class PolicyEngine:
         self, 
         intent: str, 
         user_id: str,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Validate request against policies.
         
@@ -104,7 +103,7 @@ class PolicyEngine:
                 "constraints": {}
             }
     
-    def _get_daily_usage(self, tenant_id: str, usage_type: str = "chat_requests") -> Optional[int]:
+    def _get_daily_usage(self, tenant_id: str, usage_type: str = "chat_requests") -> int | None:
         """Query api_usage_daily for the current day's count. Returns None if DB unavailable."""
         if usage_type not in self.ALLOWED_USAGE_TYPES:
             logger.warning(f"Invalid usage_type: {usage_type}")
@@ -130,7 +129,7 @@ class PolicyEngine:
             except Exception:
                 pass
 
-    def _check_usage_limit(self, tenant_id: str, usage_type: str = "chat_requests") -> Dict[str, Any]:
+    def _check_usage_limit(self, tenant_id: str, usage_type: str = "chat_requests") -> dict[str, Any]:
         """Check if tenant is within daily usage limits for a given usage type."""
         limit = self.usage_limits.get(usage_type, 1000)
         current_usage = self._get_daily_usage(tenant_id, usage_type)
@@ -197,8 +196,8 @@ class PolicyEngine:
     async def _validate_search_request(
         self, 
         user_id: str, 
-        context: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Validate candidate search request against credit limits."""
         tenant_id = (context or {}).get("tenant_id", user_id)
         max_searches = self.policies["max_pearch_searches_per_day"]
@@ -223,8 +222,8 @@ class PolicyEngine:
     async def _validate_screening_request(
         self, 
         user_id: str,
-        context: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Validate screening request against daily limits."""
         tenant_id = (context or {}).get("tenant_id", user_id)
         max_screenings = self.policies["max_voice_screenings_per_day"]
@@ -246,8 +245,8 @@ class PolicyEngine:
     async def _validate_communication_request(
         self, 
         user_id: str,
-        context: Optional[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None
+    ) -> dict[str, Any]:
         """Validate communication request (bulk email approval)."""
         # Check if bulk operation requires approval
         is_bulk = context and context.get("recipient_count", 1) > 10

@@ -5,9 +5,10 @@ LGPD Art. 7 VI: base legal = interesse legítimo (disclosure-based).
 IP e email são armazenados apenas como SHA256 hash (não reversíveis).
 """
 import uuid
-from datetime import datetime
-from sqlalchemy import Column, String, Text, DateTime, func, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+
+from sqlalchemy import Column, DateTime, Index, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+
 from app.core.database import Base
 
 

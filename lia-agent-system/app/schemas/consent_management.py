@@ -7,10 +7,11 @@ Includes schemas for:
 - Statistics and history
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class ConsentEventTypeEnum(str, Enum):
@@ -39,7 +40,7 @@ class ConsentVersionCreate(BaseModel):
     content_text: str = Field(..., min_length=10, description="Plain text content of the consent term")
     effective_from: datetime = Field(..., description="Date/time when this version becomes effective")
     requires_explicit_consent: bool = Field(default=True, description="Whether explicit consent is required")
-    renewal_period_days: Optional[int] = Field(None, ge=1, description="Days until consent expires and needs renewal")
+    renewal_period_days: int | None = Field(None, ge=1, description="Days until consent expires and needs renewal")
 
     class Config:
         json_schema_extra = {
@@ -66,14 +67,14 @@ class ConsentVersionResponse(BaseModel):
     content_html: str
     content_text: str
     hash: str
-    effective_from: Optional[datetime] = None
-    effective_until: Optional[datetime] = None
+    effective_from: datetime | None = None
+    effective_until: datetime | None = None
     is_current: bool = True
     requires_explicit_consent: bool = True
-    renewal_period_days: Optional[int] = None
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    renewal_period_days: int | None = None
+    created_by: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -81,7 +82,7 @@ class ConsentVersionResponse(BaseModel):
 
 class ConsentVersionListResponse(BaseModel):
     """Paginated list of consent versions."""
-    versions: List[ConsentVersionResponse]
+    versions: list[ConsentVersionResponse]
     total: int
     limit: int
     offset: int
@@ -94,9 +95,9 @@ class ConsentEventCreate(BaseModel):
     subject_identifier: str = Field(..., max_length=50, description="CPF or other identifier of the data subject")
     event_type: ConsentEventTypeEnum = Field(..., description="Type of consent event")
     consent_given: bool = Field(..., description="Whether consent was given")
-    ip_address: Optional[str] = Field(None, max_length=45, description="IP address of the subject")
-    user_agent: Optional[str] = Field(None, max_length=500, description="User agent string")
-    device_info: Optional[Dict[str, Any]] = Field(default={}, description="Device information")
+    ip_address: str | None = Field(None, max_length=45, description="IP address of the subject")
+    user_agent: str | None = Field(None, max_length=500, description="User agent string")
+    device_info: dict[str, Any] | None = Field(default={}, description="Device information")
     channel: ConsentChannelEnum = Field(default=ConsentChannelEnum.WEB, description="Channel used for consent")
 
     class Config:
@@ -120,21 +121,21 @@ class ConsentEventResponse(BaseModel):
     id: str
     company_id: str
     consent_version_id: str
-    subject_id: Optional[str] = None
+    subject_id: str | None = None
     subject_email: str
     subject_identifier: str
     event_type: str
     consent_given: bool
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
-    device_info: Dict[str, Any] = {}
-    location_country: Optional[str] = None
+    ip_address: str | None = None
+    user_agent: str | None = None
+    device_info: dict[str, Any] = {}
+    location_country: str | None = None
     channel: str
     proof_hash: str
-    expires_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    is_expired: Optional[bool] = None
-    days_until_expiry: Optional[int] = None
+    expires_at: datetime | None = None
+    created_at: datetime | None = None
+    is_expired: bool | None = None
+    days_until_expiry: int | None = None
 
     class Config:
         from_attributes = True
@@ -142,7 +143,7 @@ class ConsentEventResponse(BaseModel):
 
 class ConsentEventListResponse(BaseModel):
     """Paginated list of consent events."""
-    events: List[ConsentEventResponse]
+    events: list[ConsentEventResponse]
     total: int
     limit: int
     offset: int
@@ -156,8 +157,8 @@ class ConsentSubjectEvent(BaseModel):
     event_type: str
     consent_given: bool
     channel: str
-    created_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    expires_at: datetime | None = None
     is_expired: bool = False
     is_current: bool = False
 
@@ -166,18 +167,18 @@ class ConsentSubjectHistory(BaseModel):
     """Complete consent history for a data subject."""
     subject_identifier: str
     subject_email: str
-    events: List[ConsentSubjectEvent]
-    current_consents: Dict[str, bool] = {}
+    events: list[ConsentSubjectEvent]
+    current_consents: dict[str, bool] = {}
     total_events: int
 
 
 class ConsentRevokeRequest(BaseModel):
     """Schema for revoking consent."""
     subject_identifier: str = Field(..., max_length=50, description="CPF or other identifier of the data subject")
-    consent_type: Optional[str] = Field(None, max_length=50, description="Type of consent to revoke (optional)")
-    consent_version_id: Optional[str] = Field(None, description="Specific consent version ID to revoke (optional)")
-    ip_address: Optional[str] = Field(None, max_length=45, description="IP address of the subject")
-    user_agent: Optional[str] = Field(None, max_length=500, description="User agent string")
+    consent_type: str | None = Field(None, max_length=50, description="Type of consent to revoke (optional)")
+    consent_version_id: str | None = Field(None, description="Specific consent version ID to revoke (optional)")
+    ip_address: str | None = Field(None, max_length=45, description="IP address of the subject")
+    user_agent: str | None = Field(None, max_length=500, description="User agent string")
     channel: ConsentChannelEnum = Field(default=ConsentChannelEnum.WEB, description="Channel used for revocation")
 
     class Config:
@@ -209,5 +210,5 @@ class ConsentStats(BaseModel):
     total_granted: int = 0
     total_revoked: int = 0
     total_expired: int = 0
-    by_type: List[ConsentTypeStats] = []
-    by_channel: Dict[str, int] = {}
+    by_type: list[ConsentTypeStats] = []
+    by_channel: dict[str, int] = {}

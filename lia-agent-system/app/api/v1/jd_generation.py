@@ -1,12 +1,13 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
-from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.shared.compliance.audit_service import audit_service
-import logging
+from app.shared.compliance.fairness_guard_middleware import check_fairness
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jd", tags=["jd-generation"])
@@ -14,24 +15,24 @@ router = APIRouter(prefix="/jd", tags=["jd-generation"])
 
 class GenerateJDRequest(BaseModel):
     job_title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    description: Optional[str] = None
-    responsibilities: List[str] = []
-    technical_skills: List[str] = []
-    behavioral_competencies: List[str] = []
-    salary_range: Optional[str] = None
-    work_model: Optional[str] = None
-    location: Optional[str] = None
-    company_name: Optional[str] = None
-    company_description: Optional[str] = None
-    company_industry: Optional[str] = None
-    benefits: List[str] = []
-    interview_stages: List[str] = []
+    department: str | None = None
+    seniority: str | None = None
+    description: str | None = None
+    responsibilities: list[str] = []
+    technical_skills: list[str] = []
+    behavioral_competencies: list[str] = []
+    salary_range: str | None = None
+    work_model: str | None = None
+    location: str | None = None
+    company_name: str | None = None
+    company_description: str | None = None
+    company_industry: str | None = None
+    benefits: list[str] = []
+    interview_stages: list[str] = []
     company_id: str
 
 
-def _build_tags(request: GenerateJDRequest) -> List[str]:
+def _build_tags(request: GenerateJDRequest) -> list[str]:
     enforced_tags = []
     if request.job_title:
         enforced_tags.append(request.job_title.lower())
@@ -42,7 +43,7 @@ def _build_tags(request: GenerateJDRequest) -> List[str]:
     for comp in request.behavioral_competencies:
         enforced_tags.append(comp.lower())
     seen: set = set()
-    unique_tags: List[str] = []
+    unique_tags: list[str] = []
     for tag in enforced_tags:
         if tag not in seen:
             seen.add(tag)

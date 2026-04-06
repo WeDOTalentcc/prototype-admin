@@ -21,23 +21,24 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import BaseModel, Field
 
-from app.orchestrator.context_adapter import UniversalContext
-from app.services.tenant_context_service import TenantContextService
 from app.orchestrator.action_executor import (
-    ActionResult,
     ACTIONABLE_INTENTS,
+    ActionResult,
     action_executor,
     is_confirmation,
     is_rejection,
     resolve_candidate_from_context,
 )
-from app.orchestrator.pending_action import PendingActionState, pending_action_store
-from app.shared.memory.candidate_list_store import candidate_list_store
+from app.orchestrator.context_adapter import UniversalContext
+from app.orchestrator.pending_action import pending_action_store
+from app.services.tenant_context_service import TenantContextService
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.memory.candidate_list_store import candidate_list_store
 
 logger = logging.getLogger(__name__)
 
@@ -50,25 +51,25 @@ class ChatResponse(BaseModel):
     success: bool
     content: str
     agent_used: str = "main_orchestrator"
-    agents_consulted: List[str] = Field(default_factory=list)
+    agents_consulted: list[str] = Field(default_factory=list)
     intent_detected: str = "general"
     confidence: float = 1.0
-    structured_data: Optional[Dict[str, Any]] = None
-    suggested_prompts: List[str] = Field(default_factory=list)
-    actions: List[Dict[str, Any]] = Field(default_factory=list)
-    conversation_id: Optional[str] = None
-    ui_action: Optional[str] = None
-    ui_action_params: Optional[Dict[str, Any]] = None
+    structured_data: dict[str, Any] | None = None
+    suggested_prompts: list[str] = Field(default_factory=list)
+    actions: list[dict[str, Any]] = Field(default_factory=list)
+    conversation_id: str | None = None
+    ui_action: str | None = None
+    ui_action_params: dict[str, Any] | None = None
     action_executed: bool = False
-    action_result: Optional[Dict[str, Any]] = None
-    action_type: Optional[str] = None
+    action_result: dict[str, Any] | None = None
+    action_type: str | None = None
     needs_confirmation: bool = False
     needs_params: bool = False
-    pending_action_id: Optional[str] = None
-    fairness_warnings: List[str] = Field(default_factory=list)  # Soft advisory warnings do FairnessGuard
+    pending_action_id: str | None = None
+    fairness_warnings: list[str] = Field(default_factory=list)  # Soft advisory warnings do FairnessGuard
 
     @classmethod
-    def from_orchestrator_result(cls, result: Dict[str, Any], conv_id: str) -> "ChatResponse":
+    def from_orchestrator_result(cls, result: dict[str, Any], conv_id: str) -> ChatResponse:
         """Converte o dict retornado por Orchestrator.process_request()."""
         # Se o resultado tem score_breakdown, incluir em structured_data
         _structured = result.get("structured_data", result.get("data")) or {}
@@ -95,8 +96,8 @@ class ChatResponse(BaseModel):
         action_result: ActionResult,
         intent: str,
         conv_id: str,
-        suggested_prompts: Optional[List[str]] = None,
-    ) -> "ChatResponse":
+        suggested_prompts: list[str] | None = None,
+    ) -> ChatResponse:
         return cls(
             success=True,
             content=action_result.message,
@@ -140,7 +141,7 @@ class MainOrchestrator:
         self,
         ctx: UniversalContext,
         db: Any,
-        streaming_callback: Optional[Callable] = None,
+        streaming_callback: Callable | None = None,
     ) -> ChatResponse:
         """
         Processa uma mensagem através do pipeline unificado.
@@ -172,7 +173,7 @@ class MainOrchestrator:
                     conversation_id=conv_id,
                 )
             # Camada 2 — soft warnings (advisory, não bloqueia — propagados no response)
-            _soft_warnings: List[str] = list(getattr(_fairness_result, "soft_warnings", None) or [])
+            _soft_warnings: list[str] = list(getattr(_fairness_result, "soft_warnings", None) or [])
             try:
                 _implicit_warnings = self._fairness_guard.check_implicit_bias(message_text)
                 if _implicit_warnings:
@@ -234,7 +235,7 @@ class MainOrchestrator:
 
     async def _handle_pending_action(
         self, ctx: UniversalContext, conv_id: str
-    ) -> Optional[ChatResponse]:
+    ) -> ChatResponse | None:
         pending = pending_action_store.get(conv_id)
         if not pending:
             return None
@@ -349,7 +350,7 @@ class MainOrchestrator:
 
     async def _try_action_executor(
         self, ctx: UniversalContext, conv_id: str
-    ) -> Optional[ChatResponse]:
+    ) -> ChatResponse | None:
         candidates = ctx.candidates or []
 
         try:
@@ -401,7 +402,7 @@ class MainOrchestrator:
         ctx: UniversalContext,
         conv_id: str,
         db: Any,
-        streaming_callback: Optional[Callable],
+        streaming_callback: Callable | None,
     ) -> ChatResponse:
         """
         Pipeline consolidado: ConversationMemory → CascadedRouter → DomainWorkflow.
@@ -536,7 +537,7 @@ class MainOrchestrator:
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _get_suggested_prompts(intent: str, candidates_count: int, selected_count: int) -> List[str]:
+def _get_suggested_prompts(intent: str, candidates_count: int, selected_count: int) -> list[str]:
     base_prompts = {
         "mover_candidato": ["Ver pipeline completo", "Quem mais está pronto para avançar?"],
         "reprovar_candidato": ["Ver outros candidatos", "Buscar perfis similares"],
@@ -550,8 +551,8 @@ def _get_suggested_prompts(intent: str, candidates_count: int, selected_count: i
 
 
 async def _extract_param_value(
-    message: str, param_name: str, candidates: List[Dict[str, Any]]
-) -> Optional[str]:
+    message: str, param_name: str, candidates: list[dict[str, Any]]
+) -> str | None:
     """Extração simples de parâmetro da mensagem do usuário."""
     msg = message.strip()
     if not msg:
@@ -573,7 +574,7 @@ async def _extract_param_value(
 # Singleton
 # ---------------------------------------------------------------------------
 
-_main_orchestrator_instance: Optional[MainOrchestrator] = None
+_main_orchestrator_instance: MainOrchestrator | None = None
 
 
 def get_main_orchestrator(orchestrator: Any = None) -> MainOrchestrator:

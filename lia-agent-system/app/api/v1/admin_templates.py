@@ -2,25 +2,21 @@
 Admin Templates API endpoints for managing system email templates.
 Admin-only endpoints for creating and managing templates that can be published to companies.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional, List, cast
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
 import logging
-from datetime import datetime
 import uuid as uuid_module
-from pydantic import BaseModel, Field
+from datetime import datetime
+from typing import cast
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
 from app.models.email_template import EmailTemplate
 from app.schemas.email_template import (
-    EmailTemplateCreate,
-    EmailTemplateUpdate,
     EmailTemplateResponse,
-    EmailTemplateListResponse,
 )
-from app.core.database import get_db
-from app.auth.dependencies import require_admin
-from app.auth.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -30,26 +26,26 @@ router = APIRouter(prefix="/admin/templates", tags=["admin-templates"])
 class SystemTemplateCreate(BaseModel):
     """Schema for creating a system template."""
     name: str = Field(..., min_length=1, max_length=255, description="Template name")
-    subject: Optional[str] = Field(None, max_length=500, description="Email subject line")
+    subject: str | None = Field(None, max_length=500, description="Email subject line")
     body_html: str = Field(..., min_length=1, description="HTML body content")
-    body_text: Optional[str] = Field(None, description="Plain text body")
-    category: Optional[str] = Field(None, max_length=50, description="Template category")
+    body_text: str | None = Field(None, description="Plain text body")
+    category: str | None = Field(None, max_length=50, description="Template category")
     channel: str = Field(default="email", description="Communication channel: email or whatsapp")
-    situation: Optional[str] = Field(None, max_length=50, description="Situation/context")
-    variables: List[str] = Field(default_factory=list, description="Template variables")
+    situation: str | None = Field(None, max_length=50, description="Situation/context")
+    variables: list[str] = Field(default_factory=list, description="Template variables")
 
 
 class SystemTemplateUpdate(BaseModel):
     """Schema for updating a system template."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    subject: Optional[str] = Field(None, max_length=500)
-    body_html: Optional[str] = Field(None, min_length=1)
-    body_text: Optional[str] = None
-    category: Optional[str] = Field(None, max_length=50)
-    channel: Optional[str] = Field(None, max_length=20)
-    situation: Optional[str] = Field(None, max_length=50)
-    variables: Optional[List[str]] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    subject: str | None = Field(None, max_length=500)
+    body_html: str | None = Field(None, min_length=1)
+    body_text: str | None = None
+    category: str | None = Field(None, max_length=50)
+    channel: str | None = Field(None, max_length=20)
+    situation: str | None = Field(None, max_length=50)
+    variables: list[str] | None = None
+    is_active: bool | None = None
 
 
 class SystemTemplateResponse(EmailTemplateResponse):
@@ -61,7 +57,7 @@ class SystemTemplateResponse(EmailTemplateResponse):
 class SystemTemplateListResponse(BaseModel):
     """Response for listing system templates."""
     total: int
-    items: List[SystemTemplateResponse]
+    items: list[SystemTemplateResponse]
 
 
 class PublishResult(BaseModel):
@@ -77,17 +73,17 @@ def template_to_response(template: EmailTemplate) -> SystemTemplateResponse:
     return SystemTemplateResponse(
         id=cast(uuid_module.UUID, template.id),
         name=cast(str, template.name),
-        subject=cast(Optional[str], template.subject),
+        subject=cast(str | None, template.subject),
         body_html=cast(str, template.body_html),
-        body_text=cast(Optional[str], template.body_text),
-        category=cast(Optional[str], template.category),
+        body_text=cast(str | None, template.body_text),
+        category=cast(str | None, template.category),
         channel=cast(str, template.channel) if template.channel else "email",
-        situation=cast(Optional[str], template.situation),
-        variables=cast(List[str], template.variables) if template.variables else [],
+        situation=cast(str | None, template.situation),
+        variables=cast(list[str], template.variables) if template.variables else [],
         is_active=cast(bool, template.is_active),
         is_system_template=cast(bool, template.is_system_template),
         version=cast(int, template.version) if template.version else 1,
-        created_by=cast(Optional[str], template.created_by),
+        created_by=cast(str | None, template.created_by),
         created_at=cast(datetime, template.created_at),
         updated_at=cast(datetime, template.updated_at) if template.updated_at else cast(datetime, template.created_at)
     )
@@ -95,11 +91,11 @@ def template_to_response(template: EmailTemplate) -> SystemTemplateResponse:
 
 @router.get("", response_model=SystemTemplateListResponse)
 async def list_system_templates(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    channel: Optional[str] = Query(None, description="Filter by channel: email or whatsapp"),
-    situation: Optional[str] = Query(None, description="Filter by situation/context"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    search: Optional[str] = Query(None, description="Search in name and subject"),
+    category: str | None = Query(None, description="Filter by category"),
+    channel: str | None = Query(None, description="Filter by channel: email or whatsapp"),
+    situation: str | None = Query(None, description="Filter by situation/context"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    search: str | None = Query(None, description="Search in name and subject"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
@@ -372,7 +368,7 @@ async def delete_system_template(
 @router.post("/{template_id}/publish", response_model=PublishResult)
 async def publish_template_to_companies(
     template_id: str,
-    company_ids: Optional[List[str]] = Query(None, description="Specific company IDs to publish to. If empty, publishes to all companies."),
+    company_ids: list[str] | None = Query(None, description="Specific company IDs to publish to. If empty, publishes to all companies."),
     db: AsyncSession = Depends(get_db)
 ):
     """

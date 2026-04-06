@@ -14,7 +14,6 @@ Guardrails:
   - Baseado em perfil real: NÃO template estático
 """
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +25,11 @@ async def send_gate_feedback(
     gate_number: int,
     candidate_id: str,
     company_id: str,
-    candidate_name: Optional[str] = None,
-    evaluation_result: Optional[dict] = None,
-    job_title: Optional[str] = None,
-    from_stage: Optional[str] = None,
-    to_stage: Optional[str] = None,
+    candidate_name: str | None = None,
+    evaluation_result: dict | None = None,
+    job_title: str | None = None,
+    from_stage: str | None = None,
+    to_stage: str | None = None,
 ) -> dict:
     """
     Gera e envia feedback diferenciado para candidato após transição de pipeline.
@@ -59,8 +58,9 @@ async def send_gate_feedback(
         Dict com { feedback_text, sent, gate_number, guardrails_applied }
     """
     try:
-        from app.services.llm import llm_service
         from langchain_core.prompts import ChatPromptTemplate
+
+        from app.services.llm import llm_service
 
         # Selecionar prompt por gate
         if gate_number == 1:
@@ -132,10 +132,10 @@ async def send_gate_feedback(
 
 
 def _build_gate1_prompt(
-    candidate_name: Optional[str],
-    evaluation_result: Optional[dict],
-    job_title: Optional[str],
-    to_stage: Optional[str],
+    candidate_name: str | None,
+    evaluation_result: dict | None,
+    job_title: str | None,
+    to_stage: str | None,
 ) -> str:
     """Gate 1: feedback construtivo, focado em desenvolvimento."""
     name = candidate_name or "Candidato(a)"
@@ -171,10 +171,10 @@ Escreva apenas o feedback, sem introdução ou explicação."""
 
 
 def _build_gate2_prompt(
-    candidate_name: Optional[str],
-    evaluation_result: Optional[dict],
-    job_title: Optional[str],
-    from_stage: Optional[str],
+    candidate_name: str | None,
+    evaluation_result: dict | None,
+    job_title: str | None,
+    from_stage: str | None,
 ) -> str:
     """Gate 2: feedback conclusivo, respeitoso, com caminho de revisão."""
     name = candidate_name or "Candidato(a)"
@@ -229,8 +229,8 @@ def _ensure_review_link(text: str) -> str:
 
 def _get_safe_fallback_feedback(
     gate_number: int,
-    candidate_name: Optional[str],
-    job_title: Optional[str],
+    candidate_name: str | None,
+    job_title: str | None,
 ) -> str:
     """Feedback fallback seguro quando LLM falha."""
     name = candidate_name or "Candidato(a)"

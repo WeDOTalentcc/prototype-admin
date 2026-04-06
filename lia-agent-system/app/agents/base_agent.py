@@ -8,13 +8,13 @@ com imports existentes (app.agents.base_agent.*).
 Não adicionar nova lógica aqui.
 """
 from app.shared.agents.agent_types import (  # noqa: F401
+    AgentAction,
+    AgentResponse,
+    AgentTask,
     AgentType,
+    BaseAgent,
     TaskPriority,
     TaskStatus,
-    AgentAction,
-    AgentTask,
-    AgentResponse,
-    BaseAgent,
 )
 
 __all__ = [

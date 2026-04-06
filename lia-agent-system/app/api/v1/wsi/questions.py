@@ -10,22 +10,27 @@ Routes:
   GET  /question-sets/{job_id}/version/{version}
   GET  /question-sets/{job_id}/consistency
 """
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-import uuid
 import json
 import logging
+import uuid
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
 
 from ._shared import (
-    GenerateQuestionsRequest, GenerateQuestionsResponse, WSIQuestionOutput,
-    SuggestQuestionRequest, SaveQuestionsRequest,
-    BLOOM_LEVELS, DREYFUS_LEVELS,
-    get_anthropic_client, _run_anthropic_sync, parse_json_response,
-    logger as _shared_logger,
+    BLOOM_LEVELS,
+    GenerateQuestionsRequest,
+    GenerateQuestionsResponse,
+    SaveQuestionsRequest,
+    SuggestQuestionRequest,
+    WSIQuestionOutput,
+    _run_anthropic_sync,
+    get_anthropic_client,
+    parse_json_response,
 )
 
 logger = logging.getLogger(__name__)

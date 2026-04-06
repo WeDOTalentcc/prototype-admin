@@ -6,27 +6,24 @@ Provedores suportados:
 - Google Calendar (opcional, /calendar/google/*)
   Requer ENABLE_GOOGLE_CALENDAR=True e credenciais configuradas por empresa.
 """
-import hmac
 import hashlib
+import hmac
 import logging
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional
 from datetime import datetime
-from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from app.core.config import settings
+from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.schemas.calendar import (
     AvailabilityRequest,
-    TimeSlot,
-    FindMeetingTimeRequest,
-    ScheduleInterviewRequest,
     CancelInterviewRequest,
+    FindMeetingTimeRequest,
     RescheduleInterviewRequest,
-    CalendarEventResponse,
-    MeetingSuggestion
+    ScheduleInterviewRequest,
+    TimeSlot,
 )
-from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +55,7 @@ async def calendar_health():
     }
 
 
-@router.post("/availability", response_model=List[TimeSlot], dependencies=[Depends(check_graph_configured)])
+@router.post("/availability", response_model=list[TimeSlot], dependencies=[Depends(check_graph_configured)])
 async def check_availability(request: AvailabilityRequest):
     """
     Check interviewer availability for a specific date.
@@ -85,7 +82,7 @@ async def check_availability(request: AvailabilityRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/find-meeting-times", response_model=List[dict], dependencies=[Depends(check_graph_configured)])
+@router.post("/find-meeting-times", response_model=list[dict], dependencies=[Depends(check_graph_configured)])
 async def find_meeting_times(request: FindMeetingTimeRequest):
     """
     Find best meeting times for interview using Microsoft Graph findMeetingTimes API.
@@ -201,7 +198,7 @@ def check_google_calendar_configured():
 
 class GoogleScheduleInterviewRequest(BaseModel):
     company_id: str = Field(..., description="Company ID (tenant)")
-    attendees: List[str] = Field(..., description="Attendee email addresses")
+    attendees: list[str] = Field(..., description="Attendee email addresses")
     organizer_email: str = Field(..., description="Organizer / calendar owner email")
     start_time: datetime = Field(..., description="Interview start time (UTC)")
     duration_minutes: int = Field(default=60, ge=15, le=480)
@@ -219,7 +216,7 @@ class GoogleCancelInterviewRequest(BaseModel):
 class GoogleAvailabilityRequest(BaseModel):
     company_id: str
     organizer_email: str
-    attendees: List[str]
+    attendees: list[str]
     duration_minutes: int = Field(default=60, ge=15, le=480)
     start: datetime
     end: datetime
@@ -380,11 +377,14 @@ async def google_oauth_callback(
         raise HTTPException(status_code=400, detail="OAuth state inválido — possível CSRF")
 
     try:
+        import json
+        import uuid
+
         from google_auth_oauthlib.flow import Flow  # type: ignore
-        from app.shared.encryption import encrypt_value
+
         from app.core.database import AsyncSessionLocal
         from app.models.company_calendar_credentials import CompanyCalendarCredentials
-        import uuid, json
+        from app.shared.encryption import encrypt_value
 
         flow = Flow.from_client_config(
             {

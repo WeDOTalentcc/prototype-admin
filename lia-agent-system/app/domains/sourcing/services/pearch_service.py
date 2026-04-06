@@ -2,37 +2,37 @@
 Pearch AI integration service for candidate search (API v2).
 Based on https://apidocs.pearch.ai/reference/post_v2-search
 """
-import os
 import logging
-from typing import List, Dict, Any, Optional, Tuple
-import httpx
+import os
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, func
+from typing import Any
 
+import httpx
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import retry, stop_after_attempt, wait_exponential
-from app.shared.resilience.circuit_breaker import circuit_breaker, CircuitBreakerError
+
+from app.constants.industries import expand_industries_for_search
+from app.models.candidate import Candidate
 from app.models.pearch import (
-    CandidateProfile,
-    CandidateExperience,
     CandidateEducation,
+    CandidateExperience,
     CandidateInsights,
-    QueryInsight,
+    CandidateProfile,
     CompanyInfo,
     CompanyRole,
+    CreditEstimate,
+    HybridSearchRequest,
+    HybridSearchResponse,
     Language,
     PearchSearchRequest,
     PearchSearchResponse,
     PearchSearchResult,
-    HybridSearchRequest,
-    HybridSearchResponse,
-    SearchType,
-    CreditEstimate,
+    QueryInsight,
     SearchConfirmation,
-    SearchSpec
+    SearchType,
 )
-from app.models.candidate import Candidate
-from app.constants.industries import expand_industries_for_search
+from app.shared.resilience.circuit_breaker import circuit_breaker
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +54,8 @@ async def _pearch_search_fallback(self, request, timeout=120):
 
     if query and company_id:
         try:
-            from app.services.rag_pipeline_service import RAGPipelineService
             from app.core.database import AsyncSessionLocal
+            from app.services.rag_pipeline_service import RAGPipelineService
 
             rag_svc = RAGPipelineService()
             async with AsyncSessionLocal() as db:
@@ -128,7 +128,7 @@ class PearchService:
         if not self.api_key:
             logger.warning("PEARCH_API_KEY not set - external candidate search will not work")
     
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         """Get headers for API requests."""
         return {
             "accept": "application/json",
@@ -238,7 +238,7 @@ class PearchService:
 
         # FAR-2: FairnessGuard — bloquear queries discriminatórias antes de enviar ao Pearch
         try:
-            from app.shared.compliance.fairness_guard import FairnessGuard, FairnessCheckResult
+            from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
             _fg_result = _fg.check(request.query)
             if _fg_result.is_blocked:
@@ -327,7 +327,7 @@ class PearchService:
             logger.error(f"Unexpected error calling Pearch API: {e}")
             raise
     
-    def _parse_response(self, data: Dict[str, Any], search_time: float) -> PearchSearchResponse:
+    def _parse_response(self, data: dict[str, Any], search_time: float) -> PearchSearchResponse:
         """Parse raw API response into structured models."""
         search_results = []
         
@@ -384,7 +384,7 @@ class PearchService:
             search_time_seconds=search_time
         )
     
-    def _parse_company_location(self, company_info: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def _parse_company_location(self, company_info: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
         """
         Parse company HQ location from company_info.
         
@@ -420,7 +420,7 @@ class PearchService:
         
         return city, state, country
     
-    def _parse_institution_location(self, education_data: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def _parse_institution_location(self, education_data: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
         """
         Parse institution location from education data.
         
@@ -447,7 +447,7 @@ class PearchService:
         
         return city, state, country
     
-    def _parse_profile(self, data: Dict[str, Any]) -> CandidateProfile:
+    def _parse_profile(self, data: dict[str, Any]) -> CandidateProfile:
         """Parse profile data into CandidateProfile model."""
         # Parse languages
         languages = []
@@ -622,20 +622,20 @@ class PearchService:
         db: AsyncSession,
         query: str,
         limit: int = 20,
-        exclude_ids: Optional[List[int]] = None,
-        industries: Optional[List[str]] = None,
+        exclude_ids: list[int] | None = None,
+        industries: list[str] | None = None,
         require_email: bool = False,
         require_phone: bool = False,
         include_discovered: bool = True,
-        funding_stages: Optional[List[str]] = None,
-        company_hq_countries: Optional[List[str]] = None,
-        company_tags: Optional[List[str]] = None,
-        institution_tiers: Optional[List[str]] = None,
-        institution_countries: Optional[List[str]] = None,
-        institution_ranking_max: Optional[int] = None,
-        timezones: Optional[List[str]] = None,
-        timezone_pattern: Optional[str] = None
-    ) -> Tuple[List[CandidateProfile], int]:
+        funding_stages: list[str] | None = None,
+        company_hq_countries: list[str] | None = None,
+        company_tags: list[str] | None = None,
+        institution_tiers: list[str] | None = None,
+        institution_countries: list[str] | None = None,
+        institution_ranking_max: int | None = None,
+        timezones: list[str] | None = None,
+        timezone_pattern: str | None = None
+    ) -> tuple[list[CandidateProfile], int]:
         """
         Busca candidatos no banco de dados local e na tabela de staging (discovered).
         
@@ -660,7 +660,8 @@ class PearchService:
         Returns:
             Tuple de (lista de perfis, total encontrado)
         """
-        from app.models.candidate import CandidateExperience, CandidateEducation as CandidateEducationDB, ExternalCandidateProfile
+        from app.models.candidate import CandidateEducation as CandidateEducationDB
+        from app.models.candidate import CandidateExperience, ExternalCandidateProfile
         
         logger.info(f"Searching local database: '{query}' (limit={limit}, industries={industries}, include_discovered={include_discovered})")
         
@@ -706,8 +707,6 @@ class PearchService:
             
             # Subquery para encontrar candidate_ids com experiências em qualquer das industries
             # Usa overlap (&&) para verificar se há intersecção entre os arrays
-            from sqlalchemy import cast
-            from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
             
             logger.debug(f"Industry filter: original={industries}, expanded={expanded_industries[:10]}...")
             
@@ -747,7 +746,6 @@ class PearchService:
         # Filter by company tags (via experiences table) - overlap with array
         if company_tags and len(company_tags) > 0:
             tags_lower = [t.lower() for t in company_tags]
-            from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
             tags_subq = (
                 select(CandidateExperience.candidate_id)
                 .where(
@@ -1107,7 +1105,7 @@ class PearchService:
                 logger.error(f"Pearch search failed: {e}")
                 warning_message = f"Busca externa falhou: {str(e)}"
         
-        total_time = (datetime.now() - start_time).total_seconds()
+        (datetime.now() - start_time).total_seconds()
         
         return HybridSearchResponse(
             query=request.query,
@@ -1129,7 +1127,7 @@ class PearchService:
         self,
         thread_id: str,
         additional_query: str,
-        limit: Optional[int] = None
+        limit: int | None = None
     ) -> PearchSearchResponse:
         """
         Refina uma busca existente usando o thread_id.

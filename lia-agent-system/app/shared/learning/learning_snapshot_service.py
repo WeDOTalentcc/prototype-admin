@@ -18,8 +18,8 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +40,13 @@ async def _get_redis():
     """Retorna cliente Redis async. Retorna None se indisponível."""
     try:
         import redis.asyncio as aioredis
+
         from app.core.config import settings
         return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
     except Exception:
         try:
             import aioredis  # type: ignore
+
             from app.core.config import settings
             return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
         except Exception:
@@ -67,7 +69,7 @@ class LearningSnapshotService:
         self,
         company_id: str,
         db: Any,  # AsyncSession — tipagem fraca para evitar import circular
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Captura os LearningPattern atuais da empresa e persiste no Redis.
 
@@ -77,7 +79,7 @@ class LearningSnapshotService:
         try:
             payload = await self._load_patterns(company_id, db)
 
-            ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+            ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
             key = _snapshot_key(company_id, ts)
 
             redis = await _get_redis()
@@ -103,9 +105,10 @@ class LearningSnapshotService:
 
     async def _load_patterns(
         self, company_id: str, db: Any
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Carrega LearningPattern do DB e serializa para lista de dicts. Mockável em testes."""
         from sqlalchemy import select
+
         from app.models.intelligent_cache import LearningPattern
 
         result = await db.execute(
@@ -134,7 +137,7 @@ class LearningSnapshotService:
             for p in patterns
         ]
 
-    async def get_latest_key(self, company_id: str) -> Optional[str]:
+    async def get_latest_key(self, company_id: str) -> str | None:
         """Retorna a chave do snapshot mais recente, ou None."""
         try:
             redis = await _get_redis()
@@ -144,13 +147,13 @@ class LearningSnapshotService:
                 raw = await redis.get(_index_key(company_id))
                 if not raw:
                     return None
-                index: List[str] = json.loads(raw)
+                index: list[str] = json.loads(raw)
                 return index[-1] if index else None
         except Exception as exc:
             logger.debug("[LearningSnapshot] get_latest_key falhou: %s", exc)
             return None
 
-    async def list_snapshots(self, company_id: str) -> List[str]:
+    async def list_snapshots(self, company_id: str) -> list[str]:
         """Retorna lista de chaves de snapshots disponíveis (mais antigo → mais recente)."""
         try:
             redis = await _get_redis()
@@ -202,7 +205,7 @@ class LearningSnapshotService:
                 )
                 return False
 
-            payload: List[Dict[str, Any]] = json.loads(raw)
+            payload: list[dict[str, Any]] = json.loads(raw)
 
             await self._restore_patterns(company_id, payload, db)
             await db.commit()
@@ -226,10 +229,11 @@ class LearningSnapshotService:
             return False
 
     async def _restore_patterns(
-        self, company_id: str, payload: List[Dict[str, Any]], db: Any
+        self, company_id: str, payload: list[dict[str, Any]], db: Any
     ) -> None:
         """Remove padrões atuais e restaura a partir do payload. Mockável em testes."""
         from sqlalchemy import delete
+
         from app.models.intelligent_cache import LearningPattern
 
         await db.execute(
@@ -256,7 +260,7 @@ class LearningSnapshotService:
         """Mantém índice de até MAX_SNAPSHOTS chaves por empresa."""
         idx_key = _index_key(company_id)
         raw = await redis.get(idx_key)
-        index: List[str] = json.loads(raw) if raw else []
+        index: list[str] = json.loads(raw) if raw else []
         index.append(new_key)
         if len(index) > MAX_SNAPSHOTS:
             index = index[-MAX_SNAPSHOTS:]

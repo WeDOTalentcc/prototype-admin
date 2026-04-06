@@ -3,28 +3,21 @@ Job Status Webhooks API endpoints.
 
 Manages webhook registrations for job vacancy status change notifications.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc, func
-from typing import Optional, List, Dict, Any
-from uuid import UUID
-from datetime import datetime
-from pydantic import BaseModel, Field, HttpUrl
 import logging
+from datetime import datetime
+from typing import Any
+from uuid import UUID
 
-from app.core.database import get_db
-from app.models.webhook_registration import (
-    WebhookRegistration,
-    WebhookDeliveryLog,
-    JOB_STATUS_WEBHOOK_EVENTS
-)
-from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
-from app.auth.dependencies import (
-    get_current_user,
-    get_current_active_user,
-    get_user_company_id
-)
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
+from app.core.database import get_db
+from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
+from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = logging.getLogger(__name__)
@@ -34,9 +27,9 @@ class WebhookRegisterRequest(BaseModel):
     """Request to register a new webhook."""
     name: str = Field(..., min_length=1, max_length=255)
     url: str = Field(..., min_length=1, max_length=2000)
-    event_types: List[str] = Field(default=["job.status_changed"])
-    description: Optional[str] = None
-    headers: Optional[Dict[str, str]] = None
+    event_types: list[str] = Field(default=["job.status_changed"])
+    description: str | None = None
+    headers: dict[str, str] | None = None
     retry_count: int = Field(default=3, ge=1, le=10)
     timeout_seconds: int = Field(default=30, ge=5, le=120)
 
@@ -55,48 +48,48 @@ class WebhookResponse(BaseModel):
     id: str
     company_id: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     url: str
-    event_types: List[str]
+    event_types: list[str]
     is_active: bool
     retry_count: int
     timeout_seconds: int
-    last_triggered_at: Optional[str] = None
-    last_success_at: Optional[str] = None
-    last_failure_at: Optional[str] = None
-    last_failure_reason: Optional[str] = None
+    last_triggered_at: str | None = None
+    last_success_at: str | None = None
+    last_failure_at: str | None = None
+    last_failure_reason: str | None = None
     total_triggers: int
     total_successes: int
     total_failures: int
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class WebhookListResponse(BaseModel):
     """Response for listing webhooks."""
     success: bool
-    webhooks: List[WebhookResponse]
+    webhooks: list[WebhookResponse]
     total: int
 
 
 class WebhookUpdateRequest(BaseModel):
     """Request to update a webhook."""
-    name: Optional[str] = None
-    url: Optional[str] = None
-    description: Optional[str] = None
-    event_types: Optional[List[str]] = None
-    headers: Optional[Dict[str, str]] = None
-    is_active: Optional[bool] = None
-    retry_count: Optional[int] = Field(default=None, ge=1, le=10)
-    timeout_seconds: Optional[int] = Field(default=None, ge=5, le=120)
+    name: str | None = None
+    url: str | None = None
+    description: str | None = None
+    event_types: list[str] | None = None
+    headers: dict[str, str] | None = None
+    is_active: bool | None = None
+    retry_count: int | None = Field(default=None, ge=1, le=10)
+    timeout_seconds: int | None = Field(default=None, ge=5, le=120)
 
 
 class WebhookTestResponse(BaseModel):
     """Response after testing a webhook."""
     success: bool
-    status_code: Optional[int] = None
-    duration_ms: Optional[int] = None
-    error: Optional[str] = None
+    status_code: int | None = None
+    duration_ms: int | None = None
+    error: str | None = None
     message: str
 
 
@@ -105,18 +98,18 @@ class WebhookLogResponse(BaseModel):
     id: str
     event_type: str
     status: str
-    status_code: Optional[int] = None
-    error_message: Optional[str] = None
+    status_code: int | None = None
+    error_message: str | None = None
     attempt_number: int
     triggered_at: str
-    completed_at: Optional[str] = None
-    duration_ms: Optional[int] = None
+    completed_at: str | None = None
+    duration_ms: int | None = None
 
 
 class WebhookLogsResponse(BaseModel):
     """Response for webhook logs."""
     success: bool
-    logs: List[WebhookLogResponse]
+    logs: list[WebhookLogResponse]
     total: int
 
 
@@ -124,7 +117,7 @@ class WebhookEventResponse(BaseModel):
     """Webhook event type info."""
     event: str
     description: str
-    payload_example: Dict[str, Any]
+    payload_example: dict[str, Any]
 
 
 @router.post("/register", response_model=WebhookRegisterResponse)
@@ -189,7 +182,7 @@ async def register_webhook(
 
 @router.get("/", response_model=WebhookListResponse)
 async def list_webhooks(
-    is_active: Optional[bool] = None,
+    is_active: bool | None = None,
     limit: int = Query(default=50, le=100),
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -468,7 +461,7 @@ async def test_webhook(
 @router.get("/{webhook_id}/logs", response_model=WebhookLogsResponse)
 async def get_webhook_logs(
     webhook_id: UUID,
-    status: Optional[str] = None,
+    status: str | None = None,
     limit: int = Query(default=50, le=100),
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -539,7 +532,7 @@ async def get_webhook_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/events/available", response_model=List[WebhookEventResponse])
+@router.get("/events/available", response_model=list[WebhookEventResponse])
 async def get_available_events(
     current_user: User = Depends(get_current_active_user)
 ):

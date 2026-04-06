@@ -7,21 +7,21 @@ This service handles:
 - Managing webhook configurations
 - Logging webhook delivery attempts
 """
-import os
-import logging
-import httpx
 import hashlib
 import hmac
 import json
+import logging
 import secrets
-from typing import Dict, Any, List, Optional
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc
+from typing import Any
 
-from app.core.database import AsyncSessionLocal
+import httpx
+from sqlalchemy import and_, desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
-from app.models.webhook import Webhook, WebhookLog, WebhookEvent, WebhookStatus, WEBHOOK_EVENTS
+from app.core.database import AsyncSessionLocal
+from app.models.webhook import WEBHOOK_EVENTS, Webhook, WebhookLog, WebhookStatus
 
 logger = logging.getLogger(__name__)
 
@@ -44,15 +44,15 @@ class WebhookService:
         company_id: str,
         name: str,
         url: str,
-        events: List[str],
-        description: Optional[str] = None,
-        secret_key: Optional[str] = None,
-        headers: Optional[Dict[str, str]] = None,
+        events: list[str],
+        description: str | None = None,
+        secret_key: str | None = None,
+        headers: dict[str, str] | None = None,
         retry_count: int = 3,
         timeout_seconds: int = 30,
-        created_by: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        created_by: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Register a new webhook.
         
@@ -129,9 +129,9 @@ class WebhookService:
         self,
         webhook_id: str,
         company_id: str,
-        updates: Dict[str, Any],
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        updates: dict[str, Any],
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Update an existing webhook.
         
@@ -198,8 +198,8 @@ class WebhookService:
         self,
         webhook_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Delete a webhook.
         
@@ -256,12 +256,12 @@ class WebhookService:
     async def list_webhooks(
         self,
         company_id: str,
-        is_active: Optional[bool] = None,
-        event_filter: Optional[str] = None,
+        is_active: bool | None = None,
+        event_filter: str | None = None,
         limit: int = 50,
         offset: int = 0,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         List webhooks for a company.
         
@@ -320,8 +320,8 @@ class WebhookService:
         self,
         webhook_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get a single webhook by ID.
         
@@ -373,10 +373,10 @@ class WebhookService:
     async def trigger_webhook(
         self,
         event: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Trigger all webhooks subscribed to an event.
         
@@ -452,9 +452,9 @@ class WebhookService:
     async def _deliver_webhook(
         self,
         webhook: Webhook,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Deliver a webhook to its endpoint.
         
@@ -620,8 +620,8 @@ class WebhookService:
         self,
         webhook_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Send a test event to a webhook.
         
@@ -682,11 +682,11 @@ class WebhookService:
         self,
         webhook_id: str,
         company_id: str,
-        status_filter: Optional[str] = None,
+        status_filter: str | None = None,
         limit: int = 50,
         offset: int = 0,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get delivery logs for a webhook.
         
@@ -741,7 +741,7 @@ class WebhookService:
             if should_close:
                 await db.close()
     
-    def get_available_events(self) -> List[Dict[str, Any]]:
+    def get_available_events(self) -> list[dict[str, Any]]:
         """
         Get list of available webhook events.
         

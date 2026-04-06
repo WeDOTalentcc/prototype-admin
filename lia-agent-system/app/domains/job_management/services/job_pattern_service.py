@@ -9,17 +9,17 @@ Enables the 10th job to be 80% faster than the 1st by:
 """
 import logging
 import re
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime, timedelta
-from uuid import UUID, uuid4
+from datetime import datetime
 from statistics import mean, median
+from typing import Any
+from uuid import UUID, uuid4
 
-from sqlalchemy import select, func, and_, or_, update
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.job_pattern import JobPattern, SalaryBenchmark, SkillCluster
 from app.models.feedback_learning import JobOutcome
+from app.models.job_pattern import JobPattern, SalaryBenchmark
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +70,8 @@ class JobPatternService:
     def generate_pattern_key(
         self,
         job_title: str,
-        department: Optional[str] = None,
-        seniority: Optional[str] = None
+        department: str | None = None,
+        seniority: str | None = None
     ) -> str:
         """Generate a unique pattern key from job attributes."""
         parts = []
@@ -92,12 +92,12 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        department: Optional[str] = None,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
+        department: str | None = None,
+        seniority: str | None = None,
+        location: str | None = None,
         limit: int = 5,
-        db: Optional[AsyncSession] = None
-    ) -> List[JobPattern]:
+        db: AsyncSession | None = None
+    ) -> list[JobPattern]:
         """
         Find similar job patterns for suggestions.
         
@@ -164,11 +164,11 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
-        department: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        location: str | None = None,
+        department: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get salary suggestion based on historical data.
         
@@ -257,12 +257,12 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        existing_skills: Optional[List[str]] = None,
-        department: Optional[str] = None,
-        seniority: Optional[str] = None,
+        existing_skills: list[str] | None = None,
+        department: str | None = None,
+        seniority: str | None = None,
         limit: int = 10,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get skill recommendations based on similar jobs.
         
@@ -291,7 +291,7 @@ class JobPatternService:
                     "message": "Dados insuficientes para recomendações de skills",
                 }
             
-            skill_scores: Dict[str, float] = {}
+            skill_scores: dict[str, float] = {}
             total_weight = 0
             
             for pattern in patterns:
@@ -348,12 +348,12 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        existing_behavioral: Optional[List[str]] = None,
-        department: Optional[str] = None,
-        seniority: Optional[str] = None,
+        existing_behavioral: list[str] | None = None,
+        department: str | None = None,
+        seniority: str | None = None,
         limit: int = 5,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get behavioral competency recommendations."""
         should_close = db is None
         if db is None:
@@ -377,7 +377,7 @@ class JobPatternService:
                     "message": "Dados insuficientes para recomendações comportamentais",
                 }
             
-            behavioral_scores: Dict[str, float] = {}
+            behavioral_scores: dict[str, float] = {}
             
             for pattern in patterns:
                 weight = pattern.confidence * pattern.sample_count
@@ -415,12 +415,12 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
-        salary_min: Optional[float] = None,
-        salary_max: Optional[float] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        seniority: str | None = None,
+        location: str | None = None,
+        salary_min: float | None = None,
+        salary_max: float | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Predict time-to-fill based on similar jobs.
         
@@ -432,7 +432,7 @@ class JobPatternService:
             db = AsyncSessionLocal()
         
         try:
-            company_uuid = UUID(company_id)
+            UUID(company_id)
             
             patterns = await self.find_similar_patterns(
                 company_id=company_id,
@@ -505,9 +505,9 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        department: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        department: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get success profile based on successful hires.
         
@@ -543,8 +543,8 @@ class JobPatternService:
                     "message": "Poucos casos de sucesso para gerar perfil",
                 }
             
-            all_skills: Dict[str, int] = {}
-            all_behavioral: Dict[str, int] = {}
+            all_skills: dict[str, int] = {}
+            all_behavioral: dict[str, int] = {}
             salaries = []
             ttf_days = []
             
@@ -597,8 +597,8 @@ class JobPatternService:
         self,
         company_id: str,
         job_id: str,
-        outcome_data: Dict[str, Any],
-        db: Optional[AsyncSession] = None
+        outcome_data: dict[str, Any],
+        db: AsyncSession | None = None
     ) -> JobOutcome:
         """
         Record a job outcome for learning purposes.
@@ -701,7 +701,7 @@ class JobPatternService:
                     pattern.success_count += 1
                 
                 if outcome.salary_min and outcome.salary_max:
-                    avg_salary = (outcome.salary_min + outcome.salary_max) / 2
+                    (outcome.salary_min + outcome.salary_max) / 2
                     if pattern.avg_salary_min:
                         pattern.avg_salary_min = (pattern.avg_salary_min * (pattern.sample_count - 1) + outcome.salary_min) / pattern.sample_count
                         pattern.avg_salary_max = (pattern.avg_salary_max * (pattern.sample_count - 1) + outcome.salary_max) / pattern.sample_count
@@ -850,13 +850,13 @@ class JobPatternService:
         self,
         company_id: str,
         job_title: str,
-        department: Optional[str] = None,
-        seniority: Optional[str] = None,
-        location: Optional[str] = None,
-        existing_skills: Optional[List[str]] = None,
-        existing_behavioral: Optional[List[str]] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        department: str | None = None,
+        seniority: str | None = None,
+        location: str | None = None,
+        existing_skills: list[str] | None = None,
+        existing_behavioral: list[str] | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Get all suggestions for the wizard in a single call.
         

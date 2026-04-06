@@ -4,11 +4,11 @@ Base ATS Client Interface
 Defines the abstract interface that all ATS clients must implement
 for bidirectional synchronization between WedoTalent and external ATS platforms.
 """
+import logging
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 class ATSClientConfig:
     """Configuration for ATS client."""
     api_key: str
-    api_secret: Optional[str] = None
-    base_url: Optional[str] = None
-    company_id: Optional[str] = None
-    webhook_url: Optional[str] = None
+    api_secret: str | None = None
+    base_url: str | None = None
+    company_id: str | None = None
+    webhook_url: str | None = None
     timeout: int = 30
     retry_attempts: int = 3
     retry_delay: float = 1.0
@@ -32,19 +32,19 @@ class ATSCandidate:
     ats_id: str
     name: str
     email: str
-    phone: Optional[str] = None
-    status: Optional[str] = None
-    stage: Optional[str] = None
-    cv_url: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    location: Optional[str] = None
-    notes: Optional[str] = None
-    custom_fields: Optional[Dict[str, Any]] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    raw_data: Optional[Dict[str, Any]] = None
+    phone: str | None = None
+    status: str | None = None
+    stage: str | None = None
+    cv_url: str | None = None
+    linkedin_url: str | None = None
+    location: str | None = None
+    notes: str | None = None
+    custom_fields: dict[str, Any] | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    raw_data: dict[str, Any] | None = None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "ats_id": self.ats_id,
@@ -68,18 +68,18 @@ class ATSJob:
     """Normalized job data from ATS."""
     ats_id: str
     title: str
-    description: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    status: Optional[str] = None
-    requirements: Optional[str] = None
-    salary_range: Optional[str] = None
-    employment_type: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    raw_data: Optional[Dict[str, Any]] = None
+    description: str | None = None
+    department: str | None = None
+    location: str | None = None
+    status: str | None = None
+    requirements: str | None = None
+    salary_range: str | None = None
+    employment_type: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    raw_data: dict[str, Any] | None = None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "ats_id": self.ats_id,
@@ -101,12 +101,12 @@ class SyncResult:
     """Result of a sync operation."""
     success: bool
     action: str  # created, updated, deleted
-    ats_id: Optional[str] = None
-    wedotalent_id: Optional[str] = None
-    changes: List[str] = field(default_factory=list)
-    error: Optional[str] = None
+    ats_id: str | None = None
+    wedotalent_id: str | None = None
+    changes: list[str] = field(default_factory=list)
+    error: str | None = None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "success": self.success,
             "action": self.action,
@@ -148,23 +148,23 @@ class ATSClient(ABC):
     # ============== CANDIDATE OPERATIONS ==============
     
     @abstractmethod
-    async def get_candidate(self, candidate_id: str) -> Optional[ATSCandidate]:
+    async def get_candidate(self, candidate_id: str) -> ATSCandidate | None:
         """Get a single candidate by ID."""
         pass
     
     @abstractmethod
     async def list_candidates(
         self,
-        job_id: Optional[str] = None,
-        status: Optional[str] = None,
+        job_id: str | None = None,
+        status: str | None = None,
         limit: int = 100,
         offset: int = 0
-    ) -> List[ATSCandidate]:
+    ) -> list[ATSCandidate]:
         """List candidates with optional filters."""
         pass
     
     @abstractmethod
-    async def create_candidate(self, data: Dict[str, Any]) -> ATSCandidate:
+    async def create_candidate(self, data: dict[str, Any]) -> ATSCandidate:
         """Create a new candidate in ATS."""
         pass
     
@@ -172,7 +172,7 @@ class ATSClient(ABC):
     async def update_candidate(
         self,
         candidate_id: str,
-        data: Dict[str, Any]
+        data: dict[str, Any]
     ) -> ATSCandidate:
         """Update an existing candidate."""
         pass
@@ -182,7 +182,7 @@ class ATSClient(ABC):
         self,
         candidate_id: str,
         new_status: str,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> bool:
         """Update candidate status/stage."""
         pass
@@ -192,7 +192,7 @@ class ATSClient(ABC):
         self,
         candidate_id: str,
         note: str,
-        author: Optional[str] = None
+        author: str | None = None
     ) -> bool:
         """Add a note/observation to candidate."""
         pass
@@ -200,16 +200,16 @@ class ATSClient(ABC):
     # ============== JOB OPERATIONS ==============
     
     @abstractmethod
-    async def get_job(self, job_id: str) -> Optional[ATSJob]:
+    async def get_job(self, job_id: str) -> ATSJob | None:
         """Get a single job by ID."""
         pass
     
     @abstractmethod
     async def list_jobs(
         self,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100
-    ) -> List[ATSJob]:
+    ) -> list[ATSJob]:
         """List jobs with optional filters."""
         pass
     
@@ -218,8 +218,8 @@ class ATSClient(ABC):
     async def sync_candidate_to_ats(
         self,
         wedotalent_id: str,
-        data: Dict[str, Any],
-        ats_id: Optional[str] = None
+        data: dict[str, Any],
+        ats_id: str | None = None
     ) -> SyncResult:
         """
         Push candidate data from WedoTalent to ATS.
@@ -267,7 +267,7 @@ class ATSClient(ABC):
     async def sync_candidate_from_ats(
         self,
         ats_id: str
-    ) -> Optional[ATSCandidate]:
+    ) -> ATSCandidate | None:
         """
         Pull candidate data from ATS to WedoTalent.
         
@@ -282,10 +282,10 @@ class ATSClient(ABC):
     
     async def sync_candidates_from_ats(
         self,
-        job_id: Optional[str] = None,
-        since: Optional[datetime] = None,
+        job_id: str | None = None,
+        since: datetime | None = None,
         limit: int = 100
-    ) -> List[ATSCandidate]:
+    ) -> list[ATSCandidate]:
         """
         Pull multiple candidates from ATS (bulk sync).
         
@@ -308,7 +308,7 @@ class ATSClient(ABC):
         
         return candidates
     
-    async def sync_job_from_ats(self, ats_id: str) -> Optional[ATSJob]:
+    async def sync_job_from_ats(self, ats_id: str) -> ATSJob | None:
         """
         Pull job data from ATS.
         
@@ -323,9 +323,9 @@ class ATSClient(ABC):
     
     async def sync_jobs_from_ats(
         self,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 100
-    ) -> List[ATSJob]:
+    ) -> list[ATSJob]:
         """
         Pull all jobs from ATS.
         

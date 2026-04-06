@@ -8,13 +8,13 @@ Learns from job creation patterns to:
 - Enable the 80% faster 10th job creation goal
 """
 import logging
-from typing import Dict, List, Optional, Any
-from uuid import UUID, uuid4
-from datetime import datetime, timedelta
 from collections import Counter
+from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID, uuid4
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.job_template import JobTemplate
 
@@ -30,9 +30,9 @@ class TemplateLearningService:
     async def learn_from_job_creation(
         self,
         company_id: UUID,
-        job_data: Dict[str, Any],
-        template_used: Optional[UUID] = None
-    ) -> Optional[JobTemplate]:
+        job_data: dict[str, Any],
+        template_used: UUID | None = None
+    ) -> JobTemplate | None:
         """
         Learn from a completed job creation and potentially create a new template.
         
@@ -68,7 +68,7 @@ class TemplateLearningService:
         company_id: UUID,
         normalized_title: str,
         days: int = 365
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Find similar jobs created by the company."""
         cutoff = datetime.utcnow() - timedelta(days=days)
         
@@ -119,7 +119,7 @@ class TemplateLearningService:
         self,
         company_id: UUID,
         normalized_title: str
-    ) -> Optional[JobTemplate]:
+    ) -> JobTemplate | None:
         """Check if a template already exists for this pattern."""
         result = await self.db.execute(
             text("""
@@ -139,8 +139,8 @@ class TemplateLearningService:
     async def _create_learned_template(
         self,
         company_id: UUID,
-        job_data: Dict[str, Any],
-        similar_jobs: List[Dict]
+        job_data: dict[str, Any],
+        similar_jobs: list[dict]
     ) -> JobTemplate:
         """Create a new template learned from similar jobs."""
         merged_skills = self._merge_skills(similar_jobs)
@@ -189,7 +189,7 @@ class TemplateLearningService:
         logger.info(f"Created learned template: {title} for company {company_id}")
         return template
     
-    def _merge_skills(self, jobs: List[Dict]) -> List[Dict]:
+    def _merge_skills(self, jobs: list[dict]) -> list[dict]:
         """Merge skills from similar jobs, keeping most common."""
         skill_counts = Counter()
         skill_details = {}
@@ -221,7 +221,7 @@ class TemplateLearningService:
         
         return merged
     
-    def _merge_behavioral(self, jobs: List[Dict]) -> List[Dict]:
+    def _merge_behavioral(self, jobs: list[dict]) -> list[dict]:
         """Merge behavioral competencies from similar jobs."""
         behavior_counts = Counter()
         behavior_details = {}
@@ -251,7 +251,7 @@ class TemplateLearningService:
         
         return merged
     
-    def _merge_responsibilities(self, jobs: List[Dict]) -> List[str]:
+    def _merge_responsibilities(self, jobs: list[dict]) -> list[str]:
         """Merge responsibilities from similar jobs."""
         resp_counts = Counter()
         
@@ -260,19 +260,19 @@ class TemplateLearningService:
             if isinstance(responsibilities, list):
                 for resp in responsibilities:
                     if isinstance(resp, str) and len(resp) > 10:
-                        normalized = resp.strip().lower()[:100]
+                        resp.strip().lower()[:100]
                         resp_counts[resp] += 1
         
         return [resp for resp, _ in resp_counts.most_common(8)]
     
-    def _average_value(self, jobs: List[Dict], key: str) -> Optional[float]:
+    def _average_value(self, jobs: list[dict], key: str) -> float | None:
         """Calculate average of a numeric field."""
         values = [j.get(key) for j in jobs if j.get(key)]
         if values:
             return sum(values) / len(values)
         return None
     
-    def _most_common(self, jobs: List[Dict], key: str) -> Optional[str]:
+    def _most_common(self, jobs: list[dict], key: str) -> str | None:
         """Find most common value for a field."""
         values = [j.get(key) for j in jobs if j.get(key)]
         if values:
@@ -303,7 +303,7 @@ class TemplateLearningService:
         self,
         template_id: UUID,
         company_id: UUID,
-        job_data: Dict[str, Any]
+        job_data: dict[str, Any]
     ) -> None:
         """Record template usage for analytics."""
         await self.db.execute(
@@ -322,7 +322,7 @@ class TemplateLearningService:
     async def get_learning_stats(
         self,
         company_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get learning statistics for a company."""
         result = await self.db.execute(
             text("""
@@ -361,7 +361,7 @@ class TemplateLearningService:
         self,
         company_id: UUID,
         limit: int = 5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Suggest job patterns that could benefit from templates."""
         result = await self.db.execute(
             text("""

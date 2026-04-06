@@ -3,6 +3,7 @@ Analytics routes: metrics, analytics deep-dive, history, stats/overview,
 archetypes (already in crud.py), job report.
 """
 from fastapi import APIRouter
+
 from ._shared import *
 
 router = APIRouter()

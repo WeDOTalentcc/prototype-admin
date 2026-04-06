@@ -13,9 +13,8 @@ Usage:
     user_id = payload.user_id
 """
 import logging
-from datetime import datetime, timezone
-from typing import Optional
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 import jwt
 from jwt.exceptions import InvalidTokenError as JWTError
@@ -36,7 +35,7 @@ def validate_rails_token(
     token: str,
     rails_secret_key: str,
     algorithm: str = "HS256",
-) -> Optional[RailsTokenPayload]:
+) -> RailsTokenPayload | None:
     """
     Validate a JWT issued by the Rails ats_api.
 
@@ -59,7 +58,7 @@ def validate_rails_token(
 
         return RailsTokenPayload(
             user_id=int(user_id),
-            exp=datetime.fromtimestamp(exp, tz=timezone.utc) if exp else datetime.max.replace(tzinfo=timezone.utc),
+            exp=datetime.fromtimestamp(exp, tz=UTC) if exp else datetime.max.replace(tzinfo=UTC),
             raw=payload,
         )
     except JWTError as e:
@@ -73,7 +72,7 @@ def validate_rails_token(
 async def resolve_company_from_rails_user(
     user_id: int,
     ats_client: "WeDOTalentATSClient",
-) -> Optional[str]:
+) -> str | None:
     """
     Resolve company_id/account from a Rails user_id.
     Calls /v1/me to get the users account_id.

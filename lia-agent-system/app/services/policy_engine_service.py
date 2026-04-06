@@ -7,26 +7,32 @@ This service provides:
 - Escalation workflow management
 - Integration with audit and notification services
 """
-import json
-import logging
 import fnmatch
+import logging
 import time
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List, Tuple
 from functools import wraps
-from pathlib import Path
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, and_, or_, delete, func, desc
+from sqlalchemy import and_, delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.models.policy import (
-    BusinessRule, RateLimitRule, RateLimitCounter,
-    EscalationRule, PolicyEvaluationLog, EscalationLog,
-    RuleType, TargetType, TriggerType, EscalationAction,
+    DEFAULT_BUSINESS_RULES,
+    DEFAULT_ESCALATION_RULES,
+    DEFAULT_RATE_LIMIT_RULES,
+    BusinessRule,
+    EscalationAction,
+    EscalationLog,
+    EscalationRule,
+    PolicyEvaluationLog,
     PolicyEvaluationResult,
-    DEFAULT_BUSINESS_RULES, DEFAULT_RATE_LIMIT_RULES, DEFAULT_ESCALATION_RULES
+    RateLimitCounter,
+    RateLimitRule,
+    RuleType,
+    TargetType,
 )
 
 logger = logging.getLogger(__name__)
@@ -89,11 +95,11 @@ class EvaluationResult:
         self,
         result: PolicyEvaluationResult,
         allowed: bool,
-        reason: Optional[str] = None,
-        matching_rule: Optional[BusinessRule] = None,
-        rate_limit_status: Optional[Dict[str, Any]] = None,
+        reason: str | None = None,
+        matching_rule: BusinessRule | None = None,
+        rate_limit_status: dict[str, Any] | None = None,
         requires_approval: bool = False,
-        approval_config: Optional[Dict[str, Any]] = None,
+        approval_config: dict[str, Any] | None = None,
         evaluation_time_ms: float = 0.0,
         rules_evaluated: int = 0
     ):
@@ -107,7 +113,7 @@ class EvaluationResult:
         self.evaluation_time_ms = evaluation_time_ms
         self.rules_evaluated = rules_evaluated
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "result": self.result.value,
             "allowed": self.allowed,
@@ -131,8 +137,8 @@ class RateLimitResult:
         limit_value: int,
         window_seconds: int,
         remaining: int,
-        reset_at: Optional[datetime] = None,
-        rule_name: Optional[str] = None
+        reset_at: datetime | None = None,
+        rule_name: str | None = None
     ):
         self.allowed = allowed
         self.current_count = current_count
@@ -142,7 +148,7 @@ class RateLimitResult:
         self.reset_at = reset_at
         self.rule_name = rule_name
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "allowed": self.allowed,
             "current_count": self.current_count,
@@ -160,10 +166,10 @@ class EscalationResult:
     def __init__(
         self,
         success: bool,
-        escalation_log_id: Optional[str] = None,
-        action_taken: Optional[str] = None,
-        notifications_sent: List[str] = None,
-        message: Optional[str] = None
+        escalation_log_id: str | None = None,
+        action_taken: str | None = None,
+        notifications_sent: list[str] = None,
+        message: str | None = None
     ):
         self.success = success
         self.escalation_log_id = escalation_log_id
@@ -171,7 +177,7 @@ class EscalationResult:
         self.notifications_sent = notifications_sent or []
         self.message = message
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "success": self.success,
             "escalation_log_id": self.escalation_log_id,
@@ -187,17 +193,17 @@ class PolicyEngineService:
     """
     
     def __init__(self):
-        self._rules_cache: Dict[str, List[BusinessRule]] = {}
+        self._rules_cache: dict[str, list[BusinessRule]] = {}
         self._cache_ttl = 300
-        self._cache_timestamp: Optional[datetime] = None
+        self._cache_timestamp: datetime | None = None
     
     async def evaluate(
         self,
         action: str,
-        context: Dict[str, Any],
-        agent_name: Optional[str] = None,
-        company_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        context: dict[str, Any],
+        agent_name: str | None = None,
+        company_id: str | None = None,
+        user_id: str | None = None,
         check_rate_limit: bool = True,
         dry_run: bool = False
     ) -> EvaluationResult:
@@ -220,7 +226,7 @@ class PolicyEngineService:
         rules_evaluated = 0
         
         # Safely parse company_id to UUID — invalid strings fall back to no-tenant filter
-        _company_uuid: Optional[UUID] = None
+        _company_uuid: UUID | None = None
         if company_id:
             try:
                 _company_uuid = UUID(company_id)
@@ -245,7 +251,7 @@ class PolicyEngineService:
                 result = await session.execute(query)
                 rules = result.scalars().all()
                 
-                matching_rule: Optional[BusinessRule] = None
+                matching_rule: BusinessRule | None = None
                 evaluation_result = PolicyEvaluationResult.ALLOW
                 reason = None
                 requires_approval = False
@@ -334,7 +340,7 @@ class PolicyEngineService:
                     rules_evaluated=rules_evaluated
                 )
     
-    def _action_matches(self, action: str, rule_actions: List[str]) -> bool:
+    def _action_matches(self, action: str, rule_actions: list[str]) -> bool:
         """Check if action matches any of the rule's action patterns."""
         if not rule_actions:
             return True
@@ -351,9 +357,9 @@ class PolicyEngineService:
     
     def _conditions_match(
         self,
-        conditions: Dict[str, Any],
+        conditions: dict[str, Any],
         action: str,
-        context: Dict[str, Any]
+        context: dict[str, Any]
     ) -> bool:
         """Evaluate if the conditions match the current context."""
         if not conditions:
@@ -419,9 +425,9 @@ class PolicyEngineService:
         target_type: str,
         target_id: str,
         action: str,
-        company_id: Optional[str] = None,
+        company_id: str | None = None,
         increment: bool = True,
-        session: Optional[AsyncSession] = None
+        session: AsyncSession | None = None
     ) -> RateLimitResult:
         """
         Check and optionally increment rate limit counter.
@@ -454,7 +460,7 @@ class PolicyEngineService:
             result = await db_session.execute(query)
             rules = result.scalars().all()
             
-            matching_rule: Optional[RateLimitRule] = None
+            matching_rule: RateLimitRule | None = None
             for rule in rules:
                 if rule.action_pattern:
                     if fnmatch.fnmatch(action, rule.action_pattern):
@@ -554,7 +560,7 @@ class PolicyEngineService:
         target_type: str,
         target_id: str,
         action: str,
-        company_id: Optional[str] = None
+        company_id: str | None = None
     ) -> RateLimitResult:
         """
         Increment rate limit counter and return current status.
@@ -574,7 +580,7 @@ class PolicyEngineService:
         target_type: str,
         target_id: str,
         action: str,
-        company_id: Optional[str] = None
+        company_id: str | None = None
     ) -> bool:
         """
         Check if action is within rate limit without incrementing.
@@ -592,10 +598,10 @@ class PolicyEngineService:
     
     async def trigger_escalation(
         self,
-        rule_id: Optional[str] = None,
-        trigger_type: Optional[str] = None,
-        context: Dict[str, Any] = None,
-        company_id: Optional[str] = None
+        rule_id: str | None = None,
+        trigger_type: str | None = None,
+        context: dict[str, Any] = None,
+        company_id: str | None = None
     ) -> EscalationResult:
         """
         Trigger an escalation based on a rule or trigger type.
@@ -728,10 +734,10 @@ class PolicyEngineService:
     
     async def _send_notifications(
         self,
-        recipients: List[str],
-        template: Optional[str],
-        context: Dict[str, Any]
-    ) -> List[str]:
+        recipients: list[str],
+        template: str | None,
+        context: dict[str, Any]
+    ) -> list[str]:
         """Send notifications to recipients. Returns list of sent notification IDs."""
         notifications_sent = []
         
@@ -760,7 +766,7 @@ class PolicyEngineService:
         
         return notifications_sent
     
-    def _format_template(self, template: str, context: Dict[str, Any]) -> str:
+    def _format_template(self, template: str, context: dict[str, Any]) -> str:
         """Format a notification template with context variables."""
         try:
             for key, value in context.items():
@@ -773,10 +779,10 @@ class PolicyEngineService:
         self,
         agent_name: str,
         action: str,
-        context: Dict[str, Any],
-        company_id: Optional[str] = None,
-        user_id: Optional[str] = None
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+        context: dict[str, Any],
+        company_id: str | None = None,
+        user_id: str | None = None
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """
         Pre-execution check for agent actions.
         
@@ -802,7 +808,7 @@ class PolicyEngineService:
         
         return (result.allowed, result.reason, approval_config)
     
-    async def load_default_rules(self) -> Dict[str, int]:
+    async def load_default_rules(self) -> dict[str, int]:
         """
         Load default rules from configuration into the database.
         
@@ -906,7 +912,7 @@ class PolicyEngineService:
         self,
         company_id: str,
         sector: str,
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
     ) -> dict:
         """
         Persiste os defaults setoriais em CompanyHiringPolicy.
@@ -925,10 +931,12 @@ class PolicyEngineService:
         Returns:
             Dict com os campos atualizados em CompanyHiringPolicy.
         """
-        from app.orchestrator.policy_engine import PolicyEngine
-        from app.models.company_hiring_policy import CompanyHiringPolicy
-        from sqlalchemy import select
         import uuid as _uuid
+
+        from sqlalchemy import select
+
+        from app.models.company_hiring_policy import CompanyHiringPolicy
+        from app.orchestrator.policy_engine import PolicyEngine
 
         engine = PolicyEngine()
         defaults = engine.apply_industry_defaults(sector)
@@ -1066,7 +1074,7 @@ class PolicyDenied(Exception):
 class PolicyApprovalRequired(Exception):
     """Exception raised when a policy requires approval for an action."""
     
-    def __init__(self, action: str, reason: str, approval_config: Dict[str, Any]):
+    def __init__(self, action: str, reason: str, approval_config: dict[str, Any]):
         self.action = action
         self.reason = reason
         self.approval_config = approval_config

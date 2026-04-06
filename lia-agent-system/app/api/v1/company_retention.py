@@ -12,17 +12,17 @@ COMO APLICAR:
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
-from sqlalchemy import select
 
 router = APIRouter()
 
@@ -81,7 +81,7 @@ async def update_retention_policy(
     )
     policy = result.scalar_one_or_none()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     if policy is None:
         policy = CompanyRetentionPolicy(

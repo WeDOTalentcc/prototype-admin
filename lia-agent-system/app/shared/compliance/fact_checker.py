@@ -7,11 +7,12 @@ Checks salary ranges, candidate counts, dates, and other verifiable claims.
 Adds confidence_verified flag to responses for transparency.
 Part of the 3-pillar compliance architecture (LGPD, SOX, EU AI Act).
 """
-import re
 import logging
-from typing import Callable, Dict, Any, Optional, List
+import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +21,11 @@ logger = logging.getLogger(__name__)
 class FactCheckClaim:
     claim_type: str
     original_value: Any
-    verified_value: Optional[Any] = None
+    verified_value: Any | None = None
     is_verified: bool = False
-    is_accurate: Optional[bool] = None
-    deviation_pct: Optional[float] = None
-    source: Optional[str] = None
+    is_accurate: bool | None = None
+    deviation_pct: float | None = None
+    source: str | None = None
     notes: str = ""
 
 
@@ -36,7 +37,7 @@ class FactCheckResult:
     accurate_claims: int = 0
     inaccurate_claims: int = 0
     unverifiable_claims: int = 0
-    claims: List[FactCheckClaim] = field(default_factory=list)
+    claims: list[FactCheckClaim] = field(default_factory=list)
     overall_accuracy: float = 1.0
     checked_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -60,7 +61,7 @@ class FactCheckResult:
             self.overall_accuracy = 1.0
         self.confidence_verified = self.verified_claims > 0
 
-    def to_metadata(self) -> Dict[str, Any]:
+    def to_metadata(self) -> dict[str, Any]:
         return {
             "fact_check": {
                 "confidence_verified": self.confidence_verified,
@@ -95,13 +96,13 @@ MAX_CANDIDATE_COUNT = 50_000
 
 
 class FactChecker:
-    def __init__(self, data_sources: Optional[Dict[str, Any]] = None):
+    def __init__(self, data_sources: dict[str, Any] | None = None):
         self._data_sources = data_sources or {}
 
     def check_response(
         self,
         response_text: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> FactCheckResult:
         result = FactCheckResult(confidence_verified=False)
         context = context or {}
@@ -127,7 +128,7 @@ class FactChecker:
             return 0.0
 
     def _check_salary_claims(
-        self, text: str, context: Dict[str, Any], result: FactCheckResult
+        self, text: str, context: dict[str, Any], result: FactCheckResult
     ) -> None:
         for match in SALARY_PATTERN.finditer(text):
             low = self._parse_br_number(match.group(1))
@@ -150,7 +151,7 @@ class FactChecker:
             expected_range = context.get("expected_salary_range")
             if expected_range and isinstance(expected_range, dict):
                 exp_low = expected_range.get("min", 0)
-                exp_high = expected_range.get("max", float("inf"))
+                expected_range.get("max", float("inf"))
                 if low > 0 and exp_low > 0:
                     deviation = abs(low - exp_low) / exp_low
                     claim.deviation_pct = round(deviation * 100, 1)
@@ -162,7 +163,7 @@ class FactChecker:
             result.add_claim(claim)
 
     def _check_candidate_counts(
-        self, text: str, context: Dict[str, Any], result: FactCheckResult
+        self, text: str, context: dict[str, Any], result: FactCheckResult
     ) -> None:
         for match in CANDIDATE_COUNT_PATTERN.finditer(text):
             count = int(match.group(1))
@@ -195,7 +196,7 @@ class FactChecker:
             result.add_claim(claim)
 
     def _check_percentage_claims(
-        self, text: str, context: Dict[str, Any], result: FactCheckResult
+        self, text: str, context: dict[str, Any], result: FactCheckResult
     ) -> None:
         for match in PERCENTAGE_PATTERN.finditer(text):
             value = float(match.group(1).replace(",", "."))
@@ -215,7 +216,7 @@ class FactChecker:
             result.add_claim(claim)
 
     def _check_date_claims(
-        self, text: str, context: Dict[str, Any], result: FactCheckResult
+        self, text: str, context: dict[str, Any], result: FactCheckResult
     ) -> None:
         for match in DATE_PATTERN.finditer(text):
             day, month, year = match.groups()
@@ -251,7 +252,7 @@ class FactChecker:
     def verify_count_claim(
         self,
         response_text: str,
-        expected_count: Optional[int] = None,
+        expected_count: int | None = None,
         tolerance_pct: float = 10.0,
     ) -> FactCheckClaim:
         """
@@ -296,7 +297,7 @@ class FactChecker:
     def verify_average_claim(
         self,
         response_text: str,
-        expected_average: Optional[float] = None,
+        expected_average: float | None = None,
         tolerance_pct: float = 20.0,
         claim_type: str = "average",
     ) -> FactCheckClaim:
@@ -342,7 +343,7 @@ class FactChecker:
     def verify_top_candidates_claim(
         self,
         response_text: str,
-        expected_top_n: Optional[int] = None,
+        expected_top_n: int | None = None,
         max_reasonable_top: int = 20,
     ) -> FactCheckClaim:
         """
@@ -388,7 +389,7 @@ class FactChecker:
     # LIA-C06 - Domain-specific validator registry
     # ------------------------------------------------------------------
 
-    _domain_validators: Dict[str, List[Callable]] = {}
+    _domain_validators: dict[str, list[Callable]] = {}
 
     @classmethod
     def register_validator(
@@ -420,7 +421,7 @@ class FactChecker:
     async def check_response_with_domain(
         self,
         response_text: str,
-        context_data: Dict[str, Any],
+        context_data: dict[str, Any],
         domain_id: str,
     ) -> "FactCheckResult":
         """Verifica resposta usando validadores genericos + validadores domain-specific.

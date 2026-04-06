@@ -5,9 +5,9 @@ Modelos para detecção e resposta a comandos de aceitação, rejeição,
 substituição, ajuste de nível e clarificação de sugestões durante
 a criação de Job Descriptions.
 """
-from typing import List, Optional
-from pydantic import BaseModel, Field
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 from .job_description import RequirementLevel
 
@@ -27,15 +27,15 @@ class SuggestionInteractionRequest(BaseModel):
         ...,
         description="Mensagem original do recrutador"
     )
-    job_id: Optional[str] = Field(
+    job_id: str | None = Field(
         None,
         description="ID da vaga em processamento"
     )
-    conversation_id: Optional[str] = Field(
+    conversation_id: str | None = Field(
         None,
         description="ID da conversa/sessão"
     )
-    current_suggestions: List[str] = Field(
+    current_suggestions: list[str] = Field(
         default_factory=list,
         description="Lista de sugestões ativas no momento"
     )
@@ -51,11 +51,11 @@ class DetectedInteraction(BaseModel):
         ...,
         description="Skill/competência alvo da ação"
     )
-    replacement_skill: Optional[str] = Field(
+    replacement_skill: str | None = Field(
         None,
         description="Skill de substituição (para interações REPLACE)"
     )
-    new_level: Optional[RequirementLevel] = Field(
+    new_level: RequirementLevel | None = Field(
         None,
         description="Novo nível de requirement (para interações ADJUST_LEVEL)"
     )
@@ -77,11 +77,11 @@ class SuggestionInteractionResponse(BaseModel):
         ...,
         description="Indica se a interação foi processada com sucesso"
     )
-    interactions: List[DetectedInteraction] = Field(
+    interactions: list[DetectedInteraction] = Field(
         default_factory=list,
         description="Lista de interações detectadas"
     )
-    updated_suggestions: List[str] = Field(
+    updated_suggestions: list[str] = Field(
         default_factory=list,
         description="Lista atualizada de sugestões após as interações"
     )

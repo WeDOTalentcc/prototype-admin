@@ -10,22 +10,23 @@ Usage in endpoints:
         allowed_days = get_policy_rule(policy, "scheduling_rules", "allowed_days", ["mon","tue","wed","thu","fri"])
 """
 import logging
-from typing import Optional, Dict, Any
-from fastapi import Request, Depends, Query, Header
+from typing import Any
+
+from fastapi import Depends, Header, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.shared.policy_helper import get_company_policy, get_policy_rule, _get_defaults_dict
+from app.shared.policy_helper import _get_defaults_dict, get_company_policy, get_policy_rule
 
 logger = logging.getLogger(__name__)
 
 
 async def get_policy_from_request(
     request: Request,
-    x_company_id: Optional[str] = Header(None, alias="x-company-id"),
-    company_id: Optional[str] = Query(None),
+    x_company_id: str | None = Header(None, alias="x-company-id"),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     FastAPI dependency that resolves company_id and returns the hiring policy.
     
@@ -57,7 +58,7 @@ async def get_policy_from_request(
 async def get_policy_for_company(
     company_id: str,
     db: AsyncSession,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Direct policy lookup for use in services (not as a dependency).
     Convenience wrapper around get_company_policy with error handling.
@@ -73,7 +74,7 @@ async def get_policy_for_company(
 
 
 def resolve_policy_value(
-    policy: Dict[str, Any],
+    policy: dict[str, Any],
     block: str,
     key: str,
     override: Any = None,

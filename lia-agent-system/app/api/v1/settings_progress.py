@@ -2,27 +2,16 @@
 Settings Progress API endpoint.
 Calculates real completion percentages for configuration settings based on database data.
 """
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Dict, Any
 import logging
+from typing import Any
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.company import (
-    CompanyProfile,
-    Department,
-    Benefit,
-    CultureValue,
-    Approver,
-    GlobalSearchSettings
-)
-from app.models.company_culture import CompanyCultureProfile
-from app.models.recruitment_journey import (
-    RecruitmentTemplate,
-    RecruitmentSLA,
-    RecruitmentAutomation
-)
+from app.models.company import Approver, Benefit, CompanyProfile, Department, GlobalSearchSettings
+from app.models.recruitment_journey import RecruitmentAutomation, RecruitmentSLA, RecruitmentTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +195,7 @@ async def calculate_global_search_progress(company_id, db: AsyncSession) -> tupl
 async def get_settings_progress(
     company_id: str = Query(default=None, description="Company ID (optional, uses default if not provided)"),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get settings completion progress.
     

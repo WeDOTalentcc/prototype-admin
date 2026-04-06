@@ -1,7 +1,7 @@
 import logging
-from typing import Dict, Any, Optional, List, Set
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +22,15 @@ class WebhookEventType(str, Enum):
 class WebhookAdapter:
     """Base adapter for processing inbound webhook events."""
 
-    _processed_events: Set[str] = set()
-    _event_log: List[Dict[str, Any]] = []
+    _processed_events: set[str] = set()
+    _event_log: list[dict[str, Any]] = []
 
     @classmethod
     def is_duplicate(cls, event_id: str) -> bool:
         return event_id in cls._processed_events
 
     @classmethod
-    def mark_processed(cls, event_id: str, event_type: str, provider: str, result: Dict[str, Any]):
+    def mark_processed(cls, event_id: str, event_type: str, provider: str, result: dict[str, Any]):
         cls._processed_events.add(event_id)
         cls._event_log.append({
             "event_id": event_id,
@@ -44,7 +44,7 @@ class WebhookAdapter:
             cls._event_log = cls._event_log[-5000:]
 
     @classmethod
-    def get_event_log(cls, limit: int = 50) -> List[Dict[str, Any]]:
+    def get_event_log(cls, limit: int = 50) -> list[dict[str, Any]]:
         return cls._event_log[-limit:]
 
 
@@ -59,7 +59,7 @@ class InterviewWebhookAdapter(WebhookAdapter):
     }
 
     @classmethod
-    async def process(cls, event_id: str, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def process(cls, event_id: str, event_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         if cls.is_duplicate(event_id):
             logger.info(f"[WEBHOOK] Duplicate event ignored: {event_id}")
             return {"status": "duplicate", "event_id": event_id}
@@ -98,7 +98,7 @@ class TestWebhookAdapter(WebhookAdapter):
     }
 
     @classmethod
-    async def process(cls, event_id: str, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def process(cls, event_id: str, event_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         if cls.is_duplicate(event_id):
             return {"status": "duplicate", "event_id": event_id}
 
@@ -129,7 +129,7 @@ class DocumentWebhookAdapter(WebhookAdapter):
     """Processes document submission webhook events."""
 
     @classmethod
-    async def process(cls, event_id: str, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def process(cls, event_id: str, event_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         if cls.is_duplicate(event_id):
             return {"status": "duplicate", "event_id": event_id}
 

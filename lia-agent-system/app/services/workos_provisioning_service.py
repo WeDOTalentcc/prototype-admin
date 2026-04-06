@@ -3,21 +3,20 @@ WorkOS Organization Provisioning Service.
 
 Automatically provisions WorkOS Organizations when new clients are created.
 """
-import os
 import logging
-from typing import Optional
+import os
 
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update, select
 from workos import WorkOSClient
 
-from app.models.client_account import ClientAccount
 from app.auth.workos_models import CompanyWorkOSConfig
+from app.models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
 
 
-def extract_domain_from_email(email: Optional[str]) -> Optional[str]:
+def extract_domain_from_email(email: str | None) -> str | None:
     """
     Extract domain from an email address.
     
@@ -42,7 +41,7 @@ def extract_domain_from_email(email: Optional[str]) -> Optional[str]:
 async def provision_workos_organization(
     client: ClientAccount,
     db: AsyncSession
-) -> Optional[str]:
+) -> str | None:
     """
     Provision a WorkOS Organization for a new client.
     
@@ -97,7 +96,7 @@ async def provision_workos_organization(
             .where(CompanyWorkOSConfig.company_id == client_id_str)
             .values(workos_organization_id=organization_id)
         )
-        result = await db.execute(stmt)
+        await db.execute(stmt)
         await db.commit()
         
         config_query = select(CompanyWorkOSConfig).where(

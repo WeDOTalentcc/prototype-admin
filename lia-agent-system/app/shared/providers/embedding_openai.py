@@ -11,7 +11,6 @@ Dimension compatibility:
 """
 import logging
 import os
-from typing import List, Optional
 
 from app.shared.providers.embedding_provider import EmbeddingProviderABC, EmbeddingResult
 
@@ -47,7 +46,7 @@ class OpenAIEmbeddingProvider(EmbeddingProviderABC):
 
     def __init__(
         self,
-        model: Optional[str] = None,
+        model: str | None = None,
         output_dimensions: int = OPENAI_EMBEDDING_DIMENSIONS_DEFAULT,
     ):
         self._model = model or OPENAI_EMBEDDING_MODEL
@@ -123,12 +122,12 @@ class OpenAIEmbeddingProvider(EmbeddingProviderABC):
             logger.error("[OpenAIEmbedding] embed_text failed: %s", exc)
             raise
 
-    async def embed_batch(self, texts: List[str]) -> List[EmbeddingResult]:
+    async def embed_batch(self, texts: list[str]) -> list[EmbeddingResult]:
         """Generate embeddings for a list of texts using OpenAI batch API."""
         if not texts:
             return []
 
-        results: List[EmbeddingResult] = []
+        results: list[EmbeddingResult] = []
 
         for i in range(0, len(texts), OPENAI_BATCH_SIZE):
             batch = texts[i : i + OPENAI_BATCH_SIZE]
@@ -139,7 +138,7 @@ class OpenAIEmbeddingProvider(EmbeddingProviderABC):
             non_empty_indices = [idx for idx, t in enumerate(clean_batch) if t]
             non_empty_texts = [clean_batch[idx] for idx in non_empty_indices]
 
-            batch_results: List[Optional[EmbeddingResult]] = [None] * len(batch)
+            batch_results: list[EmbeddingResult | None] = [None] * len(batch)
 
             for idx in range(len(batch)):
                 if idx not in non_empty_indices:

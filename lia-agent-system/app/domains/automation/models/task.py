@@ -4,11 +4,12 @@ Task Model - Database model for agent-generated tasks.
 Tasks are created by agents and can be assigned to other agents
 or human users (recruiters).
 """
-from sqlalchemy import Column, String, Text, DateTime, Enum as SQLEnum, JSON, ForeignKey, Boolean, Integer
-from sqlalchemy.orm import relationship
-from datetime import datetime
 import enum
 import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
 
 from app.core.database import Base
 

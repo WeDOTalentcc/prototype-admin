@@ -8,8 +8,9 @@ Tools (2): set_search_criteria, suggest_skills
 Modelo: Haiku (baixo custo — tarefa simples e estruturada)
 """
 import logging
-from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+
 from app.domains.sourcing.agents.sourcing_planner_tool_registry import get_planner_tools
+from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 
 logger = logging.getLogger(__name__)
 

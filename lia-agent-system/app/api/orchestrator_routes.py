@@ -4,22 +4,20 @@ Orchestrator API Routes
 FastAPI endpoints for multi-agent orchestration.
 """
 
+import logging
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
-import logging
 
+from app.domains.job_management.services.wizard_orchestrator_service import (
+    wizard_orchestrator_service,
+)
 from app.orchestrator import Orchestrator
 from app.services.llm import LLMService
 from app.services.tool_executor_service import (
-    ToolExecutorService,
     ToolExecutionRequest,
-    ToolExecutionResponse,
-    tool_executor_service
-)
-from app.domains.job_management.services.wizard_orchestrator_service import (
-    WizardOrchestratorService,
-    wizard_orchestrator_service
+    tool_executor_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,67 +29,67 @@ class OrchestratorRequest(BaseModel):
     """Request model for orchestrator endpoint."""
     user_id: str
     message: str
-    conversation_id: Optional[str] = None
-    context_type: Optional[str] = None  # 'general', 'wizard', 'pipeline', etc.
-    context_id: Optional[str] = None  # ID related to context (e.g., job_id, conversation_id)
-    conversation_context: Optional[Dict[str, Any]] = None  # Previous conversation context for memory
+    conversation_id: str | None = None
+    context_type: str | None = None  # 'general', 'wizard', 'pipeline', etc.
+    context_id: str | None = None  # ID related to context (e.g., job_id, conversation_id)
+    conversation_context: dict[str, Any] | None = None  # Previous conversation context for memory
 
 
 class OrchestratorResponse(BaseModel):
     """Response model for orchestrator endpoint."""
     success: bool
-    conversation_id: Optional[str] = None
-    intent: Optional[str] = None
-    agent: Optional[str] = None
-    confidence: Optional[float] = None
-    result: Optional[Dict[str, Any]] = None
-    message: Optional[str] = None
-    error: Optional[str] = None
+    conversation_id: str | None = None
+    intent: str | None = None
+    agent: str | None = None
+    confidence: float | None = None
+    result: dict[str, Any] | None = None
+    message: str | None = None
+    error: str | None = None
 
 
 class ExecuteToolRequest(BaseModel):
     """Request model for tool execution endpoint."""
     tool_name: str
-    parameters: Dict[str, Any]
+    parameters: dict[str, Any]
     user_id: str = "authenticated-user"
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class ExecuteToolResponse(BaseModel):
     """Response model for tool execution endpoint."""
     success: bool
     message: str
-    data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    data: dict[str, Any] | None = None
+    error: str | None = None
     tool_name: str
     execution_time_ms: float = 0.0
     requires_confirmation: bool = False
-    confirmation_message: Optional[str] = None
-    action_taken: Optional[str] = None
-    affected_entities: List[str] = []
+    confirmation_message: str | None = None
+    action_taken: str | None = None
+    affected_entities: list[str] = []
 
 
 class WizardIntentRequest(BaseModel):
     """Request model for wizard intent detection."""
     message: str
-    context: Optional[Dict[str, Any]] = None
-    conversation_id: Optional[str] = None
-    user_id: Optional[str] = None
+    context: dict[str, Any] | None = None
+    conversation_id: str | None = None
+    user_id: str | None = None
 
 
 class WizardIntentResponse(BaseModel):
     """Response model for wizard intent detection."""
     intent: str
     confidence: float
-    entities: Dict[str, Any] = {}
-    suggested_tool_call: Optional[Dict[str, Any]] = None
-    conversational_response: Optional[str] = None
-    injected_context: Optional[str] = None
-    conversation_id: Optional[str] = None
+    entities: dict[str, Any] = {}
+    suggested_tool_call: dict[str, Any] | None = None
+    conversational_response: str | None = None
+    injected_context: str | None = None
+    conversation_id: str | None = None
 
 
 # Global orchestrator instance (initialized on startup)
-orchestrator: Optional[Orchestrator] = None
+orchestrator: Orchestrator | None = None
 
 
 def get_orchestrator() -> Orchestrator:
@@ -317,7 +315,7 @@ async def get_available_intents():
 
 @router.get("/tools")
 async def get_available_tools(
-    agent_type: Optional[str] = None
+    agent_type: str | None = None
 ):
     """
     Get list of available tools.

@@ -1,11 +1,11 @@
 """
 Company Screening Questions model for company-level default screening questions.
 """
-from datetime import datetime
-from typing import Optional, List
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 

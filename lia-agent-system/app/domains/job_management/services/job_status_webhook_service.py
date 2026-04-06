@@ -11,19 +11,15 @@ import asyncio
 import json
 import logging
 from datetime import datetime
-from typing import Dict, Any, List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-import httpx
+from typing import Any
 
-from app.core.database import AsyncSessionLocal
+import httpx
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
-from app.models.webhook_registration import (
-    WebhookRegistration,
-    WebhookDeliveryLog,
-    JOB_STATUS_WEBHOOK_EVENTS
-)
 from app.models.audit_log import AuditLog, DecisionType
+from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +48,9 @@ class JobStatusWebhookService:
         new_status: str,
         company_id: str,
         db: AsyncSession,
-        changed_by: Optional[str] = None,
-        job_title: Optional[str] = None
-    ) -> Dict[str, Any]:
+        changed_by: str | None = None,
+        job_title: str | None = None
+    ) -> dict[str, Any]:
         """
         Dispatch webhook notifications for job status change.
         
@@ -143,7 +139,7 @@ class JobStatusWebhookService:
         company_id: str,
         event_type: str,
         db: AsyncSession
-    ) -> List[WebhookRegistration]:
+    ) -> list[WebhookRegistration]:
         """Get active webhooks for a company subscribed to an event type."""
         result = await db.execute(
             select(WebhookRegistration).where(
@@ -165,10 +161,10 @@ class JobStatusWebhookService:
     async def _deliver_with_retry(
         self,
         webhook: WebhookRegistration,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         event_type: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Deliver webhook with exponential backoff retry.
         
@@ -217,11 +213,11 @@ class JobStatusWebhookService:
     async def _deliver_webhook(
         self,
         webhook: WebhookRegistration,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         event_type: str,
         attempt: int,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Deliver a single webhook request.
         
@@ -381,7 +377,7 @@ class JobStatusWebhookService:
         webhook_id: str,
         event_type: str,
         success: bool,
-        error: Optional[str],
+        error: str | None,
         db: AsyncSession
     ):
         """Log webhook dispatch to audit trail."""
@@ -409,7 +405,7 @@ class JobStatusWebhookService:
         webhook_id: str,
         company_id: str,
         db: AsyncSession
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Send a test webhook to verify configuration.
         
@@ -463,7 +459,7 @@ class JobStatusWebhookService:
                 "error": str(e)
             }
     
-    async def get_available_events(self) -> List[Dict[str, Any]]:
+    async def get_available_events(self) -> list[dict[str, Any]]:
         """Get list of available webhook events."""
         return JOB_STATUS_WEBHOOK_EVENTS
 

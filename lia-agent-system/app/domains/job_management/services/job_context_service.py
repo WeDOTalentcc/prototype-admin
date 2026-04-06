@@ -11,10 +11,10 @@ Used by the Orchestrator to provide specialized agents with full context
 for data-driven, accurate responses.
 """
 import logging
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +29,13 @@ class FunnelHealthStatus(str, Enum):
 class FunnelMetrics:
     """Metrics for recruitment funnel analysis."""
     total_candidates: int = 0
-    by_stage: Dict[str, int] = field(default_factory=dict)
-    conversion_rates: Dict[str, float] = field(default_factory=dict)
-    avg_time_by_stage: Dict[str, float] = field(default_factory=dict)
-    bottleneck_stage: Optional[str] = None
+    by_stage: dict[str, int] = field(default_factory=dict)
+    conversion_rates: dict[str, float] = field(default_factory=dict)
+    avg_time_by_stage: dict[str, float] = field(default_factory=dict)
+    bottleneck_stage: str | None = None
     health_status: FunnelHealthStatus = FunnelHealthStatus.HEALTHY
-    stalled_candidates: List[Dict[str, Any]] = field(default_factory=list)
-    candidates_needing_feedback: List[Dict[str, Any]] = field(default_factory=list)
+    stalled_candidates: list[dict[str, Any]] = field(default_factory=list)
+    candidates_needing_feedback: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -43,33 +43,33 @@ class EnrichedCandidate:
     """Candidate with all relevant scores and metrics."""
     id: str
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    role: Optional[str] = None
-    current_company: Optional[str] = None
-    location: Optional[str] = None
-    stage: Optional[str] = None
-    sub_status: Optional[str] = None
+    email: str | None = None
+    phone: str | None = None
+    role: str | None = None
+    current_company: str | None = None
+    location: str | None = None
+    stage: str | None = None
+    sub_status: str | None = None
     days_in_stage: int = 0
     
-    fit_score: Optional[float] = None
-    wsi_score: Optional[float] = None
-    wsi_technical: Optional[float] = None
-    wsi_behavioral: Optional[float] = None
+    fit_score: float | None = None
+    wsi_score: float | None = None
+    wsi_technical: float | None = None
+    wsi_behavioral: float | None = None
     
-    big_five: Dict[str, float] = field(default_factory=dict)
+    big_five: dict[str, float] = field(default_factory=dict)
     
-    rubric_scores: Dict[str, float] = field(default_factory=dict)
+    rubric_scores: dict[str, float] = field(default_factory=dict)
     
-    skills: List[str] = field(default_factory=list)
-    experience_years: Optional[int] = None
+    skills: list[str] = field(default_factory=list)
+    experience_years: int | None = None
     
     has_cv: bool = False
     has_wsi_screening: bool = False
     has_interview: bool = False
     
-    warnings: List[str] = field(default_factory=list)
-    last_activity: Optional[datetime] = None
+    warnings: list[str] = field(default_factory=list)
+    last_activity: datetime | None = None
 
 
 @dataclass
@@ -77,29 +77,29 @@ class EnrichedJobContext:
     """Complete enriched context for a job vacancy."""
     job_id: str
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    work_model: Optional[str] = None
-    location: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
+    work_model: str | None = None
+    location: str | None = None
     
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
+    salary_min: float | None = None
+    salary_max: float | None = None
     
-    required_skills: List[str] = field(default_factory=list)
-    desired_skills: List[str] = field(default_factory=list)
-    requirements: List[str] = field(default_factory=list)
+    required_skills: list[str] = field(default_factory=list)
+    desired_skills: list[str] = field(default_factory=list)
+    requirements: list[str] = field(default_factory=list)
     
     status: str = "active"
     priority: str = "normal"
-    deadline: Optional[datetime] = None
+    deadline: datetime | None = None
     days_open: int = 0
     
     funnel_metrics: FunnelMetrics = field(default_factory=FunnelMetrics)
     
-    candidates: List[EnrichedCandidate] = field(default_factory=list)
+    candidates: list[EnrichedCandidate] = field(default_factory=list)
     
-    similar_jobs_avg_time_to_hire: Optional[float] = None
-    similar_jobs_avg_candidates: Optional[int] = None
+    similar_jobs_avg_time_to_hire: float | None = None
+    similar_jobs_avg_candidates: int | None = None
 
 
 class JobContextService:
@@ -117,9 +117,9 @@ class JobContextService:
     
     def enrich_from_frontend_data(
         self,
-        job_context: Dict[str, Any],
-        candidates: List[Dict[str, Any]],
-        selected_candidate_ids: Optional[List[str]] = None
+        job_context: dict[str, Any],
+        candidates: list[dict[str, Any]],
+        selected_candidate_ids: list[str] | None = None
     ) -> EnrichedJobContext:
         """
         Enrich job context from frontend-provided data.
@@ -171,8 +171,8 @@ class JobContextService:
     
     def _enrich_candidates(
         self, 
-        candidates: List[Dict[str, Any]]
-    ) -> List[EnrichedCandidate]:
+        candidates: list[dict[str, Any]]
+    ) -> list[EnrichedCandidate]:
         """Enrich candidate data with computed fields."""
         enriched = []
         
@@ -216,7 +216,7 @@ class JobContextService:
     
     def _compute_funnel_metrics(
         self, 
-        candidates: List[EnrichedCandidate]
+        candidates: list[EnrichedCandidate]
     ) -> FunnelMetrics:
         """Compute funnel metrics from candidates."""
         metrics = FunnelMetrics()
@@ -268,8 +268,8 @@ class JobContextService:
         ]
         
         total = metrics.total_candidates
-        hired = metrics.by_stage.get("hired", 0)
-        rejected = metrics.by_stage.get("rejected", 0)
+        metrics.by_stage.get("hired", 0)
+        metrics.by_stage.get("rejected", 0)
         stalled = len(metrics.stalled_candidates)
         
         if total == 0:
@@ -283,7 +283,7 @@ class JobContextService:
         
         return metrics
     
-    def _parse_salary_min(self, salary: Optional[str]) -> Optional[float]:
+    def _parse_salary_min(self, salary: str | None) -> float | None:
         """Extract minimum salary from salary text."""
         if not salary:
             return None
@@ -299,7 +299,7 @@ class JobContextService:
             pass
         return None
     
-    def _parse_salary_max(self, salary: Optional[str]) -> Optional[float]:
+    def _parse_salary_max(self, salary: str | None) -> float | None:
         """Extract maximum salary from salary text."""
         if not salary:
             return None
@@ -315,7 +315,7 @@ class JobContextService:
             pass
         return None
     
-    def _parse_date(self, date_str: Optional[str]) -> Optional[datetime]:
+    def _parse_date(self, date_str: str | None) -> datetime | None:
         """Parse date string to datetime."""
         if not date_str:
             return None
@@ -324,7 +324,7 @@ class JobContextService:
         except Exception:
             return None
     
-    def _parse_experience(self, experience: Optional[str]) -> Optional[int]:
+    def _parse_experience(self, experience: str | None) -> int | None:
         """Parse experience string to years."""
         if not experience:
             return None
@@ -337,7 +337,7 @@ class JobContextService:
             pass
         return None
     
-    def to_context_dict(self, enriched: EnrichedJobContext) -> Dict[str, Any]:
+    def to_context_dict(self, enriched: EnrichedJobContext) -> dict[str, Any]:
         """
         Convert EnrichedJobContext to a dictionary for agent consumption.
         

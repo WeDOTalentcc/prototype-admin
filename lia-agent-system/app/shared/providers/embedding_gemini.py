@@ -6,7 +6,6 @@ Extracted from the original EmbeddingService.
 """
 import logging
 import os
-from typing import List, Optional
 
 from app.shared.providers.embedding_provider import EmbeddingProviderABC, EmbeddingResult
 
@@ -27,7 +26,7 @@ class GeminiEmbeddingProvider(EmbeddingProviderABC):
 
     _provider_name = "gemini"
 
-    def __init__(self, model: Optional[str] = None):
+    def __init__(self, model: str | None = None):
         self._model = model or GEMINI_EMBEDDING_MODEL
         self._client = None
 
@@ -109,9 +108,9 @@ class GeminiEmbeddingProvider(EmbeddingProviderABC):
             logger.error("[GeminiEmbedding] embed_text failed: %s", exc)
             raise
 
-    async def embed_batch(self, texts: List[str]) -> List[EmbeddingResult]:
+    async def embed_batch(self, texts: list[str]) -> list[EmbeddingResult]:
         """Generate embeddings for a list of texts using Gemini."""
-        results: List[EmbeddingResult] = []
+        results: list[EmbeddingResult] = []
 
         for text in texts:
             try:

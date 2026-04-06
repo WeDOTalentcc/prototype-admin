@@ -4,9 +4,9 @@ Intent Schemas - Define entity requirements for each intent per agent.
 This module provides structured schemas for intent detection and routing,
 enabling dynamic confidence scoring based on entity presence and quality.
 """
-from typing import Dict, List, Optional, Set, Any
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 from app.agents.base_agent import AgentType
 
@@ -50,16 +50,16 @@ class EntityRequirement:
     importance: EntityImportance = EntityImportance.OPTIONAL
     description: str = ""
     default_value: Any = None
-    validation_pattern: Optional[str] = None
+    validation_pattern: str | None = None
     
-    def is_satisfied(self, entities: Dict[str, Any]) -> bool:
+    def is_satisfied(self, entities: dict[str, Any]) -> bool:
         """Check if this requirement is satisfied by the entities."""
         entity_key = self.entity_type.value
         if self.importance == EntityImportance.REQUIRED:
             return entity_key in entities and entities[entity_key] is not None
         return True
     
-    def get_confidence_contribution(self, entities: Dict[str, Any]) -> float:
+    def get_confidence_contribution(self, entities: dict[str, Any]) -> float:
         """Get confidence contribution based on entity presence."""
         entity_key = self.entity_type.value
         has_entity = entity_key in entities and entities[entity_key] is not None
@@ -78,16 +78,16 @@ class IntentSchema:
     intent: str
     agent_type: AgentType
     description: str
-    entity_requirements: List[EntityRequirement] = field(default_factory=list)
-    keywords: List[str] = field(default_factory=list)
-    fallback_intents: List[str] = field(default_factory=list)
-    requires_context: List[str] = field(default_factory=list)
+    entity_requirements: list[EntityRequirement] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
+    fallback_intents: list[str] = field(default_factory=list)
+    requires_context: list[str] = field(default_factory=list)
     min_confidence: float = 0.5
     
     def calculate_confidence(
         self, 
-        entities: Dict[str, Any], 
-        context: Dict[str, Any],
+        entities: dict[str, Any], 
+        context: dict[str, Any],
         message: str = ""
     ) -> float:
         """Calculate confidence score for handling this intent."""
@@ -111,7 +111,7 @@ class IntentSchema:
         
         return min(0.95, max(0.0, base_confidence))
     
-    def get_missing_entities(self, entities: Dict[str, Any]) -> List[EntityRequirement]:
+    def get_missing_entities(self, entities: dict[str, Any]) -> list[EntityRequirement]:
         """Get list of missing required/recommended entities."""
         missing = []
         for req in self.entity_requirements:
@@ -120,7 +120,7 @@ class IntentSchema:
                     missing.append(req)
         return missing
     
-    def is_valid(self, entities: Dict[str, Any]) -> bool:
+    def is_valid(self, entities: dict[str, Any]) -> bool:
         """Check if all required entities are present."""
         return all(
             req.is_satisfied(entities) 
@@ -438,7 +438,7 @@ RECRUITER_ASSISTANT_INTENTS = [
     ),
 ]
 
-ALL_INTENT_SCHEMAS: Dict[AgentType, List[IntentSchema]] = {
+ALL_INTENT_SCHEMAS: dict[AgentType, list[IntentSchema]] = {
     AgentType.JOB_PLANNER: JOB_PLANNER_INTENTS,
     AgentType.SOURCING: SOURCING_INTENTS,
     AgentType.CV_SCREENING: CV_SCREENING_INTENTS,
@@ -452,12 +452,12 @@ ALL_INTENT_SCHEMAS: Dict[AgentType, List[IntentSchema]] = {
 }
 
 
-def get_agent_intents(agent_type: AgentType) -> List[IntentSchema]:
+def get_agent_intents(agent_type: AgentType) -> list[IntentSchema]:
     """Get all intent schemas for a specific agent."""
     return ALL_INTENT_SCHEMAS.get(agent_type, [])
 
 
-def get_intent_schema(intent: str) -> Optional[IntentSchema]:
+def get_intent_schema(intent: str) -> IntentSchema | None:
     """Get the schema for a specific intent."""
     for schemas in ALL_INTENT_SCHEMAS.values():
         for schema in schemas:
@@ -468,9 +468,9 @@ def get_intent_schema(intent: str) -> Optional[IntentSchema]:
 
 def find_best_matching_intent(
     message: str,
-    entities: Dict[str, Any],
-    context: Dict[str, Any]
-) -> Optional[IntentSchema]:
+    entities: dict[str, Any],
+    context: dict[str, Any]
+) -> IntentSchema | None:
     """Find the best matching intent schema for a message."""
     best_schema = None
     best_confidence = 0.0

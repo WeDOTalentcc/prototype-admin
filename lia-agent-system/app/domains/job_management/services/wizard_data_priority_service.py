@@ -13,19 +13,18 @@ This service queries each source in priority order and returns the best
 suggestion for each field in the job wizard.
 """
 import logging
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from uuid import UUID
 from enum import Enum
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, func, and_, or_, desc
+from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.imported_job_description import ImportedJobDescription, ClientSkillCatalog
-from app.models.job_pattern import JobPattern, SalaryBenchmark
-from app.models.company_learning import CompanySkill, CompanyResponsibility
-from app.models.company import CompanyProfile, Department, Benefit
+from app.models.company import Benefit, Department
+from app.models.company_learning import CompanyResponsibility, CompanySkill
+from app.models.imported_job_description import ClientSkillCatalog, ImportedJobDescription
+from app.models.job_pattern import JobPattern
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +47,9 @@ class Suggestion:
     source: DataSource
     confidence: float
     explanation: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "value": self.value,
             "source": self.source.value,
@@ -64,15 +63,15 @@ class Suggestion:
 class JobContext:
     """Context for querying suggestions."""
     company_id: UUID
-    job_title: Optional[str] = None
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    location: Optional[str] = None
-    work_model: Optional[str] = None
-    employment_type: Optional[str] = None
-    recruiter_id: Optional[str] = None
+    job_title: str | None = None
+    department: str | None = None
+    seniority: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    recruiter_id: str | None = None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "company_id": str(self.company_id),
             "job_title": self.job_title,
@@ -122,7 +121,7 @@ class WizardDataPriorityService:
         field: str,
         context: JobContext,
         include_all_sources: bool = False
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """
         Get the best suggestion for a field based on context.
         
@@ -147,7 +146,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         field: str,
         context: JobContext
-    ) -> List[Suggestion]:
+    ) -> list[Suggestion]:
         """
         Get suggestions from all sources for comparison.
         
@@ -166,8 +165,8 @@ class WizardDataPriorityService:
         self,
         db: AsyncSession,
         context: JobContext,
-        fields: Optional[List[str]] = None
-    ) -> Dict[str, Suggestion]:
+        fields: list[str] | None = None
+    ) -> dict[str, Suggestion]:
         """
         Get suggestions for multiple fields at once.
         
@@ -194,7 +193,7 @@ class WizardDataPriorityService:
         source: DataSource,
         field: str,
         context: JobContext
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """Query a specific data source for a field suggestion."""
         
         query_methods = {
@@ -216,7 +215,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         field: str,
         context: JobContext
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """Query company settings (Menu Configurações)."""
         
         if field == "department":
@@ -256,7 +255,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         field: str,
         context: JobContext
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """Query LIA platform history (vagas criadas anteriormente)."""
         
         if field == "technical_skills":
@@ -328,7 +327,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         field: str,
         context: JobContext
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """Query imported JDs from ATS."""
         
         filters = [
@@ -423,7 +422,7 @@ class WizardDataPriorityService:
                     value=[b[0] for b in top_benefits],
                     source=DataSource.IMPORTED_ATS,
                     confidence=0.85,
-                    explanation=f"Benefícios mais oferecidos em vagas similares"
+                    explanation="Benefícios mais oferecidos em vagas similares"
                 )
         
         elif field == "behavioral_competencies":
@@ -443,7 +442,7 @@ class WizardDataPriorityService:
                     value=[{"name": c[0], "frequency": c[1]} for c in top_comps],
                     source=DataSource.IMPORTED_ATS,
                     confidence=0.85,
-                    explanation=f"Competências comportamentais frequentes em vagas similares"
+                    explanation="Competências comportamentais frequentes em vagas similares"
                 )
         
         return None
@@ -453,7 +452,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         field: str,
         context: JobContext
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """Query workforce planning data (future implementation)."""
         return None
 
@@ -462,7 +461,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         field: str,
         context: JobContext
-    ) -> Optional[Suggestion]:
+    ) -> Suggestion | None:
         """Query curated templates (662 templates)."""
         return None
 
@@ -471,7 +470,7 @@ class WizardDataPriorityService:
         db: AsyncSession,
         context: JobContext,
         limit: int = 5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Find similar jobs from all sources.
         
@@ -515,7 +514,7 @@ class WizardDataPriorityService:
         self,
         db: AsyncSession,
         company_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get data coverage statistics for a company.
         

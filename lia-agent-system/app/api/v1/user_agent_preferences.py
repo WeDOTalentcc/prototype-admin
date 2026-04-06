@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
@@ -45,12 +44,12 @@ class PreferenceResponse(BaseModel):
     domain: str
     action_type: str
     auto_confirm: bool
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
     @classmethod
-    def from_orm(cls, obj) -> "PreferenceResponse":
+    def from_orm(cls, obj) -> PreferenceResponse:
         return cls(
             id=str(obj.id),
             user_id=obj.user_id,
@@ -74,7 +73,7 @@ class AutoConfirmCheckResponse(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
-@router.get("", response_model=List[PreferenceResponse])
+@router.get("", response_model=list[PreferenceResponse])
 async def list_user_preferences(
     user_id: str = Query(...),
     company_id: str = Query(...),

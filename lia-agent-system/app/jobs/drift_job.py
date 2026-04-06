@@ -11,7 +11,6 @@ Referências:
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 async def run_drift_check_all_companies(
     db: AsyncSession,
-    notify_user_id: Optional[str] = None,
+    notify_user_id: str | None = None,
 ) -> dict:
     """
     Executa drift check para todas as empresas ativas.

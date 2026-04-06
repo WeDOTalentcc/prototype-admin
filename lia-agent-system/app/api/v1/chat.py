@@ -1,33 +1,42 @@
 """
 Chat API endpoints for LIA conversation.
 """
-from typing import List, Optional, Dict, Any, AsyncGenerator
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Form, Request
-from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, text
-import uuid
 import json
-import os
 import logging
-import asyncio
+import os
+import uuid
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from datetime import datetime, timedelta
+from typing import Any
 
-from app.core.database import get_db
-from app.models.conversation import Conversation, Message
-from app.schemas.chat import MessageCreate, ChatResponse, ConversationListResponse, MessageResponse, ConversationResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import StreamingResponse
+from sqlalchemy import desc, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.orchestrator.pending_action import PendingActionStore, PendingActionState, pending_action_store
+from app.core.database import get_db
+from app.models.conversation import Conversation, Message
 from app.orchestrator.action_executor import (
-    ActionExecutorService, action_executor, ActionResult,
-    is_confirmation, is_rejection, ACTIONABLE_INTENTS
+    ACTIONABLE_INTENTS,
+    ActionResult,
+    action_executor,
+    is_confirmation,
+    is_rejection,
+)
+from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from app.schemas.chat import (
+    ChatResponse,
+    ConversationListResponse,
+    ConversationResponse,
+    MessageCreate,
+    MessageResponse,
 )
 
 logger = logging.getLogger(__name__)
 
-INTENT_TO_ACTIONABLE: Dict[str, str] = {
+INTENT_TO_ACTIONABLE: dict[str, str] = {
     # English → PT (fallback for EN intents from orchestrator)
     "move_candidate": "mover_candidato",
     "update_candidate_status": "atualizar_status_candidato",
@@ -48,7 +57,7 @@ INTENT_TO_ACTIONABLE: Dict[str, str] = {
     "reopen_job": "reabrir_vaga",
 }
 
-JOB_ACTION_MAP: Dict[str, str] = {
+JOB_ACTION_MAP: dict[str, str] = {
     "pausar": "pausar_vaga",
     "pause": "pausar_vaga",
     "fechar": "fechar_vaga",
@@ -63,14 +72,14 @@ JOB_ACTION_MAP: Dict[str, str] = {
 SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "search_candidates", "unknown"}
 
 
-def _flatten_entities(entities: Dict[str, Any]) -> Dict[str, Any]:
+def _flatten_entities(entities: dict[str, Any]) -> dict[str, Any]:
     flat = dict(entities)
     if "entidades" in entities and isinstance(entities["entidades"], dict):
         flat.update(entities["entidades"])
     return flat
 
 
-def map_intent_to_actionable(intent: str, entities: Dict[str, Any]) -> Optional[str]:
+def map_intent_to_actionable(intent: str, entities: dict[str, Any]) -> str | None:
     if intent in SKIP_ACTION_INTENTS:
         return None
     flat = _flatten_entities(entities)
@@ -87,14 +96,14 @@ def map_intent_to_actionable(intent: str, entities: Dict[str, Any]) -> Optional[
     return None
 
 
-def _build_tool_schema_for_intent(action_id: str, config: Dict[str, Any]) -> Dict[str, Any]:
+def _build_tool_schema_for_intent(action_id: str, config: dict[str, Any]) -> dict[str, Any]:
     """Constrói schema de tool Claude-compatible a partir de uma config ACTIONABLE_INTENTS."""
     required = config.get("required_params", [])
     optional = config.get("optional_params", [])
     param_labels = config.get("param_labels", {})
     clarification_prompts = config.get("clarification_prompts", {})
 
-    properties: Dict[str, Any] = {}
+    properties: dict[str, Any] = {}
     for param in required + optional:
         label = param_labels.get(param, param)
         description = clarification_prompts.get(param, f"Valor para {label}")
@@ -114,10 +123,10 @@ def _build_tool_schema_for_intent(action_id: str, config: Dict[str, Any]) -> Dic
 async def _try_extract_params_with_llm(
     user_message: str,
     intent: str,
-    config: Dict[str, Any],
-    collected_params: Dict[str, Any],
-    missing: List[str],
-) -> Optional[Dict[str, Any]]:
+    config: dict[str, Any],
+    collected_params: dict[str, Any],
+    missing: list[str],
+) -> dict[str, Any] | None:
     """
     Tenta extrair parâmetros faltantes via LLM (generate_with_tools, single-shot).
 
@@ -152,7 +161,7 @@ async def _try_extract_params_with_llm(
     return None
 
 
-async def resolve_job_id_by_title(db: AsyncSession, job_title: str, company_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+async def resolve_job_id_by_title(db: AsyncSession, job_title: str, company_id: str | None = None) -> dict[str, Any] | None:
     try:
         query = text("""
             SELECT id, title, status FROM job_vacancies
@@ -169,7 +178,7 @@ async def resolve_job_id_by_title(db: AsyncSession, job_title: str, company_id: 
     return None
 
 
-async def resolve_candidate_by_name(db: AsyncSession, candidate_name: str) -> Optional[Dict[str, Any]]:
+async def resolve_candidate_by_name(db: AsyncSession, candidate_name: str) -> dict[str, Any] | None:
     try:
         query = text("""
             SELECT vc.id, vc.candidate_id, vc.stage, vc.status
@@ -196,11 +205,11 @@ async def handle_action_flow(
     conversation_id: str,
     user_message_text: str,
     intent: str,
-    entities: Dict[str, Any],
+    entities: dict[str, Any],
     user_id: str,
     current_user: User,
     db: AsyncSession,
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     pending = pending_action_store.get(conversation_id)
 
     # Multi-turno: coletar parâmetro faltante se já há ação pendente
@@ -320,7 +329,7 @@ async def handle_action_flow(
     if not config:
         return None
 
-    collected_params: Dict[str, Any] = {}
+    collected_params: dict[str, Any] = {}
     flat = _flatten_entities(entities)
     cargo = flat.get("cargo") or flat.get("titulo_vaga") or flat.get("job_title") or flat.get("vaga") or flat.get("titulo") or flat.get("title")
     if cargo:
@@ -453,7 +462,7 @@ async def handle_action_flow(
 
 
 # Verbos por action_id para mensagens de confirmação
-_ACTION_VERBS: Dict[str, str] = {
+_ACTION_VERBS: dict[str, str] = {
     "move_candidate": "mover",
     "pause_job": "pausar",
     "close_job": "fechar",
@@ -464,7 +473,7 @@ _ACTION_VERBS: Dict[str, str] = {
 }
 
 # Perguntas de clarificação genéricas por parâmetro
-_PARAM_QUESTIONS: Dict[str, str] = {
+_PARAM_QUESTIONS: dict[str, str] = {
     "candidate_id": "Qual candidato?",
     "to_stage": "Para qual etapa do pipeline?",
     "job_id": "Qual vaga?",
@@ -474,7 +483,7 @@ _PARAM_QUESTIONS: Dict[str, str] = {
 }
 
 
-def _build_response_from_action(action_metadata: Dict[str, Any]) -> Optional[str]:
+def _build_response_from_action(action_metadata: dict[str, Any]) -> str | None:
     """Gera texto de resposta para o usuário a partir do resultado da action flow.
 
     Retorna None quando não há ação ativa (fluxo normal do orquestrador).
@@ -752,9 +761,9 @@ async def send_message(
 @router.post("/with-attachments", response_model=ChatResponse)
 async def send_message_with_attachments(
     content: str = Form(...),
-    conversation_id: Optional[str] = Form(None),
-    attachments: List[UploadFile] = File(default=[]),
-    audio: Optional[UploadFile] = File(default=None),
+    conversation_id: str | None = Form(None),
+    attachments: list[UploadFile] = File(default=[]),
+    audio: UploadFile | None = File(default=None),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db)
 ):
@@ -1069,7 +1078,6 @@ async def websocket_endpoint(
                 if lia_response:
                     ws_action_metadata = None
                     try:
-                        from app.auth.models import User as _User
                         _ws_user = type("_U", (), {
                             "id": user_id,
                             "email": "",
@@ -1090,7 +1098,7 @@ async def websocket_endpoint(
                     ws_action_response = _build_response_from_action(ws_action_metadata) if ws_action_metadata else None
                     ws_final_response = ws_action_response if ws_action_response else lia_response
 
-                    ws_msg_metadata: Dict[str, Any] = {
+                    ws_msg_metadata: dict[str, Any] = {
                         "intent": ws_orch["intent"],
                         "entities": ws_orch["entities"],
                     }
@@ -1132,7 +1140,7 @@ Use markdown quando útil (listas, negrito), mas evite formatação excessiva em
 async def _sse_event_generator(
     conversation_id: str,
     user_message: str,
-    history: List[Dict[str, str]],
+    history: list[dict[str, str]],
     db: AsyncSession,
     conversation_obj,
 ) -> AsyncGenerator[str, None]:
@@ -1197,7 +1205,7 @@ async def stream_message(
     """
     body = await request.json()
     user_content: str = body.get("content", "").strip()
-    conversation_id: Optional[str] = body.get("conversation_id")
+    conversation_id: str | None = body.get("conversation_id")
 
     if not user_content:
         raise HTTPException(status_code=422, detail="content is required")

@@ -8,30 +8,34 @@ Provides endpoints for:
 - CSV export
 - Retention policy management
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, func, desc
-from typing import Optional
-from datetime import datetime, timedelta
-import logging
-import io
 import csv
+import io
+import logging
+from datetime import datetime, timedelta
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.shared.tenant_guard import get_verified_company_id
 from app.models.audit_logs import (
-    SOXAuditLog, AuditRetentionPolicy,
-    ActionCategory, AuditStatus,
-    DEFAULT_RETENTION_POLICIES
+    DEFAULT_RETENTION_POLICIES,
+    AuditRetentionPolicy,
+    SOXAuditLog,
 )
 from app.schemas.audit_logs import (
-    AuditLogResponse, AuditLogListResponse, AuditLogCreate,
-    AuditStatsResponse, AuditRetentionPolicyResponse, AuditRetentionPolicyListResponse,
-    AuditRetentionPolicyCreate, AuditRetentionPolicyUpdate,
-    ActionCategoryEnum, AuditStatusEnum, SeedRetentionPoliciesResponse
+    AuditLogCreate,
+    AuditLogListResponse,
+    AuditLogResponse,
+    AuditRetentionPolicyCreate,
+    AuditRetentionPolicyListResponse,
+    AuditRetentionPolicyResponse,
+    AuditStatsResponse,
+    SeedRetentionPoliciesResponse,
 )
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +44,10 @@ router = APIRouter(prefix="/audit-logs", tags=["audit-logs"])
 
 @router.get("/stats", response_model=AuditStatsResponse, summary="Get audit log statistics")
 async def get_audit_stats(
-    date_from: Optional[datetime] = Query(None, description="Start date for stats"),
-    date_to: Optional[datetime] = Query(None, description="End date for stats"),
-    client_id: Optional[str] = Query(None, description="Filter by client ID"),
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    date_from: datetime | None = Query(None, description="Start date for stats"),
+    date_to: datetime | None = Query(None, description="End date for stats"),
+    client_id: str | None = Query(None, description="Filter by client ID"),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated statistics for audit logs."""
@@ -130,11 +134,11 @@ async def get_audit_stats(
 
 @router.get("/export", summary="Export audit logs as CSV")
 async def export_audit_logs(
-    date_from: Optional[datetime] = Query(None, description="Start date"),
-    date_to: Optional[datetime] = Query(None, description="End date"),
-    client_id: Optional[str] = Query(None, description="Filter by client ID"),
-    action_category: Optional[str] = Query(None, description="Filter by category"),
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    date_from: datetime | None = Query(None, description="Start date"),
+    date_to: datetime | None = Query(None, description="End date"),
+    client_id: str | None = Query(None, description="Filter by client ID"),
+    action_category: str | None = Query(None, description="Filter by category"),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Export audit logs as CSV file for compliance reporting."""
@@ -296,7 +300,7 @@ async def create_retention_policy(
 @router.get("/{log_id}", response_model=AuditLogResponse, summary="Get audit log by ID")
 async def get_audit_log(
     log_id: str,
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single audit log entry by ID."""
@@ -332,17 +336,17 @@ async def get_audit_log(
 
 @router.get("", response_model=AuditLogListResponse, summary="List audit logs")
 async def list_audit_logs(
-    date_from: Optional[datetime] = Query(None, description="Start date"),
-    date_to: Optional[datetime] = Query(None, description="End date"),
-    client_id: Optional[str] = Query(None, description="Filter by client ID"),
-    user_id: Optional[str] = Query(None, description="Filter by user ID"),
-    action_category: Optional[str] = Query(None, description="Filter by action category"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    action: Optional[str] = Query(None, description="Filter by action (partial match)"),
-    resource_type: Optional[str] = Query(None, description="Filter by resource type"),
+    date_from: datetime | None = Query(None, description="Start date"),
+    date_to: datetime | None = Query(None, description="End date"),
+    client_id: str | None = Query(None, description="Filter by client ID"),
+    user_id: str | None = Query(None, description="Filter by user ID"),
+    action_category: str | None = Query(None, description="Filter by action category"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    action: str | None = Query(None, description="Filter by action (partial match)"),
+    resource_type: str | None = Query(None, description="Filter by resource type"),
     limit: int = Query(50, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: Optional[str] = Depends(get_verified_company_id),
+    company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List audit logs with optional filtering and pagination."""

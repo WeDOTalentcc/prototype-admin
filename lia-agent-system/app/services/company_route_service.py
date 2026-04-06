@@ -5,12 +5,12 @@ Placed in shared services since company spans multiple domains.
 """
 import json
 import logging
-from typing import Dict, Any, List, Optional
-from uuid import UUID
 from datetime import datetime
+from typing import Any
+from uuid import UUID
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 logger = logging.getLogger(__name__)
 
@@ -22,32 +22,32 @@ class CompanyRouteService:
         self,
         db: AsyncSession,
         company_name: str,
-        trade_name: Optional[str] = None,
-        cnpj: Optional[str] = None,
-        address: Optional[str] = None,
-        sector: Optional[str] = None,
-        employee_count: Optional[int] = None,
-        website: Optional[str] = None,
-        linkedin_url: Optional[str] = None,
-        logo_url: Optional[str] = None,
-        responsible_name: Optional[str] = None,
-        responsible_email: Optional[str] = None,
-        responsible_phone: Optional[str] = None,
-        responsible_position: Optional[str] = None,
-        preferred_contact_time: Optional[str] = None,
-        hiring_volume: Optional[str] = None,
-        job_types: Optional[List[str]] = None,
-        current_ats: Optional[str] = None,
-        main_challenges: Optional[List[str]] = None,
-        main_priority: Optional[str] = None,
-        platform_expectations: Optional[str] = None,
-        communication_channels: Optional[List[str]] = None,
-        allow_lia_contact: Optional[bool] = None,
-        additional_notes: Optional[str] = None,
-        work_model: Optional[str] = None,
-        company_id: Optional[str] = None,
-        culture_profile_data: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        trade_name: str | None = None,
+        cnpj: str | None = None,
+        address: str | None = None,
+        sector: str | None = None,
+        employee_count: int | None = None,
+        website: str | None = None,
+        linkedin_url: str | None = None,
+        logo_url: str | None = None,
+        responsible_name: str | None = None,
+        responsible_email: str | None = None,
+        responsible_phone: str | None = None,
+        responsible_position: str | None = None,
+        preferred_contact_time: str | None = None,
+        hiring_volume: str | None = None,
+        job_types: list[str] | None = None,
+        current_ats: str | None = None,
+        main_challenges: list[str] | None = None,
+        main_priority: str | None = None,
+        platform_expectations: str | None = None,
+        communication_channels: list[str] | None = None,
+        allow_lia_contact: bool | None = None,
+        additional_notes: str | None = None,
+        work_model: str | None = None,
+        company_id: str | None = None,
+        culture_profile_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Process onboarding wizard submission.
 
         Extracted from POST /onboarding (lines 147-297).
@@ -56,7 +56,7 @@ class CompanyRouteService:
         Returns:
             Dict with keys: success, message, company_id, company_name
         """
-        from app.models.company import CompanyProfile, CompanyCultureProfile
+        from app.models.company import CompanyCultureProfile, CompanyProfile
 
         profile = None
 
@@ -183,9 +183,9 @@ class CompanyRouteService:
 
     async def enrich_company_profile(
         self,
-        linkedin_url: Optional[str] = None,
-        glassdoor_company_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        linkedin_url: str | None = None,
+        glassdoor_company_name: str | None = None,
+    ) -> dict[str, Any]:
         """Enrich company profile with LinkedIn and Glassdoor data.
 
         Extracted from POST /enrich (lines 300-376).
@@ -197,10 +197,10 @@ class CompanyRouteService:
         """
         from app.domains.sourcing.services.apify_service import apify_service
 
-        errors: List[str] = []
-        linkedin_data: Dict[str, Any] = {}
-        glassdoor_data: Dict[str, Any] = {}
-        enriched_culture: Dict[str, Any] = {}
+        errors: list[str] = []
+        linkedin_data: dict[str, Any] = {}
+        glassdoor_data: dict[str, Any] = {}
+        enriched_culture: dict[str, Any] = {}
 
         if not linkedin_url and not glassdoor_company_name:
             return {
@@ -247,7 +247,7 @@ class CompanyRouteService:
 
     async def generate_evp(
         self, db: AsyncSession, profile_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate EVP (Employee Value Proposition) analysis using LLM.
 
         Extracted from POST /profile/{profile_id}/generate-evp (lines 752-894).
@@ -285,7 +285,7 @@ class CompanyRouteService:
             "overall_rating": additional_data.get("overall_rating", ""),
         }
 
-        sources: List[str] = []
+        sources: list[str] = []
         if company_info.get("description") or company_info.get("tagline"):
             sources.append("linkedin")
         if company_info.get("mission") or company_info.get("culture_highlights"):
@@ -380,7 +380,7 @@ REGRAS:
 
     async def get_company_with_relations(
         self, db: AsyncSession, profile_id: UUID
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Get company profile with all related data.
 
         Extracted from GET /profile/{profile_id}/full (lines 694-743).
@@ -390,7 +390,7 @@ REGRAS:
             Dict with profile data plus departments, benefits, culture_values lists,
             or None if not found.
         """
-        from app.models.company import CompanyProfile, Department, Benefit, CultureValue
+        from app.models.company import Benefit, CompanyProfile, CultureValue, Department
 
         result = await db.execute(
             select(CompanyProfile).where(CompanyProfile.id == profile_id)
@@ -424,7 +424,7 @@ REGRAS:
         )
         culture_values = vals_result.scalars().all()
 
-        def _serialize(obj: Any) -> Dict[str, Any]:
+        def _serialize(obj: Any) -> dict[str, Any]:
             result_dict = {}
             for col in obj.__table__.columns:
                 val = getattr(obj, col.name, None)
@@ -445,9 +445,9 @@ REGRAS:
     async def list_departments(
         self,
         db: AsyncSession,
-        company_id: Optional[UUID] = None,
+        company_id: UUID | None = None,
         include_inactive: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """List departments with member counts.
 
         Extracted from GET /departments (lines 897-931).
@@ -467,7 +467,7 @@ REGRAS:
         result = await db.execute(query)
         departments = result.scalars().all()
 
-        dept_dicts: List[Dict[str, Any]] = []
+        dept_dicts: list[dict[str, Any]] = []
         for dept in departments:
             member_count_result = await db.execute(
                 select(func.count(DepartmentMember.id)).where(
@@ -493,9 +493,9 @@ REGRAS:
     async def create_department(
         self,
         db: AsyncSession,
-        company_id: Optional[str],
-        department_data: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        company_id: str | None,
+        department_data: dict[str, Any],
+    ) -> dict[str, Any]:
         """Create a new department.
 
         Extracted from POST /departments (lines 934-976).
@@ -547,8 +547,8 @@ REGRAS:
         self,
         db: AsyncSession,
         department_id: UUID,
-        update_data: Dict[str, Any],
-    ) -> Optional[Dict[str, Any]]:
+        update_data: dict[str, Any],
+    ) -> dict[str, Any] | None:
         """Update a department.
 
         Extracted from PUT /departments/{department_id} (lines 979-1010).
@@ -582,7 +582,7 @@ REGRAS:
 
     async def delete_department(
         self, db: AsyncSession, department_id: UUID
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Soft delete a department.
 
         Extracted from DELETE /departments/{department_id} (lines 1013-1039).
@@ -608,7 +608,7 @@ REGRAS:
 
     async def auto_enrich_company(
         self, db: AsyncSession, profile_id: UUID
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Automatically enrich company profile after onboarding.
 
         Extracted from POST /auto-enrich/{profile_id} (lines 387-601).
@@ -618,14 +618,14 @@ REGRAS:
         Returns:
             Dict with keys: success, fields_updated, apify_data, inferred_data, errors
         """
-        from app.models.company import CompanyProfile, CompanyCultureProfile
         from app.domains.sourcing.services.apify_service import apify_service
+        from app.models.company import CompanyCultureProfile, CompanyProfile
         from app.services.llm import llm_service
 
-        errors: List[str] = []
-        fields_updated: List[str] = []
-        apify_data: Dict[str, Any] = {}
-        inferred_data: Dict[str, Any] = {}
+        errors: list[str] = []
+        fields_updated: list[str] = []
+        apify_data: dict[str, Any] = {}
+        inferred_data: dict[str, Any] = {}
 
         result = await db.execute(
             select(CompanyProfile).where(CompanyProfile.id == profile_id)
@@ -639,8 +639,8 @@ REGRAS:
         )
         culture_profile = culture_result.scalar_one_or_none()
 
-        linkedin_data: Dict[str, Any] = {}
-        glassdoor_data: Dict[str, Any] = {}
+        linkedin_data: dict[str, Any] = {}
+        glassdoor_data: dict[str, Any] = {}
 
         linkedin_url = profile.linkedin_url or (profile.additional_data or {}).get("linkedin_url")
         if linkedin_url:
@@ -806,8 +806,8 @@ REGRAS:
     async def get_benefits_summary(
         self,
         db: AsyncSession,
-        company_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        company_id: str | None = None,
+    ) -> dict[str, Any]:
         """Get a summary of company benefits for AI agents.
 
         Extracted from GET /benefits/summary (lines 1508-1600+).
@@ -817,8 +817,9 @@ REGRAS:
             Dict with keys: total_count, active_count, highlighted_count,
             categories, formatted_text, benefits
         """
-        from app.models.company import Benefit
         import uuid as uuid_mod
+
+        from app.models.company import Benefit
 
         query = select(Benefit)
         if company_id:
@@ -841,7 +842,7 @@ REGRAS:
             "security": "Segurança",
         }
 
-        categories: Dict[str, Any] = {}
+        categories: dict[str, Any] = {}
         for benefit in active_benefits:
             cat = benefit.category or "other"
             if cat not in categories:

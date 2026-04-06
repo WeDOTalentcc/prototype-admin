@@ -7,9 +7,10 @@ This model manages pending messages with:
 - Priority-based ordering
 - LGPD consent tracking
 """
-from datetime import datetime, timedelta
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Integer, Index, Float
 import uuid
+from datetime import datetime, timedelta
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Index, Integer, String, Text
 
 from app.core.database import Base
 

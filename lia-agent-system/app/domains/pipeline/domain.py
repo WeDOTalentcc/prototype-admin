@@ -3,9 +3,9 @@ PipelineTransitionDomain - Exposes pipeline transitions as agent-callable tools.
 Part of the domain-driven architecture for agent orchestration.
 """
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Any
 
-from app.domains.base import DomainPrompt, DomainContext, DomainAction, IntentResult, DomainResponse, ConfidenceLevel
+from app.domains.base import DomainAction, DomainContext, DomainResponse, IntentResult
 from app.domains.compliance_base import ComplianceDomainPrompt
 from app.domains.registry import register_domain
 
@@ -76,7 +76,7 @@ DOMAIN_INTENTS = [
     "sugerir_acao",
 ]
 
-_KEYWORD_ACTION_MAP: Dict[str, str] = {
+_KEYWORD_ACTION_MAP: dict[str, str] = {
     "mover candidato": "move_candidate",
     "move candidate": "move_candidate",
     "avançar candidato": "move_candidate",
@@ -104,7 +104,7 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
     description = DOMAIN_DESCRIPTION
     version = "1.0.0"
 
-    def get_allowed_actions(self) -> List[DomainAction]:
+    def get_allowed_actions(self) -> list[DomainAction]:
         return [
             DomainAction(
                 action_id="move_candidate",
@@ -152,8 +152,9 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
         ]
 
     def get_system_prompt(self) -> str:
-        import yaml
         from pathlib import Path
+
+        import yaml
         prompt_path = Path(__file__).parent.parent.parent / "prompts" / "domains" / "pipeline_transition.yaml"
         try:
             with open(prompt_path) as f:
@@ -194,7 +195,7 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
             reasoning=f"Matched pipeline action: {best_action}",
         )
 
-    async def execute_action(self, action_id: str, params: Dict[str, Any], context: DomainContext) -> DomainResponse:
+    async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         tool_context = {
             "user_id": context.user_id,
             "tenant_id": context.tenant_id,
@@ -215,7 +216,7 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
             action_id=action_id,
         )
 
-    def get_suggestions(self, context: DomainContext) -> List[str]:
+    def get_suggestions(self, context: DomainContext) -> list[str]:
         return [
             "Mover candidato para próxima etapa",
             "Ver etapas do pipeline",
@@ -225,9 +226,9 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
 
 async def handle_tool_call(
     tool_name: str,
-    parameters: Dict[str, Any],
-    context: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    parameters: dict[str, Any],
+    context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     try:
         if tool_name == "move_candidate":
             return await _handle_move_candidate(parameters, context)
@@ -246,7 +247,7 @@ async def handle_tool_call(
         return {"success": False, "error": str(e)}
 
 
-async def _handle_move_candidate(params: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+async def _handle_move_candidate(params: dict[str, Any], context: dict[str, Any] | None) -> dict[str, Any]:
     try:
         import httpx
 
@@ -287,7 +288,7 @@ async def _handle_move_candidate(params: Dict[str, Any], context: Optional[Dict[
         return {"success": False, "error": str(e)}
 
 
-async def _handle_interpret_context(params: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+async def _handle_interpret_context(params: dict[str, Any], context: dict[str, Any] | None) -> dict[str, Any]:
     try:
         from app.domains.communication.services.interpret_context_llm_service import interpret_with_llm
 
@@ -307,10 +308,11 @@ async def _handle_interpret_context(params: Dict[str, Any], context: Optional[Di
         return {"success": False, "error": str(e)}
 
 
-async def _handle_predict_sub_status(params: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+async def _handle_predict_sub_status(params: dict[str, Any], context: dict[str, Any] | None) -> dict[str, Any]:
     try:
-        import httpx
         import os
+
+        import httpx
 
         payload = {
             "vacancy_candidate_id": params["vacancy_candidate_id"],
@@ -358,7 +360,7 @@ async def _handle_predict_sub_status(params: Dict[str, Any], context: Optional[D
         }
 
 
-async def _handle_suggest_next_action(params: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+async def _handle_suggest_next_action(params: dict[str, Any], context: dict[str, Any] | None) -> dict[str, Any]:
     try:
         from app.domains.communication.services.infer_behavior_service import infer_behavior_auto
 
@@ -389,7 +391,7 @@ async def _handle_suggest_next_action(params: Dict[str, Any], context: Optional[
         return {"success": False, "error": str(e)}
 
 
-async def _handle_list_stages(params: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+async def _handle_list_stages(params: dict[str, Any], context: dict[str, Any] | None) -> dict[str, Any]:
     from app.models.recruitment_stages import STANDARD_STAGE_CATALOG
 
     stages = []
@@ -403,7 +405,7 @@ async def _handle_list_stages(params: Dict[str, Any], context: Optional[Dict[str
     return {"success": True, "stages": stages}
 
 
-def get_domain_config() -> Dict[str, Any]:
+def get_domain_config() -> dict[str, Any]:
     return {
         "name": DOMAIN_NAME,
         "description": DOMAIN_DESCRIPTION,

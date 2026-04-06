@@ -5,14 +5,14 @@ import logging
 import re
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 from app.models.archetype import SearchArchetype
 
 logger = logging.getLogger(__name__)
 
 
-def extract_tags_from_search_spec(search_spec: Dict[str, Any]) -> List[str]:
+def extract_tags_from_search_spec(search_spec: dict[str, Any]) -> list[str]:
     """
     Extract human-readable tags from a search specification.
     
@@ -136,7 +136,7 @@ def _generate_archetype_id(name: str) -> str:
     return f"{slug}-{short_uuid}"
 
 
-def _extract_query_from_search_spec(search_spec: Dict[str, Any]) -> str:
+def _extract_query_from_search_spec(search_spec: dict[str, Any]) -> str:
     """
     Build a natural language query from the search specification.
     
@@ -186,7 +186,7 @@ def _extract_query_from_search_spec(search_spec: Dict[str, Any]) -> str:
     return " ".join(parts)
 
 
-def _extract_filters_from_search_spec(search_spec: Dict[str, Any]) -> Dict[str, Any]:
+def _extract_filters_from_search_spec(search_spec: dict[str, Any]) -> dict[str, Any]:
     """
     Extract structured filters from the search specification.
     
@@ -241,10 +241,10 @@ def _extract_filters_from_search_spec(search_spec: Dict[str, Any]) -> Dict[str, 
 
 
 def build_archetype_from_search(
-    search_spec: Dict[str, Any],
+    search_spec: dict[str, Any],
     name: str,
-    description: Optional[str],
-    emoji: Optional[str],
+    description: str | None,
+    emoji: str | None,
     company_id: str,
     user_id: str
 ) -> SearchArchetype:

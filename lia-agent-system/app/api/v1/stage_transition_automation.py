@@ -10,14 +10,14 @@ Provides endpoints for:
 Part of LIA Automation System v1.0
 """
 
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
 import logging
 import os
+from typing import Any
 
-from app.domains.automation.services.stage_transition_automation import stage_transition_service
-from app.domains.automation.services.stage_transition_automation import SubStatusPredictor
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+
+from app.domains.automation.services.stage_transition_automation import SubStatusPredictor, stage_transition_service
 
 logger = logging.getLogger(__name__)
 
@@ -35,48 +35,48 @@ async def get_db_session():
 
 
 class WSIScore(BaseModel):
-    overall: Optional[float] = None
-    technical: Optional[float] = None
-    behavioral: Optional[float] = None
-    cultural: Optional[float] = None
+    overall: float | None = None
+    technical: float | None = None
+    behavioral: float | None = None
+    cultural: float | None = None
 
 
 class InterviewNote(BaseModel):
     stage: str
-    interviewer: Optional[str] = None
-    rating: Optional[float] = None
-    strengths: List[str] = []
-    gaps: List[str] = []
-    recommendation: Optional[str] = None
-    notes: Optional[str] = None
+    interviewer: str | None = None
+    rating: float | None = None
+    strengths: list[str] = []
+    gaps: list[str] = []
+    recommendation: str | None = None
+    notes: str | None = None
 
 
 class LiaParecer(BaseModel):
-    summary: Optional[str] = None
-    strengths: List[str] = []
-    development_areas: List[str] = []
-    cultural_fit: Optional[float] = None
-    recommendation: Optional[str] = None
+    summary: str | None = None
+    strengths: list[str] = []
+    development_areas: list[str] = []
+    cultural_fit: float | None = None
+    recommendation: str | None = None
 
 
 class CandidateContext(BaseModel):
     id: str
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    current_title: Optional[str] = None
-    current_company: Optional[str] = None
-    wsi_score: Optional[WSIScore] = None
-    interview_notes: List[InterviewNote] = []
-    lia_parecer: Optional[LiaParecer] = None
+    email: str | None = None
+    phone: str | None = None
+    current_title: str | None = None
+    current_company: str | None = None
+    wsi_score: WSIScore | None = None
+    interview_notes: list[InterviewNote] = []
+    lia_parecer: LiaParecer | None = None
 
 
 class JobContext(BaseModel):
     id: str
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
-    requirements: List[str] = []
+    department: str | None = None
+    seniority: str | None = None
+    requirements: list[str] = []
     has_hired_candidate: bool = False
 
 
@@ -84,14 +84,14 @@ class PredictSubStatusRequest(BaseModel):
     candidate_context: CandidateContext
     from_stage: str
     to_stage: str
-    job_context: Optional[JobContext] = None
+    job_context: JobContext | None = None
 
 
 class PredictSubStatusResponse(BaseModel):
     predicted_substatus: str
     confidence: float
     reasoning: str
-    alternatives: List[Dict[str, Any]] = []
+    alternatives: list[dict[str, Any]] = []
 
 
 class GenerateMessageRequest(BaseModel):
@@ -104,9 +104,9 @@ class GenerateMessageRequest(BaseModel):
 
 
 class GenerateMessageResponse(BaseModel):
-    subject: Optional[str] = None
+    subject: str | None = None
     body: str
-    metadata: Dict[str, Any] = {}
+    metadata: dict[str, Any] = {}
 
 
 class RegenerateMessageRequest(BaseModel):
@@ -119,10 +119,10 @@ class RegenerateMessageRequest(BaseModel):
 
 
 class RegenerateMessageResponse(BaseModel):
-    subject: Optional[str] = None
+    subject: str | None = None
     body: str
-    changes_made: List[str] = []
-    metadata: Dict[str, Any] = {}
+    changes_made: list[str] = []
+    metadata: dict[str, Any] = {}
 
 
 class TransitionAction(BaseModel):
@@ -130,7 +130,7 @@ class TransitionAction(BaseModel):
     name: str
     description: str
     recommended: bool = False
-    template_category: Optional[str] = None
+    template_category: str | None = None
 
 
 class GetActionsRequest(BaseModel):
@@ -139,7 +139,7 @@ class GetActionsRequest(BaseModel):
 
 
 class GetActionsResponse(BaseModel):
-    actions: List[TransitionAction]
+    actions: list[TransitionAction]
 
 
 @router.post("/predict-substatus", response_model=PredictSubStatusResponse)
@@ -289,7 +289,7 @@ async def get_substatus_options(stage: str):
     Returns the list of valid sub-statuses with display names
     for use in the transition modal dropdown.
     """
-    from app.models.recruitment_stages import SUB_STATUSES, REJECTION_REASONS, OFFER_DECLINE_REASONS
+    from app.models.recruitment_stages import OFFER_DECLINE_REASONS, REJECTION_REASONS, SUB_STATUSES
     
     try:
         if stage == 'rejected':
@@ -325,10 +325,10 @@ async def get_substatus_options(stage: str):
 
 
 class BulkPredictSubStatusRequest(BaseModel):
-    candidates: List[CandidateContext]
+    candidates: list[CandidateContext]
     from_stage: str
     to_stage: str
-    job_context: Optional[JobContext] = None
+    job_context: JobContext | None = None
 
 
 class CandidatePrediction(BaseModel):
@@ -339,28 +339,28 @@ class CandidatePrediction(BaseModel):
 
 
 class BulkPredictSubStatusResponse(BaseModel):
-    predictions: List[CandidatePrediction]
+    predictions: list[CandidatePrediction]
     ai_powered: bool = False
 
 
 class BulkGenerateMessagesRequest(BaseModel):
-    candidates: List[CandidateContext]
+    candidates: list[CandidateContext]
     job_context: JobContext
     to_stage: str
-    substatus_map: Dict[str, str]
+    substatus_map: dict[str, str]
     message_type: str = "feedback_construtivo"
     channel: str = Field(default="email", pattern="^(email|whatsapp)$")
 
 
 class CandidateMessage(BaseModel):
     candidate_id: str
-    subject: Optional[str] = None
+    subject: str | None = None
     body: str
     ai_personalized: bool = False
 
 
 class BulkGenerateMessagesResponse(BaseModel):
-    messages: List[CandidateMessage]
+    messages: list[CandidateMessage]
 
 
 @router.post("/bulk-predict-substatus", response_model=BulkPredictSubStatusResponse)
@@ -373,7 +373,7 @@ async def bulk_predict_substatus(request: BulkPredictSubStatusRequest):
     otherwise falls back to the deterministic SubStatusPredictor.
     """
     use_llm = os.getenv('ENABLE_LLM_SUBSTATUS_PREDICTION', 'true').lower() == 'true'
-    predictions: List[CandidatePrediction] = []
+    predictions: list[CandidatePrediction] = []
 
     for candidate in request.candidates:
         try:
@@ -423,7 +423,7 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
     Uses each candidate's specific substatus from the substatus_map
     to produce individualized communication.
     """
-    messages: List[CandidateMessage] = []
+    messages: list[CandidateMessage] = []
 
     for candidate in request.candidates:
         substatus = request.substatus_map.get(candidate.id, 'profile_not_aligned')
@@ -460,7 +460,7 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
 
 
 class DbPredictSubStatusRequest(BaseModel):
-    vacancy_candidate_ids: List[str]
+    vacancy_candidate_ids: list[str]
     from_stage: str
     to_stage: str
 
@@ -473,7 +473,7 @@ class DbCandidatePrediction(BaseModel):
 
 
 class DbPredictSubStatusResponse(BaseModel):
-    predictions: List[DbCandidatePrediction]
+    predictions: list[DbCandidatePrediction]
     ai_powered: bool = False
     data_source: str = "database"
 
@@ -508,7 +508,9 @@ async def bulk_predict_substatus_from_db(
         )
     
     try:
-        from app.domains.automation.services.stage_transition_automation import stage_transition_service as domain_service
+        from app.domains.automation.services.stage_transition_automation import (
+            stage_transition_service as domain_service,
+        )
         results = await domain_service.predict_substatus_bulk_from_db(
             vacancy_candidate_ids=request.vacancy_candidate_ids,
             from_stage=request.from_stage,

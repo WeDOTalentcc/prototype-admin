@@ -5,8 +5,9 @@ Provides a central registry for all tools that LLM agents can invoke,
 including schema definitions and access control per agent type.
 """
 import logging
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Awaitable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +17,11 @@ class ToolDefinition:
     """Definition of a tool that can be called by LLM agents."""
     name: str
     description: str
-    parameters_schema: Dict[str, Any]
-    handler: Callable[..., Awaitable[Dict[str, Any]]]
-    allowed_agents: List[str] = field(default_factory=list)
+    parameters_schema: dict[str, Any]
+    handler: Callable[..., Awaitable[dict[str, Any]]]
+    allowed_agents: list[str] = field(default_factory=list)
     
-    def to_claude_schema(self) -> Dict[str, Any]:
+    def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""
         return {
             "name": self.name,
@@ -28,7 +29,7 @@ class ToolDefinition:
             "input_schema": self.parameters_schema
         }
     
-    def to_gemini_schema(self) -> Dict[str, Any]:
+    def to_gemini_schema(self) -> dict[str, Any]:
         """Convert to Gemini's function declaration format."""
         return {
             "name": self.name,
@@ -46,7 +47,7 @@ class ToolRegistry:
     """
     
     def __init__(self):
-        self._tools: Dict[str, ToolDefinition] = {}
+        self._tools: dict[str, ToolDefinition] = {}
         self.logger = logging.getLogger(self.__class__.__name__)
     
     def register(self, tool: ToolDefinition) -> None:
@@ -62,7 +63,7 @@ class ToolRegistry:
         self._tools[tool.name] = tool
         self.logger.info(f"Registered tool: {tool.name}")
     
-    def get_tool(self, name: str) -> Optional[ToolDefinition]:
+    def get_tool(self, name: str) -> ToolDefinition | None:
         """
         Get a tool by name.
         
@@ -74,7 +75,7 @@ class ToolRegistry:
         """
         return self._tools.get(name)
     
-    def get_tools_for_agent(self, agent_type: str) -> List[ToolDefinition]:
+    def get_tools_for_agent(self, agent_type: str) -> list[ToolDefinition]:
         """
         Get all tools available to a specific agent type.
         
@@ -90,7 +91,7 @@ class ToolRegistry:
                 available_tools.append(tool)
         return available_tools
     
-    def get_all_schemas(self, format: str = "claude") -> List[Dict[str, Any]]:
+    def get_all_schemas(self, format: str = "claude") -> list[dict[str, Any]]:
         """
         Get all tool schemas in the specified format.
         
@@ -112,7 +113,7 @@ class ToolRegistry:
         self, 
         agent_type: str, 
         format: str = "claude"
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get tool schemas available to a specific agent.
         
@@ -132,7 +133,7 @@ class ToolRegistry:
                 schemas.append(tool.to_claude_schema())
         return schemas
     
-    def list_tools(self) -> List[str]:
+    def list_tools(self) -> list[str]:
         """Get list of all registered tool names."""
         return list(self._tools.keys())
     

@@ -9,34 +9,32 @@ Provides endpoints for:
 - CSV/JSON export
 - Seeding initial data
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from fastapi.responses import StreamingResponse, JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc
-from typing import Optional, List
-from datetime import datetime, timedelta
-import logging
-import io
 import csv
+import io
 import json
+import logging
+from datetime import datetime, timedelta
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
+from sqlalchemy import and_, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.shared.tenant_guard import get_verified_company_id
-from app.models.health_check import (
-    ComplianceHealthCheckItem,
-    ComplianceHealthCheckHistory,
-    DEFAULT_HEALTH_CHECK_ITEMS
-)
+from app.models.health_check import DEFAULT_HEALTH_CHECK_ITEMS, ComplianceHealthCheckHistory, ComplianceHealthCheckItem
 from app.models.observability import ComplianceControlLibrary
 from app.schemas.health_check import (
-    HealthCheckItemResponse, HealthCheckItemListResponse,
-    HealthCheckItemCreate, HealthCheckItemUpdate,
-    HealthCheckVerifyRequest, HealthCheckStatusUpdateRequest,
-    HealthCheckHistoryResponse, HealthCheckHistoryListResponse,
-    HealthCheckSummaryResponse, FrameworkSummary,
+    FrameworkSummary,
+    HealthCheckHistoryListResponse,
+    HealthCheckHistoryResponse,
+    HealthCheckItemCreate,
+    HealthCheckItemListResponse,
+    HealthCheckItemResponse,
+    HealthCheckStatusUpdateRequest,
+    HealthCheckSummaryResponse,
+    HealthCheckVerifyRequest,
     SeedHealthCheckResponse,
-    ComplianceFrameworkEnum, HealthCheckStatusEnum
 )
 
 logger = logging.getLogger(__name__)
@@ -145,8 +143,8 @@ async def get_health_check_summary(
 
 @router.get("/export", summary="Export health check items")
 async def export_health_check(
-    framework: Optional[str] = Query(None, description="Filter by framework"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    framework: str | None = Query(None, description="Filter by framework"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     format: str = Query("csv", description="Export format: csv or json"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -500,10 +498,10 @@ async def get_health_check_item(
 
 @router.get("", response_model=HealthCheckItemListResponse, summary="List health check items")
 async def list_health_check_items(
-    framework: Optional[str] = Query(None, description="Filter by framework (SOX, SOC2, ISO27001, LGPD, BCB498, EUAI, NYC144)"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    category: Optional[str] = Query(None, description="Filter by category"),
-    priority: Optional[str] = Query(None, description="Filter by priority"),
+    framework: str | None = Query(None, description="Filter by framework (SOX, SOC2, ISO27001, LGPD, BCB498, EUAI, NYC144)"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    category: str | None = Query(None, description="Filter by category"),
+    priority: str | None = Query(None, description="Filter by priority"),
     overdue_only: bool = Query(False, description="Only show items with overdue reviews"),
     limit: int = Query(50, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),

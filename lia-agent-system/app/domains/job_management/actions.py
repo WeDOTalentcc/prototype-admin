@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import List
 
 from app.domains.base import DomainAction
 
-JOB_MANAGEMENT_ACTIONS: List[DomainAction] = [
+JOB_MANAGEMENT_ACTIONS: list[DomainAction] = [
     DomainAction(action_id="create_job", name="Criar vaga", description="Criar nova vaga via conversa"),
     DomainAction(action_id="guided_wizard", name="Wizard guiado", description="Fluxo conversacional guiado para criação de vaga"),
     DomainAction(action_id="extract_requirements", name="Extrair requisitos", description="Extrair requisitos de uma job description usando IA"),

@@ -2,6 +2,7 @@
 # DEPRECATED: importe diretamente de app.domains.policy.agents.agent
 # Este shim será removido em sprint futura.
 import warnings
+
 warnings.warn(
     "app.agents.policy_setup_agent está depreciado. "
     "Use app.domains.policy.agents.agent.PolicySetupAgent diretamente.",
@@ -10,9 +11,9 @@ warnings.warn(
 )
 from app.domains.policy.agents.agent import PolicySetupAgent, policy_setup_agent  # noqa: F401
 from app.domains.policy.agents.stage_context import (  # noqa: F401
-    QUESTIONS,
-    BLOCK_NAMES,
     BLOCK_FIELD_MAP,
+    BLOCK_NAMES,
+    QUESTIONS,
     PolicySetupSession,
     get_or_create_session,
 )

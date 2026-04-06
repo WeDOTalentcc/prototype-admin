@@ -10,88 +10,78 @@ This module provides:
 - Enhanced base agent and registry
 """
 
-from app.shared.robustness.intent_schemas import (
-    IntentSchema,
-    EntityRequirement,
-    EntityImportance,
-    EntityType,
-    get_agent_intents,
-    get_intent_schema,
-    ALL_INTENT_SCHEMAS
+from app.shared.robustness.context_management import (
+    CANCELLATION_KEYWORDS,
+    CONFIRMATION_KEYWORDS,
+    RESTART_KEYWORDS,
+    CancellationHandler,
+    ContextManager,
+    ContextSnapshot,
+    ContextStatus,
+    HandoffContract,
 )
-
+from app.shared.robustness.defensive_prompts import (
+    AMBIGUITY_DETECTION_PROMPT,
+    CLARIFICATION_TRIGGERS,
+    ERROR_RECOVERY_PROMPT,
+    OUT_OF_SCOPE_RESPONSES,
+    WHAT_I_CAN_DO,
+    format_confirmation_message,
+    get_clarification_message,
+    get_defensive_prompt_section,
+    get_out_of_scope_response,
+)
+from app.shared.robustness.enhanced_base import EnhancedBaseAgent, RobustAgentMixin
+from app.shared.robustness.enhanced_registry import (
+    FALLBACK_CHAINS,
+    EnhancedAgentRegistry,
+    RoutingDecision,
+    RoutingTelemetry,
+    enhanced_registry,
+)
 from app.shared.robustness.error_handling import (
     AgentError,
     AgentErrorCode,
     AgentErrorResponse,
-    handle_agent_errors,
     create_user_friendly_error,
+    handle_agent_errors,
     raise_missing_entity,
     raise_not_found,
-    raise_validation_error
+    raise_validation_error,
 )
-
 from app.shared.robustness.input_validation import (
     BaseAgentInput,
-    JobInput,
     CandidateInput,
-    SearchInput,
     InterviewInput,
-    WSIInput,
+    JobInput,
     MessageInput,
-    validate_agent_input,
-    sanitize_text,
-    sanitize_sql_input,
-    detect_language,
+    SearchInput,
     SupportedLanguage,
+    WSIInput,
+    detect_language,
     is_empty_or_whitespace,
-    normalize_text
+    normalize_text,
+    sanitize_sql_input,
+    sanitize_text,
+    validate_agent_input,
 )
-
-from app.shared.robustness.context_management import (
-    ContextManager,
-    ContextStatus,
-    CancellationHandler,
-    HandoffContract,
-    ContextSnapshot,
-    CANCELLATION_KEYWORDS,
-    RESTART_KEYWORDS,
-    CONFIRMATION_KEYWORDS
+from app.shared.robustness.intent_schemas import (
+    ALL_INTENT_SCHEMAS,
+    EntityImportance,
+    EntityRequirement,
+    EntityType,
+    IntentSchema,
+    get_agent_intents,
+    get_intent_schema,
 )
-
-from app.shared.robustness.defensive_prompts import (
-    CLARIFICATION_TRIGGERS,
-    OUT_OF_SCOPE_RESPONSES,
-    AMBIGUITY_DETECTION_PROMPT,
-    ERROR_RECOVERY_PROMPT,
-    WHAT_I_CAN_DO,
-    get_defensive_prompt_section,
-    get_clarification_message,
-    get_out_of_scope_response,
-    format_confirmation_message
-)
-
-from app.shared.robustness.enhanced_base import (
-    EnhancedBaseAgent,
-    RobustAgentMixin
-)
-
-from app.shared.robustness.enhanced_registry import (
-    EnhancedAgentRegistry,
-    RoutingDecision,
-    RoutingTelemetry,
-    FALLBACK_CHAINS,
-    enhanced_registry
-)
-
 from app.shared.robustness.response_filter import (
+    FORBIDDEN_PATTERNS,
+    INFORMAL_TERMS,
+    PROFESSIONAL_INDICATORS,
     ToneFilter,
     filter_response,
-    validate_response,
     tone_filter,
-    INFORMAL_TERMS,
-    FORBIDDEN_PATTERNS,
-    PROFESSIONAL_INDICATORS,
+    validate_response,
 )
 
 __all__ = [

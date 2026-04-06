@@ -3,10 +3,10 @@ WSI Question Adjuster Service
 Regenerates WSI screening questions based on recruiter natural language requests.
 Uses Gemini 2.5 Flash for fast iteration.
 """
-import logging
 import json
+import logging
 import os
-from typing import List, Optional, Dict, Any
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ MAX_ITERATIONS_PER_BLOCK = 5
 class WSIQuestionAdjusterService:
     def __init__(self):
         self._model = None
-        self._iteration_counts: Dict[str, int] = {}
+        self._iteration_counts: dict[str, int] = {}
 
     def _get_model(self):
         if self._model is None:
@@ -57,9 +57,9 @@ class WSIQuestionAdjusterService:
         job_id: str,
         block_id: str,
         adjustment_prompt: str,
-        current_questions: List[Dict[str, Any]],
-        job_context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        current_questions: list[dict[str, Any]],
+        job_context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Adjust WSI questions based on recruiter's natural language request.
         Returns adjusted questions with diff information.
@@ -178,13 +178,13 @@ Responda APENAS com JSON válido, sem markdown."""
     async def evaluate_job_description(
         self,
         job_title: str,
-        responsibilities: List[str],
-        technical_skills: List[str],
-        behavioral_competencies: List[str],
-        seniority: Optional[str] = None,
-        department: Optional[str] = None,
-        description: Optional[str] = None
-    ) -> Dict[str, Any]:
+        responsibilities: list[str],
+        technical_skills: list[str],
+        behavioral_competencies: list[str],
+        seniority: str | None = None,
+        department: str | None = None,
+        description: str | None = None
+    ) -> dict[str, Any]:
         """
         Evaluate a Job Description for WSI question generation readiness.
         Returns a score, indicators, and LIA suggestions.

@@ -9,15 +9,16 @@ Provides endpoints for:
 - Testing automations
 - Triggering automations manually
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
 import logging
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.automation.services.automation_service import automation_service
-from app.models.automation import TriggerType, ActionType
+from app.models.automation import ActionType, TriggerType
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +35,12 @@ class AutomationCondition(BaseModel):
 class CreateAutomationRequest(BaseModel):
     """Request model for creating an automation."""
     name: str = Field(..., min_length=1, max_length=255, description="Automation name")
-    description: Optional[str] = Field(None, max_length=1000, description="Automation description")
+    description: str | None = Field(None, max_length=1000, description="Automation description")
     trigger_type: str = Field(..., description="Trigger type: candidate_stage_changed, interview_scheduled, offer_sent, screening_completed, no_response_48h")
-    trigger_config: Optional[Dict[str, Any]] = Field(default={}, description="Trigger configuration")
+    trigger_config: dict[str, Any] | None = Field(default={}, description="Trigger configuration")
     action_type: str = Field(..., description="Action type: send_email, send_whatsapp, create_task, notify_recruiter")
-    action_config: Optional[Dict[str, Any]] = Field(default={}, description="Action configuration (template_id, message, etc)")
-    conditions: Optional[List[Dict[str, Any]]] = Field(default=[], description="Conditions for automation execution")
+    action_config: dict[str, Any] | None = Field(default={}, description="Action configuration (template_id, message, etc)")
+    conditions: list[dict[str, Any]] | None = Field(default=[], description="Conditions for automation execution")
     is_active: bool = Field(default=True, description="Whether automation is active")
     priority: str = Field(default="normal", description="Priority: low, normal, high")
     cooldown_minutes: int = Field(default=0, ge=0, description="Cooldown in minutes between executions")
@@ -47,34 +48,34 @@ class CreateAutomationRequest(BaseModel):
 
 class UpdateAutomationRequest(BaseModel):
     """Request model for updating an automation."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = Field(None, max_length=1000)
-    trigger_type: Optional[str] = None
-    trigger_config: Optional[Dict[str, Any]] = None
-    action_type: Optional[str] = None
-    action_config: Optional[Dict[str, Any]] = None
-    conditions: Optional[List[Dict[str, Any]]] = None
-    is_active: Optional[bool] = None
-    priority: Optional[str] = None
-    cooldown_minutes: Optional[int] = Field(None, ge=0)
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = Field(None, max_length=1000)
+    trigger_type: str | None = None
+    trigger_config: dict[str, Any] | None = None
+    action_type: str | None = None
+    action_config: dict[str, Any] | None = None
+    conditions: list[dict[str, Any]] | None = None
+    is_active: bool | None = None
+    priority: str | None = None
+    cooldown_minutes: int | None = Field(None, ge=0)
 
 
 class TestAutomationRequest(BaseModel):
     """Request model for testing an automation."""
-    test_data: Optional[Dict[str, Any]] = Field(default=None, description="Test trigger data")
+    test_data: dict[str, Any] | None = Field(default=None, description="Test trigger data")
 
 
 class TriggerAutomationRequest(BaseModel):
     """Request model for manually triggering automations."""
     trigger_type: str = Field(..., description="Trigger type")
-    trigger_data: Dict[str, Any] = Field(..., description="Trigger event data")
+    trigger_data: dict[str, Any] = Field(..., description="Trigger event data")
 
 
 @router.get("", summary="List automations")
 async def list_automations(
     company_id: str = Query(..., description="Company ID (required)"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    trigger_type: Optional[str] = Query(None, description="Filter by trigger type"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    trigger_type: str | None = Query(None, description="Filter by trigger type"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db)
@@ -113,7 +114,7 @@ async def list_automations(
 async def create_automation(
     data: CreateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
-    user_id: Optional[str] = Query(None, description="User creating the automation"),
+    user_id: str | None = Query(None, description="User creating the automation"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -217,7 +218,7 @@ async def update_automation(
     automation_id: str,
     data: UpdateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
-    user_id: Optional[str] = Query(None, description="User updating the automation"),
+    user_id: str | None = Query(None, description="User updating the automation"),
     db: AsyncSession = Depends(get_db)
 ):
     """

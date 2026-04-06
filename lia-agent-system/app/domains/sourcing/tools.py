@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Dict, Any, List, Optional
 import importlib
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-SOURCING_TOOLS: List[Dict[str, Any]] = [
+SOURCING_TOOLS: list[dict[str, Any]] = [
     {
         "tool_id": "search_candidates",
         "name": "Buscar Candidatos",
@@ -132,7 +132,7 @@ SOURCING_TOOLS: List[Dict[str, Any]] = [
 ]
 
 
-def _get_tool_by_id(tool_id: str) -> Optional[Dict[str, Any]]:
+def _get_tool_by_id(tool_id: str) -> dict[str, Any] | None:
     """Retrieve a tool definition by its ID."""
     for tool in SOURCING_TOOLS:
         if tool["tool_id"] == tool_id:
@@ -141,8 +141,8 @@ def _get_tool_by_id(tool_id: str) -> Optional[Dict[str, Any]]:
 
 
 async def execute_sourcing_tool(
-    tool_id: str, params: Dict[str, Any], tenant_id: str
-) -> Dict[str, Any]:
+    tool_id: str, params: dict[str, Any], tenant_id: str
+) -> dict[str, Any]:
     """Execute a sourcing tool by its ID.
 
     Dynamically imports the handler function referenced in the tool definition

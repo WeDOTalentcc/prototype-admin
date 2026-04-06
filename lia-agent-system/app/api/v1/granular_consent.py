@@ -7,7 +7,6 @@ POST /api/v1/consent/granular/{candidate_id}/update   — atualiza múltiplas fi
 Requer X-Company-ID header para isolamento multi-tenant.
 """
 import logging
-from typing import Dict, List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
@@ -16,8 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.granular_consent_service import (
-    GranularConsentService,
     ALL_PURPOSES,
+    GranularConsentService,
 )
 
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ router = APIRouter(prefix="/consent/granular", tags=["granular-consent"])
 
 
 def _require_company_id(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
 ) -> str:
     if not x_company_id:
         raise HTTPException(
@@ -52,21 +51,21 @@ class ConsentStatusItem(BaseModel):
     consent_type: str
     given: bool
     revoked: bool
-    consent_date: Optional[str] = None
-    revoked_at: Optional[str] = None
-    source: Optional[str] = None
+    consent_date: str | None = None
+    revoked_at: str | None = None
+    source: str | None = None
 
 
 class GranularConsentSummaryResponse(BaseModel):
     candidate_id: str
     company_id: str
     all_blocking_given: bool
-    consents: List[ConsentStatusItem]
+    consents: list[ConsentStatusItem]
 
 
 class BulkConsentUpdateRequest(BaseModel):
     """Mapa de finalidade → consentimento (True=conceder, False=revogar)."""
-    updates: Dict[str, bool]
+    updates: dict[str, bool]
     source: str = "api"
 
 

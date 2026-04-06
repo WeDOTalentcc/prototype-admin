@@ -1,20 +1,14 @@
 """
 WSI package — shared imports, constants, models, and utility functions.
 """
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-import uuid
 import asyncio
 import json
 import logging
-from app.shared.pii_masking import strip_pii_for_llm_prompt
 import os
+from typing import Any
 
-from app.core.database import get_db
-from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
+from pydantic import BaseModel, Field
+
 
 logger = logging.getLogger(__name__)
 
@@ -83,32 +77,32 @@ class WSIQuestionOutput(BaseModel):
     bloom_level_name: str
     skill_targeted: str
     question_type: str
-    block_id: Optional[int] = None
-    category: Optional[str] = None
-    is_eliminatory: Optional[bool] = False
+    block_id: int | None = None
+    category: str | None = None
+    is_eliminatory: bool | None = False
 
 
 class GenerateQuestionsRequest(BaseModel):
-    job_vacancy_id: Optional[str] = None
-    company_id: Optional[str] = None
-    job_title: Optional[str] = None
-    requirements: Optional[List[str]] = None
-    skills: Optional[List[str]] = None
-    technical_skills: Optional[List[str]] = None
-    behavioral_competencies: Optional[List[str]] = None
-    responsibilities: Optional[List[str]] = None
-    seniority_level: Optional[str] = "pleno"
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    description: Optional[str] = None
+    job_vacancy_id: str | None = None
+    company_id: str | None = None
+    job_title: str | None = None
+    requirements: list[str] | None = None
+    skills: list[str] | None = None
+    technical_skills: list[str] | None = None
+    behavioral_competencies: list[str] | None = None
+    responsibilities: list[str] | None = None
+    seniority_level: str | None = "pleno"
+    seniority: str | None = None
+    department: str | None = None
+    description: str | None = None
     num_questions: int = Field(default=5, ge=3, le=12)
-    max_questions: Optional[int] = None
+    max_questions: int | None = None
 
 
 class GenerateQuestionsResponse(BaseModel):
     session_id: str
-    questions: List[WSIQuestionOutput]
-    job_title: Optional[str]
+    questions: list[WSIQuestionOutput]
+    job_title: str | None
     methodology: str = "WSI (Bloom + Dreyfus + Big Five)"
 
 
@@ -137,10 +131,10 @@ class AnalyzeResponseOutput(BaseModel):
     score: float = Field(ge=0, le=5)  # Escala 0.0 – 5.0
     score_max: float = 5.0
     score_normalized: float = 0.0
-    star_completeness: Optional[float] = None
+    star_completeness: float | None = None
     feedback: str
-    evidences: List[str]
-    red_flags: List[str]
+    evidences: list[str]
+    red_flags: list[str]
 
 
 class ResponseInput(BaseModel):
@@ -151,8 +145,8 @@ class ResponseInput(BaseModel):
 class CompleteScreeningRequest(BaseModel):
     session_id: str
     candidate_id: str
-    job_vacancy_id: Optional[str] = None
-    responses: List[ResponseInput]
+    job_vacancy_id: str | None = None
+    responses: list[ResponseInput]
 
 
 class ArchetypeIndicator(BaseModel):
@@ -164,26 +158,26 @@ class ArchetypeIndicator(BaseModel):
 class CompleteScreeningResponse(BaseModel):
     result_id: str
     candidate_id: str
-    job_vacancy_id: Optional[str]
+    job_vacancy_id: str | None
     overall_score: float = Field(ge=0, le=5)
     classification: str
-    cognitive_level: Dict[str, Any]
-    proficiency_level: Dict[str, Any]
+    cognitive_level: dict[str, Any]
+    proficiency_level: dict[str, Any]
     big_five_profile: BigFiveIndicators
-    archetype_indicators: List[ArchetypeIndicator]
+    archetype_indicators: list[ArchetypeIndicator]
     summary: str
-    recommendations: List[str]
-    response_analyses: List[AnalyzeResponseOutput]
+    recommendations: list[str]
+    response_analyses: list[AnalyzeResponseOutput]
 
 
 class JDEvaluateRequest(BaseModel):
     job_title: str
-    responsibilities: Optional[List[str]] = None
-    technical_skills: Optional[List[str]] = None
-    behavioral_competencies: Optional[List[str]] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    description: Optional[str] = None
+    responsibilities: list[str] | None = None
+    technical_skills: list[str] | None = None
+    behavioral_competencies: list[str] | None = None
+    seniority: str | None = None
+    department: str | None = None
+    description: str | None = None
 
 
 class JDEvaluateResponse(BaseModel):
@@ -192,26 +186,26 @@ class JDEvaluateResponse(BaseModel):
     max_score: int = 100
     band: str
     band_label: str
-    indicators: List[Dict[str, Any]]
+    indicators: list[dict[str, Any]]
     lia_suggestion: str
     can_generate: bool
-    details: Dict[str, Any]
+    details: dict[str, Any]
 
 
 class SaveQuestionsRequest(BaseModel):
     job_id: str
-    questions: List[Dict[str, Any]]
-    source: Optional[str] = "manual"
+    questions: list[dict[str, Any]]
+    source: str | None = "manual"
 
 
 class SuggestQuestionRequest(BaseModel):
     prompt: str
-    job_title: Optional[str] = None
-    block_id: Optional[int] = None
-    technical_skills: Optional[List[str]] = None
-    behavioral_competencies: Optional[List[str]] = None
-    seniority: Optional[str] = None
-    description: Optional[str] = None
+    job_title: str | None = None
+    block_id: int | None = None
+    technical_skills: list[str] | None = None
+    behavioral_competencies: list[str] | None = None
+    seniority: str | None = None
+    description: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -293,7 +287,7 @@ async def get_anthropic_client():
         return None
 
 
-def parse_json_response(content: str, fallback: Dict) -> Dict:
+def parse_json_response(content: str, fallback: dict) -> dict:
     """Safely parse JSON from LLM response."""
     try:
         if isinstance(content, dict):
@@ -333,7 +327,7 @@ async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: lis
             timeout=timeout
         )
         return response
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.warning(f"Anthropic call timed out after {timeout}s (model={model})")
         return None
     except Exception as e:

@@ -6,18 +6,15 @@ including emails, WhatsApp messages, screening invites, and feedback.
 """
 
 import logging
-from typing import Dict, Any, Optional, List
 from datetime import datetime
-from sqlalchemy import select, desc, and_, func
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
+from sqlalchemy import and_, desc, func, select
 
 from app.core.database import AsyncSessionLocal
 from app.models import (
     CommunicationHistory,
-    CommunicationType,
-    CommunicationChannel,
-    CommunicationDirection,
-    CommunicationStatus
+    CommunicationStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,16 +33,16 @@ class CommunicationHistoryService:
         message_content: str,
         sent_by: str,
         company_id: str,
-        candidate_email: Optional[str] = None,
-        candidate_phone: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-        vacancy_title: Optional[str] = None,
-        subject: Optional[str] = None,
-        template_id: Optional[str] = None,
-        template_name: Optional[str] = None,
-        attachments: Optional[List[Dict[str, Any]]] = None,
-        sent_by_name: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        candidate_email: str | None = None,
+        candidate_phone: str | None = None,
+        vacancy_id: str | None = None,
+        vacancy_title: str | None = None,
+        subject: str | None = None,
+        template_id: str | None = None,
+        template_name: str | None = None,
+        attachments: list[dict[str, Any]] | None = None,
+        sent_by_name: str | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> CommunicationHistory:
         """
         Create a new communication history record.
@@ -109,14 +106,14 @@ class CommunicationHistoryService:
     async def list_communications(
         self,
         company_id: str,
-        candidate_id: Optional[str] = None,
-        vacancy_id: Optional[str] = None,
-        communication_type: Optional[str] = None,
-        channel: Optional[str] = None,
-        status: Optional[str] = None,
+        candidate_id: str | None = None,
+        vacancy_id: str | None = None,
+        communication_type: str | None = None,
+        channel: str | None = None,
+        status: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         List communications with optional filters.
         
@@ -182,7 +179,7 @@ class CommunicationHistoryService:
     async def get_communication_by_id(
         self,
         communication_id: str
-    ) -> Optional[CommunicationHistory]:
+    ) -> CommunicationHistory | None:
         """
         Get a single communication record by ID.
         
@@ -210,8 +207,8 @@ class CommunicationHistoryService:
         self,
         communication_id: str,
         new_status: str,
-        error_message: Optional[str] = None,
-    ) -> Optional[CommunicationHistory]:
+        error_message: str | None = None,
+    ) -> CommunicationHistory | None:
         """
         Update communication status with appropriate timestamps.
         
@@ -260,7 +257,7 @@ class CommunicationHistoryService:
         company_id: str,
         limit: int = 100,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get all communications for a specific candidate.
         
@@ -308,10 +305,10 @@ class CommunicationHistoryService:
     async def transfer_communications_ownership(
         self,
         job_id: str,
-        from_user_ids: List[str],
+        from_user_ids: list[str],
         to_user_id: str,
         company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Transfer ownership of PENDING communications from one or more users to a new user.
         

@@ -1,20 +1,21 @@
 """LIA Profile Analysis API - Generates AI-powered candidate summaries in different formats."""
 
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-import os
-from anthropic import Anthropic
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc, delete
 import logging
+import os
+from typing import Any
+
+from anthropic import Anthropic
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import and_, desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.lia_profile_analysis import LiaProfileAnalysis
 from app.schemas.lia_profile_analysis import (
+    CandidateAnalysesSummary,
     LiaProfileAnalysisCreate,
     LiaProfileAnalysisResponse,
-    CandidateAnalysesSummary
 )
 
 logger = logging.getLogger(__name__)
@@ -30,15 +31,15 @@ client = Anthropic(
 )
 
 class CandidateData(BaseModel):
-    name: Optional[str] = None
-    current_role: Optional[str] = None
-    current_company: Optional[str] = None
-    location: Optional[str] = None
-    experience_years: Optional[int] = None
-    skills: Optional[List[str]] = []
-    education: Optional[List[Dict[str, Any]]] = []
-    experiences: Optional[List[Dict[str, Any]]] = []
-    summary: Optional[str] = None
+    name: str | None = None
+    current_role: str | None = None
+    current_company: str | None = None
+    location: str | None = None
+    experience_years: int | None = None
+    skills: list[str] | None = []
+    education: list[dict[str, Any]] | None = []
+    experiences: list[dict[str, Any]] | None = []
+    summary: str | None = None
 
 class ProfileAnalysisRequest(BaseModel):
     candidate_id: str
@@ -77,7 +78,7 @@ def format_candidate_info(data: CandidateData) -> str:
                 edu_str = f"- {edu.get('institution', edu.get('instituicao', 'Unknown'))}: {edu.get('degree', edu.get('curso', ''))} ({edu.get('year', edu.get('ano', ''))})"
                 edu_parts.append(edu_str)
         if edu_parts:
-            info_parts.append(f"Education:\n" + "\n".join(edu_parts))
+            info_parts.append("Education:\n" + "\n".join(edu_parts))
     
     if data.experiences:
         exp_parts = []
@@ -89,7 +90,7 @@ def format_candidate_info(data: CandidateData) -> str:
                 exp_str = f"- {company}: {role} ({period})"
                 exp_parts.append(exp_str)
         if exp_parts:
-            info_parts.append(f"Work Experience:\n" + "\n".join(exp_parts))
+            info_parts.append("Work Experience:\n" + "\n".join(exp_parts))
     
     return "\n".join(info_parts)
 

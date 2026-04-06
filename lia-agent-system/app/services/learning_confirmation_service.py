@@ -8,11 +8,11 @@ Handles: record_skill_confirmation, record_skill_rejection,
          get_skills_without_duplicates, get_learning_context,
          update_pattern, _calculate_confidence, and pattern helpers.
 """
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
 import hashlib
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +35,7 @@ PATTERN_CONFIDENCE_THRESHOLDS = {"high": 10, "medium": 5, "low": 1}
 @dataclass
 class ConfirmationResult:
     success: bool
-    item_id: Optional[str]
+    item_id: str | None
     is_new: bool
     times_confirmed: int
     is_promoted: bool
@@ -44,10 +44,10 @@ class ConfirmationResult:
 
 @dataclass
 class LearningContext:
-    company_skills: List[Dict[str, Any]]
-    company_responsibilities: List[Dict[str, Any]]
-    patterns: Dict[str, Any]
-    success_rate: Dict[str, float]
+    company_skills: list[dict[str, Any]]
+    company_responsibilities: list[dict[str, Any]]
+    patterns: dict[str, Any]
+    success_rate: dict[str, float]
 
 
 def _calculate_confidence(sample_size: int) -> str:
@@ -74,10 +74,10 @@ class LearningConfirmationService:
         company_id: str,
         skill_name: str,
         skill_type: str = "technical",
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         source: str = LearningSource.WIZARD_CONFIRMED.value,
-        created_by: Optional[str] = None,
+        created_by: str | None = None,
     ) -> ConfirmationResult:
         try:
             normalized = skill_name.strip().lower()
@@ -185,11 +185,11 @@ class LearningConfirmationService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
         only_promoted: bool = False,
         limit: int = 20,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         try:
             conditions = [CompanySkill.company_id == company_id]
             if only_promoted:
@@ -234,9 +234,9 @@ class LearningConfirmationService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        exclude_already_selected: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
+        role: str | None = None,
+        exclude_already_selected: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         try:
             stmt = select(CompanySkill).where(
                 CompanySkill.company_id == company_id
@@ -285,11 +285,11 @@ class LearningConfirmationService:
         db: AsyncSession,
         company_id: str,
         description: str,
-        category: Optional[str] = None,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        category: str | None = None,
+        role: str | None = None,
+        seniority: str | None = None,
         source: str = LearningSource.WIZARD_CONFIRMED.value,
-        created_by: Optional[str] = None,
+        created_by: str | None = None,
     ) -> ConfirmationResult:
         try:
             desc_hash = self._hash_description(description)
@@ -358,10 +358,10 @@ class LearningConfirmationService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
+        role: str | None = None,
         only_promoted: bool = False,
         limit: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         try:
             conditions = [CompanyResponsibility.company_id == company_id]
             if only_promoted:
@@ -412,11 +412,11 @@ class LearningConfirmationService:
         accepted: bool,
         suggested_value: Any = None,
         actual_value: Any = None,
-        job_id: Optional[str] = None,
-        candidate_id: Optional[str] = None,
-        context: Optional[Dict] = None,
-        feedback_reason: Optional[str] = None,
-        created_by: Optional[str] = None,
+        job_id: str | None = None,
+        candidate_id: str | None = None,
+        context: dict | None = None,
+        feedback_reason: str | None = None,
+        created_by: str | None = None,
     ) -> bool:
         try:
             from uuid import UUID
@@ -495,7 +495,7 @@ class LearningConfirmationService:
 
     async def _get_company_patterns(
         self, db: AsyncSession, company_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             stmt = select(CompanyPattern).where(
                 CompanyPattern.company_id == company_id
@@ -515,7 +515,7 @@ class LearningConfirmationService:
 
     async def _get_success_rates(
         self, db: AsyncSession, company_id: str
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         try:
             stmt = (
                 select(
@@ -541,8 +541,8 @@ class LearningConfirmationService:
         self,
         db: AsyncSession,
         company_id: str,
-        role: Optional[str] = None,
-        seniority: Optional[str] = None,
+        role: str | None = None,
+        seniority: str | None = None,
     ) -> LearningContext:
         skills = await self.get_company_skills(
             db, company_id, role=role, seniority=seniority, limit=15

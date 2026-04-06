@@ -7,7 +7,6 @@ Menor número = maior prioridade.
 from __future__ import annotations
 
 import logging
-from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class PriorityCalculator:
     """
 
     # Task type → base priority
-    _BASE_PRIORITIES: Dict[str, int] = {
+    _BASE_PRIORITIES: dict[str, int] = {
         "cv_screening": 2,
         "sourcing": 2,
         "followup": 3,
@@ -37,7 +36,7 @@ class PriorityCalculator:
     def compute(
         self,
         task_type: str,
-        metadata: Optional[Dict] = None,
+        metadata: dict | None = None,
     ) -> int:
         """
         Retorna prioridade numérica para a task (1=mais urgente, 5=mais baixa).

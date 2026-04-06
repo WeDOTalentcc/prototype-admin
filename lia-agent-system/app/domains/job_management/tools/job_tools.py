@@ -9,9 +9,9 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime
-from uuid import UUID, uuid4
+from typing import TYPE_CHECKING, Any, Optional
+from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
 
@@ -21,27 +21,27 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
 
 
 async def create_job(
     title: str,
-    department: Optional[str] = None,
-    seniority: Optional[str] = None,
-    work_model: Optional[str] = None,
-    location: Optional[str] = None,
-    description: Optional[str] = None,
-    requirements: Optional[List[str]] = None,
-    skills: Optional[List[str]] = None,
-    salary_min: Optional[float] = None,
-    salary_max: Optional[float] = None,
-    company_id: Optional[str] = None,
-    recruiter_id: Optional[str] = None,
+    department: str | None = None,
+    seniority: str | None = None,
+    work_model: str | None = None,
+    location: str | None = None,
+    description: str | None = None,
+    requirements: list[str] | None = None,
+    skills: list[str] | None = None,
+    salary_min: float | None = None,
+    salary_max: float | None = None,
+    company_id: str | None = None,
+    recruiter_id: str | None = None,
     publish: bool = False,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create a new job vacancy.
     
@@ -146,9 +146,9 @@ async def create_job(
 
 async def update_job(
     job_id: str,
-    updates: Dict[str, Any],
+    updates: dict[str, Any],
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Update an existing job vacancy.
     
@@ -166,8 +166,9 @@ async def update_job(
     logger.info(f"🔄 Updating job vacancy: {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
@@ -234,9 +235,9 @@ async def update_job(
 
 async def pause_job(
     job_id: str,
-    reason: Optional[str] = None,
+    reason: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Pause a job vacancy temporarily.
     
@@ -250,8 +251,9 @@ async def pause_job(
     logger.info(f"⏸️ Pausing job vacancy: {job_id}")
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -297,7 +299,7 @@ async def pause_job(
                 
                 return {
                     "success": True,
-                    "message": f"⏸️ Vaga foi pausada.",
+                    "message": "⏸️ Vaga foi pausada.",
                     "action_taken": "pause_job",
                     "affected_entities": [job_id],
                     "data": {
@@ -320,10 +322,10 @@ async def pause_job(
 async def close_job(
     job_id: str,
     reason: str,
-    hired_candidate_id: Optional[str] = None,
+    hired_candidate_id: str | None = None,
     notify_candidates: bool = True,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Close a job vacancy.
     
@@ -350,8 +352,9 @@ async def close_job(
     reason_display = reason_messages.get(reason, reason)
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -419,7 +422,7 @@ async def close_job(
                 return {
                     "success": True,
                     "requires_confirmation": True,
-                    "confirmation_message": f"⚠️ Tem certeza que deseja encerrar esta vaga?",
+                    "confirmation_message": "⚠️ Tem certeza que deseja encerrar esta vaga?",
                     "message": f"🔒 Vaga foi {reason_display}.",
                     "action_taken": "close_job",
                     "affected_entities": [job_id],
@@ -442,9 +445,9 @@ async def close_job(
 
 async def publish_job(
     job_id: str,
-    channels: Optional[List[str]] = None,
+    channels: list[str] | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Publish a job vacancy to make it live.
     
@@ -461,8 +464,9 @@ async def publish_job(
     publish_channels = channels or default_channels
     
     try:
-        from app.core.database import AsyncSessionLocal
         from sqlalchemy import select
+
+        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -510,7 +514,7 @@ async def publish_job(
                 
                 return {
                     "success": True,
-                    "message": f"🚀 Vaga publicada com sucesso!",
+                    "message": "🚀 Vaga publicada com sucesso!",
                     "action_taken": "publish_job",
                     "affected_entities": [job_id],
                     "data": {

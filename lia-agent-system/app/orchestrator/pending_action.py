@@ -7,13 +7,13 @@ this module stores the pending action state keyed by conversation_id.
 Uses PostgreSQL for persistent storage with in-memory cache as L1.
 Falls back to memory-only if DB is unavailable.
 """
-import os
 import json
 import logging
+import os
 import threading
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +24,12 @@ class PendingActionState:
     intent: str
     action_id: str
     domain_id: str
-    collected_params: Dict[str, Any]
-    missing_params: List[str]
+    collected_params: dict[str, Any]
+    missing_params: list[str]
     conversation_id: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     awaiting_confirmation: bool = False
-    confirmation_summary: Optional[Dict[str, Any]] = None
+    confirmation_summary: dict[str, Any] | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     expires_at: datetime = field(default_factory=lambda: datetime.utcnow() + timedelta(minutes=5))
 
@@ -46,14 +46,14 @@ class PendingActionState:
         if param_name in self.missing_params:
             self.missing_params.remove(param_name)
 
-    def next_missing_param(self) -> Optional[str]:
+    def next_missing_param(self) -> str | None:
         return self.missing_params[0] if self.missing_params else None
 
 
 class PendingActionStore:
 
     def __init__(self):
-        self._memory_store: Dict[str, PendingActionState] = {}
+        self._memory_store: dict[str, PendingActionState] = {}
         self._lock = threading.Lock()
         self._pool = None
         self._init_db_pool()
@@ -86,7 +86,7 @@ class PendingActionStore:
             except Exception:
                 pass
 
-    def get(self, conversation_id: str) -> Optional[PendingActionState]:
+    def get(self, conversation_id: str) -> PendingActionState | None:
         with self._lock:
             state = self._memory_store.get(conversation_id)
             if state:
@@ -127,7 +127,7 @@ class PendingActionStore:
             db_cleaned = self._db_cleanup_expired()
             return max(len(expired_keys), db_cleaned)
 
-    def _db_get(self, conversation_id: str) -> Optional[PendingActionState]:
+    def _db_get(self, conversation_id: str) -> PendingActionState | None:
         conn = self._get_conn()
         if not conn:
             return None

@@ -6,24 +6,48 @@ Public API (get_all_system_templates, get_template_categories, search_templates)
 is unchanged from the previous Python-dict implementation.
 """
 from app.data.loader import (
-    get_tech_templates as _get_tech,
-    get_vendas_templates as _get_vendas,
-    get_rh_templates as _get_rh,
-    get_financas_templates as _get_financas,
-    get_marketing_templates as _get_marketing,
-    get_operacoes_templates as _get_operacoes,
-    get_juridico_templates as _get_juridico,
-    get_engenharia_templates as _get_engenharia,
-    get_customer_success_templates as _get_cs,
     get_administrativo_templates as _get_admin,
-    get_cs_templates as _get_cs2,
-    get_saude_templates as _get_saude,
-    get_template_categories,
+)
+from app.data.loader import (
     get_category_aliases,
     get_subcategory_aliases,
+    get_template_categories,
 )
-from app.data.templates.tecnologia import get_all_tecnologia_templates
+from app.data.loader import (
+    get_cs_templates as _get_cs2,
+)
+from app.data.loader import (
+    get_customer_success_templates as _get_cs,
+)
+from app.data.loader import (
+    get_engenharia_templates as _get_engenharia,
+)
+from app.data.loader import (
+    get_financas_templates as _get_financas,
+)
+from app.data.loader import (
+    get_juridico_templates as _get_juridico,
+)
+from app.data.loader import (
+    get_marketing_templates as _get_marketing,
+)
+from app.data.loader import (
+    get_operacoes_templates as _get_operacoes,
+)
+from app.data.loader import (
+    get_rh_templates as _get_rh,
+)
+from app.data.loader import (
+    get_saude_templates as _get_saude,
+)
+from app.data.loader import (
+    get_tech_templates as _get_tech,
+)
+from app.data.loader import (
+    get_vendas_templates as _get_vendas,
+)
 from app.data.templates.financas import get_all_financas_templates
+from app.data.templates.tecnologia import get_all_tecnologia_templates
 
 # Re-export for backward compat (used in app/data/templates/__init__ imports)
 TECH_TEMPLATES = None          # lazy via _get_tech()

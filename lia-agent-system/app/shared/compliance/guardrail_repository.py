@@ -7,10 +7,9 @@ Consultas otimizadas com índices em is_active, domain e company_id.
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel
-from sqlalchemy import select, and_, or_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.guardrail import Guardrail
@@ -20,13 +19,13 @@ logger = logging.getLogger(__name__)
 
 class GuardrailCreate(BaseModel):
     level: str = "primary"
-    domain: Optional[str] = None
-    node: Optional[str] = None
-    tool: Optional[str] = None
+    domain: str | None = None
+    node: str | None = None
+    tool: str | None = None
     rule: str
     blocking_message: str
     is_active: bool = True
-    company_id: Optional[str] = None
+    company_id: str | None = None
     updated_by: str = "system"
 
 
@@ -36,9 +35,9 @@ class GuardrailRepository:
     @staticmethod
     async def get_active(
         db: AsyncSession,
-        domain: Optional[str] = None,
-        company_id: Optional[str] = None,
-    ) -> List[Guardrail]:
+        domain: str | None = None,
+        company_id: str | None = None,
+    ) -> list[Guardrail]:
         """
         Retorna guardrails ativos aplicáveis ao domínio e tenant.
 
@@ -90,9 +89,9 @@ class GuardrailRepository:
     @staticmethod
     async def get_blocked_tools(
         db: AsyncSession,
-        domain: Optional[str] = None,
-        company_id: Optional[str] = None,
-    ) -> List[str]:
+        domain: str | None = None,
+        company_id: str | None = None,
+    ) -> list[str]:
         """
         Retorna lista de nomes de tools bloqueadas pelos guardrails ativos.
 
@@ -125,7 +124,7 @@ class GuardrailRepository:
         return guardrail
 
     @staticmethod
-    async def toggle_active(db: AsyncSession, guardrail_id: str) -> Optional[Guardrail]:
+    async def toggle_active(db: AsyncSession, guardrail_id: str) -> Guardrail | None:
         """Inverte is_active do guardrail. Retorna None se não encontrado."""
         stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
         result = await db.execute(stmt)
@@ -149,7 +148,7 @@ class GuardrailRepository:
         db: AsyncSession,
         guardrail_id: str,
         data: GuardrailCreate,
-    ) -> Optional[Guardrail]:
+    ) -> Guardrail | None:
         """Atualiza campos de um guardrail existente."""
         stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
         result = await db.execute(stmt)

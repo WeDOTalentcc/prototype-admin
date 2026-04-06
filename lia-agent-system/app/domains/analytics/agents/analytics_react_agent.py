@@ -7,32 +7,21 @@ Migração completa concluída — path legado ReActLoop removido.
 Domain: analytics
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
-from app.services.confidence_policy_service import confidence_policy_service
 
-from app.domains.analytics.agents.analytics_stage_context import (
-    STAGE_DEFINITIONS,
-    get_stage_context,
-    get_transition_prompt,
-)
 from app.domains.analytics.agents.analytics_system_prompt import get_analytics_system_prompt
 from app.domains.analytics.agents.analytics_tool_registry import (
     get_analytics_tools,
-    get_stage_tools,
 )
+from app.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +41,7 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "analytics"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:

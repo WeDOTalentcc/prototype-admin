@@ -6,10 +6,10 @@ Provides:
 - Text-to-speech using OpenAI TTS API
 - Real-time streaming transcription support
 """
-import os
-import base64
 import logging
-from typing import Optional, Dict, Any, AsyncGenerator, List
+import os
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import httpx
 
@@ -53,7 +53,7 @@ class VoiceService:
             os.getenv("AI_INTEGRATIONS_OPENAI_API_KEY") or 
             os.getenv("OPENAI_API_KEY")
         )
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client with connection pooling."""
@@ -67,7 +67,7 @@ class VoiceService:
             await self._client.aclose()
             self._client = None
     
-    def _detect_audio_format(self, audio_data: bytes, filename: Optional[str] = None) -> str:
+    def _detect_audio_format(self, audio_data: bytes, filename: str | None = None) -> str:
         """Detect audio format from file header or filename."""
         if filename:
             ext = filename.lower().split(".")[-1]
@@ -94,8 +94,8 @@ class VoiceService:
         audio_data: bytes,
         language: str = "pt-BR",
         model: str = "nova-2",
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        filename: str | None = None
+    ) -> dict[str, Any]:
         """
         Transcribe audio to text using OpenAI Whisper.
         
@@ -138,8 +138,8 @@ class VoiceService:
         self,
         audio_data: bytes,
         language: str,
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        filename: str | None = None
+    ) -> dict[str, Any]:
         """Transcribe using OpenAI Whisper API."""
         client = await self._get_client()
         
@@ -292,7 +292,6 @@ class VoiceService:
                 yield result.get("text", "")
             return
         
-        import asyncio
         
         buffer = bytearray()
         last_transcript = ""
@@ -322,7 +321,7 @@ class VoiceService:
             except Exception as e:
                 logger.warning(f"Final transcription error: {e}")
     
-    def is_available(self) -> Dict[str, bool]:
+    def is_available(self) -> dict[str, bool]:
         """Check which voice services are available."""
         return {
             "transcription_openai": bool(self.openai_api_key),

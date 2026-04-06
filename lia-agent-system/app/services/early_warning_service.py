@@ -16,7 +16,7 @@ Sem migration — usa dados existentes:
   users (id, email — para recruiter_email → recruiter_id)
 """
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Thresholds por etapa — (warning_days, critical_days)
 # ---------------------------------------------------------------------------
-_EWS_THRESHOLDS: Dict[str, Tuple[int, int]] = {
+_EWS_THRESHOLDS: dict[str, tuple[int, int]] = {
     "offer": (2, 4),
     "proposta": (2, 4),
     "interview_hr": (3, 5),
@@ -45,17 +45,17 @@ _EWS_THRESHOLDS: Dict[str, Tuple[int, int]] = {
     "initial": (7, 12),
 }
 
-_DEFAULT_THRESHOLDS: Tuple[int, int] = (5, 10)
+_DEFAULT_THRESHOLDS: tuple[int, int] = (5, 10)
 
 
-def _thresholds_for_stage(stage: str) -> Tuple[int, int]:
+def _thresholds_for_stage(stage: str) -> tuple[int, int]:
     return _EWS_THRESHOLDS.get((stage or "").lower(), _DEFAULT_THRESHOLDS)
 
 
 def compute_ews_score(
     days_since_contact: float,
     stage: str,
-    lia_score: Optional[float] = None,
+    lia_score: float | None = None,
 ) -> float:
     """
     Calcula o EWS score de 0.0 a 1.0.
@@ -95,8 +95,8 @@ class EarlyWarningService:
         self,
         company_id: str,
         min_risk_level: str = "medium",
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Retorna candidatos ativos em risco de desengajamento, ordenados por ews_score DESC.
 
@@ -202,8 +202,8 @@ class EarlyWarningService:
     async def get_summary_by_risk_level(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Resumo por nível de risco para o endpoint REST.
         Retorna contagens e top candidatos por nível.
@@ -212,7 +212,7 @@ class EarlyWarningService:
             company_id, min_risk_level="medium", db=db
         )
 
-        summary: Dict[str, Any] = {
+        summary: dict[str, Any] = {
             "total": len(candidates),
             "by_risk_level": {"critical": 0, "high": 0, "medium": 0},
             "top_critical": [],

@@ -6,39 +6,32 @@ payment methods, and webhook integrations with Iugu/Vindi.
 
 SECURITY: All endpoints enforce multi-tenant isolation via X-Company-ID header.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import logging
+from datetime import datetime
+from typing import Any
 from uuid import UUID
+
+from dateutil.relativedelta import relativedelta
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.billing import (
-    Subscription,
     Invoice,
-    PaymentMethod,
-    SubscriptionStatus,
     InvoiceStatus,
+    PaymentMethod,
+    Subscription,
 )
-from app.services.billing_service import BillingService
 from app.schemas.billing import (
+    BillingStatusResponse,
+    PaymentMethodCreate,
+    RefundRequest,
+    SubscriptionCancel,
     SubscriptionCreate,
     SubscriptionUpdate,
-    SubscriptionCancel,
-    SubscriptionResponse,
-    SubscriptionListResponse,
-    InvoiceResponse,
-    InvoiceListResponse,
-    RefundRequest,
-    PaymentMethodCreate,
-    PaymentMethodResponse,
-    PaymentMethodListResponse,
-    WebhookPayload,
-    BillingStatusResponse,
 )
+from app.services.billing_service import BillingService
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +39,10 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 
 def get_user_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
-) -> Dict[str, Any]:
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
+    x_user_role: str | None = Header(None, alias="X-User-Role")
+) -> dict[str, Any]:
     """Get user context from request headers."""
     return {
         "company_id": x_company_id,
@@ -59,7 +52,7 @@ def get_user_from_headers(
     }
 
 
-def require_company_id(current_user: Dict[str, Any]) -> str:
+def require_company_id(current_user: dict[str, Any]) -> str:
     """
     Validate that X-Company-ID header is present and return the company_id.
     
@@ -85,7 +78,7 @@ def require_company_id(current_user: Dict[str, Any]) -> str:
     return company_id
 
 
-def require_admin(current_user: Dict[str, Any]) -> None:
+def require_admin(current_user: dict[str, Any]) -> None:
     """Raise exception if user is not admin."""
     if not current_user.get("is_admin", False):
         raise HTTPException(
@@ -100,7 +93,7 @@ def log_cross_tenant_attempt(
     target_company_id: str,
     user_id: str,
     resource_type: str,
-    resource_id: Optional[str] = None
+    resource_id: str | None = None
 ) -> None:
     """
     Log attempted cross-tenant access for security monitoring.
@@ -116,10 +109,10 @@ def log_cross_tenant_attempt(
 
 
 def verify_company_ownership(
-    current_user: Dict[str, Any],
+    current_user: dict[str, Any],
     target_client_id: str,
     resource_type: str,
-    resource_id: Optional[str] = None
+    resource_id: str | None = None
 ) -> None:
     """
     Verify that the current user has access to the target client's resources.
@@ -164,7 +157,7 @@ def parse_uuid(value: str, field_name: str = "ID") -> UUID:
 
 @router.get("/status", summary="Get billing providers status")
 async def get_billing_status(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ) -> BillingStatusResponse:
     """
@@ -210,11 +203,11 @@ async def get_billing_status(
 
 @router.get("/subscriptions", summary="List subscriptions")
 async def list_subscriptions(
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    provider: Optional[str] = Query(None, description="Filter by provider"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    provider: str | None = Query(None, description="Filter by provider"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -284,7 +277,7 @@ async def list_subscriptions(
 @router.get("/subscriptions/{client_id}", summary="Get client subscription")
 async def get_client_subscription(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -342,7 +335,7 @@ async def get_client_subscription(
 @router.post("/subscriptions", summary="Create subscription")
 async def create_subscription(
     data: SubscriptionCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -400,7 +393,7 @@ async def create_subscription(
 async def update_subscription(
     subscription_id: str,
     data: SubscriptionUpdate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -473,8 +466,8 @@ async def update_subscription(
 @router.delete("/subscriptions/{subscription_id}", summary="Cancel subscription")
 async def cancel_subscription(
     subscription_id: str,
-    data: Optional[SubscriptionCancel] = None,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    data: SubscriptionCancel | None = None,
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -534,11 +527,11 @@ async def cancel_subscription(
 
 @router.get("/invoices", summary="List invoices")
 async def list_invoices(
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    provider: Optional[str] = Query(None, description="Filter by provider"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
+    provider: str | None = Query(None, description="Filter by provider"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -608,9 +601,9 @@ async def list_invoices(
 @router.get("/invoices/client/{client_id}", summary="Get client invoices")
 async def get_client_invoices(
     client_id: str,
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -662,7 +655,7 @@ async def get_client_invoices(
 @router.get("/invoices/{invoice_id}", summary="Get invoice details")
 async def get_invoice(
     invoice_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -714,8 +707,8 @@ async def get_invoice(
 @router.post("/invoices/{invoice_id}/refund", summary="Refund invoice")
 async def refund_invoice(
     invoice_id: str,
-    data: Optional[RefundRequest] = None,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    data: RefundRequest | None = None,
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -789,7 +782,7 @@ async def refund_invoice(
 @router.get("/payment-methods/{client_id}", summary="Get client payment methods")
 async def get_client_payment_methods(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -844,7 +837,7 @@ async def get_client_payment_methods(
 @router.post("/payment-methods", summary="Add payment method")
 async def add_payment_method(
     data: PaymentMethodCreate,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -856,7 +849,7 @@ async def add_payment_method(
         company_id = require_company_id(current_user)
         
         sub_uuid = parse_uuid(data.subscription_id, "subscription_id")
-        client_uuid = parse_uuid(data.client_id, "client_id")
+        parse_uuid(data.client_id, "client_id")
         
         verify_company_ownership(
             current_user=current_user,
@@ -935,7 +928,7 @@ async def add_payment_method(
 @router.delete("/payment-methods/{payment_method_id}", summary="Remove payment method")
 async def remove_payment_method(
     payment_method_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1006,7 +999,7 @@ async def handle_iugu_webhook(
     Authentication is done via webhook signature verification.
     """
     try:
-        body = await request.body()
+        await request.body()
         try:
             payload = await request.json()
         except Exception:
@@ -1044,7 +1037,7 @@ async def handle_vindi_webhook(
     Authentication is done via webhook signature verification.
     """
     try:
-        body = await request.body()
+        await request.body()
         try:
             payload = await request.json()
         except Exception:
@@ -1072,6 +1065,7 @@ async def handle_vindi_webhook(
 
 from pydantic import BaseModel, Field
 from sqlalchemy.orm.attributes import flag_modified
+
 from app.models.client_account import ClientAccount
 
 
@@ -1092,16 +1086,16 @@ class InvoiceSettingsSchema(BaseModel):
     currency: str = "BRL"
     status: str = Field(..., description="paid, pending, failed, refunded")
     due_date: datetime
-    paid_at: Optional[datetime] = None
-    items: List[Dict[str, Any]] = Field(default_factory=list)
+    paid_at: datetime | None = None
+    items: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class PaymentMethodSettingsSchema(BaseModel):
     """Payment method stored in client.settings["billing"]."""
     id: str
     type: str = Field(..., description="credit_card, boleto, pix")
-    last_four: Optional[str] = None
-    brand: Optional[str] = None
+    last_four: str | None = None
+    brand: str | None = None
     is_default: bool = False
 
 
@@ -1113,23 +1107,23 @@ class UsageSettingsSchema(BaseModel):
     jobs_limit: int = 50
     active_users: int = 0
     users_limit: int = 10
-    period_start: Optional[datetime] = None
-    period_end: Optional[datetime] = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
 
 
 class SubscriptionUpdateRequest(BaseModel):
     """Request to update subscription."""
-    plan_id: Optional[str] = None
-    status: Optional[str] = None
-    cancel_at_period_end: Optional[bool] = None
-    current_period_end: Optional[datetime] = None
+    plan_id: str | None = None
+    status: str | None = None
+    cancel_at_period_end: bool | None = None
+    current_period_end: datetime | None = None
 
 
 class PaymentMethodCreateRequest(BaseModel):
     """Request to create payment method."""
     type: str = Field(..., description="credit_card, boleto, pix")
-    last_four: Optional[str] = None
-    brand: Optional[str] = None
+    last_four: str | None = None
+    brand: str | None = None
     is_default: bool = False
 
 
@@ -1152,7 +1146,7 @@ async def get_client_by_id(client_id: str, db: AsyncSession) -> ClientAccount:
     return client
 
 
-def get_billing_settings(client: ClientAccount) -> Dict[str, Any]:
+def get_billing_settings(client: ClientAccount) -> dict[str, Any]:
     """Get or initialize billing settings for a client."""
     settings = client.settings or {}
     if "billing" not in settings:
@@ -1185,7 +1179,7 @@ def get_billing_settings(client: ClientAccount) -> Dict[str, Any]:
 @router.get("/clients/{client_id}", summary="Get client billing data")
 async def get_client_billing(
     client_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1228,7 +1222,7 @@ async def get_client_billing(
 
 @router.get("/subscription", summary="Get current user subscription")
 async def get_current_subscription(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1266,7 +1260,7 @@ async def get_current_subscription(
 @router.put("/subscription", summary="Update current user subscription")
 async def update_current_subscription(
     data: SubscriptionUpdateRequest,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1320,9 +1314,9 @@ async def update_current_subscription(
 
 @router.get("/my-invoices", summary="List current user invoices")
 async def list_my_invoices(
-    status_filter: Optional[str] = Query(None, alias="status"),
+    status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(50, ge=1, le=200),
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1362,7 +1356,7 @@ async def list_my_invoices(
 @router.get("/my-invoices/{invoice_id}", summary="Get invoice details")
 async def get_my_invoice(
     invoice_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1402,7 +1396,7 @@ async def get_my_invoice(
 @router.post("/my-invoices/{invoice_id}/pay", summary="Mark invoice as paid (simulation)")
 async def pay_my_invoice(
     invoice_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1466,7 +1460,7 @@ async def pay_my_invoice(
 
 @router.get("/my-payment-methods", summary="List current user payment methods")
 async def list_my_payment_methods(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1501,7 +1495,7 @@ async def list_my_payment_methods(
 @router.post("/my-payment-methods", summary="Add payment method")
 async def add_my_payment_method(
     data: PaymentMethodCreateRequest,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1558,7 +1552,7 @@ async def add_my_payment_method(
 @router.delete("/my-payment-methods/{method_id}", summary="Remove payment method")
 async def remove_my_payment_method(
     method_id: str,
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1616,7 +1610,7 @@ async def remove_my_payment_method(
 
 @router.get("/usage", summary="Get current usage")
 async def get_usage(
-    current_user: Dict[str, Any] = Depends(get_user_from_headers),
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
     """

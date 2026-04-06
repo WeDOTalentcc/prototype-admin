@@ -6,10 +6,11 @@ with support for few-shot examples and Chain-of-Thought reasoning.
 
 Moved from app/prompts/templates.py (I3b cleanup).
 """
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field
-import re
 import logging
+import re
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +30,13 @@ class PromptTemplate(BaseModel):
     """
     name: str
     system_prompt: str
-    few_shot_examples: List[Dict[str, Any]] = Field(default_factory=list)
+    few_shot_examples: list[dict[str, Any]] = Field(default_factory=list)
     cot_enabled: bool = False
-    cot_steps: Optional[List[str]] = None
-    output_format: Optional[str] = None
-    variables: List[str] = Field(default_factory=list)
+    cot_steps: list[str] | None = None
+    output_format: str | None = None
+    variables: list[str] = Field(default_factory=list)
 
-    def render(self, context: Dict[str, Any]) -> str:
+    def render(self, context: dict[str, Any]) -> str:
         """
         Render the full prompt with context variables, examples, and CoT.
 
@@ -65,11 +66,11 @@ class PromptTemplate(BaseModel):
 
         return "".join(prompt_parts)
 
-    def render_system_prompt(self, context: Dict[str, Any]) -> str:
+    def render_system_prompt(self, context: dict[str, Any]) -> str:
         """Render only the system prompt with context."""
         return self._interpolate(self.system_prompt, context)
 
-    def render_user_message(self, user_input: str, context: Dict[str, Any]) -> str:
+    def render_user_message(self, user_input: str, context: dict[str, Any]) -> str:
         """
         Render a user message with examples and context.
 
@@ -99,7 +100,7 @@ class PromptTemplate(BaseModel):
 
         return "\n\n".join(parts)
 
-    def _interpolate(self, text: str, context: Dict[str, Any]) -> str:
+    def _interpolate(self, text: str, context: dict[str, Any]) -> str:
         """Replace {variable} placeholders with context values."""
         result = text
         for key, value in context.items():
@@ -114,7 +115,7 @@ class PromptTemplate(BaseModel):
 
         return result
 
-    def _render_examples(self, context: Dict[str, Any]) -> str:
+    def _render_examples(self, context: dict[str, Any]) -> str:
         """Render few-shot examples section."""
         if not self.few_shot_examples:
             return ""
@@ -168,7 +169,7 @@ class PromptLibrary:
 
     Provides a singleton pattern for managing templates across the application.
     """
-    _templates: Dict[str, PromptTemplate] = {}
+    _templates: dict[str, PromptTemplate] = {}
     _initialized: bool = False
 
     @classmethod
@@ -209,7 +210,7 @@ class PromptLibrary:
         return cls._templates[name]
 
     @classmethod
-    def list_templates(cls) -> List[str]:
+    def list_templates(cls) -> list[str]:
         """Get list of all registered template names."""
         if not cls._initialized:
             cls._initialize_defaults()

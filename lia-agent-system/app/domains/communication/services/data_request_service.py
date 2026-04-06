@@ -7,29 +7,26 @@ Service for managing data request operations including:
 - Checking completion status
 - Managing templates and fields
 """
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
-from uuid import UUID
 import logging
+from datetime import datetime, timedelta
+from typing import Any
+from uuid import UUID
 
-from sqlalchemy import select, and_, or_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.models.data_request import (
-    DataRequest,
-    DataRequestTemplate,
-    DataRequestField,
-    DataRequestResponse,
-    DataRequestConfig,
-    VacancyDataRequestConfig,
-    DataRequestStatus,
-    DataFieldType,
-    TriggerType,
-    DEFAULT_DATA_FIELDS,
-)
 from app.models.candidate import Candidate
-from app.models.job_vacancy import JobVacancy
+from app.models.data_request import (
+    DEFAULT_DATA_FIELDS,
+    DataFieldType,
+    DataRequest,
+    DataRequestConfig,
+    DataRequestField,
+    DataRequestStatus,
+    DataRequestTemplate,
+    TriggerType,
+    VacancyDataRequestConfig,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +39,14 @@ class DataRequestService:
         db: AsyncSession,
         company_id: UUID,
         candidate_id: UUID,
-        vacancy_id: Optional[UUID] = None,
-        template_id: Optional[UUID] = None,
-        fields: Optional[List[Dict[str, Any]]] = None,
+        vacancy_id: UUID | None = None,
+        template_id: UUID | None = None,
+        fields: list[dict[str, Any]] | None = None,
         trigger_type: TriggerType = TriggerType.MANUAL,
-        trigger_stage: Optional[str] = None,
+        trigger_stage: str | None = None,
         is_blocking: bool = False,
         expiration_days: int = 7,
-        created_by: Optional[UUID] = None,
+        created_by: UUID | None = None,
     ) -> DataRequest:
         """
         Create a new data request for a candidate.
@@ -112,8 +109,8 @@ class DataRequestService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-        channels: List[str] = None,
-    ) -> Dict[str, Any]:
+        channels: list[str] = None,
+    ) -> dict[str, Any]:
         """
         Send notification to candidate about data request.
         
@@ -166,8 +163,8 @@ class DataRequestService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-        channels: List[str] = None,
-    ) -> Dict[str, Any]:
+        channels: list[str] = None,
+    ) -> dict[str, Any]:
         """
         Resend notification (increment reminder count).
         
@@ -204,7 +201,7 @@ class DataRequestService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Check and update completion status of a data request.
         
@@ -248,9 +245,9 @@ class DataRequestService:
         self,
         db: AsyncSession,
         candidate_id: UUID,
-        status: Optional[DataRequestStatus] = None,
+        status: DataRequestStatus | None = None,
         include_expired: bool = False,
-    ) -> List[DataRequest]:
+    ) -> list[DataRequest]:
         """
         Get all data requests for a candidate.
         
@@ -285,8 +282,8 @@ class DataRequestService:
         self,
         db: AsyncSession,
         vacancy_id: UUID,
-        status: Optional[DataRequestStatus] = None,
-    ) -> List[DataRequest]:
+        status: DataRequestStatus | None = None,
+    ) -> list[DataRequest]:
         """
         Get all data requests for a vacancy.
         
@@ -312,7 +309,7 @@ class DataRequestService:
         self,
         db: AsyncSession,
         data_request_id: UUID,
-    ) -> Optional[DataRequest]:
+    ) -> DataRequest | None:
         """Get a data request by ID."""
         return await db.get(DataRequest, data_request_id)
     
@@ -320,7 +317,7 @@ class DataRequestService:
         self,
         db: AsyncSession,
         token: str,
-    ) -> Optional[DataRequest]:
+    ) -> DataRequest | None:
         """Get a data request by token."""
         query = select(DataRequest).where(DataRequest.token == token)
         result = await db.execute(query)
@@ -368,7 +365,7 @@ class DataRequestService:
         self,
         db: AsyncSession,
         company_id: UUID,
-        updates: Dict[str, Any],
+        updates: dict[str, Any],
     ) -> DataRequestConfig:
         """Update company config."""
         config = await self.get_or_create_config(db, company_id)
@@ -387,7 +384,7 @@ class DataRequestService:
         db: AsyncSession,
         company_id: UUID,
         active_only: bool = True,
-    ) -> List[DataRequestTemplate]:
+    ) -> list[DataRequestTemplate]:
         """List templates for a company."""
         query = select(DataRequestTemplate).where(
             DataRequestTemplate.company_id == company_id
@@ -406,13 +403,13 @@ class DataRequestService:
         db: AsyncSession,
         company_id: UUID,
         name: str,
-        description: Optional[str] = None,
-        fields: Optional[List[Dict[str, Any]]] = None,
-        trigger_stage: Optional[str] = None,
+        description: str | None = None,
+        fields: list[dict[str, Any]] | None = None,
+        trigger_stage: str | None = None,
         trigger_type: TriggerType = TriggerType.MANUAL,
         is_blocking: bool = False,
         expiration_days: int = 7,
-        created_by: Optional[UUID] = None,
+        created_by: UUID | None = None,
     ) -> DataRequestTemplate:
         """Create a new template."""
         template = DataRequestTemplate(
@@ -437,7 +434,7 @@ class DataRequestService:
         self,
         db: AsyncSession,
         template_id: UUID,
-        updates: Dict[str, Any],
+        updates: dict[str, Any],
     ) -> DataRequestTemplate:
         """Update a template."""
         template = await db.get(DataRequestTemplate, template_id)
@@ -475,7 +472,7 @@ class DataRequestService:
         db: AsyncSession,
         company_id: UUID,
         include_defaults: bool = True,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """List available fields for a company."""
         fields = []
         
@@ -523,15 +520,15 @@ class DataRequestService:
         name: str,
         label: str,
         field_type: DataFieldType,
-        label_en: Optional[str] = None,
-        description: Optional[str] = None,
+        label_en: str | None = None,
+        description: str | None = None,
         is_required: bool = True,
-        validation_rules: Optional[Dict[str, Any]] = None,
-        options: Optional[List[str]] = None,
-        placeholder: Optional[str] = None,
-        help_text: Optional[str] = None,
+        validation_rules: dict[str, Any] | None = None,
+        options: list[str] | None = None,
+        placeholder: str | None = None,
+        help_text: str | None = None,
         max_file_size_mb: int = 10,
-        allowed_file_types: Optional[List[str]] = None,
+        allowed_file_types: list[str] | None = None,
         order: int = 0,
     ) -> DataRequestField:
         """Create a custom field."""
@@ -564,7 +561,7 @@ class DataRequestService:
         db: AsyncSession,
         vacancy_id: UUID,
         company_id: UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get trigger configuration for a vacancy.
         
@@ -615,10 +612,10 @@ class DataRequestService:
     async def get_trigger_fields_for_stage(
         self,
         db: AsyncSession,
-        vacancy_id: Optional[UUID],
+        vacancy_id: UUID | None,
         company_id: UUID,
         stage: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get the trigger configuration for a specific stage.
         
@@ -708,7 +705,7 @@ class DataRequestService:
         self,
         db: AsyncSession,
         candidate_id: UUID,
-        vacancy_id: Optional[UUID],
+        vacancy_id: UUID | None,
         stage: str,
     ) -> bool:
         """

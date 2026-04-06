@@ -10,8 +10,7 @@ Chaves Redis:
   TTL automático: 32 dias (reset mensal implícito)
 """
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from app.core.config import settings
 
@@ -22,7 +21,7 @@ _TTL_SECONDS = 32 * 24 * 3600  # 32 dias — garante cobertura do mês
 
 
 def _budget_key(company_id: str) -> str:
-    month = datetime.now(timezone.utc).strftime("%Y-%m")
+    month = datetime.now(UTC).strftime("%Y-%m")
     return f"{_REDIS_KEY_PREFIX}:{company_id}:{month}"
 
 
@@ -90,7 +89,7 @@ class TenantBudget:
 
     async def check_and_record(
         self, company_id: str, tokens: int
-    ) -> tuple[bool, int, Optional[str]]:
+    ) -> tuple[bool, int, str | None]:
         """
         Verifica orçamento e registra uso.
 
@@ -108,7 +107,7 @@ class TenantBudget:
             )
             return False, total, f"Orçamento mensal de tokens esgotado ({total}/{self.monthly_limit})"
 
-        warning: Optional[str] = None
+        warning: str | None = None
         if ratio >= self._alert_threshold:
             warning = (
                 f"Atenção: {ratio:.0%} do orçamento mensal de tokens consumido "
@@ -149,7 +148,7 @@ class TenantBudget:
             "usage_pct": round(ratio * 100, 1),
             "alert": ratio >= self._alert_threshold,
             "blocked": ratio >= 1.0,
-            "month": datetime.now(timezone.utc).strftime("%Y-%m"),
+            "month": datetime.now(UTC).strftime("%Y-%m"),
         }
 
     def get_provider_container(self, company_id: str):

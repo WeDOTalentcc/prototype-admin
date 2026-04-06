@@ -1,13 +1,12 @@
-import uuid
 import logging
+import uuid
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any, Optional
 
-from sqlalchemy import select, update, and_, desc
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, desc, select, update
 
 from app.core.database import AsyncSessionLocal
-from app.models.task_record import TaskRecord, DeadLetterRecord
+from app.models.task_record import DeadLetterRecord, TaskRecord
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +25,15 @@ class TaskPersistenceService:
         task_id: str,
         domain_id: str,
         action_id: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         priority: int = 1,
         state: str = "queued",
         user_id: str = "",
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
         max_retries: int = 2,
-        callback: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        scheduled_at: Optional[datetime] = None,
+        callback: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        scheduled_at: datetime | None = None,
     ) -> TaskRecord:
         async with AsyncSessionLocal() as session:
             try:
@@ -66,13 +65,13 @@ class TaskPersistenceService:
         self,
         task_id: str,
         state: str,
-        result: Optional[Any] = None,
-        error: Optional[str] = None,
-        retry_count: Optional[int] = None,
+        result: Any | None = None,
+        error: str | None = None,
+        retry_count: int | None = None,
     ) -> None:
         async with AsyncSessionLocal() as session:
             try:
-                values: Dict[str, Any] = {"state": state}
+                values: dict[str, Any] = {"state": state}
                 if state == "running":
                     values["started_at"] = datetime.utcnow()
                 if state in ("completed", "failed", "cancelled"):
@@ -92,7 +91,7 @@ class TaskPersistenceService:
                 await session.rollback()
                 logger.error(f"Failed to update task {task_id} state: {e}")
 
-    async def load_pending_tasks(self) -> List[TaskRecord]:
+    async def load_pending_tasks(self) -> list[TaskRecord]:
         async with AsyncSessionLocal() as session:
             try:
                 stmt = select(TaskRecord).where(
@@ -108,13 +107,13 @@ class TaskPersistenceService:
 
     async def get_task_history(
         self,
-        domain_id: Optional[str] = None,
-        state: Optional[str] = None,
-        user_id: Optional[str] = None,
-        tenant_id: Optional[str] = None,
+        domain_id: str | None = None,
+        state: str | None = None,
+        user_id: str | None = None,
+        tenant_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         async with AsyncSessionLocal() as session:
             try:
                 conditions = []
@@ -139,7 +138,7 @@ class TaskPersistenceService:
                 logger.error(f"Failed to get task history: {e}")
                 return []
 
-    async def get_task_record(self, task_id: str) -> Optional[Dict[str, Any]]:
+    async def get_task_record(self, task_id: str) -> dict[str, Any] | None:
         async with AsyncSessionLocal() as session:
             try:
                 stmt = select(TaskRecord).where(TaskRecord.id == task_id)
@@ -157,12 +156,12 @@ class TaskPersistenceService:
         task_id: str,
         domain_id: str,
         action_id: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         error: str = "",
         retry_count: int = 0,
-        original_created_at: Optional[datetime] = None,
-        tenant_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        original_created_at: datetime | None = None,
+        tenant_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         dlq_id = str(uuid.uuid4())
         async with AsyncSessionLocal() as session:
@@ -190,11 +189,11 @@ class TaskPersistenceService:
 
     async def list_dlq(
         self,
-        resolved: Optional[bool] = None,
-        domain_id: Optional[str] = None,
+        resolved: bool | None = None,
+        domain_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         async with AsyncSessionLocal() as session:
             try:
                 conditions = []
@@ -215,7 +214,7 @@ class TaskPersistenceService:
                 logger.error(f"Failed to list DLQ: {e}")
                 return []
 
-    async def get_dlq_record(self, dlq_id: str) -> Optional[DeadLetterRecord]:
+    async def get_dlq_record(self, dlq_id: str) -> DeadLetterRecord | None:
         async with AsyncSessionLocal() as session:
             try:
                 stmt = select(DeadLetterRecord).where(DeadLetterRecord.id == dlq_id)
@@ -242,7 +241,7 @@ class TaskPersistenceService:
                 logger.error(f"Failed to resolve DLQ entry {dlq_id}: {e}")
                 return False
 
-    async def get_db_stats(self) -> Dict[str, Any]:
+    async def get_db_stats(self) -> dict[str, Any]:
         async with AsyncSessionLocal() as session:
             try:
                 from sqlalchemy import func

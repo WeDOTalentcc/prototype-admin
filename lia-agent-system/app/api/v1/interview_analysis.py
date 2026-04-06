@@ -6,26 +6,34 @@ Integra:
 - WSI deterministic analysis
 - LIA Opinion generation
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Response, Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, and_
-from typing import Optional, Dict, Any
-from pydantic import BaseModel
-from datetime import datetime
-from uuid import UUID
-import logging
-import uuid
-import hmac
 import hashlib
+import hmac
+import logging
 import os
+import uuid
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response
+from pydantic import BaseModel
+from sqlalchemy import and_, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.communication.services.teams_recording_service import teams_recording_service
+from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
+    interview_transcript_analysis_service,
+)
 from app.models.interview import Interview
 from app.models.lia_opinion import LiaOpinion
-from app.domains.communication.services.teams_recording_service import teams_recording_service
-from app.domains.interview_scheduling.services.interview_transcript_analysis_service import interview_transcript_analysis_service
-from app.schemas.lia_opinion import LiaOpinionCreate, OpinionTypeEnum, OpinionSourceEnum, RecommendationEnum
-from app.services.notification_service import notification_service, NotificationChannel, NotificationType, ProactiveNotificationType
+from app.schemas.lia_opinion import LiaOpinionCreate, OpinionSourceEnum, OpinionTypeEnum, RecommendationEnum
+from app.services.notification_service import (
+    NotificationChannel,
+    NotificationType,
+    ProactiveNotificationType,
+    notification_service,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +50,14 @@ class AnalyzeTranscriptRequest(BaseModel):
     """Request to analyze raw transcript text."""
     transcript_text: str
     candidate_id: str
-    job_vacancy_id: Optional[str] = None
+    job_vacancy_id: str | None = None
     interview_type: str = "technical"
 
 
 class TeamsWebhookPayload(BaseModel):
     """Microsoft Teams subscription webhook payload."""
     value: list = []
-    validationToken: Optional[str] = None
+    validationToken: str | None = None
 
 
 class AnalysisStatusResponse(BaseModel):
@@ -58,8 +66,8 @@ class AnalysisStatusResponse(BaseModel):
     status: str
     has_transcript: bool
     has_analysis: bool
-    analysis_result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    analysis_result: dict[str, Any] | None = None
+    error: str | None = None
 
 
 async def create_opinion_from_analysis(
@@ -482,7 +490,7 @@ async def teams_meeting_webhook(
             client_state_found = payload.value[0].get("clientState") == expected_client_state
         
         if not client_state_found:
-            logger.warning(f"❌ Invalid or missing clientState in webhook notification")
+            logger.warning("❌ Invalid or missing clientState in webhook notification")
             raise HTTPException(status_code=401, detail="Invalid client state")
     
     # Validate HMAC signature if configured
@@ -490,7 +498,7 @@ async def teams_meeting_webhook(
         webhook_signature = request.headers.get("X-Hub-Signature-256")
         
         if not webhook_signature:
-            logger.warning(f"❌ Webhook secret configured but no X-Hub-Signature-256 header provided")
+            logger.warning("❌ Webhook secret configured but no X-Hub-Signature-256 header provided")
             raise HTTPException(status_code=401, detail="Missing webhook signature")
         
         # Get raw request body for HMAC verification
@@ -502,7 +510,7 @@ async def teams_meeting_webhook(
         ).hexdigest()
         
         if not hmac.compare_digest(webhook_signature, expected_signature):
-            logger.warning(f"❌ Invalid HMAC signature in webhook")
+            logger.warning("❌ Invalid HMAC signature in webhook")
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
         
         logger.info("✅ HMAC signature verified")

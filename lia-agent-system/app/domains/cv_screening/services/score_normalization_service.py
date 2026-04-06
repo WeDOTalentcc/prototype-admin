@@ -1,8 +1,9 @@
 import logging
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -12,10 +13,10 @@ class NormalizedCandidateScore:
     candidate_id: str
     raw_score: float
     normalized_score: float
-    question_set_version: Optional[int]
-    difficulty_coefficient: Optional[float]
+    question_set_version: int | None
+    difficulty_coefficient: float | None
     normalization_factor: float
-    scoring_details: Dict[str, Any]
+    scoring_details: dict[str, Any]
 
 
 class ScoreNormalizationService:
@@ -28,8 +29,8 @@ class ScoreNormalizationService:
         self,
         db: AsyncSession,
         job_vacancy_id: str,
-        candidate_scores: List[Dict[str, Any]],
-    ) -> List[NormalizedCandidateScore]:
+        candidate_scores: list[dict[str, Any]],
+    ) -> list[NormalizedCandidateScore]:
         version_coefficients = await self._load_version_coefficients(db, job_vacancy_id)
 
         if not version_coefficients:
@@ -100,7 +101,7 @@ class ScoreNormalizationService:
 
     async def _load_version_coefficients(
         self, db: AsyncSession, job_vacancy_id: str
-    ) -> Dict[Optional[int], Optional[float]]:
+    ) -> dict[int | None, float | None]:
         try:
             result = await db.execute(text("""
                 SELECT version, difficulty_coefficient
@@ -118,7 +119,7 @@ class ScoreNormalizationService:
         self,
         db: AsyncSession,
         job_vacancy_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             versions_result = await db.execute(text("""
                 SELECT version, difficulty_coefficient, questions_count, source, is_active

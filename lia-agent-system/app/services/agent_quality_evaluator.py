@@ -21,7 +21,7 @@ import os
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ QUALITY_EVAL_SAMPLING_RATE: float = float(
     os.environ.get("QUALITY_EVAL_SAMPLING_RATE", "0.10")
 )
 
-EVAL_METRICS: Dict[str, str] = {
+EVAL_METRICS: dict[str, str] = {
     "task_completion": (
         "A tarefa solicitada pelo usuário foi completamente executada pelo agente?"
     ),
@@ -52,8 +52,8 @@ EVAL_METRICS: Dict[str, str] = {
 class EvaluationResult:
     agent_id: str
     company_id: str
-    session_id: Optional[str]
-    scores: Dict[str, float]
+    session_id: str | None
+    scores: dict[str, float]
     overall_score: float
     evaluated_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -78,11 +78,11 @@ class AgentQualityEvaluator:
         agent_id: str,
         user_message: str,
         agent_response: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         company_id: str,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         db: Any = None,
-    ) -> Optional[EvaluationResult]:
+    ) -> EvaluationResult | None:
         """
         Avalia a resposta se dentro do sampling rate configurado.
         Retorna None se não amostrado ou se avaliação falhar (shadow mode).
@@ -112,16 +112,16 @@ class AgentQualityEvaluator:
         agent_id: str,
         user_message: str,
         agent_response: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         company_id: str,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         db: Any = None,
     ) -> EvaluationResult:
         """
         Avalia resposta com LLM-as-judge (5 métricas).
         Persiste resultado e envia para LangSmith (se configurado).
         """
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
 
         for metric, question in EVAL_METRICS.items():
             score = await self._judge(

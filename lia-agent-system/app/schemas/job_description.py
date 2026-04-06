@@ -3,10 +3,10 @@ Schemas para geração de Job Description em duas versões:
 - JD Preview (v1): Validação após coleta inicial com indicadores de sugestão da LIA
 - JD Final (v2): Versão completa para publicação com todas as informações
 """
-from typing import Dict, List, Optional, Any, Literal
-from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class SuggestionSource(str, Enum):
@@ -47,7 +47,7 @@ class SuggestedItem(BaseModel):
     """Item com indicação de origem (detectado, sugerido pela LIA, etc.)"""
     value: str
     source: SuggestionSource = SuggestionSource.RECRUITER
-    confidence: Optional[float] = None
+    confidence: float | None = None
     is_new: bool = False
 
 
@@ -56,8 +56,8 @@ class Competency(BaseModel):
     name: str
     level: RequirementLevel = RequirementLevel.REQUIRED
     source: SuggestionSource = SuggestionSource.RECRUITER
-    years_experience: Optional[int] = None
-    proficiency: Optional[str] = None
+    years_experience: int | None = None
+    proficiency: str | None = None
     is_new: bool = False
 
 
@@ -71,86 +71,86 @@ class Responsibility(BaseModel):
 class Benefit(BaseModel):
     """Benefício oferecido"""
     name: str
-    description: Optional[str] = None
-    value: Optional[str] = None
+    description: str | None = None
+    value: str | None = None
 
 
 class CompensationData(BaseModel):
     """Dados de compensação"""
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
+    salary_min: float | None = None
+    salary_max: float | None = None
     salary_currency: str = "BRL"
     show_salary: bool = True
-    bonus_percentage: Optional[float] = None
-    bonus_description: Optional[str] = None
-    plr: Optional[str] = None
-    equity: Optional[str] = None
-    benefits: List[Benefit] = Field(default_factory=list)
+    bonus_percentage: float | None = None
+    bonus_description: str | None = None
+    plr: str | None = None
+    equity: str | None = None
+    benefits: list[Benefit] = Field(default_factory=list)
     
-    market_comparison: Optional[str] = None
-    market_percentile: Optional[int] = None
+    market_comparison: str | None = None
+    market_percentile: int | None = None
     has_alert: bool = False
-    alert_message: Optional[str] = None
+    alert_message: str | None = None
 
 
 class InterviewStage(BaseModel):
     """Etapa do processo seletivo"""
     order: int
     name: str
-    format: Optional[str] = None
-    duration: Optional[str] = None
-    description: Optional[str] = None
-    responsible: Optional[str] = None
-    responsible_email: Optional[str] = None
+    format: str | None = None
+    duration: str | None = None
+    description: str | None = None
+    responsible: str | None = None
+    responsible_email: str | None = None
 
 
 class CompanyInfo(BaseModel):
     """Informações da empresa para o JD"""
     name: str
-    about: Optional[str] = None
-    mission: Optional[str] = None
-    size: Optional[str] = None
-    industry: Optional[str] = None
-    values: List[Dict[str, str]] = Field(default_factory=list)
-    evp: Optional[Dict[str, str]] = None
-    diversity_statement: Optional[str] = None
-    careers_url: Optional[str] = None
-    contact_email: Optional[str] = None
+    about: str | None = None
+    mission: str | None = None
+    size: str | None = None
+    industry: str | None = None
+    values: list[dict[str, str]] = Field(default_factory=list)
+    evp: dict[str, str] | None = None
+    diversity_statement: str | None = None
+    careers_url: str | None = None
+    contact_email: str | None = None
 
 
 class HiringManager(BaseModel):
     """Gestor da vaga (dados internos, não publicados)"""
     name: str
     email: str
-    department: Optional[str] = None
+    department: str | None = None
 
 
 class JobMetadata(BaseModel):
     """Metadados internos da vaga (não publicados)"""
-    hiring_manager: Optional[HiringManager] = None
+    hiring_manager: HiringManager | None = None
     is_confidential: bool = False
     priority: Priority = Priority.MEDIUM
-    open_date: Optional[datetime] = None
-    target_date: Optional[datetime] = None
-    sla_days: Optional[int] = None
+    open_date: datetime | None = None
+    target_date: datetime | None = None
+    sla_days: int | None = None
 
 
 class JobDescriptionBase(BaseModel):
     """Campos comuns entre v1 e v2"""
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
     num_positions: int = 1
     
     work_model: WorkModel = WorkModel.HYBRID
-    office_days_per_week: Optional[int] = None
+    office_days_per_week: int | None = None
     contract_type: ContractType = ContractType.CLT
-    location: Optional[str] = None
+    location: str | None = None
     
     is_affirmative: bool = False
-    affirmative_type: Optional[str] = None
+    affirmative_type: str | None = None
     
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class JobDescriptionPreview(JobDescriptionBase):
@@ -161,14 +161,14 @@ class JobDescriptionPreview(JobDescriptionBase):
     Inclui indicadores de sugestões da LIA (💡).
     NÃO inclui Interview Process.
     """
-    responsibilities: List[Responsibility] = Field(default_factory=list)
+    responsibilities: list[Responsibility] = Field(default_factory=list)
     
-    technical_competencies: List[Competency] = Field(default_factory=list)
-    behavioral_competencies: List[Competency] = Field(default_factory=list)
+    technical_competencies: list[Competency] = Field(default_factory=list)
+    behavioral_competencies: list[Competency] = Field(default_factory=list)
     
-    compensation: Optional[CompensationData] = None
+    compensation: CompensationData | None = None
     
-    company: Optional[CompanyInfo] = None
+    company: CompanyInfo | None = None
     
     suggestions_count: int = 0
     alerts_count: int = 0
@@ -208,23 +208,23 @@ class JobDescriptionFinal(JobDescriptionBase):
     Inclui Interview Process, Apply At, etc.
     Sem indicadores de sugestão (versão limpa).
     """
-    responsibilities: List[str] = Field(default_factory=list)
+    responsibilities: list[str] = Field(default_factory=list)
     
-    required_technical: List[str] = Field(default_factory=list)
-    required_behavioral: List[str] = Field(default_factory=list)
-    nice_to_have: List[str] = Field(default_factory=list)
+    required_technical: list[str] = Field(default_factory=list)
+    required_behavioral: list[str] = Field(default_factory=list)
+    nice_to_have: list[str] = Field(default_factory=list)
     
-    compensation: Optional[CompensationData] = None
+    compensation: CompensationData | None = None
     
-    company: Optional[CompanyInfo] = None
+    company: CompanyInfo | None = None
     
-    interview_process: List[InterviewStage] = Field(default_factory=list)
-    total_timeline: Optional[str] = None
+    interview_process: list[InterviewStage] = Field(default_factory=list)
+    total_timeline: str | None = None
     
-    apply_url: Optional[str] = None
-    contact_email: Optional[str] = None
+    apply_url: str | None = None
+    contact_email: str | None = None
     
-    metadata: Optional[JobMetadata] = None
+    metadata: JobMetadata | None = None
     
     generated_at: datetime = Field(default_factory=datetime.utcnow)
     
@@ -259,60 +259,60 @@ class JobDescriptionFinal(JobDescriptionBase):
 
 class JDGenerationRequest(BaseModel):
     """Request para gerar Job Description"""
-    job_id: Optional[str] = None
+    job_id: str | None = None
     company_id: str
-    recruiter_id: Optional[str] = None
+    recruiter_id: str | None = None
     
     title: str
-    department: Optional[str] = None
-    seniority: Optional[str] = None
+    department: str | None = None
+    seniority: str | None = None
     num_positions: int = 1
     
     work_model: WorkModel = WorkModel.HYBRID
-    office_days_per_week: Optional[int] = None
+    office_days_per_week: int | None = None
     contract_type: ContractType = ContractType.CLT
-    location: Optional[str] = None
+    location: str | None = None
     
     is_affirmative: bool = False
-    affirmative_type: Optional[str] = None
+    affirmative_type: str | None = None
     
-    description: Optional[str] = None
-    raw_input: Optional[str] = None
+    description: str | None = None
+    raw_input: str | None = None
     
-    detected_responsibilities: List[str] = Field(default_factory=list)
-    detected_technical_skills: List[str] = Field(default_factory=list)
-    detected_behavioral_skills: List[str] = Field(default_factory=list)
+    detected_responsibilities: list[str] = Field(default_factory=list)
+    detected_technical_skills: list[str] = Field(default_factory=list)
+    detected_behavioral_skills: list[str] = Field(default_factory=list)
     
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    bonus_percentage: Optional[float] = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    bonus_percentage: float | None = None
     
-    hiring_manager_name: Optional[str] = None
-    hiring_manager_email: Optional[str] = None
+    hiring_manager_name: str | None = None
+    hiring_manager_email: str | None = None
     
     is_confidential: bool = False
     priority: Priority = Priority.MEDIUM
-    target_date: Optional[datetime] = None
+    target_date: datetime | None = None
     
-    interview_stages: List[InterviewStage] = Field(default_factory=list)
+    interview_stages: list[InterviewStage] = Field(default_factory=list)
 
 
 class JDPreviewResponse(BaseModel):
     """Response da geração de JD Preview"""
     success: bool
-    preview: Optional[JobDescriptionPreview] = None
-    markdown: Optional[str] = None
+    preview: JobDescriptionPreview | None = None
+    markdown: str | None = None
     suggestions_applied: int = 0
-    alerts: List[str] = Field(default_factory=list)
-    error: Optional[str] = None
+    alerts: list[str] = Field(default_factory=list)
+    error: str | None = None
 
 
 class JDFinalResponse(BaseModel):
     """Response da geração de JD Final"""
     success: bool
-    final: Optional[JobDescriptionFinal] = None
-    markdown: Optional[str] = None
-    html: Optional[str] = None
+    final: JobDescriptionFinal | None = None
+    markdown: str | None = None
+    html: str | None = None
     ready_to_publish: bool = False
-    missing_fields: List[str] = Field(default_factory=list)
-    error: Optional[str] = None
+    missing_fields: list[str] = Field(default_factory=list)
+    error: str | None = None

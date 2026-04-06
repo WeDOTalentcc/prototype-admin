@@ -1,21 +1,24 @@
 import logging
-from typing import List, Dict, Optional
 
 from app.shared.channels.channel_adapter import (
-    ChannelAdapter, ChannelType, ChannelMessage, DeliveryResult, DeliveryStatus
+    ChannelAdapter,
+    ChannelMessage,
+    ChannelType,
+    DeliveryResult,
+    DeliveryStatus,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class ChannelRouter:
-    def __init__(self, adapters: Dict[ChannelType, ChannelAdapter]):
+    def __init__(self, adapters: dict[ChannelType, ChannelAdapter]):
         self._adapters = adapters
 
     async def route(
         self,
         message: ChannelMessage,
-        preferred_channels: List[ChannelType],
+        preferred_channels: list[ChannelType],
         fallback: bool = True,
     ) -> DeliveryResult:
         channels_to_try = list(preferred_channels)

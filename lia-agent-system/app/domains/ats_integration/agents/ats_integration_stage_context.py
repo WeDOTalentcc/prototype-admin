@@ -2,9 +2,9 @@
 
 Defines execution stages for the ATS integration workflow and their associated tools.
 """
-from typing import Any, Dict, List
+from typing import Any
 
-STAGE_DEFINITIONS: Dict[str, Any] = {
+STAGE_DEFINITIONS: dict[str, Any] = {
     "provider-detection": {
         "description": (
             "Identificar o provedor ATS alvo, validar credenciais configuradas "
@@ -38,19 +38,19 @@ STAGE_DEFINITIONS: Dict[str, Any] = {
 }
 
 
-def get_stage_context(stage: str) -> Dict[str, Any]:
+def get_stage_context(stage: str) -> dict[str, Any]:
     """Return stage definition; defaults to provider-detection if unknown."""
     return STAGE_DEFINITIONS.get(stage, STAGE_DEFINITIONS["provider-detection"])
 
 
-def get_stage_tools(stage: str) -> List[str]:
+def get_stage_tools(stage: str) -> list[str]:
     """Return tool names available for a given stage."""
     return get_stage_context(stage).get("tools", [])
 
 
 def get_transition_prompt(from_stage: str, to_stage: str) -> str:
     """Return a human-readable transition message between stages."""
-    prompts: Dict[tuple, str] = {
+    prompts: dict[tuple, str] = {
         ("provider-detection", "field-mapping"): (
             "Provedor ATS identificado. Validando mapeamento de campos..."
         ),

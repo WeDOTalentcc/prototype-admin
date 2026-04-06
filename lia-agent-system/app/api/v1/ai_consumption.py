@@ -7,36 +7,35 @@ Provides endpoints for:
 - Managing credit limits (admin)
 - Analytics by agent, model, and day
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, Header, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func, desc, cast, Date
-from typing import Optional, Dict, Any
-from datetime import datetime, date, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import Date, and_, cast, desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.models.ai_consumption import AiConsumption, AiCreditsBalance
-from app.shared.tenant_guard import get_verified_company_id
-from app.services.token_tracking_service import (
-    TokenTrackingService,
-    get_token_tracking_service,
-    TOKEN_PRICES,
-    DEFAULT_LIMITS
-)
+from app.models.ai_consumption import AiConsumption
 from app.schemas.ai_consumption import (
     AiConsumptionRecord,
     AiConsumptionResponse,
-    AiConsumptionListResponse,
-    UsageSummaryResponse,
-    UsageByAgentResponse,
-    UsageByAgentListResponse,
-    UsageByDayResponse,
-    UsageByDayListResponse,
     BalanceResponse,
     UpdateLimitsRequest,
+    UsageByAgentListResponse,
+    UsageByAgentResponse,
+    UsageByDayListResponse,
+    UsageByDayResponse,
     UsageHistoryResponse,
+    UsageSummaryResponse,
 )
+from app.services.token_tracking_service import (
+    DEFAULT_LIMITS,
+    TOKEN_PRICES,
+    get_token_tracking_service,
+)
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -122,10 +121,10 @@ async def get_client_usage(
 
 @router.get("/history", response_model=UsageHistoryResponse, summary="Get usage history")
 async def get_usage_history(
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
-    agent_type: Optional[str] = Query(None, description="Filter by agent type"),
-    model: Optional[str] = Query(None, description="Filter by model"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
+    agent_type: str | None = Query(None, description="Filter by agent type"),
+    model: str | None = Query(None, description="Filter by model"),
     limit: int = Query(50, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
@@ -171,8 +170,8 @@ async def get_usage_history(
 
 @router.get("/by-agent", response_model=UsageByAgentListResponse, summary="Get usage by agent type")
 async def get_usage_by_agent(
-    start_date: Optional[datetime] = Query(None, description="Start date filter"),
-    end_date: Optional[datetime] = Query(None, description="End date filter"),
+    start_date: datetime | None = Query(None, description="Start date filter"),
+    end_date: datetime | None = Query(None, description="End date filter"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -407,8 +406,8 @@ async def update_limits(
 
 
 def get_user_id_from_header(
-    x_user_id: Optional[str] = Header(None, alias="X-User-ID")
-) -> Optional[str]:
+    x_user_id: str | None = Header(None, alias="X-User-ID")
+) -> str | None:
     """Extract user ID from header (optional)."""
     if x_user_id:
         try:
@@ -428,10 +427,10 @@ ai_usage_router = APIRouter(prefix="/ai/usage", tags=["ai-usage"])
 @ai_usage_router.get("/me", summary="Get current user's AI usage")
 async def get_my_usage(
     period: str = Query("day", description="Period: hour, day, week, month"),
-    user_id: Optional[str] = Depends(get_user_id_from_header),
+    user_id: str | None = Depends(get_user_id_from_header),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get AI token usage for the current user.
     
@@ -477,7 +476,7 @@ async def get_company_usage(
     period: str = Query("day", description="Period: hour, day, week, month"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get AI token usage for the company.
     
@@ -512,7 +511,7 @@ async def get_agents_usage(
     period: str = Query("day", description="Period: hour, day, week, month"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get AI token usage grouped by agent type (admin endpoint).
     
@@ -543,7 +542,7 @@ async def get_agents_usage(
 async def get_usage_limits(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get the configured usage limits for the company.
     
@@ -567,10 +566,10 @@ async def get_usage_limits(
 
 @ai_usage_router.post("/check-limits", summary="Check if within usage limits")
 async def check_usage_limits(
-    user_id: Optional[str] = Depends(get_user_id_from_header),
+    user_id: str | None = Depends(get_user_id_from_header),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Check if the user/company is within configured usage limits.
     
@@ -628,7 +627,7 @@ async def get_real_time_usage(
     window_minutes: int = Query(5, ge=1, le=60, description="Time window in minutes"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get real-time AI usage statistics for the last N minutes.
     

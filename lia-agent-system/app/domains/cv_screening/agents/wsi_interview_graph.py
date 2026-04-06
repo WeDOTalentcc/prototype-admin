@@ -14,11 +14,10 @@ Conforme recomendação arquitetural: fluxos previsíveis = Graph,
 fluxos com raciocínio autônomo = ReAct.
 """
 import logging
-import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 try:
@@ -56,7 +55,7 @@ class WSIQuestionBlock:
     competency: str
     bloom_level: int  # 1-6
     dreyfus_level: int  # 1-5
-    big_five_trait: Optional[str] = None
+    big_five_trait: str | None = None
     max_score: float = 10.0
     # F9-1 — peso normalizado do trait F3 (score_final / soma_scores_traits).
     # Padrão 1.0 = pesos uniformes quando dados F3 indisponíveis (perguntas do DB sem ranking OCEAN).
@@ -71,7 +70,7 @@ class WSIResponseRecord:
     bloom_achieved: int = 0
     dreyfus_achieved: int = 0
     reasoning: str = ""
-    scored_at: Optional[datetime] = None
+    scored_at: datetime | None = None
 
 
 @dataclass
@@ -83,18 +82,18 @@ class WSIInterviewState:
     interview_level: str = "standard"  # "quick" | "standard" | "full"
 
     # Contexto carregado no LOAD_CONTEXT
-    job_requirements: Dict[str, Any] = field(default_factory=dict)
-    candidate_profile: Dict[str, Any] = field(default_factory=dict)
+    job_requirements: dict[str, Any] = field(default_factory=dict)
+    candidate_profile: dict[str, Any] = field(default_factory=dict)
 
     # Banco de perguntas para esta sessão
-    question_blocks: List[WSIQuestionBlock] = field(default_factory=list)
+    question_blocks: list[WSIQuestionBlock] = field(default_factory=list)
     current_question_index: int = 0
 
     # Respostas coletadas
-    responses: List[WSIResponseRecord] = field(default_factory=list)
+    responses: list[WSIResponseRecord] = field(default_factory=list)
 
     # Pergunta atual em exibição
-    current_question: Optional[WSIQuestionBlock] = None
+    current_question: WSIQuestionBlock | None = None
     awaiting_response: bool = False
 
     # Scores parciais por dimensão
@@ -106,17 +105,17 @@ class WSIInterviewState:
     behavioral_score_count: int = 0
 
     # Score final
-    wsi_final_score: Optional[float] = None
+    wsi_final_score: float | None = None
     recommendation: str = ""  # "aprovado" | "aguardando" | "reprovado"
 
     # Auditoria
     stage: WSIInterviewStage = WSIInterviewStage.INIT
-    execution_log: List[Dict[str, Any]] = field(default_factory=list)
+    execution_log: list[dict[str, Any]] = field(default_factory=list)
     started_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
-    error: Optional[str] = None
+    completed_at: datetime | None = None
+    error: str | None = None
 
-    def log_step(self, node: str, details: Dict[str, Any]) -> None:
+    def log_step(self, node: str, details: dict[str, Any]) -> None:
         self.execution_log.append({
             "node": node,
             "timestamp": datetime.utcnow().isoformat(),
@@ -341,8 +340,9 @@ class WSIInterviewNodes:
             # Lê de job_screening_questions antes de qualquer geração on-the-fly.
             if state.job_id:
                 try:
-                    from app.core.database import AsyncSessionLocal
                     from sqlalchemy import text as _sql_text
+
+                    from app.core.database import AsyncSessionLocal
                     async with AsyncSessionLocal() as _db:
                         rows = (await _db.execute(
                             _sql_text(
@@ -611,7 +611,7 @@ class WSIInterviewNodes:
 
             # AUD: Audit trail para cada bloco avaliado (BCB 498 / SOX)
             try:
-                from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                 await audit_service.log_decision(
                     company_id=str(state.company_id) if state.company_id else None,
                     agent_name="wsi_interview_graph",
@@ -662,7 +662,9 @@ class WSIInterviewNodes:
         """Calcula score final WSI e gera parecer."""
         state.stage = WSIInterviewStage.GENERATE_FEEDBACK
         try:
-            from app.domains.cv_screening.services.wsi_deterministic_scorer import calculate_final_wsi_score as deterministic_final
+            from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+                calculate_final_wsi_score as deterministic_final,
+            )
 
             # Usa SENIORITY_WEIGHTS da spec F8 (não hardcoded 70%/30%)
             _seniority = state.job_requirements.get("seniority")
@@ -710,7 +712,7 @@ class WSIInterviewNodes:
 
             # AUD: Audit trail para avaliação final WSI (BCB 498 / SOX)
             try:
-                from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                 _passed = state.recommendation == "aprovado"
                 await audit_service.log_decision(
                     company_id=str(state.company_id) if state.company_id else None,
@@ -786,7 +788,7 @@ class WSIInterviewNodes:
             state.behavioral_score = (state.behavioral_score * n + clamped) / (n + 1)
             state.behavioral_score_count = n + 1
 
-    def _build_fallback_questions(self) -> List[WSIQuestionBlock]:
+    def _build_fallback_questions(self) -> list[WSIQuestionBlock]:
         """Perguntas de fallback quando o pipeline não consegue gerar questões."""
         return [
             WSIQuestionBlock(
@@ -835,9 +837,9 @@ class WSIInterviewGraph:
             logger.debug("WSI complete: score=%s recommendation=%s", state.wsi_final_score, state.recommendation)
     """
 
-    def __init__(self, nodes: Optional[WSIInterviewNodes] = None):
+    def __init__(self, nodes: WSIInterviewNodes | None = None):
         self.nodes = nodes or WSIInterviewNodes()
-        self._compiled_lg: Optional[Any] = None  # LangGraph compiled graph (lazy init)
+        self._compiled_lg: Any | None = None  # LangGraph compiled graph (lazy init)
         logger.info("[WSIInterviewGraph] Initialized")
 
 
@@ -863,7 +865,8 @@ class WSIInterviewGraph:
 
     def _build_langgraph(self) -> Any:
         """Constrói StateGraph com nós wrapper (dict ↔ WSIInterviewState)."""
-        from langgraph.graph import StateGraph, END as LEND
+        from langgraph.graph import END as LEND
+        from langgraph.graph import StateGraph
         from lia_agents_core.checkpointer import get_checkpointer
 
         nodes_ref = self.nodes
@@ -1019,7 +1022,7 @@ class WSIInterviewGraph:
                     try:
                         from app.services.hitl_service import hitl_service
                         wsi_dict = result.get("wsi_data", {})
-                        pending_id = await hitl_service.request_approval(
+                        await hitl_service.request_approval(
                             thread_id=state.session_id,
                             action="finalize_wsi_score",
                             description=(
@@ -1087,7 +1090,7 @@ class WSIInterviewGraph:
         """Submete resposta do candidato via LangGraph nativo."""
         return await self._submit_response_langgraph(state, candidate_response, audit_callback)
 
-    def get_session_summary(self, state: WSIInterviewState) -> Dict[str, Any]:
+    def get_session_summary(self, state: WSIInterviewState) -> dict[str, Any]:
         """Retorna resumo auditável da sessão (para compliance e relatórios)."""
         return {
             "session_id": state.session_id,

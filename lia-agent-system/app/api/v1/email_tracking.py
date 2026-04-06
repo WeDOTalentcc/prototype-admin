@@ -11,9 +11,11 @@ LGPD disclosure obrigatória nos emails:
 """
 import logging
 import os
-from fastapi import APIRouter, Request, Depends, Path, Query, HTTPException
-from fastapi.responses import Response, RedirectResponse
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
+from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db as get_async_db
 
 router = APIRouter(prefix="/email-tracking", tags=["Email Tracking"])
@@ -129,9 +131,9 @@ def _verify_mailgun_signature(request: Request, body: bytes) -> bool:
         return True
 
     try:
-        import json
-        import hmac
         import hashlib
+        import hmac
+        import json
 
         try:
             data = json.loads(body)

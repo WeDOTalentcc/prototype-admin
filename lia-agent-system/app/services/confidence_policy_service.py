@@ -4,10 +4,10 @@ Confidence Policy Service for Job Wizard Enhancement.
 Manages confidence calculations and decision policies for
 auto-applying inferred values during job creation wizard flow.
 """
-from enum import Enum
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Tuple, Optional
 import logging
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class ConfidenceThresholds:
     ask_user: float = 0.50
 
 
-SOURCE_BASE_CONFIDENCE: Dict[str, float] = {
+SOURCE_BASE_CONFIDENCE: dict[str, float] = {
     "text_extraction": 0.70,
     "company_default": 0.85,
     "benchmark": 0.60,
@@ -57,8 +57,8 @@ MAX_CONFIDENCE = 0.95
 class ConfidenceResult:
     """Result of a confidence calculation."""
     confidence: float
-    sources: List[str]
-    adjustments: List[str]
+    sources: list[str]
+    adjustments: list[str]
     action: ConfidenceAction
 
 
@@ -70,7 +70,7 @@ class ConfidencePolicyService:
     action to take based on that confidence.
     """
     
-    def __init__(self, thresholds: Optional[ConfidenceThresholds] = None):
+    def __init__(self, thresholds: ConfidenceThresholds | None = None):
         self.thresholds = thresholds or ConfidenceThresholds()
         self.logger = logging.getLogger(self.__class__.__name__)
     
@@ -78,7 +78,7 @@ class ConfidencePolicyService:
         self,
         field: str,
         value: Any,
-        sources: List[Dict[str, Any]]
+        sources: list[dict[str, Any]]
     ) -> ConfidenceResult:
         """
         Calculate confidence for a field value based on its sources.
@@ -137,7 +137,7 @@ class ConfidencePolicyService:
     def get_action_for_confidence(
         self,
         confidence: float,
-        thresholds: Optional[ConfidenceThresholds] = None
+        thresholds: ConfidenceThresholds | None = None
     ) -> ConfidenceAction:
         """
         Determine the action to take based on confidence level.
@@ -166,8 +166,8 @@ class ConfidencePolicyService:
         recruiter_id: str,
         field: str,
         confidence: float,
-        thresholds: Optional[ConfidenceThresholds] = None
-    ) -> Tuple[bool, str]:
+        thresholds: ConfidenceThresholds | None = None
+    ) -> tuple[bool, str]:
         """
         Determine if a value should be auto-applied for a specific context.
         
@@ -193,11 +193,11 @@ class ConfidencePolicyService:
         if action == ConfidenceAction.ASK_USER:
             return (False, f"Low confidence ({confidence:.2f}) - requires user confirmation")
         
-        return (False, f"Conflict detected - requires user resolution")
+        return (False, "Conflict detected - requires user resolution")
     
     def calculate_aggregate_confidence(
         self,
-        field_confidences: Dict[str, float]
+        field_confidences: dict[str, float]
     ) -> float:
         """
         Calculate overall confidence for a draft based on individual field confidences.
@@ -215,9 +215,9 @@ class ConfidencePolicyService:
     
     def get_fields_needing_confirmation(
         self,
-        field_confidences: Dict[str, float],
-        thresholds: Optional[ConfidenceThresholds] = None
-    ) -> List[str]:
+        field_confidences: dict[str, float],
+        thresholds: ConfidenceThresholds | None = None
+    ) -> list[str]:
         """
         Get list of fields that need user confirmation.
         
@@ -239,8 +239,8 @@ class ConfidencePolicyService:
     
     def get_fields_with_conflicts(
         self,
-        sources_by_field: Dict[str, List[Dict[str, Any]]]
-    ) -> List[str]:
+        sources_by_field: dict[str, list[dict[str, Any]]]
+    ) -> list[str]:
         """
         Identify fields where sources provide conflicting values.
         

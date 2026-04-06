@@ -6,9 +6,9 @@ DOMAIN_QUEUES mapeia domínio de agente para:
 - priority: prioridade na fila (1-10, maior = mais urgente)
 - task: nome registrado da Celery task
 """
-from typing import Dict, Any
+from typing import Any
 
-DOMAIN_QUEUES: Dict[str, Dict[str, Any]] = {
+DOMAIN_QUEUES: dict[str, dict[str, Any]] = {
     # Domínios com SLA curto (interação direta com recrutador)
     "wizard": {
         "queue": "vagas_normal",
@@ -93,7 +93,7 @@ SYNC_DOMAINS = frozenset({
 })
 
 
-def get_domain_config(domain: str) -> Dict[str, Any]:
+def get_domain_config(domain: str) -> dict[str, Any]:
     """Retorna configuração de fila para um domínio. Fallback: vagas_normal."""
     return DOMAIN_QUEUES.get(domain, {
         "queue": "vagas_normal",

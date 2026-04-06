@@ -2,21 +2,21 @@
 Job Board API endpoints.
 Handles publishing jobs to external job boards (LinkedIn, Indeed).
 """
-from fastapi import APIRouter, Depends, HTTPException, Response
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from uuid import UUID
-from typing import Optional, List, Dict, Any
-from datetime import datetime
 import logging
+from datetime import datetime
+from uuid import UUID
 
-from app.core.database import get_db
-from app.models.job_vacancy import JobVacancy
-from app.domains.job_management.services.job_board_service import job_board_service
-from app.domains.communication.services.email_service import email_service
-from app.auth.dependencies import get_current_user, get_current_active_user, get_user_company_id
-from app.auth.models import User
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import get_current_active_user, get_user_company_id
+from app.auth.models import User
+from app.core.database import get_db
+from app.domains.communication.services.email_service import email_service
+from app.domains.job_management.services.job_board_service import job_board_service
+from app.models.job_vacancy import JobVacancy
 
 router = APIRouter(prefix="/job-boards", tags=["job-boards"])
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ async def send_recruiter_freeze_summary(
     job: JobVacancy,
     freeze_reason: str,
     freeze_reason_label: str,
-    unfreeze_date: Optional[str],
+    unfreeze_date: str | None,
     frozen_at: datetime,
     candidates_notified: int = 0,
     candidates_email: int = 0,
@@ -279,20 +279,20 @@ class PublishResponse(BaseModel):
     message: str
     platform: str
     job_id: str
-    post_id: Optional[str] = None
-    job_title: Optional[str] = None
-    published_at: Optional[str] = None
-    job_url: Optional[str] = None
-    feed_url: Optional[str] = None
-    note: Optional[str] = None
-    mock: Optional[bool] = None
+    post_id: str | None = None
+    job_title: str | None = None
+    published_at: str | None = None
+    job_url: str | None = None
+    feed_url: str | None = None
+    note: str | None = None
+    mock: bool | None = None
 
 
 class PublishingStatusResponse(BaseModel):
     job_id: str
     job_title: str
     platforms: dict
-    last_published_at: Optional[str] = None
+    last_published_at: str | None = None
 
 
 class UnpublishResponse(BaseModel):
@@ -300,8 +300,8 @@ class UnpublishResponse(BaseModel):
     message: str
     platform: str
     job_id: str
-    old_post_id: Optional[str] = None
-    old_indeed_id: Optional[str] = None
+    old_post_id: str | None = None
+    old_indeed_id: str | None = None
 
 
 @router.post("/linkedin/publish/{job_id}", response_model=PublishResponse)
@@ -391,7 +391,7 @@ async def publish_to_indeed(
 
 @router.get("/feed/indeed.xml")
 async def get_indeed_xml_feed(
-    company_id: Optional[str] = None,
+    company_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -574,14 +574,14 @@ async def publish_to_multiple_platforms(
 class UnpublishCompleteRequest(BaseModel):
     job_ids: list[str]
     freeze_job: bool = False
-    freeze_reason: Optional[str] = None
-    freeze_start_date: Optional[str] = None
-    unfreeze_date: Optional[str] = None
+    freeze_reason: str | None = None
+    freeze_start_date: str | None = None
+    unfreeze_date: str | None = None
     notify_applicants: bool = False
-    notification_channel: Optional[str] = None
-    notification_message: Optional[str] = None
-    notification_subject: Optional[str] = None
-    candidate_ids: Optional[list[str]] = None
+    notification_channel: str | None = None
+    notification_message: str | None = None
+    notification_subject: str | None = None
+    candidate_ids: list[str] | None = None
     cancel_scheduled_interviews: bool = False
     cancel_scheduled_screenings: bool = False
     send_recruiter_summary: bool = False

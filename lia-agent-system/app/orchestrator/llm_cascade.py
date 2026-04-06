@@ -14,7 +14,7 @@ Integra com TenantBudget para registrar tokens consumidos.
 import json
 import logging
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from app.core.config import settings
 from app.services.llm import LLMProvider, llm_service
@@ -67,10 +67,10 @@ class LLMCascadeRouter:
     async def route(
         self,
         message: str,
-        context: Optional[Dict[str, Any]] = None,
-        company_id: Optional[str] = None,
-        preferred_model: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        company_id: str | None = None,
+        preferred_model: str | None = None,
+    ) -> dict[str, Any]:
         """
         Rota a mensagem usando a escada de custo.
 
@@ -185,7 +185,7 @@ class LLMCascadeRouter:
 
     async def _call_model(
         self, message: str, model_name: str
-    ) -> Tuple[Optional[Dict[str, Any]], int]:
+    ) -> tuple[dict[str, Any] | None, int]:
         """Chama um modelo específico e retorna (resultado_parseado, tokens_estimados).
 
         O provider é derivado do nome do modelo via _provider_for_model:
@@ -220,7 +220,7 @@ class LLMCascadeRouter:
             logger.debug("[LLMCascade] _call_model(%s, provider=%s) falhou: %s", model_name, provider, exc)
             return None, tokens_est
 
-    async def _record_tokens(self, company_id: Optional[str], tokens: int) -> None:
+    async def _record_tokens(self, company_id: str | None, tokens: int) -> None:
         """Registra uso de tokens no budget do tenant (best-effort)."""
         if not company_id or tokens <= 0:
             return

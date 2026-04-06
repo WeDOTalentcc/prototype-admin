@@ -7,13 +7,12 @@ Handles wizard-specific analytical queries:
 - "Quanto falta para publicar?" (completion percentage)
 - "Resume o que já coletamos" (collected data summary)
 """
-import os
 import json
 import logging
-import re
-from typing import Dict, List, Optional, Any, Tuple
+import os
+from typing import Any
+
 from anthropic import Anthropic
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +64,7 @@ ANALYTICS_KEYWORDS = {
 }
 
 
-def detect_wizard_analytics_command(message: str) -> Optional[Tuple[str, float]]:
+def detect_wizard_analytics_command(message: str) -> tuple[str, float] | None:
     msg_lower = message.lower().strip()
 
     for cmd_type, keywords in ANALYTICS_KEYWORDS.items():
@@ -82,7 +81,7 @@ class WizardAnalyticsService:
     """Service for analytical queries about the job being created in the wizard."""
 
     def __init__(self):
-        self._client: Optional[Anthropic] = None
+        self._client: Anthropic | None = None
 
     @property
     def client(self) -> Anthropic:
@@ -99,9 +98,9 @@ class WizardAnalyticsService:
 
     def analyze_completion(
         self,
-        collected_data: Dict[str, Any],
+        collected_data: dict[str, Any],
         current_stage: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         all_required = []
         for stage, fields in STAGE_REQUIRED_FIELDS.items():
             all_required.extend(fields)
@@ -127,7 +126,7 @@ class WizardAnalyticsService:
 
     def build_status_response(
         self,
-        collected_data: Dict[str, Any],
+        collected_data: dict[str, Any],
         current_stage: str,
         command_type: str,
     ) -> str:
@@ -146,7 +145,7 @@ class WizardAnalyticsService:
         else:
             return self._format_status(collected_data, analysis)
 
-    def _format_status(self, collected: Dict, analysis: Dict) -> str:
+    def _format_status(self, collected: dict, analysis: dict) -> str:
         title = collected.get("title", "sem título")
         pct = analysis["completion_pct"]
 
@@ -168,7 +167,7 @@ class WizardAnalyticsService:
 
         return "\n".join(lines)
 
-    def _format_missing(self, analysis: Dict) -> str:
+    def _format_missing(self, analysis: dict) -> str:
         if not analysis["missing_required"]:
             return "✅ **Todos os campos obrigatórios estão preenchidos!** Você pode publicar a vaga."
 
@@ -179,17 +178,17 @@ class WizardAnalyticsService:
             stage = self._field_stage(f)
             lines.append(f"- **{self._field_label(f)}** (etapa: {WIZARD_STAGE_NAMES.get(stage, stage)})")
 
-        lines.append(f"\n💡 Preencha estes campos para liberar a publicação.")
+        lines.append("\n💡 Preencha estes campos para liberar a publicação.")
         return "\n".join(lines)
 
-    def _format_completeness(self, analysis: Dict) -> str:
+    def _format_completeness(self, analysis: dict) -> str:
         pct = analysis["completion_pct"]
         bar_len = 20
         filled_len = int(pct / 100 * bar_len)
         bar = "█" * filled_len + "░" * (bar_len - filled_len)
 
         lines = [
-            f"## 📊 Completude da Vaga\n",
+            "## 📊 Completude da Vaga\n",
             f"**{pct}%** `[{bar}]`\n",
             f"- ✅ {len(analysis['filled_required'])} campos obrigatórios preenchidos",
             f"- ❌ {len(analysis['missing_required'])} campos obrigatórios faltando",
@@ -199,11 +198,11 @@ class WizardAnalyticsService:
         if analysis["can_publish"]:
             lines.append("\n🚀 **Vaga pronta para publicar!**")
         else:
-            lines.append(f"\n⚠️ Complete os campos faltantes para publicar.")
+            lines.append("\n⚠️ Complete os campos faltantes para publicar.")
 
         return "\n".join(lines)
 
-    def _format_summary(self, collected: Dict, analysis: Dict) -> str:
+    def _format_summary(self, collected: dict, analysis: dict) -> str:
         lines = [
             "## 📝 Resumo dos Dados Coletados\n",
         ]
@@ -234,7 +233,7 @@ class WizardAnalyticsService:
         lines.append(f"---\n📊 Completude: **{analysis['completion_pct']}%**")
         return "\n".join(lines)
 
-    def _format_next_steps(self, analysis: Dict) -> str:
+    def _format_next_steps(self, analysis: dict) -> str:
         if analysis["can_publish"]:
             return (
                 "## 🚀 Próximos Passos\n\n"

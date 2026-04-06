@@ -5,10 +5,9 @@ Maps each action_behavior to its available capabilities, expected preferences,
 and contextual prompts. Used by the system prompt and tool registry to scope
 what the agent can do for each transition type.
 """
-from typing import Any, Dict, List
+from typing import Any
 
-
-STAGE_CAPABILITIES: Dict[str, Dict[str, Any]] = {
+STAGE_CAPABILITIES: dict[str, dict[str, Any]] = {
     "screening": {
         "label": "Triagem",
         "description": "Configurar e iniciar triagem do candidato (WSI, texto, vídeo)",
@@ -241,11 +240,11 @@ STAGE_CAPABILITIES: Dict[str, Dict[str, Any]] = {
 }
 
 
-def get_stage_capabilities(action_behavior: str) -> Dict[str, Any]:
+def get_stage_capabilities(action_behavior: str) -> dict[str, Any]:
     return STAGE_CAPABILITIES.get(action_behavior, STAGE_CAPABILITIES["passive"])
 
 
-def get_allowed_tools_for_behavior(action_behavior: str) -> List[str]:
+def get_allowed_tools_for_behavior(action_behavior: str) -> list[str]:
     caps = get_stage_capabilities(action_behavior)
     return caps.get("tools", [])
 

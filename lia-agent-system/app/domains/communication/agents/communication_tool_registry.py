@@ -5,7 +5,7 @@ CommunicationHistoryService into ToolDefinition format so the ReActLoop can
 autonomously decide which tools to call.
 """
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 
@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-async def _wrap_send_email(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_send_email(**kwargs: Any) -> dict[str, Any]:
     """Send an email to a candidate using EmailService / CommunicationService."""
+    from app.core.database import AsyncSessionLocal
     from app.domains.communication.services.communication_service import (
         CommunicationService,
-        MessageType,
         MessageChannel,
+        MessageType,
     )
-    from app.core.database import AsyncSessionLocal
 
     candidate_id = kwargs.get("candidate_id")
     company_id = kwargs.get("company_id")
@@ -76,7 +76,7 @@ async def _wrap_send_email(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_send_whatsapp(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
     """Send a WhatsApp message to a candidate using WhatsAppService."""
     from app.domains.communication.services.whatsapp_service import WhatsAppService
 
@@ -115,7 +115,7 @@ async def _wrap_send_whatsapp(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_get_communication_history(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
     """Retrieve communication history for a candidate using CommunicationHistoryService."""
     from app.domains.communication.services.communication_history_service import (
         CommunicationHistoryService,
@@ -151,20 +151,21 @@ async def _wrap_get_communication_history(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_schedule_message(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
     """Schedule a future message for a candidate using CommunicationService.
 
     For email and whatsapp channels the message is routed through CommunicationService.
     Teams notifications are dispatched via TeamsService (webhook-based; scheduling is
     recorded locally since Teams does not support native delayed delivery).
     """
+    from datetime import datetime
+
+    from app.core.database import AsyncSessionLocal
     from app.domains.communication.services.communication_service import (
         CommunicationService,
-        MessageType,
         MessageChannel,
+        MessageType,
     )
-    from app.core.database import AsyncSessionLocal
-    from datetime import datetime
 
     candidate_id = kwargs.get("candidate_id")
     company_id = kwargs.get("company_id")
@@ -190,7 +191,7 @@ async def _wrap_schedule_message(**kwargs: Any) -> Dict[str, Any]:
         }
 
     try:
-        scheduled_at = datetime.fromisoformat(scheduled_at_str)
+        datetime.fromisoformat(scheduled_at_str)
     except ValueError as e:
         return {"success": False, "message": f"scheduled_at inválido: {e}"}
 
@@ -250,14 +251,14 @@ async def _wrap_schedule_message(**kwargs: Any) -> Dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
-async def _wrap_check_rate_limit(**kwargs: Any) -> Dict[str, Any]:
+async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
     """Check the current rate limit status for a candidate/channel combination."""
+    from app.core.database import AsyncSessionLocal
     from app.domains.communication.services.communication_service import (
         CommunicationService,
         MessageChannel,
         MessageType,
     )
-    from app.core.database import AsyncSessionLocal
 
     candidate_id = kwargs.get("candidate_id")
     company_id = kwargs.get("company_id")
@@ -313,7 +314,7 @@ async def _wrap_check_rate_limit(**kwargs: Any) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def get_communication_tools() -> List[ToolDefinition]:
+def get_communication_tools() -> list[ToolDefinition]:
     return [
         ToolDefinition(
             name="send_email",
@@ -367,7 +368,7 @@ def get_communication_tools() -> List[ToolDefinition]:
     ]
 
 
-def get_stage_tools(stage: str) -> List[ToolDefinition]:
+def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """Return tools available for a given communication stage."""
     from app.domains.communication.agents.communication_stage_context import (
         get_stage_tools as _stage_tools,

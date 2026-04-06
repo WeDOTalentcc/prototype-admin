@@ -21,9 +21,10 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,12 @@ class AgentEvent:
     from_agent: str
     to_agent: str
     event_type: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     company_id: str
     event_id: str = field(default_factory=lambda: __import__('uuid').uuid4().hex)
     published_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "from_agent": self.from_agent,
             "to_agent": self.to_agent,
@@ -52,7 +53,7 @@ class AgentEvent:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "AgentEvent":
+    def from_dict(cls, data: dict[str, Any]) -> AgentEvent:
         return cls(
             from_agent=data["from_agent"],
             to_agent=data["to_agent"],
@@ -68,7 +69,7 @@ class AgentBus:
     """Redis Pub/Sub based agent communication bus."""
 
     def __init__(self):
-        self._subscribers: Dict[str, List[Callable]] = {}
+        self._subscribers: dict[str, list[Callable]] = {}
 
     def channel(self, company_id: str, to_agent: str) -> str:
         return f"{CHANNEL_PREFIX}:{company_id}:{to_agent}"
@@ -78,7 +79,7 @@ class AgentBus:
         from_agent: str,
         to_agent: str,
         event_type: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         company_id: str,
     ) -> bool:
         """Publish event to target agent. Fail-open: returns False on error."""
@@ -133,7 +134,7 @@ class AgentBus:
             except Exception as exc:
                 logger.warning("[AgentBus] handler error for %s: %s", event.to_agent, exc)
 
-    def list_subscribers(self) -> Dict[str, int]:
+    def list_subscribers(self) -> dict[str, int]:
         return {agent: len(handlers) for agent, handlers in self._subscribers.items()}
 
 

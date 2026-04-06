@@ -5,26 +5,23 @@ Handles candidate file attachments - CVs, documents, certificates, videos, trans
 Supports file upload with multipart/form-data.
 """
 
-from fastapi import APIRouter, HTTPException, Query, status, File, UploadFile, Form
-from fastapi.responses import StreamingResponse
-from typing import Optional
 import logging
-import os
 import uuid
-import base64
 from datetime import datetime
 from pathlib import Path
-import io
 
-from app.services.attachment_service import attachment_service
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
+
 from app.schemas.attachment import (
     AttachmentCreate,
-    AttachmentResponse,
     AttachmentListResponse,
-    FileUploadResponse,
+    AttachmentResponse,
     CandidateFilesResponse,
     CategoryCount,
+    FileUploadResponse,
 )
+from app.services.attachment_service import attachment_service
 
 logger = logging.getLogger(__name__)
 
@@ -116,10 +113,10 @@ async def create_attachment(data: AttachmentCreate):
 @router.get("", response_model=AttachmentListResponse)
 async def list_attachments(
     company_id: str = Query(..., description="Company ID (required)"),
-    candidate_id: Optional[str] = Query(None, description="Filter by candidate ID"),
-    file_type: Optional[str] = Query(None, description="Filter by type: cv, document, certificate, video, transcript, other"),
-    upload_source: Optional[str] = Query(None, description="Filter by source: candidate, recruiter, lia, ats"),
-    is_active: Optional[bool] = Query(True, description="Filter by active status (default: True)"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID"),
+    file_type: str | None = Query(None, description="Filter by type: cv, document, certificate, video, transcript, other"),
+    upload_source: str | None = Query(None, description="Filter by source: candidate, recruiter, lia, ats"),
+    is_active: bool | None = Query(True, description="Filter by active status (default: True)"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
 ):
@@ -344,7 +341,7 @@ async def upload_candidate_file(
 async def get_candidate_files(
     candidate_id: str,
     company_id: str = Query(..., description="Company ID"),
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
 ):
     """
     Get all files for a candidate with category counts.

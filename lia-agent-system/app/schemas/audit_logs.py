@@ -1,10 +1,11 @@
 """
 Pydantic schemas for SOX-Compliant Audit Logs API.
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class ActionCategoryEnum(str, Enum):
@@ -29,24 +30,24 @@ class AuditStatusEnum(str, Enum):
 class AuditLogResponse(BaseModel):
     """Response schema for a single audit log entry."""
     id: str
-    timestamp: Optional[datetime] = None
-    user_id: Optional[str] = None
-    user_email: Optional[str] = None
-    client_id: Optional[str] = None
-    client_name: Optional[str] = None
+    timestamp: datetime | None = None
+    user_id: str | None = None
+    user_email: str | None = None
+    client_id: str | None = None
+    client_name: str | None = None
     action: str
     action_category: str
-    resource_type: Optional[str] = None
-    resource_id: Optional[str] = None
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    resource_type: str | None = None
+    resource_id: str | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
     status: str
-    details: Dict[str, Any] = {}
+    details: dict[str, Any] = {}
     retention_years: int = 7
-    retention_until: Optional[datetime] = None
-    request_id: Optional[str] = None
-    session_id: Optional[str] = None
-    created_at: Optional[datetime] = None
+    retention_until: datetime | None = None
+    request_id: str | None = None
+    session_id: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -54,7 +55,7 @@ class AuditLogResponse(BaseModel):
 
 class AuditLogListResponse(BaseModel):
     """Paginated list of audit logs."""
-    logs: List[AuditLogResponse]
+    logs: list[AuditLogResponse]
     total: int
     limit: int
     offset: int
@@ -63,20 +64,20 @@ class AuditLogListResponse(BaseModel):
 
 class AuditLogCreate(BaseModel):
     """Schema for creating a new audit log entry."""
-    user_id: Optional[str] = Field(None, description="User ID performing the action")
-    user_email: Optional[str] = Field(None, description="User email")
-    client_id: Optional[str] = Field(None, description="Client/Company ID")
-    client_name: Optional[str] = Field(None, description="Client/Company name")
+    user_id: str | None = Field(None, description="User ID performing the action")
+    user_email: str | None = Field(None, description="User email")
+    client_id: str | None = Field(None, description="Client/Company ID")
+    client_name: str | None = Field(None, description="Client/Company name")
     action: str = Field(..., description="Action performed", max_length=255)
     action_category: ActionCategoryEnum = Field(..., description="Category of the action")
-    resource_type: Optional[str] = Field(None, description="Type of resource affected")
-    resource_id: Optional[str] = Field(None, description="ID of resource affected")
-    ip_address: Optional[str] = Field(None, description="Client IP address")
-    user_agent: Optional[str] = Field(None, description="Client user agent")
+    resource_type: str | None = Field(None, description="Type of resource affected")
+    resource_id: str | None = Field(None, description="ID of resource affected")
+    ip_address: str | None = Field(None, description="Client IP address")
+    user_agent: str | None = Field(None, description="Client user agent")
     status: AuditStatusEnum = Field(AuditStatusEnum.SUCCESS, description="Action status")
-    details: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional details")
-    request_id: Optional[str] = Field(None, description="Request correlation ID")
-    session_id: Optional[str] = Field(None, description="Session ID")
+    details: dict[str, Any] | None = Field(default_factory=dict, description="Additional details")
+    request_id: str | None = Field(None, description="Request correlation ID")
+    session_id: str | None = Field(None, description="Session ID")
 
     class Config:
         json_schema_extra = {
@@ -98,28 +99,28 @@ class AuditLogCreate(BaseModel):
 
 class AuditLogFilter(BaseModel):
     """Filter options for querying audit logs."""
-    date_from: Optional[datetime] = Field(None, description="Start date for filtering")
-    date_to: Optional[datetime] = Field(None, description="End date for filtering")
-    client_id: Optional[str] = Field(None, description="Filter by client ID")
-    user_id: Optional[str] = Field(None, description="Filter by user ID")
-    action_category: Optional[ActionCategoryEnum] = Field(None, description="Filter by action category")
-    status: Optional[AuditStatusEnum] = Field(None, description="Filter by status")
-    action: Optional[str] = Field(None, description="Filter by action name (partial match)")
-    resource_type: Optional[str] = Field(None, description="Filter by resource type")
+    date_from: datetime | None = Field(None, description="Start date for filtering")
+    date_to: datetime | None = Field(None, description="End date for filtering")
+    client_id: str | None = Field(None, description="Filter by client ID")
+    user_id: str | None = Field(None, description="Filter by user ID")
+    action_category: ActionCategoryEnum | None = Field(None, description="Filter by action category")
+    status: AuditStatusEnum | None = Field(None, description="Filter by status")
+    action: str | None = Field(None, description="Filter by action name (partial match)")
+    resource_type: str | None = Field(None, description="Filter by resource type")
 
 
 class AuditStatsResponse(BaseModel):
     """Aggregated statistics for audit logs."""
     total_logs: int
-    logs_by_category: Dict[str, int] = {}
-    logs_by_status: Dict[str, int] = {}
+    logs_by_category: dict[str, int] = {}
+    logs_by_status: dict[str, int] = {}
     failed_actions_count: int
     ai_decisions_count: int
     unique_users: int
     unique_clients: int
-    period_start: Optional[datetime] = None
-    period_end: Optional[datetime] = None
-    top_actions: List[Dict[str, Any]] = []
+    period_start: datetime | None = None
+    period_end: datetime | None = None
+    top_actions: list[dict[str, Any]] = []
 
 
 class AuditRetentionPolicyResponse(BaseModel):
@@ -127,12 +128,12 @@ class AuditRetentionPolicyResponse(BaseModel):
     id: str
     category: str
     retention_months: int
-    description: Optional[str] = None
+    description: str | None = None
     is_sox_required: bool = False
-    legal_basis: Optional[str] = None
+    legal_basis: str | None = None
     is_active: bool = True
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -140,7 +141,7 @@ class AuditRetentionPolicyResponse(BaseModel):
 
 class AuditRetentionPolicyListResponse(BaseModel):
     """List of retention policies."""
-    policies: List[AuditRetentionPolicyResponse]
+    policies: list[AuditRetentionPolicyResponse]
     total: int
 
 
@@ -148,9 +149,9 @@ class AuditRetentionPolicyCreate(BaseModel):
     """Schema for creating a retention policy."""
     category: str = Field(..., description="Audit category", max_length=50)
     retention_months: int = Field(..., ge=1, le=1200, description="Retention period in months")
-    description: Optional[str] = Field(None, description="Policy description")
+    description: str | None = Field(None, description="Policy description")
     is_sox_required: bool = Field(False, description="Whether SOX compliance requires this retention")
-    legal_basis: Optional[str] = Field(None, description="Legal basis for retention")
+    legal_basis: str | None = Field(None, description="Legal basis for retention")
 
     class Config:
         json_schema_extra = {
@@ -166,19 +167,19 @@ class AuditRetentionPolicyCreate(BaseModel):
 
 class AuditRetentionPolicyUpdate(BaseModel):
     """Schema for updating a retention policy."""
-    retention_months: Optional[int] = Field(None, ge=1, le=1200, description="Retention period in months")
-    description: Optional[str] = Field(None, description="Policy description")
-    is_sox_required: Optional[bool] = Field(None, description="Whether SOX compliance requires this retention")
-    legal_basis: Optional[str] = Field(None, description="Legal basis for retention")
-    is_active: Optional[bool] = Field(None, description="Whether policy is active")
+    retention_months: int | None = Field(None, ge=1, le=1200, description="Retention period in months")
+    description: str | None = Field(None, description="Policy description")
+    is_sox_required: bool | None = Field(None, description="Whether SOX compliance requires this retention")
+    legal_basis: str | None = Field(None, description="Legal basis for retention")
+    is_active: bool | None = Field(None, description="Whether policy is active")
 
 
 class AuditExportRequest(BaseModel):
     """Request schema for exporting audit logs."""
-    date_from: Optional[datetime] = Field(None, description="Start date for export")
-    date_to: Optional[datetime] = Field(None, description="End date for export")
-    client_id: Optional[str] = Field(None, description="Filter by client ID")
-    action_category: Optional[ActionCategoryEnum] = Field(None, description="Filter by category")
+    date_from: datetime | None = Field(None, description="Start date for export")
+    date_to: datetime | None = Field(None, description="End date for export")
+    client_id: str | None = Field(None, description="Filter by client ID")
+    action_category: ActionCategoryEnum | None = Field(None, description="Filter by category")
     format: str = Field("csv", description="Export format: csv or json")
 
 
@@ -186,7 +187,7 @@ class AuditExportResponse(BaseModel):
     """Response schema for export request."""
     export_id: str
     status: str
-    file_url: Optional[str] = None
+    file_url: str | None = None
     record_count: int
     created_at: datetime
 

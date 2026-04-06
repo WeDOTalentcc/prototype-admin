@@ -2,20 +2,20 @@
 Benefits Templates API endpoints.
 Provides pre-registered benefit templates for recruiters.
 """
-from fastapi import APIRouter, HTTPException, Query, Depends, UploadFile, File
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from typing import Optional, List, Dict
-from sqlalchemy import select, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
+import csv
+import io
 import logging
 from datetime import datetime
 from uuid import UUID
-import csv
-import io
 
-from app.models.company import BenefitTemplate, Benefit
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
+from app.models.company import Benefit, BenefitTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ router = APIRouter(prefix="/benefits", tags=["benefits"])
 class BenefitTemplateResponse(BaseModel):
     id: UUID
     name: str
-    description: Optional[str]
+    description: str | None
     category: str
     is_popular: bool
     is_active: bool
@@ -38,7 +38,7 @@ class BenefitTemplateResponse(BaseModel):
 
 
 class BenefitTemplateListResponse(BaseModel):
-    items: List[BenefitTemplateResponse]
+    items: list[BenefitTemplateResponse]
     total: int
     by_category: dict
 
@@ -124,8 +124,8 @@ BENEFIT_TEMPLATES_DATA = [
 
 @router.get("/templates", response_model=BenefitTemplateListResponse)
 async def get_benefit_templates(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    search: Optional[str] = Query(None, description="Search by name"),
+    category: str | None = Query(None, description="Filter by category"),
+    search: str | None = Query(None, description="Search by name"),
     popular_only: bool = Query(False, description="Show only popular templates"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -246,14 +246,14 @@ async def get_benefit_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def parse_csv_file(content: bytes) -> List[Dict[str, str]]:
+def parse_csv_file(content: bytes) -> list[dict[str, str]]:
     """Parse CSV file content and return list of dictionaries."""
     text = content.decode('utf-8-sig')
     reader = csv.DictReader(io.StringIO(text))
     return list(reader)
 
 
-def parse_excel_file(content: bytes) -> List[Dict[str, str]]:
+def parse_excel_file(content: bytes) -> list[dict[str, str]]:
     """Parse Excel file content and return list of dictionaries."""
     try:
         from openpyxl import load_workbook
@@ -286,7 +286,7 @@ def parse_excel_file(content: bytes) -> List[Dict[str, str]]:
         )
 
 
-def parse_file_content(filename: str, content: bytes) -> List[Dict[str, str]]:
+def parse_file_content(filename: str, content: bytes) -> list[dict[str, str]]:
     """Parse file content based on extension."""
     file_ext = filename.split('.')[-1].lower() if '.' in filename else ''
     
@@ -311,7 +311,7 @@ def normalize_name(name: str) -> str:
     return normalized
 
 
-def build_templates_lookup() -> Dict[str, Dict]:
+def build_templates_lookup() -> dict[str, dict]:
     """Build a lookup dictionary for templates by normalized name."""
     lookup = {}
     for template in BENEFIT_TEMPLATES_DATA:
@@ -325,7 +325,7 @@ class BenefitImportResponse(BaseModel):
     imported: int
     matched: int
     new: int
-    errors: List[str]
+    errors: list[str]
 
 
 @router.get("/import/template")

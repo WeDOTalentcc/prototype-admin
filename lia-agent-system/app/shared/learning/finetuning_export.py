@@ -2,16 +2,16 @@ import json
 import logging
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.feedback_learning import (
-    WizardFeedback,
-    SuggestionFeedback,
     JobOutcome,
     JobOutcomeType,
+    SuggestionFeedback,
+    WizardFeedback,
 )
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ class FineTuningExportService:
         db: AsyncSession,
         format: str = 'jsonl',
         min_quality_score: float = 0.7,
-    ) -> List[str]:
+    ) -> list[str]:
         try:
             filled_job_ids = set()
             try:
@@ -114,7 +114,7 @@ class FineTuningExportService:
                     if min_quality_score > 0.5:
                         continue
 
-                original_text = self._format_value_as_text(wf.original_value)
+                self._format_value_as_text(wf.original_value)
                 corrected_text = self._format_value_as_text(wf.corrected_value)
 
                 system_content = (
@@ -229,7 +229,7 @@ class FineTuningExportService:
         self,
         company_id: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             wizard_total = await db.execute(
                 select(func.count(WizardFeedback.id)).where(

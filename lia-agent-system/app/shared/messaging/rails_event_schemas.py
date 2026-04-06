@@ -15,11 +15,10 @@ Schema aligned with Rails models:
   - candidate_id, job_id, apply_id match Rails IDs
   - selective_process_id matches Rails pipeline stage IDs
 """
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field, asdict
 import json
-
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from typing import Any
 
 RAILS_EVENT_EXCHANGE = "lia_rails_events"
 
@@ -29,14 +28,14 @@ class BaseRailsEvent:
     """Base event schema for Rails integration."""
     event_type: str
     company_id: str
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     source: str = "lia-agent-system"
     version: str = "1.0"
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), default=str)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -44,72 +43,72 @@ class BaseRailsEvent:
 class ScreeningCompletedEvent(BaseRailsEvent):
     """Published when LIA completes a candidate screening."""
     event_type: str = "screening.completed"
-    apply_id: Optional[int] = None
-    candidate_id: Optional[int] = None
-    job_id: Optional[int] = None
-    score: Optional[float] = None  # 0.0 - 10.0
-    recommendation: Optional[str] = None  # "advance", "hold", "decline"
-    reasoning: Optional[str] = None
-    bias_flags: List[str] = field(default_factory=list)
+    apply_id: int | None = None
+    candidate_id: int | None = None
+    job_id: int | None = None
+    score: float | None = None  # 0.0 - 10.0
+    recommendation: str | None = None  # "advance", "hold", "decline"
+    reasoning: str | None = None
+    bias_flags: list[str] = field(default_factory=list)
 
 
 @dataclass
 class InterviewScheduledEvent(BaseRailsEvent):
     """Published when LIA schedules an interview."""
     event_type: str = "interview.scheduled"
-    apply_id: Optional[int] = None
-    candidate_id: Optional[int] = None
-    job_id: Optional[int] = None
-    scheduled_at: Optional[str] = None
-    channel: Optional[str] = None  # "whatsapp", "teams", "email"
-    interview_type: Optional[str] = None  # "technical", "behavioral", "wsi"
+    apply_id: int | None = None
+    candidate_id: int | None = None
+    job_id: int | None = None
+    scheduled_at: str | None = None
+    channel: str | None = None  # "whatsapp", "teams", "email"
+    interview_type: str | None = None  # "technical", "behavioral", "wsi"
 
 
 @dataclass
 class InterviewCompletedEvent(BaseRailsEvent):
     """Published when LIA completes an interview evaluation."""
     event_type: str = "interview.completed"
-    apply_id: Optional[int] = None
-    candidate_id: Optional[int] = None
-    job_id: Optional[int] = None
-    competency_scores: Dict[str, float] = field(default_factory=dict)
-    overall_score: Optional[float] = None
-    report_summary: Optional[str] = None
+    apply_id: int | None = None
+    candidate_id: int | None = None
+    job_id: int | None = None
+    competency_scores: dict[str, float] = field(default_factory=dict)
+    overall_score: float | None = None
+    report_summary: str | None = None
 
 
 @dataclass
 class OfferSentEvent(BaseRailsEvent):
     """Published when LIA sends an offer to a candidate."""
     event_type: str = "offer.sent"
-    apply_id: Optional[int] = None
-    candidate_id: Optional[int] = None
-    job_id: Optional[int] = None
-    salary_offered: Optional[float] = None
-    channel: Optional[str] = None
+    apply_id: int | None = None
+    candidate_id: int | None = None
+    job_id: int | None = None
+    salary_offered: float | None = None
+    channel: str | None = None
 
 
 @dataclass
 class CandidateEnrichedEvent(BaseRailsEvent):
     """Published when LIA enriches a candidate profile with AI data."""
     event_type: str = "candidate.enriched"
-    candidate_id: Optional[int] = None
-    lia_score: Optional[float] = None
-    skills_match_pct: Optional[float] = None
-    cultural_fit: Optional[float] = None
-    seniority_detected: Optional[str] = None
-    enrichment_source: Optional[str] = None  # "cv_parsing", "linkedin", "screening"
+    candidate_id: int | None = None
+    lia_score: float | None = None
+    skills_match_pct: float | None = None
+    cultural_fit: float | None = None
+    seniority_detected: str | None = None
+    enrichment_source: str | None = None  # "cv_parsing", "linkedin", "screening"
 
 
 @dataclass
 class PipelineMovedEvent(BaseRailsEvent):
     """Published when LIA moves a candidate in the pipeline."""
     event_type: str = "pipeline.moved"
-    apply_id: Optional[int] = None
-    candidate_id: Optional[int] = None
-    job_id: Optional[int] = None
-    from_stage: Optional[str] = None
-    to_stage: Optional[str] = None
-    reason: Optional[str] = None
+    apply_id: int | None = None
+    candidate_id: int | None = None
+    job_id: int | None = None
+    from_stage: str | None = None
+    to_stage: str | None = None
+    reason: str | None = None
 
 
 # Registry of all event types for documentation/validation

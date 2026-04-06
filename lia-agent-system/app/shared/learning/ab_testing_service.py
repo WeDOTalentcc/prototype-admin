@@ -3,12 +3,12 @@ import logging
 import math
 import statistics
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from sqlalchemy import select, func, and_, distinct
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.ab_testing import PromptVariant, ABTestResult
+from app.models.ab_testing import ABTestResult, PromptVariant
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class ABTestingService:
         test_name: str,
         session_id: str,
         db: AsyncSession,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         try:
             result = await db.execute(
                 select(PromptVariant).where(
@@ -73,8 +73,8 @@ class ABTestingService:
         metric_name: str,
         metric_value: float,
         db: AsyncSession,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Optional[ABTestResult]:
+        context: dict[str, Any] | None = None,
+    ) -> ABTestResult | None:
         try:
             record = ABTestResult(
                 test_name=test_name,
@@ -99,7 +99,7 @@ class ABTestingService:
         self,
         test_name: str,
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             result = await db.execute(
                 select(ABTestResult).where(
@@ -117,7 +117,7 @@ class ABTestingService:
                     "total_observations": 0,
                 }
 
-            metrics_by_name: Dict[str, Dict[str, List[float]]] = {}
+            metrics_by_name: dict[str, dict[str, list[float]]] = {}
 
             for r in all_results:
                 if r.metric_name not in metrics_by_name:
@@ -126,7 +126,7 @@ class ABTestingService:
                     metrics_by_name[r.metric_name][r.variant_name] = []
                 metrics_by_name[r.metric_name][r.variant_name].append(r.metric_value)
 
-            variants_summary: Dict[str, Dict[str, Any]] = {}
+            variants_summary: dict[str, dict[str, Any]] = {}
 
             for r in all_results:
                 if r.variant_name not in variants_summary:
@@ -226,7 +226,7 @@ class ABTestingService:
     async def list_active_tests(
         self,
         db: AsyncSession,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         try:
             result = await db.execute(
                 select(PromptVariant).where(
@@ -235,7 +235,7 @@ class ABTestingService:
             )
             variants = result.scalars().all()
 
-            tests: Dict[str, Dict[str, Any]] = {}
+            tests: dict[str, dict[str, Any]] = {}
 
             for v in variants:
                 if v.test_name not in tests:
@@ -259,9 +259,9 @@ class ABTestingService:
     async def create_test(
         self,
         test_name: str,
-        variants: List[Dict[str, Any]],
+        variants: list[dict[str, Any]],
         db: AsyncSession,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             existing = await db.execute(
                 select(func.count(PromptVariant.id)).where(

@@ -15,12 +15,13 @@ Usage:
         wsi_scores={"adaptabilidade": 0.85, ...}
     )
 """
-import logging
-import httpx
-import os
-from typing import Optional, Dict, Any, List
-from datetime import datetime
 import asyncio
+import logging
+import os
+from datetime import datetime
+from typing import Any
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class EventDispatcher:
     def __init__(self):
         internal_api_url = os.getenv("INTERNAL_API_URL", "http://127.0.0.1:8000")
         self.base_url = f"{internal_api_url}/api/v1/automation"
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
         self._enabled = True
     
     async def get_client(self) -> httpx.AsyncClient:
@@ -65,10 +66,10 @@ class EventDispatcher:
     async def dispatch(
         self,
         trigger: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         fire_and_forget: bool = True,
         use_engine: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch an event to the appropriate automation handler.
         
@@ -86,8 +87,12 @@ class EventDispatcher:
             return {"success": True, "skipped": True, "reason": "dispatcher_disabled"}
         
         if use_engine:
-            from app.domains.automation.services.stage_automation_engine import stage_automation_engine, AutomationEvent, TriggerType
             from app.core.database import AsyncSessionLocal
+            from app.domains.automation.services.stage_automation_engine import (
+                AutomationEvent,
+                TriggerType,
+                stage_automation_engine,
+            )
             
             try:
                 trigger_type = TriggerType(trigger.replace("-", "_"))
@@ -158,9 +163,9 @@ class EventDispatcher:
     
     async def dispatch_multiple(
         self,
-        events: List[Dict[str, Any]],
+        events: list[dict[str, Any]],
         fire_and_forget: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Dispatch multiple events in parallel.
         
@@ -186,11 +191,11 @@ class EventDispatcher:
         candidate_id: str,
         vacancy_id: str,
         company_id: str,
-        wsi_scores: Optional[Dict[str, float]] = None,
+        wsi_scores: dict[str, float] | None = None,
         screening_type: str = "wsi",
         passed: bool = True,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when a candidate completes screening.
         
@@ -230,12 +235,12 @@ class EventDispatcher:
         vacancy_id: str,
         company_id: str,
         new_stage: str,
-        previous_stage: Optional[str] = None,
+        previous_stage: str | None = None,
         triggered_by: str = "system",
-        source_agent: Optional[str] = None,
+        source_agent: str | None = None,
         sync_to_ats: bool = True,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when a candidate's stage changes.
         
@@ -285,10 +290,10 @@ class EventDispatcher:
         interview_id: str,
         interview_datetime: str,
         interview_type: str = "video",
-        interviewer_name: Optional[str] = None,
-        interviewer_email: Optional[str] = None,
+        interviewer_name: str | None = None,
+        interviewer_email: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when an interview is scheduled.
         
@@ -332,10 +337,10 @@ class EventDispatcher:
         vacancy_id: str,
         company_id: str,
         interview_id: str,
-        outcome: Optional[str] = None,
-        feedback: Optional[Dict[str, Any]] = None,
+        outcome: str | None = None,
+        feedback: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when an interview is completed.
         
@@ -375,9 +380,9 @@ class EventDispatcher:
         vacancy_id: str,
         company_id: str,
         days_inactive: int,
-        last_activity: Optional[str] = None,
+        last_activity: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when a candidate becomes inactive.
         
@@ -417,7 +422,7 @@ class EventDispatcher:
         interview_id: str,
         scheduled_datetime: str,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when a candidate doesn't show up for an interview.
         
@@ -454,12 +459,12 @@ class EventDispatcher:
         candidate_id: str,
         vacancy_id: str,
         company_id: str,
-        salary_offered: Optional[float] = None,
-        start_date: Optional[str] = None,
-        response_deadline: Optional[str] = None,
-        offer_details: Optional[Dict[str, Any]] = None,
+        salary_offered: float | None = None,
+        start_date: str | None = None,
+        response_deadline: str | None = None,
+        offer_details: dict[str, Any] | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when an offer is sent to a candidate.
         
@@ -500,12 +505,12 @@ class EventDispatcher:
         candidate_id: str,
         vacancy_id: str,
         company_id: str,
-        hire_date: Optional[str] = None,
-        final_salary: Optional[float] = None,
-        department: Optional[str] = None,
-        manager_id: Optional[str] = None,
+        hire_date: str | None = None,
+        final_salary: float | None = None,
+        department: str | None = None,
+        manager_id: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when a candidate is hired.
         
@@ -546,12 +551,12 @@ class EventDispatcher:
         candidate_id: str,
         vacancy_id: str,
         company_id: str,
-        rejection_reason: Optional[str] = None,
-        rejection_stage: Optional[str] = None,
+        rejection_reason: str | None = None,
+        rejection_stage: str | None = None,
         add_to_talent_pool: bool = True,
         send_feedback: bool = True,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Dispatch event when a candidate is rejected.
         
@@ -592,11 +597,11 @@ class EventDispatcher:
         job_id: str,
         company_id: str,
         new_status: str,
-        previous_status: Optional[str] = None,
+        previous_status: str | None = None,
         changed_by: str = "system",
-        job_title: Optional[str] = None,
+        job_title: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payload = {
             "job_id": job_id,
             "company_id": company_id,
@@ -623,9 +628,9 @@ class EventDispatcher:
         candidates_added: int,
         source: str = "local",
         expanded_to_global: bool = False,
-        job_title: Optional[str] = None,
+        job_title: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payload = {
             "job_id": job_id,
             "company_id": company_id,
@@ -651,11 +656,11 @@ class EventDispatcher:
         candidate_id: str,
         message_type: str,
         channel: str,
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         success: bool = True,
-        log_id: Optional[str] = None,
+        log_id: str | None = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payload = {
             "company_id": company_id,
             "candidate_id": candidate_id,
@@ -680,12 +685,12 @@ class EventDispatcher:
         company_id: str,
         ats_type: str,
         trigger: str,
-        candidate_id: Optional[str] = None,
-        job_id: Optional[str] = None,
+        candidate_id: str | None = None,
+        job_id: str | None = None,
         fields_synced: int = 0,
         success: bool = True,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payload = {
             "company_id": company_id,
             "ats_type": ats_type,
@@ -709,11 +714,11 @@ class EventDispatcher:
         self,
         company_id: str,
         report_type: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         email_sent: bool = False,
         recipients_count: int = 0,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payload = {
             "company_id": company_id,
             "report_type": report_type,

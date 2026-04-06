@@ -4,14 +4,14 @@ Orchestrated Talent Chat API — delegates to MainOrchestrator (consolidated ent
 v4.0: Unified pipeline via MainOrchestrator.process() + ContextAdapter.from_talent_chat().
       FairnessGuard, PendingAction, ActionExecutor, CascadedRouter all handled centrally.
 """
-from fastapi import APIRouter, HTTPException, Depends, Request
-from app.dependencies.token_budget import require_token_budget
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
 import logging
-import uuid
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from app.api.orchestrator_routes import get_main_orchestrator
+from app.dependencies.token_budget import require_token_budget
 from app.orchestrator.context_adapter import ContextAdapter
 from app.orchestrator.main_orchestrator import MainOrchestrator
 
@@ -21,19 +21,19 @@ router = APIRouter()
 
 class OrchestratedTalentChatRequest(BaseModel):
     message: str = Field(..., description="User's natural language query")
-    candidates: List[Dict[str, Any]] = Field(
+    candidates: list[dict[str, Any]] = Field(
         default_factory=list, description="List of candidates in current view"
     )
-    selected_candidate_ids: Optional[List[str]] = Field(
+    selected_candidate_ids: list[str] | None = Field(
         None, description="IDs of selected candidates for focused operations"
     )
-    search_context: Optional[Dict[str, Any]] = Field(
+    search_context: dict[str, Any] | None = Field(
         None, description="Current search context: query, mode, filters, results count"
     )
-    target_job: Optional[Dict[str, Any]] = Field(
+    target_job: dict[str, Any] | None = Field(
         None, description="Optional job vacancy for matching/scoring context"
     )
-    conversation_id: Optional[str] = Field(
+    conversation_id: str | None = Field(
         None, description="Optional conversation ID for context continuity"
     )
     user_id: str = Field(default="recruiter", description="User ID for routing")
@@ -43,22 +43,22 @@ class OrchestratedTalentChatResponse(BaseModel):
     success: bool
     content: str = Field(..., description="Formatted markdown response")
     agent_used: str = Field(..., description="Primary agent that handled the query")
-    agents_consulted: List[str] = Field(default_factory=list)
+    agents_consulted: list[str] = Field(default_factory=list)
     intent_detected: str = Field(..., description="Detected user intent")
     confidence: float = Field(..., description="Routing confidence")
-    structured_data: Optional[Dict[str, Any]] = None
-    suggested_prompts: List[str] = Field(default_factory=list)
-    actions: List[Dict[str, Any]] = Field(default_factory=list)
-    conversation_id: Optional[str] = None
-    ui_action: Optional[str] = Field(None, description="Frontend action trigger")
-    ui_action_params: Optional[Dict[str, Any]] = Field(None)
+    structured_data: dict[str, Any] | None = None
+    suggested_prompts: list[str] = Field(default_factory=list)
+    actions: list[dict[str, Any]] = Field(default_factory=list)
+    conversation_id: str | None = None
+    ui_action: str | None = Field(None, description="Frontend action trigger")
+    ui_action_params: dict[str, Any] | None = Field(None)
     action_executed: bool = Field(default=False)
-    action_result: Optional[Dict[str, Any]] = None
-    action_type: Optional[str] = None
+    action_result: dict[str, Any] | None = None
+    action_type: str | None = None
     needs_confirmation: bool = Field(default=False, description="Whether action awaits user confirmation")
     needs_params: bool = Field(default=False, description="Whether action needs more parameters from user")
-    pending_action_id: Optional[str] = Field(None, description="ID for pending multi-turn action")
-    execution_plan: Optional[Dict[str, Any]] = Field(None, description="Multi-step plan summary if a plan was executed")
+    pending_action_id: str | None = Field(None, description="ID for pending multi-turn action")
+    execution_plan: dict[str, Any] | None = Field(None, description="Multi-step plan summary if a plan was executed")
 
 @router.post("/talent-chat", response_model=OrchestratedTalentChatResponse)
 async def orchestrated_talent_chat(

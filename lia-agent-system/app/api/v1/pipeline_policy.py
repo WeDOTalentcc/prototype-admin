@@ -6,13 +6,14 @@ Endpoints:
 - GET /pipeline-policy/{company_id}/templates — Get available pipeline templates
 """
 import logging
-from typing import Optional, Dict, Any, List
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 from app.core.database import get_db
-from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
+from app.shared.policy_middleware import get_policy_for_company
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ async def validate_transition(
     candidate_id: str = Query(...),
     target_stage: str = Query(...),
     db: AsyncSession = Depends(get_db),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Validate whether a pipeline transition is allowed based on company policy.
     
@@ -34,9 +35,9 @@ async def validate_transition(
     policy = await get_policy_for_company(company_id, db)
     pipeline_rules = policy.get("pipeline_rules", {})
     
-    warnings: List[str] = []
-    blockers: List[str] = []
-    metadata: Dict[str, Any] = {}
+    warnings: list[str] = []
+    blockers: list[str] = []
+    metadata: dict[str, Any] = {}
     
     is_offer_stage = target_stage.lower() in [
         "proposta", "offer", "proposal", "contratação", "hiring"
@@ -103,7 +104,7 @@ async def validate_transition(
 async def get_pipeline_templates(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get available pipeline templates for a company.
     

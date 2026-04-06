@@ -4,18 +4,17 @@ ATS Provider Factory
 Factory for creating and caching ATS client instances.
 Supports environment-variable-based configuration and provider status reporting.
 """
-import os
 import logging
-from typing import Optional, Dict
+import os
 
 from app.services.ats_clients.base import ATSClient, ATSClientConfig
 from app.services.ats_clients.gupy import GupyClient
-from app.services.ats_clients.pandape import PandapeClient
 from app.services.ats_clients.merge import MergeClient
+from app.services.ats_clients.pandape import PandapeClient
 
 logger = logging.getLogger(__name__)
 
-PROVIDER_CLASSES: Dict[str, type] = {
+PROVIDER_CLASSES: dict[str, type] = {
     "gupy": GupyClient,
     "pandape": PandapeClient,
     "merge": MergeClient,
@@ -23,10 +22,10 @@ PROVIDER_CLASSES: Dict[str, type] = {
 
 
 class ATSProviderFactory:
-    _cache: Dict[str, ATSClient] = {}
+    _cache: dict[str, ATSClient] = {}
 
     @classmethod
-    def get_provider(cls, provider_name: str, config: Optional[ATSClientConfig] = None) -> ATSClient:
+    def get_provider(cls, provider_name: str, config: ATSClientConfig | None = None) -> ATSClient:
         provider_name = provider_name.lower()
 
         if provider_name in cls._cache:
@@ -70,8 +69,8 @@ class ATSProviderFactory:
         )
 
     @classmethod
-    def get_all_providers_status(cls) -> Dict[str, Dict]:
-        status: Dict[str, Dict] = {}
+    def get_all_providers_status(cls) -> dict[str, dict]:
+        status: dict[str, dict] = {}
         for name in PROVIDER_CLASSES:
             prefix = f"ATS_{name.upper()}"
             api_key = os.getenv(f"{prefix}_API_KEY", "")

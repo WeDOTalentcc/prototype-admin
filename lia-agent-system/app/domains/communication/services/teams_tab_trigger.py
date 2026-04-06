@@ -6,7 +6,7 @@ proactive Adaptive Card messages when the recruiter attempts a
 complex action that is better handled in the full platform.
 """
 import logging
-from typing import Optional, Dict, Any, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Each key = event_type sent by the frontend tracker
 # Value = (title, description, platform_path)
 # ------------------------------------------------------------------ #
-COMPLEX_ACTIONS: Dict[str, Tuple[str, str, str]] = {
+COMPLEX_ACTIONS: dict[str, tuple[str, str, str]] = {
     "click_create_job": (
         "Criar uma vaga completa",
         "Para criar uma vaga com todos os campos e configurações, use a plataforma completa.",
@@ -62,7 +62,7 @@ class TeamsTabTriggerEngine:
 
     PLATFORM_URL_DEFAULT = "https://app.wedotalent.com"
 
-    def __init__(self, platform_url: Optional[str] = None):
+    def __init__(self, platform_url: str | None = None):
         import os
         self.platform_url = (
             platform_url
@@ -72,9 +72,9 @@ class TeamsTabTriggerEngine:
     def evaluate(
         self,
         event_type: str,
-        entity_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        entity_id: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Evaluate an event from the Teams Tab iframe.
 
@@ -98,7 +98,7 @@ class TeamsTabTriggerEngine:
         logger.info(f"[TeamsTabTrigger] Triggering proactive card for event='{event_type}', link='{deep_link}'")
         return card
 
-    def _build_card(self, title: str, description: str, deep_link: str) -> Dict[str, Any]:
+    def _build_card(self, title: str, description: str, deep_link: str) -> dict[str, Any]:
         """Build an Adaptive Card with a deep-link button to the platform."""
         return {
             "type": "AdaptiveCard",
@@ -133,7 +133,7 @@ class TeamsTabTriggerEngine:
 
 
 # Module-level singleton
-_engine: Optional[TeamsTabTriggerEngine] = None
+_engine: TeamsTabTriggerEngine | None = None
 
 
 def get_trigger_engine() -> TeamsTabTriggerEngine:

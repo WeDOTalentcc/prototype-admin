@@ -11,8 +11,8 @@ Design Decision (December 2025):
 - If customization is needed in the future, it should be per-vacancy
   with explicit justification and audit trail
 """
-from typing import Dict, Any
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -56,7 +56,7 @@ class ScoringWeights:
         )
         return abs(profile_sum - 1.0) < 0.01 and abs(wsi_sum - 1.0) < 0.01
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "profile_weights": {
                 "skills_match": self.skills_match,
@@ -79,6 +79,7 @@ UNIVERSAL_WEIGHTS = ScoringWeights()
 IndustryWeights = ScoringWeights
 
 from enum import Enum
+
 
 class Industry(str, Enum):
     """

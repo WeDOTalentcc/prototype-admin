@@ -2,16 +2,16 @@
 Route service facade for candidate search and sourcing.
 Encapsulates business logic from API routes (app/api/v1/candidate_search.py) for portability.
 """
-import logging
 import hashlib
-import unicodedata
+import logging
 import re
-from typing import Dict, Any, List, Optional
-from uuid import UUID
+import unicodedata
 from datetime import datetime
+from typing import Any
+from uuid import UUID
 
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ def _normalize_name(name: str) -> str:
     return normalized
 
 
-def _generate_fingerprint(name: str, linkedin_url: Optional[str] = None, email: Optional[str] = None) -> str:
+def _generate_fingerprint(name: str, linkedin_url: str | None = None, email: str | None = None) -> str:
     parts = [_normalize_name(name)]
     if linkedin_url:
         linkedin_id = linkedin_url.rstrip('/').split('/')[-1].lower()
@@ -52,8 +52,8 @@ class CandidateSearchRouteService:
         self,
         db: AsyncSession,
         query: str,
-        thread_id: Optional[str] = None,
-        search_spec: Optional[Dict[str, Any]] = None,
+        thread_id: str | None = None,
+        search_spec: dict[str, Any] | None = None,
         search_local: bool = True,
         search_pearch: bool = False,
         pearch_type: str = "fast",
@@ -61,11 +61,11 @@ class CandidateSearchRouteService:
         pearch_limit: int = 20,
         show_emails: bool = False,
         show_phone_numbers: bool = False,
-        job_vacancy_id: Optional[str] = None,
-        job_id: Optional[str] = None,
-        exclude_candidate_ids: Optional[List[str]] = None,
+        job_vacancy_id: str | None = None,
+        job_id: str | None = None,
+        exclude_candidate_ids: list[str] | None = None,
         include_discovered: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Search candidates using hybrid strategy (local DB + Pearch AI).
 
         Extracted from POST /candidates (lines 569-669).
@@ -77,8 +77,7 @@ class CandidateSearchRouteService:
             total_count, credits_remaining, search_time_seconds, warning_message,
             can_load_more, should_expand_to_global, expansion_message, high_adherence_count
         """
-        from app.domains.sourcing.services.pearch_service import pearch_service
-        from app.domains.sourcing.services.pearch_service import HybridSearchRequest, SearchType
+        from app.domains.sourcing.services.pearch_service import HybridSearchRequest, SearchType, pearch_service
 
         hybrid_request = HybridSearchRequest(
             query=query,
@@ -98,7 +97,7 @@ class CandidateSearchRouteService:
 
         result = await pearch_service.hybrid_search(db, hybrid_request)
 
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         for profile in result.local_candidates:
             candidates.append({"profile": profile, "source": "local"})
         for profile in result.pearch_candidates:
@@ -112,7 +111,7 @@ class CandidateSearchRouteService:
 
         scored_candidates = []
         for c in candidates:
-            score = c.get("rubric_score")
+            c.get("rubric_score")
             scored_candidates.append(c)
 
         high_adherence_count = sum(
@@ -157,7 +156,7 @@ class CandidateSearchRouteService:
         db: AsyncSession,
         candidate_id: str,
         job_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Evaluate a single candidate against job requirements using rubric scoring.
 
         Extracted from POST /evaluate-for-job (lines 672-813) — single candidate path.
@@ -167,7 +166,6 @@ class CandidateSearchRouteService:
             Dict with keys: candidate_id, rubric_score, rubric_match_label,
             rubric_evaluated, error
         """
-        from app.models.candidate import Candidate, ExternalCandidateProfile
         from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 
         requirements = await self._get_job_requirements(db, job_id)
@@ -208,9 +206,9 @@ class CandidateSearchRouteService:
     async def evaluate_candidates_batch(
         self,
         db: AsyncSession,
-        candidate_ids: List[str],
+        candidate_ids: list[str],
         job_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Evaluate multiple candidates against job requirements in batch.
 
         Extracted from POST /evaluate-for-job (lines 672-813).
@@ -232,7 +230,7 @@ class CandidateSearchRouteService:
                 ],
             }
 
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
         evaluated_count = 0
         failed_count = 0
 
@@ -255,10 +253,10 @@ class CandidateSearchRouteService:
     async def import_pearch_candidates(
         self,
         db: AsyncSession,
-        candidates_data: List[Dict[str, Any]],
-        source_search_query: Optional[str],
+        candidates_data: list[dict[str, Any]],
+        source_search_query: str | None,
         company_id: UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Import candidates from Pearch search into staging table.
 
         Extracted from POST /candidates/import (lines 844-1038).
@@ -269,13 +267,14 @@ class CandidateSearchRouteService:
             Dict with keys: imported_count, skipped_count, updated_count,
             imported_ids, skipped_ids, mapping, message
         """
-        from app.models.candidate import ExternalCandidateProfile, Candidate, CandidateSource
         import uuid as uuid_lib
 
-        imported_ids: List[str] = []
-        skipped_ids: List[str] = []
-        updated_ids: List[str] = []
-        id_mappings: List[Dict[str, str]] = []
+        from app.models.candidate import Candidate, ExternalCandidateProfile
+
+        imported_ids: list[str] = []
+        skipped_ids: list[str] = []
+        updated_ids: list[str] = []
+        id_mappings: list[dict[str, str]] = []
 
         for candidate_dto in candidates_data:
             pearch_id = candidate_dto.get("pearch_id")
@@ -438,7 +437,7 @@ class CandidateSearchRouteService:
         db: AsyncSession,
         profile_id: str,
         company_id: UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Promote a discovered candidate from staging to main candidates table.
 
         Extracted from POST /candidates/promote/{profile_id} (lines 1051-1464).
@@ -449,11 +448,15 @@ class CandidateSearchRouteService:
             Dict with keys: success, message, candidate_id, profile_id,
             was_merged, merged_with_id
         """
-        from app.models.candidate import (
-            ExternalCandidateProfile, Candidate, CandidateSource,
-            CandidateExperience, CandidateEducation,
-        )
         import uuid as uuid_lib
+
+        from app.models.candidate import (
+            Candidate,
+            CandidateEducation,
+            CandidateExperience,
+            CandidateSource,
+            ExternalCandidateProfile,
+        )
 
         profile_result = await db.execute(
             select(ExternalCandidateProfile).where(ExternalCandidateProfile.id == profile_id)
@@ -664,13 +667,13 @@ class CandidateSearchRouteService:
         db: AsyncSession,
         pearch_id: str,
         candidate_name: str,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        linkedin_url: Optional[str] = None,
-        current_title: Optional[str] = None,
-        current_company: Optional[str] = None,
-        avatar_url: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        email: str | None = None,
+        phone: str | None = None,
+        linkedin_url: str | None = None,
+        current_title: str | None = None,
+        current_company: str | None = None,
+        avatar_url: str | None = None,
+    ) -> dict[str, Any]:
         """Persist revealed contact data for a Pearch candidate.
 
         Extracted from POST /candidates/persist-revealed (lines 1487-1580).
@@ -678,8 +681,9 @@ class CandidateSearchRouteService:
         Returns:
             Dict with keys: success, message, candidate_id, is_new
         """
-        from app.models.candidate import Candidate
         import uuid as uuid_lib
+
+        from app.models.candidate import Candidate
 
         existing = await db.execute(
             select(Candidate).where(Candidate.pearch_profile_id == pearch_id)
@@ -711,7 +715,7 @@ class CandidateSearchRouteService:
             }
 
         name_parts = candidate_name.split(' ', 1)
-        first_name = name_parts[0] if name_parts else None
+        name_parts[0] if name_parts else None
         new_candidate = Candidate(
             id=uuid_lib.uuid4(),
             name=candidate_name,
@@ -740,8 +744,8 @@ class CandidateSearchRouteService:
         self,
         db: AsyncSession,
         query: str,
-        company_id: Optional[UUID] = None,
-    ) -> Dict[str, Any]:
+        company_id: UUID | None = None,
+    ) -> dict[str, Any]:
         """Get auto-complete suggestions based on query prefix.
 
         Provides suggestions from job titles, skills, and recent searches.
@@ -751,7 +755,7 @@ class CandidateSearchRouteService:
         """
         from app.models.candidate import Candidate
 
-        suggestions: List[str] = []
+        suggestions: list[str] = []
 
         if len(query) < 2:
             return {"suggestions": [], "source": "none"}
@@ -787,16 +791,17 @@ class CandidateSearchRouteService:
     async def get_search_statistics(
         self,
         db: AsyncSession,
-        company_id: Optional[UUID] = None,
-    ) -> Dict[str, Any]:
+        company_id: UUID | None = None,
+    ) -> dict[str, Any]:
         """Get statistics and facets for the candidate search interface.
 
         Returns:
             Dict with keys: total_candidates, total_discovered,
             top_skills, top_titles, source_breakdown
         """
-        from app.models.candidate import Candidate, ExternalCandidateProfile
         from sqlalchemy import func as sqla_func
+
+        from app.models.candidate import Candidate, ExternalCandidateProfile
 
         total_result = await db.execute(
             select(sqla_func.count(Candidate.id)).where(Candidate.is_active == True)
@@ -825,12 +830,12 @@ class CandidateSearchRouteService:
             "source_breakdown": source_breakdown,
         }
 
-    def _merge_candidate_fields(self, existing_candidate: Any, profile: Any) -> List[str]:
+    def _merge_candidate_fields(self, existing_candidate: Any, profile: Any) -> list[str]:
         """Merge staging profile fields into existing candidate (only fills gaps).
 
         Returns list of updated field names.
         """
-        updated_fields: List[str] = []
+        updated_fields: list[str] = []
         if profile.email and not existing_candidate.email:
             existing_candidate.email = profile.email
             updated_fields.append("email")
@@ -902,13 +907,13 @@ class CandidateSearchRouteService:
 
         return updated_fields
 
-    async def _get_job_requirements(self, db: AsyncSession, job_id: str) -> Optional[List[Any]]:
+    async def _get_job_requirements(self, db: AsyncSession, job_id: str) -> list[Any] | None:
         """Fetch job requirements for rubric evaluation."""
         try:
-            from app.models.job_vacancy import JobRequirement
             from app.domains.cv_screening.services.rubric_evaluation_service import JobRequirementCreate
+            from app.models.job_vacancy import JobRequirement
 
-            def _normalize_priority(priority: Optional[str]) -> str:
+            def _normalize_priority(priority: str | None) -> str:
                 if not priority:
                     return "medium"
                 p = priority.lower().strip()
@@ -941,8 +946,8 @@ class CandidateSearchRouteService:
             return None
 
     async def _evaluate_candidates_with_rubrics(
-        self, candidates: List[Dict[str, Any]], requirements: List[Any]
-    ) -> List[Dict[str, Any]]:
+        self, candidates: list[dict[str, Any]], requirements: list[Any]
+    ) -> list[dict[str, Any]]:
         """Evaluate candidates using rubric service and update dicts in-place."""
         from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 
@@ -976,7 +981,7 @@ class CandidateSearchRouteService:
                 candidate["rubric_evaluated"] = False
         return candidates
 
-    async def _load_candidate_data(self, db: AsyncSession, candidate_id: str) -> Optional[Dict[str, Any]]:
+    async def _load_candidate_data(self, db: AsyncSession, candidate_id: str) -> dict[str, Any] | None:
         """Load candidate data from main table or staging table."""
         from app.models.candidate import Candidate, ExternalCandidateProfile
 

@@ -13,12 +13,24 @@ Design Principles:
 3. ATS mapping supports complex relationships (many ATS stages → one Wedo stage)
 4. Every transition is logged for auditing and analytics
 """
-from datetime import datetime
-from typing import Optional, List, Dict, Any
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey, UniqueConstraint, Index
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship
 import uuid
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
 
@@ -82,7 +94,7 @@ class RecruitmentStage(Base):
         Index('ix_recruitment_stages_company_order', 'company_id', 'stage_order'),
     )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": str(self.id),
             "company_id": self.company_id,
@@ -159,7 +171,7 @@ class RecruitmentSubStatus(Base):
         Index('ix_sub_status_stage_order', 'stage_id', 'sub_status_order'),
     )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": str(self.id),
             "stage_id": str(self.stage_id),
@@ -241,7 +253,7 @@ class ATSStageMapping(Base):
         Index('ix_ats_mapping_wedotalent_stage', 'wedotalent_stage_id'),
     )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": str(self.id),
             "company_id": self.company_id,
@@ -287,7 +299,7 @@ class ScreeningQuestion(Base):
         Index('ix_screening_questions_company_order', 'company_id', 'order'),
     )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": str(self.id),
             "company_id": self.company_id,
@@ -364,7 +376,7 @@ class CandidateStageHistory(Base):
         Index('ix_stage_history_candidate', 'candidate_id', 'created_at'),
     )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": str(self.id),
             "vacancy_candidate_id": str(self.vacancy_candidate_id),

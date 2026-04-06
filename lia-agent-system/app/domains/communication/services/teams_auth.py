@@ -3,11 +3,11 @@ Microsoft Bot Framework JWT validation.
 Security layer for Teams webhook endpoints.
 """
 import logging
-from typing import Optional
+from datetime import datetime, timedelta
+
+import httpx
 import jwt
 from jwt import PyJWKClient
-import httpx
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,9 @@ class BotFrameworkAuthenticator:
     """
     
     def __init__(self):
-        self._jwks_uri: Optional[str] = None
-        self._jwks_client: Optional[PyJWKClient] = None
-        self._cache_expires: Optional[datetime] = None
+        self._jwks_uri: str | None = None
+        self._jwks_client: PyJWKClient | None = None
+        self._cache_expires: datetime | None = None
     
     async def validate_token(self, authorization_header: str, expected_app_id: str) -> bool:
         """

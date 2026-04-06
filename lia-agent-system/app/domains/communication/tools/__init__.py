@@ -1,5 +1,5 @@
 """Communication Domain - Tool definitions and executor."""
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 from app.domains.base import DomainContext
 
@@ -76,9 +76,9 @@ def _get_tool_by_id(tool_id: str) -> dict | None:
 
 async def execute_communication_tool(
     tool_id: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     context: DomainContext,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     tool = _get_tool_by_id(tool_id)
     if not tool:
         return {"error": f"Tool {tool_id} not found", "status": "error"}

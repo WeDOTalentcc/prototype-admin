@@ -4,11 +4,10 @@ OTP Service for Shared Searches feature.
 Provides OTP generation, hashing, verification, and session token management
 for secure access to shared search results.
 """
+import logging
 import os
 import secrets
-import logging
 from datetime import datetime, timedelta
-from typing import Optional, Tuple
 
 import bcrypt
 import jwt
@@ -72,7 +71,7 @@ class OTPService:
         self, 
         email: str, 
         shared_search_id: str
-    ) -> Tuple[str, datetime]:
+    ) -> tuple[str, datetime]:
         """
         Generate a secure JWT session token.
         
@@ -97,7 +96,7 @@ class OTPService:
         
         return token, expires_at
     
-    def verify_session_token(self, token: str) -> Optional[dict]:
+    def verify_session_token(self, token: str) -> dict | None:
         """
         Verify a session token and return its payload.
         

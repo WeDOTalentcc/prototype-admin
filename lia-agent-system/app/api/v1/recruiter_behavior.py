@@ -7,7 +7,7 @@ Endpoints:
   POST /api/v1/recruiters/{recruiter_id}/behavior-invalidate → força re-computação
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel
@@ -29,21 +29,21 @@ class BehaviorProfileResponse(BaseModel):
     recruiter_id: str
     company_id: str
     computed_at: str
-    active_hours_distribution: Dict[str, int] = {}
-    preferred_sourcing_channels: Dict[str, int] = {}
-    avg_response_time_hours: Optional[float] = None
-    avg_hiring_velocity_days: Optional[float] = None
-    stage_conversion_rates: Dict[str, float] = {}
+    active_hours_distribution: dict[str, int] = {}
+    preferred_sourcing_channels: dict[str, int] = {}
+    avg_response_time_hours: float | None = None
+    avg_hiring_velocity_days: float | None = None
+    stage_conversion_rates: dict[str, float] = {}
     communication_style: str = "balanced"
-    typical_batch_size: Optional[int] = None
-    rejection_reasons_top: List[str] = []
-    bias_risk_score: Optional[float] = None
+    typical_batch_size: int | None = None
+    rejection_reasons_top: list[str] = []
+    bias_risk_score: float | None = None
     experience_level: str = "intermediate"
 
 
 class BehaviorSignalRequest(BaseModel):
     action_type: str
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 # ── endpoints ─────────────────────────────────────────────────────────────────

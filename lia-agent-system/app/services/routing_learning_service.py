@@ -5,9 +5,9 @@ Records when users redirect conversations (implicit correction signal).
 Computes per-company domain confidence adjustments from correction history.
 """
 from __future__ import annotations
+
 import logging
 import os
-from typing import Dict, Optional
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class RoutingLearningService:
 
     async def compute_domain_confidence_adjustments(
         self, company_id: str, db=None
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Compute confidence adjustments per domain from recent corrections.
 
         Returns dict mapping domain → adjustment factor (0.8 to 1.2).
@@ -64,7 +64,8 @@ class RoutingLearningService:
         if not USE_ADAPTIVE_ROUTING or db is None:
             return {}
         try:
-            from sqlalchemy import select, func, case
+            from sqlalchemy import case, func, select
+
             from app.models.routing_feedback import RoutingFeedback
             cutoff = datetime.utcnow() - timedelta(days=_LOOKBACK_DAYS)
 
@@ -82,7 +83,7 @@ class RoutingLearningService:
             )
             rows = result.all()
 
-            adjustments: Dict[str, float] = {}
+            adjustments: dict[str, float] = {}
             for row in rows:
                 domain, total, corrections = row.routed_domain, row.total, (row.corrections or 0)
                 if total < _MIN_SAMPLES:
@@ -105,7 +106,7 @@ class RoutingLearningService:
             )
             return {}
 
-    async def get_cached_adjustments(self, company_id: str) -> Dict[str, float]:
+    async def get_cached_adjustments(self, company_id: str) -> dict[str, float]:
         """Get pre-computed adjustments from Redis. Fail-open → empty dict."""
         try:
             from app.core.redis_client import get_redis
@@ -118,11 +119,12 @@ class RoutingLearningService:
             pass
         return {}
 
-    async def cache_adjustments(self, company_id: str, adjustments: Dict[str, float]) -> None:
+    async def cache_adjustments(self, company_id: str, adjustments: dict[str, float]) -> None:
         """Cache adjustments to Redis (TTL=24h). Fail-silent."""
         try:
-            from app.core.redis_client import get_redis
             import json
+
+            from app.core.redis_client import get_redis
             redis = await get_redis()
             await redis.setex(
                 f"routing_adj:{company_id}", 86400, json.dumps(adjustments)

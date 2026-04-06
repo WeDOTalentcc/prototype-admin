@@ -20,15 +20,15 @@ This service handles:
    - Fallback handling when provider fails
    - Retry logic with exponential backoff
 """
-from typing import Dict, Any, List, Optional, Protocol, Tuple
-from datetime import datetime, timedelta, time
-from abc import ABC, abstractmethod
-from enum import Enum
 import asyncio
 import logging
-import uuid
 import os
 import random
+import uuid
+from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 try:
     import httpx as _httpx_comm
@@ -38,26 +38,23 @@ except ImportError:
     _httpx_comm = None  # type: ignore[assignment]
 
 try:
-    from twilio.rest import Client as TwilioClient
     from twilio.base.exceptions import TwilioRestException
+    from twilio.rest import Client as TwilioClient
     TWILIO_AVAILABLE = True
 except ImportError:
     TWILIO_AVAILABLE = False
     TwilioClient = None
     TwilioRestException = Exception
 
-from sqlalchemy import Column, String, Text, DateTime, Boolean, JSON, Integer, Float, select, and_, or_, desc
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text, and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import UUID
 
-from app.core.database import Base, AsyncSessionLocal
-from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
+from app.core.database import AsyncSessionLocal, Base
 from app.services.notification_service import (
-    NotificationService, 
-    NotificationType, 
-    NotificationChannel,
-    ProactiveNotificationType
+    NotificationService,
+    NotificationType,
 )
+from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +189,7 @@ class PendingApproval(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -275,7 +272,7 @@ class CommunicationLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -335,7 +332,7 @@ class CandidateOptOut(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -379,7 +376,7 @@ class CandidateQuarantine(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "id": self.id,
@@ -415,11 +412,11 @@ class MessageProvider(ABC):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """
         Send a message.
         
@@ -429,7 +426,7 @@ class MessageProvider(ABC):
         pass
     
     @abstractmethod
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """
         Check the status of a sent message.
         
@@ -466,11 +463,11 @@ class MockEmailProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """Simulate sending an email. Returns failure in production."""
         if self._environment == "production":
             logger.critical(f"[MOCK EMAIL] BLOCKED in production — email to {to} was NOT sent. Configure a real email provider.")
@@ -479,7 +476,7 @@ class MockEmailProvider(MessageProvider):
         message_id = f"mock_email_{uuid.uuid4().hex[:12]}"
         return True, message_id, {"mock": True, "to": to, "subject": subject}
     
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """Simulate checking email status."""
         return "delivered", {"mock": True}
     
@@ -508,11 +505,11 @@ class ResendMessageProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         if not self.api_key:
             return False, None, {"error": "RESEND_API_KEY not configured"}
         try:
@@ -547,7 +544,7 @@ class ResendMessageProvider(MessageProvider):
             logger.error(f"[RESEND] Exception sending to {to}: {e}", exc_info=True)
             return False, None, {"error": str(e)}
     
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         return "unknown", {"note": "Resend status tracking requires webhook setup"}
     
     def is_available(self) -> bool:
@@ -588,11 +585,11 @@ class MailgunMessageProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """
         Send email via Mailgun HTTP API.
 
@@ -620,7 +617,7 @@ class MailgunMessageProvider(MessageProvider):
             import httpx
 
             sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
-            data: Dict[str, Any] = {
+            data: dict[str, Any] = {
                 "from": sender,
                 "to": to,
                 "subject": subject or "(No Subject)",
@@ -676,7 +673,7 @@ class MailgunMessageProvider(MessageProvider):
                 "error_type": type(e).__name__
             }
 
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """
         Check Mailgun email status.
 
@@ -718,11 +715,11 @@ class AWSEmailProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """Send email via AWS SES."""
         if not self.is_available():
             logger.warning("AWS SES not configured, falling back")
@@ -736,7 +733,7 @@ class AWSEmailProvider(MessageProvider):
             logger.error(f"AWS SES error: {e}")
             return False, None, {"error": str(e)}
     
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """Check AWS SES email status."""
         return "delivered", {"provider": "aws_ses"}
     
@@ -766,11 +763,11 @@ class MockWhatsAppProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """Simulate sending a WhatsApp message. Returns failure in production."""
         if self._environment == "production":
             logger.critical(f"[MOCK WHATSAPP] BLOCKED in production — message to {to} was NOT sent.")
@@ -780,7 +777,7 @@ class MockWhatsAppProvider(MessageProvider):
         message_id = f"mock_wa_{uuid.uuid4().hex[:12]}"
         return True, message_id, {"mock": True, "to": to}
     
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """Simulate checking WhatsApp status."""
         return "delivered", {"mock": True}
     
@@ -821,10 +818,10 @@ class TwilioWhatsAppProvider(MessageProvider):
         self.account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
         self.auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
         self.from_number = os.environ.get("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
-        self._client: Optional[TwilioClient] = None
+        self._client: TwilioClient | None = None
     
     @property
-    def client(self) -> Optional[TwilioClient]:
+    def client(self) -> TwilioClient | None:
         """Lazy initialization of Twilio client."""
         if self._client is None and self.is_available() and TWILIO_AVAILABLE:
             self._client = TwilioClient(self.account_sid, self.auth_token)
@@ -858,11 +855,11 @@ class TwilioWhatsAppProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """
         Send WhatsApp message via Twilio API.
         
@@ -946,7 +943,7 @@ class TwilioWhatsAppProvider(MessageProvider):
                 "error_type": type(e).__name__
             }
     
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """
         Check Twilio WhatsApp message status using Twilio's Message API.
         
@@ -1042,11 +1039,11 @@ class WhatsAppBusinessProvider(MessageProvider):
     async def send(
         self,
         to: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
+        body_html: str | None = None,
         **kwargs
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """Send message via WhatsApp Business API."""
         if not self.is_available():
             logger.warning("WhatsApp Business API not configured, falling back")
@@ -1060,7 +1057,7 @@ class WhatsAppBusinessProvider(MessageProvider):
             logger.error(f"WhatsApp Business API error: {e}")
             return False, None, {"error": str(e)}
     
-    async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
+    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
         """Check WhatsApp Business API message status."""
         return "delivered", {"provider": "whatsapp_business"}
     
@@ -1090,13 +1087,13 @@ class CommunicationService:
     def __init__(self):
         self.notification_service = NotificationService()
         
-        self._email_providers: List[MessageProvider] = [
+        self._email_providers: list[MessageProvider] = [
             MailgunMessageProvider(),
             ResendMessageProvider(),
             MockEmailProvider(),
         ]
         
-        self._whatsapp_providers: List[MessageProvider] = [
+        self._whatsapp_providers: list[MessageProvider] = [
             TwilioWhatsAppProvider(),
             WhatsAppBusinessProvider(),
             MockWhatsAppProvider(),
@@ -1148,7 +1145,7 @@ class CommunicationService:
         candidate_id: str,
         company_id: str,
         db: AsyncSession
-    ) -> Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         """
         Check if candidate has exceeded daily rate limit.
         
@@ -1179,7 +1176,7 @@ class CommunicationService:
         company_id: str,
         channel: MessageChannel,
         db: AsyncSession
-    ) -> Tuple[bool, Optional[CandidateOptOut]]:
+    ) -> tuple[bool, CandidateOptOut | None]:
         """
         Check if candidate has opted out of communications.
         
@@ -1208,7 +1205,7 @@ class CommunicationService:
         candidate_id: str,
         company_id: str,
         db: AsyncSession
-    ) -> Tuple[bool, Optional[CandidateQuarantine]]:
+    ) -> tuple[bool, CandidateQuarantine | None]:
         """
         Check if candidate is in quarantine period.
         
@@ -1237,8 +1234,8 @@ class CommunicationService:
         company_id: str,
         channel: MessageChannel,
         message_type: MessageType,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Validate if a message can be sent to a candidate.
         
@@ -1300,7 +1297,7 @@ class CommunicationService:
                 next_window = self._get_next_sending_window()
                 result["warnings"].append({
                     "type": "outside_hours",
-                    "message": f"Fora do horário de envio (8h-20h dias úteis)",
+                    "message": "Fora do horário de envio (8h-20h dias úteis)",
                     "next_window": next_window.isoformat(),
                     "will_queue": True
                 })
@@ -1316,23 +1313,23 @@ class CommunicationService:
         company_id: str,
         candidate_id: str,
         candidate_name: str,
-        candidate_email: Optional[str],
-        candidate_phone: Optional[str],
+        candidate_email: str | None,
+        candidate_phone: str | None,
         message_type: MessageType,
         channel: MessageChannel,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
-        job_id: Optional[str] = None,
-        job_title: Optional[str] = None,
-        ai_personalization: Optional[str] = None,
-        personalization_context: Optional[Dict[str, Any]] = None,
-        requested_by: Optional[str] = None,
+        body_html: str | None = None,
+        job_id: str | None = None,
+        job_title: str | None = None,
+        ai_personalization: str | None = None,
+        personalization_context: dict[str, Any] | None = None,
+        requested_by: str | None = None,
         priority: str = "normal",
         expires_in_hours: int = 48,
-        extra_data: Optional[Dict[str, Any]] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        extra_data: dict[str, Any] | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Create a new approval request for a communication.
         
@@ -1415,12 +1412,12 @@ class CommunicationService:
         self,
         approval_id: str,
         reviewed_by: str,
-        review_notes: Optional[str] = None,
-        modified_subject: Optional[str] = None,
-        modified_body: Optional[str] = None,
+        review_notes: str | None = None,
+        modified_subject: str | None = None,
+        modified_body: str | None = None,
         send_immediately: bool = True,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Approve a pending communication request and optionally send it.
         
@@ -1498,8 +1495,8 @@ class CommunicationService:
         approval_id: str,
         reviewed_by: str,
         review_notes: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Reject a pending communication request.
         """
@@ -1544,13 +1541,13 @@ class CommunicationService:
     async def get_pending_approvals(
         self,
         company_id: str,
-        message_type: Optional[MessageType] = None,
-        channel: Optional[MessageChannel] = None,
-        priority: Optional[str] = None,
+        message_type: MessageType | None = None,
+        channel: MessageChannel | None = None,
+        priority: str | None = None,
         limit: int = 50,
         offset: int = 0,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get pending approval requests for a company."""
         should_close = False
         if db is None:
@@ -1598,7 +1595,7 @@ class CommunicationService:
             if should_close:
                 await db.close()
     
-    def _get_provider(self, channel: MessageChannel) -> Optional[MessageProvider]:
+    def _get_provider(self, channel: MessageChannel) -> MessageProvider | None:
         """Get an available provider for the given channel."""
         if channel == MessageChannel.EMAIL:
             providers = self._email_providers
@@ -1617,20 +1614,20 @@ class CommunicationService:
         self,
         company_id: str,
         candidate_id: str,
-        candidate_email: Optional[str],
-        candidate_phone: Optional[str],
+        candidate_email: str | None,
+        candidate_phone: str | None,
         message_type: MessageType,
         channel: MessageChannel,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str] = None,
-        job_id: Optional[str] = None,
-        approval_id: Optional[str] = None,
-        approved_by: Optional[str] = None,
-        sent_by: Optional[str] = None,
+        body_html: str | None = None,
+        job_id: str | None = None,
+        approval_id: str | None = None,
+        approved_by: str | None = None,
+        sent_by: str | None = None,
         skip_policy_checks: bool = False,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Send a message to a candidate.
         
@@ -1753,12 +1750,12 @@ class CommunicationService:
         self,
         channel: MessageChannel,
         recipient: str,
-        subject: Optional[str],
+        subject: str | None,
         body: str,
-        body_html: Optional[str],
+        body_html: str | None,
         log: CommunicationLog,
         db: AsyncSession
-    ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    ) -> tuple[bool, str | None, dict[str, Any] | None]:
         """
         Send message with retry logic and exponential backoff.
         """
@@ -1801,16 +1798,16 @@ class CommunicationService:
         company_id: str,
         candidate_id: str,
         candidate_name: str,
-        candidate_email: Optional[str],
-        candidate_phone: Optional[str],
+        candidate_email: str | None,
+        candidate_phone: str | None,
         message_type: MessageType,
         channel: MessageChannel,
-        template_variables: Dict[str, Any],
-        job_id: Optional[str] = None,
-        job_title: Optional[str] = None,
-        sent_by: Optional[str] = "system",
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        template_variables: dict[str, Any],
+        job_id: str | None = None,
+        job_title: str | None = None,
+        sent_by: str | None = "system",
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """
         Send an automatic message (no approval required) using templates.
         
@@ -1859,14 +1856,14 @@ class CommunicationService:
         message_type: MessageType,
         company_id: str,
         candidate_id: str,
-        candidate_email: Optional[str],
+        candidate_email: str | None,
         candidate_name: str,
-        variables: Dict[str, Any],
+        variables: dict[str, Any],
         channel: MessageChannel = MessageChannel.EMAIL,
-        job_id: Optional[str] = None,
-        sent_by: Optional[str] = "system",
+        job_id: str | None = None,
+        sent_by: str | None = "system",
         skip_approval_check: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Send a message using database templates selected via MESSAGE_TYPE_TO_SITUATION.
         
@@ -1892,8 +1889,8 @@ class CommunicationService:
         Returns:
             Result dict with success status and details
         """
-        from app.models.email_template import EmailTemplate
         from app.domains.communication.services.email_service import email_service
+        from app.models.email_template import EmailTemplate
         
         try:
             situation = MESSAGE_TYPE_TO_SITUATION.get(message_type)
@@ -1907,7 +1904,9 @@ class CommunicationService:
 
             recommended_template_id = None
             try:
-                from app.shared.intelligence.template_learning.template_learning_service import template_learning_service
+                from app.shared.intelligence.template_learning.template_learning_service import (
+                    template_learning_service,
+                )
                 recommended_template_id = await template_learning_service.recommend_template(
                     db=db,
                     company_id=company_id,
@@ -2049,7 +2048,9 @@ class CommunicationService:
                         logger.debug("[ABTracking] CommunicationLog extra_data update skipped: %s", _upd_exc)
 
                 try:
-                    from app.shared.intelligence.template_learning.template_learning_service import template_learning_service
+                    from app.shared.intelligence.template_learning.template_learning_service import (
+                        template_learning_service,
+                    )
                     template_learning_service.record_send(
                         company_id=company_id,
                         template_id=_template_id_str,
@@ -2094,12 +2095,12 @@ class CommunicationService:
         company_id: str,
         candidate_id: str,
         channel: MessageChannel,
-        candidate_email: Optional[str] = None,
-        candidate_phone: Optional[str] = None,
-        opt_out_reason: Optional[str] = None,
+        candidate_email: str | None = None,
+        candidate_phone: str | None = None,
+        opt_out_reason: str | None = None,
         opted_out_via: str = "user_request",
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Record a candidate's opt-out from communications (LGPD compliance)."""
         should_close = False
         if db is None:
@@ -2138,12 +2139,12 @@ class CommunicationService:
         company_id: str,
         candidate_id: str,
         channel: MessageChannel,
-        candidate_email: Optional[str] = None,
-        candidate_phone: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        candidate_email: str | None = None,
+        candidate_phone: str | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Record a candidate's consent for communications (LGPD compliance)."""
         should_close = False
         if db is None:
@@ -2192,10 +2193,10 @@ class CommunicationService:
         company_id: str,
         candidate_id: str,
         reason: str = "rejection",
-        job_id: Optional[str] = None,
+        job_id: str | None = None,
         quarantine_days: int = 90,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Add a candidate to quarantine (no contact for specified period)."""
         should_close = False
         if db is None:
@@ -2236,8 +2237,8 @@ class CommunicationService:
         quarantine_id: str,
         lifted_by: str,
         lift_reason: str,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Lift a quarantine early."""
         should_close = False
         if db is None:
@@ -2278,12 +2279,12 @@ class CommunicationService:
         self,
         company_id: str,
         candidate_id: str,
-        channel: Optional[MessageChannel] = None,
-        status: Optional[CommunicationStatus] = None,
+        channel: MessageChannel | None = None,
+        status: CommunicationStatus | None = None,
         limit: int = 50,
         offset: int = 0,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get communication history for a candidate."""
         should_close = False
         if db is None:
@@ -2324,9 +2325,9 @@ class CommunicationService:
     async def get_daily_stats(
         self,
         company_id: str,
-        date: Optional[datetime] = None,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        date: datetime | None = None,
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Get daily communication statistics."""
         should_close = False
         if db is None:
@@ -2384,14 +2385,14 @@ class CommunicationService:
         company_id: str,
         passed: bool,
         wsi_score: float,
-        strengths: List[str],
-        development_areas: Optional[List[str]] = None,
-        candidate_name: Optional[str] = None,
-        candidate_email: Optional[str] = None,
-        candidate_phone: Optional[str] = None,
-        job_title: Optional[str] = None,
-        company_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+        strengths: list[str],
+        development_areas: list[str] | None = None,
+        candidate_name: str | None = None,
+        candidate_email: str | None = None,
+        candidate_phone: str | None = None,
+        job_title: str | None = None,
+        company_name: str | None = None
+    ) -> dict[str, Any]:
         """
         Send screening result communication to candidate.
         
@@ -2554,8 +2555,8 @@ class CommunicationService:
 
     async def process_queued_messages(
         self,
-        db: Optional[AsyncSession] = None
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None
+    ) -> dict[str, Any]:
         """Process messages that were queued for later sending."""
         if not self._is_within_sending_hours():
             return {

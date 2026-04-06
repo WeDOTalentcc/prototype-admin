@@ -9,12 +9,12 @@ All functions are async, connect to PostgreSQL via AsyncSessionLocal,
 and return Dict[str, Any] with 'success', 'data', and 'message' keys.
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
+from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ STAGE_ORDER = [
 ]
 
 
-async def get_pipeline_health(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def get_pipeline_health(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Analyse pipeline health for a company or specific job vacancy.
 
     Counts candidates per stage, calculates average days in each stage,
@@ -44,7 +44,7 @@ async def get_pipeline_health(company_id: str, job_id: Optional[str] = None) -> 
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND vc.vacancy_id = :job_id"
@@ -81,8 +81,8 @@ async def get_pipeline_health(company_id: str, job_id: Optional[str] = None) -> 
             )
             stalled_row = stalled_result.mappings().first()
 
-            by_stage: Dict[str, int] = {}
-            avg_days_in_stage: Dict[str, float] = {}
+            by_stage: dict[str, int] = {}
+            avg_days_in_stage: dict[str, float] = {}
             total_candidates = 0
 
             for row in stage_rows:
@@ -111,7 +111,7 @@ async def get_pipeline_health(company_id: str, job_id: Optional[str] = None) -> 
         return {"success": False, "error": str(e)}
 
 
-async def get_conversion_rates(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def get_conversion_rates(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Calculate stage-to-stage conversion rates for the recruitment funnel.
 
     For each consecutive pair of stages, computes the ratio of candidates
@@ -127,7 +127,7 @@ async def get_conversion_rates(company_id: str, job_id: Optional[str] = None) ->
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND vc.vacancy_id = :job_id"
@@ -146,9 +146,9 @@ async def get_conversion_rates(company_id: str, job_id: Optional[str] = None) ->
             )
             rows = result.mappings().all()
 
-            stage_counts: Dict[str, int] = {row["stage"]: int(row["cnt"]) for row in rows if row["stage"]}
+            stage_counts: dict[str, int] = {row["stage"]: int(row["cnt"]) for row in rows if row["stage"]}
 
-            conversion_rates: Dict[str, float] = {}
+            conversion_rates: dict[str, float] = {}
             for i in range(len(STAGE_ORDER) - 1):
                 from_stage = STAGE_ORDER[i]
                 to_stage = STAGE_ORDER[i + 1]
@@ -180,7 +180,7 @@ async def get_conversion_rates(company_id: str, job_id: Optional[str] = None) ->
         return {"success": False, "error": str(e)}
 
 
-async def get_time_to_fill(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def get_time_to_fill(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Calculate time-to-fill statistics for closed/filled job vacancies.
 
     Measures the number of days between job creation and the closed_at or
@@ -196,7 +196,7 @@ async def get_time_to_fill(company_id: str, job_id: Optional[str] = None) -> Dic
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND jv.id = :job_id"
@@ -234,7 +234,7 @@ async def get_time_to_fill(company_id: str, job_id: Optional[str] = None) -> Dic
             all_days = [round(float(r["days_to_fill"]), 1) for r in rows]
             all_days.sort()
 
-            dept_days: Dict[str, List[float]] = {}
+            dept_days: dict[str, list[float]] = {}
             for r in rows:
                 dept = r["department"] or "unknown"
                 dept_days.setdefault(dept, []).append(float(r["days_to_fill"]))
@@ -263,7 +263,7 @@ async def get_time_to_fill(company_id: str, job_id: Optional[str] = None) -> Dic
         return {"success": False, "error": str(e)}
 
 
-async def get_candidate_quality_distribution(company_id: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+async def get_candidate_quality_distribution(company_id: str, job_id: str | None = None) -> dict[str, Any]:
     """Analyse the distribution of candidate scores across score buckets.
 
     Groups candidates by LIA score ranges (0-20, 21-40, etc.) and
@@ -279,7 +279,7 @@ async def get_candidate_quality_distribution(company_id: str, job_id: Optional[s
     """
     try:
         async with AsyncSessionLocal() as session:
-            params: Dict[str, Any] = {"company_id": company_id}
+            params: dict[str, Any] = {"company_id": company_id}
             job_filter = ""
             if job_id:
                 job_filter = "AND vc.vacancy_id = :job_id"
@@ -310,8 +310,8 @@ async def get_candidate_quality_distribution(company_id: str, job_id: Optional[s
                 "61-80": 0,
                 "81-100": 0,
             }
-            scores: List[float] = []
-            candidates_list: List[Dict[str, Any]] = []
+            scores: list[float] = []
+            candidates_list: list[dict[str, Any]] = []
 
             for row in rows:
                 s = float(row["score"])
@@ -351,7 +351,7 @@ async def get_candidate_quality_distribution(company_id: str, job_id: Optional[s
         return {"success": False, "error": str(e)}
 
 
-def get_insight_tools() -> List[ToolDefinition]:
+def get_insight_tools() -> list[ToolDefinition]:
     """Return all insight tools as ToolDefinition objects for the ReAct loop.
 
     Each ToolDefinition includes the tool name, description, JSON Schema

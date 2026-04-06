@@ -3,18 +3,19 @@ LIA Field Toggles API endpoints.
 
 Manages field toggle configurations for companies in the LIA wizard.
 """
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from typing import Dict, List, Optional, Any
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
 import logging
 import uuid as uuid_lib
+from datetime import datetime
+from typing import Any
 
-from app.core.database import get_db
-from app.models.lia_field_toggles import LiaFieldToggle, DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
+from app.core.database import get_db
+from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
 
 logger = logging.getLogger(__name__)
 
@@ -25,36 +26,36 @@ class FieldToggleResponse(BaseModel):
     """Response for a single field toggle."""
     field_key: str
     is_active: bool
-    comment: Optional[str] = None
-    fallback_strategies: Optional[List[str]] = None
-    updated_at: Optional[datetime] = None
-    updated_by: Optional[str] = None
+    comment: str | None = None
+    fallback_strategies: list[str] | None = None
+    updated_at: datetime | None = None
+    updated_by: str | None = None
 
 
 class FieldTogglesResponse(BaseModel):
     """Response containing all field toggles for a company."""
     company_id: str
-    toggles: Dict[str, bool]
-    comments: Dict[str, Optional[str]]
-    details: List[FieldToggleResponse]
+    toggles: dict[str, bool]
+    comments: dict[str, str | None]
+    details: list[FieldToggleResponse]
 
 
 class FieldToggleUpdate(BaseModel):
     """Update for a single field toggle."""
     is_active: bool
-    comment: Optional[str] = None
+    comment: str | None = None
 
 
 class FieldTogglesUpdate(BaseModel):
     """Request to update field toggles."""
-    toggles: Dict[str, bool]
-    comments: Optional[Dict[str, str]] = None
+    toggles: dict[str, bool]
+    comments: dict[str, str] | None = None
 
 
 class CompletenessCheckRequest(BaseModel):
     """Request for completeness check."""
-    job_data: Dict[str, Any]
-    toggles: Optional[Dict[str, bool]] = None
+    job_data: dict[str, Any]
+    toggles: dict[str, bool] | None = None
 
 
 class FieldSuggestionResponse(BaseModel):
@@ -67,14 +68,14 @@ class FieldSuggestionResponse(BaseModel):
 
 class CompletenessCheckResponse(BaseModel):
     """Response for completeness check."""
-    filled_fields: List[str]
-    missing_critical: List[str]
-    missing_important: List[str]
-    toggled_off: List[str]
+    filled_fields: list[str]
+    missing_critical: list[str]
+    missing_important: list[str]
+    toggled_off: list[str]
     can_publish: bool
     completeness_score: int
-    field_details: Dict[str, Dict[str, Any]]
-    suggestions: Dict[str, FieldSuggestionResponse]
+    field_details: dict[str, dict[str, Any]]
+    suggestions: dict[str, FieldSuggestionResponse]
 
 
 @router.get("/{company_id}/field-toggles", response_model=FieldTogglesResponse)
@@ -230,9 +231,9 @@ async def check_job_completeness(
     """
     Check completeness of job data and get suggestions for missing fields.
     """
-    from app.services.config_completeness_service import config_completeness_service
-    from app.models.job_vacancy import JobVacancy
     from app.models.company import CompanyProfile
+    from app.models.job_vacancy import JobVacancy
+    from app.services.config_completeness_service import config_completeness_service
     
     try:
         company_uuid = uuid_lib.UUID(company_id)
@@ -361,20 +362,20 @@ async def seed_default_toggles(
 
 class JobContextRequest(BaseModel):
     """Job context for better field resolution."""
-    title: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    title: str | None = None
+    seniority: str | None = None
+    department: str | None = None
 
 
 class FieldContextResponse(BaseModel):
     """Context for a single field."""
     field_key: str
-    value: Optional[Any] = None
+    value: Any | None = None
     source: str
     source_explanation: str
     confidence: float
     is_toggle_active: bool
-    recruiter_comment: Optional[str] = None
+    recruiter_comment: str | None = None
 
 
 class AgentContextResponse(BaseModel):
@@ -384,13 +385,13 @@ class AgentContextResponse(BaseModel):
     data_quality_score: float
     active_field_count: int
     inactive_field_count: int
-    field_contexts: Dict[str, FieldContextResponse]
+    field_contexts: dict[str, FieldContextResponse]
 
 
 @router.post("/{company_id}/agent-context", response_model=AgentContextResponse)
 async def get_agent_context(
     company_id: str,
-    job_context: Optional[JobContextRequest] = None,
+    job_context: JobContextRequest | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user_or_demo)
 ):
@@ -459,16 +460,16 @@ class EmptyFieldNotification(BaseModel):
     field_label: str
     impact_description: str
     has_fallback: bool
-    fallback_strategies: List[str]
+    fallback_strategies: list[str]
     times_reminded: int
-    actions: List[EmptyFieldAction]
+    actions: list[EmptyFieldAction]
 
 
 class EmptyFieldsResponse(BaseModel):
     """Response with all empty active field notifications."""
     company_id: str
     user_id: str
-    notifications: List[EmptyFieldNotification]
+    notifications: list[EmptyFieldNotification]
     total_empty_fields: int
 
 
@@ -482,21 +483,21 @@ class ReminderPreferenceResponse(BaseModel):
     field_key: str
     action: str
     remind_me: bool
-    snooze_until: Optional[str] = None
+    snooze_until: str | None = None
     times_reminded: int
     times_filled_with_lia: int
 
 
 class FieldSuggestionRequest(BaseModel):
     """Request for field value suggestion."""
-    job_context: Optional[JobContextRequest] = None
+    job_context: JobContextRequest | None = None
 
 
 class FieldValueSuggestion(BaseModel):
     """Suggested value for an empty field."""
     field_key: str
     field_label: str
-    suggested_value: Optional[Any] = None
+    suggested_value: Any | None = None
     source: str
     source_icon: str
     source_explanation: str
@@ -508,7 +509,7 @@ class FieldValueSuggestion(BaseModel):
 async def get_empty_field_notifications(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
+    current_user = Depends(get_current_user_or_demo)
 ):
     """
     Get notifications for fields with active toggles but empty company config.
@@ -526,7 +527,7 @@ async def get_empty_field_notifications(
     """
     from app.services.lia_field_config_service import LiaFieldConfigService
     
-    user_id = current_user.get("sub", current_user.get("email", "demo_user"))
+    user_id = str(current_user.id)
     
     service = LiaFieldConfigService(db)
     notifications = await service.detect_empty_active_fields(company_id, user_id)
@@ -563,7 +564,7 @@ async def update_empty_field_preference(
     field_key: str,
     update: ReminderPreferenceUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
+    current_user = Depends(get_current_user_or_demo)
 ):
     """
     Update recruiter's preference for an empty field reminder.
@@ -583,7 +584,7 @@ async def update_empty_field_preference(
             detail=f"Invalid action. Must be one of: {valid_actions}"
         )
     
-    user_id = current_user.get("sub", current_user.get("email", "demo_user"))
+    user_id = str(current_user.id)
     
     service = LiaFieldConfigService(db)
     result = await service.update_reminder_preference(
@@ -607,7 +608,7 @@ async def update_empty_field_preference(
 async def suggest_field_value(
     company_id: str,
     field_key: str,
-    request: Optional[FieldSuggestionRequest] = None,
+    request: FieldSuggestionRequest | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user_or_demo)
 ):

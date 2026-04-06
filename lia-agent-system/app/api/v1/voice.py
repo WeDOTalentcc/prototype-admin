@@ -3,11 +3,11 @@ Voice API Endpoints
 
 REST API para transcrição de áudio usando Gemini Flash.
 """
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
-from fastapi.responses import JSONResponse
-from typing import Optional
 import logging
 import mimetypes
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
 
 from app.services.gemini_voice_service import get_voice_service
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["voice"])
 
 
-def detect_mime_type(filename: str, content_type: Optional[str]) -> str:
+def detect_mime_type(filename: str, content_type: str | None) -> str:
     """
     Detect MIME type from filename if content_type is missing or generic.
     
@@ -45,7 +45,7 @@ def detect_mime_type(filename: str, content_type: Optional[str]) -> str:
 async def voice_health_check():
     """Check if Gemini Voice service is configured."""
     try:
-        service = get_voice_service()
+        get_voice_service()
         return {
             "service": "Gemini Voice-to-Text",
             "status": "configured",
@@ -68,7 +68,7 @@ async def voice_health_check():
 async def transcribe_audio(
     audio: UploadFile = File(..., description="Audio file to transcribe"),
     language: str = Form("pt-BR", description="Target language (default: pt-BR)"),
-    prompt: Optional[str] = Form(None, description="Custom transcription prompt")
+    prompt: str | None = Form(None, description="Custom transcription prompt")
 ):
     """
     Transcreve arquivo de áudio para texto.
@@ -175,8 +175,8 @@ async def analyze_audio(
 @router.post("/voice/interview")
 async def analyze_interview(
     audio: UploadFile = File(..., description="Interview audio file"),
-    job_title: Optional[str] = Form(None, description="Job title for context"),
-    questions: Optional[str] = Form(None, description="Expected questions (comma-separated)")
+    job_title: str | None = Form(None, description="Job title for context"),
+    questions: str | None = Form(None, description="Expected questions (comma-separated)")
 ):
     """
     Transcreve e analisa entrevista de candidato com scoring.

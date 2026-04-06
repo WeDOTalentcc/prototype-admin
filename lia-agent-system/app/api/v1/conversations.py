@@ -7,16 +7,15 @@ Provides:
 - Delete/archive conversations
 - Clear conversation history
 """
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-from datetime import datetime
 import logging
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.domains.recruiter_assistant.services.conversation_memory import ConversationMemory, conversation_memory
-from app.models.conversation import ConversationContextType
+from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 
 logger = logging.getLogger(__name__)
 
@@ -28,15 +27,15 @@ class ConversationResponse(BaseModel):
     id: str
     user_id: str
     context_type: str
-    context_id: Optional[str] = None
-    title: Optional[str] = None
-    summary: Optional[str] = None
-    intent: Optional[str] = None
+    context_id: str | None = None
+    title: str | None = None
+    summary: str | None = None
+    intent: str | None = None
     status: str
     is_active: bool
     message_count: int
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class MessageResponse(BaseModel):
@@ -45,22 +44,22 @@ class MessageResponse(BaseModel):
     conversation_id: str
     role: str
     content: str
-    intent: Optional[str] = None
-    tool_calls: Optional[List[Dict[str, Any]]] = None
-    metadata: Optional[Dict[str, Any]] = None
-    created_at: Optional[str] = None
+    intent: str | None = None
+    tool_calls: list[dict[str, Any]] | None = None
+    metadata: dict[str, Any] | None = None
+    created_at: str | None = None
 
 
 class ConversationDetailResponse(BaseModel):
     """Detailed conversation with messages."""
     conversation: ConversationResponse
-    messages: List[MessageResponse]
-    summary: Optional[str] = None
+    messages: list[MessageResponse]
+    summary: str | None = None
 
 
 class ConversationListResponse(BaseModel):
     """List of conversations."""
-    conversations: List[ConversationResponse]
+    conversations: list[ConversationResponse]
     total: int
     offset: int
     limit: int
@@ -73,20 +72,20 @@ class CreateConversationRequest(BaseModel):
     extrai de JWT em implementações futuras com auth middleware.
     O float (LiaChatPanel) não envia user_id; o WebSocket usa JWT separadamente.
     """
-    user_id: Optional[str] = None
+    user_id: str | None = None
     context_type: str = "general"
-    context_id: Optional[str] = None
-    title: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    context_id: str | None = None
+    title: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class AddMessageRequest(BaseModel):
     """Request to add a message to a conversation."""
     role: str = Field(..., description="Message role: user, assistant, system, tool")
     content: str = Field(..., description="Message content")
-    intent: Optional[str] = None
-    tool_calls: Optional[List[Dict[str, Any]]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    intent: str | None = None
+    tool_calls: list[dict[str, Any]] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class UpdateSummaryRequest(BaseModel):
@@ -97,7 +96,7 @@ class UpdateSummaryRequest(BaseModel):
 @router.get("", response_model=ConversationListResponse)
 async def list_conversations(
     user_id: str = Query(..., description="User ID to get conversations for"),
-    context_type: Optional[str] = Query(None, description="Filter by context type"),
+    context_type: str | None = Query(None, description="Filter by context type"),
     include_archived: bool = Query(False, description="Include archived conversations"),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
@@ -303,7 +302,7 @@ async def add_message(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{conversation_id}/summary", response_model=Dict[str, Any])
+@router.post("/{conversation_id}/summary", response_model=dict[str, Any])
 async def update_summary(
     conversation_id: str,
     request: UpdateSummaryRequest = UpdateSummaryRequest(),

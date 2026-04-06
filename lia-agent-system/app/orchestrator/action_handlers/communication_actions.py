@@ -5,15 +5,15 @@ Handles: send_email, schedule_interview, create_generic_event
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 async def execute_communication_action(
     action_id: str,
-    params: Dict[str, Any],
-    context: Dict[str, Any],
+    params: dict[str, Any],
+    context: dict[str, Any],
 ):
     """Route communication actions to specific handler."""
     if action_id == "send_email":
@@ -25,11 +25,12 @@ async def execute_communication_action(
     return None
 
 
-async def _send_email(params: Dict[str, Any], context: Dict[str, Any]):
+async def _send_email(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.domains.communication.services.email_providers import get_email_provider
         import html as html_module
+
+        from app.domains.communication.services.email_providers import get_email_provider
 
         provider = get_email_provider()
         status = provider.get_status()
@@ -67,12 +68,14 @@ async def _send_email(params: Dict[str, Any], context: Dict[str, Any]):
     return None
 
 
-async def _schedule_interview(params: Dict[str, Any], context: Dict[str, Any]):
+async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.core.database import AsyncSessionLocal
-        from sqlalchemy import text
         import uuid as uuid_mod
+
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
 
         async with AsyncSessionLocal() as db:
             interview_id = str(uuid_mod.uuid4())
@@ -112,7 +115,7 @@ async def _schedule_interview(params: Dict[str, Any], context: Dict[str, Any]):
     return None
 
 
-async def _create_generic_event(params: Dict[str, Any], context: Dict[str, Any]):
+async def _create_generic_event(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from app.domains.interview_scheduling.services.calendar_service import calendar_service

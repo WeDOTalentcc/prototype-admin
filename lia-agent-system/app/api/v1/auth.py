@@ -9,24 +9,37 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
 from app.auth.schemas import (
-    UserCreate, UserLogin, UserResponse, TokenResponse, TokenRefresh,
-    PasswordResetRequest, PasswordResetConfirm, EmailVerificationRequest,
-    UserPublicRegister, InvitationAccept, InvitationInfo
+    EmailVerificationRequest,
+    InvitationAccept,
+    InvitationInfo,
+    PasswordResetConfirm,
+    PasswordResetRequest,
+    TokenRefresh,
+    TokenResponse,
+    UserCreate,
+    UserLogin,
+    UserPublicRegister,
+    UserResponse,
 )
 from app.auth.security import (
-    verify_password, get_password_hash, 
-    create_access_token, create_refresh_token,
-    decode_token, ACCESS_TOKEN_EXPIRE_MINUTES,
-    generate_secure_token, PASSWORD_RESET_EXPIRE_HOURS,
-    INVITATION_EXPIRE_HOURS, EMAIL_VERIFICATION_EXPIRE_DAYS
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    EMAIL_VERIFICATION_EXPIRE_DAYS,
+    INVITATION_EXPIRE_HOURS,
+    PASSWORD_RESET_EXPIRE_HOURS,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    generate_secure_token,
+    get_password_hash,
+    verify_password,
 )
-from app.auth.dependencies import get_current_active_user
+from app.core.database import get_db
 from app.domains.communication.services.email_service import email_service
-from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
+from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 

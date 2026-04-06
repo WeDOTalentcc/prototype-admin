@@ -12,30 +12,17 @@ Follows the 4-file pattern:
   - pipeline_stage_context.py — Stage-specific context
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
-    BaseAgent,
 )
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
-from app.shared.compliance.audit_callback import AuditCallback
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
 
-from app.domains.pipeline.agents.pipeline_stage_context import (
-    get_stage_capabilities,
-    get_allowed_tools_for_behavior,
-)
 from app.domains.pipeline.agents.pipeline_system_prompt import get_pipeline_system_prompt
-from app.domains.pipeline.agents.pipeline_tool_registry import (
-    get_pipeline_transition_tools,
-    GUARDRAIL_TOOLS,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +46,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
         return "pipeline_transition"
 
     @property
-    def available_tools(self) -> List[str]:
+    def available_tools(self) -> list[str]:
         from app.domains.pipeline.agents.pipeline_tool_registry import ALL_TOOLS
         return [t.name for t in ALL_TOOLS]
 
@@ -70,6 +57,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
     def _get_tools(self) -> list:
         """Todos os tools do domínio Pipeline Transition (LangGraph usa set completo)."""
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+
         from app.domains.pipeline.agents.pipeline_tool_registry import ALL_TOOLS
         enhanced = self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in list(ALL_TOOLS) + enhanced]
@@ -117,7 +105,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
 
         # SEG-5: AuditService — caminho LangGraph nativo
         try:
-            from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+            from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
             action_behavior = input.context.get("action_behavior", "passive")
             from_stage = input.context.get("from_stage", "")
             to_stage = input.context.get("to_stage", "")
@@ -222,7 +210,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
             try:
                 # SEG-5: AuditService — registrar decisão de solicitar aprovação HITL
                 try:
-                    from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
+                    from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                     await audit_service.log_decision(
                         company_id=str(input.company_id or ""),
                         agent_name="pipeline_transition_agent",
@@ -312,7 +300,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
         return _output
 
 
-_agent_instance: Optional[PipelineTransitionAgent] = None
+_agent_instance: PipelineTransitionAgent | None = None
 
 
 def get_pipeline_transition_agent() -> PipelineTransitionAgent:

@@ -2,21 +2,21 @@
 Seed Service - Populates database with demo/test data.
 All seed data is clearly marked with '[DEMO]' prefix for easy identification.
 """
-import uuid
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
 import logging
 import random
+import uuid
+from datetime import datetime, timedelta
+from typing import Any
 
-from app.models.job_vacancy import JobVacancy, JobVacancyInterviewStage
-from app.models.candidate import Candidate, VacancyCandidate, CandidateEducation, CandidateExperience
-from app.core.database import AsyncSessionLocal
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.candidate import Candidate, CandidateEducation, CandidateExperience, VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
-COMPANY_ID: Optional[str] = None
+COMPANY_ID: str | None = None
 
 def get_seed_company_id() -> str:
     if not COMPANY_ID:
@@ -24,7 +24,7 @@ def get_seed_company_id() -> str:
     return COMPANY_ID
 
 
-def generate_demo_job_vacancies() -> List[Dict[str, Any]]:
+def generate_demo_job_vacancies() -> list[dict[str, Any]]:
     """Generate realistic demo job vacancies for different departments."""
     
     recruiters = [
@@ -667,7 +667,7 @@ def generate_demo_job_vacancies() -> List[Dict[str, Any]]:
     return result
 
 
-def generate_demo_candidates() -> List[Dict[str, Any]]:
+def generate_demo_candidates() -> list[dict[str, Any]]:
     """Generate realistic demo candidates with complete professional profiles."""
     
     candidates = [
@@ -1164,7 +1164,7 @@ def generate_demo_candidates() -> List[Dict[str, Any]]:
     return result
 
 
-def generate_vacancy_candidates(job_ids: List[str], candidate_ids: List[str]) -> List[Dict[str, Any]]:
+def generate_vacancy_candidates(job_ids: list[str], candidate_ids: list[str]) -> list[dict[str, Any]]:
     """Generate vacancy-candidate relationships with various stages."""
     
     stages = ["Novo", "Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Proposta", "Contratado", "Recusado"]
@@ -1200,7 +1200,7 @@ def generate_vacancy_candidates(job_ids: List[str], candidate_ids: List[str]) ->
     return result
 
 
-async def seed_demo_data(db: AsyncSession) -> Dict[str, Any]:
+async def seed_demo_data(db: AsyncSession) -> dict[str, Any]:
     """
     Seed the database with demo data.
     Clears existing demo data and creates fresh records.
@@ -1297,7 +1297,7 @@ async def seed_demo_data(db: AsyncSession) -> Dict[str, Any]:
     }
 
 
-async def clear_demo_data(db: AsyncSession) -> Dict[str, Any]:
+async def clear_demo_data(db: AsyncSession) -> dict[str, Any]:
     """Clear all demo data from the database."""
     logger.info("🗑️  Clearing demo data...")
     

@@ -5,14 +5,15 @@ Implements the ATSClient interface for Merge.dev's Unified ATS API.
 Merge provides a single API to integrate with 40+ ATS platforms including
 Greenhouse, Lever, Workable, BambooHR, iCIMS, and more.
 """
-import os
-import httpx
-from typing import Dict, Any, List, Optional
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
 
-from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob, SyncResult
+import httpx
+
 from app.shared.resilience.circuit_breaker import MERGE_CIRCUIT, circuit_breaker_decorator
+
+from .base import ATSCandidate, ATSClient, ATSClientConfig, ATSJob, SyncResult
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class MergeClient(ATSClient):
     def __init__(self, config: ATSClientConfig):
         super().__init__(config)
         self.base_url = config.base_url or "https://api.merge.dev/api/ats/v1"
-        self._http_client: Optional[httpx.AsyncClient] = None
+        self._http_client: httpx.AsyncClient | None = None
     
     async def _get_http_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -36,7 +37,7 @@ class MergeClient(ATSClient):
             self._http_client = httpx.AsyncClient(timeout=self.config.timeout)
         return self._http_client
     
-    def _headers(self, account_token: Optional[str] = None) -> Dict[str, str]:
+    def _headers(self, account_token: str | None = None) -> dict[str, str]:
         """Get headers for Merge API requests."""
         headers = {
             "Authorization": f"Bearer {self.config.api_key}",
@@ -61,7 +62,7 @@ class MergeClient(ATSClient):
             return False
     
     @circuit_breaker_decorator(MERGE_CIRCUIT)
-    async def get_candidate(self, ats_candidate_id: str) -> Optional[ATSCandidate]:
+    async def get_candidate(self, ats_candidate_id: str) -> ATSCandidate | None:
         """Get candidate from Merge."""
         try:
             client = await self._get_http_client()
@@ -79,15 +80,15 @@ class MergeClient(ATSClient):
     @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def get_candidates(
         self,
-        job_id: Optional[str] = None,
-        stage: Optional[str] = None,
-        modified_after: Optional[datetime] = None,
+        job_id: str | None = None,
+        stage: str | None = None,
+        modified_after: datetime | None = None,
         limit: int = 100
-    ) -> List[ATSCandidate]:
+    ) -> list[ATSCandidate]:
         """Get candidates from Merge with optional filters."""
         try:
             client = await self._get_http_client()
-            params: Dict[str, Any] = {"page_size": limit}
+            params: dict[str, Any] = {"page_size": limit}
             
             if modified_after:
                 params["modified_after"] = modified_after.isoformat()
@@ -111,7 +112,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to get candidates: {e}")
             return []
     
-    def _parse_candidate(self, data: Dict[str, Any]) -> Optional[ATSCandidate]:
+    def _parse_candidate(self, data: dict[str, Any]) -> ATSCandidate | None:
         """Parse Merge candidate response to ATSCandidate."""
         try:
             emails = data.get("email_addresses", [])
@@ -159,7 +160,7 @@ class MergeClient(ATSClient):
             return None
     
     @circuit_breaker_decorator(MERGE_CIRCUIT)
-    async def create_candidate(self, candidate_data: Dict[str, Any]) -> SyncResult:
+    async def create_candidate(self, candidate_data: dict[str, Any]) -> SyncResult:
         """Create candidate in Merge/linked ATS."""
         try:
             client = await self._get_http_client()
@@ -220,7 +221,7 @@ class MergeClient(ATSClient):
     async def update_candidate(
         self,
         ats_candidate_id: str,
-        updates: Dict[str, Any]
+        updates: dict[str, Any]
     ) -> SyncResult:
         """Update candidate in Merge/linked ATS."""
         try:
@@ -256,7 +257,7 @@ class MergeClient(ATSClient):
         ats_candidate_id: str,
         application_id: str,
         new_stage: str,
-        stage_id: Optional[str] = None
+        stage_id: str | None = None
     ) -> SyncResult:
         """Update candidate's application stage."""
         try:
@@ -331,7 +332,7 @@ class MergeClient(ATSClient):
             )
     
     @circuit_breaker_decorator(MERGE_CIRCUIT)
-    async def get_job(self, ats_job_id: str) -> Optional[ATSJob]:
+    async def get_job(self, ats_job_id: str) -> ATSJob | None:
         """Get job from Merge."""
         try:
             client = await self._get_http_client()
@@ -349,14 +350,14 @@ class MergeClient(ATSClient):
     @circuit_breaker_decorator(MERGE_CIRCUIT)
     async def get_jobs(
         self,
-        status: Optional[str] = None,
-        modified_after: Optional[datetime] = None,
+        status: str | None = None,
+        modified_after: datetime | None = None,
         limit: int = 100
-    ) -> List[ATSJob]:
+    ) -> list[ATSJob]:
         """Get jobs from Merge."""
         try:
             client = await self._get_http_client()
-            params: Dict[str, Any] = {"page_size": limit}
+            params: dict[str, Any] = {"page_size": limit}
             
             if status:
                 params["status"] = status
@@ -382,7 +383,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to get jobs: {e}")
             return []
     
-    def _parse_job(self, data: Dict[str, Any]) -> Optional[ATSJob]:
+    def _parse_job(self, data: dict[str, Any]) -> ATSJob | None:
         """Parse Merge job response to ATSJob."""
         try:
             departments = data.get("departments", [])
@@ -406,7 +407,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to parse job: {e}")
             return None
     
-    async def get_stages(self, job_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def get_stages(self, job_id: str | None = None) -> list[dict[str, Any]]:
         """Get interview stages from Merge."""
         try:
             client = await self._get_http_client()
@@ -427,7 +428,7 @@ class MergeClient(ATSClient):
             logger.error(f"[MERGE] Failed to get stages: {e}")
             return []
     
-    def get_stage_mapping(self) -> Dict[str, str]:
+    def get_stage_mapping(self) -> dict[str, str]:
         """Get mapping between LIA stages and Merge/ATS stages."""
         return {
             "triagem": "Application Review",
@@ -440,7 +441,7 @@ class MergeClient(ATSClient):
             "desistencia": "Withdrawn"
         }
     
-    def get_reverse_stage_mapping(self) -> Dict[str, str]:
+    def get_reverse_stage_mapping(self) -> dict[str, str]:
         """Get mapping from Merge/ATS stages to LIA stages."""
         return {v.lower(): k for k, v in self.get_stage_mapping().items()}
     

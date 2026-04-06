@@ -4,32 +4,29 @@ Wizard Step Service — extracted from lia_assistant.py (Fase 5 decomposition).
 Contains the full logic of the /job-wizard/step endpoint, previously an inline
 2000-line handler. The router now delegates to wizard_step_service.process().
 """
+import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, and_, text
+from sqlalchemy import and_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-import logging
 
-from app.models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
-from app.models.candidate import Candidate
-from app.models import JobVacancy
-from app.services.intent_classifier import intent_classifier_service, IntentType
-from app.services.enhanced_intent_classifier import (
-    enhanced_intent_classifier, EnhancedIntentType,
-)
+from app.domains.job_management.services.jd_generator_service import jd_generator_service
+from app.models.job_draft import ChangeType, JobDraft, JobDraftStatus
+from app.services.confidence_policy_service import ConfidencePolicyService
+from app.services.config_completeness_service import ConfigCompletenessService
 from app.services.context_aggregator_service import context_aggregator
+from app.services.enhanced_intent_classifier import (
+    EnhancedIntentType,
+    enhanced_intent_classifier,
+)
+from app.services.intent_classifier import IntentType, intent_classifier_service
 from app.services.knowledge_base_service import knowledge_base
 from app.services.learning_hub_service import learning_hub_service
 from app.services.organization_catalog_service import OrganizationCatalogService
-from app.services.confidence_policy_service import ConfidencePolicyService
-from app.services.config_completeness_service import ConfigCompletenessService
-from app.services.skills_catalog_service import skills_catalog_service
 from app.services.responsibilities_catalog_service import responsibilities_catalog_service
-from app.domains.job_management.services.jd_generator_service import jd_generator_service
-from app.services.feedback_learning_service import FeedbackLearningService
-from app.services.llm import llm_service
+from app.services.skills_catalog_service import skills_catalog_service
 
 USE_ENHANCED_CLASSIFIER = True
 
@@ -48,10 +45,9 @@ class WizardStepService:
     ) -> Any:
         """Process one wizard step and return a WizardStepResponse."""
         # Import response model here to avoid circular imports at module load time
-        from app.api.v1.lia_assistant import WizardStepRequest, WizardStepResponse
-
-        from app.models.company_benefit import CompanyBenefit
+        from app.api.v1.lia_assistant import WizardStepResponse
         from app.models.company import CompanyProfile, Department
+        from app.models.company_benefit import CompanyBenefit
 
         WIZARD_STAGES = [
             {"stage": 1, "name": "description", "panel": "Descrição da Vaga"},
@@ -138,7 +134,6 @@ class WizardStepService:
 
             enhanced_classification = None
             aggregated_context = None
-            kb_response = None
 
             if USE_ENHANCED_CLASSIFIER:
                 try:
@@ -194,7 +189,7 @@ class WizardStepService:
                                 job_draft[key] = value
 
                     if enhanced_classification.intent_type == EnhancedIntentType.QUESTION:
-                        kb_response = knowledge_base.search(request.user_input)
+                        knowledge_base.search(request.user_input)
 
                     logger.info(f"Enhanced classification: {enhanced_classification.intent_type} (confidence: {enhanced_classification.confidence})")
 
@@ -363,7 +358,7 @@ class WizardStepService:
                 logger.warning(f"Could not fetch company profile/departments: {e}")
 
             # Helper function to get historical job patterns for fallback suggestions
-            async def get_historical_job_patterns(db_session: AsyncSession, company_id: str) -> Dict[str, Any]:
+            async def get_historical_job_patterns(db_session: AsyncSession, company_id: str) -> dict[str, Any]:
                 """
                 Get most frequent work_model, employment_type and location patterns from historical jobs.
                 Returns suggestions with confidence based on frequency.
@@ -443,7 +438,7 @@ class WizardStepService:
                 return patterns
 
             # Helper function to get salary patterns from historical jobs
-            async def get_historical_salary_patterns(db_session: AsyncSession, company_id: str, job_title: str, seniority: str) -> Dict[str, Any]:
+            async def get_historical_salary_patterns(db_session: AsyncSession, company_id: str, job_title: str, seniority: str) -> dict[str, Any]:
                 """
                 Get salary patterns from historical jobs for similar roles.
                 Returns average salary range based on similar positions.
@@ -598,7 +593,7 @@ class WizardStepService:
                 else:
                     low_confidence_fields.append(field)
 
-            response_style = "assertive" if len(low_confidence_fields) == 0 else "questioning"
+            "assertive" if len(low_confidence_fields) == 0 else "questioning"
 
             company_context = ""
             if company_profile:
@@ -656,11 +651,11 @@ class WizardStepService:
 
             if company_departments:
                 dept_info = [f"- {d['name']}" + (f" (Gestor: {d['manager']})" if d.get('manager') else "") for d in company_departments[:10]]
-                company_context += f"\nDEPARTAMENTOS:\n" + "\n".join(dept_info) + "\n"
+                company_context += "\nDEPARTAMENTOS:\n" + "\n".join(dept_info) + "\n"
 
             if company_benefits:
                 benefit_info = [f"- {b['name']} ({b['category']})" for b in company_benefits[:10]]
-                company_context += f"\nBENEFÍCIOS:\n" + "\n".join(benefit_info) + "\n"
+                company_context += "\nBENEFÍCIOS:\n" + "\n".join(benefit_info) + "\n"
 
             detected_criteria = None
             lia_message = ""
@@ -1082,7 +1077,7 @@ class WizardStepService:
                                     suggestion_parts.append(f"**Localização**: {job_draft.get('location')} ({ctx})")
 
                                 if suggestion_parts:
-                                    lia_message += f"\n\n📊 **Sugestões baseadas no seu histórico**:\n"
+                                    lia_message += "\n\n📊 **Sugestões baseadas no seu histórico**:\n"
                                     lia_message += "\n".join(['• ' + p for p in suggestion_parts])
                                     lia_message += "\n\n*Esses valores foram sugeridos com base nas suas vagas anteriores. Deseja manter ou alterar?*"
 
@@ -1149,7 +1144,7 @@ class WizardStepService:
 
                                 if gap_analysis.get('missing_behavioral'):
                                     behav_names = [s.get('name', str(s)) for s in gap_analysis['missing_behavioral'][:3]]
-                                    gap_feedback_parts.append(f"\n🎯 **Competências comportamentais sugeridas**:")
+                                    gap_feedback_parts.append("\n🎯 **Competências comportamentais sugeridas**:")
                                     gap_feedback_parts.extend([f"  • {name}" for name in behav_names])
 
                                 gap_feedback_parts.append("\n*Gostaria de adicionar alguma dessas competências à vaga?*")
@@ -1228,7 +1223,7 @@ class WizardStepService:
                 elif current_stage == 4:
                     benefits_list = ""
                     if company_benefits:
-                        benefits_list = f"\n\n✅ **Benefícios cadastrados da empresa:**\n" + "\n".join([f"• {b['name']}" for b in company_benefits[:10]])
+                        benefits_list = "\n\n✅ **Benefícios cadastrados da empresa:**\n" + "\n".join([f"• {b['name']}" for b in company_benefits[:10]])
                     else:
                         benefits_list = "\n\n⚠️ *Nenhum benefício cadastrado. Você pode adicionar benefícios em Configurações → Benefícios.*"
 
@@ -1353,8 +1348,8 @@ class WizardStepService:
                     # Get detected competencies for WSI question generation
                     detected_tech = job_draft.get('competenciasTecnicas') or job_draft.get('detected_skills') or []
                     detected_behav = job_draft.get('competenciasComportamentais') or job_draft.get('behavioral_skills') or []
-                    job_title_for_wsi = job_draft.get('cargo') or job_draft.get('job_title') or ''
-                    seniority_for_wsi = job_draft.get('senioridade') or job_draft.get('seniority') or 'Pleno'
+                    job_draft.get('cargo') or job_draft.get('job_title') or ''
+                    job_draft.get('senioridade') or job_draft.get('seniority') or 'Pleno'
 
                     if isinstance(detected_tech, str):
                         detected_tech = [detected_tech]
@@ -1437,7 +1432,6 @@ class WizardStepService:
     ❓ *Quer saber mais sobre a metodologia WSI? Pergunte!*"""
 
                 elif current_stage == 6:
-                    job_context = request.context or {}
 
                     job_data_for_completeness = {
                         "title": job_draft.get("cargo") or job_draft.get("job_title"),

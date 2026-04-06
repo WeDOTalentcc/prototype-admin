@@ -9,7 +9,7 @@ Methodology: BARS (Behaviorally Anchored Rating Scales) + André Methodology v1
 Reference:   LIA_METHODOLOGY.md Section 4
 """
 import logging
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 from app.tools.registry import ToolDefinition, tool_registry
 
@@ -19,18 +19,18 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
 
 
 async def analyze_cv_match(
-    candidate_id: Optional[str] = None,
-    candidate_name: Optional[str] = None,
-    vacancy_id: Optional[str] = None,
-    vacancy_title: Optional[str] = None,
+    candidate_id: str | None = None,
+    candidate_name: str | None = None,
+    vacancy_id: str | None = None,
+    vacancy_title: str | None = None,
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Evaluate a candidate's CV against a job vacancy using BARS rubric methodology.
 
@@ -48,7 +48,7 @@ async def analyze_cv_match(
         missing_skills, recommendation, and full BARS evaluation detail.
     """
     context = _extract_context(kwargs)
-    company_id: Optional[str] = context.company_id if context else None
+    company_id: str | None = context.company_id if context else None
 
     logger.info(
         "[analyze_cv_match] candidate=%s|%r  vacancy=%s|%r  company=%s",
@@ -70,8 +70,9 @@ async def analyze_cv_match(
         }
 
     try:
+        from sqlalchemy import func, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func
         from app.models.candidate import Candidate
         from app.models.job_vacancy import JobVacancy
 

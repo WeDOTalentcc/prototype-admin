@@ -1,6 +1,6 @@
 import logging
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -11,23 +11,23 @@ MAX_SHORTLIST = 50
 
 @dataclass
 class ConversationState:
-    company_id: Optional[str] = None  # Multi-tenancy: tenant isolation
-    last_candidates_shown: List[int] = field(default_factory=list)
-    last_candidate_detailed: Optional[int] = None
-    detailed_history: List[int] = field(default_factory=list)
-    shortlist: List[int] = field(default_factory=list)
-    mentioned_candidates: Dict[str, int] = field(default_factory=dict)
-    active_filters: Dict[str, Any] = field(default_factory=dict)
-    last_search_term: Optional[str] = None
-    last_action: Optional[str] = None
-    last_job_id: Optional[int] = None
-    last_domain_id: Optional[str] = None
-    last_results_count: Optional[int] = None
+    company_id: str | None = None  # Multi-tenancy: tenant isolation
+    last_candidates_shown: list[int] = field(default_factory=list)
+    last_candidate_detailed: int | None = None
+    detailed_history: list[int] = field(default_factory=list)
+    shortlist: list[int] = field(default_factory=list)
+    mentioned_candidates: dict[str, int] = field(default_factory=dict)
+    active_filters: dict[str, Any] = field(default_factory=dict)
+    last_search_term: str | None = None
+    last_action: str | None = None
+    last_job_id: int | None = None
+    last_domain_id: str | None = None
+    last_results_count: int | None = None
     # Phase 2 — MemoryResolver expansion
-    last_entity: Optional[Dict[str, Any]] = None  # {type, id, name} último mencionado
+    last_entity: dict[str, Any] | None = None  # {type, id, name} último mencionado
     pagination_cursor: int = 0                     # offset para "mostra mais"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "company_id": self.company_id,
             "last_candidates_shown": self.last_candidates_shown,
@@ -46,7 +46,7 @@ class ConversationState:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ConversationState":
+    def from_dict(cls, data: dict[str, Any]) -> "ConversationState":
         return cls(
             company_id=data.get("company_id"),
             last_candidates_shown=data.get("last_candidates_shown", []),
@@ -143,7 +143,7 @@ class ConversationState:
         logger.debug(f"Removed candidate {candidate_id} from shortlist")
         return True
 
-    def update_candidates_shown(self, candidate_ids: List[int]) -> None:
+    def update_candidates_shown(self, candidate_ids: list[int]) -> None:
         self.last_candidates_shown = candidate_ids[:MAX_CANDIDATES_SHOWN]
         logger.debug(f"Updated candidates shown: {len(self.last_candidates_shown)} candidates")
 

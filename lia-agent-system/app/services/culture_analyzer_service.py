@@ -6,10 +6,10 @@ Enhanced with multi-source extraction (Website + LinkedIn).
 import json
 import logging
 import re
-from typing import Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import timedelta
+from typing import Any
 
-from app.services.llm import llm_service, LLMProvider
+from app.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +30,9 @@ class CultureAnalyzerService:
     async def analyze_culture(
         self, 
         content: str, 
-        linkedin_data: Optional[Dict] = None,
+        linkedin_data: dict | None = None,
         provider: LLMProvider = "claude"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze company culture from scraped content and LinkedIn data.
         
@@ -74,7 +74,7 @@ class CultureAnalyzerService:
             logger.error(f"Error analyzing culture: {type(e).__name__}: {e}")
             return self._get_default_result(str(e))
     
-    def _merge_linkedin_data(self, analysis: Dict, linkedin_data: Dict) -> Dict:
+    def _merge_linkedin_data(self, analysis: dict, linkedin_data: dict) -> dict:
         """
         Merge LinkedIn structured data with LLM analysis.
         LinkedIn data takes precedence for factual fields.
@@ -102,7 +102,7 @@ class CultureAnalyzerService:
         
         return analysis
     
-    def _parse_llm_response(self, response: str) -> Dict[str, Any]:
+    def _parse_llm_response(self, response: str) -> dict[str, Any]:
         """Parse LLM response and extract JSON data."""
         try:
             json_match = re.search(r'\{[\s\S]*\}', response)
@@ -119,7 +119,7 @@ class CultureAnalyzerService:
             logger.error(f"JSON parse error: {e}")
             return self._get_default_result(f"JSON parse error: {e}")
     
-    def _validate_and_normalize(self, data: Dict) -> Dict[str, Any]:
+    def _validate_and_normalize(self, data: dict) -> dict[str, Any]:
         """Validate and normalize the parsed data including new fields."""
         result = {
             "success": True,
@@ -183,7 +183,7 @@ class CultureAnalyzerService:
         
         return result
     
-    def _get_default_result(self, error: str) -> Dict[str, Any]:
+    def _get_default_result(self, error: str) -> dict[str, Any]:
         """Return default result structure on error."""
         return {
             "success": False,
@@ -227,9 +227,9 @@ class CultureAnalyzerService:
     
     def calculate_culture_match(
         self, 
-        company_profile: Dict[str, int], 
-        candidate_profile: Dict[str, int]
-    ) -> Dict[str, Any]:
+        company_profile: dict[str, int], 
+        candidate_profile: dict[str, int]
+    ) -> dict[str, Any]:
         """
         Calculate culture fit match between company and candidate Big Five profiles.
         

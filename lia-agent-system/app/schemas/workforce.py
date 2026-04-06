@@ -1,23 +1,24 @@
 """
 Pydantic schemas for Workforce Planning module.
 """
-from datetime import datetime, date
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from datetime import date, datetime
+from typing import Any
 from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class HiringPlanBase(BaseModel):
     fiscal_year: int
     name: str
-    description: Optional[str] = None
-    status: Optional[str] = "draft"
-    owner_name: Optional[str] = None
-    owner_email: Optional[str] = None
-    total_headcount: Optional[int] = 0
-    total_budget: Optional[float] = None
-    currency: Optional[str] = "BRL"
-    ai_source_metadata: Optional[Dict[str, Any]] = {}
+    description: str | None = None
+    status: str | None = "draft"
+    owner_name: str | None = None
+    owner_email: str | None = None
+    total_headcount: int | None = 0
+    total_budget: float | None = None
+    currency: str | None = "BRL"
+    ai_source_metadata: dict[str, Any] | None = {}
 
 
 class HiringPlanCreate(HiringPlanBase):
@@ -25,17 +26,17 @@ class HiringPlanCreate(HiringPlanBase):
 
 
 class HiringPlanUpdate(BaseModel):
-    fiscal_year: Optional[int] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    owner_name: Optional[str] = None
-    owner_email: Optional[str] = None
-    total_headcount: Optional[int] = None
-    total_budget: Optional[float] = None
-    currency: Optional[str] = None
-    ai_source_metadata: Optional[Dict[str, Any]] = None
-    is_active: Optional[bool] = None
+    fiscal_year: int | None = None
+    name: str | None = None
+    description: str | None = None
+    status: str | None = None
+    owner_name: str | None = None
+    owner_email: str | None = None
+    total_headcount: int | None = None
+    total_budget: float | None = None
+    currency: str | None = None
+    ai_source_metadata: dict[str, Any] | None = None
+    is_active: bool | None = None
 
 
 class HiringPlanResponse(HiringPlanBase):
@@ -44,7 +45,7 @@ class HiringPlanResponse(HiringPlanBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
+    created_by: str | None
     
     class Config:
         from_attributes = True
@@ -54,64 +55,64 @@ class PlannedHeadcountBase(BaseModel):
     target_month: int
     target_year: int
     title: str
-    level: Optional[str] = None
-    contract_type: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    salary_currency: Optional[str] = "BRL"
-    headcount: Optional[int] = 1
-    justification: Optional[str] = None
-    hiring_manager_name: Optional[str] = None
-    hiring_manager_email: Optional[str] = None
-    technical_profile: Optional[Dict[str, Any]] = {}
-    behavioral_profile: Optional[Dict[str, Any]] = {}
-    job_description: Optional[str] = None
-    priority: Optional[str] = "medium"
-    hiring_window_start: Optional[date] = None
-    hiring_window_end: Optional[date] = None
-    status: Optional[str] = "planned"
-    notes: Optional[str] = None
+    level: str | None = None
+    contract_type: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    salary_currency: str | None = "BRL"
+    headcount: int | None = 1
+    justification: str | None = None
+    hiring_manager_name: str | None = None
+    hiring_manager_email: str | None = None
+    technical_profile: dict[str, Any] | None = {}
+    behavioral_profile: dict[str, Any] | None = {}
+    job_description: str | None = None
+    priority: str | None = "medium"
+    hiring_window_start: date | None = None
+    hiring_window_end: date | None = None
+    status: str | None = "planned"
+    notes: str | None = None
 
 
 class PlannedHeadcountCreate(PlannedHeadcountBase):
     hiring_plan_id: UUID
-    department_id: Optional[UUID] = None
-    ideal_profile_id: Optional[UUID] = None
+    department_id: UUID | None = None
+    ideal_profile_id: UUID | None = None
 
 
 class PlannedHeadcountUpdate(BaseModel):
-    target_month: Optional[int] = None
-    target_year: Optional[int] = None
-    title: Optional[str] = None
-    level: Optional[str] = None
-    contract_type: Optional[str] = None
-    salary_min: Optional[float] = None
-    salary_max: Optional[float] = None
-    salary_currency: Optional[str] = None
-    headcount: Optional[int] = None
-    justification: Optional[str] = None
-    hiring_manager_name: Optional[str] = None
-    hiring_manager_email: Optional[str] = None
-    technical_profile: Optional[Dict[str, Any]] = None
-    behavioral_profile: Optional[Dict[str, Any]] = None
-    job_description: Optional[str] = None
-    priority: Optional[str] = None
-    hiring_window_start: Optional[date] = None
-    hiring_window_end: Optional[date] = None
-    status: Optional[str] = None
-    notes: Optional[str] = None
-    department_id: Optional[UUID] = None
-    ideal_profile_id: Optional[UUID] = None
-    linked_vacancy_id: Optional[UUID] = None
-    is_active: Optional[bool] = None
+    target_month: int | None = None
+    target_year: int | None = None
+    title: str | None = None
+    level: str | None = None
+    contract_type: str | None = None
+    salary_min: float | None = None
+    salary_max: float | None = None
+    salary_currency: str | None = None
+    headcount: int | None = None
+    justification: str | None = None
+    hiring_manager_name: str | None = None
+    hiring_manager_email: str | None = None
+    technical_profile: dict[str, Any] | None = None
+    behavioral_profile: dict[str, Any] | None = None
+    job_description: str | None = None
+    priority: str | None = None
+    hiring_window_start: date | None = None
+    hiring_window_end: date | None = None
+    status: str | None = None
+    notes: str | None = None
+    department_id: UUID | None = None
+    ideal_profile_id: UUID | None = None
+    linked_vacancy_id: UUID | None = None
+    is_active: bool | None = None
 
 
 class PlannedHeadcountResponse(PlannedHeadcountBase):
     id: UUID
     hiring_plan_id: UUID
-    department_id: Optional[UUID]
-    ideal_profile_id: Optional[UUID]
-    linked_vacancy_id: Optional[UUID]
+    department_id: UUID | None
+    ideal_profile_id: UUID | None
+    linked_vacancy_id: UUID | None
     ai_generated: bool
     is_active: bool
     created_at: datetime
@@ -124,20 +125,20 @@ class PlannedHeadcountResponse(PlannedHeadcountBase):
 class ImportJobBase(BaseModel):
     file_name: str
     file_type: str
-    status: Optional[str] = "pending"
-    total_rows: Optional[int] = 0
-    imported_rows: Optional[int] = 0
-    error_rows: Optional[int] = 0
-    errors: Optional[List[Dict[str, Any]]] = []
-    column_mapping: Optional[Dict[str, str]] = {}
-    ai_suggestions: Optional[Dict[str, Any]] = {}
+    status: str | None = "pending"
+    total_rows: int | None = 0
+    imported_rows: int | None = 0
+    error_rows: int | None = 0
+    errors: list[dict[str, Any]] | None = []
+    column_mapping: dict[str, str] | None = {}
+    ai_suggestions: dict[str, Any] | None = {}
 
 
 class ImportJobCreate(BaseModel):
     hiring_plan_id: UUID
     file_name: str
     file_type: str
-    column_mapping: Optional[Dict[str, str]] = {}
+    column_mapping: dict[str, str] | None = {}
 
 
 class ImportJobResponse(ImportJobBase):
@@ -145,24 +146,24 @@ class ImportJobResponse(ImportJobBase):
     hiring_plan_id: UUID
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
+    created_by: str | None
     
     class Config:
         from_attributes = True
 
 
 class HiringPlanWithDetails(HiringPlanResponse):
-    planned_headcounts: List[PlannedHeadcountResponse] = []
-    import_jobs: List[ImportJobResponse] = []
+    planned_headcounts: list[PlannedHeadcountResponse] = []
+    import_jobs: list[ImportJobResponse] = []
 
 
 class ImportRowValidation(BaseModel):
     row_number: int
-    data: Dict[str, Any]
+    data: dict[str, Any]
     is_valid: bool
-    errors: List[str] = []
-    warnings: List[str] = []
-    suggested_corrections: Optional[Dict[str, Any]] = None
+    errors: list[str] = []
+    warnings: list[str] = []
+    suggested_corrections: dict[str, Any] | None = None
 
 
 class ImportPreview(BaseModel):
@@ -171,21 +172,21 @@ class ImportPreview(BaseModel):
     total_rows: int
     valid_rows: int
     error_rows: int
-    detected_columns: List[str]
-    column_mapping: Dict[str, str]
-    ai_suggested_mapping: Optional[Dict[str, str]] = None
-    sample_data: List[Dict[str, Any]] = []
-    row_validations: List[ImportRowValidation] = []
+    detected_columns: list[str]
+    column_mapping: dict[str, str]
+    ai_suggested_mapping: dict[str, str] | None = None
+    sample_data: list[dict[str, Any]] = []
+    row_validations: list[ImportRowValidation] = []
     can_proceed: bool
-    validation_summary: Dict[str, Any] = {}
+    validation_summary: dict[str, Any] = {}
 
 
 class ImportConfirm(BaseModel):
     import_job_id: UUID
-    column_mapping: Dict[str, str]
-    skip_invalid_rows: Optional[bool] = False
-    apply_ai_corrections: Optional[bool] = True
-    rows_to_import: Optional[List[int]] = None
+    column_mapping: dict[str, str]
+    skip_invalid_rows: bool | None = False
+    apply_ai_corrections: bool | None = True
+    rows_to_import: list[int] | None = None
 
 
 class ImportResult(BaseModel):
@@ -194,17 +195,17 @@ class ImportResult(BaseModel):
     total_rows: int
     imported_rows: int
     error_rows: int
-    errors: List[Dict[str, Any]] = []
-    created_headcount_ids: List[UUID] = []
+    errors: list[dict[str, Any]] = []
+    created_headcount_ids: list[UUID] = []
 
 
 class MonthlyHeadcountStats(BaseModel):
     month: int
     year: int
     total_headcount: int
-    by_status: Dict[str, int] = {}
-    by_priority: Dict[str, int] = {}
-    by_department: Dict[str, int] = {}
+    by_status: dict[str, int] = {}
+    by_priority: dict[str, int] = {}
+    by_department: dict[str, int] = {}
 
 
 class WorkforcePlanningStats(BaseModel):
@@ -216,14 +217,14 @@ class WorkforcePlanningStats(BaseModel):
     total_pending: int
     total_cancelled: int
     fill_rate: float
-    total_budget: Optional[float] = None
-    budget_utilized: Optional[float] = None
-    monthly_breakdown: List[MonthlyHeadcountStats] = []
-    by_department: Dict[str, int] = {}
-    by_level: Dict[str, int] = {}
-    by_contract_type: Dict[str, int] = {}
-    by_priority: Dict[str, int] = {}
-    avg_time_to_fill: Optional[float] = None
+    total_budget: float | None = None
+    budget_utilized: float | None = None
+    monthly_breakdown: list[MonthlyHeadcountStats] = []
+    by_department: dict[str, int] = {}
+    by_level: dict[str, int] = {}
+    by_contract_type: dict[str, int] = {}
+    by_priority: dict[str, int] = {}
+    avg_time_to_fill: float | None = None
     positions_at_risk: int = 0
 
 
@@ -246,4 +247,4 @@ class HiringPlanSummary(BaseModel):
     in_progress_count: int
     pending_count: int
     fill_rate: float
-    department_summary: List[DepartmentHeadcountSummary] = []
+    department_summary: list[DepartmentHeadcountSummary] = []

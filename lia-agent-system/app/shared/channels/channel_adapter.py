@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class ChannelType(str, Enum):
@@ -26,14 +26,14 @@ class ChannelMessage:
     recipient_id: str
     recipient_name: str
     recipient_contact: str
-    subject: Optional[str] = None
+    subject: str | None = None
     body_text: str = ""
-    body_html: Optional[str] = None
-    template_id: Optional[str] = None
-    template_vars: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    body_html: str | None = None
+    template_id: str | None = None
+    template_vars: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
     company_id: str = ""
-    vacancy_id: Optional[str] = None
+    vacancy_id: str | None = None
 
 
 @dataclass
@@ -42,9 +42,9 @@ class DeliveryResult:
     channel: ChannelType
     message_id: str
     status: DeliveryStatus
-    provider_id: Optional[str] = None
-    error: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = field(default_factory=dict)
+    provider_id: str | None = None
+    error: str | None = None
+    metadata: dict[str, Any] | None = field(default_factory=dict)
 
 
 class ChannelAdapter(ABC):

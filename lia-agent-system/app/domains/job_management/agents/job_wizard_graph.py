@@ -5,13 +5,13 @@ Implements a directed graph where nodes are processing steps and
 edges define the flow between them. Supports conditional routing,
 streaming execution, and state persistence.
 """
-import logging
 import asyncio
-import time
-from typing import Dict, List, Any, Optional, Callable, AsyncIterator, Tuple
-from datetime import datetime
-from uuid import uuid4
+import logging
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
 try:
     from langsmith import traceable as _traceable
@@ -21,19 +21,17 @@ except ImportError:
             return fn
         return decorator
 
+from lia_agents_core.state_machine import (
+    GraphExecutionLog,
+    JobWizardState,
+    ReasoningStep,
+    WizardIntent,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_agents_core.state_machine import (
-    JobWizardState,
-    WizardStage,
-    WizardIntent,
-    GraphExecutionLog,
-    ReasoningStep,
-    create_initial_state,
-)
 from app.agents.nodes import JobWizardNodes, job_wizard_nodes
+from app.services.checkpoint_service import delete_checkpoint, restore_checkpoint, save_checkpoint
 from app.tools import initialize_tools
-from app.services.checkpoint_service import save_checkpoint, restore_checkpoint, delete_checkpoint
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +45,7 @@ _tools_initialized = False
 class EdgeCondition:
     """Condition for a graph edge."""
     target_node: str
-    condition: Optional[Callable[[JobWizardState], bool]] = None
+    condition: Callable[[JobWizardState], bool] | None = None
     priority: int = 0
 
 
@@ -66,7 +64,7 @@ class JobWizardGraph:
     START_NODE = "intent_classifier"
     END_NODE = "END"
     
-    def __init__(self, nodes: Optional[JobWizardNodes] = None):
+    def __init__(self, nodes: JobWizardNodes | None = None):
         global _tools_initialized
         if not _tools_initialized:
             initialize_tools()
@@ -77,10 +75,10 @@ class JobWizardGraph:
         self.edges = self._build_edges()
         self.conditional_edges = self._build_conditional_edges()
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._execution_logs: Dict[str, GraphExecutionLog] = {}
-        self._compiled_lg: Optional[Any] = None  # LangGraph compiled graph (lazy init)
+        self._execution_logs: dict[str, GraphExecutionLog] = {}
+        self._compiled_lg: Any | None = None  # LangGraph compiled graph (lazy init)
     
-    def _build_edges(self) -> Dict[str, List[str]]:
+    def _build_edges(self) -> dict[str, list[str]]:
         """
         Define static graph edges (transitions).
         
@@ -96,7 +94,7 @@ class JobWizardGraph:
             "stage_transition": ["END"]
         }
     
-    def _build_conditional_edges(self) -> Dict[str, List[EdgeCondition]]:
+    def _build_conditional_edges(self) -> dict[str, list[EdgeCondition]]:
         """
         Define conditional edges based on state.
         
@@ -175,7 +173,8 @@ class JobWizardGraph:
 
     def _build_langgraph(self):
         """Constrói StateGraph nativo substituindo checkpoint_service por PostgresSaver."""
-        from langgraph.graph import StateGraph, END as LEND
+        from langgraph.graph import END as LEND
+        from langgraph.graph import StateGraph
         from lia_agents_core.checkpointer import get_checkpointer
 
         nodes_ref = self.nodes
@@ -355,8 +354,8 @@ class JobWizardGraph:
     async def invoke(
         self,
         state: JobWizardState,
-        start_node: Optional[str] = None,
-        db: Optional[AsyncSession] = None,
+        start_node: str | None = None,
+        db: AsyncSession | None = None,
         audit_callback=None,
     ) -> JobWizardState:
         """Invoca o grafo via LangGraph nativo (PostgresSaver gerencia checkpoints).
@@ -370,8 +369,8 @@ class JobWizardGraph:
     async def _invoke_legacy(
         self,
         state: JobWizardState,
-        start_node: Optional[str] = None,
-        db: Optional[AsyncSession] = None,
+        start_node: str | None = None,
+        db: AsyncSession | None = None,
         audit_callback=None,
     ) -> JobWizardState:
         """
@@ -443,8 +442,8 @@ class JobWizardGraph:
                     current_node = self._get_next_node(current_node, state)
                     self.logger.debug(f"Next node: {current_node}")
 
-        except asyncio.TimeoutError:
-            self.logger.error(f"JobWizardGraph timeout após 120s", extra={"execution_id": execution_id})
+        except TimeoutError:
+            self.logger.error("JobWizardGraph timeout após 120s", extra={"execution_id": execution_id})
             state["error"] = "Timeout: graph execution exceeded 120s"
 
         if iteration >= self.MAX_ITERATIONS:
@@ -476,6 +475,7 @@ class JobWizardGraph:
             _is_confirm = _intent_es in ("confirm", "CONFIRM")
             if db is not None and _job_id and _company_id_es and _is_confirm:
                 import asyncio as _asyncio
+
                 from app.services.event_store_service import event_store_service as _es
                 _asyncio.create_task(_es.append(
                     aggregate_type="job",
@@ -528,8 +528,8 @@ class JobWizardGraph:
     async def stream(
         self,
         state: JobWizardState,
-        start_node: Optional[str] = None
-    ) -> AsyncIterator[Dict[str, Any]]:
+        start_node: str | None = None
+    ) -> AsyncIterator[dict[str, Any]]:
         """
         Stream execution for real-time updates.
         
@@ -613,11 +613,11 @@ class JobWizardGraph:
             "timestamp": end_time.isoformat()
         }
     
-    def get_execution_log(self, execution_id: str) -> Optional[GraphExecutionLog]:
+    def get_execution_log(self, execution_id: str) -> GraphExecutionLog | None:
         """Get the execution log for a specific run."""
         return self._execution_logs.get(execution_id)
 
-    def get_graph_structure(self) -> Dict[str, Any]:
+    def get_graph_structure(self) -> dict[str, Any]:
         """Get a description of the graph structure for visualization."""
         return {
             "nodes": list(self.edges.keys()) + [self.END_NODE],

@@ -18,22 +18,21 @@ Environment Variables:
 
 import audioop
 import io
-import os
 import logging
-import struct
-import wave
+import os
 import uuid
-from typing import Optional, Dict, Any
+import wave
 from datetime import datetime
+from typing import Any
 from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 
 try:
-    from twilio.rest import Client as TwilioClient
     from twilio.base.exceptions import TwilioRestException
     from twilio.request_validator import RequestValidator
-    from twilio.twiml.voice_response import VoiceResponse, Connect, Stream, Say, Pause, Gather
+    from twilio.rest import Client as TwilioClient
+    from twilio.twiml.voice_response import Connect, Gather, Pause, Say, Stream, VoiceResponse
     TWILIO_AVAILABLE = True
 except ImportError:
     TWILIO_AVAILABLE = False
@@ -95,7 +94,7 @@ def mulaw_to_wav(mulaw_data: bytes, sample_rate: int = 8000) -> bytes:
     return buf.getvalue()
 
 
-def mp3_to_mulaw(mp3_data: bytes) -> Optional[bytes]:
+def mp3_to_mulaw(mp3_data: bytes) -> bytes | None:
     """
     Convert MP3 audio (from TTS) to raw μ-law for Twilio Media Stream.
 
@@ -153,8 +152,8 @@ class TwilioVoiceService:
         self.voice_number = os.getenv("TWILIO_VOICE_NUMBER")
         self.twiml_app_sid = os.getenv("TWILIO_TWIML_APP_SID")
         self.base_url = os.getenv("APP_BASE_URL", "").rstrip("/")
-        self._client: Optional[TwilioClient] = None
-        self._validator: Optional[RequestValidator] = None
+        self._client: TwilioClient | None = None
+        self._validator: RequestValidator | None = None
 
     @property
     def is_configured(self) -> bool:
@@ -201,7 +200,7 @@ class TwilioVoiceService:
         return self._client
 
     @property
-    def validator(self) -> Optional[RequestValidator]:
+    def validator(self) -> RequestValidator | None:
         """Get or create Twilio request validator for webhook signature checking."""
         if self._validator is None and self.auth_token and RequestValidator:
             self._validator = RequestValidator(self.auth_token)
@@ -212,7 +211,7 @@ class TwilioVoiceService:
         return f"{self.base_url}/api/v1/twilio-voice{path}"
 
     def verify_webhook_signature(
-        self, url: str, params: Dict[str, str], signature: str
+        self, url: str, params: dict[str, str], signature: str
     ) -> bool:
         """
         Verify Twilio webhook request signature (security guard).
@@ -248,9 +247,9 @@ class TwilioVoiceService:
         to_phone: str,
         candidate_name: str,
         job_title: str,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         language: str = "pt-BR",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Initiate an outbound screening call to a candidate.
 
@@ -446,7 +445,7 @@ class TwilioVoiceService:
 
         return str(response)
 
-    def end_call(self, call_sid: str) -> Dict[str, Any]:
+    def end_call(self, call_sid: str) -> dict[str, Any]:
         """Programmatically terminate an active call."""
         try:
             call = self.client.calls(call_sid).update(status="completed")
@@ -465,9 +464,9 @@ class TwilioVoiceService:
         self,
         session_id: str,
         candidate_id: str,
-        identity: Optional[str] = None,
+        identity: str | None = None,
         expires_in: int = 3600,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a Twilio Access Token for the browser VoIP client (Twilio Client SDK).
 
@@ -588,7 +587,7 @@ class TwilioVoiceService:
 
         return str(response)
 
-    def parse_status_webhook(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_status_webhook(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Parse Twilio Voice call status callback payload."""
         return {
             "call_sid": payload.get("CallSid"),

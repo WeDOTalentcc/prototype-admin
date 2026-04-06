@@ -8,19 +8,20 @@ This service handles:
 - Integration with TaskService and JobAlertService
 - Configurable thresholds for sourcing decisions
 """
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
 import logging
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any
 
-from app.models.job_vacancy import JobVacancy
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.sourcing.services.pearch_service import pearch_service
+from app.models.alert import Alert, AlertSeverity, AlertStatus, AlertType
 from app.models.candidate import Candidate
 from app.models.interview import Interview
-from app.models.task import Task, TaskType, TaskPriority, TaskStatus
-from app.models.alert import Alert, AlertType, AlertSeverity, AlertStatus
-from app.domains.sourcing.services.pearch_service import pearch_service
+from app.models.job_vacancy import JobVacancy
+from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +49,9 @@ class PipelineJobStatus:
     qualified_ratio: float
     needs_more_candidates: bool
     days_open: int
-    last_sourcing_run: Optional[datetime] = None
+    last_sourcing_run: datetime | None = None
     pipeline_status: str = "idle"
-    recommended_action: Optional[str] = None
+    recommended_action: str | None = None
 
 
 @dataclass
@@ -61,9 +62,9 @@ class PipelineRunResult:
     candidates_found_local: int = 0
     candidates_found_global: int = 0
     candidates_added: int = 0
-    tasks_created: List[str] = field(default_factory=list)
-    alerts_created: List[str] = field(default_factory=list)
-    error_message: Optional[str] = None
+    tasks_created: list[str] = field(default_factory=list)
+    alerts_created: list[str] = field(default_factory=list)
+    error_message: str | None = None
     expanded_to_global: bool = False
     duration_seconds: float = 0.0
 
@@ -79,9 +80,9 @@ class SourcingPipelineService:
     4. Creates follow-up tasks and alerts as needed
     """
     
-    def __init__(self, config: Optional[PipelineConfig] = None):
+    def __init__(self, config: PipelineConfig | None = None):
         self.config = config or PipelineConfig()
-        self._running_jobs: Dict[str, datetime] = {}
+        self._running_jobs: dict[str, datetime] = {}
     
     def update_config(self, **kwargs) -> PipelineConfig:
         """
@@ -102,7 +103,7 @@ class SourcingPipelineService:
         
         return self.config
     
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Get current pipeline configuration as a dictionary."""
         return {
             "min_candidates_per_job": self.config.min_candidates_per_job,
@@ -119,7 +120,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job_id: str
-    ) -> Optional[PipelineJobStatus]:
+    ) -> PipelineJobStatus | None:
         """
         Get the pipeline status for a specific job.
         
@@ -144,7 +145,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         limit: int = 50
-    ) -> List[PipelineJobStatus]:
+    ) -> list[PipelineJobStatus]:
         """
         Get all open jobs that need more candidates.
         
@@ -323,7 +324,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         max_jobs: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run the sourcing pipeline for all jobs that need more candidates.
         
@@ -456,7 +457,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job: JobVacancy
-    ) -> List[Candidate]:
+    ) -> list[Candidate]:
         """
         Search for matching candidates in local database.
         
@@ -515,7 +516,7 @@ class SourcingPipelineService:
         
         return matched_candidates
     
-    async def _run_global_search(self, job: JobVacancy) -> List[Dict[str, Any]]:
+    async def _run_global_search(self, job: JobVacancy) -> list[dict[str, Any]]:
         """
         Search for candidates using Pearch AI global database.
         
@@ -638,7 +639,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job: JobVacancy,
-        candidates: List[Candidate]
+        candidates: list[Candidate]
     ) -> int:
         """
         Add found candidates to the job pipeline by creating initial interview records.
@@ -670,7 +671,7 @@ class SourcingPipelineService:
             
             interview = Interview(
                 title=f"Pipeline: {job.title} - {candidate.name}",
-                description=f"Candidato adicionado automaticamente ao pipeline",
+                description="Candidato adicionado automaticamente ao pipeline",
                 interview_type="triagem",
                 interview_mode="phone",
                 candidate_id=candidate.id,
@@ -701,7 +702,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job: JobVacancy,
-        pearch_candidates: List[Dict[str, Any]]
+        pearch_candidates: list[dict[str, Any]]
     ) -> int:
         """
         Add Pearch candidates to the database and job pipeline.
@@ -758,7 +759,7 @@ class SourcingPipelineService:
             
             interview = Interview(
                 title=f"Pipeline: {job.title} - {candidate.name}",
-                description=f"Candidato sourced via Pearch AI global search",
+                description="Candidato sourced via Pearch AI global search",
                 interview_type="triagem",
                 interview_mode="phone",
                 candidate_id=candidate.id,
@@ -788,7 +789,7 @@ class SourcingPipelineService:
         db: AsyncSession,
         job: JobVacancy,
         current_count: int
-    ) -> Optional[Task]:
+    ) -> Task | None:
         """
         Create a follow-up sourcing task.
         
@@ -846,7 +847,7 @@ class SourcingPipelineService:
         db: AsyncSession,
         job: JobVacancy,
         current_count: int
-    ) -> Optional[Alert]:
+    ) -> Alert | None:
         """
         Create a low volume alert for the job.
         
@@ -912,7 +913,7 @@ class SourcingPipelineService:
         job_id: str,
         user_credits: int,
         expand_to_global: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run sourcing immediately after job publication.
         
@@ -1006,7 +1007,7 @@ class SourcingPipelineService:
         job_id: str,
         user_id: str,
         credits_to_use: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Confirm global search and add Pearch candidates.
         Deducts credits from user account.
@@ -1080,7 +1081,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get current sourcing progress and candidates found for a job.
         

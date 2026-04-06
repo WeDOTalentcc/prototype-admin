@@ -18,7 +18,7 @@ Benchmark thresholds per stage (business days — conservative for Brazilian mar
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +28,7 @@ from app.core.database import AsyncSessionLocal
 logger = logging.getLogger(__name__)
 
 # Days before a stage is flagged as a bottleneck
-_STAGE_THRESHOLDS: Dict[str, int] = {
+_STAGE_THRESHOLDS: dict[str, int] = {
     "applied": 2,
     "initial": 2,
     "novo": 2,
@@ -57,10 +57,10 @@ class PipelineVelocityService:
 
     async def get_velocity_metrics(
         self,
-        vacancy_id: Optional[str] = None,
-        company_id: Optional[str] = None,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        vacancy_id: str | None = None,
+        company_id: str | None = None,
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Return per-stage velocity metrics for a vacancy or whole company.
 
@@ -75,7 +75,7 @@ class PipelineVelocityService:
 
         try:
             filters = []
-            params: Dict[str, Any] = {}
+            params: dict[str, Any] = {}
 
             if vacancy_id:
                 filters.append("vc.vacancy_id::text = :vacancy_id")
@@ -109,8 +109,8 @@ class PipelineVelocityService:
             )
             rows = result.mappings().fetchall()
 
-            per_stage: Dict[str, Dict[str, Any]] = {}
-            bottleneck_stages: List[str] = []
+            per_stage: dict[str, dict[str, Any]] = {}
+            bottleneck_stages: list[str] = []
 
             for row in rows:
                 stage = row["stage"] or "unknown"
@@ -164,8 +164,8 @@ class PipelineVelocityService:
     async def get_bottlenecked_candidates(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Return candidates currently stuck beyond their stage threshold.
 

@@ -14,12 +14,11 @@ other module instantiates an LLM client.
 This is the "nuclear option" — it intercepts ALL SDK usage regardless
 of whether the caller goes through LLMService or not.
 """
+import functools
+import logging
 import os
 import time
-import logging
-import functools
 import traceback
-from typing import Any
 
 logger = logging.getLogger(__name__)
 

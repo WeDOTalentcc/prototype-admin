@@ -8,10 +8,11 @@ Includes schemas for:
 - SOX Controls
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class ComplianceFrameworkTypeEnum(str, Enum):
@@ -79,14 +80,14 @@ class ControlLibraryResponse(BaseModel):
     framework: str
     control_id: str
     control_name: str
-    control_description: Optional[str] = None
-    control_category: Optional[str] = None
-    domain: Optional[str] = None
+    control_description: str | None = None
+    control_category: str | None = None
+    domain: str | None = None
     is_mandatory: bool = True
-    implementation_guidance: Optional[str] = None
-    evidence_requirements: List[str] = []
-    related_controls: List[str] = []
-    created_at: Optional[datetime] = None
+    implementation_guidance: str | None = None
+    evidence_requirements: list[str] = []
+    related_controls: list[str] = []
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -94,7 +95,7 @@ class ControlLibraryResponse(BaseModel):
 
 class ControlLibraryListResponse(BaseModel):
     """Paginated list of control library entries."""
-    controls: List[ControlLibraryResponse]
+    controls: list[ControlLibraryResponse]
     total: int
     limit: int
     offset: int
@@ -105,13 +106,13 @@ class ControlLibraryCreate(BaseModel):
     framework: str = Field(..., description="Compliance framework (ISO_27001, SOC_2_TYPE_II, etc.)")
     control_id: str = Field(..., description="Control ID (e.g., A.5.1, CC6.1)")
     control_name: str = Field(..., description="Control name")
-    control_description: Optional[str] = Field(None, description="Control description")
-    control_category: Optional[str] = Field(None, description="Category (e.g., Access Control)")
-    domain: Optional[str] = Field(None, description="Domain/area")
+    control_description: str | None = Field(None, description="Control description")
+    control_category: str | None = Field(None, description="Category (e.g., Access Control)")
+    domain: str | None = Field(None, description="Domain/area")
     is_mandatory: bool = Field(True, description="Whether control is mandatory")
-    implementation_guidance: Optional[str] = Field(None, description="Implementation guidance")
-    evidence_requirements: Optional[List[str]] = Field(default=[], description="Required evidence")
-    related_controls: Optional[List[str]] = Field(default=[], description="Related control IDs")
+    implementation_guidance: str | None = Field(None, description="Implementation guidance")
+    evidence_requirements: list[str] | None = Field(default=[], description="Required evidence")
+    related_controls: list[str] | None = Field(default=[], description="Related control IDs")
 
 
 class EvidenceFile(BaseModel):
@@ -127,18 +128,18 @@ class CompanyControlResponse(BaseModel):
     company_id: str
     control_library_id: str
     status: str
-    implementation_date: Optional[date] = None
-    last_review_date: Optional[date] = None
-    next_review_date: Optional[date] = None
-    owner_name: Optional[str] = None
-    owner_email: Optional[str] = None
-    notes: Optional[str] = None
-    evidence_files: List[Dict[str, Any]] = []
-    effectiveness_rating: Optional[int] = None
-    auditor_notes: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    control: Optional[ControlLibraryResponse] = None
+    implementation_date: date | None = None
+    last_review_date: date | None = None
+    next_review_date: date | None = None
+    owner_name: str | None = None
+    owner_email: str | None = None
+    notes: str | None = None
+    evidence_files: list[dict[str, Any]] = []
+    effectiveness_rating: int | None = None
+    auditor_notes: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    control: ControlLibraryResponse | None = None
 
     class Config:
         from_attributes = True
@@ -146,7 +147,7 @@ class CompanyControlResponse(BaseModel):
 
 class CompanyControlListResponse(BaseModel):
     """Paginated list of company compliance controls."""
-    controls: List[CompanyControlResponse]
+    controls: list[CompanyControlResponse]
     total: int
     limit: int
     offset: int
@@ -155,23 +156,23 @@ class CompanyControlListResponse(BaseModel):
 class CompanyControlCreate(BaseModel):
     """Schema for creating a company compliance control."""
     control_library_id: str = Field(..., description="Control library ID")
-    status: Optional[str] = Field("not_started", description="Implementation status")
-    owner_name: Optional[str] = Field(None, description="Control owner name")
-    owner_email: Optional[str] = Field(None, description="Control owner email")
-    notes: Optional[str] = Field(None, description="Implementation notes")
+    status: str | None = Field("not_started", description="Implementation status")
+    owner_name: str | None = Field(None, description="Control owner name")
+    owner_email: str | None = Field(None, description="Control owner email")
+    notes: str | None = Field(None, description="Implementation notes")
 
 
 class CompanyControlUpdate(BaseModel):
     """Schema for updating a company compliance control."""
-    status: Optional[str] = Field(None, description="Implementation status")
-    implementation_date: Optional[date] = Field(None, description="Implementation date")
-    last_review_date: Optional[date] = Field(None, description="Last review date")
-    next_review_date: Optional[date] = Field(None, description="Next review date")
-    owner_name: Optional[str] = Field(None, description="Control owner name")
-    owner_email: Optional[str] = Field(None, description="Control owner email")
-    notes: Optional[str] = Field(None, description="Implementation notes")
-    effectiveness_rating: Optional[int] = Field(None, ge=0, le=100, description="Effectiveness rating (0-100)")
-    auditor_notes: Optional[str] = Field(None, description="Auditor notes")
+    status: str | None = Field(None, description="Implementation status")
+    implementation_date: date | None = Field(None, description="Implementation date")
+    last_review_date: date | None = Field(None, description="Last review date")
+    next_review_date: date | None = Field(None, description="Next review date")
+    owner_name: str | None = Field(None, description="Control owner name")
+    owner_email: str | None = Field(None, description="Control owner email")
+    notes: str | None = Field(None, description="Implementation notes")
+    effectiveness_rating: int | None = Field(None, ge=0, le=100, description="Effectiveness rating (0-100)")
+    auditor_notes: str | None = Field(None, description="Auditor notes")
 
 
 class EvidenceUpload(BaseModel):
@@ -186,21 +187,21 @@ class ComplianceAuditResponse(BaseModel):
     company_id: str
     framework: str
     audit_type: str
-    auditor_organization: Optional[str] = None
-    auditor_name: Optional[str] = None
-    audit_start_date: Optional[date] = None
-    audit_end_date: Optional[date] = None
-    scope_description: Optional[str] = None
+    auditor_organization: str | None = None
+    auditor_name: str | None = None
+    audit_start_date: date | None = None
+    audit_end_date: date | None = None
+    scope_description: str | None = None
     findings_count: int = 0
     critical_findings: int = 0
     high_findings: int = 0
     medium_findings: int = 0
     low_findings: int = 0
-    overall_result: Optional[str] = None
-    certificate_url: Optional[str] = None
-    report_url: Optional[str] = None
-    valid_until: Optional[date] = None
-    created_at: Optional[datetime] = None
+    overall_result: str | None = None
+    certificate_url: str | None = None
+    report_url: str | None = None
+    valid_until: date | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -208,7 +209,7 @@ class ComplianceAuditResponse(BaseModel):
 
 class ComplianceAuditListResponse(BaseModel):
     """Paginated list of compliance audits."""
-    audits: List[ComplianceAuditResponse]
+    audits: list[ComplianceAuditResponse]
     total: int
     limit: int
     offset: int
@@ -218,28 +219,28 @@ class ComplianceAuditCreate(BaseModel):
     """Schema for creating a compliance audit."""
     framework: str = Field(..., description="Compliance framework")
     audit_type: str = Field(..., description="Audit type (internal/external/certification)")
-    auditor_organization: Optional[str] = Field(None, description="Auditor organization")
-    auditor_name: Optional[str] = Field(None, description="Auditor name")
-    audit_start_date: Optional[date] = Field(None, description="Audit start date")
-    audit_end_date: Optional[date] = Field(None, description="Audit end date")
-    scope_description: Optional[str] = Field(None, description="Audit scope")
+    auditor_organization: str | None = Field(None, description="Auditor organization")
+    auditor_name: str | None = Field(None, description="Auditor name")
+    audit_start_date: date | None = Field(None, description="Audit start date")
+    audit_end_date: date | None = Field(None, description="Audit end date")
+    scope_description: str | None = Field(None, description="Audit scope")
 
 
 class ComplianceAuditUpdate(BaseModel):
     """Schema for updating a compliance audit."""
-    auditor_organization: Optional[str] = None
-    auditor_name: Optional[str] = None
-    audit_end_date: Optional[date] = None
-    scope_description: Optional[str] = None
-    findings_count: Optional[int] = None
-    critical_findings: Optional[int] = None
-    high_findings: Optional[int] = None
-    medium_findings: Optional[int] = None
-    low_findings: Optional[int] = None
-    overall_result: Optional[str] = None
-    certificate_url: Optional[str] = None
-    report_url: Optional[str] = None
-    valid_until: Optional[date] = None
+    auditor_organization: str | None = None
+    auditor_name: str | None = None
+    audit_end_date: date | None = None
+    scope_description: str | None = None
+    findings_count: int | None = None
+    critical_findings: int | None = None
+    high_findings: int | None = None
+    medium_findings: int | None = None
+    low_findings: int | None = None
+    overall_result: str | None = None
+    certificate_url: str | None = None
+    report_url: str | None = None
+    valid_until: date | None = None
 
 
 class SOXControlResponse(BaseModel):
@@ -249,19 +250,19 @@ class SOXControlResponse(BaseModel):
     section: str
     control_id: str
     control_name: str
-    control_objective: Optional[str] = None
+    control_objective: str | None = None
     key_control: bool = False
-    frequency: Optional[str] = None
-    control_owner: Optional[str] = None
-    last_test_date: Optional[date] = None
+    frequency: str | None = None
+    control_owner: str | None = None
+    last_test_date: date | None = None
     test_result: str = "not_tested"
-    test_evidence: Optional[str] = None
-    remediation_plan: Optional[str] = None
-    remediation_due_date: Optional[date] = None
+    test_evidence: str | None = None
+    remediation_plan: str | None = None
+    remediation_due_date: date | None = None
     segregation_of_duties_verified: bool = False
     audit_trail_enabled: bool = False
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -269,7 +270,7 @@ class SOXControlResponse(BaseModel):
 
 class SOXControlListResponse(BaseModel):
     """Paginated list of SOX controls."""
-    controls: List[SOXControlResponse]
+    controls: list[SOXControlResponse]
     total: int
     limit: int
     offset: int
@@ -280,25 +281,25 @@ class SOXControlCreate(BaseModel):
     section: str = Field(..., description="SOX section (302/404/409/802)")
     control_id: str = Field(..., description="Control ID")
     control_name: str = Field(..., description="Control name")
-    control_objective: Optional[str] = Field(None, description="Control objective")
+    control_objective: str | None = Field(None, description="Control objective")
     key_control: bool = Field(False, description="Is key control")
-    frequency: Optional[str] = Field(None, description="Frequency (daily/weekly/monthly/quarterly/annual)")
-    control_owner: Optional[str] = Field(None, description="Control owner")
+    frequency: str | None = Field(None, description="Frequency (daily/weekly/monthly/quarterly/annual)")
+    control_owner: str | None = Field(None, description="Control owner")
 
 
 class SOXControlUpdate(BaseModel):
     """Schema for updating a SOX control."""
-    control_objective: Optional[str] = None
-    key_control: Optional[bool] = None
-    frequency: Optional[str] = None
-    control_owner: Optional[str] = None
-    last_test_date: Optional[date] = None
-    test_result: Optional[str] = None
-    test_evidence: Optional[str] = None
-    remediation_plan: Optional[str] = None
-    remediation_due_date: Optional[date] = None
-    segregation_of_duties_verified: Optional[bool] = None
-    audit_trail_enabled: Optional[bool] = None
+    control_objective: str | None = None
+    key_control: bool | None = None
+    frequency: str | None = None
+    control_owner: str | None = None
+    last_test_date: date | None = None
+    test_result: str | None = None
+    test_evidence: str | None = None
+    remediation_plan: str | None = None
+    remediation_due_date: date | None = None
+    segregation_of_duties_verified: bool | None = None
+    audit_trail_enabled: bool | None = None
 
 
 class FrameworkStats(BaseModel):
@@ -314,14 +315,14 @@ class FrameworkStats(BaseModel):
 
 class ComplianceDashboardResponse(BaseModel):
     """Dashboard response with all frameworks status."""
-    by_framework: Dict[str, FrameworkStats] = {}
+    by_framework: dict[str, FrameworkStats] = {}
     total_controls: int = 0
     total_implemented: int = 0
     overall_compliance_percentage: float = 0.0
     upcoming_reviews: int = 0
     overdue_reviews: int = 0
-    recent_audits: List[ComplianceAuditResponse] = []
-    sox_summary: Optional[Dict[str, Any]] = None
+    recent_audits: list[ComplianceAuditResponse] = []
+    sox_summary: dict[str, Any] | None = None
 
 
 class SeedDataResponse(BaseModel):

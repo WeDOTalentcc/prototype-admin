@@ -6,8 +6,8 @@ Fallback: CLAUDE_DEFAULT_MODEL.
 """
 from __future__ import annotations
 
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 

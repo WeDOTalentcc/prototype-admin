@@ -3,8 +3,8 @@
 # EU AI Act Annex III item 4: High-risk AI in recruitment
 
 import logging
-from datetime import datetime, timezone
 import uuid
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -35,5 +35,5 @@ class PolicyService:
             "explanation": explanation,
             "factors": factors,
             "model_version": "lia-v1",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

@@ -11,8 +11,7 @@ Nenhuma migration necessária. Todos os dados já existem.
 Linkage: vacancy_candidates.vacancy_id → job_vacancies.created_by = recruiter user_id
 """
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +21,7 @@ from app.core.database import AsyncSessionLocal
 logger = logging.getLogger(__name__)
 
 # Thresholds de urgência por etapa (dias sem ação = urgente)
-_URGENCY_THRESHOLDS: Dict[str, int] = {
+_URGENCY_THRESHOLDS: dict[str, int] = {
     # Oferta — crítico mover rápido
     "offer": 2,
     "proposta": 2,
@@ -71,8 +70,8 @@ class RecruiterMetricsService:
         self,
         recruiter_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Retorna candidatos nas vagas do recrutador que precisam de ação,
         ordenados por urgência decrescente.
@@ -167,8 +166,8 @@ class RecruiterMetricsService:
         recruiter_id: str,
         company_id: str,
         period_days: int = 30,
-        db: Optional[AsyncSession] = None,
-    ) -> Optional[float]:
+        db: AsyncSession | None = None,
+    ) -> float | None:
         """
         Tempo médio (em dias) entre um candidato entrar em uma etapa e o
         primeiro contato da empresa (via communication_logs).
@@ -226,8 +225,8 @@ class RecruiterMetricsService:
         self,
         recruiter_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Resumo semanal do recrutador para o Daily Briefing.
         Retorna estrutura segura — nunca lança exceção.
@@ -260,7 +259,7 @@ class RecruiterMetricsService:
         self,
         recruiter_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None,
+        db: AsyncSession | None = None,
     ) -> int:
         """Candidatos que mudaram de etapa nos últimos 7 dias nas vagas do recrutador."""
         should_close = db is None
@@ -300,8 +299,8 @@ class RecruiterMetricsService:
     async def get_company_recruiters_backlog(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> List[Dict[str, Any]]:
+        db: AsyncSession | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Retorna o backlog agregado por recrutador para toda a empresa.
         Usado pelo ProactiveAgentWorker — uma query, sem N+1.
@@ -347,7 +346,7 @@ class RecruiterMetricsService:
                 await db.close()
 
         # Agrupa por recruiter_id
-        recruiters: Dict[str, Dict[str, Any]] = {}
+        recruiters: dict[str, dict[str, Any]] = {}
         for row in rows:
             rid = row.recruiter_id
             if rid not in recruiters:
@@ -380,8 +379,8 @@ class RecruiterMetricsService:
     async def get_company_benchmark(
         self,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Calcula a mediana anônima de métricas de todos os recrutadores ativos na empresa.
         Requer ≥ 2 recrutadores com dados para retornar benchmark válido (privacidade).
@@ -423,7 +422,7 @@ class RecruiterMetricsService:
             return {"benchmark_available": False, "recruiter_count": len(recruiter_ids)}
 
         # Coleta métricas de cada recrutador
-        all_metrics: List[Dict[str, Any]] = []
+        all_metrics: list[dict[str, Any]] = []
         for rid in recruiter_ids:
             try:
                 summary = await self.get_weekly_summary(recruiter_id=rid, company_id=company_id)
@@ -434,7 +433,7 @@ class RecruiterMetricsService:
         if len(all_metrics) < 2:
             return {"benchmark_available": False, "recruiter_count": len(recruiter_ids)}
 
-        def _median(values: List[float]) -> float:
+        def _median(values: list[float]) -> float:
             sorted_vals = sorted(v for v in values if v is not None)
             n = len(sorted_vals)
             if n == 0:
@@ -464,8 +463,8 @@ class RecruiterMetricsService:
         self,
         recruiter_id: str,
         company_id: str,
-        db: Optional[AsyncSession] = None,
-    ) -> Dict[str, Any]:
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
         """
         Retorna métricas pessoais do recrutador + benchmark da empresa + comparação.
 
@@ -483,10 +482,10 @@ class RecruiterMetricsService:
         )
 
         def _compare(
-            personal_val: Optional[float],
-            benchmark_val: Optional[float],
+            personal_val: float | None,
+            benchmark_val: float | None,
             lower_is_better: bool = False,
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             if personal_val is None or benchmark_val is None or benchmark_val == 0:
                 return {
                     "personal": personal_val,

@@ -9,13 +9,14 @@ Allows tenant admins to:
 - List available providers
 """
 import logging
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException
 from lia_config.database import get_db
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.tenant_llm_context import clear_tenant_config_cache
@@ -29,7 +30,7 @@ router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
 class ProviderConfig(BaseModel):
     provider: str  # gemini, claude, openai
     api_key: str
-    model: Optional[str] = None
+    model: str | None = None
     is_active: bool = True
 
 class RoutingConfig(BaseModel):
@@ -41,22 +42,22 @@ class RoutingConfig(BaseModel):
 
 class LLMConfigRequest(BaseModel):
     primary_provider: str = "gemini"
-    fallback_order: List[str] = Field(default=["gemini", "claude", "openai"])
-    providers: Dict[str, ProviderConfig] = Field(default={})
+    fallback_order: list[str] = Field(default=["gemini", "claude", "openai"])
+    providers: dict[str, ProviderConfig] = Field(default={})
     routing: RoutingConfig = RoutingConfig()
 
 class LLMConfigResponse(BaseModel):
     company_id: str
     primary_provider: str
-    fallback_order: List[str]
-    providers: Dict[str, Any]  # API keys masked
-    routing: Dict[str, str]
+    fallback_order: list[str]
+    providers: dict[str, Any]  # API keys masked
+    routing: dict[str, str]
     is_active: bool
 
 class TestProviderRequest(BaseModel):
     provider: str
     api_key: str
-    model: Optional[str] = None
+    model: str | None = None
 
 class TestProviderResponse(BaseModel):
     success: bool

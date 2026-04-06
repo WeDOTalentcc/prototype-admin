@@ -2,12 +2,10 @@
 Pydantic schemas for authentication.
 """
 from datetime import datetime
-from typing import Optional
-from uuid import UUID
 from enum import Enum
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
-from typing import List
 
 
 class UserRole(str, Enum):
@@ -63,15 +61,15 @@ class TokenPayload(BaseModel):
     sub: str
     exp: datetime
     type: str
-    role: Optional[str] = None
+    role: str | None = None
 
 
 class UserUpdate(BaseModel):
     """Schema for updating a user."""
-    email: Optional[EmailStr] = None
-    name: Optional[str] = Field(None, min_length=2, max_length=255)
-    role: Optional[UserRole] = None
-    is_active: Optional[bool] = None
+    email: EmailStr | None = None
+    name: str | None = Field(None, min_length=2, max_length=255)
+    role: UserRole | None = None
+    is_active: bool | None = None
 
 
 class UserManagementCreate(BaseModel):
@@ -79,9 +77,9 @@ class UserManagementCreate(BaseModel):
     email: EmailStr
     name: str = Field(..., min_length=2, max_length=255)
     role: UserRole = UserRole.viewer
-    company_id: Optional[str] = None
-    permissions: List[str] = Field(default_factory=list)
-    password: Optional[str] = Field(None, description="Password for the user. If not provided, a default will be used.")
+    company_id: str | None = None
+    permissions: list[str] = Field(default_factory=list)
+    password: str | None = Field(None, description="Password for the user. If not provided, a default will be used.")
 
 
 class UserManagementResponse(BaseModel):
@@ -90,9 +88,9 @@ class UserManagementResponse(BaseModel):
     email: str
     name: str
     role: UserRole
-    company_id: Optional[str] = None
+    company_id: str | None = None
     is_active: bool
-    permissions: List[str] = []
+    permissions: list[str] = []
     created_at: datetime
     updated_at: datetime
 
@@ -102,12 +100,12 @@ class UserManagementResponse(BaseModel):
 
 class UserManagementUpdate(BaseModel):
     """Schema for updating a user from admin panel."""
-    email: Optional[EmailStr] = None
-    name: Optional[str] = Field(None, min_length=2, max_length=255)
-    role: Optional[UserRole] = None
-    is_active: Optional[bool] = None
-    company_id: Optional[str] = None
-    permissions: Optional[List[str]] = None
+    email: EmailStr | None = None
+    name: str | None = Field(None, min_length=2, max_length=255)
+    role: UserRole | None = None
+    is_active: bool | None = None
+    company_id: str | None = None
+    permissions: list[str] | None = None
 
 
 class PasswordResetRequest(BaseModel):
@@ -143,6 +141,6 @@ class InvitationInfo(BaseModel):
     """Schema for invitation info response."""
     email: str
     name: str
-    company_id: Optional[str] = None
+    company_id: str | None = None
     valid: bool = True
-    message: Optional[str] = None
+    message: str | None = None

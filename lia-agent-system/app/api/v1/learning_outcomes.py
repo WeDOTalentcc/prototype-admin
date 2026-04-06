@@ -8,18 +8,15 @@ Provides:
 - Pattern detection from historical outcomes
 """
 import logging
-from typing import List, Optional
-from datetime import datetime
-from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, and_, case
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.feedback_learning import JobOutcome, JobOutcomeType
 from app.domains.job_management.services.outcome_tracker import outcome_tracker
+from app.models.feedback_learning import JobOutcome, JobOutcomeType
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)
@@ -29,7 +26,7 @@ class OutcomeRecordRequest(BaseModel):
     company_id: str
     job_id: str
     reason: str = Field(..., description="Close reason: filled, cancelled, expired, reposted")
-    hired_candidate_id: Optional[str] = None
+    hired_candidate_id: str | None = None
 
 
 class OutcomeResponse(BaseModel):
@@ -37,18 +34,18 @@ class OutcomeResponse(BaseModel):
     company_id: str
     job_id: str
     outcome: str
-    time_to_fill_days: Optional[int] = None
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
-    location: Optional[str] = None
-    candidate_count_total: Optional[int] = None
-    candidate_count_screened: Optional[int] = None
-    candidate_count_interviewed: Optional[int] = None
-    candidate_count_offered: Optional[int] = None
-    salary_initial_min: Optional[float] = None
-    salary_initial_max: Optional[float] = None
-    created_at: Optional[str] = None
+    time_to_fill_days: int | None = None
+    role: str | None = None
+    seniority: str | None = None
+    department: str | None = None
+    location: str | None = None
+    candidate_count_total: int | None = None
+    candidate_count_screened: int | None = None
+    candidate_count_interviewed: int | None = None
+    candidate_count_offered: int | None = None
+    salary_initial_min: float | None = None
+    salary_initial_max: float | None = None
+    created_at: str | None = None
 
 
 class OutcomeStatsResponse(BaseModel):
@@ -57,19 +54,19 @@ class OutcomeStatsResponse(BaseModel):
     cancelled_count: int = 0
     expired_count: int = 0
     fill_rate: float = 0.0
-    avg_time_to_fill_days: Optional[float] = None
-    avg_candidates_total: Optional[float] = None
-    avg_candidates_screened: Optional[float] = None
-    avg_candidates_interviewed: Optional[float] = None
+    avg_time_to_fill_days: float | None = None
+    avg_candidates_total: float | None = None
+    avg_candidates_screened: float | None = None
+    avg_candidates_interviewed: float | None = None
 
 
 class OutcomePatternResponse(BaseModel):
-    role: Optional[str] = None
-    seniority: Optional[str] = None
-    department: Optional[str] = None
+    role: str | None = None
+    seniority: str | None = None
+    department: str | None = None
     sample_size: int = 0
-    avg_time_to_fill: Optional[float] = None
-    avg_candidates: Optional[float] = None
+    avg_time_to_fill: float | None = None
+    avg_candidates: float | None = None
     fill_rate: float = 0.0
 
 
@@ -97,12 +94,12 @@ async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depen
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/outcomes/{company_id}", response_model=List[OutcomeResponse])
+@router.get("/outcomes/{company_id}", response_model=list[OutcomeResponse])
 async def list_outcomes(
     company_id: str,
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0, ge=0),
-    outcome_type: Optional[str] = Query(default=None),
+    outcome_type: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -202,7 +199,7 @@ async def get_outcome_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/outcomes/{company_id}/patterns", response_model=List[OutcomePatternResponse])
+@router.get("/outcomes/{company_id}/patterns", response_model=list[OutcomePatternResponse])
 async def get_outcome_patterns(
     company_id: str,
     group_by: str = Query(default="role", regex="^(role|seniority|department)$"),

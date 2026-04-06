@@ -12,11 +12,10 @@ Sprint Z1-01 — Tool decomposition to improve response quality and reduce cost.
 """
 import logging
 
-from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
 from app.domains.recruiter_assistant.agents.kanban_action_tool_registry import (
     get_kanban_action_tools,
-    GUARDRAIL_TOOLS,
 )
+from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent
 
 logger = logging.getLogger(__name__)
 

@@ -4,17 +4,17 @@ LIA Assistant — Feature Flags endpoints.
 Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/feature-flags/* URLs.
 """
-from typing import Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Query, Depends
-from pydantic import BaseModel
-from datetime import datetime as dt
 import logging
+from datetime import datetime as dt
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -28,23 +28,23 @@ router = APIRouter(prefix="/lia", tags=["lia-feature-flags"])
 class FeatureFlagRequest(BaseModel):
     flag_key: str
     is_enabled: bool
-    company_id: Optional[str] = None
+    company_id: str | None = None
     rollout_percentage: int = 100
-    description: Optional[str] = None
-    category: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-    expires_at: Optional[str] = None
-    created_by: Optional[str] = None
+    description: str | None = None
+    category: str | None = None
+    metadata: dict[str, Any] | None = None
+    expires_at: str | None = None
+    created_by: str | None = None
 
 
 class FeatureFlagResponse(BaseModel):
     success: bool
-    flag_id: Optional[str] = None
-    flag_key: Optional[str] = None
-    is_enabled: Optional[bool] = None
-    company_id: Optional[str] = None
-    rollout_percentage: Optional[int] = None
-    error: Optional[str] = None
+    flag_id: str | None = None
+    flag_key: str | None = None
+    is_enabled: bool | None = None
+    company_id: str | None = None
+    rollout_percentage: int | None = None
+    error: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -92,11 +92,11 @@ async def set_feature_flag(
 
 @router.get("/feature-flags")
 async def get_feature_flags(
-    company_id: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
+    category: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         from app.services.feature_flag_service import feature_flag_service
 
@@ -119,10 +119,10 @@ async def get_feature_flags(
 @router.get("/feature-flags/check/{flag_key}")
 async def check_feature_flag(
     flag_key: str,
-    company_id: Optional[str] = Query(None),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     try:
         from app.services.feature_flag_service import feature_flag_service
 

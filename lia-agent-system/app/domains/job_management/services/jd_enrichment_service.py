@@ -11,34 +11,31 @@ Fontes de dados:
 - Company Config: Configurações e defaults da empresa
 - Responsibilities Catalog: Catálogo de responsabilidades por área
 """
-import asyncio
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from uuid import uuid4
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.services.ats_job_history_service import ATSJobHistoryService
 from app.schemas.jd_enrichment import (
+    BehavioralCompetencySuggestion,
+    BonusSuggestion,
+    CompensationSuggestions,
     EnrichedJobDescription,
     EnrichedSuggestion,
-    ResponsibilitySuggestion,
-    TechnicalSkillSuggestion,
-    BehavioralCompetencySuggestion,
-    SalarySuggestion,
-    BonusSuggestion,
-    SectionSuggestions,
-    CompensationSuggestions,
-    SuggestionSource,
-    SuggestionImpactLevel,
     EnrichmentRequest,
     EnrichmentResponse,
+    SalarySuggestion,
+    SectionSuggestions,
+    SuggestionImpactLevel,
+    SuggestionSource,
+    TechnicalSkillSuggestion,
 )
-from app.services.market_benchmark_service import MarketBenchmarkService
-from app.services.skills_catalog_service import SkillsCatalogService
-from app.services.responsibilities_catalog_service import ResponsibilitiesCatalogService
 from app.services.company_configuration_service import CompanyConfigurationService
-from app.domains.job_management.services.ats_job_history_service import ATSJobHistoryService
+from app.services.market_benchmark_service import MarketBenchmarkService
+from app.services.responsibilities_catalog_service import ResponsibilitiesCatalogService
+from app.services.skills_catalog_service import SkillsCatalogService
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +64,7 @@ class JdEnrichmentService:
     async def enrich_job_description(
         self,
         request: EnrichmentRequest,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> EnrichmentResponse:
         """
         Enriquece o Job Description com sugestões contextualizadas.
@@ -160,14 +157,14 @@ class JdEnrichmentService:
     async def _enrich_responsibilities(
         self,
         request: EnrichmentRequest,
-        db: Optional[AsyncSession]
+        db: AsyncSession | None
     ) -> SectionSuggestions:
         """Enriquece responsabilidades com sugestões do catálogo e histórico."""
         detected = request.detected_responsibilities or []
-        suggestions: List[EnrichedSuggestion] = []
+        suggestions: list[EnrichedSuggestion] = []
         
         try:
-            role_area = self._detect_area_from_title(request.title)
+            self._detect_area_from_title(request.title)
             seniority = request.seniority or "pleno"
             
             catalog_suggestions = self.responsibilities_catalog.suggest_responsibilities(
@@ -214,11 +211,11 @@ class JdEnrichmentService:
     async def _enrich_technical_skills(
         self,
         request: EnrichmentRequest,
-        db: Optional[AsyncSession]
+        db: AsyncSession | None
     ) -> SectionSuggestions:
         """Enriquece competências técnicas com dados de mercado e catálogo."""
         detected = request.detected_technical_skills or []
-        suggestions: List[EnrichedSuggestion] = []
+        suggestions: list[EnrichedSuggestion] = []
         
         try:
             role_area = self._detect_area_from_title(request.title)
@@ -284,11 +281,11 @@ class JdEnrichmentService:
     async def _enrich_behavioral_competencies(
         self,
         request: EnrichmentRequest,
-        db: Optional[AsyncSession]
+        db: AsyncSession | None
     ) -> SectionSuggestions:
         """Enriquece competências comportamentais com foco em qualidade WSI."""
         detected = request.detected_behavioral_competencies or []
-        suggestions: List[EnrichedSuggestion] = []
+        suggestions: list[EnrichedSuggestion] = []
         
         try:
             role_area = self._detect_area_from_title(request.title)
@@ -309,9 +306,9 @@ class JdEnrichmentService:
                     
                     if is_leadership and is_leadership_comp:
                         justification = f"92% dos cargos de liderança pedem {comp}"
-                        wsi_note = f"Essencial para perguntas WSI sobre gestão e liderança"
+                        wsi_note = "Essencial para perguntas WSI sobre gestão e liderança"
                     elif is_senior_comp and request.seniority and "sênior" in request.seniority.lower():
-                        justification = f"Competência crítica para profissionais sênior"
+                        justification = "Competência crítica para profissionais sênior"
                         wsi_note = "Permite avaliar maturidade profissional nas perguntas WSI"
                     else:
                         justification = f"Competência recomendada para {role_area}"
@@ -353,7 +350,7 @@ class JdEnrichmentService:
     async def _enrich_compensation(
         self,
         request: EnrichmentRequest,
-        db: Optional[AsyncSession]
+        db: AsyncSession | None
     ) -> CompensationSuggestions:
         """Enriquece dados de remuneração com benchmark de mercado."""
         salary_suggestion = None
@@ -435,8 +432,8 @@ class JdEnrichmentService:
     async def _get_market_skill_data(
         self,
         title: str,
-        location: Optional[str]
-    ) -> Dict[str, Dict[str, Any]]:
+        location: str | None
+    ) -> dict[str, dict[str, Any]]:
         """Busca dados de mercado sobre skills (mock por enquanto)."""
         common_skills_market_data = {
             "python": {"percentage": 85, "time_improvement": 15},
@@ -480,7 +477,7 @@ class JdEnrichmentService:
         
         return "general"
     
-    def _is_leadership_role(self, title: str, seniority: Optional[str]) -> bool:
+    def _is_leadership_role(self, title: str, seniority: str | None) -> bool:
         """Verifica se é um cargo de liderança."""
         title_lower = title.lower()
         leadership_keywords = ["gerente", "diretor", "head", "líder", "lead", "manager", "coordenador", "supervisor", "cto", "ceo", "vp"]
@@ -500,7 +497,7 @@ class JdEnrichmentService:
         request: EnrichmentRequest,
         technical_skills: SectionSuggestions,
         behavioral: SectionSuggestions
-    ) -> Tuple[float, List[str]]:
+    ) -> tuple[float, list[str]]:
         """Calcula score de qualidade para perguntas WSI."""
         warnings = []
         score = 1.0
@@ -588,7 +585,7 @@ class JdEnrichmentService:
         if enriched_jd.compensation.salary:
             sections_with_suggestions.append("ajuste de faixa salarial")
         
-        message = f"Analisei as informações usando dados de mercado, histórico de vagas e configurações da empresa. "
+        message = "Analisei as informações usando dados de mercado, histórico de vagas e configurações da empresa. "
         
         if suggestions_count > 0:
             message += f"Preparei {suggestions_count} sugestões para enriquecer o JD: {', '.join(sections_with_suggestions)}. "
@@ -603,7 +600,7 @@ class JdEnrichmentService:
     async def generate_enriched_jd(
         self,
         request: EnrichmentRequest,
-        db: Optional[AsyncSession] = None
+        db: AsyncSession | None = None
     ) -> 'EnrichedJDResult':
         """
         Generate enriched JD in format expected by frontend.
@@ -645,7 +642,7 @@ class JdEnrichmentService:
             total_suggestions=enriched.total_suggestions_count
         )
     
-    def _determine_market_position(self, salary: Optional[SalarySuggestion]) -> Optional[str]:
+    def _determine_market_position(self, salary: SalarySuggestion | None) -> str | None:
         """Determine market position based on salary comparison."""
         if not salary or not salary.market_comparison:
             return None
@@ -663,12 +660,12 @@ class EnrichedCompensationResult:
     """Result object for compensation data."""
     def __init__(
         self,
-        current_range: Optional[Dict] = None,
-        market_range: Optional[Dict] = None,
-        market_position: Optional[str] = None,
-        salary_suggestion: Optional[SalarySuggestion] = None,
-        bonus_suggestion: Optional[BonusSuggestion] = None,
-        competitiveness_score: Optional[int] = None
+        current_range: dict | None = None,
+        market_range: dict | None = None,
+        market_position: str | None = None,
+        salary_suggestion: SalarySuggestion | None = None,
+        bonus_suggestion: BonusSuggestion | None = None,
+        competitiveness_score: int | None = None
     ):
         self.current_range = current_range
         self.market_range = market_range
@@ -682,8 +679,8 @@ class EnrichedJDResult:
     """Result object for enriched JD data with sections as array."""
     def __init__(
         self,
-        sections: List[SectionSuggestions],
-        compensation: Optional[EnrichedCompensationResult],
+        sections: list[SectionSuggestions],
+        compensation: EnrichedCompensationResult | None,
         wsi_quality_score: int,
         overall_completeness: float,
         total_suggestions: int

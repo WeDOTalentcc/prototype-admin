@@ -4,10 +4,9 @@ Fast Router - Keyword and regex-based domain routing.
 Resolves ~80% of user queries without LLM calls using pattern matching.
 Part of the CascadedRouter pipeline: memory → fast → LLM fallback.
 """
-import re
 import logging
 import math
-from typing import Optional, Dict, List, Tuple
+import re
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class FastRouteResult:
     matched_text: str
 
 
-DOMAIN_PATTERNS: Dict[str, List[str]] = {
+DOMAIN_PATTERNS: dict[str, list[str]] = {
     "job_management": [
         r"criar?\s+\w*\s*vaga",
         r"nova\s+vaga",
@@ -319,7 +318,7 @@ DOMAIN_PATTERNS: Dict[str, List[str]] = {
     ],
 }
 
-_DOMAIN_ID_NORMALIZE: Dict[str, str] = {
+_DOMAIN_ID_NORMALIZE: dict[str, str] = {
     "wsi_assessment": "cv_screening",
     "interviewing": "interview_scheduling",
     "scheduling": "interview_scheduling",
@@ -333,7 +332,7 @@ def normalize_domain_id(domain_id: str) -> str:
     return _DOMAIN_ID_NORMALIZE.get(domain_id, domain_id)
 
 
-_COMPILED_PATTERNS: Dict[str, List[re.Pattern]] = {}
+_COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 
 
 def _ensure_compiled() -> None:
@@ -356,8 +355,8 @@ class FastRouter:
 
     @staticmethod
     def _deduplicate_matches(
-        matches: List[Tuple[str, float]],
-    ) -> List[Tuple[str, float]]:
+        matches: list[tuple[str, float]],
+    ) -> list[tuple[str, float]]:
         """Deduplicate ambiguous domain matches by confidence bucket.
 
         Groups matches into 0.05-width confidence buckets.  Within the
@@ -391,8 +390,8 @@ class FastRouter:
         # Find the top bucket value
         top_bucket = _bucket(max(conf for _, conf in matches))
 
-        top_group: List[Tuple[str, float]] = []
-        rest: List[Tuple[str, float]] = []
+        top_group: list[tuple[str, float]] = []
+        rest: list[tuple[str, float]] = []
 
         for domain_with_pattern, conf in matches:
             if _bucket(conf) == top_bucket:
@@ -402,7 +401,7 @@ class FastRouter:
 
         # Within the top bucket keep only the most specific (longest pattern)
         if len(top_group) > 1:
-            def _pattern_len(item: Tuple[str, float]) -> int:
+            def _pattern_len(item: tuple[str, float]) -> int:
                 key = item[0]
                 if "|" in key:
                     return len(key.split("|", 1)[1])
@@ -411,7 +410,7 @@ class FastRouter:
             top_group = [max(top_group, key=_pattern_len)]
 
         # Strip the "|pattern" suffix before returning
-        def _strip_pattern(item: Tuple[str, float]) -> Tuple[str, float]:
+        def _strip_pattern(item: tuple[str, float]) -> tuple[str, float]:
             domain, conf = item
             return (domain.split("|", 1)[0], conf)
 
@@ -425,15 +424,15 @@ class FastRouter:
     # Core matching
     # ------------------------------------------------------------------
 
-    def match(self, message: str) -> Optional[FastRouteResult]:
+    def match(self, message: str) -> FastRouteResult | None:
         message_lower = message.lower().strip()
         if not message_lower:
             return None
 
-        all_matches: List[FastRouteResult] = []
+        all_matches: list[FastRouteResult] = []
 
         for domain_id, patterns in _COMPILED_PATTERNS.items():
-            best_for_domain: Optional[FastRouteResult] = None
+            best_for_domain: FastRouteResult | None = None
             best_specificity = 0
             for pattern in patterns:
                 m = pattern.search(message_lower)
@@ -468,7 +467,7 @@ class FastRouter:
                 best_match.confidence = max(0.3, best_match.confidence - 0.15)
 
         # P06: deduplication — resolve ties by most-specific pattern string
-        raw_tuples: List[Tuple[str, float]] = [
+        raw_tuples: list[tuple[str, float]] = [
             (f"{r.domain_id}|{r.matched_pattern}", r.confidence)
             for r in all_matches
         ]
@@ -501,7 +500,7 @@ class FastRouter:
         )
         return best_match
 
-    def match_all(self, message: str) -> List[FastRouteResult]:
+    def match_all(self, message: str) -> list[FastRouteResult]:
         message_lower = message.lower().strip()
         if not message_lower:
             return []
@@ -520,8 +519,8 @@ class FastRouter:
                     break
         return sorted(results, key=lambda r: r.confidence, reverse=True)
 
-    def get_patterns_for_domain(self, domain_id: str) -> List[str]:
+    def get_patterns_for_domain(self, domain_id: str) -> list[str]:
         return DOMAIN_PATTERNS.get(domain_id, [])
 
-    def get_all_domains(self) -> List[str]:
+    def get_all_domains(self) -> list[str]:
         return list(DOMAIN_PATTERNS.keys())

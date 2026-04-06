@@ -2,11 +2,11 @@
 Abstract base class for email providers.
 Provides a unified interface for different email sending services.
 """
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
 from datetime import datetime
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -17,27 +17,27 @@ class EmailMessage:
     to: str
     subject: str
     html_content: str
-    text_content: Optional[str] = None
-    from_email: Optional[str] = None
-    from_name: Optional[str] = None
-    reply_to: Optional[str] = None
-    cc: Optional[List[str]] = None
-    bcc: Optional[List[str]] = None
-    headers: Optional[Dict[str, str]] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    text_content: str | None = None
+    from_email: str | None = None
+    from_name: str | None = None
+    reply_to: str | None = None
+    cc: list[str] | None = None
+    bcc: list[str] | None = None
+    headers: dict[str, str] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class EmailResult:
     """Result of an email send operation."""
     success: bool
-    message_id: Optional[str] = None
+    message_id: str | None = None
     provider: str = ""
     status: str = "unknown"
-    error: Optional[str] = None
-    error_code: Optional[str] = None
-    sent_at: Optional[datetime] = None
-    raw_response: Optional[Dict[str, Any]] = None
+    error: str | None = None
+    error_code: str | None = None
+    sent_at: datetime | None = None
+    raw_response: dict[str, Any] | None = None
 
 
 class EmailProvider(ABC):
@@ -58,14 +58,14 @@ class EmailProvider(ABC):
         to: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None,
-        from_email: Optional[str] = None,
-        from_name: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        text_content: str | None = None,
+        from_email: str | None = None,
+        from_name: str | None = None,
+        reply_to: str | None = None,
+        cc: list[str] | None = None,
+        bcc: list[str] | None = None,
+        headers: dict[str, str] | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EmailResult:
         """
         Send a single email.
@@ -91,8 +91,8 @@ class EmailProvider(ABC):
     @abstractmethod
     async def send_bulk(
         self,
-        messages: List[EmailMessage]
-    ) -> List[EmailResult]:
+        messages: list[EmailMessage]
+    ) -> list[EmailResult]:
         """
         Send multiple emails in bulk.
         
@@ -105,7 +105,7 @@ class EmailProvider(ABC):
         pass
     
     @abstractmethod
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """
         Get provider status for health checks.
         

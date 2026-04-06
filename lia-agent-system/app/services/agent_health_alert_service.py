@@ -19,7 +19,7 @@ Referências:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +47,10 @@ class AgentHealthAlertService:
     """
 
     def __init__(self) -> None:
-        self._redis: Optional[Any] = None
-        self._memory: Dict[str, int] = {}   # fallback in-memory
+        self._redis: Any | None = None
+        self._memory: dict[str, int] = {}   # fallback in-memory
 
-    async def _get_redis(self) -> Optional[Any]:
+    async def _get_redis(self) -> Any | None:
         if not _AIOREDIS_AVAILABLE:
             return None
         if self._redis is not None:
@@ -105,7 +105,7 @@ class AgentHealthAlertService:
         agent_id: str,
         level: str,
         count: int,
-        notify_user_id: Optional[str],
+        notify_user_id: str | None,
     ) -> None:
         """Envia notificação Bell + Teams."""
         if not notify_user_id:
@@ -117,9 +117,9 @@ class AgentHealthAlertService:
 
         try:
             from app.services.notification_service import (
-                notification_service,
-                NotificationType,
                 NotificationChannel,
+                NotificationType,
+                notification_service,
             )
 
             ntype = NotificationType.URGENT if level == "CRITICAL" else NotificationType.WARNING
@@ -149,7 +149,7 @@ class AgentHealthAlertService:
         company_id: str,
         agent_id: str,
         error: str,
-        notify_user_id: Optional[str] = None,
+        notify_user_id: str | None = None,
     ) -> int:
         """
         Registra uma falha do agente. Dispara alerta se threshold atingido.

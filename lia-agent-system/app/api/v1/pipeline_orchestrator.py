@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Request, HTTPException
-from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
-from lia_agents_core.agent_interface import AgentInput
 import logging
 import os
+
+from fastapi import APIRouter, HTTPException, Request
+from lia_agents_core.agent_interface import AgentInput
+
+from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
 
 logger = logging.getLogger("lia.pipeline_orchestrator")
 router = APIRouter(prefix="/pipeline", tags=["Pipeline Agent"])

@@ -16,7 +16,7 @@ precisão do roteamento nas etapas seguintes (Tier 1/2/3).
 """
 import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ _POSITIONAL_PATTERNS = re.compile(
     re.IGNORECASE | re.UNICODE,
 )
 
-_POSITIONAL_WORD_TO_INDEX: Dict[str, int] = {
+_POSITIONAL_WORD_TO_INDEX: dict[str, int] = {
     "primeiro": 0, "1o": 0, "1º": 0, "1°": 0,
     "segundo": 1, "2o": 1, "2º": 1, "2°": 1,
     "terceiro": 2, "3o": 2, "3º": 2, "3°": 2,
@@ -83,7 +83,7 @@ _NEW_SEARCH_PATTERNS = re.compile(
 )
 
 
-def _extract_entity_label(entity: Dict[str, Any]) -> str:
+def _extract_entity_label(entity: dict[str, Any]) -> str:
     """Formata um entity dict em string legível para injeção no prompt."""
     entity_id = entity.get("id", "")
     name = entity.get("name") or entity.get("title") or entity.get("label") or ""
@@ -128,7 +128,7 @@ def should_keep_filters(message: str) -> bool:
     return False
 
 
-def _resolve_positional(message: str, candidate_ids: List[int]) -> Optional[Tuple[int, int]]:
+def _resolve_positional(message: str, candidate_ids: list[int]) -> tuple[int, int] | None:
     """
     Detecta referência posicional e retorna (índice, candidate_id) ou None.
     Ex: "o terceiro" com lista [10, 20, 30] → (2, 30)
@@ -170,10 +170,10 @@ class MemoryResolver:
         self,
         message: str,
         session_id: str,
-        domain: Optional[str] = None,
-        conversation_state: Optional[Any] = None,
-        candidate_list_store: Optional[Any] = None,
-    ) -> Tuple[str, bool]:
+        domain: str | None = None,
+        conversation_state: Any | None = None,
+        candidate_list_store: Any | None = None,
+    ) -> tuple[str, bool]:
         """
         Tenta enriquecer a mensagem com contexto da memória de trabalho.
 
@@ -200,7 +200,7 @@ class MemoryResolver:
             idx = _POSITIONAL_WORD_TO_INDEX.get(positional_word)
             if idx is not None:
                 # Tenta primeiro o Redis com dados completos
-                candidate_full: Optional[Dict[str, Any]] = None
+                candidate_full: dict[str, Any] | None = None
                 if candidate_list_store is not None:
                     try:
                         candidate_full = await candidate_list_store.get_by_position(session_id, idx)
@@ -272,7 +272,7 @@ class MemoryResolver:
 
         return enriched, resolved
 
-    def _build_context_lines(self, context: Any, conversation_state: Optional[Any] = None) -> list:
+    def _build_context_lines(self, context: Any, conversation_state: Any | None = None) -> list:
         """Extrai linhas de contexto legíveis da memória de trabalho."""
         lines = []
 
@@ -357,7 +357,7 @@ class MemoryResolver:
         entry = {
             "domain": domain,
             "action": action,
-            "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            "timestamp": _dt.datetime.now(_dt.UTC).isoformat(),
             "metadata": metadata or {},
         }
         self._action_history.append(entry)

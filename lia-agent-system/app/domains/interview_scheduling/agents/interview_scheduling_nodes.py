@@ -1,19 +1,18 @@
 """
 LangGraph nodes for interview scheduling conversational workflow.
 """
-from typing import Dict, Any
-from datetime import datetime, date, timedelta
-import logging
-from anthropic import AsyncAnthropic
 import json
+import logging
+from datetime import date, datetime, timedelta
+from typing import Any
 
-from app.schemas.interview_scheduling_state import InterviewSchedulingState
-from app.domains.interview_scheduling.services.calendar_service import calendar_service
+from anthropic import AsyncAnthropic
+
 from app.core.database import get_db
 from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
+from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.models.interview import Interview
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from app.schemas.interview_scheduling_state import InterviewSchedulingState
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class InterviewSchedulingService:
     """Service for managing interview scheduling state."""
     
     @staticmethod
-    def load_from_workflow_data(workflow_data: Dict[str, Any]) -> InterviewSchedulingState:
+    def load_from_workflow_data(workflow_data: dict[str, Any]) -> InterviewSchedulingState:
         """Load InterviewSchedulingState from workflow_data."""
         state_dict = workflow_data.get("interview_scheduling_state")
         if state_dict:
@@ -39,8 +38,8 @@ class InterviewSchedulingService:
     @staticmethod
     def save_to_workflow_data(
         state: InterviewSchedulingState, 
-        workflow_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        workflow_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Save InterviewSchedulingState to workflow_data."""
         workflow_data["interview_scheduling_state"] = state.model_dump(mode="json")
         return workflow_data
@@ -105,7 +104,7 @@ def _compute_confidence_score(interview_state: "InterviewSchedulingState", workf
 # STATE LOADER
 # =============================================
 
-async def interview_state_loader(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_state_loader(state: dict[str, Any]) -> dict[str, Any]:
     """
     Load or initialize InterviewSchedulingState from workflow_data.
     """
@@ -130,7 +129,7 @@ async def interview_state_loader(state: Dict[str, Any]) -> Dict[str, Any]:
 # INTERVIEW ROUTER
 # =============================================
 
-async def interview_router(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_router(state: dict[str, Any]) -> dict[str, Any]:
     """
     Route to appropriate collector based on pending fields.
     """
@@ -159,7 +158,7 @@ async def interview_router(state: Dict[str, Any]) -> Dict[str, Any]:
 # FIELD COLLECTOR
 # =============================================
 
-async def interview_details_collector(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
     """
     Collect interview details from user message.
     Uses LLM to extract structured information.
@@ -172,7 +171,7 @@ async def interview_details_collector(state: Dict[str, Any]) -> Dict[str, Any]:
 
     # Get last user message
     last_message = state["messages"][-1].content
-    entities = state.get("entities", {})
+    state.get("entities", {})
 
     # SEG-2: FairnessGuard — verificar critérios discriminatórios antes de processar
     try:
@@ -267,7 +266,7 @@ async def interview_details_collector(state: Dict[str, Any]) -> Dict[str, Any]:
 # VALIDATOR
 # =============================================
 
-async def interview_validator(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_validator(state: dict[str, Any]) -> dict[str, Any]:
     """
     Validate interview scheduling state completeness.
     """
@@ -296,7 +295,7 @@ async def interview_validator(state: Dict[str, Any]) -> Dict[str, Any]:
 # SCHEDULER EXECUTOR
 # =============================================
 
-async def interview_scheduler_executor(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_scheduler_executor(state: dict[str, Any]) -> dict[str, Any]:
     """
     Execute actual interview scheduling via calendar_service.
     """
@@ -344,7 +343,7 @@ async def interview_scheduler_executor(state: Dict[str, Any]) -> Dict[str, Any]:
             return state
         
         # Prepare request
-        interview_request = interview_state.to_interview_request()
+        interview_state.to_interview_request()
         
         # Schedule via calendar service
         all_interviewer_emails = [interview_state.interviewer_email]
@@ -424,7 +423,7 @@ async def interview_scheduler_executor(state: Dict[str, Any]) -> Dict[str, Any]:
 # RESPONSE PLANNER
 # =============================================
 
-async def interview_response_planner(state: Dict[str, Any]) -> Dict[str, Any]:
+async def interview_response_planner(state: dict[str, Any]) -> dict[str, Any]:
     """
     Plan LIA's next response for interview scheduling workflow.
     """

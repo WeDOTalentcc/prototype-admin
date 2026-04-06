@@ -6,9 +6,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 from enum import Enum
-from typing import Optional
 
 
 class TemporalGranularity(str, Enum):
@@ -139,7 +138,7 @@ class TemporalResolver:
     Referência: HireEZ e Tezi AI usam NLP temporal para filtros de busca.
     """
     
-    def __init__(self, reference_date: Optional[date] = None):
+    def __init__(self, reference_date: date | None = None):
         self._today = reference_date or date.today()
         self._patterns = _build_patterns(self._today)
         # Generic N-days pattern
@@ -153,7 +152,7 @@ class TemporalResolver:
         # ISO single date
         self._iso_date_pattern = re.compile(r"\b(\d{4}-\d{2}-\d{2})\b")
     
-    def resolve(self, text: str) -> Optional[TemporalResult]:
+    def resolve(self, text: str) -> TemporalResult | None:
         """Attempt to resolve a temporal expression in the given text.
         
         Returns the first match found, or None if no temporal expression detected.

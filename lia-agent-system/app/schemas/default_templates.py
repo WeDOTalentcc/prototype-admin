@@ -2,10 +2,10 @@
 Pydantic schemas for Default Templates API.
 """
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field
-from uuid import UUID
 from enum import Enum
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class TemplateCategoryEnum(str, Enum):
@@ -35,25 +35,25 @@ class DefaultTemplateBase(BaseModel):
     """Base default template schema with common fields."""
     name: str = Field(..., min_length=1, max_length=255, description="Template name")
     category: TemplateCategoryEnum = Field(default=TemplateCategoryEnum.EMAIL, description="Template category: email, sms, whatsapp, push")
-    subject: Optional[str] = Field(None, max_length=500, description="Subject line (required for email)")
+    subject: str | None = Field(None, max_length=500, description="Subject line (required for email)")
     body: str = Field(..., min_length=1, description="Template body content")
-    variables: List[str] = Field(default_factory=list, description="List of variable names used in template")
+    variables: list[str] = Field(default_factory=list, description="List of variable names used in template")
     status: TemplateStatusEnum = Field(default=TemplateStatusEnum.DRAFT, description="Template status: active, draft, archived")
 
 
 class DefaultTemplateCreate(DefaultTemplateBase):
     """Schema for creating a new default template."""
-    created_by: Optional[str] = Field(None, description="User who created the template")
+    created_by: str | None = Field(None, description="User who created the template")
 
 
 class DefaultTemplateUpdate(BaseModel):
     """Schema for updating a default template (all fields optional)."""
-    name: Optional[str] = Field(None, min_length=1, max_length=255)
-    category: Optional[TemplateCategoryEnum] = None
-    subject: Optional[str] = Field(None, max_length=500)
-    body: Optional[str] = Field(None, min_length=1)
-    variables: Optional[List[str]] = None
-    status: Optional[TemplateStatusEnum] = None
+    name: str | None = Field(None, min_length=1, max_length=255)
+    category: TemplateCategoryEnum | None = None
+    subject: str | None = Field(None, max_length=500)
+    body: str | None = Field(None, min_length=1)
+    variables: list[str] | None = None
+    status: TemplateStatusEnum | None = None
 
 
 class DefaultTemplateResponse(BaseModel):
@@ -61,12 +61,12 @@ class DefaultTemplateResponse(BaseModel):
     id: UUID
     name: str
     category: str
-    subject: Optional[str] = None
+    subject: str | None = None
     body: str
-    variables: List[str] = Field(default_factory=list)
+    variables: list[str] = Field(default_factory=list)
     status: str
     client_usage_count: int = 0
-    created_by: Optional[str] = None
+    created_by: str | None = None
     created_at: datetime
     updated_at: datetime
     
@@ -77,21 +77,21 @@ class DefaultTemplateResponse(BaseModel):
 class DefaultTemplateListResponse(BaseModel):
     """Response for listing default templates."""
     total: int
-    items: List[DefaultTemplateResponse]
+    items: list[DefaultTemplateResponse]
 
 
 class TemplateVariablesListResponse(BaseModel):
     """Response for listing available template variables."""
-    variables: List[TemplateVariableResponse]
+    variables: list[TemplateVariableResponse]
 
 
 class DefaultTemplateDuplicateRequest(BaseModel):
     """Request for duplicating a template."""
-    new_name: Optional[str] = Field(None, description="Name for the duplicated template. If not provided, appends ' (Copy)'")
+    new_name: str | None = Field(None, description="Name for the duplicated template. If not provided, appends ' (Copy)'")
 
 
 class SeedTemplatesResponse(BaseModel):
     """Response after seeding default templates."""
     created: int
-    templates: List[DefaultTemplateResponse]
+    templates: list[DefaultTemplateResponse]
     message: str

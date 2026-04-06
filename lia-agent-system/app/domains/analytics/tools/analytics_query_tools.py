@@ -15,8 +15,8 @@ Provides function calling capabilities for:
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry
@@ -27,17 +27,17 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _extract_context(kwargs: Dict[str, Any]) -> Optional["ToolExecutionContext"]:
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
 
 
 async def get_pipeline_stats(
-    period: Optional[str] = "month",
-    recruiter_id: Optional[str] = None,
-    department: Optional[str] = None,
+    period: str | None = "month",
+    recruiter_id: str | None = None,
+    department: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get pipeline statistics and metrics.
     
@@ -56,10 +56,11 @@ async def get_pipeline_stats(
     logger.info(f"📊 Getting pipeline stats (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         period_days = {
             "week": 7,
@@ -160,7 +161,7 @@ async def get_vacancy_funnel(
     include_stalled: bool = True,
     stalled_days: int = 7,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get funnel metrics for a specific vacancy.
     
@@ -178,10 +179,11 @@ async def get_vacancy_funnel(
     logger.info(f"📊 Getting vacancy funnel: {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate, Candidate
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -292,10 +294,10 @@ async def get_vacancy_funnel(
 
 
 async def compare_candidates(
-    candidate_ids: List[str],
-    job_id: Optional[str] = None,
+    candidate_ids: list[str],
+    job_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Compare multiple candidates side by side.
     
@@ -312,8 +314,9 @@ async def compare_candidates(
     logger.info(f"🔄 Comparing {len(candidate_ids)} candidates (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate
         
         async with AsyncSessionLocal() as db:
@@ -383,12 +386,12 @@ async def compare_candidates(
 
 
 async def get_activity_summary(
-    job_id: Optional[str] = None,
-    recruiter_id: Optional[str] = None,
+    job_id: str | None = None,
+    recruiter_id: str | None = None,
     period: str = "week",
-    activity_type: Optional[str] = None,
+    activity_type: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get activity summary including interviews, emails, and communications.
     
@@ -403,13 +406,13 @@ async def get_activity_summary(
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-    effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📊 Getting activity summary (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
         from app.models.candidate import VacancyCandidate
         
         period_days = {"today": 1, "week": 7, "month": 30}.get(period, 7)
@@ -505,12 +508,12 @@ async def get_activity_summary(
 
 
 async def get_pending_actions(
-    job_id: Optional[str] = None,
-    recruiter_id: Optional[str] = None,
+    job_id: str | None = None,
+    recruiter_id: str | None = None,
     include_overdue: bool = True,
     overdue_days: int = 3,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get pending actions including overdue feedbacks and stalled candidates.
     
@@ -525,14 +528,14 @@ async def get_pending_actions(
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-    effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📋 Getting pending actions (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
-        from app.models.candidate import VacancyCandidate, Candidate
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
         
         overdue_threshold = datetime.utcnow() - timedelta(days=overdue_days)
@@ -638,11 +641,11 @@ async def get_pending_actions(
 
 
 async def get_recruiter_metrics(
-    recruiter_id: Optional[str] = None,
+    recruiter_id: str | None = None,
     period: str = "month",
     compare_with_team: bool = False,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get recruiter performance metrics.
     
@@ -661,10 +664,11 @@ async def get_recruiter_metrics(
     logger.info(f"📊 Getting recruiter metrics for {effective_recruiter} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         period_days = {"week": 7, "month": 30, "quarter": 90, "year": 365}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -755,10 +759,10 @@ async def get_recruiter_metrics(
 
 async def get_velocity_metrics(
     period: str = "month",
-    recruiter_id: Optional[str] = None,
+    recruiter_id: str | None = None,
     sla_days: int = 30,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get hiring velocity metrics for vacancies.
     
@@ -778,8 +782,9 @@ async def get_velocity_metrics(
     logger.info(f"⏱️ Getting velocity metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.job_vacancy import JobVacancy
         
         period_days = {"month": 30, "quarter": 90, "year": 365}.get(period, 30)
@@ -849,9 +854,9 @@ async def get_velocity_metrics(
 
 async def get_efficiency_metrics(
     period: str = "month",
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get recruitment efficiency metrics.
     
@@ -869,10 +874,10 @@ async def get_efficiency_metrics(
     logger.info(f"📈 Getting efficiency metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
         
         period_days = {"month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -956,11 +961,11 @@ async def get_efficiency_metrics(
 
 
 async def get_comparative_metrics(
-    recruiter_id: Optional[str] = None,
+    recruiter_id: str | None = None,
     comparison_type: str = "team",
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get comparative metrics for recruiter performance.
     
@@ -979,17 +984,18 @@ async def get_comparative_metrics(
     logger.info(f"📊 Getting comparative metrics (company: {company_id}, type: {comparison_type})")
     
     try:
+        from sqlalchemy import and_, distinct, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_, distinct
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
         previous_start = start_date - timedelta(days=period_days)
         
         async with AsyncSessionLocal() as db:
-            async def get_recruiter_stats(recruiter: Optional[str], from_date: datetime, to_date: datetime):
+            async def get_recruiter_stats(recruiter: str | None, from_date: datetime, to_date: datetime):
                 conditions = [
                     JobVacancy.company_id == company_id,
                     JobVacancy.created_at >= from_date,
@@ -1101,10 +1107,10 @@ async def get_comparative_metrics(
 
 
 async def get_workload_distribution(
-    team_id: Optional[str] = None,
+    team_id: str | None = None,
     include_details: bool = False,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get team workload distribution metrics.
     
@@ -1122,8 +1128,9 @@ async def get_workload_distribution(
     logger.info(f"📊 Getting workload distribution (company: {company_id}, team: {team_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
         from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
@@ -1140,7 +1147,7 @@ async def get_workload_distribution(
             jobs = result.scalars().all()
             
             total_active_jobs = len(jobs)
-            jobs_per_recruiter: Dict[str, Any] = {}
+            jobs_per_recruiter: dict[str, Any] = {}
             
             for job in jobs:
                 recruiter = getattr(job, 'recruiter', 'Não atribuído') or 'Não atribuído'
@@ -1201,7 +1208,7 @@ async def get_bottleneck_analysis(
     job_id: str,
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Analyze pipeline bottlenecks for a specific job.
     
@@ -1219,13 +1226,14 @@ async def get_bottleneck_analysis(
     logger.info(f"🔍 Analyzing bottlenecks for job: {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate, Candidate
         
         period_days = {"week": 7, "month": 30}.get(period, 30)
-        start_date = datetime.utcnow() - timedelta(days=period_days)
+        datetime.utcnow() - timedelta(days=period_days)
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -1262,7 +1270,7 @@ async def get_bottleneck_analysis(
             vacancy_candidates = vc_result.all()
             
             stages = ["Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado", "Reprovado"]
-            stage_stats: Dict[str, Dict[str, Any]] = {s: {"count": 0, "rejected": 0, "time_in_stage": []} for s in stages}
+            stage_stats: dict[str, dict[str, Any]] = {s: {"count": 0, "rejected": 0, "time_in_stage": []} for s in stages}
             
             for vc, c in vacancy_candidates:
                 stage = getattr(vc, 'stage', 'Triagem') or 'Triagem'
@@ -1330,10 +1338,10 @@ async def get_bottleneck_analysis(
 
 
 async def get_stakeholder_metrics(
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get stakeholder responsiveness metrics.
     
@@ -1351,10 +1359,11 @@ async def get_stakeholder_metrics(
     logger.info(f"👥 Getting stakeholder metrics (company: {company_id}, job: {job_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         period_days = {"week": 7, "month": 30}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -1376,7 +1385,7 @@ async def get_stakeholder_metrics(
             
             pending_approvals = []
             delayed_decisions = []
-            stakeholder_response_times: Dict[str, List[int]] = {}
+            stakeholder_response_times: dict[str, list[int]] = {}
             
             for job in jobs:
                 approval_status = getattr(job, 'approval_status', 'aprovada')
@@ -1487,9 +1496,9 @@ async def get_stakeholder_metrics(
 
 async def get_hiring_quality(
     period: str = "quarter",
-    department_id: Optional[str] = None,
+    department_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get post-hire quality metrics.
     
@@ -1506,10 +1515,10 @@ async def get_hiring_quality(
     logger.info(f"⭐ Getting hiring quality metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate
         
         period_days = {
             "quarter": 90,
@@ -1581,7 +1590,7 @@ async def get_hiring_quality(
 async def get_prediction_metrics(
     job_id: str,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get job success predictions based on pipeline health.
     
@@ -1597,10 +1606,11 @@ async def get_prediction_metrics(
     logger.info(f"🔮 Getting prediction metrics for job {job_id} (company: {company_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate, Candidate
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -1742,10 +1752,10 @@ async def get_prediction_metrics(
 
 
 async def get_cost_metrics(
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get recruitment cost analysis metrics.
     
@@ -1762,8 +1772,9 @@ async def get_cost_metrics(
     logger.info(f"💰 Getting cost metrics (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.job_vacancy import JobVacancy
         
         period_days = {
@@ -1889,7 +1900,7 @@ async def get_trends(
     metric_type: str = "candidates",
     period: str = "month",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get historical trend analysis for recruitment metrics.
     
@@ -1906,10 +1917,11 @@ async def get_trends(
     logger.info(f"📈 Getting trends for {metric_type} (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, extract, func, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_, extract
-        from app.models.job_vacancy import JobVacancy
         from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         months_to_analyze = 6 if period == "month" else 12
         start_date = datetime.utcnow() - timedelta(days=months_to_analyze * 30)
@@ -2028,10 +2040,10 @@ async def get_trends(
 
 
 async def get_ml_predictions(
-    candidate_id: Optional[str] = None,
-    job_id: Optional[str] = None,
+    candidate_id: str | None = None,
+    job_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get ML-based predictions for candidate success.
     
@@ -2048,8 +2060,9 @@ async def get_ml_predictions(
     logger.info(f"🤖 Getting ML predictions (company: {company_id}, candidate: {candidate_id}, job: {job_id})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
         from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
         
@@ -2202,9 +2215,9 @@ async def get_ml_predictions(
 
 async def get_conversion_patterns(
     period: str = "month",
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Analyze source and profile conversion patterns.
     
@@ -2221,10 +2234,10 @@ async def get_conversion_patterns(
     logger.info(f"🔄 Getting conversion patterns (company: {company_id}, period: {period})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, func, and_
         from app.models.candidate import Candidate, VacancyCandidate
-        from app.models.job_vacancy import JobVacancy
         
         period_days = {
             "month": 30,
@@ -2348,10 +2361,10 @@ async def get_conversion_patterns(
 
 
 async def get_smart_alerts(
-    job_id: Optional[str] = None,
+    job_id: str | None = None,
     severity: str = "all",
     **kwargs
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get intelligent alerts and risk detection for recruitment pipeline.
     
@@ -2368,10 +2381,11 @@ async def get_smart_alerts(
     logger.info(f"🚨 Getting smart alerts (company: {company_id}, severity: {severity})")
     
     try:
+        from sqlalchemy import and_, select
+
         from app.core.database import AsyncSessionLocal
-        from sqlalchemy import select, and_
+        from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
-        from app.models.candidate import VacancyCandidate, Candidate
         
         async with AsyncSessionLocal() as db:
             sla_at_risk = []
