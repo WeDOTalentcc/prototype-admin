@@ -8,10 +8,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import and_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.approvals.dependencies import get_approvals_repo
+from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
 from app.domains.communication.services.email_service import email_service
 from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import audit_service
@@ -107,7 +106,7 @@ async def create_approval_request(
     request: ApprovalRequestCreate,
     company_id: str = Query(..., description="Company ID"),
     requester_id: str | None = Query(None, description="Requester user ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """Create a new approval request and send notification email to approver."""
     try:
@@ -132,23 +131,20 @@ async def create_approval_request(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
         )
-        
-        db.add(approval)
-        await db.flush()
-        await db.refresh(approval)
-        
+
+        approval = await repo.add_and_flush(approval)
+
         try:
-            await send_approval_request_email(db, approval)
+            await send_approval_request_email(repo.db, approval)
             approval.email_sent = True
             approval.email_sent_at = datetime.utcnow()
-            await db.flush()
-            await db.refresh(approval)
+            approval = await repo.flush_and_refresh(approval)
         except Exception as e:
             logger.error(f"Failed to send approval request email: {e}")
-        
+
         logger.info(f"Created approval request {approval.id} for {request.target_name}")
         return to_response(approval)
-        
+
     except Exception as e:
         logger.error(f"Error creating approval request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -163,7 +159,7 @@ async def list_approval_requests(
     requester_email: str | None = Query(None, description="Filter by requester email"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """List approval requests for a company with optional filters."""
     try:
@@ -171,7 +167,8 @@ async def list_approval_requests(
             parsed_company_id = UUID(company_id)
         except (ValueError, TypeError):
             from app.models.company import CompanyProfile
-            result = await db.execute(
+            from sqlalchemy import select
+            result = await repo.db.execute(
                 select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
             )
             default_company = result.scalar_one_or_none()
@@ -179,28 +176,19 @@ async def list_approval_requests(
                 parsed_company_id = default_company.id
             else:
                 return []
-        
-        query = select(ApprovalRequest).where(
-            ApprovalRequest.company_id == parsed_company_id
+
+        approvals = await repo.list_by_company(
+            company_id=parsed_company_id,
+            status=status,
+            request_type=request_type,
+            approver_email=approver_email,
+            requester_email=requester_email,
+            limit=limit,
+            offset=offset,
         )
-        
-        if status:
-            query = query.where(ApprovalRequest.status == status)
-        if request_type:
-            query = query.where(ApprovalRequest.request_type == request_type)
-        if approver_email:
-            query = query.where(ApprovalRequest.approver_email == approver_email)
-        if requester_email:
-            query = query.where(ApprovalRequest.requester_email == requester_email)
-        
-        query = query.order_by(ApprovalRequest.created_at.desc())
-        query = query.offset(offset).limit(limit)
-        
-        result = await db.execute(query)
-        approvals = result.scalars().all()
-        
+
         return [to_response(a) for a in approvals]
-        
+
     except Exception as e:
         logger.error(f"Error listing approval requests: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -210,27 +198,16 @@ async def list_approval_requests(
 async def list_pending_approvals(
     company_id: str = Query(..., description="Company ID"),
     approver_email: str | None = Query(None, description="Filter by approver email"),
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """List pending approval requests for a company."""
     try:
-        query = select(ApprovalRequest).where(
-            and_(
-                ApprovalRequest.company_id == UUID(company_id),
-                ApprovalRequest.status == "pending"
-            )
+        approvals = await repo.list_pending_by_company(
+            company_id=UUID(company_id),
+            approver_email=approver_email,
         )
-        
-        if approver_email:
-            query = query.where(ApprovalRequest.approver_email == approver_email)
-        
-        query = query.order_by(ApprovalRequest.created_at.desc())
-        
-        result = await db.execute(query)
-        approvals = result.scalars().all()
-        
         return [to_response(a) for a in approvals]
-        
+
     except Exception as e:
         logger.error(f"Error listing pending approvals: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -239,20 +216,17 @@ async def list_pending_approvals(
 @router.get("/{approval_id}", response_model=ApprovalRequestResponse)
 async def get_approval_request(
     approval_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """Get a specific approval request by ID."""
     try:
-        result = await db.execute(
-            select(ApprovalRequest).where(ApprovalRequest.id == UUID(approval_id))
-        )
-        approval = result.scalar_one_or_none()
-        
+        approval = await repo.get_by_id(UUID(approval_id))
+
         if not approval:
             raise HTTPException(status_code=404, detail="Approval request not found")
-        
+
         return to_response(approval)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -266,48 +240,44 @@ async def approve_request(
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     approved_by: str = Query(..., description="Email of the approver"),
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """Approve an approval request."""
     try:
-        result = await db.execute(
-            select(ApprovalRequest).where(ApprovalRequest.id == UUID(approval_id))
-        )
-        approval = result.scalar_one_or_none()
-        
+        approval = await repo.get_by_id(UUID(approval_id))
+
         if not approval:
             raise HTTPException(status_code=404, detail="Approval request not found")
-        
+
         if str(approval.company_id) != company_id:
             logger.warning(f"Company ID mismatch: approval belongs to {approval.company_id}, request from {company_id}")
             raise HTTPException(status_code=403, detail="Approval request does not belong to this company")
-        
+
         if approval.approver_email.lower() != approved_by.lower():
             logger.warning(f"Unauthorized approval attempt: {approved_by} tried to approve request assigned to {approval.approver_email}")
             raise HTTPException(status_code=403, detail="Only the assigned approver can approve this request")
-        
+
         if approval.status != "pending":
             raise HTTPException(
-                status_code=400, 
-                detail=f"Cannot approve request with status '{approval.status}'"
+                status_code=400,
+                detail="Cannot approve request with status '" + approval.status + "'"
             )
-        
+
         approval.status = "approved"
         approval.approval_notes = update.approval_notes
         approval.resolved_at = datetime.utcnow()
         approval.resolved_by = approved_by
         approval.updated_at = datetime.utcnow()
-        
-        await db.flush()
-        await db.refresh(approval)
-        
+
+        approval = await repo.flush_and_refresh(approval)
+
         try:
-            await send_approval_result_email(db, approval, approved=True)
+            await send_approval_result_email(repo.db, approval, approved=True)
             approval.notification_sent = True
         except Exception as e:
             logger.error(f"Failed to send approval result email for {approval_id}: {str(e)}", exc_info=True)
             approval.notification_sent = False
-        
+
         logger.info(f"Approval request {approval_id} approved by {approved_by}")
 
         try:
@@ -331,7 +301,7 @@ async def approve_request(
             logger.warning(f"Audit log failed for approval: {audit_err}")
 
         return to_response(approval)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -345,48 +315,44 @@ async def reject_request(
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     rejected_by: str = Query(..., description="Email of the rejector"),
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """Reject an approval request."""
     try:
-        result = await db.execute(
-            select(ApprovalRequest).where(ApprovalRequest.id == UUID(approval_id))
-        )
-        approval = result.scalar_one_or_none()
-        
+        approval = await repo.get_by_id(UUID(approval_id))
+
         if not approval:
             raise HTTPException(status_code=404, detail="Approval request not found")
-        
+
         if str(approval.company_id) != company_id:
             logger.warning(f"Company ID mismatch: approval belongs to {approval.company_id}, request from {company_id}")
             raise HTTPException(status_code=403, detail="Approval request does not belong to this company")
-        
+
         if approval.approver_email.lower() != rejected_by.lower():
             logger.warning(f"Unauthorized rejection attempt: {rejected_by} tried to reject request assigned to {approval.approver_email}")
             raise HTTPException(status_code=403, detail="Only the assigned approver can reject this request")
-        
+
         if approval.status != "pending":
             raise HTTPException(
-                status_code=400, 
-                detail=f"Cannot reject request with status '{approval.status}'"
+                status_code=400,
+                detail="Cannot reject request with status '" + approval.status + "'"
             )
-        
+
         approval.status = "rejected"
         approval.rejection_reason = update.rejection_reason
         approval.resolved_at = datetime.utcnow()
         approval.resolved_by = rejected_by
         approval.updated_at = datetime.utcnow()
-        
-        await db.flush()
-        await db.refresh(approval)
-        
+
+        approval = await repo.flush_and_refresh(approval)
+
         try:
-            await send_approval_result_email(db, approval, approved=False)
+            await send_approval_result_email(repo.db, approval, approved=False)
             approval.notification_sent = True
         except Exception as e:
             logger.error(f"Failed to send rejection email for {approval_id}: {str(e)}", exc_info=True)
             approval.notification_sent = False
-        
+
         logger.info(f"Approval request {approval_id} rejected by {rejected_by}")
 
         try:
@@ -410,7 +376,7 @@ async def reject_request(
             logger.warning(f"Audit log failed for rejection: {audit_err}")
 
         return to_response(approval)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -423,43 +389,39 @@ async def cancel_request(
     approval_id: str,
     company_id: str = Query(..., description="Company ID"),
     cancelled_by: str = Query(..., description="Email of the canceller"),
-    db: AsyncSession = Depends(get_db)
+    repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """Cancel an approval request (by the requester)."""
     try:
-        result = await db.execute(
-            select(ApprovalRequest).where(ApprovalRequest.id == UUID(approval_id))
-        )
-        approval = result.scalar_one_or_none()
-        
+        approval = await repo.get_by_id(UUID(approval_id))
+
         if not approval:
             raise HTTPException(status_code=404, detail="Approval request not found")
-        
+
         if str(approval.company_id) != company_id:
             logger.warning(f"Company ID mismatch: approval belongs to {approval.company_id}, request from {company_id}")
             raise HTTPException(status_code=403, detail="Approval request does not belong to this company")
-        
+
         if approval.requester_email.lower() != cancelled_by.lower():
             logger.warning(f"Unauthorized cancel attempt: {cancelled_by} tried to cancel request created by {approval.requester_email}")
             raise HTTPException(status_code=403, detail="Only the requester can cancel this request")
-        
+
         if approval.status != "pending":
             raise HTTPException(
-                status_code=400, 
-                detail=f"Cannot cancel request with status '{approval.status}'"
+                status_code=400,
+                detail="Cannot cancel request with status '" + approval.status + "'"
             )
-        
+
         approval.status = "cancelled"
         approval.resolved_at = datetime.utcnow()
         approval.resolved_by = cancelled_by
         approval.updated_at = datetime.utcnow()
-        
-        await db.flush()
-        await db.refresh(approval)
-        
+
+        approval = await repo.flush_and_refresh(approval)
+
         logger.info(f"Approval request {approval_id} cancelled by {cancelled_by}")
         return to_response(approval)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -467,51 +429,39 @@ async def cancel_request(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def send_approval_request_email(db: AsyncSession, approval: ApprovalRequest):
+async def send_approval_request_email(db, approval: ApprovalRequest):
     """Send email notification to approver about new approval request."""
     request_type_labels = {
-        "vacancy_approval": "Aprovação de Vaga",
-        "candidate_hire": "Aprovação de Contratação",
-        "offer_approval": "Aprovação de Proposta",
-        "budget_approval": "Aprovação de Orçamento",
-        "custom": "Aprovação Personalizada"
+        "vacancy_approval": "Aprovacao de Vaga",
+        "candidate_hire": "Aprovacao de Contratacao",
+        "offer_approval": "Aprovacao de Proposta",
+        "budget_approval": "Aprovacao de Orcamento",
+        "custom": "Aprovacao Personalizada"
     }
-    
-    type_label = request_type_labels.get(approval.request_type, "Aprovação")
-    
-    subject = f"[LIA] {type_label}: {approval.target_name}"
-    
-    body_html = f"""
-<html>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <h2 style="color: #60BED1;">Solicitação de Aprovação</h2>
-    
-    <p>Olá <strong>{approval.approver_name}</strong>,</p>
-    
-    <p>Você recebeu uma solicitação de aprovação de <strong>{approval.requester_name}</strong>.</p>
-    
-    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #1f2937;">Detalhes da Solicitação:</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li>📋 <strong>Tipo:</strong> {type_label}</li>
-            <li>📌 <strong>Item:</strong> {approval.target_name}</li>
-            <li>👤 <strong>Solicitante:</strong> {approval.requester_name} ({approval.requester_email})</li>
-            <li>📅 <strong>Data:</strong> {approval.created_at.strftime('%d/%m/%Y %H:%M')}</li>
-        </ul>
-        
-        {f'<p><strong>Descrição:</strong> {approval.target_description}</p>' if approval.target_description else ''}
-    </div>
-    
-    <p>Por favor, acesse a plataforma LIA para aprovar ou rejeitar esta solicitação.</p>
-    
-    <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-        Atenciosamente,<br>
-        Sistema LIA
-    </p>
-</body>
-</html>
-"""
-    
+
+    type_label = request_type_labels.get(approval.request_type, "Aprovacao")
+    subject = "[LIA] " + type_label + ": " + approval.target_name
+
+    description_block = "<p><strong>Descricao:</strong> " + approval.target_description + "</p>" if approval.target_description else ""
+    date_str = approval.created_at.strftime("%d/%m/%Y %H:%M")
+
+    body_html = (
+        "<html><body>"
+        "<h2>Solicitacao de Aprovacao</h2>"
+        "<p>Ola " + approval.approver_name + ",</p>"
+        "<p>Voce recebeu uma solicitacao de aprovacao de " + approval.requester_name + ".</p>"
+        "<ul>"
+        "<li>Tipo: " + type_label + "</li>"
+        "<li>Item: " + approval.target_name + "</li>"
+        "<li>Solicitante: " + approval.requester_name + " (" + approval.requester_email + ")</li>"
+        "<li>Data: " + date_str + "</li>"
+        "</ul>"
+        + description_block +
+        "<p>Por favor, acesse a plataforma LIA para aprovar ou rejeitar esta solicitacao.</p>"
+        "<p>Atenciosamente,<br>Sistema LIA</p>"
+        "</body></html>"
+    )
+
     try:
         success = await email_service._send_email_provider(
             to_email=approval.approver_email,
@@ -524,46 +474,35 @@ async def send_approval_request_email(db: AsyncSession, approval: ApprovalReques
         raise
 
 
-async def send_approval_result_email(db: AsyncSession, approval: ApprovalRequest, approved: bool):
+async def send_approval_result_email(db, approval: ApprovalRequest, approved: bool):
     """Send email notification to requester about approval result."""
     status_label = "Aprovada" if approved else "Rejeitada"
     status_color = "#16a34a" if approved else "#dc2626"
-    
-    subject = f"[LIA] Solicitação {status_label}: {approval.target_name}"
-    
+    subject = "[LIA] Solicitacao " + status_label + ": " + approval.target_name
+
     notes_section = ""
     if approved and approval.approval_notes:
-        notes_section = f'<p><strong>Observações:</strong> {approval.approval_notes}</p>'
+        notes_section = "<p><strong>Observacoes:</strong> " + approval.approval_notes + "</p>"
     elif not approved and approval.rejection_reason:
-        notes_section = f'<p><strong>Motivo da Rejeição:</strong> {approval.rejection_reason}</p>'
-    
-    body_html = f"""
-<html>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <h2 style="color: {status_color};">Solicitação {status_label}</h2>
-    
-    <p>Olá <strong>{approval.requester_name}</strong>,</p>
-    
-    <p>Sua solicitação de aprovação foi <strong style="color: {status_color};">{status_label.lower()}</strong> por <strong>{approval.approver_name}</strong>.</p>
-    
-    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #1f2937;">Detalhes:</h3>
-        <ul style="list-style: none; padding: 0;">
-            <li>📌 <strong>Item:</strong> {approval.target_name}</li>
-            <li>👤 <strong>Aprovador:</strong> {approval.approver_name}</li>
-            <li>📅 <strong>Data da Decisão:</strong> {approval.resolved_at.strftime('%d/%m/%Y %H:%M') if approval.resolved_at else 'N/A'}</li>
-        </ul>
-        {notes_section}
-    </div>
-    
-    <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-        Atenciosamente,<br>
-        Sistema LIA
-    </p>
-</body>
-</html>
-"""
-    
+        notes_section = "<p><strong>Motivo da Rejeicao:</strong> " + approval.rejection_reason + "</p>"
+
+    resolved_date = approval.resolved_at.strftime("%d/%m/%Y %H:%M") if approval.resolved_at else "N/A"
+
+    body_html = (
+        "<html><body>"
+        "<h2>Solicitacao " + status_label + "</h2>"
+        "<p>Ola " + approval.requester_name + ",</p>"
+        "<p>Sua solicitacao de aprovacao foi " + status_label.lower() + " por " + approval.approver_name + ".</p>"
+        "<ul>"
+        "<li>Item: " + approval.target_name + "</li>"
+        "<li>Aprovador: " + approval.approver_name + "</li>"
+        "<li>Data da Decisao: " + resolved_date + "</li>"
+        "</ul>"
+        + notes_section +
+        "<p>Atenciosamente,<br>Sistema LIA</p>"
+        "</body></html>"
+    )
+
     try:
         success = await email_service._send_email_provider(
             to_email=approval.requester_email,

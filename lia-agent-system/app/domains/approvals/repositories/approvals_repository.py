@@ -1,0 +1,71 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_
+from app.models.approval import ApprovalRequest
+import uuid
+from uuid import UUID
+from typing import Optional
+
+
+class ApprovalsRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    async def add_and_flush(self, approval: ApprovalRequest) -> ApprovalRequest:
+        self.db.add(approval)
+        await self.db.flush()
+        await self.db.refresh(approval)
+        return approval
+
+    async def flush_and_refresh(self, approval: ApprovalRequest) -> ApprovalRequest:
+        await self.db.flush()
+        await self.db.refresh(approval)
+        return approval
+
+    async def get_by_id(self, approval_id: UUID) -> Optional[ApprovalRequest]:
+        result = await self.db.execute(
+            select(ApprovalRequest).where(ApprovalRequest.id == approval_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_by_company(
+        self,
+        company_id: UUID,
+        status: Optional[str] = None,
+        request_type: Optional[str] = None,
+        approver_email: Optional[str] = None,
+        requester_email: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[ApprovalRequest]:
+        query = select(ApprovalRequest).where(
+            ApprovalRequest.company_id == company_id
+        )
+        if status:
+            query = query.where(ApprovalRequest.status == status)
+        if request_type:
+            query = query.where(ApprovalRequest.request_type == request_type)
+        if approver_email:
+            query = query.where(ApprovalRequest.approver_email == approver_email)
+        if requester_email:
+            query = query.where(ApprovalRequest.requester_email == requester_email)
+        query = query.order_by(ApprovalRequest.created_at.desc())
+        query = query.offset(offset).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def list_pending_by_company(
+        self,
+        company_id: UUID,
+        approver_email: Optional[str] = None,
+    ) -> list[ApprovalRequest]:
+        query = select(ApprovalRequest).where(
+            and_(
+                ApprovalRequest.company_id == company_id,
+                ApprovalRequest.status == pending
+            )
+        )
+        if approver_email:
+            query = query.where(ApprovalRequest.approver_email == approver_email)
+        query = query.order_by(ApprovalRequest.created_at.desc())
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
