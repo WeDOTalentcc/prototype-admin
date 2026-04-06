@@ -206,6 +206,18 @@ class CommunicationDispatcher:
                 logger.warning("[DISPATCHER] RESEND_API_KEY not set — no fallback available")
 
         if not self.is_mailgun_enabled and not resend_api_key:
+            environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
+            if environment == "production":
+                logger.critical(f"[DISPATCHER] No email provider configured in PRODUCTION — email to {to_email} was NOT sent!")
+                return {
+                    "success": False,
+                    "error": "No email provider configured in production",
+                    "mock": False,
+                    "provider": "none",
+                    "channel": "email",
+                    "recipient": to_email,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
             mock_id = f"mock-email-{uuid.uuid4().hex[:12]}"
             logger.warning(f"No email provider configured. Returning mock for {to_email}")
             return {
@@ -332,6 +344,17 @@ class CommunicationDispatcher:
         logger.info(f"Attempting to send WhatsApp message to {to_phone}...")
         
         if not self.is_twilio_enabled:
+            environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
+            if environment == "production":
+                logger.critical(f"[DISPATCHER] Twilio not configured in PRODUCTION — WhatsApp to {to_phone} was NOT sent!")
+                return {
+                    "success": False,
+                    "error": "Twilio not configured in production",
+                    "mock": False,
+                    "channel": "whatsapp",
+                    "recipient": to_phone,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
             mock_id = f"mock-whatsapp-{uuid.uuid4().hex[:12]}"
             logger.warning(f"Twilio not configured. Returning mock success for WhatsApp to {to_phone}")
             return {
@@ -417,6 +440,17 @@ class CommunicationDispatcher:
         logger.info(f"Attempting to send SMS to {to_phone}...")
         
         if not self.is_twilio_enabled:
+            environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
+            if environment == "production":
+                logger.critical(f"[DISPATCHER] Twilio not configured in PRODUCTION — SMS to {to_phone} was NOT sent!")
+                return {
+                    "success": False,
+                    "error": "Twilio not configured in production",
+                    "mock": False,
+                    "channel": "sms",
+                    "recipient": to_phone,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
             mock_id = f"mock-sms-{uuid.uuid4().hex[:12]}"
             logger.warning(f"Twilio not configured. Returning mock success for SMS to {to_phone}")
             return {

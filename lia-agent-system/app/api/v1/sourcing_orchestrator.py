@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 from lia_agents_core.agent_interface import AgentInput
 import logging
@@ -14,13 +14,18 @@ async def sourcing_react_orchestrate(request: Request):
     if not os.getenv("USE_REACT_AGENTS", "false").lower() == "true":
         return {"error": "ReAct agents not enabled", "detail": "Set USE_REACT_AGENTS=true"}
 
+    user_id = getattr(request.state, "user_id", None)
+    company_id = getattr(request.state, "company_id", None)
+    if not user_id or not company_id:
+        raise HTTPException(status_code=401, detail="Authentication required: missing user or company context")
+
     try:
         body = await request.json()
         agent_input = AgentInput(
             message=body.get("message", ""),
             session_id=body.get("session_id", "default"),
-            company_id=body.get("company_id", "demo"),
-            user_id=body.get("user_id", "demo-user"),
+            company_id=company_id,
+            user_id=user_id,
             context=body.get("context", {}),
         )
 

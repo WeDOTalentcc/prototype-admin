@@ -445,8 +445,16 @@ class MessageProvider(ABC):
 
 
 class MockEmailProvider(MessageProvider):
-    """Mock email provider for development/testing."""
+    """Mock email provider for development/testing. Blocked in production."""
     
+    def __init__(self):
+        self._environment = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
+        if self._environment == "production":
+            logger.critical(
+                "[MOCK EMAIL] MockEmailProvider activated in PRODUCTION — "
+                "emails will NOT be delivered! Configure MAILGUN_API_KEY or RESEND_API_KEY immediately."
+            )
+
     @property
     def name(self) -> str:
         return "mock_email"
@@ -463,7 +471,10 @@ class MockEmailProvider(MessageProvider):
         body_html: Optional[str] = None,
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
-        """Simulate sending an email."""
+        """Simulate sending an email. Raises error in production."""
+        if self._environment == "production":
+            logger.critical(f"[MOCK EMAIL] BLOCKED in production — email to {to} was NOT sent. Configure a real email provider.")
+            return False, None, {"mock": True, "blocked": True, "reason": "MockEmailProvider is not allowed in production"}
         logger.info(f"[MOCK EMAIL] To: {to}, Subject: {subject}")
         message_id = f"mock_email_{uuid.uuid4().hex[:12]}"
         return True, message_id, {"mock": True, "to": to, "subject": subject}
@@ -473,6 +484,8 @@ class MockEmailProvider(MessageProvider):
         return "delivered", {"mock": True}
     
     def is_available(self) -> bool:
+        if self._environment == "production":
+            return False
         return True
 
 
@@ -667,8 +680,16 @@ class AWSEmailProvider(MessageProvider):
 
 
 class MockWhatsAppProvider(MessageProvider):
-    """Mock WhatsApp provider for development/testing."""
+    """Mock WhatsApp provider for development/testing. Blocked in production."""
     
+    def __init__(self):
+        self._environment = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
+        if self._environment == "production":
+            logger.critical(
+                "[MOCK WHATSAPP] MockWhatsAppProvider activated in PRODUCTION — "
+                "messages will NOT be delivered! Configure TWILIO credentials immediately."
+            )
+
     @property
     def name(self) -> str:
         return "mock_whatsapp"
@@ -685,7 +706,10 @@ class MockWhatsAppProvider(MessageProvider):
         body_html: Optional[str] = None,
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
-        """Simulate sending a WhatsApp message."""
+        """Simulate sending a WhatsApp message. Raises error in production."""
+        if self._environment == "production":
+            logger.critical(f"[MOCK WHATSAPP] BLOCKED in production — message to {to} was NOT sent.")
+            return False, None, {"mock": True, "blocked": True, "reason": "MockWhatsAppProvider is not allowed in production"}
         logger.info(f"[MOCK WHATSAPP] To: {to}")
         logger.info(f"[MOCK WHATSAPP] Message: {body[:100]}...")
         message_id = f"mock_wa_{uuid.uuid4().hex[:12]}"
@@ -696,6 +720,8 @@ class MockWhatsAppProvider(MessageProvider):
         return "delivered", {"mock": True}
     
     def is_available(self) -> bool:
+        if self._environment == "production":
+            return False
         return True
 
 

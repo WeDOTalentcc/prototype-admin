@@ -2,7 +2,7 @@
 Credits API endpoints.
 Manages user credit balance for paid features (e.g., Pearch AI global search).
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from pydantic import BaseModel
@@ -27,7 +27,7 @@ class CreditBalanceResponse(BaseModel):
 
 @router.get("/balance", response_model=CreditBalanceResponse)
 async def get_credit_balance(
-    user_id: str = "demo-user",  # TODO: Get from auth when implemented
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -42,6 +42,10 @@ async def get_credit_balance(
     TODO: Implement real credit management system
     For now, returns mock data based on consumed credits from searches
     """
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
     try:
         # Calculate total credits consumed from candidate_searches table
         result = await db.execute(

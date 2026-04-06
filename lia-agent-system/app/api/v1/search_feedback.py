@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, func, and_
 from typing import Optional
@@ -11,8 +11,6 @@ from app.models.search_feedback import SearchFeedback
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/search/feedback", tags=["search-feedback"])
-
-USER_ID = "demo-user"
 
 
 class SubmitFeedbackRequest(BaseModel):
@@ -26,12 +24,16 @@ class SubmitFeedbackRequest(BaseModel):
 
 
 @router.post("/")
-async def submit_feedback(body: SubmitFeedbackRequest, db: AsyncSession = Depends(get_db)):
+async def submit_feedback(request: Request, body: SubmitFeedbackRequest, db: AsyncSession = Depends(get_db)):
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
     job_filter = SearchFeedback.job_id == body.job_id if body.job_id else SearchFeedback.job_id.is_(None)
     result = await db.execute(
         select(SearchFeedback).where(
             and_(
-                SearchFeedback.user_id == USER_ID,
+                SearchFeedback.user_id == user_id,
                 SearchFeedback.candidate_id == body.candidate_id,
                 job_filter,
             )
@@ -57,7 +59,7 @@ async def submit_feedback(body: SubmitFeedbackRequest, db: AsyncSession = Depend
         candidate_id=body.candidate_id,
         feedback_type=body.feedback_type,
         job_id=body.job_id,
-        user_id=USER_ID,
+        user_id=user_id,
         search_query=body.search_query,
         candidate_score=body.candidate_score,
         candidate_name=body.candidate_name,
@@ -69,8 +71,12 @@ async def submit_feedback(body: SubmitFeedbackRequest, db: AsyncSession = Depend
 
 
 @router.get("/user/all")
-async def get_user_feedbacks(job_id: Optional[str] = None, db: AsyncSession = Depends(get_db)):
-    query = select(SearchFeedback).where(SearchFeedback.user_id == USER_ID)
+async def get_user_feedbacks(request: Request, job_id: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
+    query = select(SearchFeedback).where(SearchFeedback.user_id == user_id)
     if job_id:
         query = query.where(SearchFeedback.job_id == job_id)
     query = query.order_by(SearchFeedback.created_at.desc())
@@ -101,10 +107,14 @@ async def get_job_feedbacks(job_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.delete("/{feedback_id}")
-async def delete_feedback(feedback_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_feedback(request: Request, feedback_id: str, db: AsyncSession = Depends(get_db)):
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+
     result = await db.execute(
         select(SearchFeedback).where(
-            and_(SearchFeedback.id == feedback_id, SearchFeedback.user_id == USER_ID)
+            and_(SearchFeedback.id == feedback_id, SearchFeedback.user_id == user_id)
         )
     )
     feedback = result.scalar_one_or_none()
