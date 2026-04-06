@@ -9,7 +9,7 @@ Provides:
 - Company-specific template creation
 """
 import os
-from typing import Any
+from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
 from sqlalchemy import func, or_, select

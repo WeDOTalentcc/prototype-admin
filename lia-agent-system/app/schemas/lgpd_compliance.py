@@ -9,7 +9,7 @@ Includes schemas for:
 
 from datetime import date, datetime
 from enum import Enum
-from typing import Any
+from typing import Final, Any
 
 from pydantic import BaseModel, Field
 

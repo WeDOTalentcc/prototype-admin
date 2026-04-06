@@ -2,7 +2,7 @@
 Archetype CRUD, generation (from-search, from-job, from-description), and search routes.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 

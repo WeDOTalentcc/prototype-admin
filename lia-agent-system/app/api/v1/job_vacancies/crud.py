@@ -1,8 +1,15 @@
+from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from datetime import datetime
+from pydantic import Field
+from typing import List, Dict, Optional
 """
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ._shared import *
 

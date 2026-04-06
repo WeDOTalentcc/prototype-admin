@@ -12,6 +12,7 @@ Implements the Learning Loop priority system:
 This service queries each source in priority order and returns the best
 suggestion for each field in the job wizard.
 """
+from pydantic import Field
 import logging
 from dataclasses import dataclass, field
 from enum import Enum

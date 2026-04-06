@@ -15,7 +15,7 @@ Features:
 import logging
 import time
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession

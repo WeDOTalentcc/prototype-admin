@@ -2,9 +2,11 @@
 Microsoft Graph API client.
 Handles authentication and API calls to Microsoft Graph.
 """
+from fastapi import Query, Request, Response
+import json
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, List
 
 import httpx
 from msal import ConfidentialClientApplication

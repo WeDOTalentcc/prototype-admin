@@ -1,3 +1,4 @@
+from typing import Final
 """
 Schemas para geração de Job Description em duas versões:
 - JD Preview (v1): Validação após coleta inicial com indicadores de sugestão da LIA

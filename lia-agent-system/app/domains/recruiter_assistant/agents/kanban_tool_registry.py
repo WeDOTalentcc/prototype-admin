@@ -7,7 +7,7 @@ pipeline analysis and optimization.
 """
 import logging
 import uuid
-from typing import Any
+from typing import Any, List
 
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text

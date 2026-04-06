@@ -9,12 +9,13 @@ Provides RESTful API for WSI screening workflow:
 5. Generate reports → Structured output
 6. Generate feedback → Candidate feedback
 """
+import time
 import json
 import logging
 import uuid
-from typing import Any
+from typing import Final, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

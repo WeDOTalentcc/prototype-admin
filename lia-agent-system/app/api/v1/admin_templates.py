@@ -2,6 +2,7 @@
 Admin Templates API endpoints for managing system email templates.
 Admin-only endpoints for creating and managing templates that can be published to companies.
 """
+from uuid import UUID
 import logging
 import uuid as uuid_module
 from datetime import datetime

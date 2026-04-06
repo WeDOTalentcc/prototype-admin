@@ -7,6 +7,7 @@ This module provides models for tracking:
 - Health metrics (churn risk, health score, engagement)
 - Payment history
 """
+from datetime import date
 import enum
 import uuid
 from datetime import datetime

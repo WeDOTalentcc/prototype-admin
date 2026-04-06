@@ -4,9 +4,11 @@ Wizard Step Service — extracted from lia_assistant.py (Fase 5 decomposition).
 Contains the full logic of the /job-wizard/step endpoint, previously an inline
 2000-line handler. The router now delegates to wizard_step_service.process().
 """
+import json
+import re
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Final, Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import and_, select, text

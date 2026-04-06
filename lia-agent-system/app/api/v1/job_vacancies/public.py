@@ -1,8 +1,13 @@
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from datetime import datetime
+from typing import List, Optional
 """
 Public routes (no authentication required) and share-link routes.
 Also includes router_public for candidate application flow.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 
 from ._shared import *
 

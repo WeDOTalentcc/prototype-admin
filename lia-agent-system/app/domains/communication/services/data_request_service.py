@@ -7,9 +7,10 @@ Service for managing data request operations including:
 - Checking completion status
 - Managing templates and fields
 """
+from fastapi import status
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict, List, Optional, Type
 from uuid import UUID
 
 from sqlalchemy import and_, or_, select

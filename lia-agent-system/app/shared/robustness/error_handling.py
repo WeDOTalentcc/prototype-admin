@@ -6,13 +6,14 @@ This module provides:
 - Error wrapping decorator for agent methods
 - User-friendly error messages in Portuguese
 """
+from sqlalchemy import func
 import logging
 import traceback
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Callable, Any, TypeVar
 
 logger = logging.getLogger(__name__)
 

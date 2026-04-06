@@ -5,6 +5,7 @@ This is the core instruction set that shapes how LIA behaves when analyzing
 and optimizing the recruitment pipeline (Kanban) at a strategic level.
 It must be in Portuguese and follow the conversational philosophy of the platform.
 """
+import os
 from typing import Any
 
 from app.shared.prompts.interaction_patterns import (

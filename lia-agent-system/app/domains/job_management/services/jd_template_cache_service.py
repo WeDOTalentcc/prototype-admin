@@ -16,7 +16,7 @@ import hashlib
 import json
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict
 
 try:
     import redis

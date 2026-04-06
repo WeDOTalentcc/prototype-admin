@@ -1,10 +1,12 @@
+from fastapi import status
+from uuid import UUID
 import base64
 import json
 import logging
 import random
 import uuid
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Final, Any
 
 from lia_models.job_vacancy import JobVacancy
 from sqlalchemy import and_, select, text

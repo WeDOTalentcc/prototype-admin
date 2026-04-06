@@ -1,3 +1,4 @@
+from typing import Final
 """
 Dashboard Data API endpoints with fictitious data for visualization.
 """

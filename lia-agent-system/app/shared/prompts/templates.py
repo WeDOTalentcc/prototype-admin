@@ -8,7 +8,7 @@ Moved from app/prompts/templates.py (I3b cleanup).
 """
 import logging
 import re
-from typing import Any
+from typing import Any, List
 
 from pydantic import BaseModel, Field
 

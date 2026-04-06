@@ -17,6 +17,7 @@ Design principles:
   - Irreversible: only run after dry-run validation
 """
 from __future__ import annotations
+from datetime import date
 
 import logging
 from datetime import datetime, timedelta

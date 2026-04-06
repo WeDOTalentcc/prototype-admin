@@ -2,6 +2,7 @@
 ActionResult dataclass — single source of truth for action execution results.
 No project dependencies — safe to import from anywhere.
 """
+from fastapi import status
 from dataclasses import dataclass
 from typing import Any, Literal
 

@@ -2,6 +2,7 @@
 Automation Handlers
 Individual handlers for automation triggers, called by the StageAutomationEngine.
 """
+from fastapi import status
 import logging
 from typing import Any
 

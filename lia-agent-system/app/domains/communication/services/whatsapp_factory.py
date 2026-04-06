@@ -5,6 +5,7 @@ Factory for creating WhatsApp provider instances based on company configuration.
 Supports multiple providers (Meta, Twilio) with company-specific settings.
 """
 
+from typing import Optional
 import logging
 import os
 

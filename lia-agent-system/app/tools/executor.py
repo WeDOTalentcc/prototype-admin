@@ -11,7 +11,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel, ValidationError, create_model
 

@@ -12,6 +12,7 @@ Referência:
 - wedo-governance Produção Readiness #10 (alertas automáticos)
 """
 from __future__ import annotations
+from fastapi import status
 
 import logging
 from dataclasses import dataclass, field

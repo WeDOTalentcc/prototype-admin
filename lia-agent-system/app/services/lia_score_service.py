@@ -13,12 +13,13 @@ Also implements the Unified LIA Ranking formula:
       Calibration_Adjustment
   ) × Completeness_Factor
 """
+from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
 from app.config.industry_weights import ScoringWeights, get_weights_for_industry
 

@@ -2,7 +2,7 @@
 Interview Scheduling State Schema for conversational workflow.
 """
 from datetime import date, datetime
-from typing import Any, Literal
+from typing import Final, Any, Literal
 
 from pydantic import BaseModel, Field
 

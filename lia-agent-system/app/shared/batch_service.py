@@ -13,7 +13,7 @@ import logging
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Generic, TypeVar
+from typing import Any, Callable, Generic, List, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 

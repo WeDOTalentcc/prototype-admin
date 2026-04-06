@@ -1,6 +1,7 @@
 """
 Recruitment Journey API endpoints for templates, SLAs, and automations.
 """
+from uuid import UUID
 import logging
 import uuid
 from datetime import datetime

@@ -14,9 +14,10 @@ Architecture:
 - Agent (AI): Semantic analysis, evidence extraction, requirement matching
 - System (Deterministic): Score formulas, recommendations, pipeline status
 """
+from fastapi import status
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 from sqlalchemy import select

@@ -11,7 +11,7 @@ All functions are async, connect to PostgreSQL via AsyncSessionLocal,
 and return Dict[str, Any] with 'success', 'data', and 'message' keys.
 """
 import logging
-from typing import Any
+from typing import Any, Dict, List
 
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text

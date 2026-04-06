@@ -6,6 +6,7 @@ Handles: record_stage_feedback, get_stage_analytics,
          get_learning_dashboard, _calculate_learning_health,
          _get_health_recommendations, should_skip_stage_with_learning.
 """
+from fastapi import status
 import logging
 from typing import Any
 from uuid import UUID

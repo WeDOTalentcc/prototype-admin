@@ -29,7 +29,7 @@ import json
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Header, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Header, Query, Request, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel
 
 from app.api.v1.ws_manager import ws_manager

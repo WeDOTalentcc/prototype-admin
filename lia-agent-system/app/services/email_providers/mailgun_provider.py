@@ -2,6 +2,8 @@
 Mailgun email provider implementation.
 Uses the Mailgun HTTP API for transactional email delivery.
 """
+from fastapi import status
+import json
 import asyncio
 import logging
 import os

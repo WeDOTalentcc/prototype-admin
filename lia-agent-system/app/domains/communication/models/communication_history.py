@@ -4,6 +4,7 @@ Communication History Model - Tracking all candidate communications.
 This model stores records of all communications sent to/from candidates,
 including emails, WhatsApp messages, screening invites, and feedback.
 """
+from fastapi import status
 import uuid
 from datetime import datetime
 

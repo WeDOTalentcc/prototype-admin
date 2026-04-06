@@ -12,7 +12,7 @@ Referência: app/shared/resilience/circuit_breaker.py
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from app.auth.dependencies import require_admin
 from app.shared.resilience.circuit_breaker import (

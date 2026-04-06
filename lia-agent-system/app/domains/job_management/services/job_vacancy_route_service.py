@@ -2,9 +2,11 @@
 Route service facade for job vacancy management.
 Encapsulates business logic from API routes (app/api/v1/job_vacancies.py) for portability.
 """
+from fastapi import status
+from datetime import date
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 from sqlalchemy import and_, func, or_, select

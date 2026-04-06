@@ -2,6 +2,7 @@
 Recruitment Email Templates API endpoints.
 Provides CRUD operations for pipeline stage email templates.
 """
+from uuid import UUID
 import logging
 import uuid as uuid_module
 from datetime import datetime

@@ -7,6 +7,7 @@ This module provides:
 - Professional tone validation
 - Emoji normalization
 """
+from typing import Tuple
 import logging
 import re
 from re import Pattern

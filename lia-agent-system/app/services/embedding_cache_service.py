@@ -14,6 +14,7 @@ O warm-up registra os títulos das vagas ativas no cache para que a primeira
 chamada de matching não precise ir ao LLM para vagas conhecidas.
 TTL padrão: SEMANTIC_CACHE_TTL (86400s = 24h).
 """
+from fastapi import status
 import hashlib
 import json
 import logging

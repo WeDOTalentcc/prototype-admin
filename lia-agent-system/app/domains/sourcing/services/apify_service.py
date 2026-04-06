@@ -7,6 +7,8 @@ Supports:
 - Candidate profile enrichment (LinkedIn person profiles, email discovery)
 - Salary benchmarking data
 """
+from typing import Dict
+import json
 import logging
 import os
 

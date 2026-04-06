@@ -2,6 +2,8 @@
 Communication Templates for LIA Platform.
 Contains email and WhatsApp templates for candidate outreach and feedback.
 """
+from fastapi import status
+import time
 from datetime import datetime
 from typing import Any
 

@@ -4,9 +4,10 @@ Job Wizard Tools - Tools for the job creation wizard agent.
 Provides function calling capabilities for the job wizard,
 including salary benchmarks, field validation, suggestions, and draft saving.
 """
+from fastapi import status
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional, Type
 from uuid import UUID
 
 

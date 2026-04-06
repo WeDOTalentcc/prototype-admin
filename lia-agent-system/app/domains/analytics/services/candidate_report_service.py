@@ -14,7 +14,7 @@ for hiring managers, including:
 import logging
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, Final, List, Optional
 
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate

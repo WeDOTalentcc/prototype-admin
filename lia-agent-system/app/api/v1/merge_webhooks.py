@@ -2,6 +2,7 @@
 Merge.dev Webhook Endpoints
 Receives events from Merge when data changes in linked ATS platforms.
 """
+import json
 import hashlib
 import hmac
 import logging

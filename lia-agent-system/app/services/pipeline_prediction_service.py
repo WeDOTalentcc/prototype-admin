@@ -18,7 +18,7 @@ Sem migration — usa dados existentes:
 """
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

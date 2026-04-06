@@ -20,6 +20,8 @@ This service handles:
    - Fallback handling when provider fails
    - Retry logic with exponential backoff
 """
+from fastapi import status
+from datetime import date
 import asyncio
 import logging
 import os
@@ -28,7 +30,7 @@ import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 try:
     import httpx as _httpx_comm

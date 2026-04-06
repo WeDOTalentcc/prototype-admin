@@ -7,7 +7,7 @@ including schema definitions and access control per agent type.
 import logging
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable, List
 
 logger = logging.getLogger(__name__)
 

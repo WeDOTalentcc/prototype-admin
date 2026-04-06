@@ -3,7 +3,7 @@ Report Templates for LIA Platform.
 HTML templates for daily briefings, weekly reports, and monthly manager reports.
 """
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 
 
 def _format_number(value: float, decimals: int = 1) -> str:

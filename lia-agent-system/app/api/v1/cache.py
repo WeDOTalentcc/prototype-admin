@@ -6,7 +6,7 @@ when needed for testing, debugging, or emergency cache clearing.
 """
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
 from app.services.embedding_cache_service import embedding_cache

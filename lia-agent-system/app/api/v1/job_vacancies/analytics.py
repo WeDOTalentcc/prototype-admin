@@ -1,8 +1,15 @@
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from datetime import datetime
+from datetime import date
+from datetime import timedelta
+from typing import Any, List, Dict, Optional
 """
 Analytics routes: metrics, analytics deep-dive, history, stats/overview,
 archetypes (already in crud.py), job report.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ._shared import *
 

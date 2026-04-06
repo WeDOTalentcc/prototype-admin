@@ -19,7 +19,7 @@ import os
 import re
 from datetime import datetime
 from difflib import SequenceMatcher
-from typing import Any
+from typing import Any, Type
 
 try:
     import redis

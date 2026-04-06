@@ -9,6 +9,7 @@ Provides endpoints for platform-wide and client-specific SaaS metrics:
 - Usage metrics (AI credits, users, jobs, storage)
 - Payment history
 """
+from datetime import date
 import logging
 from datetime import datetime, timedelta
 from typing import Any

@@ -2,6 +2,7 @@
 Resend email provider implementation.
 Uses the Resend API for transactional email delivery.
 """
+from fastapi import status
 import asyncio
 import logging
 import os

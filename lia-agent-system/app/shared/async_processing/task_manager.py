@@ -1,7 +1,7 @@
 import logging
 import uuid
 from collections.abc import Awaitable, Callable
-from typing import Any, Optional
+from typing import Callable, Any, Optional
 
 from app.shared.async_processing.task_queue import AsyncTask, DomainTaskQueue, TaskPriority, TaskState
 

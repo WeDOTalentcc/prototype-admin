@@ -2,11 +2,12 @@
 Abstract base class for billing providers.
 Provides a unified interface for different payment gateway services (Iugu, Vindi).
 """
+from fastapi import status
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Any
+from typing import Any, List, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -12,7 +12,7 @@ Dependências:
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict, List
 
 from app.core.config import settings
 from app.shared.resilience.circuit_breaker import GOOGLE_CALENDAR_CIRCUIT

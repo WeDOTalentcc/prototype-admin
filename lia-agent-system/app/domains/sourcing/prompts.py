@@ -5,6 +5,7 @@ Exemplos de busca de candidatos, geração de boolean strings, sugestões,
 outreach personalizado e tratamento de buscas vazias.
 """
 
+from sqlalchemy import String
 SEARCH_PYTHON_CANDIDATES = {
     "user": "Busque candidatos Python sênior com experiência em FastAPI e AWS para a vaga de Desenvolvedor Backend.",
     "assistant": """🔍 **Resultado da Busca**

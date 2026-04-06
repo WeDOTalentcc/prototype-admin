@@ -15,11 +15,12 @@ Usage:
         wsi_scores={"adaptabilidade": 0.85, ...}
     )
 """
+import json
 import asyncio
 import logging
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, Final, List, Type
 
 import httpx
 

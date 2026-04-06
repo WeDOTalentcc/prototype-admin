@@ -33,6 +33,7 @@ Usage:
         span.set_attribute("key", "value")
         ...
 """
+from sqlalchemy import func
 import functools
 import logging
 import os

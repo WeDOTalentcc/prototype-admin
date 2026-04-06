@@ -1,6 +1,7 @@
 """
 Self-Scheduling Link models for candidate interview self-service.
 """
+import time
 import secrets
 import uuid
 from datetime import datetime

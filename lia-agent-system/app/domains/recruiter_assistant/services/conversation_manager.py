@@ -11,7 +11,7 @@ Integrates with CVParserService for AI-powered CV parsing.
 import io
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 from sqlalchemy import select
@@ -1202,7 +1202,7 @@ class ConversationManager:
             Dict with success status and parsed data or error
         """
         try:
-            from fastapi import UploadFile
+            from fastapi import UploadFile, status
 
             from app.domains.cv_screening.services.cv_parser import CVParserService
             

@@ -5,6 +5,7 @@ Receives events from:
 - ATS platforms (Gupy, Pandapé, Merge)
 - Other external integrations
 """
+import json
 import hashlib
 import hmac
 import logging

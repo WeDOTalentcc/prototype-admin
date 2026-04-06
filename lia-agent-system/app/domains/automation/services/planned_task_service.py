@@ -9,9 +9,10 @@ This service handles:
 - Priority calculation
 - Execution plan generation
 """
+from fastapi import status
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Tuple
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

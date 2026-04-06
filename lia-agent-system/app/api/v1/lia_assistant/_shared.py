@@ -2,6 +2,7 @@
 Shared imports, constants, Pydantic models, and helper utilities used
 across all lia_assistant sub-modules.
 """
+import time
 import json
 import logging
 import re

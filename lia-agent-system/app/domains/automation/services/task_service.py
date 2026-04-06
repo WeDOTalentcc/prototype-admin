@@ -8,9 +8,10 @@ This service handles:
 - Querying pending tasks
 - Task automation
 """
+from fastapi import status
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, List, Optional, Type
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession

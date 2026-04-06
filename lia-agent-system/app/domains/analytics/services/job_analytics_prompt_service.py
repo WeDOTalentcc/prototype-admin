@@ -9,12 +9,13 @@ Architecture:
 - Supports single job, multiple jobs, or portfolio-wide analysis
 - Returns structured responses suitable for chat display
 """
+from fastapi import Response
 import logging
 import re
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession

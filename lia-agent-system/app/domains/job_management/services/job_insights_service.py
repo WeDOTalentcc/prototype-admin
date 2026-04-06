@@ -8,11 +8,12 @@ This service queries the JobVacancy table to provide:
 - Time to fill metrics
 - Success metrics from closed positions
 """
+from fastapi import status
 import logging
 import statistics
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Optional
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession

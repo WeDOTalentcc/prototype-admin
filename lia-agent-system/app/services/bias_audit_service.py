@@ -17,6 +17,7 @@ Referências:
 - SOX / ISO 27001: evidência de fairness com dados reais
 """
 from __future__ import annotations
+from typing import List, Dict
 
 import json
 import logging

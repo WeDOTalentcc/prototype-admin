@@ -1,6 +1,7 @@
 """
 Core search, evaluate, import, promote, persist-revealed, estimate, similar routes.
 """
+from uuid import UUID
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile

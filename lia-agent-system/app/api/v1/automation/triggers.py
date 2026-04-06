@@ -11,10 +11,12 @@ Includes:
 - POST /screen-candidate
 - POST /trigger-event
 """
+from typing import List, Optional, Type
+from sqlalchemy import Boolean
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db

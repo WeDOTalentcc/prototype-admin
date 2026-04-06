@@ -10,7 +10,7 @@ This module implements a complete function-calling system where:
 3. Results are returned to the user with appropriate messaging
 """
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel
 

@@ -9,6 +9,7 @@ Unlike the old PolicySetupAgent (linear 19-question questionnaire), this prompt
 enables a true ReAct agent that reasons about compliance, explains trade-offs,
 and proactively validates policies against ethical and legal standards.
 """
+from fastapi import Query
 from typing import Any
 
 from app.shared.prompts.interaction_patterns import ANTI_SYCOPHANCY_BLOCK, NEGATION_DETECTION_BLOCK

@@ -4,6 +4,7 @@ Communication API Endpoints using CommunicationDispatcher
 Provides endpoints for sending email and WhatsApp messages via the unified dispatcher.
 Logs all communications to the CommunicationHistory for tracking.
 """
+from uuid import UUID
 import uuid as uuid_mod
 from datetime import datetime
 from typing import Any

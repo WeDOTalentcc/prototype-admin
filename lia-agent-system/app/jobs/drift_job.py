@@ -9,6 +9,7 @@ Referências:
 - wedo-governance Production Readiness #10 (alertas automáticos periódicos)
 """
 from __future__ import annotations
+from fastapi import status
 
 import logging
 

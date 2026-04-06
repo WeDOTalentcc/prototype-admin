@@ -2,6 +2,7 @@
 Job Vacancy Creation Nodes for LangGraph workflow.
 Contains specialized collectors, router, validator, frame generator, etc.
 """
+from pydantic import validator
 import logging
 from typing import Any
 

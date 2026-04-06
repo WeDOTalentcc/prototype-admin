@@ -6,7 +6,7 @@ Also provides direct email and WhatsApp sending via Mailgun and Twilio integrati
 """
 
 import logging
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 

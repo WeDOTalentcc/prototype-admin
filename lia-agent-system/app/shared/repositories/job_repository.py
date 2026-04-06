@@ -1,6 +1,7 @@
 """
 Job Repository - Database access for JobVacancy model.
 """
+from fastapi import status
 import logging
 from typing import Any
 from uuid import UUID

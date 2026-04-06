@@ -7,7 +7,7 @@ import json
 import logging
 import re
 from datetime import timedelta
-from typing import Any
+from typing import Any, Dict, Optional
 
 from app.services.llm import LLMProvider, llm_service
 

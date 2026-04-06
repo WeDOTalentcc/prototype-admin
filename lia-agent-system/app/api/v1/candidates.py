@@ -3,10 +3,12 @@ Candidates API endpoints - 2-tier search architecture:
 1. Local search (proprietary PostgreSQL database) - FREE
 2. Global search (Pearch AI 190M+ profiles) - PAID (credits required)
 """
+from typing import Optional
+from uuid import UUID
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession

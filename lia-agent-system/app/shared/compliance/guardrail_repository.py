@@ -4,6 +4,7 @@ GuardrailRepository — Fase 3
 Acesso ao banco para leitura e gestão de guardrails de agentes.
 Consultas otimizadas com índices em is_active, domain e company_id.
 """
+from uuid import UUID
 import logging
 import uuid
 from datetime import datetime

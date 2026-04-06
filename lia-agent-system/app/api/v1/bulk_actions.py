@@ -2,6 +2,7 @@
 Bulk Actions API endpoints for mass operations on candidates and job vacancies.
 Allows performing actions on multiple records at once with transactional safety.
 """
+from uuid import UUID
 import csv
 import io
 import logging
@@ -9,7 +10,7 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import and_, func, not_, select

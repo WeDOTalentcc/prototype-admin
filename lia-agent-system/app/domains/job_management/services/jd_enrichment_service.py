@@ -13,7 +13,7 @@ Fontes de dados:
 """
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

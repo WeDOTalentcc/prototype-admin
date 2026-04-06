@@ -1,6 +1,7 @@
 """
 Chat API endpoints for LIA conversation.
 """
+from uuid import UUID
 import json
 import logging
 import os

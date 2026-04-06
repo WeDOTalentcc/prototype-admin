@@ -1,3 +1,4 @@
+from uuid import UUID
 import logging
 import uuid as uuid_mod
 

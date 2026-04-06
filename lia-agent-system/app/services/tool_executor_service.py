@@ -6,7 +6,7 @@ with user permission validation and tenant scoping.
 """
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
 

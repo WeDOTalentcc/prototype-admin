@@ -16,7 +16,7 @@ precisão do roteamento nas etapas seguintes (Tier 1/2/3).
 """
 import logging
 import re
-from typing import Any
+from typing import Any, Tuple
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ This model stores the communication matrix entries that define:
 import enum
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID

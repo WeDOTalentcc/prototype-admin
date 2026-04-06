@@ -5,10 +5,11 @@ Wraps pipeline operations into ToolDefinition format so the ReActLoop
 can autonomously decide which tools to call for candidate management.
 Tools connect to PostgreSQL for real data operations.
 """
+from fastapi import status
 import logging
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text

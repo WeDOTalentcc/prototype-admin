@@ -4,11 +4,12 @@ Wizard Orchestrator Service
 Detecta intenções do usuário no wizard de criação de vaga e mapeia para tool calls.
 """
 from __future__ import annotations
+from fastapi import Response
 
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, List, Optional, Type
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

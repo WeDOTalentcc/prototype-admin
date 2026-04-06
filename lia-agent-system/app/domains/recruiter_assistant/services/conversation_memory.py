@@ -10,7 +10,7 @@ Provides:
 """
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional, Type
 from uuid import UUID
 
 from sqlalchemy import and_, delete, desc, select, update

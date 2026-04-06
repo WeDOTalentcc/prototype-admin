@@ -5,7 +5,7 @@ This service generates human-readable explanations of AI decisions,
 enabling transparency for candidates and compliance with AI governance requirements.
 """
 import logging
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import and_, select
 

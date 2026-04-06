@@ -16,6 +16,7 @@ Environment Variables:
 - APP_BASE_URL: Public URL for TwiML callbacks
 """
 
+from pydantic import validator
 import audioop
 import io
 import logging
@@ -23,7 +24,7 @@ import os
 import uuid
 import wave
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, Optional
 from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)

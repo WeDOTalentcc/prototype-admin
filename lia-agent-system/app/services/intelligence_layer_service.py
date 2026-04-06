@@ -12,7 +12,7 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Tuple
 from uuid import UUID
 
 from sqlalchemy import and_, func, select

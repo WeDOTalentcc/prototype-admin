@@ -13,7 +13,7 @@ Part of LIA Automation System v1.0
 import json
 import logging
 import os
-from typing import Any
+from typing import Any, Dict
 
 from app.shared.providers.llm_client import get_anthropic_client, is_llm_available
 

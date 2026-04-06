@@ -5,6 +5,7 @@ Each pipeline stage has different requirements, available tools, and goals.
 This module injects the right context so the agent knows what to focus on
 when managing candidates through the recruitment pipeline.
 """
+from fastapi import status
 from typing import Any
 
 STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {

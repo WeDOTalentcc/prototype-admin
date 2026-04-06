@@ -13,7 +13,7 @@ Usage:
 import logging
 import os
 
-from sqlalchemy import select
+from sqlalchemy import Integer, String, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)

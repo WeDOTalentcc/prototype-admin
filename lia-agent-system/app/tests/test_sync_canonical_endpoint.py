@@ -9,6 +9,7 @@ Cobre:
 - Isolamento por company_id: sync de empresa A não afeta empresa B
 - Resposta contém campos 'success' e 'inserted'
 """
+import json
 from unittest.mock import patch
 from uuid import uuid4
 

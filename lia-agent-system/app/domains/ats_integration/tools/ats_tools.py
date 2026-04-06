@@ -1,6 +1,8 @@
 """ATS Integration Tools — LIA Sprint 3 T03
 Bidirectional sync with external ATS platforms (Gupy, Greenhouse, Workday, Lever, etc.)
 """
+from fastapi import status
+from typing import Optional
 import logging
 import uuid
 from datetime import UTC, datetime

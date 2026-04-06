@@ -15,10 +15,9 @@ Design Principles:
 """
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Final, Any
 
 from sqlalchemy import (
-    JSON,
     Boolean,
     Column,
     DateTime,
@@ -26,6 +25,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    JSON,
     String,
     Text,
     UniqueConstraint,

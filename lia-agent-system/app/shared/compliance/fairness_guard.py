@@ -7,12 +7,14 @@ instead of proceeding with the query.
 
 Part of the 3-pillar compliance architecture (LGPD, SOX, EU AI Act).
 """
+from fastapi import status
+from uuid import UUID
 import hashlib
 import logging
 import re
 import unicodedata
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Dict, TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession

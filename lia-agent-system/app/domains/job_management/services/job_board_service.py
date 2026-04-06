@@ -3,6 +3,8 @@ Job Board Integration Service - LinkedIn and Indeed job posting.
 Handles publishing jobs to external job boards.
 For MVP: Prepare infrastructure, actual posting may require OAuth approval.
 """
+from fastapi import status
+from datetime import date
 import logging
 import os
 import uuid

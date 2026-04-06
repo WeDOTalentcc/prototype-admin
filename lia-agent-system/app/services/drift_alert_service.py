@@ -10,6 +10,7 @@ Referências:
 - EU AI Act Art. 13 (transparência e supervisão humana)
 """
 from __future__ import annotations
+from fastapi import status
 
 import logging
 from uuid import UUID

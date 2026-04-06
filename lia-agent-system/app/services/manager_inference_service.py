@@ -9,7 +9,7 @@ Provides fallback strategies when manager info is not found.
 """
 import logging
 from difflib import SequenceMatcher
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import func, or_, select
 

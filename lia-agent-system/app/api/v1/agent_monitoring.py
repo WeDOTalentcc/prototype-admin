@@ -3,7 +3,7 @@ Agent Monitoring API Endpoints
 Provides real-time metrics, health scores, and activity tracking for AI agents.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 

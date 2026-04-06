@@ -1,6 +1,8 @@
 """
 Calibration workflows, vacancy goal-check, and candidate management routes.
 """
+from uuid import UUID
+import random
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,7 +14,6 @@ from ._shared import (
     JobRequirement,
     JobRequirementCreate,
     _normalize_priority,
-    _recruiter_agent,
     get_db,
     logger,
     rubric_evaluation_service,

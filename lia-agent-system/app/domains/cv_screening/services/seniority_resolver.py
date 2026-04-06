@@ -25,6 +25,7 @@ Data: 2026-02-11
 Versão: 1.0
 """
 
+from sqlalchemy import String
 import asyncio
 import logging
 from collections import Counter

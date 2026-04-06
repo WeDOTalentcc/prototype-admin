@@ -4,6 +4,7 @@ Task Model - Database model for agent-generated tasks.
 Tasks are created by agents and can be assigned to other agents
 or human users (recruiters).
 """
+from fastapi import status
 import enum
 import uuid
 from datetime import datetime

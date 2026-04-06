@@ -6,6 +6,10 @@ Provedores suportados:
 - Google Calendar (opcional, /calendar/google/*)
   Requer ENABLE_GOOGLE_CALENDAR=True e credenciais configuradas por empresa.
 """
+from sqlalchemy import select
+from uuid import UUID
+from datetime import date
+import time
 import hashlib
 import hmac
 import logging

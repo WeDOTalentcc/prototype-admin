@@ -7,13 +7,14 @@ This module handles:
 3. Automatic feedback for low adherence candidates
 4. CV resubmission handling
 """
+from uuid import UUID
 import logging
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

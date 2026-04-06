@@ -2,6 +2,7 @@
 Shared imports, constants, helpers, and Pydantic schemas
 for the job_vacancies sub-package.
 """
+from fastapi import status
 import logging
 from datetime import datetime
 from uuid import UUID
@@ -128,6 +129,13 @@ def derive_screening_status(screening_config: dict) -> str:
 
 import re
 import secrets
+from app.core.database import get_db  # noqa: F401
+from app.auth.dependencies import get_current_active_user, get_current_user, get_user_company_id  # noqa: F401
+from app.auth.models import User  # noqa: F401
+from app.auth.dependencies import get_current_user_or_demo, get_current_user  # noqa: F401
+from app.auth.models import User  # noqa: F401
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: F401
+from fastapi import Depends, HTTPException  # noqa: F401
 
 
 def generate_slug(title: str, company_name: str = "") -> str:

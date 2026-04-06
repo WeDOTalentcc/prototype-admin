@@ -8,6 +8,7 @@ Provides endpoints for:
 - Updating entry configuration
 - Resetting to platform defaults (seed data)
 """
+from typing import List
 import logging
 from uuid import UUID
 

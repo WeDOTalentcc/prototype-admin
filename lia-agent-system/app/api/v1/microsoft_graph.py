@@ -9,7 +9,7 @@ Provides endpoints for:
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, EmailStr
 
 from app.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service

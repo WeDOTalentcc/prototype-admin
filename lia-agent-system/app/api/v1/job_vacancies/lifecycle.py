@@ -1,9 +1,15 @@
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from datetime import datetime
+import json
+from typing import List, Dict, Optional
 """
 Lifecycle routes: publish, confirm-global-search, sourcing-status,
 bulk operations (pause, resume, archive, assign-recruiter, change-status),
 close vacancy, duplicate/clone helpers.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from ._shared import *
 

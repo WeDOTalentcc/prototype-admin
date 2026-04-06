@@ -5,6 +5,7 @@ Calcula prioridade de tasks para asyncio.PriorityQueue baseado em urgência.
 Menor número = maior prioridade.
 """
 from __future__ import annotations
+import asyncio
 
 import logging
 

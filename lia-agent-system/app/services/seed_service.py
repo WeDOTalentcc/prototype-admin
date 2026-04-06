@@ -2,11 +2,12 @@
 Seed Service - Populates database with demo/test data.
 All seed data is clearly marked with '[DEMO]' prefix for easy identification.
 """
+import time
 import logging
 import random
 import uuid
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Final, Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession

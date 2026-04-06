@@ -1,6 +1,7 @@
 """Pipeline Transition Tools — LIA Sprint 3 T04
 Move candidates through hiring pipeline stages, manage offers and rejections.
 """
+from typing import Optional
 import logging
 import uuid
 from datetime import UTC, datetime

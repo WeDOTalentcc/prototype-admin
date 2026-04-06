@@ -1,7 +1,9 @@
 """
 Export routes: PDF and Excel reports.
 """
-from fastapi import APIRouter
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import *
 

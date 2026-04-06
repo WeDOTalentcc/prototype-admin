@@ -10,7 +10,7 @@ Resultado entregue via link de download (S3 presigned URL ou base64 no response)
 import json
 import logging
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Dict
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

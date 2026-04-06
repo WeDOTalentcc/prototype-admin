@@ -9,10 +9,11 @@ Environment Variables Required:
 - TWILIO_WHATSAPP_NUMBER: Twilio WhatsApp sender number (format: whatsapp:+1234567890)
 """
 
+from pydantic import validator
 import logging
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict
 
 from twilio.base.exceptions import TwilioRestException
 from twilio.request_validator import RequestValidator

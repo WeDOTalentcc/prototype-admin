@@ -3,6 +3,7 @@ Agent Monitoring Service
 Handles metrics calculation, health scores, and activity tracking for AI agents.
 Compatible with SQLAlchemy 2.0 AsyncSession.
 """
+from fastapi import status
 import random
 from datetime import datetime, timedelta
 from typing import Any

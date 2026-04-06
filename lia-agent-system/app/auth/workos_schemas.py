@@ -2,7 +2,7 @@
 Pydantic schemas for WorkOS SSO and SCIM integration.
 """
 from datetime import datetime
-from typing import Any
+from typing import Any, Mapping
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field

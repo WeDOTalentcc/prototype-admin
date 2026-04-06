@@ -10,6 +10,7 @@ Contains domain-specific examples for:
 
 Moved from app/prompts/examples.py (I3b cleanup).
 """
+from fastapi import status
 from typing import Any
 
 JOB_EXTRACTION_EXAMPLES: list[dict[str, Any]] = [

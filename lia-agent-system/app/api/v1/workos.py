@@ -8,6 +8,8 @@ to prevent direct unauthorized access.
 The /webhooks/scim endpoint is the exception - it receives direct calls from WorkOS
 and validates the WorkOS-Signature header directly.
 """
+from uuid import UUID
+import json
 import hashlib
 import hmac
 import logging

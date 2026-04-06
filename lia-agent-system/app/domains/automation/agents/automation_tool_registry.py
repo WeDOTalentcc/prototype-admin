@@ -3,6 +3,7 @@
 Wraps PlannedTaskService + LLMService operations into ToolDefinition format
 so the ReActLoop can autonomously decide which tools to call.
 """
+from fastapi import status
 import json
 import logging
 from datetime import datetime

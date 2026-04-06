@@ -13,6 +13,8 @@ Fairness: no avatar_url exposed, age only shown when company allows it.
 Multi-tenant: all DB queries are scoped by company_id.
 """
 from __future__ import annotations
+from typing import List
+from uuid import UUID
 
 import json
 import logging

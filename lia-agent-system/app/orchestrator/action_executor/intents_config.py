@@ -5,7 +5,7 @@ Configuration constants for ActionExecutor:
   - VALID_PIPELINE_STAGES / STAGE_ALIASES
   - MESSAGE_INTENT_PATTERNS: regex patterns for intent detection from raw message
 """
-from typing import Any
+from typing import Final, Any
 
 ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "mover_candidato": {

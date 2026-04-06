@@ -4,6 +4,7 @@ Gemini Voice-to-Text Service
 Transcrição de áudio usando Gemini Flash 2.5 via Replit AI Integrations.
 Suporta múltiplos formatos de áudio e vídeo.
 """
+from typing import Dict, Optional
 import logging
 import os
 

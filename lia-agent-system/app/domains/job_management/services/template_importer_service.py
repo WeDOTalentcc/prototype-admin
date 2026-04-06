@@ -9,10 +9,11 @@ Imports job templates from external sources:
 This service enables fast population of the 480+ template library
 instead of creating each template manually.
 """
+import json
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 from uuid import uuid4
 
 import httpx

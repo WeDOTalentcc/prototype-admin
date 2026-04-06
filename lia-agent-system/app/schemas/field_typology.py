@@ -4,6 +4,7 @@ Field Typology Schema for Job Wizard Enhancement.
 Defines the classification system for job vacancy fields,
 enabling intelligent field handling during wizard flow.
 """
+from pydantic import Field
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any

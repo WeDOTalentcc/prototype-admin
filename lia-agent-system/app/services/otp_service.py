@@ -1,3 +1,4 @@
+from typing import Tuple, Optional
 """
 OTP Service for Shared Searches feature.
 

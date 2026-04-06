@@ -3,10 +3,12 @@ HubSpot CRM Integration Service.
 
 Syncs client accounts to HubSpot CRM for sales and onboarding tracking.
 """
+from fastapi import status
+from uuid import UUID
 import logging
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict
 
 from hubspot import HubSpot
 from hubspot.crm.companies import SimplePublicObjectInputForCreate as CompanyInput

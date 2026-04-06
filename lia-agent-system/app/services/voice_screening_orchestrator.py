@@ -28,6 +28,7 @@ Session persistence:
 - Session survives server restarts; loaded from DB on first request
 """
 
+from fastapi import status
 import json
 import logging
 from dataclasses import dataclass, field

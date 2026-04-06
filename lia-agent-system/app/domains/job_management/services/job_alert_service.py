@@ -9,7 +9,7 @@ This service monitors job vacancies and generates alerts for:
 """
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -18,7 +18,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Final, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

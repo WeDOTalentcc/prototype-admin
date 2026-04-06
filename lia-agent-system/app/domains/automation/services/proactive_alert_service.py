@@ -12,6 +12,7 @@ Alert Categories:
 - Predictive: dropout risk, time-to-fill, ideal candidate detection
 - System: ATS sync, agent health, credits, AI errors
 """
+from fastapi import status
 import logging
 from datetime import datetime, timedelta
 from enum import Enum

@@ -4,6 +4,7 @@ Embedding service for generating text embeddings — Task #134.
 Refactored to use EmbeddingProviderFactory instead of calling Gemini directly.
 Supports multi-provider operation, fallback, and per-embedding provider metadata.
 """
+from typing import List
 import logging
 
 logger = logging.getLogger(__name__)

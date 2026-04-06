@@ -2,7 +2,7 @@
 Task Lifecycle API - Endpoints for task confirmation, reminders, and escalation.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -5,9 +5,10 @@ High-level business logic for managing interview appointments.
 Dual-provider: seleciona Google Calendar ou Microsoft Graph por empresa,
 via tabela company_calendar_credentials. Fallback: Microsoft Graph.
 """
+from datetime import date
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

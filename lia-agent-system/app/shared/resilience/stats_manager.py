@@ -3,7 +3,7 @@ import threading
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, Optional, TypeVar
+from typing import Callable, Any, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 

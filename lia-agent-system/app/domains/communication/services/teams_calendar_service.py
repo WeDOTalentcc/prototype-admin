@@ -10,6 +10,7 @@ Prerequisites (configured in Azure AD):
   - OnlineMeetings.ReadWrite
   - User.Read (for participant lookup)
 """
+import time
 import logging
 import os
 from datetime import datetime, timedelta

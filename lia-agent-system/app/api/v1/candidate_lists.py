@@ -1,6 +1,7 @@
 """
 Candidate Lists API endpoints - manage custom collections of candidates.
 """
+from uuid import UUID
 import logging
 import uuid
 from datetime import datetime

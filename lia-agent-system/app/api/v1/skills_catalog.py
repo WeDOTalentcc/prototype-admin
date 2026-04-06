@@ -12,7 +12,7 @@ Endpoints:
 - POST /wizard/record-skill-usage - Record skill usage for learning loop
 """
 import logging
-from typing import Any
+from typing import Any, Final, Optional, Type
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, validator

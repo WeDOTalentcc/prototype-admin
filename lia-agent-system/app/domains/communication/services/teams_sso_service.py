@@ -9,6 +9,7 @@ Flow:
 5. We exchange code for token, get user profile, map AAD ID → WeDOTalent user
 6. Future messages route to correct company/user context
 """
+import json
 import logging
 import os
 from typing import Any

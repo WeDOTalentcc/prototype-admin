@@ -8,8 +8,9 @@ chat prompt outside a specific job.
 Methodology: BARS (Behaviorally Anchored Rating Scales) + André Methodology v1
 Reference:   LIA_METHODOLOGY.md Section 4
 """
+from uuid import UUID
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from app.tools.registry import ToolDefinition, tool_registry
 

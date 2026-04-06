@@ -16,9 +16,9 @@ import logging
 import re
 from dataclasses import dataclass
 from difflib import SequenceMatcher
-from typing import Any
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import Boolean, and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company_learning import CompanyResponsibility

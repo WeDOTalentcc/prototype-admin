@@ -8,9 +8,10 @@ Provides function calling capabilities for:
 
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
+from fastapi import status
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, List, Optional, TYPE_CHECKING
 from uuid import UUID
 
 from app.tools.registry import ToolDefinition, tool_registry

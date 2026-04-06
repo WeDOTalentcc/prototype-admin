@@ -5,7 +5,7 @@ FastAPI endpoints for multi-agent orchestration.
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel

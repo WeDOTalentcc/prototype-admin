@@ -2,6 +2,8 @@
 Mailgun email provider implementation for the domain communication layer.
 Uses the Mailgun HTTP API for transactional email delivery.
 """
+from fastapi import status
+import json
 import logging
 import os
 from datetime import datetime

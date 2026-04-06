@@ -4,7 +4,7 @@ Provides storage and semantic search capabilities using pgvector.
 """
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional, Type
 from uuid import UUID, uuid4
 
 from sqlalchemy import and_, delete, select, text

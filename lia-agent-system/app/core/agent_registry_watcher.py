@@ -12,6 +12,7 @@ by Celery beat tasks that call ``check_and_reload()`` every 60 seconds.
     from app.core.agent_registry_watcher import agent_registry_watcher
     names = await agent_registry_watcher.check_and_reload()
 """
+from typing import List
 import logging
 import os
 

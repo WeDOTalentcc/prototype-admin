@@ -5,7 +5,7 @@ import logging
 import re
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional
 
 from app.models.archetype import SearchArchetype
 

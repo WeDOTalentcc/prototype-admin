@@ -2,6 +2,7 @@
 Teams Proactivity Engine.
 LIA proactively reaches out to recruiters via Teams based on platform events.
 """
+from fastapi import status
 import logging
 from datetime import datetime, timedelta
 from typing import Any

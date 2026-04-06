@@ -2,8 +2,10 @@
 Gupy ATS Integration Service.
 Handles candidate synchronization, job posting, and webhook processing.
 """
+from fastapi import status
+import json
 import logging
-from typing import Any
+from typing import Any, List, Optional
 
 import httpx
 

@@ -6,6 +6,8 @@ app/api/v1/interview_notes.py. All operations are scoped by company_id
 for multi-tenant isolation.
 """
 from __future__ import annotations
+from fastapi import status
+from uuid import UUID
 
 import logging
 import uuid

@@ -11,12 +11,14 @@ Environment Variables Required:
 - WHATSAPP_APP_SECRET: App secret for webhook signature verification
 """
 
+from fastapi import status
+import json
 import hashlib
 import hmac
 import logging
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 import httpx
 

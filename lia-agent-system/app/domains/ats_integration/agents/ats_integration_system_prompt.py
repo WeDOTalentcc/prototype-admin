@@ -1,3 +1,4 @@
+from typing import Final
 """ATS Integration ReAct Agent — System Prompt."""
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 from app.shared.prompts.interaction_patterns import (

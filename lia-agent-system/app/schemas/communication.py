@@ -2,6 +2,7 @@
 Pydantic schemas for Communication API.
 """
 
+from fastapi import status
 from datetime import datetime
 from typing import Any
 

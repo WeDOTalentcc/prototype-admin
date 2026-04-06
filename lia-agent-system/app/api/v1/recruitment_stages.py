@@ -6,6 +6,7 @@ Admin > Jornada de Recrutamento
 SECURITY: All endpoints require authentication via JWT token.
 Company scoping is enforced server-side based on authenticated user context.
 """
+from uuid import UUID
 import asyncio
 import json
 import logging
@@ -13,7 +14,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, delete, select
 from sqlalchemy import update as sa_update

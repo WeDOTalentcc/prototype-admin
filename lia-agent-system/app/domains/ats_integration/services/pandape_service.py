@@ -2,8 +2,10 @@
 Pandapé ATS Integration Service.
 Handles candidate synchronization and job posting for Pandapé platform.
 """
+from fastapi import status
+import json
 import logging
-from typing import Any
+from typing import Any, List
 
 import httpx
 

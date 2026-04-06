@@ -10,6 +10,7 @@ This module provides:
 Prompts now loaded from YAML files via PromptLoader.
 """
 
+from typing import List, Optional, Type
 from app.shared.prompts.loader import PromptLoader
 
 _defensive = PromptLoader.load("shared/defensive")

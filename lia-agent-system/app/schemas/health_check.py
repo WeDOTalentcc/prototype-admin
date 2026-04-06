@@ -1,6 +1,7 @@
 """
 Pydantic schemas for Compliance Health Check API.
 """
+from fastapi import status
 from datetime import datetime
 from enum import Enum
 

@@ -5,6 +5,7 @@ Covers:
   - check_vacancy_candidate_goal: goal-progress math for a vacancy
   - analyze_calibration_patterns_for_session: pattern extraction from like/dislike feedbacks
 """
+from fastapi import status
 from collections import Counter
 from datetime import datetime
 from typing import Any

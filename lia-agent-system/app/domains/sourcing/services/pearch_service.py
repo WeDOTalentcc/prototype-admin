@@ -2,10 +2,12 @@
 Pearch AI integration service for candidate search (API v2).
 Based on https://apidocs.pearch.ai/reference/post_v2-search
 """
+from fastapi import Query
+import json
 import logging
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Tuple
 
 import httpx
 from sqlalchemy import func, or_, select

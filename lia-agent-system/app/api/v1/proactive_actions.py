@@ -4,7 +4,7 @@ Proactive Actions API - Endpoints for proactive LIA suggestions.
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
