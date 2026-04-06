@@ -1,0 +1,217 @@
+"""
+ChatRepository - session-in-constructor pattern.
+
+Encapsulates all DB access for Conversation and Message models
+previously scattered across app/api/v1/chat.py.
+"""
+import logging
+import uuid
+from typing import Any
+
+from sqlalchemy import desc, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.conversation import Conversation, Message
+
+logger = logging.getLogger(__name__)
+
+
+class ChatRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    # ------------------------------------------------------------------
+    # Conversation helpers
+    # ------------------------------------------------------------------
+
+    async def create_conversation(self, user_id: str) -> Conversation:
+        conversation = Conversation(
+            user_id=user_id,
+            user_role="recruiter",
+            status="active",
+        )
+        self.db.add(conversation)
+        await self.db.flush()
+        return conversation
+
+    async def get_conversation_by_id(self, conversation_id: str) -> Conversation | None:
+        result = await self.db.execute(
+            select(Conversation).where(Conversation.id == uuid.UUID(conversation_id))
+        )
+        return result.scalar_one_or_none()
+
+    async def list_conversations(
+        self, user_id: str, page: int = 1, page_size: int = 20
+    ) -> tuple[list[Conversation], int]:
+        offset = (page - 1) * page_size
+
+        result = await self.db.execute(
+            select(Conversation)
+            .where(Conversation.user_id == user_id)
+            .where(not Conversation.is_archived)
+            .order_by(desc(Conversation.updated_at))
+            .limit(page_size)
+            .offset(offset)
+        )
+        conversations = list(result.scalars().all())
+
+        count_result = await self.db.execute(
+            select(Conversation)
+            .where(Conversation.user_id == user_id)
+            .where(not Conversation.is_archived)
+        )
+        total = len(count_result.scalars().all())
+
+        return conversations, total
+
+    async def update_conversation_intent(
+        self, conversation: Conversation, intent: str, workflow_data: dict[str, Any]
+    ) -> None:
+        conversation.intent = intent
+        conversation.workflow_data = workflow_data
+
+    async def set_conversation_title(self, conversation: Conversation, title: str) -> None:
+        if not conversation.title:
+            conversation.title = title
+
+    async def commit_and_refresh(self, *objects) -> None:
+        await self.db.commit()
+        for obj in objects:
+            await self.db.refresh(obj)
+
+    async def commit(self) -> None:
+        await self.db.commit()
+
+    # ------------------------------------------------------------------
+    # Message helpers
+    # ------------------------------------------------------------------
+
+    async def add_user_message(
+        self,
+        conversation_id: Any,
+        content: str,
+        message_metadata: dict[str, Any] | None = None,
+    ) -> Message:
+        msg = Message(
+            conversation_id=conversation_id,
+            role="human",
+            content=content,
+            message_metadata=message_metadata or {},
+        )
+        self.db.add(msg)
+        await self.db.flush()
+        return msg
+
+    async def add_ai_message(
+        self,
+        conversation_id: Any,
+        content: str,
+        message_metadata: dict[str, Any] | None = None,
+    ) -> Message:
+        msg = Message(
+            conversation_id=conversation_id,
+            role="ai",
+            content=content,
+            message_metadata=message_metadata or {},
+        )
+        self.db.add(msg)
+        return msg
+
+    async def get_recent_messages(
+        self, conversation_id: Any, limit: int = 20
+    ) -> list[Message]:
+        result = await self.db.execute(
+            select(Message)
+            .where(Message.conversation_id == conversation_id)
+            .order_by(Message.created_at.desc())
+            .limit(limit)
+        )
+        return list(reversed(result.scalars().all()))
+
+    # ------------------------------------------------------------------
+    # Resolution helpers (raw SQL — kept as-is from original functions)
+    # ------------------------------------------------------------------
+
+    async def resolve_job_id_by_title(
+        self, job_title: str, company_id: str | None = None
+    ) -> dict[str, Any] | None:
+        try:
+            query = text("""
+                SELECT id, title, status FROM job_vacancies
+                WHERE LOWER(title) LIKE :pattern
+                AND company_id = :company_id
+                ORDER BY updated_at DESC LIMIT 1
+            """)
+            result = await self.db.execute(
+                query,
+                {"pattern": f"%{job_title.lower()}%", "company_id": company_id},
+            )
+            row = result.fetchone()
+            if row:
+                return {"id": str(row.id), "title": row.title, "status": row.status}
+        except Exception as e:
+            logger.warning(f"Failed to resolve job by title '{job_title}': {e}")
+        return None
+
+    async def resolve_candidate_by_name(
+        self,
+        candidate_name: str,
+        company_id: str | None = None,
+        job_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        try:
+            conditions = ["LOWER(c.name) LIKE :pattern"]
+            bind: dict[str, Any] = {"pattern": f"%{candidate_name.lower()}%"}
+
+            if company_id:
+                conditions.append("vc.company_id = CAST(:company_id AS uuid)")
+                bind["company_id"] = str(company_id)
+
+            if job_id:
+                conditions.append("vc.vacancy_id = CAST(:job_id AS uuid)")
+                bind["job_id"] = str(job_id)
+
+            where_clause = " AND ".join(conditions)
+            query = text(f"""
+                SELECT vc.id, vc.candidate_id, c.name, vc.stage, vc.status
+                FROM vacancy_candidates vc
+                JOIN candidates c ON c.id = vc.candidate_id
+                WHERE {where_clause}
+                ORDER BY vc.updated_at DESC LIMIT 1
+            """)
+            result = await self.db.execute(query, bind)
+            row = result.fetchone()
+            if row:
+                return {
+                    "id": str(row.id),
+                    "candidate_id": str(row.candidate_id),
+                    "name": row.name,
+                    "stage": row.stage,
+                    "status": row.status,
+                }
+        except Exception as e:
+            logger.warning(f"Failed to resolve candidate by name '{candidate_name}': {e}")
+        return None
+
+    async def lookup_candidate_id_by_name(self, candidate_name: str) -> str | None:
+        """Simple lookup: returns candidate id string or None."""
+        result = await self.db.execute(
+            text("SELECT id FROM candidates WHERE LOWER(name) LIKE LOWER(:name) LIMIT 1"),
+            {"name": f"%{candidate_name}%"},
+        )
+        row = result.fetchone()
+        return str(row[0]) if row else None
+
+    async def check_candidate_ownership(
+        self, candidate_id: str, company_id: str
+    ) -> bool:
+        """Returns True if candidate belongs to company, False otherwise."""
+        result = await self.db.execute(
+            text(
+                "SELECT 1 FROM vacancy_candidates "
+                "WHERE candidate_id = CAST(:cid AS uuid) "
+                "AND company_id = CAST(:co AS uuid) LIMIT 1"
+            ),
+            {"cid": candidate_id, "co": str(company_id)},
+        )
+        return result.fetchone() is not None

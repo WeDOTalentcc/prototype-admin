@@ -78,8 +78,10 @@ async def create_ats_connection(
                 detail=f"Provider must be one of: {', '.join(SUPPORTED_PROVIDERS)}"
             )
 
+        validated_endpoint = _validate_api_endpoint(provider, request.api_endpoint)
+
         connection_ok = await _test_provider_connection(
-            provider, request.api_key, request.api_endpoint
+            provider, request.api_key, validated_endpoint
         )
 
         if not connection_ok:
@@ -93,7 +95,7 @@ async def create_ats_connection(
             provider_name=request.provider_name,
             api_key=encrypt_value(request.api_key),
             api_secret=encrypt_value(request.api_secret) if request.api_secret else None,
-            api_endpoint=request.api_endpoint,
+            api_endpoint=validated_endpoint,
             company_id=company_id,
             is_active=True,
             auto_sync_enabled=request.auto_sync_enabled,
@@ -163,9 +165,12 @@ async def list_ats_connections(
 
 
 @router.post("/ats/connections/test", response_model=dict)
-async def test_ats_connection(request: TestATSConnectionRequest):
+async def test_ats_connection(
+    request: TestATSConnectionRequest,
+    current_user=Depends(get_current_user_or_demo),
+):
     """
-    Test ATS connection credentials without saving.
+    Test ATS connection credentials without saving. Requires authentication.
     """
     try:
         provider = request.provider.lower()
@@ -200,10 +205,36 @@ async def test_ats_connection(request: TestATSConnectionRequest):
         }
 
 
+ALLOWED_ATS_DOMAINS = {
+    "gupy": ["api.gupy.io"],
+    "pandape": ["api.pandape.com", "api.pandape.com.br", "api-pandape.infojobs.com.br"],
+    "merge": ["api.merge.dev"],
+}
+
+
+def _validate_api_endpoint(provider: str, endpoint: str | None) -> str | None:
+    """Validate api_endpoint against provider-specific allowlist to prevent SSRF."""
+    if not endpoint:
+        return None
+    from urllib.parse import urlparse
+    parsed = urlparse(endpoint)
+    hostname = parsed.hostname or ""
+    allowed = ALLOWED_ATS_DOMAINS.get(provider, [])
+    if hostname not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid API endpoint for {provider}. Allowed domains: {', '.join(allowed)}"
+        )
+    if parsed.scheme != "https":
+        raise HTTPException(status_code=400, detail="API endpoint must use HTTPS")
+    return endpoint
+
+
 async def _test_provider_connection(
     provider: str, api_key: str, api_endpoint: str | None = None
 ) -> bool:
     """Test connectivity for a given ATS provider."""
+    api_endpoint = _validate_api_endpoint(provider, api_endpoint)
     if provider == "gupy":
         service = GupyService(api_key=api_key)
     elif provider == "pandape":
@@ -634,7 +665,16 @@ async def receive_ats_webhook(
             if connections_with_secret:
                 logger.warning("Webhook secret configured but no signature header for %s — rejecting", provider)
                 raise HTTPException(status_code=403, detail="Missing webhook signature header")
-            connection = all_connections[0]
+            connections_without_secret = [c for c in all_connections if not c.webhook_secret]
+            if connections_without_secret:
+                logger.warning("No webhook_secret configured for %s connections — rejecting unsigned webhook", provider)
+                raise HTTPException(
+                    status_code=403,
+                    detail="Webhook secret must be configured to accept webhook events"
+                )
+        else:
+            logger.warning("No active connection found for webhook provider %s", provider)
+            raise HTTPException(status_code=404, detail="No active connection found for this provider")
 
         connection_id = connection.id if connection else None
 
