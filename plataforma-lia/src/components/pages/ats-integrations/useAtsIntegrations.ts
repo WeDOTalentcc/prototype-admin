@@ -160,6 +160,36 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
     apiEndpoint: '',
   })
 
+  useEffect(() => {
+    if (selectedTab !== 'mapping') return
+    const loadMappings = async () => {
+      try {
+        const connRes = await fetch('/api/backend-proxy/ats/connections')
+        const allConns: ATSConnectionData[] = connRes.ok ? await connRes.json() : []
+        const conn = allConns.find(c => c.provider?.toLowerCase() === system.type && c.is_active)
+        if (!conn) return
+
+        const res = await fetch(`/api/backend-proxy/ats/field-mappings?connection_id=${conn.id}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (Array.isArray(data.mappings) && data.mappings.length > 0) {
+          setMappings(data.mappings.map((m: Record<string, unknown>, i: number) => ({
+            id: (m.id as string) || `persisted-${i}`,
+            sourceField: m.sourceField as string,
+            targetField: m.targetField as string,
+            sourceFieldName: m.sourceFieldName as string,
+            targetFieldName: m.targetFieldName as string,
+            confidence: (m.confidence as number) || 100,
+            isActive: m.isActive !== false,
+          })))
+        }
+      } catch {
+        // silent — non-critical
+      }
+    }
+    loadMappings()
+  }, [selectedTab, system.type])
+
   const systemFields: SystemField[] = system.type === 'sap' ? SAP_FIELDS : DEFAULT_FIELDS
 
   const calculateConfidence = (source: SystemField, target: SystemField): number => {

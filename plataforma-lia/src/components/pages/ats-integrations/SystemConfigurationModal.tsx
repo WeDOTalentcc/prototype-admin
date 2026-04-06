@@ -30,10 +30,10 @@ function SyncTab({ systemType }: { systemType: string }) {
     setSyncing(connectionId)
     setSyncResult(null)
     try {
-      const res = await fetch(`/api/v1/ats/connections/${connectionId}/sync`, {
+      const res = await fetch('/api/backend-proxy/ats/connections/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sync_type: syncType }),
+        body: JSON.stringify({ connection_id: connectionId, sync_type: syncType }),
       })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: `Erro HTTP ${res.status}` }))

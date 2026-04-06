@@ -63,12 +63,14 @@ class TriggerSyncRequest(BaseModel):
 @router.post("/ats/connections", response_model=dict)
 async def create_ats_connection(
     request: CreateATSConnectionRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """
     Create a new ATS connection (Gupy, Pandapé, or Merge).
     """
     try:
+        company_id = get_user_company_id(current_user)
         provider = request.provider.lower()
         if provider not in SUPPORTED_PROVIDERS:
             raise HTTPException(
@@ -86,18 +88,17 @@ async def create_ats_connection(
                 detail="Failed to connect to ATS. Please verify your API credentials."
             )
         
-        # Create connection record
         connection = ATSConnection(
             provider=ATSProvider[request.provider.upper()],
             provider_name=request.provider_name,
             api_key=encrypt_value(request.api_key),
             api_secret=encrypt_value(request.api_secret) if request.api_secret else None,
             api_endpoint=request.api_endpoint,
-            company_id=request.company_id,
+            company_id=company_id,
             is_active=True,
             auto_sync_enabled=request.auto_sync_enabled,
             sync_frequency_hours=request.sync_frequency_hours,
-            created_by="admin"
+            created_by=str(current_user.id)
         )
         
         db.add(connection)
@@ -121,13 +122,22 @@ async def create_ats_connection(
 
 
 @router.get("/ats/connections", response_model=list[dict])
-async def list_ats_connections(db: AsyncSession = Depends(get_db)):
+async def list_ats_connections(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user_or_demo),
+):
     """
-    List all ATS connections.
+    List ATS connections for the current user's company.
     """
     try:
+        company_id = get_user_company_id(current_user)
         result = await db.execute(
-            select(ATSConnection).where(ATSConnection.is_active)
+            select(ATSConnection).where(
+                and_(
+                    ATSConnection.is_active,
+                    ATSConnection.company_id == company_id,
+                )
+            )
         )
         connections = result.scalars().all()
         
@@ -608,7 +618,8 @@ async def receive_ats_webhook(
                     logger.warning("Webhook signature mismatch for %s", provider)
                     raise HTTPException(status_code=403, detail="Invalid webhook signature")
             else:
-                logger.debug("Webhook secret configured but no signature header received for %s", provider)
+                logger.warning("Webhook secret configured but no signature header received for %s — rejecting", provider)
+                raise HTTPException(status_code=403, detail="Missing webhook signature header")
 
         webhook_log = ATSWebhookLog(
             provider=provider_enum,
