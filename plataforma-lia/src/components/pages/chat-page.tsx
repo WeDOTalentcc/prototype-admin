@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import {
   Send, Loader2, FileText, Search, MapPin, X,
-  ChevronDown, Play, Mic, AlertTriangle, Cpu
+  ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain
 } from "lucide-react"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
@@ -202,7 +202,8 @@ export function LegacyChatPage() {
           {isEmptyChat && (
             <div className={`text-left pt-6 ${messagesContainerClass}`}>
               <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary">
+                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary flex items-center gap-2">
+                  <Brain className="w-7 h-7 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
                   Oi, eu sou a <span className="font-source-serif-4">LIA</span>.
                 </h2>
                 <p className="text-sm text-lia-text-tertiary">
