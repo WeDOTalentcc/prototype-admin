@@ -9,12 +9,9 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.core.database import get_db
-from app.models.journey_mapping import JourneyBlueprint, JourneyIntegration, JourneyStep
+from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
+from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
 from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
@@ -207,42 +204,42 @@ class AIRecommendationsResponse(BaseModel):
 
 
 SYSTEM_CATEGORY_MAP = {
-    'gupy': 'ats', 'pandape': 'ats', 'merge': 'ats', 'greenhouse': 'ats',
-    'workday': 'workforce_planning', 'sap_sf': 'workforce_planning',
-    'senior': 'hris', 'totvs': 'hris', 'adp': 'hris',
-    'hackerrank': 'technical_assessment', 'codility': 'technical_assessment',
-    'mindsight': 'assessment',
-    'docusign': 'digital_signature', 'clicksign': 'digital_signature',
-    'slack': 'communication', 'teams': 'communication'
+    "gupy": "ats", "pandape": "ats", "merge": "ats", "greenhouse": "ats",
+    "workday": "workforce_planning", "sap_sf": "workforce_planning",
+    "senior": "hris", "totvs": "hris", "adp": "hris",
+    "hackerrank": "technical_assessment", "codility": "technical_assessment",
+    "mindsight": "assessment",
+    "docusign": "digital_signature", "clicksign": "digital_signature",
+    "slack": "communication", "teams": "communication"
 }
 
 CHANNEL_NAMES = {
-    'linkedin_jobs': 'LinkedIn Jobs',
-    'indeed': 'Indeed',
-    'glassdoor': 'Glassdoor',
-    'catho': 'Catho',
-    'infojobs': 'InfoJobs',
-    'site_proprio': 'Site Próprio',
-    'universidades': 'Universidades',
-    'redes_sociais': 'Redes Sociais'
+    "linkedin_jobs": "LinkedIn Jobs",
+    "indeed": "Indeed",
+    "glassdoor": "Glassdoor",
+    "catho": "Catho",
+    "infojobs": "InfoJobs",
+    "site_proprio": "Site Próprio",
+    "universidades": "Universidades",
+    "redes_sociais": "Redes Sociais"
 }
 
 STEP_TYPE_MAP = {
-    'Triagem de CVs': 'cv_screening',
-    'Entrevista Inicial': 'initial_interview',
-    'Teste Técnico': 'technical_test',
-    'Entrevista Técnica': 'technical_interview',
-    'Entrevista com Gestor': 'manager_interview',
-    'Assessment Cultural': 'cultural_assessment',
-    'Proposta': 'offer',
-    'Onboarding': 'onboarding'
+    "Triagem de CVs": "cv_screening",
+    "Entrevista Inicial": "initial_interview",
+    "Teste Técnico": "technical_test",
+    "Entrevista Técnica": "technical_interview",
+    "Entrevista com Gestor": "manager_interview",
+    "Assessment Cultural": "cultural_assessment",
+    "Proposta": "offer",
+    "Onboarding": "onboarding"
 }
 
 
 @router.post("/wizard/complete", response_model=JourneyBlueprintResponse)
 async def complete_wizard(
     data: WizardCompleteData,
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """
     Complete the journey mapping wizard by creating:
@@ -251,16 +248,15 @@ async def complete_wizard(
     - JourneyIntegration for each system and publication channel
     """
     try:
-        # 1. Create Blueprint
-        blueprint = JourneyBlueprint(
-            company_id=data.company_id,
-            name="Jornada de Recrutamento",
-            description=f"Configurado via wizard em {datetime.utcnow().strftime('%d/%m/%Y')}",
-            vacancy_origin=data.vagas_abertura,
-            status="active",
-            wizard_step=5,
-            wizard_completed=True,
-            wizard_data={
+        blueprint_kwargs = {
+            "company_id": data.company_id,
+            "name": "Jornada de Recrutamento",
+            "description": f"Configurado via wizard em {datetime.utcnow().strftime('%d/%m/%Y')}",
+            "vacancy_origin": data.vagas_abertura,
+            "status": "active",
+            "wizard_step": 5,
+            "wizard_completed": True,
+            "wizard_data": {
                 "vagas_abertura": data.vagas_abertura,
                 "sistemas_usados": data.sistemas_usados,
                 "etapas_processo": data.etapas_processo,
@@ -268,97 +264,83 @@ async def complete_wizard(
                 "canais_publicacao": data.canais_publicacao,
                 "careers_page_url": data.careers_page_url
             }
-        )
-        db.add(blueprint)
-        await db.flush()  # Get blueprint ID
-        
-        # 2. Create Steps from etapas_processo
+        }
+
+        steps_data = []
         for order, etapa_name in enumerate(data.etapas_processo, start=1):
-            step_type = STEP_TYPE_MAP.get(etapa_name, 'custom')
-            
-            # Check if this step should have AI/automation enabled
+            step_type = STEP_TYPE_MAP.get(etapa_name, "custom")
+
             ai_enabled = False
             automation_enabled = False
             automation_config = {}
-            
-            if etapa_name == 'Triagem de CVs' and 'auto-screening' in data.automacoes_desejadas:
+
+            if etapa_name == "Triagem de CVs" and "auto-screening" in data.automacoes_desejadas:
                 ai_enabled = True
                 automation_enabled = True
                 automation_config = {"type": "cv_screening", "threshold": 0.7}
-            
-            if 'Entrevista' in etapa_name and 'auto-schedule' in data.automacoes_desejadas:
+
+            if "Entrevista" in etapa_name and "auto-schedule" in data.automacoes_desejadas:
                 automation_enabled = True
                 automation_config = {"type": "scheduling", "calendar_integration": True}
-            
-            step = JourneyStep(
-                blueprint_id=blueprint.id,
-                name=etapa_name,
-                description=f"Etapa de {etapa_name.lower()} do processo seletivo",
-                step_type=step_type,
-                order=order,
-                is_enabled=True,
-                is_required=True,
-                sla_days=3 if 'Triagem' in etapa_name else 5,
-                automation_enabled=automation_enabled,
-                automation_config=automation_config,
-                ai_enabled=ai_enabled,
-                ai_config={"agent": "ScreeningAgent"} if ai_enabled else {}
-            )
-            db.add(step)
-        
-        # 3. Create Integrations from sistemas_usados
+
+            steps_data.append({
+                "name": etapa_name,
+                "description": f"Etapa de {etapa_name.lower()} do processo seletivo",
+                "step_type": step_type,
+                "order": order,
+                "is_enabled": True,
+                "is_required": True,
+                "sla_days": 3 if "Triagem" in etapa_name else 5,
+                "automation_enabled": automation_enabled,
+                "automation_config": automation_config,
+                "ai_enabled": ai_enabled,
+                "ai_config": {"agent": "ScreeningAgent"} if ai_enabled else {}
+            })
+
+        integrations_data = []
         for sistema_id in data.sistemas_usados:
-            category = SYSTEM_CATEGORY_MAP.get(sistema_id, 'other')
-            integration = JourneyIntegration(
-                blueprint_id=blueprint.id,
-                name=sistema_id.replace('_', ' ').title(),
-                integration_type=category,
-                provider=sistema_id,
-                is_enabled=True,
-                is_connected=False,
-                sync_direction="bidirectional",
-                sync_frequency="realtime"
-            )
-            db.add(integration)
-        
-        # 4. Create Integrations from canais_publicacao
+            category = SYSTEM_CATEGORY_MAP.get(sistema_id, "other")
+            integrations_data.append({
+                "name": sistema_id.replace("_", " ").title(),
+                "integration_type": category,
+                "provider": sistema_id,
+                "is_enabled": True,
+                "is_connected": False,
+                "sync_direction": "bidirectional",
+                "sync_frequency": "realtime"
+            })
+
         for canal_id in data.canais_publicacao:
-            canal_name = CHANNEL_NAMES.get(canal_id, canal_id.replace('_', ' ').title())
+            canal_name = CHANNEL_NAMES.get(canal_id, canal_id.replace("_", " ").title())
             config = {}
-            if canal_id == 'site_proprio' and data.careers_page_url:
+            if canal_id == "site_proprio" and data.careers_page_url:
                 config = {"careers_url": data.careers_page_url}
-            
-            integration = JourneyIntegration(
-                blueprint_id=blueprint.id,
-                name=canal_name,
-                integration_type="job_board",
-                provider=canal_id,
-                is_enabled=True,
-                is_connected=False,
-                connection_config=config,
-                sync_direction="outbound",
-                sync_frequency="on_demand"
-            )
-            db.add(integration)
-        
-        await db.commit()
-        
-        # Reload with relationships
-        result = await db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
-            )
-            .where(JourneyBlueprint.id == blueprint.id)
+
+            integrations_data.append({
+                "name": canal_name,
+                "integration_type": "job_board",
+                "provider": canal_id,
+                "is_enabled": True,
+                "is_connected": False,
+                "connection_config": config,
+                "sync_direction": "outbound",
+                "sync_frequency": "on_demand"
+            })
+
+        blueprint = await repo.complete_wizard(
+            blueprint_kwargs=blueprint_kwargs,
+            steps_data=steps_data,
+            integrations_data=integrations_data
         )
-        blueprint = result.scalar_one()
-        
-        logger.info(f"Wizard completed for company {data.company_id}: {len(data.etapas_processo)} steps, {len(data.sistemas_usados) + len(data.canais_publicacao)} integrations")
+
+        logger.info(
+            f"Wizard completed for company {data.company_id}: "
+            f"{len(data.etapas_processo)} steps, "
+            f"{len(data.sistemas_usados) + len(data.canais_publicacao)} integrations"
+        )
         return blueprint
-        
+
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error completing wizard: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -366,25 +348,15 @@ async def complete_wizard(
 @router.get("/blueprint", response_model=JourneyBlueprintResponse)
 async def get_company_blueprint(
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Get the company's journey blueprint with steps and integrations."""
     try:
-        result = await db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
-            )
-            .where(JourneyBlueprint.company_id == company_id)
-            .order_by(JourneyBlueprint.created_at.desc())
-            .limit(1)
-        )
-        blueprint = result.scalar_one_or_none()
-        
+        blueprint = await repo.get_company_blueprint(company_id)
+
         if not blueprint:
             raise HTTPException(status_code=404, detail="No journey blueprint found for this company")
-        
+
         return blueprint
     except HTTPException:
         raise
@@ -396,11 +368,11 @@ async def get_company_blueprint(
 @router.post("/blueprint", response_model=JourneyBlueprintResponse)
 async def create_blueprint(
     data: JourneyBlueprintCreate,
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Create a new journey blueprint for a company."""
     try:
-        blueprint = JourneyBlueprint(
+        blueprint = await repo.create_blueprint_with_commit(
             company_id=data.company_id,
             name=data.name,
             description=data.description,
@@ -409,25 +381,10 @@ async def create_blueprint(
             has_internal_wfp=data.has_internal_wfp,
             status="draft"
         )
-        
-        db.add(blueprint)
-        await db.commit()
-        await db.refresh(blueprint)
-        
-        result = await db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
-            )
-            .where(JourneyBlueprint.id == blueprint.id)
-        )
-        blueprint = result.scalar_one()
-        
+
         logger.info(f"Created journey blueprint: {blueprint.name} for company {data.company_id}")
         return blueprint
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating journey blueprint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -437,37 +394,22 @@ async def update_blueprint(
     blueprint_id: uuid.UUID,
     data: JourneyBlueprintUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Update an existing journey blueprint."""
     try:
-        result = await db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
-            )
-            .where(JourneyBlueprint.id == blueprint_id)
-        )
-        blueprint = result.scalar_one_or_none()
-        
+        blueprint = await repo.get_blueprint_with_relations(blueprint_id)
+
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(blueprint, field, value)
-        
-        blueprint.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(blueprint)
-        
+        blueprint = await repo.update_blueprint(blueprint, update_data)
+
         logger.info(f"Updated journey blueprint: {blueprint.id}")
         return blueprint
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating journey blueprint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -476,46 +418,21 @@ async def update_blueprint(
 async def save_wizard_step(
     data: WizardStepData,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Save wizard step data and update progress."""
     try:
-        result = await db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
-            )
-            .where(JourneyBlueprint.id == data.blueprint_id)
-        )
-        blueprint = result.scalar_one_or_none()
-        
+        blueprint = await repo.get_blueprint_with_relations(data.blueprint_id)
+
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
-        current_wizard_data = blueprint.wizard_data or {}
-        current_wizard_data[f"step_{data.step_number}"] = data.data
-        blueprint.wizard_data = current_wizard_data
-        
-        if data.step_number > blueprint.wizard_step:
-            blueprint.wizard_step = data.step_number
-        
-        if data.data.get("completed", False):
-            blueprint.wizard_completed = True
-            blueprint.status = "completed"
-        else:
-            blueprint.status = "in_progress"
-        
-        blueprint.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(blueprint)
-        
+
+        blueprint = await repo.save_wizard_step(blueprint, data.step_number, data.data)
+
         logger.info(f"Saved wizard step {data.step_number} for blueprint: {blueprint.id}")
         return blueprint
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error saving wizard step: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -524,22 +441,14 @@ async def save_wizard_step(
 async def get_steps(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Get all steps for a journey blueprint."""
     try:
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+        blueprint = await repo.get_blueprint(blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
-        result = await db.execute(
-            select(JourneyStep)
-            .where(JourneyStep.blueprint_id == blueprint_id)
-            .order_by(JourneyStep.order)
-        )
-        steps = result.scalars().all()
+
+        steps = await repo.list_steps(blueprint_id)
         return steps
     except Exception as e:
         logger.error(f"Error fetching journey steps: {e}")
@@ -550,25 +459,18 @@ async def get_steps(
 async def create_step(
     data: JourneyStepCreate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Create a new journey step."""
     try:
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == data.blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+        blueprint = await repo.get_blueprint(data.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
-        step = JourneyStep(**data.model_dump())
-        db.add(step)
-        await db.commit()
-        await db.refresh(step)
-        
+
+        step = await repo.create_step(**data.model_dump())
+
         logger.info(f"Created journey step: {step.name}")
         return step
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating journey step: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -578,39 +480,26 @@ async def update_step(
     step_id: uuid.UUID,
     data: JourneyStepUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Update an existing journey step."""
     try:
-        result = await db.execute(
-            select(JourneyStep).where(JourneyStep.id == step_id)
-        )
-        step = result.scalar_one_or_none()
-        
+        step = await repo.get_step(step_id)
+
         if not step:
             raise HTTPException(status_code=404, detail="Journey step not found")
-        
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == step.blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+
+        blueprint = await repo.get_blueprint(step.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(step, field, value)
-        
-        step.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(step)
-        
+        step = await repo.update_step(step, update_data)
+
         logger.info(f"Updated journey step: {step.id}")
         return step
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating journey step: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -619,33 +508,25 @@ async def update_step(
 async def delete_step(
     step_id: uuid.UUID,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Delete a journey step."""
     try:
-        result = await db.execute(
-            select(JourneyStep).where(JourneyStep.id == step_id)
-        )
-        step = result.scalar_one_or_none()
-        
+        step = await repo.get_step(step_id)
+
         if not step:
             raise HTTPException(status_code=404, detail="Journey step not found")
-        
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == step.blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+
+        blueprint = await repo.get_blueprint(step.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
-        await db.delete(step)
-        await db.commit()
-        
+
+        await repo.delete_step(step)
+
         logger.info(f"Deleted journey step: {step_id}")
         return {"success": True, "message": "Step deleted successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting journey step: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -654,22 +535,14 @@ async def delete_step(
 async def get_integrations(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Get all integrations for a journey blueprint."""
     try:
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+        blueprint = await repo.get_blueprint(blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
-        result = await db.execute(
-            select(JourneyIntegration)
-            .where(JourneyIntegration.blueprint_id == blueprint_id)
-            .order_by(JourneyIntegration.integration_type)
-        )
-        integrations = result.scalars().all()
+
+        integrations = await repo.list_integrations(blueprint_id)
         return integrations
     except Exception as e:
         logger.error(f"Error fetching journey integrations: {e}")
@@ -680,25 +553,18 @@ async def get_integrations(
 async def create_integration(
     data: JourneyIntegrationCreate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Create a new journey integration."""
     try:
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == data.blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+        blueprint = await repo.get_blueprint(data.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
-        integration = JourneyIntegration(**data.model_dump())
-        db.add(integration)
-        await db.commit()
-        await db.refresh(integration)
-        
+
+        integration = await repo.create_integration(**data.model_dump())
+
         logger.info(f"Created journey integration: {integration.name}")
         return integration
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating journey integration: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -708,39 +574,26 @@ async def update_integration(
     integration_id: uuid.UUID,
     data: JourneyIntegrationUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Update an existing journey integration."""
     try:
-        result = await db.execute(
-            select(JourneyIntegration).where(JourneyIntegration.id == integration_id)
-        )
-        integration = result.scalar_one_or_none()
-        
+        integration = await repo.get_integration(integration_id)
+
         if not integration:
             raise HTTPException(status_code=404, detail="Journey integration not found")
-        
-        bp_result = await db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == integration.blueprint_id)
-        )
-        blueprint = bp_result.scalar_one_or_none()
+
+        blueprint = await repo.get_blueprint(integration.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(integration, field, value)
-        
-        integration.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(integration)
-        
+        integration = await repo.update_integration(integration, update_data)
+
         logger.info(f"Updated journey integration: {integration.id}")
         return integration
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating journey integration: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -749,22 +602,14 @@ async def update_integration(
 async def get_ai_recommendations(
     data: AIRecommendationsRequest,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    db: AsyncSession = Depends(get_db)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
     """Get AI-generated recommendations for journey optimization."""
     try:
-        result = await db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
-            )
-            .where(JourneyBlueprint.id == data.blueprint_id)
-        )
-        blueprint = result.scalar_one_or_none()
-        
+        blueprint = await repo.get_blueprint_with_relations(data.blueprint_id)
+
         verify_ownership(blueprint, company_id, "Journey blueprint")
-        
+
         steps_info = [
             {
                 "name": step.name,
@@ -776,7 +621,7 @@ async def get_ai_recommendations(
             }
             for step in blueprint.steps
         ]
-        
+
         integrations_info = [
             {
                 "name": integration.name,
@@ -786,7 +631,7 @@ async def get_ai_recommendations(
             }
             for integration in blueprint.integrations
         ]
-        
+
         prompt = f"""Analise a jornada de recrutamento abaixo e forneça recomendações para otimização:
 
 Jornada: {blueprint.name}
@@ -814,7 +659,7 @@ Responda em formato JSON com as chaves: summary, recommendations (lista), sugges
 
         try:
             ai_response = await llm_service.generate(prompt)
-            
+
             import json
             try:
                 parsed_response = json.loads(ai_response)
@@ -832,21 +677,22 @@ Responda em formato JSON com as chaves: summary, recommendations (lista), sugges
                         {"name": "Assessment Comportamental", "type": "assessment", "description": "Avaliação de fit cultural e competências"}
                     ]
                 }
-            
-            blueprint.ai_recommendations = parsed_response.get("recommendations", [])
-            blueprint.ai_summary = parsed_response.get("summary", "")
-            blueprint.updated_at = datetime.utcnow()
-            await db.commit()
-            
+
+            await repo.update_blueprint_ai(
+                blueprint,
+                ai_recommendations=parsed_response.get("recommendations", []),
+                ai_summary=parsed_response.get("summary", "")
+            )
+
             return AIRecommendationsResponse(
                 recommendations=parsed_response.get("recommendations", []),
                 summary=parsed_response.get("summary", ""),
                 suggested_steps=parsed_response.get("suggested_steps", [])
             )
-            
+
         except Exception as llm_error:
             logger.warning(f"LLM service error, returning default recommendations: {llm_error}")
-            
+
             default_response = AIRecommendationsResponse(
                 recommendations=[
                     {"title": "Automatização de Triagem", "description": "Configure triagem automática de CVs com IA", "priority": "high"},
@@ -862,7 +708,7 @@ Responda em formato JSON com as chaves: summary, recommendations (lista), sugges
                 ]
             )
             return default_response
-            
+
     except HTTPException:
         raise
     except Exception as e:
