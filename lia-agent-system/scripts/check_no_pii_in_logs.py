@@ -52,6 +52,25 @@ for path in Path("app").rglob("*.py"):
             in_log_call = True
             log_start_line = i
             paren_depth = line.count("(") - line.count(")")
+            if PII_ARG_PATTERN.search(line):
+                errors.append(
+                    f"{path}:{i}: PII in log call (started at line {log_start_line})\n"
+                    f"  > {stripped[:100]}"
+                )
+            if paren_depth <= 0:
+                in_log_call = False
+            continue
+
+        if in_log_call:
+            if PII_ARG_PATTERN.search(line):
+                errors.append(
+                    f"{path}:{i}: PII in log call (started at line {log_start_line})\n"
+                    f"  > {stripped[:100]}"
+                )
+            paren_depth += line.count("(") - line.count(")")
+            if paren_depth <= 0:
+                in_log_call = False
+            continue
 
         if in_log_call:
             if PII_ARG_PATTERN.search(line):

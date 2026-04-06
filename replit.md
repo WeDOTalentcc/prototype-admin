@@ -66,6 +66,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Design Token Migration**: Full codebase migration from hardcoded Tailwind color classes to semantic Design System LIA v4.2.1 tokens.
 - **Admin Panel Removed**: The entire `/admin` section (~19,000 lines, 93 files) was removed as it was isolated from the main platform. This included all admin pages, components, hooks, services, API proxy routes, and client management. External references were fixed (MetricCard inlined in agent-control-center, ai-consumption service relocated).
 - **Security Audit**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
+- **Backend Security Hardening (Task #34)**: Removed `demo-user` fallback from 4 endpoints (credits, search_feedback, sourcing_orchestrator, pipeline_orchestrator) — all now require authenticated `request.state.user_id`. Body payload can no longer override identity (prevents cross-tenant spoofing). Email provider chain enforced as Mailgun → Resend → Mock(dev-only). Mock email/WhatsApp providers return failure with CRITICAL logging in production.
 - **Zustand State Management**: Introduced zustand for centralized state management, covering auth, kanban, and candidate data.
 - **@ts-ignore Elimination**: Removed all `@ts-ignore` comments from the frontend codebase.
 - **God Components Split**: Split large components into hooks + sub-components for better maintainability and readability.
@@ -97,6 +98,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Apify
 - SendGrid
 - Mailgun
+- Resend (email fallback)
 - PostgreSQL
 - Redis
 - Elasticsearch
