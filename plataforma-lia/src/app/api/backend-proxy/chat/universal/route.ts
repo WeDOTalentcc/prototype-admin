@@ -1,30 +1,12 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { proxyFetchWithRetry } from '@/lib/api/proxy-fetch-with-retry'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
 
-/**
- * Proxy para o endpoint universal de chat da LIA.
- * POST /api/v1/chat/universal
- *
- * Aceita mensagens de qualquer contexto de página e roteia
- * para o domínio correto automaticamente via MainOrchestrator.
- *
- * Body: {
- *   message: string
- *   context_page: "sourcing" | "job" | "pipeline" | "kanban" | "analytics" | "general"
- *   entity_id?: string
- *   entity_type?: "sourcing" | "job" | "candidate"
- *   conversation_id?: string
- *   candidates?: object[]
- *   selected_candidate_ids?: string[]
- *   job_context?: object
- *   search_context?: object
- *   target_job?: object
- * }
- */
 const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
@@ -34,20 +16,12 @@ export async function POST(request: NextRequest) {
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    const authHeader = request.headers.get('authorization')
 
     const backendUrl = `${BACKEND_URL}/api/v1/chat/universal`
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    if (authHeader) {
-      headers['Authorization'] = authHeader
-    }
-
-    const response = await fetch(backendUrl, {
+    const response = await proxyFetchWithRetry(request, backendUrl, {
       method: 'POST',
-      headers,
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 

@@ -34,6 +34,13 @@ PUBLIC_PATHS = {
     "/openapi.json",
     "/api/v1/auth/login",
     "/api/v1/auth/register",
+    "/api/v1/auth/refresh",
+    "/api/v1/auth/public-register",
+    "/api/v1/auth/forgot-password",
+    "/api/v1/auth/reset-password",
+    "/api/v1/auth/verify-email",
+    "/api/v1/auth/resend-verification",
+    "/api/v1/auth/check-sso-domain",
     "/api/v1/auth/workos-callback",
     "/api/v1/auth/workos/callback",
     "/api/v1/data-request",
@@ -47,9 +54,13 @@ PUBLIC_PATHS = {
 # Path prefixes that are public (e.g. static files, docs)
 PUBLIC_PREFIXES = (
     "/api/v1/teams/",
+    "/api/v1/auth/invitation-info/",
+    "/api/v1/wsi/async/",
+    "/api/public/",
     "/docs/",
     "/static/",
     "/_next/",
+    "/ws/",
 )
 
 

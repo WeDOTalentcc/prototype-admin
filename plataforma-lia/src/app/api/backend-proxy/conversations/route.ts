@@ -1,10 +1,8 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
-import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { proxyFetchWithRetry } from '@/lib/api/proxy-fetch-with-retry'
 import { z } from 'zod'
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -16,9 +14,8 @@ export async function POST(request: NextRequest) {
 
     const body = bodyResult.data
     
-    const response = await fetch(`${BACKEND_URL}/api/v1/conversations`, {
+    const response = await proxyFetchWithRetry(request, '/api/v1/conversations', {
       method: 'POST',
-      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 
@@ -45,10 +42,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const params = searchParams.toString()
     
-    const response = await fetch(`${BACKEND_URL}/api/v1/conversations${params ? `?${params}` : ''}`, {
-      method: 'GET',
-      headers: getAuthHeaders(request),
-    })
+    const response = await proxyFetchWithRetry(request, `/api/v1/conversations${params ? `?${params}` : ''}`)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { proxyFetchWithRetry } from '@/lib/api/proxy-fetch-with-retry'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     
     const backendUrl = `${BACKEND_URL}/api/v1/chat`
     
-    const response = await fetch(backendUrl, {
+    const response = await proxyFetchWithRetry(request, backendUrl, {
       method: 'POST',
       headers: getAuthHeaders(request),
       body: JSON.stringify(body),
@@ -33,7 +34,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
-    // Strip internal reasoning field — prevent chain-of-thought leak to client (fix B-02)
     if (data && typeof data === "object" && "thought" in data) {
       const { thought: _thought, ...safeData } = data
       return NextResponse.json(safeData)
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    const response = await fetch(backendUrl, {
+    const response = await proxyFetchWithRetry(request, backendUrl, {
       method: 'GET',
       headers: getAuthHeaders(request),
     })

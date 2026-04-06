@@ -404,6 +404,12 @@ async def agent_chat_ws(
     company_id = auth["company_id"]
     user_id = auth["user_id"]
 
+    if not token or user_id == "anonymous":
+        await websocket.accept()
+        await websocket.close(code=1008, reason="Authentication required")
+        logger.warning("[AgentChatWS] Rejected unauthenticated WS session=%s", session_id)
+        return
+
     connected = await ws_manager.connect(websocket, session_id, company_id or "anonymous", user_id=user_id)
     if not connected:
         return
