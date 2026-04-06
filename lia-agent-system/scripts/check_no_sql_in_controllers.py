@@ -82,7 +82,6 @@ PENDING_MIGRATION = {
     "app/api/v1/company_benefits.py",
     "app/api/v1/company_culture.py",
     "app/api/v1/company_retention.py",
-    "app/api/v1/consent_management.py",
     "app/api/v1/conversations.py",
     "app/api/v1/credits.py",
     "app/api/v1/cultural_fit.py",
