@@ -415,6 +415,10 @@
   background: var(--lia-text-secondary);
 }
 
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Search Processing Animation - Sonar Effect */
 @keyframes searchPulse { 
   0%, 100% { transform: scale(1); } 

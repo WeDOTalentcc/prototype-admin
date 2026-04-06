@@ -218,26 +218,13 @@ export function LegacyChatPage() {
         {/* Messages com altura flexível e scroll */}
         <div
           ref={messagesContainerRef}
-          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-lia-border-default dark:scrollbar-thumb-lia-border-medium scrollbar-track-transparent hover:scrollbar-thumb-lia-border-medium dark:hover:scrollbar-thumb-lia-border-medium relative transition-colors motion-reduce:transition-none duration-300 ${chatContainerClass} ${
+          className={`${isEmptyChat ? 'flex-shrink' : 'flex-1'} min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-lia-border-default dark:scrollbar-thumb-lia-border-medium scrollbar-track-transparent hover:scrollbar-thumb-lia-border-medium dark:hover:scrollbar-thumb-lia-border-medium relative transition-colors motion-reduce:transition-none duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
           style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
           onScroll={checkNewMessageIndicator}
         >
-          {/* Empty state welcome message */}
-          {isEmptyChat && (
-            <div className={`text-center pt-6 ${messagesContainerClass}`}>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary flex items-center justify-center gap-2">
-                  <Brain className="w-7 h-7 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
-                  Oi, eu sou a <span className="font-source-serif-4">LIA</span>.
-                </h2>
-                <p className="text-sm text-lia-text-secondary">
-                  Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Empty state - messages area is empty, content moved to input card */}
           
           {/* Container de mensagens */}
           {!isEmptyChat && (
@@ -334,8 +321,30 @@ export function LegacyChatPage() {
         </div>
 
         {/* Input Card */}
-        <div className="p-6 flex-shrink-0 bg-white">
+        <div className={`flex-shrink-0 bg-white ${isEmptyChat ? 'flex-1 flex flex-col justify-center p-6' : 'p-6'}`}>
           <div className={inputContainerClass}>
+            {/* Empty State: Greeting + Suggestions + Prompt as one centered block */}
+            {isEmptyChat && !isSmartSearchMode && (
+              <div className="mb-6">
+                <div className="mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Brain className="w-9 h-9 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
+                    <h2 className="text-xl font-semibold text-lia-text-primary">
+                      Oi, eu sou a <span className="font-source-serif-4">LIA</span>.
+                    </h2>
+                  </div>
+                  <p className="text-sm text-lia-text-secondary">
+                    Como posso ajudar na sua jornada de recrutamento hoje?
+                  </p>
+                </div>
+                <p className="text-sm font-medium text-lia-text-secondary mb-3">O que posso fazer</p>
+                <PromptSuggestionsDock
+                  onSelect={(command) => setInput(command)}
+                  isEmpty={true}
+                />
+              </div>
+            )}
+
             {/* Context Pills */}
             {contextData && (contextData.data as any)?.totalCount > 0 && (
               <div className="mb-4">
@@ -369,15 +378,6 @@ export function LegacyChatPage() {
               />
             ) : (
               <>
-              {/* Sugestões de Tarefas (empty state) — fora do card do prompt */}
-              {isEmptyChat && (
-                <div className="mb-6">
-                  <PromptSuggestionsDock
-                    onSelect={(command) => setInput(command)}
-                    isEmpty={true}
-                  />
-                </div>
-              )}
 
               <div className="space-y-4">
                 
@@ -566,7 +566,7 @@ export function LegacyChatPage() {
                 )}
 
                 {/* Input com botões */}
-                <div className="flex items-center space-x-2 rounded-2xl border border-lia-border-subtle bg-white px-4 py-2">
+                <div className="flex items-center space-x-2 rounded-xl border border-lia-border-subtle bg-white px-4 py-2 shadow-none">
                   <div className="flex-1 relative">
                     <textarea
                       ref={inputRef}

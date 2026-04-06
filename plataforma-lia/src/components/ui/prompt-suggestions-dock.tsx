@@ -185,7 +185,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
   if (isEmpty) {
     return (
       <div className="w-full">
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="flex overflow-x-auto flex-nowrap gap-2 pb-1 scrollbar-none" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon
             const colors = CATEGORY_COLORS[suggestion.category]
@@ -193,7 +193,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="px-2.5 py-2 rounded-md transition-colors motion-reduce:transition-none text-left group"
+                className="min-w-[200px] px-3 py-3 rounded-md transition-colors motion-reduce:transition-none text-left group flex-shrink-0"
                 style={{border: `1px solid var(--lia-border-subtle)`,
                   backgroundColor: 'var(--white)'}}
                 onMouseEnter={(e) => {
@@ -212,10 +212,10 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     className="p-1 rounded flex-shrink-0"
                     style={{backgroundColor: colors.bg}}
                   >
-                    <Icon className="w-3 h-3" style={{color: colors.icon}} />
+                    <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
                   </div>
                   <span 
-                    className="font-medium text-xs leading-tight truncate"
+                    className="font-medium text-xs leading-tight whitespace-nowrap"
                     style={{color: 'var(--lia-text-primary)'}}
                   >
                     {suggestion.title}
