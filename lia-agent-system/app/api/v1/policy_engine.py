@@ -12,9 +12,7 @@ import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.domains.policy.dependencies import get_policy_repo
 from app.domains.policy.repositories.policy_repository import PolicyRepository
 from app.models.policy import BusinessRule, EscalationRule, RateLimitRule
@@ -378,7 +376,7 @@ async def trigger_escalation(
 async def apply_sector_defaults(
     company_id: str,
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
-    db: AsyncSession = Depends(get_db),
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """
     Persiste os defaults setoriais (Alpha 1) em CompanyHiringPolicy.
@@ -405,7 +403,7 @@ async def apply_sector_defaults(
         result = await service.save_policy_block(
             company_id=company_id,
             sector=sector_key,
-            db=db,
+            db=repo.db,
         )
         return result
     except Exception as e:
