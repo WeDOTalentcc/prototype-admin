@@ -2,6 +2,7 @@ import { useState } from "react"
 import type { Candidate } from "../types"
 import type { ParsedEntities, SearchMode } from "@/components/search/smart-search-input"
 import { toast } from "sonner"
+import type { ChatMessage } from "./candidates-core"
 
 export type Archetype = {
   id: string

@@ -7,6 +7,7 @@ import {
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
+import type { ChatMessage } from "./candidates-core"
 
 export type SearchSource = 'local' | 'global' | 'hybrid'
 

@@ -1,5 +1,6 @@
 "use client"
 import type { ChatMessage } from "./candidates-core"
+type LIAChatMessage = ChatMessage
 
 import React from "react"
 import { isConversationalMessage, isGenericQuestion } from "./liaMessageUtils"

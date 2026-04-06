@@ -3,6 +3,7 @@
 import type React from "react"
 import type { Candidate } from "../types"
 import { toast } from "sonner"
+import type { ChatMessage } from "./candidates-core"
 
 export interface CandidatesCVHandlersContext {
   setCandidates: (v: Candidate[]) => void
