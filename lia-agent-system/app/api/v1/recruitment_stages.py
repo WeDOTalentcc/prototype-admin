@@ -16,9 +16,6 @@ from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, delete, select
-from sqlalchemy import update as sa_update
-from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from app.auth.dependencies import (
@@ -30,7 +27,6 @@ from app.auth.dependencies import (
 )
 from app.auth.models import User
 from app.core.config import settings
-from app.core.database import get_db
 from app.domains.communication.services.return_event_service import (
     RETURN_EVENT_CONFIG,
     ReturnEventService,
@@ -48,6 +44,16 @@ from app.models.recruitment_stages import (
     RecruitmentSubStatus,
     ScreeningQuestion,
 )
+from app.domains.recruitment.dependencies import (
+    get_stage_repo,
+    get_sub_status_repo,
+    get_ats_mapping_repo,
+    get_screening_question_repo,
+)
+from app.domains.recruitment.repositories.recruitment_stage_repository import RecruitmentStageRepository
+from app.domains.recruitment.repositories.sub_status_repository import SubStatusRepository
+from app.domains.recruitment.repositories.ats_mapping_repository import ATSMappingRepository
+from app.domains.recruitment.repositories.screening_question_repository import ScreeningQuestionRepository
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +211,8 @@ class InterpretContextResponse(BaseModel):
 async def list_stages(
     include_inactive: bool = Query(default=False),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """
     List all recruitment stages for the authenticated user's company.
@@ -213,33 +220,18 @@ async def list_stages(
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        query = select(RecruitmentStage).where(
-            RecruitmentStage.company_id == effective_company_id
+
+        stages = await stage_repo.list_for_company(
+            effective_company_id, include_inactive=include_inactive
         )
-        if not include_inactive:
-            query = query.where(RecruitmentStage.is_active == True)
-        query = query.order_by(RecruitmentStage.stage_order)
-        
-        result = await db.execute(query)
-        stages = result.scalars().all()
-        
+
         stages_with_substatus = []
         for stage in stages:
             stage_dict = stage.to_dict()
-            
-            sub_result = await db.execute(
-                select(RecruitmentSubStatus)
-                .where(and_(
-                    RecruitmentSubStatus.stage_id == stage.id,
-                    RecruitmentSubStatus.is_active == True
-                ))
-                .order_by(RecruitmentSubStatus.sub_status_order)
-            )
-            sub_statuses = sub_result.scalars().all()
+            sub_statuses = await sub_status_repo.list_for_stage(stage.id)
             stage_dict["sub_statuses"] = [s.to_dict() for s in sub_statuses]
             stages_with_substatus.append(stage_dict)
-        
+
         return {
             "stages": stages_with_substatus,
             "total": len(stages_with_substatus)
@@ -253,41 +245,32 @@ async def list_stages(
 async def create_stage(
     stage: StageCreate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Create a new recruitment stage for the authenticated user's company."""
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        existing = await db.execute(
-            select(RecruitmentStage).where(and_(
-                RecruitmentStage.company_id == effective_company_id,
-                RecruitmentStage.name == stage.name
-            ))
-        )
-        if existing.scalar_one_or_none():
+
+        existing = await stage_repo.get_by_name(effective_company_id, stage.name)
+        if existing:
             raise HTTPException(status_code=400, detail=f"Stage '{stage.name}' already exists")
-        
+
         if stage.action_behavior not in VALID_ACTION_BEHAVIORS:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid action_behavior: '{stage.action_behavior}'. Must be one of: {VALID_ACTION_BEHAVIORS}"
             )
-        
-        new_stage = RecruitmentStage(
-            company_id=effective_company_id,
+
+        new_stage = await stage_repo.create({
+            "company_id": effective_company_id,
             **stage.model_dump()
-        )
-        db.add(new_stage)
-        await db.commit()
-        await db.refresh(new_stage)
-        
+        })
+
         logger.info(f"Created stage: {stage.name} for company {effective_company_id}")
         return new_stage.to_dict()
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating stage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -297,35 +280,29 @@ async def update_stage(
     stage_id: str,
     stage: StageUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Update an existing recruitment stage. Validates resource ownership."""
     try:
-        existing = await db.get(RecruitmentStage, uuid.UUID(stage_id))
+        existing = await stage_repo.get_by_id(uuid.UUID(stage_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Stage not found")
-        
+
         assert_resource_ownership(existing, current_user, "stage")
-        
+
         if stage.action_behavior is not None and stage.action_behavior not in VALID_ACTION_BEHAVIORS:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid action_behavior: '{stage.action_behavior}'. Must be one of: {VALID_ACTION_BEHAVIORS}"
             )
-        
+
         update_data = stage.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(existing, key, value)
-        
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        await db.refresh(existing)
-        
-        return existing.to_dict()
+        updated = await stage_repo.update(uuid.UUID(stage_id), update_data)
+
+        return updated.to_dict()
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating stage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -335,34 +312,31 @@ async def delete_stage(
     stage_id: str,
     hard_delete: bool = Query(default=False),
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """
     Delete a recruitment stage. Validates resource ownership.
     By default, soft-deletes (sets is_active=False).
     """
     try:
-        existing = await db.get(RecruitmentStage, uuid.UUID(stage_id))
+        existing = await stage_repo.get_by_id(uuid.UUID(stage_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Stage not found")
-        
+
         assert_resource_ownership(existing, current_user, "stage")
-        
+
         if existing.is_system:  # type: ignore[truthy-bool]
             raise HTTPException(status_code=400, detail="Cannot delete system stages")
-        
+
         if hard_delete:
-            await db.delete(existing)
+            await stage_repo.delete(uuid.UUID(stage_id))
         else:
-            existing.is_active = False  # type: ignore[assignment]
-            existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        
-        await db.commit()
+            await stage_repo.soft_delete(uuid.UUID(stage_id))
+
         return {"success": True, "deleted": stage_id}
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting stage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -372,17 +346,16 @@ async def update_stage_config(
     stage_id: str,
     config: StageConfigUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Update stage configuration (action_behavior, default_channel, SLA)."""
     try:
-        existing = await db.get(RecruitmentStage, uuid.UUID(stage_id))
+        existing = await stage_repo.get_by_id(uuid.UUID(stage_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Stage not found")
-        
+
         assert_resource_ownership(existing, current_user, "stage")
-        stage = existing
-        
+
         updates = {}
         if config.action_behavior is not None:
             if config.action_behavior not in VALID_ACTION_BEHAVIORS + ["passive"]:
@@ -395,20 +368,15 @@ async def update_stage_config(
             updates["default_channel"] = config.default_channel
         if config.sla_hours is not None:
             updates["sla_hours"] = config.sla_hours
-        
+
         if updates:
-            stmt = sa_update(RecruitmentStage).where(RecruitmentStage.id == uuid.UUID(stage_id)).values(**updates)
-            await db.execute(stmt)
-            await db.commit()
-            
-            await db.refresh(existing)
-            stage = existing
-        
-        return {"success": True, "stage": stage.to_dict()}
+            await stage_repo.update_fields_uuid(uuid.UUID(stage_id), updates)
+            existing = await stage_repo.get_by_id(uuid.UUID(stage_id))
+
+        return {"success": True, "stage": existing.to_dict()}
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -423,13 +391,10 @@ async def inline_edit_stage(
     stage_id: str,
     payload: InlineStageEdit,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     try:
-        result = await db.execute(
-            select(RecruitmentStage).where(RecruitmentStage.id == stage_id)
-        )
-        stage = result.scalars().first()
+        stage = await stage_repo.get_by_id_str(stage_id)
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
 
@@ -455,26 +420,17 @@ async def inline_edit_stage(
         if not updates:
             return {"success": True, "message": "No changes provided"}
 
-        updates["updated_at"] = datetime.utcnow()
-
-        stmt = (
-            sa_update(RecruitmentStage)
-            .where(RecruitmentStage.id == stage_id)
-            .values(**updates)
-        )
-        await db.execute(stmt)  # type: ignore[assignment]
-        await db.commit()
+        await stage_repo.update_fields(stage_id, updates)
 
         return {
             "success": True,
             "stage_id": stage_id,
-            "updates": {k: v for k, v in updates.items() if k != "updated_at"},
+            "updates": updates,
         }
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error inline editing stage: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -482,13 +438,10 @@ async def inline_edit_stage(
 async def remove_custom_stage(
     stage_id: str,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     try:
-        result = await db.execute(
-            select(RecruitmentStage).where(RecruitmentStage.id == stage_id)
-        )
-        stage = result.scalars().first()
+        stage = await stage_repo.get_by_id_str(stage_id)
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
 
@@ -501,16 +454,13 @@ async def remove_custom_stage(
         if stage_category == 'default':
             raise HTTPException(status_code=403, detail="Default stages cannot be removed, only deactivated")
 
-        stmt = delete(RecruitmentStage).where(RecruitmentStage.id == stage_id)
-        await db.execute(stmt)
-        await db.commit()
+        await stage_repo.hard_delete_by_id_str(stage_id)
 
         return {"success": True, "stage_id": stage_id, "removed": True}
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error removing stage: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -518,22 +468,14 @@ async def remove_custom_stage(
 async def reorder_stages(
     payload: StageReorderRequest,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     try:
-        for item in payload.stages:
-            stmt = (
-                sa_update(RecruitmentStage)
-                .where(RecruitmentStage.id == item.stage_id)
-                .values(stage_order=item.new_order, updated_at=datetime.utcnow())
-            )
-            await db.execute(stmt)  # type: ignore[assignment]
-
-        await db.commit()
+        items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
+        await stage_repo.reorder(items)
         return {"success": True, "reordered": len(payload.stages)}
     except Exception as e:
         logger.error(f"Error reordering stages: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -542,25 +484,20 @@ async def list_stage_sub_statuses(
     stage_id: str,
     include_inactive: bool = Query(default=False, description="Include inactive sub-statuses (for settings view)"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """List sub-statuses for a specific stage. Use include_inactive=true in settings to show full catalog."""
     try:
-        stage = await db.get(RecruitmentStage, uuid.UUID(stage_id))
+        stage = await stage_repo.get_by_id(uuid.UUID(stage_id))
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
 
         assert_resource_ownership(stage, current_user, "stage")
 
-        query = select(RecruitmentSubStatus).where(
-            RecruitmentSubStatus.stage_id == stage.id
+        sub_statuses = await sub_status_repo.list_for_stage(
+            stage.id, include_inactive=include_inactive
         )
-        if not include_inactive:
-            query = query.where(RecruitmentSubStatus.is_active == True)
-        query = query.order_by(RecruitmentSubStatus.sub_status_order)
-
-        sub_result = await db.execute(query)
-        sub_statuses = sub_result.scalars().all()
 
         return {
             "stage_id": stage_id,
@@ -579,32 +516,29 @@ async def create_sub_status(
     stage_id: str,
     sub_status: SubStatusCreate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """Create a new sub-status for a stage. Validates stage ownership."""
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        stage = await db.get(RecruitmentStage, uuid.UUID(stage_id))
+
+        stage = await stage_repo.get_by_id(uuid.UUID(stage_id))
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
-        
+
         assert_resource_ownership(stage, current_user, "stage")
-        
-        new_sub = RecruitmentSubStatus(
-            stage_id=uuid.UUID(stage_id),
-            company_id=effective_company_id,
+
+        new_sub = await sub_status_repo.create({
+            "stage_id": uuid.UUID(stage_id),
+            "company_id": effective_company_id,
             **sub_status.model_dump()
-        )
-        db.add(new_sub)
-        await db.commit()
-        await db.refresh(new_sub)
-        
+        })
+
         return new_sub.to_dict()
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating sub-status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -614,29 +548,25 @@ async def update_sub_status(
     sub_status_id: str,
     sub_status: SubStatusCreate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """Update a sub-status. Validates resource ownership."""
     try:
-        existing = await db.get(RecruitmentSubStatus, uuid.UUID(sub_status_id))
+        existing = await sub_status_repo.get_by_id(uuid.UUID(sub_status_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Sub-status not found")
-        
+
         assert_resource_ownership(existing, current_user, "sub-status")
-        
-        update_data = sub_status.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(existing, key, value)
-        
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        await db.refresh(existing)
-        
-        return existing.to_dict()
+
+        updated = await sub_status_repo.update(
+            uuid.UUID(sub_status_id),
+            sub_status.model_dump(exclude_unset=True)
+        )
+
+        return updated.to_dict()
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating sub-status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -646,30 +576,23 @@ async def patch_sub_status(
     sub_status_id: str,
     payload: dict = Body(...),
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """Partially update a sub-status (e.g., toggle is_active or is_default). All fields optional."""
     try:
-        existing = await db.get(RecruitmentSubStatus, uuid.UUID(sub_status_id))
+        existing = await sub_status_repo.get_by_id(uuid.UUID(sub_status_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Sub-status not found")
 
         assert_resource_ownership(existing, current_user, "sub-status")
 
         allowed = {"is_active", "is_default", "is_waiting", "waiting_for", "sla_hours", "color", "icon"}
-        for key, value in payload.items():
-            if key in allowed:
-                setattr(existing, key, value)
+        updated = await sub_status_repo.patch(uuid.UUID(sub_status_id), allowed, payload)
 
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        await db.refresh(existing)
-
-        return existing.to_dict()
+        return updated.to_dict()
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error patching sub-status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -678,23 +601,20 @@ async def patch_sub_status(
 async def delete_sub_status(
     sub_status_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """Delete a sub-status (soft delete). Validates resource ownership."""
     try:
-        existing = await db.get(RecruitmentSubStatus, uuid.UUID(sub_status_id))
+        existing = await sub_status_repo.get_by_id(uuid.UUID(sub_status_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Sub-status not found")
-        
+
         assert_resource_ownership(existing, current_user, "sub-status")
-        
-        existing.is_active = False  # type: ignore[assignment]
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        
+
+        await sub_status_repo.soft_delete(uuid.UUID(sub_status_id))
+
         return {"success": True, "deleted": sub_status_id}
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting sub-status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -703,25 +623,16 @@ async def delete_sub_status(
 async def list_ats_mappings(
     ats_type: str | None = Query(default=None, description="Filter by ATS type"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 ):
     """List all ATS stage mappings for the authenticated user's company."""
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        query = select(ATSStageMapping).where(
-            and_(
-                ATSStageMapping.company_id == effective_company_id,
-                ATSStageMapping.is_active == True
-            )
+
+        mappings = await ats_repo.list_for_company(
+            effective_company_id, ats_type=ats_type
         )
-        if ats_type:
-            query = query.where(ATSStageMapping.ats_type == ats_type)
-        query = query.order_by(ATSStageMapping.ats_type, ATSStageMapping.priority.desc())
-        
-        result = await db.execute(query)
-        mappings = result.scalars().all()
-        
+
         return {
             "mappings": [m.to_dict() for m in mappings],
             "total": len(mappings)
@@ -735,32 +646,28 @@ async def list_ats_mappings(
 async def create_ats_mapping(
     mapping: ATSMappingCreate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 ):
     """Create a new ATS stage mapping for the authenticated user's company."""
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        new_mapping = ATSStageMapping(
-            company_id=effective_company_id,
-            wedotalent_stage_id=uuid.UUID(mapping.wedotalent_stage_id),
-            wedotalent_sub_status_id=uuid.UUID(mapping.wedotalent_sub_status_id) if mapping.wedotalent_sub_status_id else None,
-            ats_type=mapping.ats_type,
-            ats_stage_id=mapping.ats_stage_id,
-            ats_stage_name=mapping.ats_stage_name,
-            ats_stage_order=mapping.ats_stage_order,
-            mapping_direction=mapping.mapping_direction,
-            is_default_for_sync=mapping.is_default_for_sync,
-            priority=mapping.priority,
-            notes=mapping.notes
-        )
-        db.add(new_mapping)
-        await db.commit()
-        await db.refresh(new_mapping)
-        
+
+        new_mapping = await ats_repo.create({
+            "company_id": effective_company_id,
+            "wedotalent_stage_id": uuid.UUID(mapping.wedotalent_stage_id),
+            "wedotalent_sub_status_id": uuid.UUID(mapping.wedotalent_sub_status_id) if mapping.wedotalent_sub_status_id else None,
+            "ats_type": mapping.ats_type,
+            "ats_stage_id": mapping.ats_stage_id,
+            "ats_stage_name": mapping.ats_stage_name,
+            "ats_stage_order": mapping.ats_stage_order,
+            "mapping_direction": mapping.mapping_direction,
+            "is_default_for_sync": mapping.is_default_for_sync,
+            "priority": mapping.priority,
+            "notes": mapping.notes,
+        })
+
         return new_mapping.to_dict()
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating ATS mapping: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -769,23 +676,20 @@ async def create_ats_mapping(
 async def delete_ats_mapping(
     mapping_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 ):
     """Delete an ATS mapping. Validates resource ownership."""
     try:
-        existing = await db.get(ATSStageMapping, uuid.UUID(mapping_id))
+        existing = await ats_repo.get_by_id(uuid.UUID(mapping_id))
         if not existing:
             raise HTTPException(status_code=404, detail="Mapping not found")
-        
+
         assert_resource_ownership(existing, current_user, "ATS mapping")
-        
-        existing.is_active = False  # type: ignore[assignment]
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        
+
+        await ats_repo.soft_delete(uuid.UUID(mapping_id))
+
         return {"success": True, "deleted": mapping_id}
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting ATS mapping: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -794,59 +698,58 @@ async def delete_ats_mapping(
 async def initialize_company_stages(
     ats_type: str | None = Query(default=None, description="Also initialize ATS mappings"),
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 ):
     """
     Initialize default stages and sub-statuses for the authenticated user's company.
     Optionally also initializes ATS mappings for Gupy or Pandapé.
     """
     try:
+        from app.core.database import get_db as _get_db
+        from sqlalchemy.ext.asyncio import AsyncSession
+
         effective_company_id = get_user_company_id(current_user)
-        
+
+        # pipeline_stage_service.initialize_company_stages needs a raw db session
         stages = await pipeline_stage_service.initialize_company_stages(
             company_id=effective_company_id,
-            db=db
+            db=stage_repo.db
         )
-        
+
         ats_mappings_created = 0
         if ats_type and stages:
             stage_name_to_id = {}
-            result = await db.execute(
-                select(RecruitmentStage).where(
-                    RecruitmentStage.company_id == effective_company_id
-                )
-            )
-            for stage in result.scalars().all():
-                stage_name_to_id[stage.name] = stage.id
-            
+            all_stages = await stage_repo.list_for_company(effective_company_id, include_inactive=True)
+            for s in all_stages:
+                stage_name_to_id[s.name] = s.id
+
             mappings_config = []
             if ats_type == "gupy":
                 mappings_config = GUPY_STAGE_MAPPINGS
             elif ats_type == "pandape":
                 mappings_config = PANDAPE_STAGE_MAPPINGS
-            
+
             for mapping in mappings_config:
                 wedo_stage = mapping.get("wedotalent_stage")
                 if wedo_stage in stage_name_to_id:
-                    new_mapping = ATSStageMapping(
-                        company_id=effective_company_id,
-                        ats_type=ats_type,
-                        ats_stage_name=mapping["ats_stage_name"],
-                        wedotalent_stage_id=stage_name_to_id[wedo_stage],
-                        is_default_for_sync=mapping.get("is_default_for_sync", False)
-                    )
-                    db.add(new_mapping)
+                    await ats_repo.create_no_commit({
+                        "company_id": effective_company_id,
+                        "ats_type": ats_type,
+                        "ats_stage_name": mapping["ats_stage_name"],
+                        "wedotalent_stage_id": stage_name_to_id[wedo_stage],
+                        "is_default_for_sync": mapping.get("is_default_for_sync", False),
+                    })
                     ats_mappings_created += 1
-            
-            await db.commit()
-        
+
+            await ats_repo.commit()
+
         return {
             "success": True,
             "stages_created": len(stages),
             "ats_mappings_created": ats_mappings_created
         }
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error initializing stages: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -854,7 +757,8 @@ async def initialize_company_stages(
 @router.post("/sync-canonical-sub-statuses", response_model=None)
 async def sync_canonical_sub_statuses(
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     """
     Idempotent sync: inserts any CANONICAL_SUB_STATUSES entries missing from
@@ -864,13 +768,7 @@ async def sync_canonical_sub_statuses(
     try:
         effective_company_id = get_user_company_id(current_user)
 
-        stages_result = await db.execute(
-            select(RecruitmentStage).where(
-                RecruitmentStage.company_id == effective_company_id,
-                RecruitmentStage.is_active == True,
-            )
-        )
-        stages = stages_result.scalars().all()
+        stages = await stage_repo.list_for_company(effective_company_id)
 
         inserted_total = 0
         for stage in stages:
@@ -878,38 +776,25 @@ async def sync_canonical_sub_statuses(
             if not canonical:
                 continue
 
-            existing_result = await db.execute(
-                select(RecruitmentSubStatus.name).where(
-                    RecruitmentSubStatus.stage_id == stage.id
-                )
-            )
-            existing_names = {row[0] for row in existing_result.fetchall()}
-
-            max_order_result = await db.execute(
-                select(RecruitmentSubStatus.sub_status_order).where(
-                    RecruitmentSubStatus.stage_id == stage.id
-                ).order_by(RecruitmentSubStatus.sub_status_order.desc()).limit(1)
-            )
-            max_order_row = max_order_result.fetchone()
-            next_order = (max_order_row[0] + 1) if max_order_row else 0
+            existing_names = await sub_status_repo.get_existing_names_for_stage(stage.id)
+            next_order = await sub_status_repo.get_max_order_for_stage(stage.id)
 
             for sub_data in canonical:
                 if sub_data["name"] not in existing_names:
-                    new_sub = RecruitmentSubStatus(
-                        stage_id=stage.id,
-                        company_id=effective_company_id,
-                        sub_status_order=next_order,
-                        name=sub_data["name"],
-                        display_name=sub_data["display_name"],
-                        is_default=sub_data.get("is_default", False),
-                        is_waiting=sub_data.get("is_waiting", False),
-                        waiting_for=sub_data.get("waiting_for"),
-                    )
-                    db.add(new_sub)
+                    await sub_status_repo.create_no_commit({
+                        "stage_id": stage.id,
+                        "company_id": effective_company_id,
+                        "sub_status_order": next_order,
+                        "name": sub_data["name"],
+                        "display_name": sub_data["display_name"],
+                        "is_default": sub_data.get("is_default", False),
+                        "is_waiting": sub_data.get("is_waiting", False),
+                        "waiting_for": sub_data.get("waiting_for"),
+                    })
                     next_order += 1
                     inserted_total += 1
 
-        await db.commit()
+        await sub_status_repo.commit()
         logger.info(
             "[sync_canonical] company=%s inserted=%d sub-statuses",
             effective_company_id, inserted_total
@@ -917,7 +802,6 @@ async def sync_canonical_sub_statuses(
         return {"success": True, "inserted": inserted_total}
 
     except Exception as e:
-        await db.rollback()
         logger.error("[sync_canonical] error: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -926,18 +810,18 @@ async def sync_canonical_sub_statuses(
 async def transition_candidate(
     request: TransitionRequest,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """
     Transition a candidate to a new stage/sub-status.
-    
+
     This is the main endpoint for moving candidates through the pipeline.
     Validates transition, records history, and triggers ATS sync.
     Uses the authenticated user's company for validation.
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
+
         result = await pipeline_stage_service.transition_candidate(
             vacancy_candidate_id=request.vacancy_candidate_id,
             to_stage=request.to_stage,
@@ -949,7 +833,7 @@ async def transition_candidate(
             notes=request.notes,
             context={"company_id": effective_company_id},
             force=request.force,
-            db=db
+            db=stage_repo.db
         )
         return result
     except TransitionError as e:
@@ -967,7 +851,7 @@ async def transition_candidate(
 async def get_candidate_stage_info(
     vacancy_candidate_id: str,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """
     Get current stage/sub-status info for a candidate.
@@ -975,11 +859,11 @@ async def get_candidate_stage_info(
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
+
         info = await pipeline_stage_service.get_candidate_stage_info(
             vacancy_candidate_id=vacancy_candidate_id,
             company_id=effective_company_id,
-            db=db
+            db=stage_repo.db
         )
         if not info:
             raise HTTPException(status_code=404, detail="Candidate not found")
@@ -996,7 +880,7 @@ async def get_candidate_history(
     vacancy_candidate_id: str,
     limit: int = Query(default=50, ge=1, le=200),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """
     Get stage transition history for a candidate.
@@ -1004,12 +888,12 @@ async def get_candidate_history(
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
+
         history = await pipeline_stage_service.get_candidate_history(
             vacancy_candidate_id=vacancy_candidate_id,
             company_id=effective_company_id,
             limit=limit,
-            db=db
+            db=stage_repo.db
         )
         return {
             "history": history,
@@ -1040,14 +924,14 @@ async def get_defaults():
 async def get_standard_stage_catalog():
     """
     Returns the standard stage catalog with all available pipeline columns.
-    
+
     Each entry includes:
     - Stage metadata (name, display_name, icon, color)
     - action_behavior (determines what happens on transition)
     - stage_category (system/catalog/custom)
     - default_sub_statuses for the stage
     - Whether it's removable, system-required, initial, or final
-    
+
     Used by:
     - Menu Configurações to show available stages
     - Pipeline customization in job settings
@@ -1078,46 +962,25 @@ class CompanyPipelineUpdate(BaseModel):
     stages: list[CompanyPipelineStageItem]
 
 
-async def _get_company_pipeline(company_id: str, db: AsyncSession):
-    query = (
-        select(RecruitmentStage)
-        .where(and_(
-            RecruitmentStage.company_id == company_id,
-            RecruitmentStage.is_active == True,
-        ))
-        .order_by(RecruitmentStage.stage_order)
-    )
-    result = await db.execute(query)
-    stages = result.scalars().all()
-    
+async def _get_company_pipeline(
+    company_id: str,
+    stage_repo: RecruitmentStageRepository,
+    sub_status_repo: SubStatusRepository,
+):
+    stages = await stage_repo.list_for_company(company_id)
+
     if not stages:
         stages = await pipeline_stage_service.initialize_company_stages(
-            company_id=company_id, db=db
+            company_id=company_id, db=stage_repo.db
         )
         if not stages:
             return []
-        result = await db.execute(
-            select(RecruitmentStage)
-            .where(and_(
-                RecruitmentStage.company_id == company_id,
-                RecruitmentStage.is_active == True,
-            ))
-            .order_by(RecruitmentStage.stage_order)
-        )
-        stages = result.scalars().all()
-    
+        stages = await stage_repo.list_for_company(company_id)
+
     pipeline = []
     for stage in stages:
         stage_dict = stage.to_dict()
-        sub_result = await db.execute(
-            select(RecruitmentSubStatus)
-            .where(and_(
-                RecruitmentSubStatus.stage_id == stage.id,
-                RecruitmentSubStatus.is_active == True,
-            ))
-            .order_by(RecruitmentSubStatus.sub_status_order)
-        )
-        sub_statuses = sub_result.scalars().all()
+        sub_statuses = await sub_status_repo.list_for_stage(stage.id)
         stage_dict["sub_statuses"] = [s.to_dict() for s in sub_statuses]
         pipeline.append(stage_dict)
     return pipeline
@@ -1126,11 +989,12 @@ async def _get_company_pipeline(company_id: str, db: AsyncSession):
 @router.get("/company-pipeline", response_model=None)
 async def get_company_pipeline(
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     try:
         effective_company_id = get_user_company_id(current_user)
-        pipeline = await _get_company_pipeline(effective_company_id, db)
+        pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
         return {"pipeline": pipeline, "total": len(pipeline)}
     except Exception as e:
         logger.error(f"Error getting company pipeline: {e}", exc_info=True)
@@ -1141,17 +1005,14 @@ async def get_company_pipeline(
 async def update_company_pipeline(
     payload: CompanyPipelineUpdate,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     try:
         effective_company_id = get_user_company_id(current_user)
 
-        existing_result = await db.execute(
-            select(RecruitmentStage).where(
-                RecruitmentStage.company_id == effective_company_id
-            )
-        )
-        existing_stages = {str(s.id): s for s in existing_result.scalars().all()}
+        all_stages = await stage_repo.list_for_company(effective_company_id, include_inactive=True)
+        existing_stages = {str(s.id): s for s in all_stages}
 
         catalog_by_id = {c["id"]: c for c in STANDARD_STAGE_CATALOG}
         incoming_ids = set()
@@ -1160,21 +1021,20 @@ async def update_company_pipeline(
             if item.id and item.id in existing_stages:
                 stage = existing_stages[item.id]
                 incoming_ids.add(item.id)
-                stage.stage_order = item.stage_order  # type: ignore[assignment]
+                updates: dict = {"stage_order": item.stage_order, "is_active": item.is_active}
                 if item.display_name is not None:
-                    stage.display_name = item.display_name  # type: ignore[assignment]
+                    updates["display_name"] = item.display_name
                 if item.sla_hours is not None:
-                    stage.sla_hours = item.sla_hours  # type: ignore[assignment]
+                    updates["sla_hours"] = item.sla_hours
                 if item.color is not None:
-                    stage.color = item.color  # type: ignore[assignment]
+                    updates["color"] = item.color
                 if item.icon is not None:
-                    stage.icon = item.icon  # type: ignore[assignment]
+                    updates["icon"] = item.icon
                 if item.action_behavior is not None:
-                    stage.action_behavior = item.action_behavior  # type: ignore[assignment]
+                    updates["action_behavior"] = item.action_behavior
                 if item.default_channel is not None:
-                    stage.default_channel = item.default_channel  # type: ignore[assignment]
-                stage.is_active = item.is_active  # type: ignore[assignment]
-                stage.updated_at = datetime.utcnow()  # type: ignore[assignment]
+                    updates["default_channel"] = item.default_channel
+                await stage_repo.update_fields_uuid(stage.id, updates)
             elif item.catalog_id and item.catalog_id in catalog_by_id:
                 catalog_entry = catalog_by_id[item.catalog_id]
                 new_stage = RecruitmentStage(
@@ -1193,37 +1053,36 @@ async def update_company_pipeline(
                     sla_hours=item.sla_hours,
                     is_active=item.is_active,
                 )
-                db.add(new_stage)
-                await db.flush()
+                stage_repo.db.add(new_stage)
+                await stage_repo.db.flush()
 
                 sub_status_defs = DEFAULT_SUB_STATUSES.get(catalog_entry["name"], [])
                 for idx, sub_def in enumerate(sub_status_defs):
-                    new_sub = RecruitmentSubStatus(
-                        stage_id=new_stage.id,
-                        company_id=effective_company_id,
-                        name=sub_def["name"],
-                        display_name=sub_def["display_name"],
-                        sub_status_order=idx,
-                        is_default=sub_def.get("is_default", False),
-                        is_waiting=sub_def.get("is_waiting", False),
-                        waiting_for=sub_def.get("waiting_for"),
-                    )
-                    db.add(new_sub)
+                    await sub_status_repo.create_no_commit({
+                        "stage_id": new_stage.id,
+                        "company_id": effective_company_id,
+                        "name": sub_def["name"],
+                        "display_name": sub_def["display_name"],
+                        "sub_status_order": idx,
+                        "is_default": sub_def.get("is_default", False),
+                        "is_waiting": sub_def.get("is_waiting", False),
+                        "waiting_for": sub_def.get("waiting_for"),
+                    })
 
         for stage_id, stage in existing_stages.items():
             if stage_id not in incoming_ids:
                 if not stage.is_system:  # type: ignore[truthy-bool]
-                    stage.is_active = False  # type: ignore[assignment]
-                    stage.updated_at = datetime.utcnow()  # type: ignore[assignment]
+                    await stage_repo.update_fields_uuid(
+                        stage.id, {"is_active": False}
+                    )
 
-        await db.commit()
+        await stage_repo.db.commit()
 
-        pipeline = await _get_company_pipeline(effective_company_id, db)
+        pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
         return {"pipeline": pipeline, "total": len(pipeline)}
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating company pipeline: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1246,14 +1105,15 @@ class JobPipelineUpdate(BaseModel):
 async def get_job_pipeline(
     job_id: str,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     try:
         from app.models.job_vacancy import JobVacancy
 
         effective_company_id = get_user_company_id(current_user)
 
-        job = await db.get(JobVacancy, uuid.UUID(job_id))
+        job = await stage_repo.db.get(JobVacancy, uuid.UUID(job_id))
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         if str(job.company_id) != effective_company_id:
@@ -1263,7 +1123,7 @@ async def get_job_pipeline(
 
         if pipeline_config:
             config_map = {item["stage_name"]: item for item in pipeline_config}
-            company_pipeline = await _get_company_pipeline(effective_company_id, db)
+            company_pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
             customized = []
             for stage in company_pipeline:
                 override = config_map.get(stage["name"])
@@ -1289,7 +1149,7 @@ async def get_job_pipeline(
                 "source": "custom",
             }
         else:
-            company_pipeline = await _get_company_pipeline(effective_company_id, db)
+            company_pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
             return {
                 "pipeline": company_pipeline,
                 "total": len(company_pipeline),
@@ -1308,14 +1168,15 @@ async def update_job_pipeline(
     job_id: str,
     payload: JobPipelineUpdate,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
     try:
         from app.models.job_vacancy import JobVacancy
 
         effective_company_id = get_user_company_id(current_user)
 
-        job = await db.get(JobVacancy, uuid.UUID(job_id))
+        job = await stage_repo.db.get(JobVacancy, uuid.UUID(job_id))
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         if str(job.company_id) != effective_company_id:
@@ -1336,11 +1197,11 @@ async def update_job_pipeline(
 
         job.pipeline_config = config  # type: ignore[assignment]
         job.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        await db.refresh(job)
+        await stage_repo.db.commit()
+        await stage_repo.db.refresh(job)
 
         config_map = {item["stage_name"]: item for item in config}
-        company_pipeline = await _get_company_pipeline(effective_company_id, db)
+        company_pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
         customized = []
         for stage in company_pipeline:
             override = config_map.get(stage["name"])
@@ -1367,7 +1228,6 @@ async def update_job_pipeline(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating job pipeline: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1487,7 +1347,6 @@ def _build_lia_message(
 async def interpret_transition_context(
     request: InterpretContextRequest,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
 ):
     """
     Interpret a candidate stage transition context.
@@ -1568,7 +1427,6 @@ async def interpret_transition_context(
                     )
 
                 logger.warning("[INTERPRET] Layer 3 returned empty/error response")
-                # Graceful fallback: return default sub_status + friendly message (no HTTP 500)
                 return InterpretContextResponse(
                     suggested_sub_status=_get_default_sub_status(request.to_stage),
                     suggested_action="lia_auto",
@@ -1582,7 +1440,6 @@ async def interpret_transition_context(
 
             except Exception as agent_err:
                 logger.warning(f"[INTERPRET] ReAct agent failed: {agent_err}")
-                # Graceful fallback: use rule-based defaults for sub_status + friendly message
                 return InterpretContextResponse(
                     suggested_sub_status=_get_default_sub_status(request.to_stage),
                     suggested_action=_determine_suggested_action(request.action_behavior, request.prompt),
@@ -1640,43 +1497,34 @@ class ScreeningQuestionUpdate(BaseModel):
 screening_questions_router = APIRouter(prefix="/screening-questions", tags=["screening-questions"])
 
 
-async def initialize_default_questions(company_id: str, db: AsyncSession):
+async def initialize_default_questions(
+    company_id: str,
+    sq_repo: ScreeningQuestionRepository,
+) -> list[ScreeningQuestion]:
     """Initialize default screening questions for a company if none exist."""
-    result = await db.execute(
-        select(ScreeningQuestion).where(
-            ScreeningQuestion.company_id == company_id
-        )
-    )
-    existing = result.scalars().all()
-    
+    existing = await sq_repo.list_all_for_company(company_id)
+
     if not existing:
         for q in DEFAULT_SCREENING_QUESTIONS:
-            new_question = ScreeningQuestion(
-                company_id=company_id,
-                question=q["question"],
-                question_type=q["question_type"],
-                is_required=q["is_required"],
-                order=q["order"],
-                is_default=q["is_default"],
-                options=q.get("options", [])
-            )
-            db.add(new_question)
-        await db.commit()
-        
-        result = await db.execute(
-            select(ScreeningQuestion).where(
-                ScreeningQuestion.company_id == company_id
-            ).order_by(ScreeningQuestion.order)
-        )
-        return result.scalars().all()
-    
+            await sq_repo.create_no_commit({
+                "company_id": company_id,
+                "question": q["question"],
+                "question_type": q["question_type"],
+                "is_required": q["is_required"],
+                "order": q["order"],
+                "is_default": q["is_default"],
+                "options": q.get("options", []),
+            })
+        await sq_repo.commit()
+        return await sq_repo.list_for_company(company_id)
+
     return existing
 
 
 @screening_questions_router.get("")
 async def list_screening_questions(
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
+    sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 ):
     """
     List all screening questions for the authenticated user's company.
@@ -1684,19 +1532,10 @@ async def list_screening_questions(
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        questions = await initialize_default_questions(effective_company_id, db)
-        
-        result = await db.execute(
-            select(ScreeningQuestion).where(
-                and_(
-                    ScreeningQuestion.company_id == effective_company_id,
-                    ScreeningQuestion.is_active == True
-                )
-            ).order_by(ScreeningQuestion.order)
-        )
-        questions = result.scalars().all()
-        
+
+        await initialize_default_questions(effective_company_id, sq_repo)
+        questions = await sq_repo.list_for_company(effective_company_id)
+
         return [q.to_dict() for q in questions]
     except Exception as e:
         logger.error(f"Error listing screening questions: {e}", exc_info=True)
@@ -1707,35 +1546,26 @@ async def list_screening_questions(
 async def create_screening_question(
     question: ScreeningQuestionCreate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 ):
     """
     Create a new screening question for the authenticated user's company.
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        result = await db.execute(
-            select(ScreeningQuestion).where(
-                ScreeningQuestion.company_id == effective_company_id
-            ).order_by(ScreeningQuestion.order.desc())
-        )
-        last_question = result.scalars().first()
-        next_order = (last_question.order + 1) if last_question else 1
-        
-        new_question = ScreeningQuestion(
-            company_id=effective_company_id,
-            question=question.question,
-            question_type=question.question_type,
-            is_required=question.is_required,
-            order=question.order if question.order > 0 else next_order,
-            is_default=False,
-            options=question.options
-        )
-        db.add(new_question)
-        await db.commit()
-        await db.refresh(new_question)
-        
+
+        next_order = await sq_repo.get_last_order(effective_company_id)
+
+        new_question = await sq_repo.create({
+            "company_id": effective_company_id,
+            "question": question.question,
+            "question_type": question.question_type,
+            "is_required": question.is_required,
+            "order": question.order if question.order > 0 else next_order,
+            "is_default": False,
+            "options": question.options,
+        })
+
         logger.info(f"Created screening question: {question.question[:50]} for company {effective_company_id}")
         return {
             "success": True,
@@ -1743,7 +1573,6 @@ async def create_screening_question(
             "data": new_question.to_dict()
         }
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating screening question: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1752,7 +1581,7 @@ async def create_screening_question(
 async def update_screening_questions(
     questions: list[dict] = Body(...),
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 ):
     """
     Update screening questions (bulk update).
@@ -1760,20 +1589,16 @@ async def update_screening_questions(
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
-        result = await db.execute(
-            select(ScreeningQuestion).where(
-                ScreeningQuestion.company_id == effective_company_id
-            )
-        )
-        existing_questions = {str(q.id): q for q in result.scalars().all()}
-        
+
+        existing_list = await sq_repo.list_all_for_company(effective_company_id)
+        existing_questions = {str(q.id): q for q in existing_list}
+
         incoming_ids = set()
         updated_questions = []
-        
+
         for idx, q_data in enumerate(questions):
             q_id = q_data.get("id", "")
-            
+
             if q_id in existing_questions:
                 existing = existing_questions[q_id]
                 existing.question = q_data.get("question", existing.question)
@@ -1785,16 +1610,15 @@ async def update_screening_questions(
                 incoming_ids.add(q_id)
                 updated_questions.append(existing)
             elif q_id.startswith("q-") or not q_id:
-                new_question = ScreeningQuestion(
-                    company_id=effective_company_id,
-                    question=q_data.get("question", ""),
-                    question_type=q_data.get("question_type", "text"),
-                    is_required=q_data.get("is_required", True),
-                    order=q_data.get("order", idx + 1),
-                    is_default=q_data.get("is_default", False),
-                    options=q_data.get("options", [])
-                )
-                db.add(new_question)
+                new_question = await sq_repo.create_no_commit({
+                    "company_id": effective_company_id,
+                    "question": q_data.get("question", ""),
+                    "question_type": q_data.get("question_type", "text"),
+                    "is_required": q_data.get("is_required", True),
+                    "order": q_data.get("order", idx + 1),
+                    "is_default": q_data.get("is_default", False),
+                    "options": q_data.get("options", []),
+                })
                 updated_questions.append(new_question)
             else:
                 try:
@@ -1810,17 +1634,16 @@ async def update_screening_questions(
                         updated_questions.append(existing_uuid)
                 except Exception:
                     pass
-        
+
         for q_id, existing in existing_questions.items():
             if q_id not in incoming_ids:
-                existing.is_active = False  # type: ignore[assignment]
-                existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        
-        await db.commit()
-        
+                await sq_repo.soft_delete_no_commit(existing)
+
+        await sq_repo.commit()
+
         for q in updated_questions:
-            await db.refresh(q)
-        
+            await sq_repo.refresh(q)
+
         logger.info(f"Updated {len(questions)} screening questions for company {effective_company_id}")
         return {
             "success": True,
@@ -1828,7 +1651,6 @@ async def update_screening_questions(
             "data": [q.to_dict() for q in updated_questions if q.is_active]
         }
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating screening questions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1838,44 +1660,37 @@ async def update_screening_question(
     question_id: str,
     question: ScreeningQuestionUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 ):
     """
     Update a single screening question.
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
+
         try:
             q_uuid = uuid.UUID(question_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid question ID format")
-        
-        existing = await db.get(ScreeningQuestion, q_uuid)
+
+        existing = await sq_repo.get_by_id(q_uuid)
         if not existing:
             raise HTTPException(status_code=404, detail="Question not found")
-        
+
         if existing.company_id != effective_company_id:  # type: ignore[truthy-bool]
             raise HTTPException(status_code=403, detail="Access denied")
-        
+
         update_data = question.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            if key != "id":
-                setattr(existing, key, value)
-        
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        await db.refresh(existing)
-        
+        updated = await sq_repo.update(q_uuid, update_data)
+
         return {
             "success": True,
             "message": "Screening question updated",
-            "data": existing.to_dict()
+            "data": updated.to_dict()
         }
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating screening question: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1884,30 +1699,28 @@ async def update_screening_question(
 async def delete_screening_question(
     question_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
-    db: AsyncSession = Depends(get_db)
+    sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 ):
     """
     Delete a screening question (soft delete).
     """
     try:
         effective_company_id = get_user_company_id(current_user)
-        
+
         try:
             q_uuid = uuid.UUID(question_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid question ID format")
-        
-        existing = await db.get(ScreeningQuestion, q_uuid)
+
+        existing = await sq_repo.get_by_id(q_uuid)
         if not existing:
             raise HTTPException(status_code=404, detail="Question not found")
-        
+
         if existing.company_id != effective_company_id:  # type: ignore[truthy-bool]
             raise HTTPException(status_code=403, detail="Access denied")
-        
-        existing.is_active = False  # type: ignore[assignment]
-        existing.updated_at = datetime.utcnow()  # type: ignore[assignment]
-        await db.commit()
-        
+
+        await sq_repo.soft_delete(q_uuid)
+
         logger.info(f"Deleted screening question: {question_id}")
         return {
             "success": True,
@@ -1917,7 +1730,6 @@ async def delete_screening_question(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting screening question: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1961,7 +1773,7 @@ class TransitionExecuteResponse(BaseModel):
 async def execute_transition(
     request: TransitionExecuteRequest,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Execute a candidate stage transition with optional auto-dispatch."""
     try:
@@ -1980,7 +1792,7 @@ async def execute_transition(
                 from app.domains.automation.services.candidate_context_aggregator import CandidateContextAggregator
                 from app.domains.automation.services.stage_transition_automation import SubStatusPredictor
 
-                aggregator = CandidateContextAggregator(db)
+                aggregator = CandidateContextAggregator(stage_repo.db)
                 candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
 
                 prediction = SubStatusPredictor.predict(
@@ -2005,12 +1817,10 @@ async def execute_transition(
             .where(VacancyCandidate.id == request.vacancy_candidate_id)
             .values(**values)
         )
-        await db.execute(stmt)
-        await db.commit()
+        await stage_repo.db.execute(stmt)
+        await stage_repo.db.commit()
 
         try:
-            import asyncio
-
             from app.domains.automation.services.stage_automation_engine import (
                 AutomationEvent,
                 StageAutomationEngine,
@@ -2037,7 +1847,7 @@ async def execute_transition(
                 payload=automation_payload,
             )
             engine = StageAutomationEngine()
-            asyncio.create_task(engine.process_event(event, db))
+            asyncio.create_task(engine.process_event(event, stage_repo.db))
             logger.info(f"[PIPELINE] Emitted STAGE_CHANGED event for {request.vacancy_candidate_id}")
         except Exception as event_err:
             logger.warning(f"[PIPELINE] Failed to emit STAGE_CHANGED event: {event_err}")
@@ -2047,9 +1857,11 @@ async def execute_transition(
         resolved_action_behavior = request.action_behavior
         if request.action == "lia_auto" and not resolved_action_behavior:
             try:
-                from app.models.recruitment_stages import RecruitmentStage
-                stage_stmt = select(RecruitmentStage).where(RecruitmentStage.name == request.to_stage)
-                stage_result = await db.execute(stage_stmt)
+                from sqlalchemy import select as sa_select
+                from app.models.recruitment_stages import RecruitmentStage as _RS
+                stage_result = await stage_repo.db.execute(
+                    sa_select(_RS).where(_RS.name == request.to_stage)
+                )
                 dest_stage = stage_result.scalar_one_or_none()
                 if dest_stage:
                     resolved_action_behavior = dest_stage.action_behavior
@@ -2060,7 +1872,7 @@ async def execute_transition(
         if request.action == "lia_auto" and resolved_action_behavior:  # type: ignore[truthy-bool]
             try:
                 from app.domains.communication.services.transition_dispatch_service import TransitionDispatchService
-                dispatch_service = TransitionDispatchService(db)
+                dispatch_service = TransitionDispatchService(stage_repo.db)
 
                 company_id = getattr(current_user, 'company_id', None) or 'admin_company'
                 triggered_by = getattr(current_user, 'id', None) or 'system'
@@ -2073,7 +1885,7 @@ async def execute_transition(
                         )
                         from app.domains.automation.services.stage_transition_automation import MessageGenerator
 
-                        aggregator = CandidateContextAggregator(db)
+                        aggregator = CandidateContextAggregator(stage_repo.db)
                         candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
                         job_context = candidate_context.get("job", {})
 
@@ -2142,7 +1954,6 @@ async def execute_transition(
             prediction_confidence=prediction.get("confidence") if predicted_sub_status and prediction else None,
         )
     except Exception as e:
-        await db.rollback()
         return TransitionExecuteResponse(
             success=False,
             message=str(e),
@@ -2181,6 +1992,7 @@ async def stream_return_events(
 ):
     from app.core.database import async_session_factory
     from app.models.activity_feed import ActivityFeed
+    from sqlalchemy import select as sa_select, and_ as sa_and
 
     effective_company_id = company_id or get_user_company_id(current_user)
 
@@ -2205,8 +2017,7 @@ async def stream_return_events(
                             ActivityFeed.extra_data["job_id"].as_string() == job_id
                         )
 
-                    query = select(ActivityFeed).where(and_(*filters))
-
+                    query = sa_select(ActivityFeed).where(sa_and(*filters))
                     query = query.order_by(ActivityFeed.created_at.desc()).limit(20)
 
                     result = await session.execute(query)
@@ -2254,29 +2065,29 @@ async def stream_return_events(
 @router.post("/transition/return-event", response_model=ReturnEventResponse)
 async def process_return_event(
     request: ReturnEventRequest,
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """
     Process a candidate return event.
-    
+
     Used when a candidate completes an action (screening, interview confirmation,
     test submission, document upload, offer response) to update their sub-status,
     optionally auto-move to a new stage, and notify the recruiter.
-    
+
     Valid event_types:
     - screening_complete, screening_expired
     - interview_confirmed, interview_declined, interview_completed, interview_no_show
     - test_submitted, test_expired
     - documents_received
     - offer_accepted, offer_declined
-    
+
     Auto-move rules:
     - offer_accepted → moves candidate to "hired" stage
     - offer_declined → moves candidate to "offer_declined" stage
     - All other events → only update sub-status (no stage change)
     """
     try:
-        service = ReturnEventService(db)
+        service = ReturnEventService(stage_repo.db)
         result = await service.process_event(
             vacancy_candidate_id=request.vacancy_candidate_id,
             event_type=request.event_type,
@@ -2314,14 +2125,14 @@ async def process_return_event(
 @router.post("/transition/return-event/bulk", response_model=None)
 async def process_bulk_return_events(
     request: BulkReturnEventRequest,
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """
     Process multiple return events in batch.
     Useful for webhook payloads that report multiple candidate completions at once.
     """
     results = []
-    service = ReturnEventService(db)
+    service = ReturnEventService(stage_repo.db)
 
     for event in request.events:
         try:
@@ -2362,16 +2173,17 @@ async def get_recent_return_events(
     company_id: str | None = Query(None, description="Company ID for scoping"),
     limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Get recent return events for polling/real-time updates."""
     try:
         from app.models.activity_feed import ActivityFeed
-        
-        query = select(ActivityFeed).where(
+        from sqlalchemy import select as sa_select
+
+        query = sa_select(ActivityFeed).where(
             ActivityFeed.activity_type.like("return_event_%")  # type: ignore[union-attr]
         )
-        
+
         if since:
             from datetime import datetime as dt
             try:
@@ -2379,16 +2191,16 @@ async def get_recent_return_events(
                 query = query.where(ActivityFeed.created_at > since_dt)  # type: ignore[operator]
             except ValueError:
                 pass
-        
+
         effective_company_id = company_id or get_user_company_id(current_user)
         if effective_company_id:
             pass
-            
+
         query = query.order_by(ActivityFeed.created_at.desc()).limit(limit)  # type: ignore[union-attr]
-        
-        result = await db.execute(query)
+
+        result = await stage_repo.db.execute(query)
         activities = result.scalars().all()
-        
+
         events = []
         for activity in activities:
             extra = activity.extra_data or {} if hasattr(activity, 'extra_data') else {}
@@ -2408,7 +2220,7 @@ async def get_recent_return_events(
                 "category": getattr(activity, 'category', '') or "",
                 "timestamp": activity.created_at.isoformat() if hasattr(activity, 'created_at') and activity.created_at else "",
             })
-        
+
         return {
             "events": events,
             "total": len(events),
@@ -2446,18 +2258,20 @@ async def list_return_event_types():
 async def get_pipeline_inheritance_status(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Check if a job's pipeline is customized or inherited from company default."""
     try:
         from app.models.job_vacancy import JobVacancy
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
+        from sqlalchemy import select as sa_select
+
+        result = await stage_repo.db.execute(
+            sa_select(JobVacancy).where(JobVacancy.id == job_id)
         )
         job = result.scalars().first()
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
-        
+
         return {
             "job_id": str(job.id),
             "is_customized": bool(getattr(job, 'is_pipeline_customized', False)),  # type: ignore[truthy-bool]
@@ -2474,35 +2288,29 @@ async def get_pipeline_inheritance_status(
 async def copy_company_pipeline_to_job(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Copy company's default pipeline configuration to a job (reset to default)."""
     try:
         from app.models.job_vacancy import JobVacancy
-        
-        job_result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
+        from sqlalchemy import select as sa_select
+        from sqlalchemy import update as sa_update
+
+        job_result = await stage_repo.db.execute(
+            sa_select(JobVacancy).where(JobVacancy.id == job_id)
         )
         job = job_result.scalars().first()
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
-        
+
         effective_user_company = get_user_company_id(current_user)
         if str(job.company_id) != effective_user_company:
             raise HTTPException(status_code=403, detail="Access denied")
-        
+
         company_id = str(job.company_id)  # type: ignore[truthy-bool]
-        
-        stages_result = await db.execute(
-            select(RecruitmentStage).where(
-                and_(
-                    RecruitmentStage.company_id == company_id,
-                    RecruitmentStage.is_active == True,  # type: ignore[comparison-overlap]
-                )
-            ).order_by(RecruitmentStage.stage_order)
-        )
-        company_stages = stages_result.scalars().all()
-        
+
+        company_stages = await stage_repo.list_for_company(company_id)
+
         pipeline_config = []
         for stage in company_stages:
             pipeline_config.append({
@@ -2518,7 +2326,7 @@ async def copy_company_pipeline_to_job(
                 "sla_hours": stage.sla_hours,
                 "default_channel": getattr(stage, 'default_channel', 'email') or "email",
             })
-        
+
         stmt = (
             sa_update(JobVacancy)
             .where(JobVacancy.id == job_id)
@@ -2528,9 +2336,9 @@ async def copy_company_pipeline_to_job(
                 updated_at=datetime.utcnow(),
             )
         )
-        await db.execute(stmt)  # type: ignore[assignment]
-        await db.commit()
-        
+        await stage_repo.db.execute(stmt)
+        await stage_repo.db.commit()
+
         return {
             "success": True,
             "job_id": str(job.id),
@@ -2542,7 +2350,6 @@ async def copy_company_pipeline_to_job(
         raise
     except Exception as e:
         logger.error(f"Error copying company pipeline to job: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -2550,12 +2357,13 @@ async def copy_company_pipeline_to_job(
 async def mark_pipeline_customized(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
     """Mark a job's pipeline as customized (no longer inherits from company)."""
     try:
+        from sqlalchemy import update as sa_update
         from app.models.job_vacancy import JobVacancy
-        
+
         stmt = (
             sa_update(JobVacancy)
             .where(JobVacancy.id == job_id)
@@ -2564,19 +2372,18 @@ async def mark_pipeline_customized(
                 updated_at=datetime.utcnow(),
             )
         )
-        result = await db.execute(stmt)  # type: ignore[assignment]
-        await db.commit()
-        
+        result = await stage_repo.db.execute(stmt)
+        await stage_repo.db.commit()
+
         row_count = getattr(result, 'rowcount', 0)  # type: ignore[union-attr]
         if row_count == 0:
             raise HTTPException(status_code=404, detail="Job not found")
-        
+
         return {"success": True, "job_id": job_id, "is_customized": True}
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error marking pipeline as customized: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -2607,7 +2414,7 @@ async def infer_stage_behavior(
         else:
             from app.domains.communication.services.infer_behavior_service import infer_behavior_auto
             result = await infer_behavior_auto(request.stage_name, request.description)
-        
+
         return result
     except Exception as e:
         logger.error(f"Error inferring behavior: {e}", exc_info=True)
