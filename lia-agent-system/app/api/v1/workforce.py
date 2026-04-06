@@ -323,22 +323,22 @@ async def upload_import_file(
         if not file.filename:
             raise HTTPException(status_code=400, detail="No filename provided")
 
-        allowed_extensions = [.xlsx, .xls, .csv]
-        file_ext = . + file.filename.split(.)[-1].lower() if . in file.filename else 
+        allowed_extensions = [".xlsx", ".xls", ".csv"]
+        file_ext = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
 
         if file_ext not in allowed_extensions:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid file type. Allowed: {, .join(allowed_extensions)}",
+                detail=f"Invalid file type. Allowed: {', '.join(allowed_extensions)}",
             )
 
-        file_type = excel if file_ext in [.xlsx, .xls] else csv
+        file_type = "excel" if file_ext in [".xlsx", ".xls"] else "csv"
 
         import_job = await repo.create_import_job({
-            hiring_plan_id: plan_id,
-            file_name: file.filename,
-            file_type: file_type,
-            status: processing,
+            "hiring_plan_id": plan_id,
+            "file_name": file.filename,
+            "file_type": file_type,
+            "status": "processing",
         })
 
         logger.info(f"Created import job {import_job.id} for file {file.filename}")
@@ -508,7 +508,7 @@ async def get_workforce_stats(
         total_planned = sum(h.headcount or 1 for h in headcounts)
         total_filled = sum(h.headcount or 1 for h in headcounts if h.status == filled)
         total_in_progress = sum(h.headcount or 1 for h in headcounts if h.status == in_progress)
-        total_pending = sum(h.headcount or 1 for h in headcounts if h.status in [planned, pending])
+        total_pending = sum(h.headcount or 1 for h in headcounts if h.status in ["planned", "pending"])
         total_cancelled = sum(h.headcount or 1 for h in headcounts if h.status == cancelled)
 
         fill_rate = (total_filled / total_planned * 100) if total_planned > 0 else 0.0
@@ -520,10 +520,10 @@ async def get_workforce_stats(
         by_department: dict = {}
 
         for h in headcounts:
-            status = h.status or planned
+            status = h.status or "planned"
             by_status[status] = by_status.get(status, 0) + (h.headcount or 1)
 
-            priority = h.priority or medium
+            priority = h.priority or "medium"
             by_priority[priority] = by_priority.get(priority, 0) + (h.headcount or 1)
 
             level = h.level or not_specified
@@ -539,23 +539,23 @@ async def get_workforce_stats(
         for h in headcounts:
             key = (h.target_month, h.target_year)
             if key not in monthly_data:
-                monthly_data[key] = {total: 0, by_status: {}, by_priority: {}, by_department: {}}
-            monthly_data[key][total] += h.headcount or 1
+                monthly_data[key] = {"total": 0, "by_status": {}, "by_priority": {}, "by_department": {}}
+            monthly_data[key]["total"] += h.headcount or 1
 
-            status = h.status or planned
-            monthly_data[key][by_status][status] = monthly_data[key][by_status].get(status, 0) + (h.headcount or 1)
+            status = h.status or "planned"
+            monthly_data[key]["by_status"][status] = monthly_data[key]["by_status"].get(status, 0) + (h.headcount or 1)
 
-            priority = h.priority or medium
-            monthly_data[key][by_priority][priority] = monthly_data[key][by_priority].get(priority, 0) + (h.headcount or 1)
+            priority = h.priority or "medium"
+            monthly_data[key]["by_priority"][priority] = monthly_data[key]["by_priority"].get(priority, 0) + (h.headcount or 1)
 
         monthly_breakdown = [
             MonthlyHeadcountStats(
                 month=month,
                 year=year,
-                total_headcount=data[total],
-                by_status=data[by_status],
-                by_priority=data[by_priority],
-                by_department=data[by_department],
+                total_headcount=data["total"],
+                by_status=data["by_status"],
+                by_priority=data["by_priority"],
+                by_department=data["by_department"],
             )
             for (month, year), data in sorted(monthly_data.items(), key=lambda x: (x[0][1], x[0][0]))
         ]
@@ -563,7 +563,7 @@ async def get_workforce_stats(
         positions_at_risk = 0
         today = date.today()
         for h in headcounts:
-            if h.status in [planned, pending]:
+            if h.status in ["planned", "pending"]:
                 target_date = date(h.target_year, h.target_month, 1)
                 days_until = (target_date - today).days
                 if 0 < days_until <= 30:
@@ -825,12 +825,12 @@ def parse_excel_file_workforce(content: bytes) -> list[dict[str, str]]:
 
         result = []
         for row in rows[1:]:
-            if all(cell is None or str(cell).strip() ==  for cell in row):
+            if all(cell is None or str(cell).strip() == "" for cell in row):
                 continue
             row_dict = {}
             for i, cell in enumerate(row):
                 if i < len(headers):
-                    row_dict[headers[i]] = str(cell) if cell is not None else 
+                    row_dict[headers[i]] = str(cell) if cell is not None else  ""
             result.append(row_dict)
 
         return result
@@ -847,11 +847,11 @@ async def parse_workforce_import_file(file: UploadFile) -> list[dict[str, str]]:
         raise HTTPException(status_code=400, detail="No filename provided")
 
     content = await file.read()
-    file_ext = file.filename.lower().split(.)[-1] if . in file.filename else 
+    file_ext = file.filename.lower().split(".")[-1] if "." in file.filename else ""
 
-    if file_ext == csv:
+    if file_ext == "csv":
         return parse_csv_file_workforce(content)
-    elif file_ext in [xlsx, xls]:
+    elif file_ext in ["xlsx", "xls"]:
         return parse_excel_file_workforce(content)
     else:
         raise HTTPException(
