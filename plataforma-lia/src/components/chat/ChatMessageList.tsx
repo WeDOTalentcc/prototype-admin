@@ -62,7 +62,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
   const userInitials = userDisplayName.charAt(0).toUpperCase()
 
   return (
-    <div className={`${messagesContainerClass} space-y-4`}>
+    <div className={`${messagesContainerClass} space-y-2.5`}>
       {messages.map((message, index) => {
         const isHighlighted =
           searchTerm &&
@@ -89,16 +89,16 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               }`}
             >
               {message.sender === "lia" ? (
-                <div className="flex-shrink-0 pt-4">
-                  <LIAIcon size="md" />
+                <div className="flex-shrink-0 pt-2">
+                  <LIAIcon size="sm" />
                 </div>
               ) : (
-                <Avatar className="w-10 h-10 mt-1 flex-shrink-0">
+                <Avatar className="w-7 h-7 mt-1 flex-shrink-0">
                   <AvatarImage
                     src={undefined}
                     alt={userDisplayName}
                   />
-                  <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium">
+                  <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -106,11 +106,11 @@ const ChatMessageListComponent = memo(function ChatMessageList({
 
               {/* Message content */}
               <div
-                className={`rounded-md p-5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
+                className={`rounded-md px-3 py-2.5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
               >
-                <div className="flex items-center space-x-2 mb-2">
+                <div className="flex items-center space-x-2 mb-1">
                   <span
-                    className={`text-sm font-medium text-lia-text-primary ${
+                    className={`text-xs font-medium text-lia-text-primary ${
                       message.sender === "lia" ? "lia-name -ml-1" : ""
                     }`}
                   >

@@ -316,12 +316,19 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPException):
     request_id = getattr(request.state, "request_id", "unknown")
+    # 5xx: log real detail internally, never expose to client (OWASP A05)
+    if exc.status_code >= 500:
+        logger.error(
+            "HTTP %d raised explicitly: %s [request_id=%s]",
+            exc.status_code, exc.detail, request_id,
+        )
+    safe_message = exc.detail if exc.status_code < 500 else "Internal server error"
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "error": True,
             "status_code": exc.status_code,
-            "message": exc.detail,
+            "message": safe_message,
             "request_id": request_id,
         }
     )

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 async def set_tenant_context(db: AsyncSession, company_id: str) -> None:
     """Injeta company_id na sessão PostgreSQL para RLS."""
     try:
-        await db.execute(sa.text(f"SET LOCAL app.company_id = '{company_id}'"))
+        await db.execute(sa.text("SELECT set_config('app.company_id', :cid, true)"), {"cid": str(company_id)})
     except Exception as exc:
         logger.warning("[RLS] Falha ao definir company_id na sessão: %s", exc)
 

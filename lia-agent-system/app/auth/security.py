@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import bcrypt
-from jose import jwt, JWTError
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 
 from app.core.config import settings
 

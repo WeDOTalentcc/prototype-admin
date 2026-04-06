@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import {
   Send, Loader2, FileText, Search, MapPin, X,
-  ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain
+  ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain,
+  Plus, Eraser
 } from "lucide-react"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
@@ -151,7 +152,34 @@ export function LegacyChatPage() {
       <div className={`flex flex-col h-full transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
         <div className="py-3 px-6 flex-shrink-0 bg-white">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => window.dispatchEvent(new Event('lia:new-chat'))}
+                className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                title="Novo chat"
+                aria-label="Novo chat"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setMessages([])}
+                disabled={isEmptyChat}
+                className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Limpar mensagens"
+                aria-label="Limpar mensagens"
+              >
+                <Eraser className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setShowSearch(!showSearch)}
+                className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${showSearch ? 'text-wedo-cyan bg-lia-bg-tertiary' : 'text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover'}`}
+                title="Buscar na conversa (Ctrl+F)"
+                aria-label="Buscar na conversa"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="flex items-center space-x-2">
               <Button
@@ -163,15 +191,6 @@ export function LegacyChatPage() {
               >
                 <Cpu className="w-4 h-4" />
                 Centro de Controle
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSearch(!showSearch)}
-                className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105"
-                title="Buscar na conversa (Ctrl+F)"
-              >
-                <Search className="w-4 h-4" />
               </Button>
             </div>
           </div>

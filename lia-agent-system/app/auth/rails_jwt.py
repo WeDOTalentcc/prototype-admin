@@ -17,7 +17,8 @@ from datetime import datetime, timezone
 from typing import Optional
 from dataclasses import dataclass
 
-from jose import jwt, JWTError
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 
 logger = logging.getLogger(__name__)
 

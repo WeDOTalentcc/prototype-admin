@@ -991,26 +991,24 @@ async def save_workforce_entries(
 ):
     """Save simple workforce entries for admin panel."""
     try:
-        await db.execute(
-            select(WorkforceEntry).where(
-                WorkforceEntry.year == data.year
-            )
+        # 1 query: load all existing entries for the year — process upsert in memory
+        existing_result = await db.execute(
+            select(WorkforceEntry).where(WorkforceEntry.year == data.year)
         )
-        
+        existing_map = {
+            (e.month, e.department): e
+            for e in existing_result.scalars().all()
+        }
+
+        now = datetime.utcnow()
         for entry_data in data.entries:
-            result = await db.execute(
-                select(WorkforceEntry).where(
-                    WorkforceEntry.year == data.year,
-                    WorkforceEntry.month == entry_data.month,
-                    WorkforceEntry.department == entry_data.department
-                )
-            )
-            existing = result.scalar_one_or_none()
-            
+            key = (entry_data.month, entry_data.department)
+            existing = existing_map.get(key)
+
             if existing:
                 existing.planned = entry_data.planned
                 existing.actual = entry_data.actual
-                existing.updated_at = datetime.utcnow()
+                existing.updated_at = now
             else:
                 new_entry = WorkforceEntry(
                     year=data.year,

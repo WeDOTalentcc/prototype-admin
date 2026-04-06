@@ -383,46 +383,58 @@ async def add_candidates_to_list(
         added_count = 0
         already_exists = 0
         errors = []
-        
+
+        # Parse UUIDs up-front — collect format errors individually
+        candidate_uuids = []
         for candidate_id in data.candidate_ids:
             try:
-                candidate_result = await db.execute(
-                    select(Candidate).where(Candidate.id == uuid.UUID(candidate_id))
-                )
-                candidate = candidate_result.scalar_one_or_none()
-                
-                if not candidate:
-                    errors.append({"candidate_id": candidate_id, "error": "Candidato não encontrado"})
-                    continue
-                
-                existing = await db.execute(
-                    select(CandidateListMember).where(
-                        and_(
-                            CandidateListMember.list_id == uuid.UUID(list_id),
-                            CandidateListMember.candidate_id == uuid.UUID(candidate_id)
-                        )
+                candidate_uuids.append(uuid.UUID(candidate_id))
+            except (ValueError, AttributeError) as e:
+                errors.append({"candidate_id": candidate_id, "error": f"ID inválido: {e}"})
+
+        if candidate_uuids:
+            # 1 query: fetch all candidates that exist
+            found_result = await db.execute(
+                select(Candidate.id).where(Candidate.id.in_(candidate_uuids))
+            )
+            found_ids = {row[0] for row in found_result.fetchall()}
+
+            # Report missing candidates
+            for uid in candidate_uuids:
+                if uid not in found_ids:
+                    errors.append({"candidate_id": str(uid), "error": "Candidato não encontrado"})
+
+            # 1 query: fetch already-existing members
+            existing_result = await db.execute(
+                select(CandidateListMember.candidate_id).where(
+                    and_(
+                        CandidateListMember.list_id == uuid.UUID(list_id),
+                        CandidateListMember.candidate_id.in_(candidate_uuids),
                     )
                 )
-                
-                if existing.scalar_one_or_none():
-                    already_exists += 1
-                    continue
-                
-                new_member = CandidateListMember(
-                    id=uuid.uuid4(),
-                    list_id=uuid.UUID(list_id),
-                    candidate_id=uuid.UUID(candidate_id),
-                    added_by=str(current_user.id),
-                    added_at=datetime.utcnow(),
-                    notes=data.notes,
-                    source="manual"
+            )
+            existing_ids = {row[0] for row in existing_result.fetchall()}
+            already_exists = len(existing_ids)
+
+            # Bulk insert new members only
+            to_add = [uid for uid in found_ids if uid not in existing_ids]
+            if to_add:
+                now = datetime.utcnow()
+                await db.execute(
+                    insert(CandidateListMember).values([
+                        {
+                            "id": uuid.uuid4(),
+                            "list_id": uuid.UUID(list_id),
+                            "candidate_id": uid,
+                            "added_by": str(current_user.id),
+                            "added_at": now,
+                            "notes": data.notes,
+                            "source": "manual",
+                        }
+                        for uid in to_add
+                    ]).on_conflict_do_nothing()
                 )
-                
-                db.add(new_member)
-                added_count += 1
-                
-            except Exception as e:
-                errors.append({"candidate_id": candidate_id, "error": str(e)})
+                added_count = len(to_add)
         
         lst.updated_at = datetime.utcnow()
         await db.commit()
@@ -475,25 +487,27 @@ async def remove_candidates_from_list(
             raise HTTPException(status_code=404, detail="Lista não encontrada")
         
         removed_count = 0
-        
+
+        # Parse UUIDs up-front — skip malformed ones silently (remove is best-effort)
+        candidate_uuids = []
         for candidate_id in data.candidate_ids:
             try:
-                member_result = await db.execute(
-                    select(CandidateListMember).where(
-                        and_(
-                            CandidateListMember.list_id == uuid.UUID(list_id),
-                            CandidateListMember.candidate_id == uuid.UUID(candidate_id)
-                        )
+                candidate_uuids.append(uuid.UUID(candidate_id))
+            except (ValueError, AttributeError) as e:
+                logger.warning(f"Invalid candidate_id in remove request: {candidate_id} — {e}")
+
+        if candidate_uuids:
+            from sqlalchemy import delete as sa_delete
+            # 1 query: delete all matching members at once
+            delete_result = await db.execute(
+                sa_delete(CandidateListMember).where(
+                    and_(
+                        CandidateListMember.list_id == uuid.UUID(list_id),
+                        CandidateListMember.candidate_id.in_(candidate_uuids),
                     )
                 )
-                member = member_result.scalar_one_or_none()
-                
-                if member:
-                    await db.delete(member)
-                    removed_count += 1
-                    
-            except Exception as e:
-                logger.warning(f"Error removing candidate {candidate_id}: {e}")
+            )
+            removed_count = delete_result.rowcount
         
         lst.updated_at = datetime.utcnow()
         await db.commit()
