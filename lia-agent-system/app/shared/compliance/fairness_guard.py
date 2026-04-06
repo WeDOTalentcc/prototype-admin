@@ -929,4 +929,8 @@ class FairnessGuard:
                     await _persist(_db)
                     await _db.commit()
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error("FairnessGuard audit log failed (non-blocking): %s", e)

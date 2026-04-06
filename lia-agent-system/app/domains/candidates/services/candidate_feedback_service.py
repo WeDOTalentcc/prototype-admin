@@ -310,6 +310,10 @@ class CandidateFeedbackService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error sending feedback to candidate {candidate_id}: {e}")
             raise
         finally:
@@ -493,6 +497,12 @@ class CandidateFeedbackService:
                 return True
             
             return False
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -525,6 +535,12 @@ class CandidateFeedbackService:
                 return True
             
             return False
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()

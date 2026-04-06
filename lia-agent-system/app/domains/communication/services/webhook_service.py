@@ -116,6 +116,10 @@ class WebhookService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error registering webhook: {e}")
             return {
                 "success": False,
@@ -185,6 +189,10 @@ class WebhookService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error updating webhook: {e}")
             return {
                 "success": False,
@@ -244,6 +252,10 @@ class WebhookService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error deleting webhook: {e}")
             return {
                 "success": False,
@@ -567,6 +579,10 @@ class WebhookService:
                     }
                     
         except httpx.TimeoutException:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             end_time = datetime.utcnow()
             duration_ms = int((end_time - start_time).total_seconds() * 1000)
             
@@ -592,6 +608,10 @@ class WebhookService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             end_time = datetime.utcnow()
             duration_ms = int((end_time - start_time).total_seconds() * 1000)
             

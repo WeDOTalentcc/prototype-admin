@@ -254,7 +254,6 @@ async def create_profile(
         
         profiles.append(new_profile)
         save_big_five_profiles(client, profiles)
-        await db.commit()
         
         logger.info(f"✅ Created Big Five profile '{data.name}' for company {current_user['company_id']}")
         
@@ -348,7 +347,6 @@ async def update_profile(
         
         profiles[profile_index] = profile
         save_big_five_profiles(client, profiles)
-        await db.commit()
         
         logger.info(f"✅ Updated Big Five profile '{profile_id}' for company {current_user['company_id']}")
         
@@ -389,7 +387,6 @@ async def delete_profile(
         
         deleted_profile = profiles.pop(profile_index)
         save_big_five_profiles(client, profiles)
-        await db.commit()
         
         logger.info(f"🗑️ Deleted Big Five profile '{profile_id}' for company {current_user['company_id']}")
         

@@ -189,7 +189,7 @@ async def evaluate_candidate(
             model_version="claude-sonnet-4-6",
         )
         db.add(db_evaluation)
-        await db.commit()
+        await db.flush()
         await db.refresh(db_evaluation)
     
     try:
@@ -347,7 +347,7 @@ async def batch_evaluate_candidates(
         ))
     
     if request.save_results:
-        await db.commit()
+        await db.flush()
     
     return BatchEvaluateResponse(
         job_vacancy_id=request.job_vacancy_id,
@@ -406,7 +406,7 @@ async def add_job_requirement(
         category=requirement.category,
     )
     db.add(db_requirement)
-    await db.commit()
+    await db.flush()
     await db.refresh(db_requirement)
     
     return db_requirement
@@ -432,7 +432,6 @@ async def delete_job_requirement(
         raise HTTPException(status_code=404, detail="Requirement not found")
     
     await db.delete(requirement)
-    await db.commit()
     
     return {"message": "Requirement deleted successfully"}
 

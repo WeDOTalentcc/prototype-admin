@@ -160,7 +160,6 @@ async def get_data_request_by_token(
     
     if data_request.is_expired():
         data_request.status = DataRequestStatus.EXPIRED
-        await db.commit()
         raise HTTPException(status_code=410, detail="Solicitação expirada")
     
     if require_otp and not data_request.otp_verified:
@@ -289,7 +288,6 @@ async def get_data_request_info(
     if not data_request.first_accessed_at:
         data_request.first_accessed_at = now
     data_request.last_accessed_at = now
-    await db.commit()
     
     config = await get_company_config(db, data_request.company_id)
     
@@ -377,7 +375,6 @@ async def request_otp(
     data_request.otp_expires_at = now + timedelta(minutes=otp_expiration_minutes)
     data_request.otp_attempts = 0
     
-    await db.commit()
     
     candidate = await db.get(Candidate, data_request.candidate_id)
     
@@ -449,7 +446,6 @@ async def verify_otp(
     
     if not secrets.compare_digest(request_data.code, data_request.otp_code):
         attempts_remaining = max_attempts - data_request.otp_attempts
-        await db.commit()
         
         if attempts_remaining <= 0:
             return VerifyOTPResponse(
@@ -466,7 +462,6 @@ async def verify_otp(
     
     data_request.otp_verified = True
     data_request.otp_code = None
-    await db.commit()
     
     logger.info(f"OTP verified for data request {data_request.id}")
     
@@ -580,7 +575,6 @@ async def submit_data(
     else:
         message = "Nenhum campo foi salvo."
     
-    await db.commit()
     
     return SubmitDataResponse(
         success=len(fields_with_errors) == 0,
@@ -708,7 +702,6 @@ async def upload_file(
     if data_request.status == DataRequestStatus.PENDING:
         data_request.status = DataRequestStatus.PARTIALLY_FILLED
     
-    await db.commit()
     
     logger.info(f"File uploaded for data request {data_request.id}, field {field_name}")
     

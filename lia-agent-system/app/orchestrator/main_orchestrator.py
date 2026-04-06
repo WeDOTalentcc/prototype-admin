@@ -489,6 +489,10 @@ class MainOrchestrator:
                         pass
             await db.commit()
         except Exception as _persist_exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.debug("[MainOrchestrator] Memory persist skipped: %s", _persist_exc)
 
         result.update({"conversation_id": conv_id})

@@ -105,7 +105,7 @@ async def update_retention_policy(
         policy.retention_months = body.retention_months
         policy.auto_anonymize = body.auto_anonymize
 
-    await db.commit()
+    await db.flush()
     await db.refresh(policy)
 
     return RetentionPolicyResponse(

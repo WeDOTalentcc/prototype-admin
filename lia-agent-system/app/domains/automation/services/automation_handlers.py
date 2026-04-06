@@ -1252,6 +1252,10 @@ async def handle_recruiter_override_approve(
                 extra_context={"screening_url": screening_url},
             )
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"[OVERRIDE] Failed to dispatch invite: {e}")
 
     try:

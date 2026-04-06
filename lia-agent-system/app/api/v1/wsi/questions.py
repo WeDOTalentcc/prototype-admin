@@ -145,7 +145,6 @@ async def generate_questions(
                 "scoring_criteria": json.dumps(dict(wsi_questions[idx].scoring_criteria) if idx < len(wsi_questions) else {}),
                 "sequence_order": idx + 1
             })
-        await db.commit()
     except Exception as e:
         logger.warning(f"Failed to save to DB: {e}")
 
@@ -257,7 +256,6 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
                 "block_id": q.get("block_id"),
                 "source": request.source
             })
-        await db.commit()
         try:
             await screening_question_set_service.save_question_set(
                 db=db,
@@ -291,7 +289,6 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
                     updated_at TIMESTAMP DEFAULT NOW()
                 )
             """))
-            await db.commit()
             for q in request.questions:
                 q_id = q.get("id", f"q_{uuid.uuid4().hex[:12]}")
                 await db.execute(text("""
@@ -312,7 +309,6 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
                     "block_id": q.get("block_id"),
                     "source": request.source
                 })
-            await db.commit()
             try:
                 await screening_question_set_service.save_question_set(
                     db=db,

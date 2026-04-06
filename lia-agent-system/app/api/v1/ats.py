@@ -104,7 +104,7 @@ async def create_ats_connection(
         )
         
         db.add(connection)
-        await db.commit()
+        await db.flush()
         await db.refresh(connection)
         
         logger.info(f"✅ ATS connection created: {request.provider} - {connection.id}")
@@ -282,7 +282,6 @@ async def save_field_mappings(
 
         connection.field_mappings = request.mappings
         connection.updated_at = datetime.now(timezone.utc)
-        await db.commit()
 
         logger.info(
             "Saved %d field mappings for connection %s",
@@ -385,7 +384,7 @@ async def trigger_ats_sync(
         )
 
         db.add(sync_job)
-        await db.commit()
+        await db.flush()
         await db.refresh(sync_job)
 
         records_created = 0
@@ -480,7 +479,6 @@ async def trigger_ats_sync(
             (connection.total_candidates_synced or 0) + records_created
         )
 
-        await db.commit()
 
         logger.info(
             "Sync job %s completed: created=%d, updated=%d, failed=%d",
@@ -716,7 +714,6 @@ async def receive_ats_webhook(
             webhook_log.processing_error = processing_error
             logger.warning("Webhook processing error: %s", proc_exc)
 
-        await db.commit()
 
         return {
             "success": True,

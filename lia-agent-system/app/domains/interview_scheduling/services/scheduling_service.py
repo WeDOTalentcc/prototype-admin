@@ -490,24 +490,40 @@ class SchedulingService:
             }
         
         except GraphAPIUnauthorizedError as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Graph API unauthorized for {organizer_email}: {e}")
             return await create_fallback_interview_with_ics(
                 "Authentication failed for Microsoft Graph. ICS file available for download."
             )
         
         except (GraphAPIForbiddenError, GraphAPICalendarPermissionError) as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Permission denied for {organizer_email}: {e}")
             return await create_fallback_interview_with_ics(
                 "Permission denied for calendar access. ICS file available for download."
             )
         
         except GraphAPIRateLimitError as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Rate limit exceeded: {e}")
             return await create_fallback_interview_with_ics(
                 "Microsoft Graph rate limit exceeded. ICS file available for download."
             )
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Failed to create Teams meeting: {e}")
             return await create_fallback_interview_with_ics(
                 f"Teams meeting creation failed: {str(e)}. ICS file available for download."

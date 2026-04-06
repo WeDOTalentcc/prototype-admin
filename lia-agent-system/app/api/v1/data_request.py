@@ -886,7 +886,7 @@ async def update_vacancy_triggers(
                     for stage, config in request.stage_configs.items()
                 }
         
-        await db.commit()
+        await db.flush()
         await db.refresh(vacancy_config)
         
         return await get_vacancy_triggers(vacancy_id, db)

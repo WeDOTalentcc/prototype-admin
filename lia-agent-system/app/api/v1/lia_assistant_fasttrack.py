@@ -245,7 +245,7 @@ async def fast_track_wizard_step(
                             additional_data={"source": "fast_track", "base_vacancy_id": str(selected_id)}
                         )
                         db.add(new_job)
-                        await db.commit()
+                        await db.flush()
                         await db.refresh(new_job)
 
                         created_job = {

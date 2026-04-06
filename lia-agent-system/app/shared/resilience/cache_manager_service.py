@@ -352,6 +352,10 @@ class PostgresCache:
                     confidence=entry.confidence
                 )
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"PostgreSQL cache get error for {key}: {e}")
         
         return CacheResult(hit=False, value=None)

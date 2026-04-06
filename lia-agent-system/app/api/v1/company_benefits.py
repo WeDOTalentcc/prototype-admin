@@ -150,7 +150,7 @@ async def create_company_benefit(
         )
         
         db.add(new_benefit)
-        await db.commit()
+        await db.flush()
         await db.refresh(new_benefit)
         
         logger.info(f"✅ Created company benefit: {new_benefit.name} for company: {effective_company_id}")
@@ -243,7 +243,7 @@ async def update_company_benefit(
         for key, value in update_data.items():
             setattr(benefit, key, value)
         
-        await db.commit()
+        await db.flush()
         await db.refresh(benefit)
         
         logger.info(f"✅ Updated company benefit: {benefit.name}")
@@ -299,7 +299,6 @@ async def delete_company_benefit(
             benefit.updated_at = datetime.utcnow()
             message = f"Benefit '{benefit.name}' deactivated"
         
-        await db.commit()
         
         logger.info(f"✅ {message}")
         
@@ -357,7 +356,6 @@ async def seed_default_benefits(
                 db.add(benefit)
                 created_count += 1
         
-        await db.commit()
         
         logger.info(f"✅ Seeded {created_count} default benefits for company: {effective_company_id}")
         

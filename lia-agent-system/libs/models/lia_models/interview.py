@@ -76,6 +76,7 @@ class Interview(Base):
     job_vacancy_id = Column(UUID(as_uuid=True), nullable=True)  # Link to job_vacancies table
     job_title = Column(String(255), nullable=True)
     application_stage = Column(String(100), nullable=True)  # triagem, tecnica, final, etc
+    recruitment_stage_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     # Feedback & Results
     feedback = Column(JSON, default={})  # {"technical_score": 8, "notes": "..."}

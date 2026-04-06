@@ -176,9 +176,17 @@ async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
         }
 
     except json.JSONDecodeError as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[automation_tools] LLM JSON parse error: {e}")
         return {"success": False, "message": f"Erro ao parsear resposta da IA: {e}"}
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[automation_tools] decompose_task error: {e}", exc_info=True)
         return {"success": False, "message": str(e)}
 

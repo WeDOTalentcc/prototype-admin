@@ -120,6 +120,10 @@ class EventDispatcher:
                             )
                             return result
                     except Exception as e:
+                        try:
+                            await db.rollback()
+                        except Exception:
+                            pass
                         logger.error(f"[EVENT_DISPATCHER] Engine error for {trigger}: {e}")
                         return {"success": False, "error": str(e), "engine_error": True}
                 

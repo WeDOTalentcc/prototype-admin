@@ -113,7 +113,7 @@ async def send_direct_email(
         )
         
         db.add(email_log)
-        await db.commit()
+        await db.flush()
         await db.refresh(email_log)
         
         logger.info(f"📧 Email queued: {email_log.id} (recipient omitted — LGPD)")

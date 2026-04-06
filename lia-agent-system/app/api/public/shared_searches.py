@@ -131,7 +131,6 @@ async def get_shared_search_by_token(
     if search.expires_at and search.expires_at < datetime.utcnow():
         if search.status != SharedSearchStatus.expired:
             search.status = SharedSearchStatus.expired
-            await db.commit()
         raise HTTPException(status_code=410, detail="Este link expirou")
     
     return search, access
@@ -312,7 +311,6 @@ async def request_otp(
     access.otp_hash = hash_otp(otp)
     access.otp_expires_at = datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES)
     
-    await db.commit()
     
     _email_hash = hashlib.sha256(request_data.email.lower().encode()).hexdigest()[:8]
     logger.info(f"OTP generated for email_hash={_email_hash} on shared_search={search.id}")
@@ -400,7 +398,6 @@ async def verify_otp(
     access.last_accessed_at = now
     access.total_views = (access.total_views or 0) + 1
     
-    await db.commit()
     
     session_token, expires_at = create_session_token(
         email=access.email,
@@ -490,7 +487,7 @@ async def submit_feedback(
         )
         db.add(feedback)
     
-    await db.commit()
+    await db.flush()
     await db.refresh(feedback)
 
     _reviewer_hash = hashlib.sha256(reviewer_email.lower().encode()).hexdigest()[:8] if reviewer_email else "unknown"

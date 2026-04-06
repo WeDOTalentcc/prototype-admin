@@ -254,6 +254,10 @@ class VectorSemanticCache:
                     "cache_source": "vector_cache",
                 }
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.debug("[VectorSemanticCache] _query_similar falhou: %s", exc)
             return None
 
@@ -291,6 +295,10 @@ class VectorSemanticCache:
                 )
                 await session.commit()
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.debug("[VectorSemanticCache] _insert_cache falhou: %s", exc)
 
 

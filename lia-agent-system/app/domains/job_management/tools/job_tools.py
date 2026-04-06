@@ -137,6 +137,10 @@ async def create_job(
             }
         
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error creating job: {e}", exc_info=True)
         return {
             "success": False,
@@ -226,6 +230,10 @@ async def update_job(
             }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error updating job: {e}", exc_info=True)
         return {
             "success": False,
@@ -296,6 +304,10 @@ async def pause_job(
                 }
                 
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning(f"Database model access issue: {e}, using mock response")
                 
                 return {
@@ -312,6 +324,10 @@ async def pause_job(
                 }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error pausing job: {e}", exc_info=True)
         return {
             "success": False,
@@ -418,6 +434,10 @@ async def close_job(
                 }
                 
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning(f"Database model access issue: {e}, using mock response")
                 
                 return {
@@ -436,6 +456,10 @@ async def close_job(
                 }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error closing job: {e}", exc_info=True)
         return {
             "success": False,
@@ -511,6 +535,10 @@ async def publish_job(
                 }
                 
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.warning(f"Database model access issue: {e}, using mock response")
                 
                 return {
@@ -527,6 +555,10 @@ async def publish_job(
                 }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error publishing job: {e}", exc_info=True)
         return {
             "success": False,

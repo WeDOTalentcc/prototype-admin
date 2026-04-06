@@ -180,6 +180,10 @@ class EmailChannelAdapter(ChannelAdapter):
             )
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"[EMAIL_ADAPTER] Erro ao enviar email: {e}", exc_info=True)
             return DeliveryResult(
                 success=False,

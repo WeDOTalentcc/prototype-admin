@@ -103,6 +103,10 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Candidato {candidate_id} movido de '{previous_stage}' para '{target_stage}'.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] move_candidate error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao mover candidato: {str(e)}"}
 
@@ -285,6 +289,10 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Entrevista agendada para {cand_row['name']} ({interview_type}).",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] schedule_interview error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao agendar entrevista: {str(e)}"}
 
@@ -345,6 +353,10 @@ async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Comunicação enviada para {cand_row['name']} via {channel}.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] send_communication error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao enviar comunicação: {str(e)}"}
 
@@ -382,6 +394,10 @@ async def _wrap_add_notes(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Nota adicionada ao candidato {candidate_id}.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] add_notes error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao adicionar nota: {str(e)}"}
 
@@ -415,6 +431,10 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
                 "message": f"{result.rowcount} candidatos movidos para '{target_stage}'.",  # type: ignore[union-attr]
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] batch_move error: {e}")
         return {"success": False, "data": {}, "message": f"Erro na movimentação em massa: {str(e)}"}
 
@@ -447,6 +467,10 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Candidato {candidate_id} adicionado à pré-seleção.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] add_to_shortlist error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao adicionar à pré-seleção: {str(e)}"}
 
@@ -668,6 +692,10 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Contratação de {check_row['name']} finalizada com sucesso.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] finalize_hiring error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao finalizar contratação: {str(e)}"}
 
@@ -707,6 +735,10 @@ async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Status do candidato {candidate_id} atualizado de '{check_row['status']}' para '{status}'.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] update_status error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao atualizar status: {str(e)}"}
 

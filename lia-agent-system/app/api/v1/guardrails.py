@@ -156,7 +156,7 @@ async def update_guardrail(
 
     guardrail.updated_at = datetime.utcnow()
 
-    await db.commit()
+    await db.flush()
     await db.refresh(guardrail)
     return GuardrailResponse.from_orm(guardrail)
 

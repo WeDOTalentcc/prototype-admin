@@ -412,6 +412,10 @@ async def interview_scheduler_executor(state: dict[str, Any]) -> dict[str, Any]:
         state["workflow_data"] = interview_service.save_to_workflow_data(interview_state, workflow_data)
         
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Failed to schedule interview: {e}")
         workflow_data["interview_scheduling_error"] = str(e)
         state["workflow_data"] = workflow_data

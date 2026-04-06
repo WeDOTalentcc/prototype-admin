@@ -185,42 +185,21 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
   if (isEmpty) {
     return (
       <div className="w-full">
-        <div className="flex overflow-x-auto flex-nowrap gap-2 pb-1 scrollbar-none" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon
-            const colors = CATEGORY_COLORS[suggestion.category]
             return (
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="min-w-[200px] px-3 py-3 rounded-md transition-colors motion-reduce:transition-none text-left group flex-shrink-0"
-                style={{border: `1px solid var(--lia-border-subtle)`,
-                  backgroundColor: 'var(--white)'}}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.hoverBg
-                  e.currentTarget.style.borderColor = colors.border
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--white)'
-                  e.currentTarget.style.borderColor = 'var(--lia-border-subtle)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
+                className="flex items-center gap-3 p-3 text-left border border-lia-border-subtle rounded-xl bg-white transition-all duration-200 hover:scale-[1.02] hover:border-wedo-cyan/40 hover:shadow-sm group"
               >
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="p-1 rounded flex-shrink-0"
-                    style={{backgroundColor: colors.bg}}
-                  >
-                    <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
-                  </div>
-                  <span 
-                    className="font-medium text-xs leading-tight whitespace-nowrap"
-                    style={{color: 'var(--lia-text-primary)'}}
-                  >
-                    {suggestion.title}
-                  </span>
+                <div className="bg-wedo-cyan/[0.08] text-wedo-cyan rounded-lg p-1.5 transition-colors group-hover:bg-wedo-cyan/[0.15] flex-shrink-0">
+                  <Icon className="w-4 h-4" />
                 </div>
+                <span className="text-sm font-medium text-lia-text-secondary group-hover:text-lia-text-primary">
+                  {suggestion.title}
+                </span>
               </button>
             )
           })}

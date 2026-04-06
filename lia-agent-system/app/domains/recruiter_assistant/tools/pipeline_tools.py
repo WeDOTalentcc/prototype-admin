@@ -195,6 +195,10 @@ async def create_pipeline_stage(
             }
 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error creating pipeline stage: {e}", exc_info=True)
         return {
             "success": False,

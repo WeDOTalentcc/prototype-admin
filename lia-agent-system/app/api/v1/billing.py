@@ -432,7 +432,7 @@ async def update_subscription(
                 subscription.status = data.status
             
             subscription.updated_at = datetime.utcnow()
-            await db.commit()
+            await db.flush()
             await db.refresh(subscription)
             
             result = {"success": True, "subscription": subscription.to_dict()}
@@ -757,7 +757,7 @@ async def refund_invoice(
         if data and data.reason:
             invoice.notes = f"Refund reason: {data.reason}"
         
-        await db.commit()
+        await db.flush()
         await db.refresh(invoice)
         
         logger.info(
@@ -966,7 +966,6 @@ async def remove_payment_method(
         payment_method.is_active = False
         payment_method.updated_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(
             f"Removed payment method {payment_method_id} by company {company_id}"
@@ -1238,7 +1237,6 @@ async def get_current_subscription(
         if client.settings != settings:
             client.settings = settings
             flag_modified(client, "settings")
-            await db.commit()
         
         billing = settings.get("billing", {})
         
@@ -1292,7 +1290,7 @@ async def update_current_subscription(
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(client)
         
         logger.info(f"Updated subscription for company {company_id}")
@@ -1438,7 +1436,6 @@ async def pay_my_invoice(
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(f"Marked invoice {invoice_id} as paid for company {company_id}")
         
@@ -1530,7 +1527,6 @@ async def add_my_payment_method(
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(f"Added payment method for company {company_id}")
         
@@ -1589,7 +1585,6 @@ async def remove_my_payment_method(
         flag_modified(client, "settings")
         client.updated_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(f"Removed payment method {method_id} for company {company_id}")
         
@@ -1626,7 +1621,6 @@ async def get_usage(
         if client.settings != settings:
             client.settings = settings
             flag_modified(client, "settings")
-            await db.commit()
         
         billing = settings.get("billing", {})
         usage = billing.get("usage", {})

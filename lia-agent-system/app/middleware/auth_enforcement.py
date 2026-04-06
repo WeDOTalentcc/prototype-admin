@@ -47,6 +47,7 @@ PUBLIC_PATHS = {
     "/api/v1/teams/webhook",
     "/api/v1/teams/messages",
     "/api/v1/webhooks/twilio-voice",
+    "/api/v1/webhooks/mailgun",
     "/favicon.ico",
 }
 

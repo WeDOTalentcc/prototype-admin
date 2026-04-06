@@ -287,6 +287,10 @@ class RAGASEvaluationService:
             )
             await db.commit()
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.debug("[RAGAS] Falha ao persistir resultado: %s", exc)
 
     async def get_domain_summary(

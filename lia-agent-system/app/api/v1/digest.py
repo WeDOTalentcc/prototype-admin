@@ -145,7 +145,6 @@ async def update_weekly_digest_preference(
     except Exception:
         pass
 
-    await db.commit()
 
     user_id = str(current_user.id)
     logger.info(

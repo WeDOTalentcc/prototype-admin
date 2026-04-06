@@ -192,7 +192,6 @@ async def update_field_toggles(
             db.add(new_toggle)
             updated_toggles.append(new_toggle)
     
-    await db.commit()
     
     result = await db.execute(
         select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
@@ -352,7 +351,6 @@ async def seed_default_toggles(
             db.add(new_toggle)
             created_count += 1
     
-    await db.commit()
     
     return {
         "message": f"Created {created_count} default toggles",

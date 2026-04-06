@@ -396,7 +396,6 @@ Return ONLY valid JSON:
             "final_score": data.get("score", 3.0),
             "justification": data.get("feedback", "")
         })
-        await db.commit()
     except Exception as e:
         logger.warning(f"Failed to save analysis: {e}")
 
@@ -566,7 +565,6 @@ async def complete_screening(
             WHERE id = :session_id
         """), {"session_id": request.session_id})
 
-        await db.commit()
     except Exception as e:
         logger.warning(f"Failed to save result: {e}")
 
@@ -665,7 +663,6 @@ async def complete_screening(
             "version": new_version
         })
 
-        await db.commit()
         logger.info(f"Created WSI opinion {opinion_id} for candidate {request.candidate_id}, vacancy {request.job_vacancy_id}")
 
     except Exception as e:

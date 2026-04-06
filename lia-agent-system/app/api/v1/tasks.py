@@ -192,7 +192,7 @@ async def update_task(
     
     task.updated_at = datetime.utcnow()
     
-    await db.commit()
+    await db.flush()
     await db.refresh(task)
     
     return task.to_dict()

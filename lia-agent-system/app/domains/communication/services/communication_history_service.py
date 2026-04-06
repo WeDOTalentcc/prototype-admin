@@ -350,6 +350,10 @@ class CommunicationHistoryService:
                     "to_user_id": to_user_id
                 }
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.error(f"❌ Error transferring communications: {e}")
                 return {
                     "success": False,

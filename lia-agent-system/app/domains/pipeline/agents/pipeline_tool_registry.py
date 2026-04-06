@@ -202,6 +202,10 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
                 "value": field_value,
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] update_candidate_field error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -675,6 +679,10 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Preferência '{preference_key}' salva com sucesso",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.debug(f"[pipeline_tools] save_recruiter_preference: {e}")
         return {"success": True, "message": "Preferência registrada (tabela será criada em breve)"}
 
@@ -888,6 +896,10 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                 )
                 await db.commit()
         except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             pass
 
         return {
@@ -900,6 +912,10 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
         }
 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] cancel_interview error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -1029,6 +1045,10 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                 )
                 await db.commit()
         except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             pass
 
         return {
@@ -1044,6 +1064,10 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
         }
 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[pipeline_tools] reschedule_interview error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 

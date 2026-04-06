@@ -235,6 +235,12 @@ class AutomationService:
                 }
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -848,6 +854,12 @@ class AutomationService:
             
             return automation
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -895,6 +907,12 @@ class AutomationService:
             
             return automation
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -924,6 +942,12 @@ class AutomationService:
             
             return True
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()

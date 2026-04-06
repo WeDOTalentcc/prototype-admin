@@ -384,6 +384,10 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
                     )
                     await session.commit()
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"[talent_tools] analyze_skills DB error: {e}")
 
     return {
@@ -525,6 +529,10 @@ async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
             "message": f"Shortlist criada com {added} candidatos (id: {shortlist_id}).",
         }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[talent_tools] create_shortlist error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao criar shortlist."}
 

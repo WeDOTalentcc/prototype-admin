@@ -571,6 +571,10 @@ class HubSpotService:
                 logger.info(f"✅ Updated client {client_id} with HubSpot sync info")
                 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ Failed to update client HubSpot info: {str(e)}", exc_info=True)
     
     async def update_onboarding_status(
@@ -664,6 +668,10 @@ class HubSpotService:
             return {"success": True}
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             error_msg = str(e)
             logger.error(f"❌ Failed to update onboarding status: {error_msg}", exc_info=True)
             return {"success": False, "error": error_msg}

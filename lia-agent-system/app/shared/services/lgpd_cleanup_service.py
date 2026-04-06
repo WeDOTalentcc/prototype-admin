@@ -130,6 +130,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
             summary["candidates_deleted"] = len(candidates_to_delete)
 
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error("Error during LGPD candidate cleanup: %s", exc)
             summary["errors"].append(f"candidates: {exc}")
 
@@ -171,6 +175,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
             summary["vacancy_candidates_deleted"] = len(vcs_to_delete)
 
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error("Error during LGPD vacancy_candidate cleanup: %s", exc)
             summary["errors"].append(f"vacancy_candidates: {exc}")
 
@@ -208,6 +216,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
             summary["ai_consumption_deleted"] = len(ai_to_delete)
 
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error("Error during LGPD ai_consumption cleanup: %s", exc)
             summary["errors"].append(f"ai_consumption: {exc}")
 

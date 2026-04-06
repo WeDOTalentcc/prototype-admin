@@ -84,6 +84,10 @@ class LearningAutomationService:
                 await db.commit()
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Error running pattern detection for {company_id}: {e}")
 
         return results
@@ -128,6 +132,10 @@ class LearningAutomationService:
                     )
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Error running skill promotion for {company_id}: {e}")
 
         return results

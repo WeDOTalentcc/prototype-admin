@@ -75,7 +75,6 @@ async def ensure_highlights_table(db: AsyncSession):
         CREATE INDEX IF NOT EXISTS idx_exp_highlights_expires 
         ON candidate_experience_highlights(expires_at)
     """))
-    await db.commit()
 
 
 def generate_highlight_prompt(data: GenerateHighlightRequest) -> str:
@@ -299,7 +298,6 @@ async def generate_experience_highlight(
         "expires_at": expires_at
     })
     row = result.fetchone()
-    await db.commit()
     
     return ExperienceHighlightResponse(
         id=str(row[0]),
@@ -326,7 +324,6 @@ async def delete_experience_highlight(
         DELETE FROM candidate_experience_highlights
         WHERE candidate_id = :candidate_id AND company_id = :company_id
     """), {"candidate_id": candidate_id, "company_id": company_id})
-    await db.commit()
     
     return {"deleted": result.rowcount > 0, "candidate_id": candidate_id}
 

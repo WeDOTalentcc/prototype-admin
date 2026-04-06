@@ -134,14 +134,14 @@ async def create_approval_request(
         )
         
         db.add(approval)
-        await db.commit()
+        await db.flush()
         await db.refresh(approval)
         
         try:
             await send_approval_request_email(db, approval)
             approval.email_sent = True
             approval.email_sent_at = datetime.utcnow()
-            await db.commit()
+            await db.flush()
             await db.refresh(approval)
         except Exception as e:
             logger.error(f"Failed to send approval request email: {e}")
@@ -298,17 +298,15 @@ async def approve_request(
         approval.resolved_by = approved_by
         approval.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(approval)
         
         try:
             await send_approval_result_email(db, approval, approved=True)
             approval.notification_sent = True
-            await db.commit()
         except Exception as e:
             logger.error(f"Failed to send approval result email for {approval_id}: {str(e)}", exc_info=True)
             approval.notification_sent = False
-            await db.commit()
         
         logger.info(f"Approval request {approval_id} approved by {approved_by}")
 
@@ -379,17 +377,15 @@ async def reject_request(
         approval.resolved_by = rejected_by
         approval.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(approval)
         
         try:
             await send_approval_result_email(db, approval, approved=False)
             approval.notification_sent = True
-            await db.commit()
         except Exception as e:
             logger.error(f"Failed to send rejection email for {approval_id}: {str(e)}", exc_info=True)
             approval.notification_sent = False
-            await db.commit()
         
         logger.info(f"Approval request {approval_id} rejected by {rejected_by}")
 
@@ -458,7 +454,7 @@ async def cancel_request(
         approval.resolved_by = cancelled_by
         approval.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(approval)
         
         logger.info(f"Approval request {approval_id} cancelled by {cancelled_by}")

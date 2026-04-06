@@ -118,7 +118,6 @@ async def approve_suggestion(
         suggestion.reviewed_by = reviewer_id
         suggestion.reviewed_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(f"✅ [SUGGESTION] Approved suggestion {suggestion_id} by {reviewer_id}")
         
@@ -181,7 +180,6 @@ async def reject_suggestion(
         suggestion.reviewed_at = datetime.utcnow()
         suggestion.rejection_reason = reason
         
-        await db.commit()
         
         logger.info(f"❌ [SUGGESTION] Rejected suggestion {suggestion_id} by {reviewer_id}: {reason}")
         
@@ -244,7 +242,6 @@ async def bulk_approve_suggestions(
                 logger.warning(f"Failed to approve suggestion {suggestion_id}: {e}")
                 failed_ids.append(suggestion_id)
         
-        await db.commit()
         
         logger.info(f"✅ [BULK_APPROVE] Approved {approved_count} suggestions, {len(failed_ids)} failed")
         
@@ -304,7 +301,6 @@ async def bulk_reject_suggestions(
                 logger.warning(f"Failed to reject suggestion {suggestion_id}: {e}")
                 failed_ids.append(suggestion_id)
         
-        await db.commit()
         
         logger.info(f"❌ [BULK_REJECT] Rejected {rejected_count} suggestions, {len(failed_ids)} failed")
         
@@ -418,7 +414,6 @@ async def approve_ai_suggestion(
         suggestion.status = "approved"
         suggestion.reviewed_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(f"✅ [AI_SUGGESTION] Approved suggestion {suggestion_id}")
         
@@ -465,7 +460,6 @@ async def reject_ai_suggestion(
         suggestion.reviewed_at = datetime.utcnow()
         suggestion.rejection_reason = request.reason
         
-        await db.commit()
         
         logger.info(f"❌ [AI_SUGGESTION] Rejected suggestion {suggestion_id}: {request.reason}")
         

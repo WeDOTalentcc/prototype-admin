@@ -195,7 +195,6 @@ async def _log_teams_action_audit(
             )
             
             db.add(audit_entry)
-            await db.commit()
             
             logger.info(
                 f"[TEAMS AUDIT] Action={action} Result={result} "
@@ -763,14 +762,12 @@ async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSessi
                 last_message_at=activity.get("timestamp")
             )
             db.add(teams_conv)
-            await db.commit()
             
             logger.info(f"Stored new Teams conversation: {conversation_id}")
         else:
             # Update last message timestamp
             existing.last_message_at = activity.get("timestamp")
             existing.conversation_reference = activity
-            await db.commit()
             
     except Exception as e:
         logger.error(f"Error storing conversation reference: {e}", exc_info=True)
@@ -801,7 +798,6 @@ async def _log_teams_message(activity: dict[str, Any], db: AsyncSession):
                 activity_data=activity
             )
             db.add(message)
-            await db.commit()
             
     except Exception as e:
         logger.error(f"Error logging Teams message: {e}", exc_info=True)
@@ -1435,7 +1431,6 @@ async def teams_tab_auth(
                 # Backfill AAD ID
                 user.azure_ad_object_id = aad_object_id
                 db.add(user)
-                await db.commit()
 
         if not user:
             raise HTTPException(

@@ -117,7 +117,7 @@ async def create_short_list(
         created_by=user_id,
     )
     db.add(record)
-    await db.commit()
+    await db.flush()
     await db.refresh(record)
     logger.info("[ShortList] Criada list_id=%s job_id=%s company=%s", record.id, body.job_id, company_id)
     return _to_short_list_response(record)
@@ -200,7 +200,7 @@ async def add_candidate(
         notes=body.notes,
     )
     db.add(member)
-    await db.commit()
+    await db.flush()
     await db.refresh(member)
     return ShortListCandidateResponse(
         id=str(member.id),
@@ -239,4 +239,3 @@ async def remove_candidate(
         raise HTTPException(status_code=404, detail="Candidato não encontrado na short list")
 
     await db.delete(member)
-    await db.commit()

@@ -185,7 +185,7 @@ async def create_screening_question(
         )
         
         db.add(question)
-        await db.commit()
+        await db.flush()
         await db.refresh(question)
         
         logger.info(f"Created screening question: {question.id} for company: {company_id}")
@@ -241,7 +241,7 @@ async def update_screening_question(
         
         question.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(question)
         
         logger.info(f"Updated screening question: {question.id}")
@@ -293,7 +293,6 @@ async def delete_screening_question(
             raise HTTPException(status_code=404, detail="Screening question not found")
         
         await db.delete(question)
-        await db.commit()
         
         logger.info(f"Deleted screening question: {question_id}")
         
@@ -326,7 +325,6 @@ async def reorder_screening_questions(
             ).values(order=idx, updated_at=datetime.utcnow())
             await db.execute(stmt)
         
-        await db.commit()
         
         logger.info(f"Reordered {len(request.question_ids)} screening questions for company: {company_id}")
         
@@ -383,7 +381,6 @@ async def seed_default_questions(
             db.add(question)
             created_count += 1
         
-        await db.commit()
         
         logger.info(f"Seeded {created_count} default screening questions for company: {company_id}")
         

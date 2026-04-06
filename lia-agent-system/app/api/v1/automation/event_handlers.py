@@ -339,7 +339,6 @@ async def handle_screening_completed(
                 execution_time_ms=str(execution_time)
             )
             db.add(automation_log)
-            await db.commit()
             logger.info("📝 [SCREENING_COMPLETED] Automation execution log created")
             
             # Create centralized audit log for AI governance and explainability
@@ -766,7 +765,6 @@ async def handle_interview_scheduled(
                 execution_time_ms="0"
             )
             db.add(audit_log)
-            await db.commit()
             logger.info("📝 [INTERVIEW_SCHEDULED] Audit log created")
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create audit log: {e}")
@@ -1080,7 +1078,6 @@ Responda em JSON:
                 execution_time_ms="0"
             )
             db.add(audit_log)
-            await db.commit()
             logger.info("📝 [INTERVIEW_COMPLETED] Audit log created")
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_COMPLETED] Failed to create audit log: {e}")
@@ -1364,7 +1361,6 @@ async def handle_candidate_inactive(
                 execution_time_ms="0"
             )
             db.add(audit_log)
-            await db.commit()
             logger.info("📝 [CANDIDATE_INACTIVE] Legacy audit log created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create legacy audit log: {e}")
@@ -1729,7 +1725,6 @@ async def handle_candidate_no_show(
                 execution_time_ms="0"
             )
             db.add(audit_log)
-            await db.commit()
             logger.info("📝 [CANDIDATE_NO_SHOW] Legacy audit log created")
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to create legacy audit log: {e}")
@@ -1991,7 +1986,6 @@ async def handle_ats_sync(
                 execution_time_ms="0"
             )
             db.add(audit_log)
-            await db.commit()
             logger.info("📝 [ATS_SYNC] Legacy audit log created")
         except Exception as audit_error:
             logger.error(f"❌ [ATS_SYNC] Failed to create legacy audit log: {audit_error}")

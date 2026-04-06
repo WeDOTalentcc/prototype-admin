@@ -163,7 +163,6 @@ async def update_llm_config(
             )
             db.add(config)
 
-        await db.commit()
 
         # Clear cache so next LLM call picks up new config
         clear_tenant_config_cache(company_id)

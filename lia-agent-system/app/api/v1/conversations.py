@@ -240,7 +240,6 @@ async def create_conversation(
             metadata=request.metadata,
         )
         
-        await db.commit()
         
         return ConversationResponse(
             id=str(conversation.id),
@@ -282,7 +281,6 @@ async def add_message(
             metadata=request.metadata,
         )
         
-        await db.commit()
         
         return MessageResponse(
             id=str(message.id),
@@ -318,7 +316,6 @@ async def update_summary(
             force=request.force,
         )
         
-        await db.commit()
         
         return {
             "conversation_id": conversation_id,
@@ -348,7 +345,6 @@ async def delete_conversation(
         if not success:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        await db.commit()
         
         return {"success": True, "message": "Conversation deleted"}
     except HTTPException:
@@ -376,7 +372,6 @@ async def archive_conversation(
         if not success:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        await db.commit()
         
         return {"success": True, "message": "Conversation archived"}
     except HTTPException:
@@ -404,7 +399,6 @@ async def clear_conversation(
         if not success:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        await db.commit()
         
         return {"success": True, "message": "Conversation cleared"}
     except HTTPException:

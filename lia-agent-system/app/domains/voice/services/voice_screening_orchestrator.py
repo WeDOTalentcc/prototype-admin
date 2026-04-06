@@ -218,6 +218,10 @@ class VoiceScreeningOrchestrator:
                 session.session_id, session.status,
             )
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(
                 "[VOICE SCREENING] FAILED to persist session state session=%s: %s — "
                 "session will not survive restart",
@@ -1535,6 +1539,10 @@ class VoiceScreeningOrchestrator:
             await self._generate_and_store_wsi_questions(session, db)
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning(
                 "[VOICE SCREENING] Failed to register WSI session (non-blocking): %s", e
             )
@@ -1650,6 +1658,10 @@ class VoiceScreeningOrchestrator:
             )
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning(
                 "[VOICE SCREENING] WSI question generation/storage failed (non-blocking) session=%s: %s",
                 session.session_id, e,

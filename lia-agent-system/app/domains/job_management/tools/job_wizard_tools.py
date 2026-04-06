@@ -335,6 +335,10 @@ async def save_job_draft(
             }
             
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"Error saving job draft: {e}")
         return {
             "success": False,

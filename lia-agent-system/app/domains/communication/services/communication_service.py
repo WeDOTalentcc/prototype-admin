@@ -1405,6 +1405,12 @@ class CommunicationService:
                 "validation": validation
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -1487,6 +1493,12 @@ class CommunicationService:
                 "communication_result": communication_result
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -1535,6 +1547,12 @@ class CommunicationService:
                 "approval": approval.to_dict()
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -1743,6 +1761,12 @@ class CommunicationService:
                 "provider_message_id": provider_msg_id
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -2046,6 +2070,10 @@ class CommunicationService:
                         )
                         await db.commit()
                     except Exception as _upd_exc:
+                        try:
+                            await db.rollback()
+                        except Exception:
+                            pass
                         logger.debug("[ABTracking] CommunicationLog extra_data update skipped: %s", _upd_exc)
 
                 try:
@@ -2063,6 +2091,10 @@ class CommunicationService:
             return send_result
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ Failed to send templated message: {e}")
             return {
                 "success": False,
@@ -2131,6 +2163,12 @@ class CommunicationService:
                 "opt_out": opt_out.to_dict()
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -2185,6 +2223,12 @@ class CommunicationService:
                 "reactivated": bool(opt_out)
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -2229,6 +2273,12 @@ class CommunicationService:
                 "quarantine": quarantine.to_dict()
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -2272,6 +2322,12 @@ class CommunicationService:
                 "quarantine": quarantine.to_dict()
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -2626,6 +2682,12 @@ class CommunicationService:
                 "total_queued": len(queued_logs)
             }
             
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()

@@ -194,6 +194,10 @@ class CVScoringService:
             return screening_result
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ [CV_SCORING] Error screening candidate {candidate_id}: {e}", exc_info=True)
             return {
                 "success": False,

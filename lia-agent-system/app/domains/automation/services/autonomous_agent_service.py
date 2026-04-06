@@ -220,6 +220,10 @@ class AutonomousAgentService:
             return execution_result
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Job {job_id} execution failed: {e}")
             
             async with AsyncSessionLocal() as db:
@@ -547,6 +551,10 @@ class AutonomousAgentService:
             return result
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Failed to execute action {action.id}: {e}")
             return {"success": False, "error": str(e)}
     

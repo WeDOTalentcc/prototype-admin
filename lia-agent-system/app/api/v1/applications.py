@@ -229,7 +229,6 @@ async def apply_to_vacancy(
                 db=db
             )
             
-            await db.commit()
             
             return ApplicationResponseDTO(
                 status="low_adherence",
@@ -322,7 +321,6 @@ async def apply_to_vacancy(
             db=db
         )
         
-        await db.commit()
         
         try:
             reqs_result = await db.execute(
@@ -526,7 +524,6 @@ async def resubmit_cv(
         else:
             message = f"Obrigado pelo reenvio! Sua aderência melhorou para {new_adherence_score:.0f}%, mas ainda está abaixo do mínimo necessário."
         
-        await db.commit()
         
         return ResubmitResponseDTO(
             status="resubmitted",

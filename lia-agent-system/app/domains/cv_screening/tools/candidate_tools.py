@@ -136,6 +136,10 @@ async def update_candidate_stage(
             }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error moving candidate: {e}", exc_info=True)
         return {
             "success": False,
@@ -270,6 +274,10 @@ async def add_candidate_to_vacancy(
             }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error adding candidate to vacancy: {e}", exc_info=True)
         return {
             "success": False,
@@ -979,6 +987,10 @@ async def hide_candidate(
                 }
                 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Error hiding candidate: {e}", exc_info=True)
         return {
             "success": False,

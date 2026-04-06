@@ -661,7 +661,6 @@ async def unpublish_jobs_complete(
                     job.extra_data['unfreeze_date'] = request.unfreeze_date
                 frozen_jobs.append(job_id_str)
             
-            await db.commit()
             
         except Exception as e:
             logger.error(f"Error processing job {job_id_str}: {e}")

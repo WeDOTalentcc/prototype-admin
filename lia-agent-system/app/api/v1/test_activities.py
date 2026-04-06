@@ -123,7 +123,6 @@ async def clear_test_activities(db: AsyncSession = Depends(get_db)):
     )
     
     await db.execute(stmt)
-    await db.commit()
     
     return {
         "success": True,

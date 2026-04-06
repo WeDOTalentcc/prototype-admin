@@ -178,6 +178,10 @@ class LearningConfirmationService:
                 await db.commit()
             return True
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Error recording skill rejection: {exc}")
             return False
 

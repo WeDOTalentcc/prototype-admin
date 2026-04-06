@@ -78,7 +78,7 @@ async def register(
     )
     
     db.add(user)
-    await db.commit()
+    await db.flush()
     await db.refresh(user)
     
     logger.info(f"User registered: {user.email}")
@@ -297,7 +297,7 @@ async def public_register(
     )
     
     db.add(user)
-    await db.commit()
+    await db.flush()
     await db.refresh(user)
     
     verification_link = f"{FRONTEND_URL}/verify-email?token={verification_token}"
@@ -346,7 +346,6 @@ async def forgot_password(
         user.password_reset_token_expires = reset_expires
         user.updated_at = datetime.utcnow()
         
-        await db.commit()
         
         reset_link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
         await email_service.send_user_notification(
@@ -394,7 +393,6 @@ async def reset_password(
     user.password_reset_token_expires = None
     user.updated_at = datetime.utcnow()
     
-    await db.commit()
     
     logger.info(f"Password reset completed for: {user.email}")
     
@@ -432,7 +430,6 @@ async def verify_email(
     user.email_verification_token_expires = None
     user.updated_at = datetime.utcnow()
     
-    await db.commit()
     
     logger.info(f"Email verified for: {user.email}")
     
@@ -460,7 +457,6 @@ async def resend_verification(
         user.email_verification_token_expires = verification_expires
         user.updated_at = datetime.utcnow()
         
-        await db.commit()
         
         verification_link = f"{FRONTEND_URL}/verify-email?token={verification_token}"
         await email_service.send_user_notification(
@@ -550,7 +546,6 @@ async def accept_invitation(
     user.email_verified = True
     user.updated_at = datetime.utcnow()
     
-    await db.commit()
     
     logger.info(f"Invitation accepted for: {user.email}")
     

@@ -331,6 +331,10 @@ class PolicyEngineService:
                 )
                 
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.error(f"Error evaluating policy: {e}", exc_info=True)
                 return EvaluationResult(
                     result=PolicyEvaluationResult.ALLOW,
@@ -726,6 +730,10 @@ class PolicyEngineService:
                 )
                 
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.error(f"Error triggering escalation: {e}", exc_info=True)
                 return EscalationResult(
                     success=False,

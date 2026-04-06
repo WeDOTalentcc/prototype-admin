@@ -430,6 +430,10 @@ class AutomationScheduler:
                 logger.info(f"✅ [Scheduler] Processed {len(potential_no_shows)} no-show interviews")
                 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ [Scheduler] Error in check_interview_no_shows: {e}")
     
     async def send_interview_reminders(self):
@@ -550,6 +554,10 @@ class AutomationScheduler:
                     logger.info("✅ [Scheduler] No interview reminders needed at this time")
                 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ [Scheduler] Error in send_interview_reminders: {e}")
     
     async def _send_reminder_email(self, email_service, interview: Interview, hours_until: int):
@@ -697,6 +705,10 @@ Equipe de Recrutamento
                 logger.info("✅ [Scheduler] Cleaned up stale reminder flags")
                 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ [Scheduler] Error in cleanup_stale_reminders: {e}")
     
     async def auto_complete_expired_screenings(self):
@@ -780,6 +792,10 @@ Equipe de Recrutamento
                     logger.info("✅ [Scheduler] No expired screenings found")
                 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ [Scheduler] Error in auto_complete_expired_screenings: {e}")
     
     async def run_pipeline_monitor(self):
@@ -880,6 +896,10 @@ Equipe de Recrutamento
                 await db.commit()
                 logger.info("M2 expire_trials: %d subscriptions suspended", len(expired))
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error("M2 expire_trials failed: %s", exc)
 
     async def run_lgpd_cleanup(self):

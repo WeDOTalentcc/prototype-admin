@@ -203,7 +203,6 @@ async def seed_benefit_templates(
                 db.add(template)
                 created_count += 1
         
-        await db.commit()
         
         logger.info(f"✅ Seeded {created_count} benefit templates")
         
@@ -499,7 +498,6 @@ async def import_benefits(
                 errors.append(f"Row {idx}: {str(row_error)}")
         
         if imported_count > 0:
-            await db.commit()
             logger.info(f"✅ Imported {imported_count} benefits ({matched_count} matched templates, {new_count} new)")
         
         return BenefitImportResponse(

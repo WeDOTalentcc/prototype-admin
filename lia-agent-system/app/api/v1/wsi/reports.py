@@ -373,7 +373,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             await db.execute(text(
                 "ALTER TABLE wsi_results ADD COLUMN IF NOT EXISTS f11_report_json JSONB"
             ))
-            await db.commit()
         except Exception:
             await db.rollback()
 
@@ -691,7 +690,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
                     UPDATE wsi_results SET f11_report_json = :payload
                     WHERE id = :rid
                 """), {"rid": result_id, "payload": _json.dumps(report.model_dump())})
-                await db.commit()
             except Exception as _cache_err:
                 logger.warning(f"F11-3: falha ao persistir cache do relatório: {_cache_err}")
                 await db.rollback()

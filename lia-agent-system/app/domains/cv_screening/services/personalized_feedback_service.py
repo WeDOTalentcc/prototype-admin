@@ -496,6 +496,10 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             )
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error generating personalized feedback: {e}")
             raise
         finally:
@@ -1092,6 +1096,12 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 "ready_to_send": True,
                 "auto_send_dispatched": True,
             }
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -1149,6 +1159,12 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 "rejected_by": rejected_by,
                 "rejection_reason": rejection_reason
             }
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -1220,6 +1236,12 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 logger.warning(f"Audit log failed for feedback_sent: {audit_err}")
 
             return True
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()
@@ -1265,6 +1287,12 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
             logger.info("Feedback %s marked as failed: %s", feedback_id, reason)
             return True
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
         finally:
             if should_close:
                 await db.close()

@@ -449,6 +449,10 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
                 "data": {"job_id": job_id, "new_status": "Pausada", "reason": reason},
                 "message": f"Vaga {job_id} pausada com sucesso."}
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[jobs_mgmt_tools] pause_job error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": f"Erro ao pausar vaga {job_id}."}
 
@@ -474,6 +478,10 @@ async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
                 "data": {"job_id": job_id, "new_status": "Ativa"},
                 "message": f"Vaga {job_id} reaberta com sucesso."}
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[jobs_mgmt_tools] reopen_job error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": f"Erro ao reabrir vaga {job_id}."}
 
@@ -500,6 +508,10 @@ async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
                 "data": {"job_id": job_id, "new_status": "Concluída", "reason": reason},
                 "message": f"Vaga {job_id} fechada com sucesso."}
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[jobs_mgmt_tools] close_job error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": f"Erro ao fechar vaga {job_id}."}
 
@@ -530,6 +542,10 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
                 "data": {"job_id": job_id, "previous_priority": prev_row["priority"], "new_priority": priority_pt},
                 "message": f"Prioridade da vaga {job_id} atualizada para '{priority_pt}'."}
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[jobs_mgmt_tools] update_priority error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": f"Erro ao atualizar prioridade da vaga {job_id}."}
 

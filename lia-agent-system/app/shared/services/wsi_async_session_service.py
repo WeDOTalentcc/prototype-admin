@@ -88,6 +88,10 @@ class WSIAsyncSessionService:
             )
             await db.commit()
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.debug("[WSIAsync] DB store failed: %s", exc)
 
         logger.info(
@@ -173,6 +177,10 @@ class WSIAsyncSessionService:
                 logger.info("[WSIAsync] %d sessões marcadas como expiradas", count)
             return count
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.debug("[WSIAsync] check_expired failed: %s", exc)
             return 0
 

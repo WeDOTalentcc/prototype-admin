@@ -62,7 +62,6 @@ async def finalize_job_vacancy(
             db=db,
             job_data={"title": job_title, "status": job_status},
         )
-        await db.commit()
 
         return FinalizeJobVacancyResponse(
             success=True,
@@ -539,7 +538,7 @@ async def create_job_vacancy(
         )
 
         db.add(job_vacancy)
-        await db.commit()
+        await db.flush()
         await db.refresh(job_vacancy)
 
         logger.info(f"Job vacancy created: {job_vacancy.id} - {job_vacancy.title}")
@@ -630,7 +629,7 @@ async def update_job_vacancy(
                 db=db,
             )
 
-        await db.commit()
+        await db.flush()
         await db.refresh(job_vacancy)
 
         logger.info(f"Job vacancy updated: {job_vacancy.id} - {job_vacancy.title} ({len(changes)} fields changed)")
@@ -711,7 +710,6 @@ async def delete_job_vacancy(
             db=db,
         )
 
-        await db.commit()
 
         logger.info(f"Job vacancy archived: {job_vacancy_id}")
 
@@ -774,7 +772,6 @@ async def update_job_vacancy_status(
             db=db,
         )
 
-        await db.commit()
 
         logger.info(f"Job vacancy status updated: {job_vacancy_id} ({old_status} -> {status})")
 

@@ -203,6 +203,10 @@ class AgentQualityEvaluator:
             db.add(record)
             await db.commit()
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning("[AgentQualityEvaluator] Persistência falhou: %s", exc)
 
     async def _send_to_langsmith(

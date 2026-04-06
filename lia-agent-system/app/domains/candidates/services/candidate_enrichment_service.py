@@ -127,6 +127,10 @@ class CandidateEnrichmentService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Enrichment error for candidate {candidate_id}: {type(e).__name__}: {e}")
             return {
                 "success": False,

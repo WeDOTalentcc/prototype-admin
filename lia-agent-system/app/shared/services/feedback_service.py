@@ -191,6 +191,10 @@ class FeedbackService:
             await db.commit()
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Error updating patterns from feedback: {e}")
     
     def _generate_pattern_key(self, feedback: InteractionFeedback) -> str:

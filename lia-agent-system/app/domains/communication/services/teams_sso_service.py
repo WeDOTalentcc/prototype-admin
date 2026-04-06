@@ -199,6 +199,10 @@ class TeamsSSOService:
             logger.info(f"[TeamsSSOService] Mapped Teams user {teams_user_id} → AAD {aad_object_id}")
             return True
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"[TeamsSSOService] save_user_mapping error: {e}")
             return False
 

@@ -331,7 +331,7 @@ async def create_email_template(
         )
         
         db.add(template)
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         logger.info(f"Email template created: {template.id}")
@@ -396,7 +396,7 @@ async def update_email_template(
         
         template.updated_at = datetime.utcnow()  # type: ignore[assignment]
         
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         logger.info(f"Email template updated: {template_id}")
@@ -454,7 +454,6 @@ async def delete_email_template(
             template.updated_at = datetime.utcnow()  # type: ignore[assignment]
             message = "Email template deactivated"
         
-        await db.commit()
         
         logger.info(f"Email template {'deleted' if hard_delete else 'deactivated'}: {template_id}")
         

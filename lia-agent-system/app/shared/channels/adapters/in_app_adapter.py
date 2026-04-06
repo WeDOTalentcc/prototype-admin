@@ -73,6 +73,10 @@ class InAppChannelAdapter(ChannelAdapter):
             )
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(
                 f"[IN_APP_ADAPTER] Erro ao criar notificação: {e}", exc_info=True
             )

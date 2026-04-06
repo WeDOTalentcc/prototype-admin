@@ -2131,6 +2131,10 @@ class WizardStepService:
             )
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error in wizard step: {e}", exc_info=True)
             return WizardStepResponse(
                 conversation_id=conversation_id,

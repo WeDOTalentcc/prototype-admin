@@ -229,7 +229,7 @@ async def update_alert_config(
             )
             db.add(config)
         
-        await db.commit()
+        await db.flush()
         await db.refresh(config)
         
         logger.info(f"Alert config updated successfully for company {company_id}")
@@ -391,7 +391,6 @@ async def create_alert_preferences(
                 db.add(new_pref)
                 created_preferences.append(new_pref)
         
-        await db.commit()
         
         for pref in created_preferences:
             await db.refresh(pref)

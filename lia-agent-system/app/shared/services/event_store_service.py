@@ -68,6 +68,10 @@ class EventStoreService:
             )
             return True
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning("[EventStore] append failed (fail-open): %s", exc)
             return False
 

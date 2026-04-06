@@ -176,7 +176,7 @@ async def update_communication_settings(
             db.add(settings)
             logger.info(f"Created communication settings for company {company_id}")
         
-        await db.commit()
+        await db.flush()
         await db.refresh(settings)
         
         return CommunicationSettingsResponse(

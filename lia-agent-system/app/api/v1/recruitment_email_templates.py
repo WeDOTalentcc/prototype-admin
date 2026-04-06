@@ -281,7 +281,7 @@ async def update_template(
         
         template.version = (template.version or 1) + 1
         
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         return template_to_response(template)
@@ -447,7 +447,6 @@ async def delete_template(
             )
         
         await db.delete(template)
-        await db.commit()
         
         return {"message": "Template deleted successfully", "id": template_id}
     except HTTPException:

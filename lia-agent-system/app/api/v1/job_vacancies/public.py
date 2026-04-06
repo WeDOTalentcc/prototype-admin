@@ -117,7 +117,7 @@ async def generate_public_link(
         job.public_slug = new_slug
         job.updated_at = datetime.utcnow()
 
-        await db.commit()
+        await db.flush()
         await db.refresh(job)
 
         logger.info(f"Generated public link for job {vacancy_id}: /vagas/{new_slug}")
@@ -175,7 +175,7 @@ async def get_share_link(
 
             job.public_slug = new_slug
             job.updated_at = datetime.utcnow()
-            await db.commit()
+            await db.flush()
             await db.refresh(job)
             logger.info(f"Generated public slug for job {vacancy_id}: {new_slug}")
 
@@ -218,7 +218,6 @@ async def get_public_vacancy(
             raise HTTPException(status_code=404, detail="Vaga não disponível")
 
         job.view_count = (job.view_count or 0) + 1
-        await db.commit()
 
         is_confidential = job.is_confidential or job.visibility == "confidential"
 
@@ -399,7 +398,6 @@ async def apply_to_public_vacancy(
             logger.warning(f"Score calculation failed, using default: {e}")
 
         if adherence_score < ADHERENCE_THRESHOLD:
-            await db.commit()
             return PublicApplicationResponse(
                 status="low_adherence",
                 message="Obrigado pela candidatura! Infelizmente seu perfil não atende aos requisitos mínimos desta vaga no momento. Recomendamos atualizar seu currículo e tentar novamente.",
@@ -415,7 +413,6 @@ async def apply_to_public_vacancy(
             )
         )
         if existing_vc.scalar_one_or_none():
-            await db.commit()
             return PublicApplicationResponse(
                 status="already_applied",
                 message="Você já se candidatou a esta vaga. Acompanhe seu email para atualizações.",
@@ -494,7 +491,6 @@ async def apply_to_public_vacancy(
         except Exception as e:
             logger.warning(f"Notification creation failed: {e}")
 
-        await db.commit()
 
         if is_saturated:
             return PublicApplicationResponse(

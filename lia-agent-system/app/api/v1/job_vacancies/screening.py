@@ -194,7 +194,7 @@ async def update_screening_config(
         job.screening_config = merged_config
         job.updated_at = datetime.utcnow()
 
-        await db.commit()
+        await db.flush()
         await db.refresh(job)
 
         logger.info(f"Screening config updated for job {job_id}")
@@ -277,7 +277,7 @@ async def update_screening_status(
         from sqlalchemy.orm.attributes import flag_modified
         flag_modified(job, "screening_config")
 
-        await db.commit()
+        await db.flush()
         await db.refresh(job)
 
         logger.info(f"Screening status updated to '{request.screening_status}' for job {job_id}")

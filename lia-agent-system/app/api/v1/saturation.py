@@ -180,7 +180,7 @@ async def update_saturation_settings(
     additional["saturation_settings"] = sat
     company.additional_data = additional
     company.updated_at = datetime.utcnow()
-    await db.commit()
+    await db.flush()
     await db.refresh(company)
 
     defaults = _get_company_saturation_defaults(company)
@@ -448,7 +448,6 @@ async def unlock_pipeline(
         governance_rules["threshold_web"] = old_threshold_web + increment
         governance_rules["threshold_sourcing"] = old_threshold_sourcing + increment
         vacancy.governance_rules = governance_rules
-        await db.commit()
 
         try:
             from app.domains.automation.services.automation_handlers import process_screening_queue
@@ -474,7 +473,6 @@ async def unlock_pipeline(
         disabled_until = datetime.utcnow() + timedelta(hours=request.disable_hours)
         governance_rules["saturation_disabled_until"] = disabled_until.isoformat()
         vacancy.governance_rules = governance_rules
-        await db.commit()
 
         try:
             from app.domains.automation.services.automation_handlers import process_screening_queue

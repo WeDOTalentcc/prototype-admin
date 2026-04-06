@@ -157,6 +157,10 @@ async def _wrap_save_policy_field(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Politica salva: {block}.{field} = {value}",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[policy_tools] save_policy_field error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao salvar politica: {str(e)}"}
 
@@ -1025,6 +1029,10 @@ async def _wrap_save_policy_block(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Bloco '{block}' salvo com {len(data)} campos: {', '.join(data.keys())}.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[policy_tools] save_policy_block error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao salvar bloco: {str(e)}"}
 
@@ -1120,6 +1128,10 @@ async def _wrap_apply_industry_defaults(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Defaults do setor '{industry_lower}' aplicados com sucesso em {len(defaults)} blocos. Fonte: {benchmarks.get('last_updated', 'N/A')}.",
             }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[policy_tools] apply_industry_defaults error: {e}")
         return {"success": False, "data": {}, "message": f"Erro ao aplicar defaults: {str(e)}"}
 

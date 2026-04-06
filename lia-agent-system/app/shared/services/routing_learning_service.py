@@ -51,6 +51,10 @@ class RoutingLearningService:
             )
             return True
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning("[RoutingLearning] record_correction failed (fail-open): %s", exc)
             return False
 

@@ -123,5 +123,9 @@ async def provision_workos_organization(
         return organization_id
         
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ Failed to provision WorkOS Organization for client {client.id}: {str(e)}", exc_info=True)
         return None

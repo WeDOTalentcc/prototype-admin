@@ -124,6 +124,10 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
                 action_type="schedule_interview",
             )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"Direct scheduling failed, falling back to domain: {e}")
     return None
 

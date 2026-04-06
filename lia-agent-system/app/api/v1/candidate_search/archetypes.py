@@ -228,7 +228,7 @@ async def create_archetype(
         )
         
         db.add(archetype)
-        await db.commit()
+        await db.flush()
         await db.refresh(archetype)
         
         return ArchetypeDTO(
@@ -292,7 +292,7 @@ async def create_archetype_from_search(
         )
         
         db.add(archetype)
-        await db.commit()
+        await db.flush()
         await db.refresh(archetype)
         
         logger.info(f"Created archetype '{archetype.name}' (id={archetype.id}) from search spec")
@@ -548,7 +548,7 @@ async def create_archetype_from_job(
         )
         
         db.add(archetype)
-        await db.commit()
+        await db.flush()
         await db.refresh(archetype)
         
         return ArchetypeDTO(
@@ -681,7 +681,7 @@ async def create_archetype_from_description(
         )
         
         db.add(archetype)
-        await db.commit()
+        await db.flush()
         await db.refresh(archetype)
         
         return ArchetypeDTO(
@@ -782,7 +782,6 @@ async def delete_archetype(
         await db.execute(
             delete(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
-        await db.commit()
         
         return {"message": f"Archetype '{archetype_id}' deleted successfully"}
     
@@ -839,7 +838,7 @@ async def update_archetype(
         if request.is_active is not None:
             archetype.is_active = request.is_active
         
-        await db.commit()
+        await db.flush()
         await db.refresh(archetype)
         
         return ArchetypeDTO(
@@ -906,7 +905,6 @@ async def search_by_archetype(
             .where(SearchArchetype.id == archetype_id)
             .values(usage_count=(archetype.usage_count or 0) + 1)
         )
-        await db.commit()
         
         # Build hybrid search request
         hybrid_request = HybridSearchRequest(
@@ -1218,7 +1216,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         )
         
         db.add(new_archetype)
-        await db.commit()
+        await db.flush()
         await db.refresh(new_archetype)
         
         logger.info(f"✅ Created archetype '{name}' from job '{job.title}'")
@@ -1346,7 +1344,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         )
         
         db.add(new_archetype)
-        await db.commit()
+        await db.flush()
         await db.refresh(new_archetype)
         
         logger.info(f"✅ Created archetype '{name}' from description")

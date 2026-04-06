@@ -141,6 +141,10 @@ async def _send_candidate_reminder(
         )
         await db.commit()
     except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(
             "[wsi-abandoned] erro ao notificar candidato candidate=%s: %s", candidate_id, exc
         )
@@ -179,6 +183,10 @@ async def _notify_recruiter_abandoned(
         )
         await db.commit()
     except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(
             "[wsi-abandoned] erro ao notificar recruiter job=%s: %s", job_vacancy_id, exc
         )
@@ -217,6 +225,10 @@ async def _notify_consultant_escalation(
         )
         await db.commit()
     except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(
             "[wsi-abandoned] erro ao escalar consultor job=%s: %s", job_vacancy_id, exc
         )
@@ -240,6 +252,10 @@ async def _increment_reminder_count(
         """), {"count": new_count, "session_id": session_id})
         await db.commit()
     except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(
             "[wsi-abandoned] erro ao atualizar reminder_count session=%s: %s", session_id, exc
         )

@@ -247,7 +247,6 @@ async def seed_retention_policies(
             db.add(policy)
             created_count += 1
         
-        await db.commit()
         
         return SeedRetentionPoliciesResponse(
             created_count=created_count,
@@ -285,7 +284,7 @@ async def create_retention_policy(
             legal_basis=data.legal_basis
         )
         db.add(policy)
-        await db.commit()
+        await db.flush()
         await db.refresh(policy)
         
         return AuditRetentionPolicyResponse(**policy.to_dict())
@@ -439,7 +438,7 @@ async def create_audit_log(
         )
         
         db.add(audit_log)
-        await db.commit()
+        await db.flush()
         await db.refresh(audit_log)
         
         return AuditLogResponse(**audit_log.to_dict())

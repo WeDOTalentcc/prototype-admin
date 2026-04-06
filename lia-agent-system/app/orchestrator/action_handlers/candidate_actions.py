@@ -109,6 +109,10 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
                 action_type="move_candidate",
             )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"Direct move_candidate failed, falling back to domain: {e}")
         return None
 
@@ -193,6 +197,10 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
                 action_type="update_candidate_field",
             )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"Direct update_candidate_field failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -414,6 +422,10 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
             action_type="batch_move_candidates",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"batch_move_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(

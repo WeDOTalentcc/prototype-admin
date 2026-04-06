@@ -91,6 +91,10 @@ async def _reschedule_interview(params: dict[str, Any], context: dict[str, Any])
             action_type="reschedule_interview",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"reschedule_interview failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -161,6 +165,10 @@ async def _cancel_interview(params: dict[str, Any], context: dict[str, Any]):
             action_type="cancel_interview",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"cancel_interview failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -371,6 +379,10 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
             action_type="generate_self_scheduling_link",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"generate_self_scheduling_link failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(

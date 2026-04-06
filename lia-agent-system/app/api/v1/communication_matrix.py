@@ -260,7 +260,7 @@ async def update_matrix_entry(
         if data.is_active is not None:
             entry.is_active = data.is_active
         
-        await db.commit()
+        await db.flush()
         await db.refresh(entry)
         
         logger.info(f"✅ Updated matrix entry: {entry.trigger_name} (ID: {entry.id})")
@@ -334,7 +334,6 @@ async def reset_matrix_to_defaults(
             db.add(entry)
             created_count += 1
         
-        await db.commit()
         
         logger.info(f"🔄 Reset matrix: deleted and recreated {created_count} entries for company_id={company_id}")
         
@@ -410,7 +409,6 @@ async def seed_matrix_entries(
             db.add(entry)
             created_count += 1
         
-        await db.commit()
         
         logger.info(f"🌱 Seeded matrix with {created_count} entries for company_id={company_id}")
         
@@ -477,7 +475,6 @@ async def copy_defaults_to_company(
             db.add(entry)
             created_count += 1
         
-        await db.commit()
         
         logger.info(f"📋 Copied {created_count} default entries to company {company_id}")
         

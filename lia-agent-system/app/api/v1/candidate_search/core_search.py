@@ -1026,7 +1026,6 @@ async def import_pearch_candidates(
                 local_id=str(new_id)
             ))
         
-        await db.commit()
         
         return ImportCandidatesResponse(
             imported_count=len(imported_ids),
@@ -1316,7 +1315,6 @@ async def promote_candidate_to_main_base(
             profile.promoted_at = datetime.utcnow()
             profile.status = "promoted_merged"
             
-            await db.commit()
             
             return PromoteCandidateResponse(
                 success=True,
@@ -1460,7 +1458,6 @@ async def promote_candidate_to_main_base(
         profile.promoted_at = datetime.utcnow()
         profile.status = "promoted"
         
-        await db.commit()
         
         return PromoteCandidateResponse(
             success=True,
@@ -1536,7 +1533,6 @@ async def persist_revealed_contact(
                 updated = True
             
             if updated:
-                await db.commit()
                 return RevealedContactResponse(
                     success=True,
                     message="Dados de contato atualizados no cadastro existente",
@@ -1579,7 +1575,6 @@ async def persist_revealed_contact(
                 }
             )
             db.add(candidate)
-            await db.commit()
             
             return RevealedContactResponse(
                 success=True,

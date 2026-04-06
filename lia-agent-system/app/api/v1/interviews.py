@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from anthropic import AsyncAnthropic
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,6 +37,7 @@ class ScheduleInterviewRequest(BaseModel):
     job_vacancy_id: str | None = None
     interview_type: str = "technical"  # technical, behavioral, cultural, final
     interview_mode: str = "video"  # video, in_person, phone
+    recruitment_stage_id: str | None = None
     start_time: datetime
     duration_minutes: int = 60
     location: str | None = None
@@ -73,7 +74,8 @@ class InterviewFeedbackRequest(BaseModel):
 @router.post("/interviews/schedule", response_model=dict)
 async def schedule_interview(
     request: ScheduleInterviewRequest,
-    db: AsyncSession = Depends(get_db)
+    request_obj: Request,
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Schedule a new interview with automatic Microsoft Calendar integration.
@@ -124,6 +126,29 @@ async def schedule_interview(
             notes=request.notes
         )
         
+        # Resolve recruitment stage if provided
+        resolved_stage_name = None
+        resolved_stage_id = None
+        if request.recruitment_stage_id:
+            try:
+                from app.domains.automation.models.recruitment_stages import RecruitmentStage
+                req_company_id = getattr(request_obj.state, "company_id", None) if hasattr(request_obj, "state") else None
+                stage_uuid = uuid.UUID(request.recruitment_stage_id)
+                stage_query = select(RecruitmentStage).where(RecruitmentStage.id == stage_uuid)
+                if req_company_id:
+                    stage_query = stage_query.where(RecruitmentStage.company_id == req_company_id)
+                stage_result = await db.execute(stage_query)
+                stage = stage_result.scalar_one_or_none()
+                if stage:
+                    resolved_stage_name = stage.name
+                    resolved_stage_id = stage.id
+                    logger.info(
+                        "Interview linked to stage: %s (%s)",
+                        stage.display_name, stage.name,
+                    )
+            except (ValueError, Exception) as e:
+                logger.warning("Invalid recruitment_stage_id: %s", e)
+
         # Create database record
         interview = Interview(
             title=f"Entrevista: {request.candidate_name} - {request.job_title}",
@@ -139,6 +164,9 @@ async def schedule_interview(
             duration_minutes=request.duration_minutes,
             location=request.location,
             job_title=request.job_title,
+            job_vacancy_id=uuid.UUID(request.job_vacancy_id) if request.job_vacancy_id else None,
+            application_stage=resolved_stage_name,
+            recruitment_stage_id=resolved_stage_id,
             graph_event_id=calendar_event.get("id"),
             graph_organizer_email=request.interviewer_email,
             is_synced_to_calendar=True,
@@ -153,7 +181,7 @@ async def schedule_interview(
             interview.meeting_platform = "teams"
         
         db.add(interview)
-        await db.commit()
+        await db.flush()
         await db.refresh(interview)
         
         logger.info(f"✅ Interview scheduled: {interview.id}")
@@ -306,7 +334,6 @@ async def cancel_interview(
         interview.cancelled_at = datetime.utcnow()
         interview.cancellation_reason = cancellation_message
         
-        await db.commit()
         
         logger.info(f"✅ Interview cancelled: {interview_id}")
         
@@ -412,7 +439,6 @@ async def reschedule_interview(
         interview.status = "rescheduled"
         interview.last_synced_at = datetime.utcnow()
         
-        await db.commit()
         
         logger.info(f"✅ Interview rescheduled: {interview_id} from {old_start} to {request.new_start_time}")
         
@@ -497,7 +523,6 @@ async def submit_interview_feedback(
         if interview.status == "scheduled":
             interview.status = "completed"
         
-        await db.commit()
         
         logger.info(f"✅ Feedback submitted for interview {interview_id}")
         
@@ -737,7 +762,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
             interview.meeting_platform = "teams"
         
         db.add(interview)
-        await db.commit()
+        await db.flush()
         await db.refresh(interview)
         
         # Create activity feed entry if candidate_id provided
@@ -856,3 +881,54 @@ async def get_shortlisted_candidate_ids(
     except Exception as e:
         logger.error(f"❌ Failed to get shortlisted candidates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/interviews/stages", response_model=list[dict])
+async def get_interview_stages(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get the company's configured recruitment stages that can be used for interviews.
+
+    Returns stages ordered by stage_order, filtered to active interview-type stages
+    (excludes initial funnel and final rejection/hired stages).
+    Company is resolved from the authenticated JWT context (request.state.company_id).
+    """
+    company_id = getattr(request, "state", None) and getattr(request.state, "company_id", None)
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Company context required")
+    try:
+        from app.domains.automation.models.recruitment_stages import RecruitmentStage
+        result = await db.execute(
+            select(RecruitmentStage)
+            .where(
+                and_(
+                    RecruitmentStage.company_id == company_id,
+                    RecruitmentStage.is_active.is_(True),
+                    RecruitmentStage.is_initial.is_(False),
+                    RecruitmentStage.is_final.is_(False),
+                    RecruitmentStage.is_rejection.is_(False),
+                    RecruitmentStage.is_hired.is_(False),
+                )
+            )
+            .order_by(RecruitmentStage.stage_order)
+        )
+        stages = result.scalars().all()
+
+        return [
+            {
+                "id": str(s.id),
+                "name": s.name,
+                "display_name": s.display_name,
+                "description": s.description,
+                "stage_order": s.stage_order,
+                "color": s.color,
+                "icon": s.icon,
+                "sla_hours": s.sla_hours,
+            }
+            for s in stages
+        ]
+    except Exception as e:
+        logger.error("Failed to get interview stages: %s", e)
+        raise HTTPException(status_code=500, detail="Error fetching stages")

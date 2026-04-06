@@ -312,7 +312,6 @@ async def get_balance(
         current_usage = int(result.scalar() or 0)
         
         balance.current_usage = current_usage
-        await db.commit()
         
         return BalanceResponse(**balance.to_dict())
     except Exception as e:
@@ -350,12 +349,11 @@ async def record_consumption(
         )
         
         db.add(consumption)
-        await db.commit()
+        await db.flush()
         await db.refresh(consumption)
         
         balance = await get_or_create_balance(db, company_uuid)
         balance.current_usage = (balance.current_usage or 0) + total_tokens
-        await db.commit()
         
         logger.info(f"Recorded AI consumption: {consumption.agent_type}/{consumption.operation} - {total_tokens} tokens")
         
@@ -392,7 +390,7 @@ async def update_limits(
         if request.reset_usage:
             balance.current_usage = 0
         
-        await db.commit()
+        await db.flush()
         await db.refresh(balance)
         
         logger.info(f"Updated AI limits for client {client_id}")

@@ -505,12 +505,20 @@ class EmailService:
                         await db.refresh(client)
                         logger.info(f"✅ Updated welcome_email_sent tracking for client {client.id}")
                     except Exception as tracking_error:
+                        try:
+                            await db.rollback()
+                        except Exception:
+                            pass
                         logger.warning(f"⚠️ Failed to update welcome_email tracking: {tracking_error}")
             else:
                 logger.error(f"Failed to send welcome email to {primary_email}")
             
             return success
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error sending welcome email to {primary_email}: {e}")
             return False
     

@@ -834,6 +834,10 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
             moved = result.rowcount
             await session.commit()
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[kanban_tools] batch_move_candidates error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao mover candidatos em lote."}
     return {

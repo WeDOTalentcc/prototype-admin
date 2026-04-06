@@ -183,6 +183,10 @@ async def parse_and_create_candidate(
             }
 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ parse_and_create_candidate error: {e}", exc_info=True)
         return {
             "success": False,
@@ -326,6 +330,10 @@ async def add_to_vacancy(
             }
 
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"❌ add_to_vacancy error: {e}", exc_info=True)
         return {
             "success": False,

@@ -473,6 +473,10 @@ class ConversationManager:
             )
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error parsing CV: {e}", exc_info=True)
             return ConversationMessages.cv_parse_error()
     
@@ -1073,6 +1077,10 @@ class ConversationManager:
             return False
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"Error sending feedback: {e}", exc_info=True)
             return False
     

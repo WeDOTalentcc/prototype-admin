@@ -100,6 +100,10 @@ class JobBoardService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ Error publishing to LinkedIn: {e}")
             return {
                 "success": False,
@@ -160,6 +164,10 @@ class JobBoardService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ Error publishing to Indeed: {e}")
             return {
                 "success": False,
@@ -203,6 +211,10 @@ class JobBoardService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ Error unpublishing from LinkedIn: {e}")
             return {
                 "success": False,
@@ -246,6 +258,10 @@ class JobBoardService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"❌ Error unpublishing from Indeed: {e}")
             return {
                 "success": False,

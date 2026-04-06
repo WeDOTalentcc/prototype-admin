@@ -303,11 +303,6 @@ async def tracking_webhook(
             errors += 1
             logger.debug("[EmailTracking] webhook event error: %s", e)
 
-    if accepted > 0:
-        try:
-            await db.commit()
-        except Exception as commit_exc:
-            logger.warning("[EmailTracking] webhook commit error: %s", commit_exc)
 
     logger.info("[EmailTracking] webhook processed accepted=%d errors=%d", accepted, errors)
     return {"accepted": accepted, "errors": errors}

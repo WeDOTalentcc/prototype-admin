@@ -236,7 +236,7 @@ async def auto_trigger_screening(
             resume_url=request.resume_url,
         )
         db.add(task)
-        await db.commit()
+        await db.flush()
         await db.refresh(task)
 
         logger.info(
@@ -299,7 +299,7 @@ async def execute_screening_task(
             )
 
         task.status = "processing"
-        await db.commit()
+        await db.flush()
         await db.refresh(task)
 
         logger.info(f"Screening task {task_id} status updated to processing")

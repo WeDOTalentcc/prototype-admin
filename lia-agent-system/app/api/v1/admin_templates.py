@@ -211,7 +211,7 @@ async def create_system_template(
         )
         
         db.add(template)
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         logger.info(f"System template created: {template.id}")
@@ -302,7 +302,7 @@ async def update_system_template(
         template.version = (template.version or 1) + 1
         template.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         logger.info(f"System template updated: {template_id} (v{template.version})")
@@ -351,7 +351,6 @@ async def delete_system_template(
             message = "System template deactivated"
             logger.info(f"System template deactivated: {template_id}")
         
-        await db.commit()
         
         return {"message": message, "id": template_id}
         
@@ -446,7 +445,6 @@ async def publish_template_to_companies(
             db.add(company_template)
             published_count += 1
         
-        await db.commit()
         
         logger.info(
             f"System template {template_id} published to {published_count} companies by admin {current_user.email}"

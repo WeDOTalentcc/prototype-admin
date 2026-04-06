@@ -272,7 +272,6 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
         )
 
         db.add(consent_event)
-        await db.commit()
 
         logger.info(f"LGPD opt-out processed for company_id={company_id}")
         return HTMLResponse(content=CONFIRM_HTML.format(email=safe_email))

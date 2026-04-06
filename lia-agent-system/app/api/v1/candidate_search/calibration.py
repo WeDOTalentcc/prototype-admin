@@ -209,7 +209,6 @@ async def submit_calibration_feedback(
                 message = f"Coletando preferências... Avalie mais {feedbacks_remaining} candidato(s)."
             confidence_level = min(0.9, 0.3 + (session.total_shown * 0.12))
         
-        await db.commit()
         
         return CalibrationFeedbackResponse(
             status=session.status,
@@ -292,7 +291,6 @@ async def start_calibration_session(
                 source="local"
             ))
         
-        await db.commit()
         
         if not candidates:
             return CalibrationStartResponse(
@@ -548,7 +546,6 @@ async def add_candidates_to_vacancy(
             except ValueError:
                 skipped_ids.append(candidate_id)
         
-        await db.commit()
         
         if added_count > 0 and vacancy:
             try:

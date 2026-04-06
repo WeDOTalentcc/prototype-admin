@@ -2,7 +2,7 @@
 
 import React, { useCallback } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { ParsedEntities } from "@/components/search/smart-search-input"
+import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ChatMessage, PearchSearchOptions } from "./candidates-core"
@@ -15,8 +15,35 @@ import { useCandidatesSearch } from "./useCandidatesSearch"
 import type { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import type { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
 
+type SearchSource = 'local' | 'global' | 'hybrid'
+
+interface CreditModalsState {
+  hybrid: boolean
+  global: boolean
+  email: boolean
+  phone: boolean
+}
+
+interface SearchResults {
+  local: Candidate[]
+  global: Candidate[]
+  localCount: number
+  globalCount: number
+  query: string
+  isLoading: boolean
+  showGlobalResults: boolean
+  globalDismissed: boolean
+}
+
+interface PendingSearchRequest {
+  query: string
+  entities?: ParsedEntities
+  mode?: SearchMode
+  metadata?: SearchMetadata
+}
+
 export interface UseCandidatesSearchCompositionParams {
-  searchSource: string
+  searchSource: SearchSource
   pearchSearchOptions: PearchSearchOptions
   setCandidates: (v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
   setHasSearchResults: (v: boolean) => void
@@ -30,19 +57,19 @@ export interface UseCandidatesSearchCompositionParams {
   setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>
   creditsRemaining: number | null
   setCreditsRemaining: (v: number | null) => void
-  searchThreadId: string | null
-  setSearchThreadId: (v: string | null) => void
+  searchThreadId: string | undefined
+  setSearchThreadId: (id: string | undefined) => void
   hideViewedCandidatesFilter: ReturnType<typeof useHideViewedCandidates>['filterCandidates']
   talentFunnel: ReturnType<typeof useTalentFunnel>
-  setSearchResults: Dispatch<SetStateAction<{ query: string; filters: SearchFilters }>>
+  setSearchResults: Dispatch<SetStateAction<SearchResults>>
   setShowSearchResults: (v: boolean) => void
   setDisplayedResultsCount: (v: number) => void
-  setCurrentSearchSource: (v: string) => void
+  setCurrentSearchSource: (v: SearchSource) => void
   setHasSearched: (v: boolean) => void
   setLastSearchEntities: (v: ParsedEntities | null) => void
-  setLastSearchMetadata: (v: Record<string, unknown> | null) => void
+  setLastSearchMetadata: (v: SearchMetadata | undefined) => void
   setLastSearchUsedPearch: (v: boolean) => void
-  setSearchExecutionId: (v: string | null) => void
+  setSearchExecutionId: (v: number | ((prev: number) => number)) => void
   setShowExpandGlobalOption: (v: boolean) => void
   setShowExpandedLIA: (v: boolean) => void
   setUserCollapsedLIA: (v: boolean) => void
@@ -51,16 +78,16 @@ export interface UseCandidatesSearchCompositionParams {
   setIsDroppingCV: (v: boolean) => void
   setCvUploadLoading: (v: boolean) => void
   candidates: Candidate[]
-  searchResults: { query: string; filters: SearchFilters }
+  searchResults: SearchResults
   searchTerm: string
   lastSearchQuery: string
   lastSearchEntities: ParsedEntities | null
   lastSearchMode: string
-  lastSearchMetadata: Record<string, unknown> | null
+  lastSearchMetadata: SearchMetadata | undefined
   lastSearchUsedPearch: boolean
-  currentSearchSource: string
-  openCreditModals: Set<string>
-  setOpenCreditModals: Dispatch<SetStateAction<Set<string>>>
+  currentSearchSource: SearchSource
+  openCreditModals: CreditModalsState
+  setOpenCreditModals: Dispatch<SetStateAction<CreditModalsState>>
   setPearchSearchOptions: Dispatch<SetStateAction<PearchSearchOptions>>
   creditsUsedInSearch: number
   setCreditsUsedInSearch: (v: number) => void
@@ -76,27 +103,27 @@ export interface UseCandidatesSearchCompositionParams {
   displayedResultsCount: number
   isLoadingMore: boolean
   setIsLoadingMore: (v: boolean) => void
-  searchFeedbacks: Record<string, 'up' | 'down'>
-  setSearchFeedbacks: Dispatch<SetStateAction<Record<string, 'up' | 'down'>>>
+  searchFeedbacks: Record<string, 'like' | 'dislike'>
+  setSearchFeedbacks: Dispatch<SetStateAction<Record<string, 'like' | 'dislike'>>>
   hasSearched: boolean
   showExpandGlobalOption: boolean
   showSourceChangeModal: boolean
   setShowSourceChangeModal: (v: boolean) => void
-  pendingSourceChange: string | null
-  setPendingSourceChange: (v: string | null) => void
+  pendingSourceChange: 'hybrid' | 'global' | null
+  setPendingSourceChange: (v: 'hybrid' | 'global' | null) => void
   showContactFilterModal: boolean
   setShowContactFilterModal: (v: boolean) => void
-  pendingContactFilter: string | null
-  setPendingContactFilter: (v: string | null) => void
+  pendingContactFilter: 'email' | 'phone' | null
+  setPendingContactFilter: (v: 'email' | 'phone' | null) => void
   showCreditConfirmation: boolean
   setShowCreditConfirmation: (v: boolean) => void
-  pendingSearchRequest: Record<string, unknown> | null
-  setPendingSearchRequest: Dispatch<SetStateAction<Record<string, unknown> | null>>
+  pendingSearchRequest: PendingSearchRequest | null
+  setPendingSearchRequest: Dispatch<SetStateAction<PendingSearchRequest | null>>
   activeSearchFilters: SearchFilters
   setActiveSearchFilters: Dispatch<SetStateAction<SearchFilters>>
   setSelectedTemplate: (v: string) => void
-  setSearchSource: (v: string) => void
-  searchExecutionId: string | null
+  setSearchSource: (v: SearchSource) => void
+  searchExecutionId: number
   user: Record<string, unknown> | null
 }
 

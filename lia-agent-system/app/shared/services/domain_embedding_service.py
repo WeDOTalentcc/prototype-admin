@@ -77,6 +77,10 @@ class DomainEmbeddingService:
             )
             return True
         except Exception as exc:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning("[DomainEmbedding] embed_document failed (fail-open): %s", exc)
             return False
 

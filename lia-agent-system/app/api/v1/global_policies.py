@@ -234,7 +234,7 @@ async def update_policy(
         policy.current_value = data.current_value
         policy.updated_by = UUID(user_id) if user_id else None
         
-        await db.commit()
+        await db.flush()
         await db.refresh(policy)
         
         return PolicyResponse(**policy.to_dict())
@@ -325,7 +325,6 @@ async def seed_default_policies(
             db.add(policy)
             created += 1
         
-        await db.commit()
         
         return SeedPoliciesResponse(
             created=created,

@@ -262,7 +262,7 @@ async def create_policy(
         )
         
         db.add(policy)
-        await db.commit()
+        await db.flush()
         await db.refresh(policy)
         
         logger.info(f"✅ Created policy: {policy.name} (ID: {policy.id})")
@@ -357,7 +357,7 @@ async def update_policy(
         
         policy.updated_by = user_id
         
-        await db.commit()
+        await db.flush()
         await db.refresh(policy)
         
         logger.info(f"✅ Updated policy: {policy.name} (ID: {policy.id})")
@@ -426,7 +426,6 @@ async def delete_policy(
         
         policy_name = policy.name
         await db.delete(policy)
-        await db.commit()
         
         logger.info(f"🗑️ Deleted policy: {policy_name} (ID: {policy_id})")
         

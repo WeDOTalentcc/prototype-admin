@@ -558,6 +558,10 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
                     "message": "Parametro 'shortlist_id' e obrigatorio para adicionar a uma lista.",
                 }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[sourcing_tools] add_to_shortlist error: {e}", exc_info=True)
         return {"success": False, "data": {}, "message": str(e)}
 
@@ -600,6 +604,10 @@ async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
             "message": f"Candidato '{candidate_id}' removido da shortlist.",
         }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[sourcing_tools] remove_from_shortlist error: {e}", exc_info=True)
         return {"success": False, "data": {}, "message": str(e)}
 
@@ -737,6 +745,10 @@ async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
             "message": f"Mensagem enviada para '{candidate['name']}' via {channel}.",
         }
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.error(f"[sourcing_tools] send_outreach error: {e}", exc_info=True)
         return {"success": False, "data": {}, "message": str(e)}
 

@@ -1886,6 +1886,10 @@ class TriagemSessionService:
             }
 
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.error(f"[Triagem] Phone call request failed: {e}", exc_info=True)
             return {"error": "call_failed", "detail": str(e)}
 

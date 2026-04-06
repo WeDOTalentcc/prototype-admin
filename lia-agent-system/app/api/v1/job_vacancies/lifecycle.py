@@ -127,7 +127,6 @@ async def publish_job_vacancy_simple(
         extra_data={"old_status": old_status, "trigger_sourcing": request.trigger_sourcing},
     )
 
-    await db.commit()
 
     try:
         from app.services.event_dispatcher import event_dispatcher
@@ -330,7 +329,7 @@ async def publish_job_vacancy_v2(
         job_vacancy.open_date = datetime.utcnow()
         job_vacancy.updated_at = datetime.utcnow()
 
-        await db.commit()
+        await db.flush()
         await db.refresh(job_vacancy)
 
         logger.info(f"Job vacancy status changed: {job_id} ({old_status} -> Ativa)")
@@ -611,7 +610,6 @@ async def close_vacancy(
         vacancy.status = "Concluída"
         vacancy.closed_at = datetime.utcnow()
 
-        await db.commit()
 
         try:
             from app.services.event_dispatcher import event_dispatcher
@@ -750,7 +748,6 @@ async def bulk_pause_job_vacancies(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
-    await db.commit()
 
     logger.info(f"Bulk pause: {successful} succeeded, {failed} failed for company {company_id}")
 
@@ -831,7 +828,6 @@ async def bulk_resume_job_vacancies(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
-    await db.commit()
 
     logger.info(f"Bulk resume: {successful} succeeded, {failed} failed for company {company_id}")
 
@@ -907,7 +903,6 @@ async def bulk_archive_job_vacancies(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
-    await db.commit()
 
     logger.info(f"Bulk archive: {successful} succeeded, {failed} failed for company {company_id}")
 
@@ -978,7 +973,6 @@ async def bulk_assign_recruiter(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
-    await db.commit()
 
     logger.info(f"Bulk assign recruiter ({request.recruiter_email}): {successful} succeeded, {failed} failed")
 
@@ -1080,7 +1074,6 @@ async def bulk_change_status(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
-    await db.commit()
 
     logger.info(f"Bulk change status to '{request.new_status}': {successful} succeeded, {failed} failed")
 

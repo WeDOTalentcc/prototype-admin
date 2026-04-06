@@ -180,7 +180,6 @@ async def create_workforce_plan(
         plans.append(new_plan)
         save_workforce_plans(client, plans)
         
-        await db.commit()
         
         logger.info(f"✅ Created workforce plan: {new_plan['name']} for company {company_id}")
         
@@ -238,7 +237,6 @@ async def update_workforce_plan(
         plans[plan_index] = plan
         save_workforce_plans(client, plans)
         
-        await db.commit()
         
         logger.info(f"✅ Updated workforce plan: {plan['name']} ({plan_id})")
         
@@ -280,7 +278,6 @@ async def delete_workforce_plan(
         deleted_plan = plans.pop(plan_index)
         save_workforce_plans(client, plans)
         
-        await db.commit()
         
         logger.info(f"🗑️ Deleted workforce plan: {deleted_plan['name']} ({plan_id})")
         
@@ -375,7 +372,6 @@ async def calculate_plan_metrics(
         plans[plan_index] = plan
         save_workforce_plans(client, plans)
         
-        await db.commit()
         
         logger.info(f"📊 Recalculated metrics for plan: {plan['name']}")
         

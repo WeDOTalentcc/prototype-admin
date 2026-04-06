@@ -160,7 +160,7 @@ async def register_webhook(
         )
         
         db.add(webhook)
-        await db.commit()
+        await db.flush()
         await db.refresh(webhook)
         
         logger.info(f"Webhook registered: {request.name} for company {company_id}")
@@ -341,7 +341,7 @@ async def update_webhook(
                 setattr(webhook, field, value)
         
         webhook.updated_at = datetime.utcnow()
-        await db.commit()
+        await db.flush()
         await db.refresh(webhook)
         
         logger.info(f"Webhook updated: {webhook_id}")
@@ -400,7 +400,6 @@ async def delete_webhook(
             raise HTTPException(status_code=404, detail="Webhook not found")
         
         await db.delete(webhook)
-        await db.commit()
         
         logger.info(f"Webhook deleted: {webhook_id}")
         

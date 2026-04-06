@@ -258,6 +258,10 @@ class WSIVoiceOrchestrator:
                 )
                 
             except Exception as e:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
                 logger.error(f"❌ Failed to start voice screening: {e}", exc_info=True)
                 
                 try:
@@ -267,6 +271,10 @@ class WSIVoiceOrchestrator:
                     """), {"session_id": session_id})
                     await session.commit()
                 except Exception:
+                    try:
+                        await db.rollback()
+                    except Exception:
+                        pass
                     pass
                 
                 raise

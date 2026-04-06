@@ -207,7 +207,7 @@ async def create_default_template(
         )
         
         db.add(template)
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         logger.info(f"Created default template: {template.id} - {template.name}")
@@ -277,7 +277,7 @@ async def update_default_template(
         
         template.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         
         logger.info(f"Updated default template: {template.id} - {template.name}")
@@ -333,7 +333,6 @@ async def delete_default_template(
         
         template_name = template.name
         await db.delete(template)
-        await db.commit()
         
         logger.info(f"Deleted default template: {template_id} - {template_name}")
         
@@ -391,7 +390,7 @@ async def duplicate_default_template(
         )
         
         db.add(new_template)
-        await db.commit()
+        await db.flush()
         await db.refresh(new_template)
         
         logger.info(f"Duplicated default template: {template_id} -> {new_template.id}")
@@ -458,7 +457,6 @@ async def seed_default_templates(
                 created_templates.append(template)
         
         if created_templates:
-            await db.commit()
             for template in created_templates:
                 await db.refresh(template)
         

@@ -203,7 +203,7 @@ async def save_profile_analysis(
         if existing:
             existing.content = request.content
             existing.candidate_name = request.candidate_name
-            await db.commit()
+            await db.flush()
             await db.refresh(existing)
             return LiaProfileAnalysisResponse(
                 id=str(existing.id),
@@ -227,7 +227,7 @@ async def save_profile_analysis(
         )
         
         db.add(new_analysis)
-        await db.commit()
+        await db.flush()
         await db.refresh(new_analysis)
         
         return LiaProfileAnalysisResponse(
@@ -329,7 +329,6 @@ async def delete_candidate_analysis(
             raise HTTPException(status_code=404, detail="Analysis not found")
         
         analysis.is_active = False
-        await db.commit()
         
         return {"success": True, "message": "Analysis deleted"}
         

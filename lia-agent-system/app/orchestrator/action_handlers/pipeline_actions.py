@@ -230,6 +230,10 @@ async def _create_note(params: dict[str, Any], context: dict[str, Any]):
             action_type="create_note",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"Direct create_note failed: {e}")
         return ActionResult(
             status="error",
@@ -356,6 +360,10 @@ async def _create_automation(params: dict[str, Any], context: dict[str, Any]):
             action_type="create_automation",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"create_automation failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(

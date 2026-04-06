@@ -326,18 +326,18 @@ export function LegacyChatPage() {
             {/* Empty State: Greeting + Suggestions + Prompt as one centered block */}
             {isEmptyChat && !isSmartSearchMode && (
               <div className="mb-6">
-                <div className="mb-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Brain className="w-9 h-9 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
-                    <h2 className="text-xl font-semibold text-lia-text-primary">
-                      Oi, eu sou a <span className="font-source-serif-4">LIA</span>.
-                    </h2>
+                <div className="flex flex-col items-center text-center gap-3 mb-6">
+                  <div className="w-14 h-14 bg-wedo-cyan/[0.08] rounded-2xl flex items-center justify-center border border-wedo-cyan/[0.15]">
+                    <Brain className="w-7 h-7 text-wedo-cyan" />
                   </div>
-                  <p className="text-sm text-lia-text-secondary">
-                    Como posso ajudar na sua jornada de recrutamento hoje?
-                  </p>
+                  <div>
+                    <h1 className="text-2xl text-lia-text-primary tracking-tight flex items-baseline justify-center gap-1.5">
+                      <span className="font-light text-lia-text-secondary">Oi, eu sou a</span>
+                      <span className="font-bold text-3xl text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
+                    </h1>
+                    <p className="text-lia-text-secondary mt-1 text-sm font-medium">Como posso ajudar você hoje?</p>
+                  </div>
                 </div>
-                <p className="text-sm font-medium text-lia-text-secondary mb-3">O que posso fazer</p>
                 <PromptSuggestionsDock
                   onSelect={(command) => setInput(command)}
                   isEmpty={true}
@@ -566,56 +566,59 @@ export function LegacyChatPage() {
                 )}
 
                 {/* Input com botões */}
-                <div className="flex items-center space-x-2 rounded-xl border border-lia-border-subtle bg-white px-4 py-2 shadow-none">
-                  <div className="flex-1 relative">
+                <div className="w-full relative group">
+                  <div className="absolute -inset-0.5 bg-wedo-cyan/[0.15] rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+                  <div className="relative bg-white border border-lia-border-subtle rounded-2xl shadow-sm transition-all duration-200 focus-within:border-wedo-cyan/40 focus-within:ring-2 focus-within:ring-wedo-cyan/[0.12] focus-within:shadow-md flex flex-col">
                     <textarea
                       ref={inputRef}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none py-1 text-sm focus:outline-none bg-transparent text-lia-text-primary"
-                      rows={1}
+                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-base rounded-2xl"
+                      spellCheck={false}
                     />
-                  </div>
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={activateSmartSearch}
+                          className="p-2 text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-bg-tertiary rounded-lg transition-colors"
+                          title="Busca avançada de candidatos"
+                        >
+                          <Search className="w-4 h-4" />
+                        </Button>
 
-                  <div className="flex items-center space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={activateSmartSearch}
-                      className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105"
-                      title="Busca avançada de candidatos"
-                    >
-                      <Search className="w-4 h-4" />
-                    </Button>
-                    
-                    <FileUploadButton
-                      onFilesSelected={handleFilesSelected}
-                      onFileAnalyzed={handleFileAnalyzed}
-                      disabled={isLoading}
-                      maxFiles={3}
-                      showPreview={false}
-                      autoAnalyze={true}
-                    />
-                    
-                    <AudioRecordButton
-                      onTranscription={handleAudioTranscription}
-                      onRecordingStart={handleAudioRecordingStart}
-                      onRecordingEnd={handleAudioRecordingEnd}
-                      disabled={isLoading}
-                      maxDuration={60}
-                    />
-                    
-                    <Button
-                      onClick={() => handleSendMessage()}
-                      disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
-                      size="sm"
-                      className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-lia-btn-primary-hover text-white"
-                      title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
+                        <FileUploadButton
+                          onFilesSelected={handleFilesSelected}
+                          onFileAnalyzed={handleFileAnalyzed}
+                          disabled={isLoading}
+                          maxFiles={3}
+                          showPreview={false}
+                          autoAnalyze={true}
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <AudioRecordButton
+                          onTranscription={handleAudioTranscription}
+                          onRecordingStart={handleAudioRecordingStart}
+                          onRecordingEnd={handleAudioRecordingEnd}
+                          disabled={isLoading}
+                          maxDuration={60}
+                        />
+
+                        <Button
+                          onClick={() => handleSendMessage()}
+                          disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
+                          size="sm"
+                          className="p-2 bg-lia-btn-primary-hover text-white hover:bg-lia-btn-primary-bg rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                          title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
+                        >
+                          <Send className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

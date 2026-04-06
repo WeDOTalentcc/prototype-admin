@@ -80,6 +80,7 @@ from app.api.v1 import (
     experience_highlights,
     external_webhooks,
     fairness_reports,
+    mailgun_webhooks,
     file_analysis,
     finetuning_export,
     gemini_voice,
@@ -455,6 +456,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(integrations_hub.router, prefix="/api/v1", tags=["integration-hub"])
     app.include_router(external_webhooks.router, prefix="/api/v1", tags=["external-webhooks"])
     app.include_router(merge_webhooks.router, prefix="/api/v1", tags=["merge-webhooks"])
+    app.include_router(mailgun_webhooks.router, prefix="/api/v1", tags=["mailgun-webhooks"])
     app.include_router(microsoft_graph.router, prefix="/api/v1", tags=["microsoft-graph"])
 
     # ── Learning ──────────────────────────────────────────────────────────────

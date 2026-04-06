@@ -327,6 +327,10 @@ class JobStatusWebhookService:
                     }
                     
         except httpx.TimeoutException:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             end_time = datetime.utcnow()
             duration_ms = int((end_time - start_time).total_seconds() * 1000)
             
@@ -349,6 +353,10 @@ class JobStatusWebhookService:
             }
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             end_time = datetime.utcnow()
             duration_ms = int((end_time - start_time).total_seconds() * 1000)
             
@@ -398,6 +406,10 @@ class JobStatusWebhookService:
             db.add(audit_log)
             await db.commit()
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             logger.warning(f"Failed to log to audit trail: {e}")
     
     async def send_test_webhook(

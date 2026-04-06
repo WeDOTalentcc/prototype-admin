@@ -308,6 +308,78 @@ class PaymentMethod(Base):
         return self.type.replace("_", " ").title()
 
 
+class CreditTransactionType(str, enum.Enum):
+    PURCHASE = "purchase"
+    CONSUMPTION = "consumption"
+    REFUND = "refund"
+    BONUS = "bonus"
+    ADJUSTMENT = "adjustment"
+    SUBSCRIPTION_GRANT = "subscription_grant"
+    EXPIRATION = "expiration"
+
+
+class CreditAccount(Base):
+    """Credit balance per company for metered features (global search, AI analysis, etc.)."""
+    __tablename__ = "credit_accounts"
+    __table_args__ = (
+        Index("ix_credit_accounts_company", "company_id", unique=True),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(String(100), nullable=False, unique=True, index=True)
+    balance = Column(Integer, nullable=False, default=0)
+    lifetime_purchased = Column(Integer, nullable=False, default=0)
+    lifetime_consumed = Column(Integer, nullable=False, default=0)
+    lifetime_bonus = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "company_id": self.company_id,
+            "balance": self.balance,
+            "lifetime_purchased": self.lifetime_purchased,
+            "lifetime_consumed": self.lifetime_consumed,
+            "lifetime_bonus": self.lifetime_bonus,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class CreditTransaction(Base):
+    """Immutable ledger of credit movements (purchases, consumption, refunds, bonuses)."""
+    __tablename__ = "credit_transactions"
+    __table_args__ = (
+        Index("ix_credit_tx_company_created", "company_id", "created_at"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(String(100), nullable=False, index=True)
+    transaction_type = Column(String(30), nullable=False, index=True)
+    amount = Column(Integer, nullable=False)
+    balance_after = Column(Integer, nullable=False)
+    description = Column(String(500), nullable=True)
+    reference_type = Column(String(50), nullable=True)
+    reference_id = Column(String(100), nullable=True)
+    performed_by = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "company_id": self.company_id,
+            "transaction_type": self.transaction_type,
+            "amount": self.amount,
+            "balance_after": self.balance_after,
+            "description": self.description,
+            "reference_type": self.reference_type,
+            "reference_id": self.reference_id,
+            "performed_by": self.performed_by,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 SUBSCRIPTION_STATUS_OPTIONS = [
     {"value": SubscriptionStatus.ACTIVE.value, "label": "Ativa", "description": "Assinatura em dia"},
     {"value": SubscriptionStatus.TRIALING.value, "label": "Em Trial", "description": "Período de teste"},

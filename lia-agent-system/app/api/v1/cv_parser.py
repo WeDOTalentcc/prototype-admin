@@ -459,7 +459,7 @@ async def confirm_cv_and_create_candidate(
             )
             db.add(education_record)
         
-        await db.commit()
+        await db.flush()
         await db.refresh(candidate)
         
         logger.info(f"Candidate created from CV: {candidate.id} - {candidate.name} (with {len(parsed_cv.experiences)} experiences)")

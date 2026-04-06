@@ -325,7 +325,7 @@ async def create_job_draft(
     )
     
     db.add(draft)
-    await db.commit()
+    await db.flush()
     await db.refresh(draft)
     
     logger.info(f"Created job draft {draft.id} for company {company_id}")
@@ -404,7 +404,7 @@ async def update_job_draft(
     
     draft.updated_at = datetime.utcnow()
     
-    await db.commit()
+    await db.flush()
     await db.refresh(draft)
     
     logger.info(f"Updated job draft {draft_id}")
@@ -439,7 +439,6 @@ async def delete_job_draft(
     
     draft.mark_cancelled()
     
-    await db.commit()
     
     logger.info(f"Soft deleted (cancelled) job draft {draft_id}")
     
@@ -521,7 +520,7 @@ async def publish_job_draft(
     
     draft.mark_published(job_vacancy.id)
     
-    await db.commit()
+    await db.flush()
     await db.refresh(job_vacancy)
     
     logger.info(f"Published job draft {draft_id} as job vacancy {job_vacancy.id}")

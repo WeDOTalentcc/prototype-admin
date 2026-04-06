@@ -776,6 +776,10 @@ class JobPatternService:
             self.logger.info(f"Updated patterns from outcome: {outcome.id}")
             
         except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
             self.logger.error(f"Error updating patterns from outcome: {e}")
     
     async def _update_salary_benchmark(

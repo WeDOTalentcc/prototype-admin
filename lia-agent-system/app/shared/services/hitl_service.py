@@ -75,6 +75,10 @@ async def _db_save_pending(
             db.add(record)
             await db.commit()
     except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning("[HITL] DB save pending falhou (best-effort): %s", exc)
 
 
@@ -121,6 +125,10 @@ async def _db_resolve(
             db.add(trail)
             await db.commit()
     except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning("[HITL] DB resolve falhou (best-effort): %s", exc)
 
 

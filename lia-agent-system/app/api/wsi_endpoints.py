@@ -315,7 +315,6 @@ async def generate_questions(
                 "sequence_order": idx + 1
             })
         
-        await db.commit()
         
         return GenerateQuestionsResponse(
             session_id=request.session_id,
@@ -386,7 +385,6 @@ async def analyze_response(
             "justification": analysis.justification
         })
         
-        await db.commit()
         
         return AnalyzeResponseResponse(
             analysis_id=analysis_id,
@@ -475,7 +473,6 @@ async def calculate_wsi(
             WHERE id = :session_id
         """), {"session_id": request.session_id})
         
-        await db.commit()
         
         return CalculateWSIResponse(
             result_id=result_id,

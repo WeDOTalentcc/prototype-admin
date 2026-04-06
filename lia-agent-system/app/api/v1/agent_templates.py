@@ -129,7 +129,7 @@ async def create_template(
         created_by=str(current_user.id),
     )
     db.add(template)
-    await db.commit()
+    await db.flush()
     await db.refresh(template)
     return template
 
@@ -202,7 +202,7 @@ async def update_template(
         template.archived_at = datetime.now(UTC)
 
         db.add(new_version)
-        await db.commit()
+        await db.flush()
         await db.refresh(new_version)
         return new_version
     else:
@@ -210,7 +210,7 @@ async def update_template(
         template.name = body.name
         template.domain = body.domain
         template.system_prompt_yaml = body.system_prompt_yaml
-        await db.commit()
+        await db.flush()
         await db.refresh(template)
         return template
 
@@ -245,7 +245,7 @@ async def publish_template(
 
     template.status = AgentTemplateStatus.PUBLISHED
     template.published_at = datetime.now(UTC)
-    await db.commit()
+    await db.flush()
     await db.refresh(template)
     return template
 
@@ -270,4 +270,3 @@ async def archive_template(
 
     template.status = AgentTemplateStatus.ARCHIVED
     template.archived_at = datetime.now(UTC)
-    await db.commit()

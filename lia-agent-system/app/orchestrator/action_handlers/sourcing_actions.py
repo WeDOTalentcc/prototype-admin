@@ -88,6 +88,10 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
             action_type="tag_candidates",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"tag_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -469,6 +473,10 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
             action_type="add_candidate",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"add_candidate failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
@@ -610,6 +618,10 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
             action_type="favorite_candidate",
         )
     except Exception as e:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
         logger.warning(f"favorite_candidate failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(

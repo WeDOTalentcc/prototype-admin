@@ -335,7 +335,6 @@ async def analyze_interview(
                     .where(Interview.id == interview_id)
                     .values(feedback=current_feedback)
                 )
-                await db.commit()
         
         if not transcript_text:
             raise HTTPException(
@@ -370,7 +369,6 @@ async def analyze_interview(
             .where(Interview.id == interview_id)
             .values(feedback=current_feedback)
         )
-        await db.commit()
         
         # Create LIA Opinion record
         opinion_id = await create_opinion_from_analysis(
@@ -378,7 +376,6 @@ async def analyze_interview(
             company_id=company_id,
             db=db
         )
-        await db.commit()
         
         logger.info(f"✅ Interview analysis completed: {interview_id}, WSI={analysis_result.overall_wsi_score}, opinion_id={opinion_id}")
         
@@ -431,7 +428,6 @@ async def analyze_raw_transcript(
             company_id=company_id,
             db=db
         )
-        await db.commit()
         
         logger.info(f"✅ Raw transcript analysis completed: WSI={analysis_result.overall_wsi_score}, opinion_id={opinion_id}")
         
@@ -698,7 +694,6 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
                     status="completed"
                 )
             )
-            await db.commit()
             
             # Create LIA Opinion record
             company_id = interview_record.company_id if hasattr(interview_record, 'company_id') and interview_record.company_id else None
@@ -708,7 +703,6 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
                 company_id=company_id,
                 db=db
             )
-            await db.commit()
             
             # Send notification to recruiter
             await send_analysis_notification(

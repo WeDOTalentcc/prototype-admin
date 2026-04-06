@@ -125,7 +125,7 @@ async def create_rule(
         priority=rule.priority,
     )
     db.add(new_rule)
-    await db.commit()
+    await db.flush()
     await db.refresh(new_rule)
     return {"success": True, "rule_id": str(new_rule.id), "rule": new_rule.to_dict()}
 
@@ -155,7 +155,7 @@ async def update_rule(
     for key, value in update_data.items():
         setattr(rule, key, value)
     
-    await db.commit()
+    await db.flush()
     await db.refresh(rule)
     return {"success": True, "rule": rule.to_dict()}
 
@@ -178,7 +178,6 @@ async def delete_rule(
         raise HTTPException(status_code=404, detail="Rule not found")
     
     await db.delete(rule)
-    await db.commit()
     return {"success": True, "deleted_id": rule_id}
 
 
@@ -200,7 +199,7 @@ async def toggle_rule(
         raise HTTPException(status_code=404, detail="Rule not found")
     
     rule.is_active = not rule.is_active
-    await db.commit()
+    await db.flush()
     await db.refresh(rule)
     return {"success": True, "is_active": rule.is_active, "rule": rule.to_dict()}
 
@@ -242,7 +241,6 @@ async def seed_default_rules(
         db.add(rule)
         created_rules.append(rule_data["trigger_type"])
     
-    await db.commit()
     return {
         "success": True,
         "rules_created": len(created_rules),
