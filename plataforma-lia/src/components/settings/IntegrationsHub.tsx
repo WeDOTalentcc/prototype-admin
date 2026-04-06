@@ -89,7 +89,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       })
       .catch(() => setTeamsStatus("not_configured"))
 
-    fetch("/api/backend-proxy/admin/llm-config")
+    fetch("/api/backend-proxy/llm-config")
       .then((r) => {
         if (!r.ok) throw new Error("Failed to fetch LLM config")
         return r.json()

@@ -18,7 +18,7 @@ export default function NotFound() {
           </p>
         </div>
         <Link
-          href="/admin/dashboard"
+          href="/"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan-dark transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

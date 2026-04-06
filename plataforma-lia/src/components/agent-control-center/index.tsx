@@ -9,7 +9,32 @@ import {
   AlertTriangle, ChevronRight,
   Filter, X, Brain, Zap, Target, Users
 } from 'lucide-react'
-import { MetricCard, CompactDelta } from '@/components/admin/dashboard/MetricCard'
+function MetricCard({ variant, icon, title, value, trend, accentColor }: {
+  variant?: string; icon: React.ReactNode; title: string; value: React.ReactNode; trend?: number; accentColor?: string
+}) {
+  return (
+    <div className="p-3 rounded-lg bg-lia-bg-secondary dark:bg-lia-bg-tertiary border border-lia-border-default">
+      <div className="flex items-center gap-2 mb-1">
+        <span style={{ color: accentColor }}>{icon}</span>
+        <span className="text-xs text-lia-text-disabled">{title}</span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-bold text-lia-text-primary">{value}</span>
+        {trend !== undefined && <CompactDelta value={trend} />}
+      </div>
+    </div>
+  )
+}
+
+function CompactDelta({ value }: { value: number }) {
+  if (value === 0) return null
+  const isPositive = value > 0
+  return (
+    <span className={`text-xs font-medium ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
+      {isPositive ? '+' : ''}{value}%
+    </span>
+  )
+}
 import { 
   agentMonitoringService, 
   AgentSummary, 

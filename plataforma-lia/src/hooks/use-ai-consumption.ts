@@ -6,7 +6,7 @@ import {
   UsageSummary, 
   DailyUsage, 
   AgentUsage 
-} from '@/services/admin/ai-consumption'
+} from '@/services/ai-consumption'
 
 export type { UsageSummary, DailyUsage, AgentUsage }
 

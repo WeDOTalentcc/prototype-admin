@@ -112,7 +112,6 @@ export const PINIA_READY_HOOKS = [
   'use-chat-file-handling',
   'use-chat-page-state',
   'use-chat-search',
-  'use-clients',
   'use-communication-templates',
   'use-company-culture',
   'use-company-defaults',
@@ -146,7 +145,6 @@ export const PINIA_READY_HOOKS = [
   'use-recent-items',
   'use-recruitment-stages',
   'use-return-events',
-  'use-saas-metrics',
   'use-scim-config',
   'use-score-breakdown',
   'use-search-autocomplete',
@@ -253,11 +251,6 @@ export const CONTEXT_TO_STORE_MAP = {
   // Actions: show, hide, minimize, setPosition
   LiaFloatContext: "useLiaFloatStore",
 
-  // ClientContext -> useClientStore
-  // src/contexts/ClientContext.tsx -> stores/client.ts
-  // Estado: currentClient, clients, isLoading
-  // Actions: selectClient, fetchClients
-  ClientContext: "useClientStore",
 } as const
 
 /**

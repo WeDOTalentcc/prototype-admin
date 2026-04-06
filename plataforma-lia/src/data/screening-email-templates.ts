@@ -6,7 +6,19 @@
  * @updated 2026-01-13
  */
 
-import type { DefaultTemplate } from '@/services/admin/templates-service'
+interface DefaultTemplate {
+  id: string
+  name: string
+  category: string
+  subject: string
+  body: string
+  variables?: string[]
+  isActive?: boolean
+  status?: string
+  usedByClients?: number
+  createdAt?: string
+  updatedAt?: string
+}
 
 export type ScreeningTemplateType = 'screening' | 'interview' | 'feedback' | 'reminder' | 'offer'
 export type TriggerEvent = 

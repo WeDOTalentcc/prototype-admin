@@ -10,7 +10,6 @@ const PROTECTED_PAGE_PREFIXES = [
   '/chat',
   '/agenda',
   '/configuracoes',
-  '/admin',
 ]
 
 const PROTECTED_API_PREFIXES = [

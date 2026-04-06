@@ -156,9 +156,9 @@ export default function AccessPage() {
                 </div>
 
                 {/* CTA */}
-                <Link href="/admin" className="w-full">
+                <Link href="/" className="w-full">
                   <Button className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active">
-                    Acessar Admin
+                    Acessar Plataforma
                     <Shield className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>

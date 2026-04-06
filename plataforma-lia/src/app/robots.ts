@@ -7,7 +7,6 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         // Bloquear rotas autenticadas de indexação (são privadas)
         disallow: [
-          '/admin/',
           '/api/',
           '/login',
           '/register',

@@ -64,7 +64,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **WSI Pipeline Unification (Fonte Única de Verdade)**: Reads screening questions exclusively from `job_screening_questions` DB table, with fallbacks and standardized nomenclature.
 - **WSI Competency Minimums**: Minimum technical skills raised to 9 and behavioral competencies to 5, with pipeline adjustments and frontend warnings.
 - **Design Token Migration**: Full codebase migration from hardcoded Tailwind color classes to semantic Design System LIA v4.2.1 tokens.
-- **Admin Audit & Streamlining**: Reduced accessible admin pages by removing redundant or premature features and consolidating sections.
+- **Admin Panel Removed**: The entire `/admin` section (~19,000 lines, 93 files) was removed as it was isolated from the main platform. This included all admin pages, components, hooks, services, API proxy routes, and client management. External references were fixed (MetricCard inlined in agent-control-center, ai-consumption service relocated).
 - **Security Audit**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
 - **Zustand State Management**: Introduced zustand for centralized state management, covering auth, kanban, and candidate data.
 - **@ts-ignore Elimination**: Removed all `@ts-ignore` comments from the frontend codebase.

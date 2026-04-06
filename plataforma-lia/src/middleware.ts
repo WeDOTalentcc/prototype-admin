@@ -105,30 +105,6 @@ export async function middleware(request: NextRequest) {
       return denyAccess(request, pathname)
     }
 
-    if (pathname.startsWith('/admin')) {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:8000'
-      try {
-        const meResponse = await fetch(`${backendUrl}/api/v1/auth/me`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${sessionData.accessToken}`,
-            'X-Auth-Method': 'workos',
-          },
-          signal: AbortSignal.timeout(3000),
-        })
-        if (!meResponse.ok) {
-          return denyAccess(request, pathname)
-        }
-        const meData = await meResponse.json()
-        const userRole = meData.role || meData.user_role
-        if (userRole !== 'admin') {
-          return denyAccess(request, pathname)
-        }
-      } catch {
-        return denyAccess(request, pathname)
-      }
-    }
-
     const requestHeaders = new Headers(request.headers)
     if (sessionData.accessToken && !requestHeaders.get('Authorization')) {
       requestHeaders.set('Authorization', `Bearer ${sessionData.accessToken}`)
@@ -157,13 +133,6 @@ export async function middleware(request: NextRequest) {
   const payload = await verifyJwt(token)
   if (!payload) {
     return denyAccess(request, pathname)
-  }
-
-  if (pathname.startsWith('/admin')) {
-    const role = payload.role || payload.user_role
-    if (role !== 'admin') {
-      return denyAccess(request, pathname)
-    }
   }
 
   const requestHeaders = new Headers(request.headers)
