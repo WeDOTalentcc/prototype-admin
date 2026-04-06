@@ -80,7 +80,6 @@ PENDING_MIGRATION = {
     "app/api/v1/digest.py",
     "app/api/v1/drift.py",
     "app/api/v1/early_warning.py",
-    "app/api/v1/email_templates.py",
     "app/api/v1/event_history.py",
     "app/api/v1/experience_highlights.py",
     "app/api/v1/fairness_reports.py",
