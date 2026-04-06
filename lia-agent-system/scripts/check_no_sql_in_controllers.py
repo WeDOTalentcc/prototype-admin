@@ -99,7 +99,6 @@ PENDING_MIGRATION = {
     "app/api/v1/intelligence.py",
     "app/api/v1/interview_analysis.py",
     "app/api/v1/interview_notes.py",
-    "app/api/v1/interviews.py",
     "app/api/v1/jd_import.py",
     "app/api/v1/job_analytics.py",
     "app/api/v1/job_board.py",
