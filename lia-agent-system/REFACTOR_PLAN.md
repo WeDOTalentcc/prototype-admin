@@ -1154,7 +1154,7 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 |---|---|---|---|---|---|
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
-| 2 — Extract DB to repos | ⬜ TODO | | | | |
+| 2 — Extract DB to repos | 🔄 PARTIAL | — | — | 7 files→repos, 178 pending | 2026-04-06 |
 | 3 — Model consolidation | ✅ DONE | ~393,600 | ~393,200 | 8 files→lia_models | 2026-04-06 |
 | 4 — DDD migration | 🔄 PARTIAL | — | — | 132 shims + domain copy | 2026-04-06 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |

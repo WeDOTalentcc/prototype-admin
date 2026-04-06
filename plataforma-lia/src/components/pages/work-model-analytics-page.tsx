@@ -463,7 +463,7 @@ export function WorkModelAnalyticsPage() {
             {/* Insights e Recomendações */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-              {/* Insights */}
+              {/* Insights — derivados dos dados carregados */}
               <Card className="border-l-4 border-l-green-500">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -473,46 +473,64 @@ export function WorkModelAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md">
-                      <h4 className="text-sm font-medium text-status-success dark:text-status-success mb-1">
-                        🏆 Modelo Híbrido Dominante
-                      </h4>
-                      <p className="text-xs text-status-success dark:text-status-success">
-                        48.9% dos candidatos preferem modelo híbrido, com crescimento de 8.3%
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-secondary mb-1">
-                        💰 Salário Remoto vs Híbrido
-                      </h4>
-                      <p className="text-xs text-lia-text-secondary/80">
-                        Trabalho híbrido oferece salário médio 8.2% maior que remoto
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md">
-                      <h4 className="text-sm font-medium text-wedo-orange dark:text-wedo-orange mb-1">
-                        📍 Concentração em SP/RJ
-                      </h4>
-                      <p className="text-xs text-wedo-orange dark:text-wedo-orange">
-                        71% dos candidatos estão concentrados em São Paulo e Rio de Janeiro
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
-                      <h4 className="text-sm font-medium text-wedo-purple dark:text-wedo-purple mb-1">
-                        🚀 Desenvolvedores Preferem Remoto
-                      </h4>
-                      <p className="text-xs text-wedo-purple dark:text-wedo-purple">
-                        Full Stack e Frontend lideram preferência por trabalho remoto
-                      </p>
-                    </div>
+                    {(() => {
+                      const sorted = [...workModelDistribution].sort((a, b) => b.percentual - a.percentual)
+                      const top = sorted[0]
+                      const insights = [
+                        {
+                          color: "status-success",
+                          bg: "bg-status-success/10 dark:bg-status-success/20",
+                          title: `Modelo ${top?.modelo.charAt(0).toUpperCase()}${top?.modelo.slice(1)} Dominante`,
+                          desc: `${top?.percentual.toFixed(1)}% dos candidatos preferem modelo ${top?.modelo}, com ${top?.crescimento > 0 ? 'crescimento' : 'queda'} de ${Math.abs(top?.crescimento ?? 0).toFixed(1)}%`,
+                        },
+                      ]
+                      const remoto = workModelDistribution.find(d => d.modelo === 'remoto')
+                      const hibrido = workModelDistribution.find(d => d.modelo === 'híbrido')
+                      if (remoto && hibrido && hibrido.salarioMedio > 0 && remoto.salarioMedio > 0) {
+                        const diff = ((hibrido.salarioMedio - remoto.salarioMedio) / remoto.salarioMedio * 100)
+                        insights.push({
+                          color: "lia-text-secondary",
+                          bg: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
+                          title: "Salário Remoto vs Híbrido",
+                          desc: diff > 0
+                            ? `Trabalho híbrido oferece salário médio ${diff.toFixed(1)}% maior que remoto`
+                            : `Trabalho remoto oferece salário médio ${Math.abs(diff).toFixed(1)}% maior que híbrido`,
+                        })
+                      }
+                      if ((backendData?.by_location || []).length > 0) {
+                        const topLocations = [...(backendData?.by_location || [])].sort((a, b) => b.total - a.total).slice(0, 2)
+                        const totalAll = (backendData?.by_location || []).reduce((s, l) => s + l.total, 0)
+                        const topPct = totalAll > 0 ? ((topLocations.reduce((s, l) => s + l.total, 0) / totalAll) * 100).toFixed(0) : "0"
+                        insights.push({
+                          color: "wedo-orange",
+                          bg: "bg-wedo-orange/10 dark:bg-wedo-orange/20",
+                          title: `Concentração em ${topLocations.map(l => l.regiao).join(' e ')}`,
+                          desc: `${topPct}% dos candidatos estão concentrados nessas regiões`,
+                        })
+                      }
+                      if ((backendData?.by_title || []).length > 0) {
+                        const remotoTitles = (backendData?.by_title || []).filter(t => t.remoto > t.hibrido && t.remoto > t.presencial).slice(0, 2)
+                        if (remotoTitles.length > 0) {
+                          insights.push({
+                            color: "wedo-purple",
+                            bg: "bg-wedo-purple/10 dark:bg-wedo-purple/20",
+                            title: "Preferência por Remoto",
+                            desc: `${remotoTitles.map(t => t.cargo).join(' e ')} lideram preferência por trabalho remoto`,
+                          })
+                        }
+                      }
+                      return insights.map((ins, i) => (
+                        <div key={i} className={`p-3 ${ins.bg} rounded-md`}>
+                          <h4 className={`text-sm font-medium text-${ins.color} mb-1`}>{ins.title}</h4>
+                          <p className={`text-xs text-${ins.color}`}>{ins.desc}</p>
+                        </div>
+                      ))
+                    })()}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Recomendações */}
+              {/* Recomendações — derivadas dos dados */}
               <Card className="border-l-4 border-l-purple-500">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -522,41 +540,45 @@ export function WorkModelAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
-                        🎯 Focar em Modelo Híbrido
-                      </h4>
-                      <p className="text-xs text-lia-text-secondary">
-                        Priorizar vagas híbridas para atrair 48.9% dos candidatos disponíveis
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
-                        💎 Expandir para Regiões
-                      </h4>
-                      <p className="text-xs text-lia-text-secondary">
-                        Oportunidade de crescimento em Sul e Nordeste com trabalho remoto
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
-                        📈 Ajustar Estratégia Salarial
-                      </h4>
-                      <p className="text-xs text-lia-text-secondary">
-                        Modelo híbrido justifica salários 8% maiores pela produtividade
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
-                        🔄 Revisar Políticas Presenciais
-                      </h4>
-                      <p className="text-xs text-lia-text-secondary">
-                        Apenas 16.9% preferem presencial - considerar flexibilização
-                      </p>
-                    </div>
+                    {(() => {
+                      const sorted = [...workModelDistribution].sort((a, b) => b.percentual - a.percentual)
+                      const top = sorted[0]
+                      const presencial = workModelDistribution.find(d => d.modelo === 'presencial')
+                      const recs = [
+                        {
+                          title: `Focar em Modelo ${top?.modelo.charAt(0).toUpperCase()}${top?.modelo.slice(1)}`,
+                          desc: `Priorizar vagas ${top?.modelo}s para atrair ${top?.percentual.toFixed(1)}% dos candidatos disponíveis`,
+                        },
+                      ]
+                      if ((backendData?.by_location || []).length > 2) {
+                        const smaller = [...(backendData?.by_location || [])].sort((a, b) => a.total - b.total).slice(0, 2)
+                        recs.push({
+                          title: "Expandir para Regiões",
+                          desc: `Oportunidade de crescimento em ${smaller.map(l => l.regiao).join(' e ')} com trabalho remoto`,
+                        })
+                      }
+                      const remoto = workModelDistribution.find(d => d.modelo === 'remoto')
+                      const hibrido = workModelDistribution.find(d => d.modelo === 'híbrido')
+                      if (remoto && hibrido && hibrido.salarioMedio > 0 && remoto.salarioMedio > 0) {
+                        const diff = ((hibrido.salarioMedio - remoto.salarioMedio) / remoto.salarioMedio * 100)
+                        recs.push({
+                          title: "Ajustar Estratégia Salarial",
+                          desc: `Modelo ${diff > 0 ? 'híbrido' : 'remoto'} justifica salários ${Math.abs(diff).toFixed(0)}% maiores pela produtividade`,
+                        })
+                      }
+                      if (presencial && presencial.percentual < 25) {
+                        recs.push({
+                          title: "Revisar Políticas Presenciais",
+                          desc: `Apenas ${presencial.percentual.toFixed(1)}% preferem presencial — considerar flexibilização`,
+                        })
+                      }
+                      return recs.map((rec, i) => (
+                        <div key={i} className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                          <h4 className="text-sm font-medium text-lia-text-primary mb-1">{rec.title}</h4>
+                          <p className="text-xs text-lia-text-secondary">{rec.desc}</p>
+                        </div>
+                      ))
+                    })()}
                   </div>
                 </CardContent>
               </Card>

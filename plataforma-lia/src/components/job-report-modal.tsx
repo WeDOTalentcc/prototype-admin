@@ -598,6 +598,38 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               </div>
             )}
 
+            {/* Métricas de Qualidade (ML) */}
+            {(reportData.predictions.timeToFill || reportData.predictions.salary) && (
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
+                  <Target className="w-3 h-3 text-status-success" />
+                  Métricas de Qualidade
+                </h3>
+                <div className="grid grid-cols-5 gap-2">
+                  <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                    <p className="text-micro text-lia-text-secondary">NPS</p>
+                    <p className="text-sm font-bold text-lia-text-primary">{reportData.qualityMetrics.nps}</p>
+                  </div>
+                  <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                    <p className="text-micro text-lia-text-secondary">Satisfação Cand.</p>
+                    <p className="text-sm font-bold text-lia-text-primary">{reportData.qualityMetrics.candidateSatisfaction}/5</p>
+                  </div>
+                  <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
+                    <p className="text-micro text-lia-text-secondary">Satisfação Gestor</p>
+                    <p className="text-sm font-bold text-lia-text-primary">{reportData.qualityMetrics.hiringManagerSatisfaction}/5</p>
+                  </div>
+                  <div className="p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30 text-center">
+                    <p className="text-micro text-lia-text-secondary">Benchmark TTF</p>
+                    <p className="text-micro font-medium text-wedo-purple">{reportData.qualityMetrics.timeToFillBenchmark}</p>
+                  </div>
+                  <div className="p-2 bg-status-success/10 rounded-md border border-status-success/30 text-center">
+                    <p className="text-micro text-lia-text-secondary">Salário vs Mercado</p>
+                    <p className="text-micro font-medium text-status-success">{reportData.qualityMetrics.qualityOfHireBenchmark}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Análise de Custos */}
             {selectedSections.costs && (
               <div className="space-y-2">
