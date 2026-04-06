@@ -8,8 +8,6 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel
-from sqlalchemy import update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.domains.ats_integration.dependencies import get_ats_repo

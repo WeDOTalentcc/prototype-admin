@@ -98,3 +98,31 @@ class JobVacancyCRUDRepository:
 
     def get_session(self) -> AsyncSession:
         return self.db
+
+    async def search_by_query(self, company_id, query: str, offset: int, page_size: int):
+        from sqlalchemy import and_, or_, func, select
+        from app.models.job_vacancy import JobVacancy
+        base_filter = JobVacancy.company_id == company_id
+        if query and len(query) >= 2:
+            search_term = f"%{query}%"
+            search_filter = and_(
+                base_filter,
+                or_(
+                    JobVacancy.title.ilike(search_term),
+                    JobVacancy.job_id.ilike(search_term)
+                )
+            )
+        else:
+            search_filter = base_filter
+        count_result = await self.db.execute(
+            select(func.count()).select_from(JobVacancy).where(search_filter)
+        )
+        total = count_result.scalar() or 0
+        rows_result = await self.db.execute(
+            select(JobVacancy).where(search_filter)
+            .order_by(JobVacancy.created_at.desc())
+            .offset(offset).limit(page_size)
+        )
+        rows = list(rows_result.scalars().all())
+        return total, rows
+

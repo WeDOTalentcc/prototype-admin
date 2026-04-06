@@ -5,7 +5,6 @@ from typing import (
 from uuid import UUID
 
 from pydantic import Field
-from sqlalchemy import and_, or_
 
 from app.auth.models import UserRole
 from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
@@ -109,22 +108,7 @@ async def search_job_vacancies(
         company_id = get_user_company_id(current_user)
         offset = (page - 1) * page_size
 
-        base_filter = JobVacancy.company_id == company_id
-
-        if query and len(query) >= 2:
-            search_term = f"%{query}%"
-            search_filter = and_(
-                base_filter,
-                or_(
-                    JobVacancy.title.ilike(search_term),
-                    JobVacancy.job_id.ilike(search_term)
-                )
-            )
-        else:
-            search_filter = base_filter
-
-        total_count = await repo.search_count(search_filter)
-        rows = await repo.search_vacancies(search_filter, offset, page_size)
+        total_count, rows = await repo.search_by_query(company_id, query, offset, page_size)
 
         items = []
         for row in rows:

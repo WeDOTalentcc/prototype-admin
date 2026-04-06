@@ -15,7 +15,6 @@ from uuid import UUID
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
-from sqlalchemy.orm.attributes import flag_modified
 
 from app.domains.billing.dependencies import get_billing_repo
 from app.domains.billing.repositories.billing_repository import BillingRepository
@@ -1182,7 +1181,7 @@ async def get_current_subscription(
 
         if client.settings != settings:
             client.settings = settings
-            flag_modified(client, "settings")
+            repo.mark_client_settings_modified(client)
 
         billing = settings.get("billing", {})
 
@@ -1233,7 +1232,7 @@ async def update_current_subscription(
         billing["subscription"] = subscription
         settings["billing"] = billing
         client.settings = settings
-        flag_modified(client, "settings")
+        repo.mark_client_settings_modified(client)
         client.updated_at = datetime.utcnow()
 
         await repo.flush_and_refresh_client(client)
@@ -1378,7 +1377,7 @@ async def pay_my_invoice(
         billing["invoices"] = invoices
         settings["billing"] = billing
         client.settings = settings
-        flag_modified(client, "settings")
+        repo.mark_client_settings_modified(client)
         client.updated_at = datetime.utcnow()
 
         logger.info(f"Marked invoice {invoice_id} as paid for company {company_id}")
@@ -1467,7 +1466,7 @@ async def add_my_payment_method(
         billing["payment_methods"] = payment_methods
         settings["billing"] = billing
         client.settings = settings
-        flag_modified(client, "settings")
+        repo.mark_client_settings_modified(client)
         client.updated_at = datetime.utcnow()
 
         logger.info(f"Added payment method for company {company_id}")
@@ -1524,7 +1523,7 @@ async def remove_my_payment_method(
         billing["payment_methods"] = payment_methods
         settings["billing"] = billing
         client.settings = settings
-        flag_modified(client, "settings")
+        repo.mark_client_settings_modified(client)
         client.updated_at = datetime.utcnow()
 
         logger.info(f"Removed payment method {method_id} for company {company_id}")
@@ -1561,7 +1560,7 @@ async def get_usage(
 
         if client.settings != settings:
             client.settings = settings
-            flag_modified(client, "settings")
+            repo.mark_client_settings_modified(client)
 
         billing = settings.get("billing", {})
         usage = billing.get("usage", {})

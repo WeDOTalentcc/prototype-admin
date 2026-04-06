@@ -139,3 +139,8 @@ class BillingRepository:
         """Flush pending changes and refresh the client instance."""
         await self.db.flush()
         await self.db.refresh(client)
+
+    def mark_client_settings_modified(self, client) -> None:
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(client, "settings")
+

@@ -3,12 +3,12 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
-from lia_agents_core.working_memory import AgentWorkingMemory
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import AsyncSessionLocal
+from app.domains.agent_memory.dependencies import get_agent_memory_repo
+from app.domains.agent_memory.repositories.agent_memory_repository import AgentMemoryRepository
+from lia_agents_core.working_memory import AgentWorkingMemory
 
 logger = logging.getLogger("lia.agent_memory")
 router = APIRouter(prefix="/agent-memory", tags=["Agent Memory"])
@@ -91,22 +91,12 @@ async def get_active_sessions(
     domain: str | None = Query(None),
     limit: int = Query(10, ge=1, le=100),
     current_user: User = Depends(get_current_user_or_demo),
+    repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
 ):
     logger.info(f"[access] active-sessions requested by user={getattr(current_user, 'id', 'unknown')} domain={domain}")
     try:
-        async with AsyncSessionLocal() as session:
-            stmt = select(AgentWorkingMemory).where(
-                AgentWorkingMemory.company_id == current_user.company_id,
-            ).order_by(
-                desc(AgentWorkingMemory.updated_at)
-            )
-            if domain:
-                stmt = stmt.where(AgentWorkingMemory.domain == domain)
-            stmt = stmt.limit(limit)
-
-            result = await session.execute(stmt)
-            memories = result.scalars().all()
-            return [_memory_to_summary(m) for m in memories]
+        memories = await repo.list_active_sessions(current_user.company_id, domain, limit)
+        return [_memory_to_summary(m) for m in memories]
     except Exception as e:
         logger.error(f"Failed to fetch active sessions: {e}")
         return []
@@ -117,21 +107,14 @@ async def get_memory_summary(
     session_id: str,
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
+    repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
 ):
     logger.info(f"[access] memory-summary requested by user={getattr(current_user, 'id', 'unknown')} session={session_id} domain={domain}")
     try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                select(AgentWorkingMemory).where(
-                    AgentWorkingMemory.session_id == session_id,
-                    AgentWorkingMemory.domain == domain,
-                    AgentWorkingMemory.company_id == current_user.company_id,
-                )
-            )
-            memory = result.scalar_one_or_none()
-            if memory is None:
-                return _default_summary(session_id, domain)
-            return _memory_to_summary(memory)
+        memory = await repo.get_memory(session_id, domain, current_user.company_id)
+        if memory is None:
+            return _default_summary(session_id, domain)
+        return _memory_to_summary(memory)
     except Exception as e:
         logger.error(f"Failed to fetch memory summary for session={session_id}: {e}")
         return _default_summary(session_id, domain)
@@ -142,21 +125,14 @@ async def get_memory(
     session_id: str,
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
+    repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
 ):
     logger.info(f"[access] memory-read requested by user={getattr(current_user, 'id', 'unknown')} session={session_id} domain={domain}")
     try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                select(AgentWorkingMemory).where(
-                    AgentWorkingMemory.session_id == session_id,
-                    AgentWorkingMemory.domain == domain,
-                    AgentWorkingMemory.company_id == current_user.company_id,
-                )
-            )
-            memory = result.scalar_one_or_none()
-            if memory is None:
-                return _default_memory(session_id, domain)
-            return _memory_to_dict(memory)
+        memory = await repo.get_memory(session_id, domain, current_user.company_id)
+        if memory is None:
+            return _default_memory(session_id, domain)
+        return _memory_to_dict(memory)
     except Exception as e:
         logger.error(f"Failed to fetch memory for session={session_id}: {e}")
         return _default_memory(session_id, domain)
@@ -167,28 +143,21 @@ async def reset_memory(
     session_id: str,
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
+    repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
 ):
     logger.warning(f"[access] memory-reset requested by user={getattr(current_user, 'id', 'unknown')} session={session_id} domain={domain}")
     try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                select(AgentWorkingMemory).where(
-                    AgentWorkingMemory.session_id == session_id,
-                    AgentWorkingMemory.domain == domain,
-                    AgentWorkingMemory.company_id == current_user.company_id,
-                )
-            )
-            memory = result.scalar_one_or_none()
-            if memory is None:
-                return {"status": "not_found", "message": "No working memory found for this session"}
+        memory = await repo.get_memory(session_id, domain, current_user.company_id)
+        if memory is None:
+            return {"status": "not_found", "message": "No working memory found for this session"}
 
-            memory.iteration_count = 0
-            memory.pending_actions = []
-            memory.updated_at = datetime.utcnow()
-            await session.commit()
+        memory.iteration_count = 0
+        memory.pending_actions = []
+        memory.updated_at = datetime.utcnow()
+        await repo.commit()
 
-            logger.info(f"Reset working memory for session={session_id} domain={domain}")
-            return {"status": "reset", "session_id": session_id, "domain": domain}
+        logger.info(f"Reset working memory for session={session_id} domain={domain}")
+        return {"status": "reset", "session_id": session_id, "domain": domain}
     except Exception as e:
         logger.error(f"Failed to reset memory for session={session_id}: {e}")
         return {"status": "error", "message": "Failed to reset working memory"}
