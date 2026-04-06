@@ -12,13 +12,17 @@ import type { SystemConfigurationModalProps } from './ats-integrations.types'
 export function SystemConfigurationModal({ system, onClose }: SystemConfigurationModalProps) {
   const {
     selectedTab, setSelectedTab,
-    isConnecting, connectionStatus, handleTestConnection,
+    isConnecting, connectionStatus, connectionMessage,
+    credentials, setCredentials,
+    handleTestConnection, handleSaveConnection, isSaving,
     mappings, selectedTemplate,
     systemFields, liaFields, mappingTemplates,
     handleDragStart, handleDragOver, handleDrop,
     applyTemplate, removeMapping,
     getFieldTypeIcon, getConfidenceColor
   } = useSystemModal(system)
+
+  const isAtsProvider = system.type === 'gupy' || system.type === 'pandape'
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -121,6 +125,37 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                   </div>
                 </div>
               )}
+              {isAtsProvider && (
+                <div>
+                  <h4 className="text-xs font-medium text-lia-text-primary mb-4">
+                    Credenciais {system.type === 'gupy' ? 'Gupy' : 'Pandapé'}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-lia-text-primary mb-2">API Key</label>
+                      <input
+                        type="password"
+                        placeholder="Cole sua API Key aqui"
+                        value={credentials.apiKey}
+                        onChange={(e) => setCredentials({ ...credentials, apiKey: e.target.value })}
+                        className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong bg-lia-bg-primary text-lia-text-primary"
+                      />
+                    </div>
+                    {system.type === 'pandape' && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-lia-text-primary mb-2">API Endpoint (opcional)</label>
+                        <input
+                          type="url"
+                          placeholder="https://api-ats.pandape.com"
+                          value={credentials.apiEndpoint}
+                          onChange={(e) => setCredentials({ ...credentials, apiEndpoint: e.target.value })}
+                          className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong bg-lia-bg-primary text-lia-text-primary"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between p-4 bg-lia-bg-secondary rounded-md" role="status" aria-live="polite" aria-label="Status da conexão">
                 <div className="flex items-center gap-3">
                   {connectionStatus === 'idle' && <Wifi className="w-5 h-5 text-lia-text-secondary" />}
@@ -131,8 +166,8 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     <p className="font-medium text-lia-text-primary">
                       {connectionStatus === 'idle' && 'Pronto para testar conexão'}
                       {connectionStatus === 'testing' && 'Testando conexão...'}
-                      {connectionStatus === 'success' && 'Conexão estabelecida com sucesso!'}
-                      {connectionStatus === 'error' && 'Erro na conexão - verifique as credenciais'}
+                      {connectionStatus === 'success' && (connectionMessage || 'Conexão estabelecida com sucesso!')}
+                      {connectionStatus === 'error' && (connectionMessage || 'Erro na conexão - verifique as credenciais')}
                     </p>
                     <p className="text-sm text-lia-text-secondary">
                       {connectionStatus === 'idle' && 'Clique em "Testar Conexão" para validar as configurações'}
@@ -142,11 +177,20 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     </p>
                   </div>
                 </div>
-                <Button onClick={handleTestConnection} disabled={isConnecting} className="gap-2">
-                  {isConnecting
-                    ? <><RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />Testando...</>
-                    : <><Zap className="w-4 h-4" />Testar Conexão</>}
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleTestConnection} disabled={isConnecting} variant="outline" className="gap-2">
+                    {isConnecting
+                      ? <><RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />Testando...</>
+                      : <><Zap className="w-4 h-4" />Testar Conexão</>}
+                  </Button>
+                  {isAtsProvider && connectionStatus === 'success' && (
+                    <Button onClick={handleSaveConnection} disabled={isSaving} className="gap-2">
+                      {isSaving
+                        ? <><RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />Salvando...</>
+                        : <><CheckCircle className="w-4 h-4" />Salvar Conexão</>}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}

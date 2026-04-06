@@ -60,6 +60,9 @@ class ATSConnection(Base):
     sync_jobs = Column(Boolean, default=True)
     sync_applications = Column(Boolean, default=True)
     
+    # Field mappings
+    field_mappings = Column(JSON, default=[])  # [{sourceField, targetField, confidence}]
+    
     # Webhook configuration
     webhook_url = Column(String(1000), nullable=True)  # Our webhook endpoint
     webhook_events = Column(JSON, default=[])  # ["candidate.hired", "application.created"]

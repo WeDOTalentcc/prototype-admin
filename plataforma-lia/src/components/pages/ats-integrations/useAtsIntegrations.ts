@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import type {
   ATSSystem,
   FieldMapping,
@@ -19,7 +19,6 @@ import {
 } from './ats-integrations.constants'
 
 export interface UseAtsIntegrationsReturn {
-  // page state
   selectedView: ViewTab
   setSelectedView: (v: ViewTab) => void
   selectedSystem: ATSSystem | null
@@ -27,24 +26,38 @@ export interface UseAtsIntegrationsReturn {
   openSystemModal: (system: ATSSystem) => void
   closeSystemModal: () => void
 
-  // derived data (constants re-exported for JSX)
   atsSystems: typeof ATS_SYSTEMS
   integrations: typeof INTEGRATIONS
   syncLogs: typeof SYNC_LOGS
 
-  // helpers
+  connections: ATSConnectionData[]
+  loadingConnections: boolean
+  refreshConnections: () => void
+
   getStatusColor: (status: string) => string
 }
 
+export interface ATSConnectionData {
+  id: string
+  provider: string
+  provider_name: string
+  is_active: boolean
+  last_sync_at: string | null
+  last_sync_status: string | null
+  total_candidates_synced: number
+}
+
 export interface UseSystemModalReturn {
-  // modal tab
   selectedTab: ModalTab
   setSelectedTab: (t: ModalTab) => void
-  // connection
   isConnecting: boolean
   connectionStatus: ConnectionStatus
+  connectionMessage: string
+  credentials: ATSCredentials
+  setCredentials: (c: ATSCredentials) => void
   handleTestConnection: () => void
-  // mapping
+  handleSaveConnection: () => void
+  isSaving: boolean
   mappings: FieldMapping[]
   draggedField: SystemField | null
   selectedTemplate: string
@@ -56,16 +69,43 @@ export interface UseSystemModalReturn {
   handleDrop: (e: React.DragEvent, targetField: SystemField) => void
   applyTemplate: (templateId: string) => void
   removeMapping: (mappingId: string) => void
-  // pure utils
+  handleSaveMappings: (connectionId: string) => void
+  isSavingMappings: boolean
   getFieldTypeIcon: (type: string) => string
   getConfidenceColor: (confidence: number) => string
 }
 
-// ── Page-level hook ────────────────────────────────────────────────────────
+export interface ATSCredentials {
+  apiKey: string
+  apiSecret: string
+  apiEndpoint: string
+}
+
 export function useAtsIntegrations(): UseAtsIntegrationsReturn {
   const [selectedView, setSelectedView] = useState<ViewTab>('overview')
   const [selectedSystem, setSelectedSystem] = useState<ATSSystem | null>(null)
   const [showSystemModal, setShowSystemModal] = useState(false)
+  const [connections, setConnections] = useState<ATSConnectionData[]>([])
+  const [loadingConnections, setLoadingConnections] = useState(false)
+
+  const fetchConnections = useCallback(async () => {
+    setLoadingConnections(true)
+    try {
+      const res = await fetch('/api/backend-proxy/ats/connections')
+      if (res.ok) {
+        const data = await res.json()
+        setConnections(Array.isArray(data) ? data : [])
+      }
+    } catch {
+      // silent — connections list is non-critical
+    } finally {
+      setLoadingConnections(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchConnections()
+  }, [fetchConnections])
 
   const openSystemModal = useCallback((system: ATSSystem) => {
     setSelectedSystem(system)
@@ -97,18 +137,28 @@ export function useAtsIntegrations(): UseAtsIntegrationsReturn {
     atsSystems: ATS_SYSTEMS,
     integrations: INTEGRATIONS,
     syncLogs: SYNC_LOGS,
+    connections,
+    loadingConnections,
+    refreshConnections: fetchConnections,
     getStatusColor
   }
 }
 
-// ── Modal-level hook ───────────────────────────────────────────────────────
 export function useSystemModal(system: { type: string }): UseSystemModalReturn {
   const [selectedTab, setSelectedTab] = useState<ModalTab>('connection')
   const [isConnecting, setIsConnecting] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle')
+  const [connectionMessage, setConnectionMessage] = useState('')
   const [mappings, setMappings] = useState<FieldMapping[]>([])
   const [draggedField, setDraggedField] = useState<SystemField | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [isSavingMappings, setIsSavingMappings] = useState(false)
+  const [credentials, setCredentials] = useState<ATSCredentials>({
+    apiKey: '',
+    apiSecret: '',
+    apiEndpoint: '',
+  })
 
   const systemFields: SystemField[] = system.type === 'sap' ? SAP_FIELDS : DEFAULT_FIELDS
 
@@ -128,14 +178,102 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
     return Math.min(confidence, 100)
   }
 
-  const handleTestConnection = useCallback(() => {
+  const handleTestConnection = useCallback(async () => {
+    if (!credentials.apiKey) {
+      setConnectionStatus('error')
+      setConnectionMessage('Informe a API Key antes de testar.')
+      return
+    }
+
     setConnectionStatus('testing')
     setIsConnecting(true)
-    setTimeout(() => {
-      setConnectionStatus('success')
+    setConnectionMessage('')
+
+    try {
+      const res = await fetch('/api/backend-proxy/ats/connections/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: system.type,
+          api_key: credentials.apiKey,
+          api_endpoint: credentials.apiEndpoint || undefined,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setConnectionStatus('success')
+        setConnectionMessage(data.message || 'Conexão estabelecida com sucesso.')
+      } else {
+        setConnectionStatus('error')
+        setConnectionMessage(data.message || 'Falha na conexão. Verifique as credenciais.')
+      }
+    } catch {
+      setConnectionStatus('error')
+      setConnectionMessage('Erro de rede ao testar conexão.')
+    } finally {
       setIsConnecting(false)
-    }, 3000)
-  }, [])
+    }
+  }, [credentials.apiKey, credentials.apiEndpoint, system.type])
+
+  const handleSaveConnection = useCallback(async () => {
+    if (!credentials.apiKey) return
+
+    setIsSaving(true)
+    try {
+      const res = await fetch('/api/backend-proxy/ats/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: system.type,
+          provider_name: system.type === 'gupy' ? 'Gupy' : system.type === 'pandape' ? 'Pandapé' : system.type,
+          api_key: credentials.apiKey,
+          api_secret: credentials.apiSecret || undefined,
+          api_endpoint: credentials.apiEndpoint || undefined,
+        }),
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        setConnectionStatus('success')
+        setConnectionMessage('Conexão salva com sucesso.')
+      } else {
+        setConnectionMessage(data.message || 'Erro ao salvar conexão.')
+      }
+    } catch {
+      setConnectionMessage('Erro de rede ao salvar conexão.')
+    } finally {
+      setIsSaving(false)
+    }
+  }, [credentials, system.type])
+
+  const handleSaveMappings = useCallback(async (connectionId: string) => {
+    setIsSavingMappings(true)
+    try {
+      const res = await fetch('/api/backend-proxy/ats/field-mappings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          connection_id: connectionId,
+          mappings: mappings.map(m => ({
+            sourceField: m.sourceField,
+            targetField: m.targetField,
+            sourceFieldName: m.sourceFieldName,
+            targetFieldName: m.targetFieldName,
+            confidence: m.confidence,
+            isActive: m.isActive,
+          })),
+        }),
+      })
+
+      await res.json()
+    } catch {
+      // silent
+    } finally {
+      setIsSavingMappings(false)
+    }
+  }, [mappings])
 
   const handleDragStart = useCallback((field: SystemField) => {
     setDraggedField(field)
@@ -186,7 +324,7 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
   }, [])
 
   const getFieldTypeIcon = useCallback((type: string) => {
-    return FIELD_TYPE_ICONS[type] ?? '❓'
+    return FIELD_TYPE_ICONS[type] ?? '?'
   }, [])
 
   const getConfidenceColor = useCallback((confidence: number) => {
@@ -200,7 +338,12 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
     setSelectedTab,
     isConnecting,
     connectionStatus,
+    connectionMessage,
+    credentials,
+    setCredentials,
     handleTestConnection,
+    handleSaveConnection,
+    isSaving,
     mappings,
     draggedField,
     selectedTemplate,
@@ -212,6 +355,8 @@ export function useSystemModal(system: { type: string }): UseSystemModalReturn {
     handleDrop,
     applyTemplate,
     removeMapping,
+    handleSaveMappings,
+    isSavingMappings,
     getFieldTypeIcon,
     getConfidenceColor
   }

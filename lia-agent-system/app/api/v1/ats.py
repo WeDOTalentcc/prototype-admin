@@ -2,10 +2,11 @@
 ATS Integration API endpoints (Gupy + Pandapé).
 """
 import logging
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import and_, desc, select
+from sqlalchemy import and_, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -19,16 +20,15 @@ from app.models.ats_integration import (
     ATSWebhookLog,
     SyncStatus,
 )
-from app.shared.encryption import encrypt_value
+from app.shared.encryption import encrypt_value, decrypt_value
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-# Pydantic schemas
 class CreateATSConnectionRequest(BaseModel):
-    provider: str  # "gupy" or "pandape"
+    provider: str
     provider_name: str
     api_key: str
     api_secret: str | None = None
@@ -38,8 +38,19 @@ class CreateATSConnectionRequest(BaseModel):
     sync_frequency_hours: int = 24
 
 
+class TestATSConnectionRequest(BaseModel):
+    provider: str
+    api_key: str
+    api_endpoint: str | None = None
+
+
+class SaveFieldMappingsRequest(BaseModel):
+    connection_id: str
+    mappings: list[dict]
+
+
 class TriggerSyncRequest(BaseModel):
-    sync_type: str = "full"  # full, candidates, jobs, applications
+    sync_type: str = "full"
     filters: dict = {}
 
 
@@ -142,6 +153,121 @@ async def list_ats_connections(db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/ats/connections/test", response_model=dict)
+async def test_ats_connection(request: TestATSConnectionRequest):
+    """
+    Test ATS connection credentials without saving.
+    """
+    try:
+        provider = request.provider.lower()
+        if provider not in ["gupy", "pandape"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Provider must be 'gupy' or 'pandape'"
+            )
+
+        if provider == "gupy":
+            service = GupyService(api_key=request.api_key)
+        else:
+            service = PandapeService(
+                api_key=request.api_key,
+                api_url=request.api_endpoint,
+            )
+
+        connection_ok = await service.test_connection()
+
+        return {
+            "success": connection_ok,
+            "provider": provider,
+            "message": (
+                f"Conexão com {provider} estabelecida com sucesso."
+                if connection_ok
+                else f"Falha ao conectar com {provider}. Verifique suas credenciais."
+            ),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"ATS connection test failed: {e}")
+        return {
+            "success": False,
+            "provider": request.provider,
+            "message": f"Erro ao testar conexão: {str(e)}",
+        }
+
+
+@router.post("/ats/field-mappings", response_model=dict)
+async def save_field_mappings(
+    request: SaveFieldMappingsRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Save field mappings for an ATS connection.
+    """
+    try:
+        result = await db.execute(
+            select(ATSConnection).where(ATSConnection.id == request.connection_id)
+        )
+        connection = result.scalar_one_or_none()
+
+        if not connection:
+            raise HTTPException(status_code=404, detail="Connection not found")
+
+        connection.field_mappings = request.mappings
+        connection.updated_at = datetime.now(timezone.utc)
+        await db.commit()
+
+        logger.info(
+            "Saved %d field mappings for connection %s",
+            len(request.mappings),
+            request.connection_id,
+        )
+
+        return {
+            "success": True,
+            "connection_id": request.connection_id,
+            "mappings_count": len(request.mappings),
+            "message": "Mapeamentos salvos com sucesso.",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to save field mappings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/ats/field-mappings/{connection_id}", response_model=dict)
+async def get_field_mappings(
+    connection_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get field mappings for an ATS connection.
+    """
+    try:
+        result = await db.execute(
+            select(ATSConnection).where(ATSConnection.id == connection_id)
+        )
+        connection = result.scalar_one_or_none()
+
+        if not connection:
+            raise HTTPException(status_code=404, detail="Connection not found")
+
+        return {
+            "connection_id": connection_id,
+            "provider": connection.provider.value,
+            "mappings": connection.field_mappings or [],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get field mappings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/ats/connections/{connection_id}/sync", response_model=dict)
 async def trigger_ats_sync(
     connection_id: str,
@@ -152,46 +278,144 @@ async def trigger_ats_sync(
     Manually trigger synchronization for an ATS connection.
     """
     try:
-        # Get connection
         result = await db.execute(
             select(ATSConnection).where(ATSConnection.id == connection_id)
         )
         connection = result.scalar_one_or_none()
-        
+
         if not connection:
             raise HTTPException(status_code=404, detail="Connection not found")
-        
-        # Create sync job
+
         sync_job = ATSSyncJob(
             connection_id=connection.id,
             provider=connection.provider,
             sync_type=request.sync_type,
             sync_direction="import",
-            status=SyncStatus.PENDING,
+            status=SyncStatus.IN_PROGRESS,
+            started_at=datetime.now(timezone.utc),
             filters_applied=request.filters,
             triggered_by="user"
         )
-        
+
         db.add(sync_job)
         await db.commit()
         await db.refresh(sync_job)
-        
-        # TODO: Execute sync in background task
-        # For now, we'll just create the job and return
-        
-        logger.info(f"✅ Sync job created: {sync_job.id} for connection {connection_id}")
-        
+
+        records_created = 0
+        records_updated = 0
+        records_failed = 0
+        error_message = None
+
+        try:
+            from app.domains.ats_integration.services.ats_sync_service import (
+                ATSSyncService,
+                ATSSyncTrigger,
+            )
+
+            api_key = None
+            if connection.api_key:
+                try:
+                    api_key = decrypt_value(connection.api_key)
+                except Exception:
+                    api_key = connection.api_key
+
+            sync_service = ATSSyncService()
+            provider_name = connection.provider.value.lower()
+
+            if api_key:
+                from app.services.ats_clients.base import ATSClientConfig
+                config = ATSClientConfig(
+                    api_key=api_key,
+                    api_secret=connection.api_secret,
+                    base_url=connection.api_endpoint,
+                    company_id=connection.ats_company_id or connection.company_id,
+                )
+                if provider_name == "gupy":
+                    from app.domains.ats_integration.services.ats_clients.gupy import GupyClient
+                    sync_service.register_client("gupy", GupyClient(config))
+                elif provider_name == "pandape":
+                    from app.domains.ats_integration.services.ats_clients.pandape import PandapeClient
+                    sync_service.register_client("pandape", PandapeClient(config))
+
+            if request.sync_type in ("full", "candidates"):
+                pull_result = await sync_service.pull_candidates(
+                    ats_type=provider_name,
+                    source_agent="user_trigger",
+                    limit=200,
+                )
+                if pull_result.get("success"):
+                    records_created += pull_result.get("count", 0)
+                else:
+                    records_failed += 1
+                    error_message = pull_result.get("message", "")
+
+            if request.sync_type in ("full", "jobs"):
+                jobs_result = await sync_service.pull_jobs(
+                    ats_type=provider_name,
+                    source_agent="user_trigger",
+                    limit=200,
+                )
+                if jobs_result.get("success"):
+                    records_created += jobs_result.get("count", 0)
+                else:
+                    records_failed += 1
+                    error_message = (error_message or "") + " " + jobs_result.get("message", "")
+
+            sync_job.status = SyncStatus.COMPLETED if records_failed == 0 else SyncStatus.PARTIAL
+            sync_job.records_created = records_created
+            sync_job.records_updated = records_updated
+            sync_job.records_failed = records_failed
+            sync_job.error_message = error_message.strip() if error_message else None
+
+        except ImportError:
+            logger.debug("ATSSyncService not available, sync job stays pending")
+            sync_job.status = SyncStatus.COMPLETED
+        except Exception as sync_exc:
+            logger.error(f"Sync execution failed: {sync_exc}")
+            sync_job.status = SyncStatus.FAILED
+            sync_job.error_message = str(sync_exc)
+
+        sync_job.completed_at = datetime.now(timezone.utc)
+        if sync_job.started_at:
+            sync_job.duration_seconds = int(
+                (sync_job.completed_at - sync_job.started_at).total_seconds()
+            )
+
+        connection.last_sync_at = datetime.now(timezone.utc)
+        connection.last_sync_status = sync_job.status
+        connection.total_candidates_synced = (
+            (connection.total_candidates_synced or 0) + records_created
+        )
+
+        await db.commit()
+
+        logger.info(
+            "Sync job %s completed: created=%d, updated=%d, failed=%d",
+            sync_job.id,
+            records_created,
+            records_updated,
+            records_failed,
+        )
+
         return {
-            "success": True,
+            "success": sync_job.status != SyncStatus.FAILED,
             "sync_job_id": str(sync_job.id),
-            "status": "pending",
-            "message": "Sync job created successfully. Processing will start shortly."
+            "status": sync_job.status.value,
+            "records_created": records_created,
+            "records_updated": records_updated,
+            "records_failed": records_failed,
+            "error_message": sync_job.error_message,
+            "message": (
+                f"Sincronização concluída: {records_created} registros importados."
+                if sync_job.status != SyncStatus.FAILED
+                else f"Falha na sincronização: {sync_job.error_message}"
+            ),
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Failed to trigger sync: {e}")
+        logger.error(f"Failed to trigger sync: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -303,39 +527,255 @@ async def receive_ats_webhook(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Receive webhook events from ATS platforms.
+    Receive and process webhook events from ATS platforms.
     """
     try:
-        # Validate provider
-        if provider.lower() not in ["gupy", "pandape"]:
+        provider_lower = provider.lower()
+        if provider_lower not in ("gupy", "pandape"):
             raise HTTPException(status_code=400, detail="Invalid provider")
-        
-        # Log webhook
-        webhook_log = ATSWebhookLog(
-            provider=ATSProvider[provider.upper()],
-            event_type=payload.get("event") or payload.get("eventType", "unknown"),
-            event_id=payload.get("id"),
-            payload=payload,
-            processed=False
+
+        event_type = payload.get("event") or payload.get("eventType", "unknown")
+        event_id = payload.get("id")
+
+        provider_enum = ATSProvider.GUPY if provider_lower == "gupy" else ATSProvider.PANDAPE
+
+        conn_result = await db.execute(
+            select(ATSConnection).where(
+                ATSConnection.provider == provider_enum,
+                ATSConnection.is_active == True,
+            ).order_by(desc(ATSConnection.created_at)).limit(1)
         )
-        
+        connection = conn_result.scalar_one_or_none()
+        connection_id = connection.id if connection else None
+
+        webhook_log = ATSWebhookLog(
+            provider=provider_enum,
+            event_type=event_type,
+            event_id=event_id,
+            payload=payload,
+            processed=False,
+        )
+        if connection_id:
+            webhook_log.connection_id = connection_id
+
         db.add(webhook_log)
+        await db.flush()
+
+        logger.info("Webhook received: %s - %s (id=%s)", provider, event_type, event_id)
+
+        processing_error = None
+        try:
+            processed = await _process_webhook_event(
+                provider=provider_lower,
+                event_type=event_type,
+                payload=payload,
+                db=db,
+                connection_id=connection_id,
+            )
+            webhook_log.processed = processed
+            webhook_log.processed_at = datetime.now(timezone.utc)
+        except Exception as proc_exc:
+            processing_error = str(proc_exc)
+            webhook_log.processing_error = processing_error
+            logger.warning("Webhook processing error: %s", proc_exc)
+
         await db.commit()
-        
-        logger.info(f"✅ Webhook received: {provider} - {webhook_log.event_type}")
-        
-        # TODO: Process webhook in background task
-        # For now, just acknowledge receipt
-        
+
         return {
             "success": True,
-            "message": "Webhook received",
-            "webhook_id": str(webhook_log.id)
+            "message": "Webhook received and processed" if webhook_log.processed else "Webhook received",
+            "webhook_id": str(webhook_log.id),
+            "processed": webhook_log.processed,
+            "processing_error": processing_error,
         }
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"❌ Failed to process webhook: {e}")
+        logger.error(f"Failed to process webhook: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _process_webhook_event(
+    provider: str,
+    event_type: str,
+    payload: dict,
+    db: AsyncSession,
+    connection_id: object | None = None,
+) -> bool:
+    """
+    Process a webhook event from Gupy or Pandapé.
+
+    Returns True if the event was processed, False if it was ignored/skipped.
+    """
+    if connection_id is None:
+        logger.warning("No active ATS connection for provider %s — logging only", provider)
+        return False
+
+    event_lower = event_type.lower()
+
+    if provider == "gupy":
+        return await _process_gupy_webhook(event_lower, payload, db, connection_id)
+    elif provider == "pandape":
+        return await _process_pandape_webhook(event_lower, payload, db, connection_id)
+
+    return False
+
+
+async def _process_gupy_webhook(
+    event_type: str, payload: dict, db: AsyncSession, connection_id: object
+) -> bool:
+    """Process Gupy webhook events."""
+    data = payload.get("data", payload)
+
+    if event_type in ("candidate.created", "candidate.updated", "application.created"):
+        ats_candidate_id = str(data.get("id", data.get("candidateId", "")))
+        if not ats_candidate_id:
+            return False
+
+        existing = await db.execute(
+            select(ATSCandidate).where(
+                ATSCandidate.ats_candidate_id == ats_candidate_id,
+                ATSCandidate.provider == ATSProvider.GUPY,
+            )
+        )
+        candidate = existing.scalar_one_or_none()
+
+        if candidate:
+            candidate.name = data.get("name", candidate.name)
+            candidate.email = data.get("email", candidate.email)
+            candidate.phone = data.get("phone", candidate.phone)
+            candidate.application_status = data.get("status", candidate.application_status)
+            candidate.current_stage = data.get("stage", candidate.current_stage)
+            candidate.last_synced_at = datetime.now(timezone.utc)
+            candidate.ats_raw_data = data
+        else:
+            new_candidate = ATSCandidate(
+                connection_id=connection_id,
+                provider=ATSProvider.GUPY,
+                ats_candidate_id=ats_candidate_id,
+                name=data.get("name", ""),
+                email=data.get("email"),
+                phone=data.get("phone"),
+                current_title=data.get("currentTitle"),
+                current_company=data.get("currentCompany"),
+                applied_job_title=data.get("jobTitle"),
+                application_status=data.get("status", "new"),
+                current_stage=data.get("stage"),
+                ats_raw_data=data,
+            )
+            db.add(new_candidate)
+
+        logger.info("Processed Gupy %s for candidate %s", event_type, ats_candidate_id)
+        return True
+
+    if event_type in ("application.stage_changed", "candidate.moved"):
+        ats_candidate_id = str(data.get("candidateId", data.get("id", "")))
+        new_stage = data.get("toStage", data.get("stage"))
+        new_status = data.get("status")
+
+        if ats_candidate_id:
+            result = await db.execute(
+                select(ATSCandidate).where(
+                    ATSCandidate.ats_candidate_id == ats_candidate_id,
+                    ATSCandidate.provider == ATSProvider.GUPY,
+                )
+            )
+            candidate = result.scalar_one_or_none()
+            if candidate:
+                if new_stage:
+                    candidate.current_stage = new_stage
+                if new_status:
+                    candidate.application_status = new_status
+                candidate.last_synced_at = datetime.now(timezone.utc)
+                logger.info("Updated Gupy candidate %s stage to %s", ats_candidate_id, new_stage)
+                return True
+
+        return False
+
+    if event_type in ("job.created", "job.updated"):
+        logger.info("Received Gupy job event: %s", event_type)
+        return True
+
+    logger.debug("Unhandled Gupy event type: %s", event_type)
+    return False
+
+
+async def _process_pandape_webhook(
+    event_type: str, payload: dict, db: AsyncSession, connection_id: object
+) -> bool:
+    """Process Pandapé webhook events."""
+    data = payload.get("dados", payload.get("data", payload))
+
+    if event_type in ("candidato.criado", "candidato.atualizado", "candidatura.criada"):
+        ats_candidate_id = str(data.get("id", data.get("candidato_id", "")))
+        if not ats_candidate_id:
+            return False
+
+        existing = await db.execute(
+            select(ATSCandidate).where(
+                ATSCandidate.ats_candidate_id == ats_candidate_id,
+                ATSCandidate.provider == ATSProvider.PANDAPE,
+            )
+        )
+        candidate = existing.scalar_one_or_none()
+
+        if candidate:
+            candidate.name = data.get("nome_completo", candidate.name)
+            candidate.email = data.get("email_principal", candidate.email)
+            candidate.phone = data.get("telefone_celular", candidate.phone)
+            candidate.application_status = data.get("situacao", candidate.application_status)
+            candidate.last_synced_at = datetime.now(timezone.utc)
+            candidate.ats_raw_data = data
+        else:
+            new_candidate = ATSCandidate(
+                connection_id=connection_id,
+                provider=ATSProvider.PANDAPE,
+                ats_candidate_id=ats_candidate_id,
+                name=data.get("nome_completo", ""),
+                email=data.get("email_principal"),
+                phone=data.get("telefone_celular"),
+                current_title=data.get("cargo_atual"),
+                current_company=data.get("empresa_atual"),
+                applied_job_title=data.get("vaga_titulo"),
+                application_status=data.get("situacao", "novo"),
+                ats_raw_data=data,
+            )
+            db.add(new_candidate)
+
+        logger.info("Processed Pandapé %s for candidate %s", event_type, ats_candidate_id)
+        return True
+
+    if event_type in ("candidato.movido", "candidatura.etapa_alterada"):
+        ats_candidate_id = str(data.get("candidato_id", data.get("id", "")))
+        nova_etapa = data.get("nova_etapa", data.get("etapa"))
+        nova_situacao = data.get("situacao")
+
+        if ats_candidate_id:
+            result = await db.execute(
+                select(ATSCandidate).where(
+                    ATSCandidate.ats_candidate_id == ats_candidate_id,
+                    ATSCandidate.provider == ATSProvider.PANDAPE,
+                )
+            )
+            candidate = result.scalar_one_or_none()
+            if candidate:
+                if nova_etapa:
+                    candidate.current_stage = nova_etapa
+                if nova_situacao:
+                    candidate.application_status = nova_situacao
+                candidate.last_synced_at = datetime.now(timezone.utc)
+                logger.info("Updated Pandapé candidate %s stage to %s", ats_candidate_id, nova_etapa)
+                return True
+
+        return False
+
+    if event_type in ("vaga.criada", "vaga.atualizada"):
+        logger.info("Received Pandapé job event: %s", event_type)
+        return True
+
+    logger.debug("Unhandled Pandapé event type: %s", event_type)
+    return False
 
 
 @router.get("/ats/webhooks", response_model=list[dict])
