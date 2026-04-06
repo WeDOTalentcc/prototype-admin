@@ -768,7 +768,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 "wsi_final_score": wsi_final,
                 "decision": decision,
                 "auto_advance": auto_advance,
-                "auto_reject": auto_reject,
+                "auto_stage_advance": auto_advance,
                 "event_id": event.event_id,
             },
             category="screening",
@@ -784,7 +784,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 + (
                     "Ação automática executada."
                     if (decision == "approved" and auto_advance)
-                    or (decision == "rejected" and auto_reject)
+                    or (decision == "rejected" and auto_advance)
                     else "Requer revisão manual do recrutador."
                 )
             ),
@@ -796,7 +796,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 "candidate_name": candidate_name,
                 "wsi_final_score": wsi_final,
                 "decision": decision,
-                "requires_action": decision == "review" or not (auto_advance or auto_reject),
+                "requires_action": decision == "review" or not auto_advance,
             },
             category="notification",
             priority="high",
