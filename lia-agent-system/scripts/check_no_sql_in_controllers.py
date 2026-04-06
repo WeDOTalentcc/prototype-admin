@@ -164,7 +164,6 @@ PENDING_MIGRATION = {
     "app/api/v1/search_feedback.py",
     "app/api/v1/self_scheduling_public.py",
     "app/api/v1/settings_progress.py",
-    "app/api/v1/shared_searches.py",
     "app/api/v1/short_lists.py",
     "app/api/v1/skills_catalog.py",
     "app/api/v1/sourcing.py",
