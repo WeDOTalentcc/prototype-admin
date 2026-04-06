@@ -462,7 +462,7 @@ async def trigger_escalation(
 @router.post(
     "/apply-sector/{company_id}",
     summary="Aplica defaults setoriais Alpha 1 para uma empresa",
-, response_model=None)
+    response_model=None)
 async def apply_sector_defaults(
     company_id: str,
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),

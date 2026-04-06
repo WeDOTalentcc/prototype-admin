@@ -188,7 +188,7 @@ async def start_interview_graph_session(
 @router.post(
     "/interview-graph/sessions/{session_id}/respond",
     summary="Envia resposta do candidato na entrevista WSI síncrona",
-, response_model=None)
+    response_model=None)
 async def respond_interview_graph(session_id: str, request: InterviewGraphRespondRequest):
     """Processa a resposta do candidato, pontua e avança para a próxima pergunta.
 
@@ -240,7 +240,7 @@ async def respond_interview_graph(session_id: str, request: InterviewGraphRespon
 @router.get(
     "/interview-graph/sessions/{session_id}",
     summary="Resumo auditável da sessão de entrevista WSI",
-, response_model=None)
+    response_model=None)
 async def get_interview_graph_session(session_id: str):
     """Retorna o resumo completo da sessão para fins de auditoria e compliance."""
     from app.domains.cv_screening.agents.wsi_interview_graph import wsi_interview_graph

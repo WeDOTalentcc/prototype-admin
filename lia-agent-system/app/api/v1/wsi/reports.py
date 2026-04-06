@@ -788,7 +788,7 @@ async def get_vacancy_ranking(
 @router.get(
     "/candidate/{candidate_id}/ranking/{job_vacancy_id}",
     summary="F11-6 — Posição do candidato no ranking da vaga",
-, response_model=None)
+    response_model=None)
 async def get_candidate_ranking(
     candidate_id: str,
     job_vacancy_id: str,

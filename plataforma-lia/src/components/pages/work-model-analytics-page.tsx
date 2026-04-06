@@ -1,18 +1,17 @@
 "use client"
 
-
 import { formatBRL } from "@/lib/pricing"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuthStore } from "@/stores/auth-store"
 import {
   BarChart3, PieChart, MapPin, Users, TrendingUp, Download,
   Filter, Calendar, Building, Target, ArrowUp, ArrowDown,
   RotateCcw, Zap, Clock, Globe, Home, Briefcase
 } from "lucide-react"
 
-// Interfaces para tipos de dados
 interface WorkModelData {
   modelo: 'remoto' | 'híbrido' | 'presencial'
   candidatos: number
@@ -48,78 +47,75 @@ interface SeniorityData {
   salarioMedio: number
 }
 
+const FALLBACK_DISTRIBUTION: WorkModelData[] = [
+  { modelo: 'remoto', candidatos: 0, percentual: 0, crescimento: 0, salarioMedio: 0 },
+  { modelo: 'híbrido', candidatos: 0, percentual: 0, crescimento: 0, salarioMedio: 0 },
+  { modelo: 'presencial', candidatos: 0, percentual: 0, crescimento: 0, salarioMedio: 0 },
+]
+
 export function WorkModelAnalyticsPage() {
-  // Estados para filtros
   const [selectedPeriod, setSelectedPeriod] = useState<'30d' | '90d' | '6m' | '1y'>('90d')
   const [selectedRegion, setSelectedRegion] = useState<string>('all')
   const [selectedCargo, setSelectedCargo] = useState<string>('all')
   const [selectedSeniority, setSelectedSeniority] = useState<string>('all')
+  const [backendData, setBackendData] = useState<any>(null)
+  const [dataLoading, setDataLoading] = useState(false)
+  const user = useAuthStore((s) => s.user)
+  const companyId = (user as any)?.company_id || ""
 
-  // Mock data - distribuição geral de modelos de trabalho
-  const workModelDistribution: WorkModelData[] = [
-    {
-      modelo: 'remoto',
-      candidatos: 342,
-      percentual: 34.2,
-      crescimento: 12.5,
-      salarioMedio: 8500
-    },
-    {
-      modelo: 'híbrido',
-      candidatos: 489,
-      percentual: 48.9,
-      crescimento: 8.3,
-      salarioMedio: 9200
-    },
-    {
-      modelo: 'presencial',
-      candidatos: 169,
-      percentual: 16.9,
-      crescimento: -5.2,
-      salarioMedio: 7800
+  const fetchAnalytics = useCallback(async () => {
+    setDataLoading(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/jobs/work-model-analytics?period=${selectedPeriod}`)
+      if (res.ok) {
+        const data = await res.json()
+        setBackendData(data)
+      }
+    } catch (e) {
+      console.error("[WorkModelAnalytics] fetch error:", e)
+    } finally {
+      setDataLoading(false)
     }
-  ]
+  }, [selectedPeriod])
 
-  // Mock data - distribuição por cargo
-  const cargoWorkModels: CargoWorkModel[] = [
-    { cargo: 'Desenvolvedor Frontend', remoto: 45, hibrido: 32, presencial: 8, total: 85 },
-    { cargo: 'Desenvolvedor Backend', remoto: 38, hibrido: 28, presencial: 12, total: 78 },
-    { cargo: 'Full Stack Developer', remoto: 52, hibrido: 41, presencial: 15, total: 108 },
-    { cargo: 'UX Designer', remoto: 28, hibrido: 35, presencial: 18, total: 81 },
-    { cargo: 'Product Manager', remoto: 22, hibrido: 31, presencial: 9, total: 62 },
-    { cargo: 'Data Scientist', remoto: 34, hibrido: 25, presencial: 6, total: 65 },
-    { cargo: 'DevOps Engineer', remoto: 41, hibrido: 22, presencial: 8, total: 71 },
-    { cargo: 'QA Engineer', remoto: 19, hibrido: 28, presencial: 15, total: 62 },
-    { cargo: 'Tech Lead', remoto: 18, hibrido: 24, presencial: 12, total: 54 },
-    { cargo: 'Mobile Developer', remoto: 31, hibrido: 19, presencial: 11, total: 61 }
-  ]
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
 
-  // Mock data - distribuição regional
-  const regionalData: RegionalData[] = [
-    { regiao: 'Sudeste', estado: 'SP', remoto: 156, hibrido: 234, presencial: 89, total: 479 },
-    { regiao: 'Sudeste', estado: 'RJ', remoto: 89, hibrido: 112, presencial: 34, total: 235 },
-    { regiao: 'Sudeste', estado: 'MG', remoto: 34, hibrido: 45, presencial: 18, total: 97 },
-    { regiao: 'Sul', estado: 'RS', remoto: 28, hibrido: 41, presencial: 12, total: 81 },
-    { regiao: 'Sul', estado: 'SC', remoto: 19, hibrido: 28, presencial: 8, total: 55 },
-    { regiao: 'Sul', estado: 'PR', remoto: 15, hibrido: 22, presencial: 6, total: 43 },
-    { regiao: 'Nordeste', estado: 'PE', remoto: 12, hibrido: 18, presencial: 9, total: 39 },
-    { regiao: 'Nordeste', estado: 'BA', remoto: 8, hibrido: 15, presencial: 7, total: 30 },
-    { regiao: 'Centro-Oeste', estado: 'DF', remoto: 18, hibrido: 25, presencial: 11, total: 54 }
-  ]
+  const workModelDistribution: WorkModelData[] = useMemo(() => {
+    if (!backendData?.distribution?.length) return FALLBACK_DISTRIBUTION
+    return backendData.distribution.map((d: any) => ({
+      modelo: d.modelo as any,
+      candidatos: d.candidatos,
+      percentual: d.percentual,
+      crescimento: 0,
+      salarioMedio: d.salarioMedio || 0,
+    }))
+  }, [backendData])
 
-  // Mock data - distribuição por senioridade
-  const seniorityData: SeniorityData[] = [
-    { nivel: 'Estagiário', experiencia: '0-1 anos', remoto: 12, hibrido: 28, presencial: 15, total: 55, salarioMedio: 2800 },
-    { nivel: 'Júnior', experiencia: '1-3 anos', remoto: 78, hibrido: 95, presencial: 42, total: 215, salarioMedio: 4500 },
-    { nivel: 'Pleno', experiencia: '3-6 anos', remoto: 134, hibrido: 189, presencial: 67, total: 390, salarioMedio: 7200 },
-    { nivel: 'Sênior', experiencia: '6-10 anos', remoto: 98, hibrido: 142, presencial: 38, total: 278, salarioMedio: 11500 },
-    { nivel: 'Especialista', experiencia: '10-15 anos', remoto: 18, hibrido: 31, presencial: 6, total: 55, salarioMedio: 16800 },
-    { nivel: 'Líder Técnico', experiencia: '15+ anos', remoto: 2, hibrido: 4, presencial: 1, total: 7, salarioMedio: 22000 }
-  ]
+  const cargoWorkModels: CargoWorkModel[] = useMemo(() => {
+    if (!backendData?.by_title?.length) return []
+    return backendData.by_title
+  }, [backendData])
 
-  // Cálculos derivados
+  const regionalData: RegionalData[] = useMemo(() => {
+    if (!backendData?.by_location?.length) return []
+    return backendData.by_location.map((d: any) => ({
+      regiao: d.regiao,
+      estado: d.regiao,
+      remoto: d.remoto || 0,
+      hibrido: d.hibrido || 0,
+      presencial: d.presencial || 0,
+      total: d.total || 0,
+    }))
+  }, [backendData])
+
+  const seniorityData: SeniorityData[] = []
+
   const totalCandidatos = workModelDistribution.reduce((sum, item) => sum + item.candidatos, 0)
-  const salarioMedioGeral = workModelDistribution.reduce((sum, item) => sum + (item.salarioMedio * item.candidatos), 0) / totalCandidatos
+  const salarioMedioGeral = totalCandidatos > 0
+    ? workModelDistribution.reduce((sum, item) => sum + (item.salarioMedio * item.candidatos), 0) / totalCandidatos
+    : 0
 
   // Função para gerar cores das barras
   const getWorkModelColor = (modelo: string) => {

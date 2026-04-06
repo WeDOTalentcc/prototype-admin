@@ -1,7 +1,11 @@
-import { CURRENCY_SYMBOL } from "@/lib/pricing"
+"use client"
+import { useEffect } from "react"
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RecruitmentMLDashboard } from "@/components/ml/recruitment-ml-engine"
+import { useMLPredictions } from "@/hooks/use-ml-predictions"
+import { useAuthStore } from "@/stores/auth-store"
 import type { RecruiterData } from "../indicators.types"
 import {
   TrendingUp, Clock, AlertTriangle, DollarSign, Brain, Target,
@@ -12,24 +16,43 @@ interface PredictionsTabProps {
 }
 
 export function PredictionsTab({ recruiters }: PredictionsTabProps) {
+  const user = useAuthStore((s) => s.user)
+  const { insights, timeToFill, salary, loading, fetchInsights, fetchTimeToFill, fetchSalary } = useMLPredictions()
+  const companyId = (user as any)?.company_id || "default"
+
+  useEffect(() => {
+    fetchInsights(companyId)
+    fetchTimeToFill(companyId, {})
+    fetchSalary(companyId, {})
+  }, [companyId, fetchInsights, fetchTimeToFill, fetchSalary])
+
+  const ttfDays = timeToFill?.predicted_days ?? 0
+  const ttfConfidence = timeToFill ? Math.round(timeToFill.confidence * 100) : 0
+  const salaryMin = salary?.suggested_min ?? 0
+  const salaryMax = salary?.suggested_max ?? 0
+  const totalHires = insights?.summary?.total_hires ?? 0
+  const successRate = insights?.summary?.success_rate ? Math.round(insights.summary.success_rate * 100) : 0
+
   return (
     <div className="space-y-6">
       {/* Sistema de Machine Learning */}
-      <RecruitmentMLDashboard candidates={recruiters as any} /> {/* TODO: fix type */}
+      <RecruitmentMLDashboard candidates={recruiters as any} />
 
-      {/* KPIs Preditivos */}
+      {/* KPIs Preditivos — dados reais do backend ML */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-status-success/30">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-status-success font-medium">Previsão Q4</p>
-                <p className="text-2xl font-bold text-status-success">156</p>
-                <p className="text-xs text-lia-text-primary">Contratações</p>
+                <p className="text-sm text-status-success font-medium">Contratações</p>
+                <p className="text-2xl font-bold text-status-success">{loading ? "..." : totalHires}</p>
+                <p className="text-xs text-lia-text-primary">Históricas</p>
               </div>
               <TrendingUp className="w-8 h-8 text-status-success" />
             </div>
-            <div className="mt-2 text-xs text-status-success">+12% vs Q3 (IA: 89% confiança)</div>
+            <div className="mt-2 text-xs text-status-success">
+              {insights ? `Taxa de sucesso: ${successRate}%` : "Carregando..."}
+            </div>
           </CardContent>
         </Card>
 
@@ -41,16 +64,16 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                   Time to Fill
                 </p>
                 <p className="text-2xl font-bold text-lia-text-primary">
-                  24 dias
+                  {loading ? "..." : `${ttfDays} dias`}
                 </p>
                 <p className="text-xs text-lia-text-primary">
-                  Previsão média
+                  {timeToFill ? `${timeToFill.range_min}-${timeToFill.range_max} dias` : "Previsão média"}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-lia-text-secondary" />
             </div>
             <div className="mt-2 text-xs text-lia-text-secondary">
-              -8% vs atual (IA: 92% confiança)
+              {timeToFill ? `${timeToFill.comparison_to_market} (IA: ${ttfConfidence}%)` : "Carregando..."}
             </div>
           </CardContent>
         </Card>
@@ -59,15 +82,19 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-purple font-medium">Turnover Risk</p>
-                <p className="text-2xl font-bold text-wedo-purple">8.2%</p>
+                <p className="text-sm text-wedo-purple font-medium">Faixa Salarial</p>
+                <p className="text-2xl font-bold text-wedo-purple">
+                  {loading ? "..." : salary ? `P${salary.market_percentile}` : "--"}
+                </p>
                 <p className="text-xs text-lia-text-primary">
-                  Próximos 6 meses
+                  Percentil de mercado
                 </p>
               </div>
               <AlertTriangle className="w-8 h-8 text-wedo-purple" />
             </div>
-            <div className="mt-2 text-xs text-wedo-purple">87 funcionários em risco</div>
+            <div className="mt-2 text-xs text-wedo-purple">
+              {salary ? salary.competitive_analysis : "Carregando..."}
+            </div>
           </CardContent>
         </Card>
 
@@ -75,67 +102,65 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-orange font-medium">Budget Impact</p>
-                <p className="text-2xl font-bold text-wedo-orange">{CURRENCY_SYMBOL} 2.8M</p>
+                <p className="text-sm text-wedo-orange font-medium">Salário Sugerido</p>
+                <p className="text-2xl font-bold text-wedo-orange">
+                  {loading ? "..." : salary ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} --`}
+                </p>
                 <p className="text-xs text-lia-text-primary">
-                  Economia prevista
+                  {salary ? `até ${formatBRL(salaryMax)}` : "Faixa ótima"}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-wedo-orange" />
             </div>
-            <div className="mt-2 text-xs text-wedo-orange">Otimizações em TA</div>
+            <div className="mt-2 text-xs text-wedo-orange">
+              {salary ? `${Math.round(salary.confidence * 100)}% confiança` : "Calculando..."}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Análise Preditiva de Demanda */}
+      {/* Insights de ML e Fatores de Impacto */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-wedo-purple" />
-              Previsão de Demanda por Área
+              Fatores de Impacto — Time to Fill
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { area: "Tecnologia", current: 45, predicted: 62, confidence: 94 },
-                { area: "Vendas", current: 23, predicted: 31, confidence: 87 },
-                { area: "Marketing", current: 18, predicted: 22, confidence: 91 },
-                { area: "Design", current: 12, predicted: 16, confidence: 89 },
-                { area: "Operações", current: 15, predicted: 18, confidence: 85 },
-              ].map((item, index) => (
-                <div key={item.area} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-lia-text-primary">
-                      {item.area}
-                    </span>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-lia-text-secondary">
-                        {item.current} → {item.predicted}
+              {(timeToFill?.factors || []).length > 0 ? (
+                timeToFill!.factors.map((factor, index) => (
+                  <div key={factor.name} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-lia-text-primary">
+                        {factor.name}
                       </span>
-                      <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">
-                        {item.confidence}% confiança
-                      </Badge>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-lia-text-secondary">{factor.value}</span>
+                        <Badge className={
+                          factor.impact === "high" ? "bg-status-error/15 text-status-error text-xs" :
+                          factor.impact === "medium" ? "bg-status-warning/15 text-status-warning text-xs" :
+                          "bg-status-success/15 text-status-success text-xs"
+                        }>
+                          {factor.impact === "high" ? "Alto" : factor.impact === "medium" ? "Médio" : "Baixo"}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
                     <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
                       <div
-                        className="bg-lia-bg-secondary0 h-2 rounded-full"
-                        style={{ width: `${(item.current / 70) * 100}%` }}
-                      />
-                    </div>
-                    <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
-                      <div
-                        className="bg-wedo-purple h-2 rounded-full"
-                        style={{ width: `${(item.predicted / 70) * 100}%` }}
+                        className={`h-2 rounded-full ${factor.impact === "high" ? "bg-status-error" : factor.impact === "medium" ? "bg-status-warning" : "bg-status-success"}`}
+                        style={{ width: `${factor.impact === "high" ? 90 : factor.impact === "medium" ? 60 : 30}%` }}
                       />
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-lia-text-secondary">
+                  {loading ? "Carregando fatores..." : "Nenhum fator disponível. Execute uma previsão para ver os fatores de impacto."}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -144,139 +169,89 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-status-success" />
-              Skills em Alta Demanda
+              Skills de Sucesso
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { skill: "Inteligência Artificial", growth: "+127%", urgency: "alta" },
-                { skill: "React/Next.js", growth: "+89%", urgency: "alta" },
-                { skill: "DevOps/K8s", growth: "+76%", urgency: "média" },
-                { skill: "Product Management", growth: "+65%", urgency: "média" },
-                { skill: "Data Science", growth: "+54%", urgency: "média" },
-                { skill: "UX Research", growth: "+43%", urgency: "baixa" },
-              ].map((item, index) => (
-                <div
-                  key={item.skill}
-                  className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md"
-                >
-                  <div>
-                    <div className="font-medium text-lia-text-primary">
-                      {item.skill}
-                    </div>
-                    <div className="text-sm text-status-success">{item.growth} crescimento</div>
-                  </div>
-                  <Badge
-                    className={
-                      item.urgency === "alta"
-                        ? "bg-status-error/15 text-status-error"
-                        : item.urgency === "média"
-                        ? "bg-status-warning/15 text-status-warning"
-                        : "bg-status-success/15 text-status-success"
-                    }
+              {(insights?.top_successful_skills || []).length > 0 ? (
+                insights!.top_successful_skills.map((item) => (
+                  <div
+                    key={item.skill}
+                    className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md"
                   >
-                    {item.urgency === "alta"
-                      ? "🔴 Alta"
-                      : item.urgency === "média"
-                      ? "🟡 Média"
-                      : "🟢 Baixa"}
-                  </Badge>
-                </div>
-              ))}
+                    <div>
+                      <div className="font-medium text-lia-text-primary">
+                        {item.skill}
+                      </div>
+                      <div className="text-sm text-status-success">{Math.round(item.success_rate * 100)}% taxa de sucesso</div>
+                    </div>
+                    <Badge className={
+                      item.success_rate >= 0.8 ? "bg-status-success/15 text-status-success" :
+                      item.success_rate >= 0.5 ? "bg-status-warning/15 text-status-warning" :
+                      "bg-status-error/15 text-status-error"
+                    }>
+                      {item.count} contratações
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-lia-text-secondary">
+                  {loading ? "Carregando skills..." : "Sem dados históricos de skills disponíveis."}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alertas e Recomendações de IA */}
-      <Card className="border-l-4 border-l-red-500">
+      {/* Recomendações de IA — dados reais do backend */}
+      <Card className="border-l-4 border-l-wedo-purple">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-status-error" />
-            Alertas Inteligentes e Ações Recomendadas
+            <Brain className="w-5 h-5 text-wedo-purple" />
+            Recomendações Inteligentes
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              {
-                type: "urgente",
-                title: "Escassez crítica em IA/ML",
-                description:
-                  "Demanda crescerá 127% nos próximos 3 meses, mas pipeline tem apenas 12 candidatos.",
-                action: "Iniciar campanha agressiva de sourcing e aumentar budget em 40%",
-                confidence: 94,
-              },
-              {
-                type: "atencao",
-                title: "Risco de turnover em Tech",
-                description: "23 desenvolvedores sêniores com padrão de saída detectado.",
-                action: "Implementar programa de retenção e revisar pacotes salariais",
-                confidence: 87,
-              },
-              {
-                type: "oportunidade",
-                title: "Otimização de processo",
-                description:
-                  "IA detectou 8 etapas desnecessárias no funil que aumentam time to fill em 12 dias.",
-                action: "Simplificar processo e automatizar triagem inicial",
-                confidence: 91,
-              },
-            ].map((alert, index) => (
-              <div
-                key={`alert-${index}`}
-                className={`p-4 rounded-md border-l-4 ${
-                  alert.type === "urgente"
-                    ? "bg-status-error/10 border-l-red-500"
-                    : alert.type === "atencao"
-                    ? "bg-status-warning/10 border-l-yellow-500"
-                    : "bg-status-success/10 border-l-green-500"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4
-                      className={`font-medium mb-1 ${
-                        alert.type === "urgente"
-                          ? "text-status-error"
-                          : alert.type === "atencao"
-                          ? "text-status-warning"
-                          : "text-status-success"
-                      }`}
-                    >
-                      {alert.type === "urgente" ? "🚨" : alert.type === "atencao" ? "⚠️" : "💡"}{" "}
-                      {alert.title}
-                    </h4>
-                    <p
-                      className={`text-sm mb-2 ${
-                        alert.type === "urgente"
-                          ? "text-status-error"
-                          : alert.type === "atencao"
-                          ? "text-status-warning"
-                          : "text-status-success"
-                      }`}
-                    >
-                      {alert.description}
-                    </p>
-                    <p
-                      className={`text-sm font-medium ${
-                        alert.type === "urgente"
-                          ? "text-status-error"
-                          : alert.type === "atencao"
-                          ? "text-status-warning"
-                          : "text-status-success"
-                      }`}
-                    >
-                      💡 Ação recomendada: {alert.action}
-                    </p>
+            {(insights?.recommendations || []).length > 0 ? (
+              insights!.recommendations.map((rec, index) => (
+                <div
+                  key={`rec-${index}`}
+                  className={`p-4 rounded-md border-l-4 ${
+                    rec.priority === "high"
+                      ? "bg-status-error/10 border-l-red-500"
+                      : rec.priority === "medium"
+                      ? "bg-status-warning/10 border-l-yellow-500"
+                      : "bg-status-success/10 border-l-green-500"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className={`font-medium mb-1 ${
+                        rec.priority === "high" ? "text-status-error" :
+                        rec.priority === "medium" ? "text-status-warning" : "text-status-success"
+                      }`}>
+                        {rec.action}
+                      </h4>
+                      <p className="text-sm text-lia-text-secondary">{rec.impact}</p>
+                    </div>
+                    <Badge className={
+                      rec.priority === "high" ? "ml-4 bg-status-error/15 text-status-error" :
+                      rec.priority === "medium" ? "ml-4 bg-status-warning/15 text-status-warning" :
+                      "ml-4 bg-status-success/15 text-status-success"
+                    }>
+                      {rec.priority === "high" ? "Alta" : rec.priority === "medium" ? "Média" : "Baixa"}
+                    </Badge>
                   </div>
-                  <Badge className="ml-4 bg-lia-bg-tertiary text-lia-text-primary">
-                    {alert.confidence}% confiança
-                  </Badge>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-lia-text-secondary">
+                {loading ? "Carregando recomendações..." : "Sem recomendações disponíveis. Execute análises para gerar insights."}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

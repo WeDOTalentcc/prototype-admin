@@ -12,6 +12,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.calibration_service import CalibrationService
 
@@ -83,7 +84,7 @@ class StartCalibrationSessionResponse(BaseModel):
 @router.post("/start", response_model=StartCalibrationSessionResponse)
 async def start_calibration_session(
     request: StartCalibrationSessionRequest,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Start a calibration session by finding potential candidates for the job.
@@ -160,7 +161,7 @@ async def start_calibration_session(
 async def record_explicit_feedback(
     request: ExplicitFeedbackRequest,
     user_id: str = "system",
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Record explicit feedback (thumbs up/down) from recruiter."""
     service = CalibrationService(db)
@@ -187,7 +188,7 @@ async def record_explicit_feedback(
 async def record_implicit_feedback(
     request: ImplicitFeedbackRequest,
     user_id: str = "system",
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Record implicit feedback from recruiter actions (stage changes, etc)."""
     service = CalibrationService(db)
@@ -215,7 +216,7 @@ async def record_implicit_feedback(
 async def record_post_hire_feedback(
     request: PostHireFeedbackRequest,
     user_id: str = "system",
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Record post-hire outcome feedback."""
     service = CalibrationService(db)
@@ -242,7 +243,7 @@ async def get_divergences(
     days: int = 30,
     min_delta: float = 5.0,
     limit: int = 20,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get recent divergences between LIA and recruiter decisions."""
     service = CalibrationService(db)
@@ -263,7 +264,7 @@ async def get_divergences(
 @router.get("/stats", response_model=None)
 async def get_calibration_stats(
     days: int = 30,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get calibration statistics for the dashboard."""
     service = CalibrationService(db)
@@ -278,7 +279,7 @@ async def get_calibration_stats(
 
 @router.get("/suggestions", response_model=None)
 async def get_pending_suggestions(
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get all pending calibration suggestions."""
     service = CalibrationService(db)
@@ -294,7 +295,7 @@ async def get_pending_suggestions(
 
 @router.post("/suggestions/generate", response_model=None)
 async def generate_suggestions(
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Analyze divergences and generate new calibration suggestions."""
     service = CalibrationService(db)
@@ -312,7 +313,7 @@ async def generate_suggestions(
 async def approve_suggestion(
     suggestion_id: str,
     user_id: str = "system",
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Approve a calibration suggestion."""
     service = CalibrationService(db)
@@ -334,7 +335,7 @@ async def reject_suggestion(
     suggestion_id: str,
     request: SuggestionActionRequest,
     user_id: str = "system",
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Reject a calibration suggestion."""
     service = CalibrationService(db)
@@ -359,7 +360,7 @@ async def reject_suggestion(
 async def get_recent_events(
     limit: int = 50,
     feedback_types: str | None = None,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get recent calibration events."""
     service = CalibrationService(db)
@@ -381,7 +382,7 @@ async def get_recent_events(
 @router.get("/weights", response_model=None)
 async def get_weights(
     job_id: str | None = None,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get current calibration weights."""
     service = CalibrationService(db)
@@ -398,7 +399,7 @@ async def get_weights(
 @router.get("/dashboard", response_model=None)
 async def get_calibration_dashboard(
     days: int = 30,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get complete calibration dashboard data."""
     service = CalibrationService(db)

@@ -81,9 +81,66 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
         if cands.avg_days_in_pipeline:
             lines.append(f"\n**Tempo Médio no Pipeline:** {cands.avg_days_in_pipeline} dias")
 
+        hire_rate = 0
         if cands.total_candidates and cands.total_candidates > 0:
             hire_rate = round((cands.stage_hired / cands.total_candidates) * 100, 1) if cands.stage_hired else 0
             lines.append(f"**Taxa de Contratação:** {hire_rate}%")
+
+        ml_predictions = {}
+        try:
+            from app.services.ml.outcome_predictor import OutcomePredictor
+            predictor = OutcomePredictor()
+            job_data = {}
+            if job_id:
+                async with AsyncSessionLocal() as db2:
+                    job_row = await db2.execute(text("""
+                        SELECT title, department, location, seniority_level, work_model
+                        FROM job_vacancies WHERE id = CAST(:jid AS uuid)
+                    """), {"jid": str(job_id)})
+                    jrow = job_row.fetchone()
+                    if jrow:
+                        job_data = {
+                            "title": jrow.title, "department": jrow.department,
+                            "location": jrow.location, "seniority": jrow.seniority_level,
+                            "work_model": jrow.work_model,
+                        }
+
+            async with AsyncSessionLocal() as db3:
+                ttf_pred = await predictor.predict_time_to_fill(db=db3, job_data=job_data, company_id=str(company_id))
+                sal_pred = await predictor.predict_optimal_salary(db=db3, job_data=job_data, company_id=str(company_id))
+
+            ttf = {
+                "predicted_days": ttf_pred.predicted_days,
+                "range_min": ttf_pred.range_min,
+                "range_max": ttf_pred.range_max,
+                "confidence": ttf_pred.confidence,
+                "comparison_to_market": ttf_pred.comparison_to_market,
+                "factors": ttf_pred.factors or [],
+            }
+            sal = {
+                "suggested_min": sal_pred.suggested_min,
+                "suggested_max": sal_pred.suggested_max,
+                "market_percentile": sal_pred.market_percentile,
+                "competitive_analysis": sal_pred.competitive_analysis,
+                "confidence": sal_pred.confidence,
+                "factors": sal_pred.factors or [],
+            }
+            ml_predictions = {"time_to_fill": ttf, "salary": sal}
+
+            lines.append(f"\n**Predições ML:**")
+            lines.append(f"  - Previsão Time-to-Fill: **{ttf['predicted_days']} dias** ({ttf['range_min']}-{ttf['range_max']}d, {round(ttf['confidence']*100)}% confiança)")
+            lines.append(f"  - {ttf['comparison_to_market']}")
+            lines.append(f"  - Faixa Salarial Sugerida: **R$ {sal['suggested_min']:,.0f} — R$ {sal['suggested_max']:,.0f}** (P{sal['market_percentile']})")
+            lines.append(f"  - {sal['competitive_analysis']}")
+
+            if ttf.get("factors"):
+                high_factors = [f for f in ttf["factors"] if f.get("impact") == "high"]
+                if high_factors:
+                    lines.append(f"\n**Fatores de Risco (alto impacto):**")
+                    for f in high_factors[:3]:
+                        lines.append(f"  - ⚠️ {f['name']}: {f['value']}")
+        except Exception as ml_err:
+            logger.debug(f"ML enrichment skipped: {ml_err}")
 
         return ActionResult(
             status="executed",
@@ -98,6 +155,8 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
                     "hired": cands.stage_hired, "rejected": cands.stage_rejected,
                 },
                 "avg_days_in_pipeline": cands.avg_days_in_pipeline,
+                "hire_rate": hire_rate,
+                "ml_predictions": ml_predictions,
                 "generated_at": datetime.utcnow().isoformat(),
             },
             action_type="generate_kpi_report",

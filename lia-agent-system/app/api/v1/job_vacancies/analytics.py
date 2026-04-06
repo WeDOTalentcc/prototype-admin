@@ -1067,3 +1067,100 @@ async def get_job_report(
         channel_performance=channel_performance,
         top_candidates=top_candidates,
     )
+
+
+@router.get("/work-model-analytics", response_model=None)
+async def get_work_model_analytics(
+    period: str = Query("90d"),
+    current_user=Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import text
+
+    company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
+    if not company_id:
+        raise HTTPException(status_code=403, detail="Company not associated with user")
+
+    period_map = {"30d": 30, "90d": 90, "6m": 180, "1y": 365}
+    days = period_map.get(period, 90)
+
+    wm_result = await db.execute(text("""
+        SELECT
+            COALESCE(work_model, 'Não informado') as work_model,
+            COUNT(*) as total,
+            AVG(CASE WHEN salary_max > 0 THEN salary_max ELSE NULL END)::int as avg_salary
+        FROM job_vacancies
+        WHERE company_id = CAST(:co AS uuid)
+          AND created_at >= NOW() - (:days || ' days')::interval
+        GROUP BY COALESCE(work_model, 'Não informado')
+        ORDER BY total DESC
+    """), {"co": company_id, "days": str(days)})
+    wm_rows = wm_result.fetchall()
+
+    title_result = await db.execute(text("""
+        SELECT
+            COALESCE(title, 'Sem título') as title,
+            COALESCE(work_model, 'Não informado') as work_model,
+            COUNT(*) as total
+        FROM job_vacancies
+        WHERE company_id = CAST(:co AS uuid)
+          AND created_at >= NOW() - (:days || ' days')::interval
+        GROUP BY title, work_model
+        ORDER BY total DESC
+        LIMIT 10
+    """), {"co": company_id, "days": str(days)})
+    title_rows = title_result.fetchall()
+
+    location_result = await db.execute(text("""
+        SELECT
+            COALESCE(location, 'Não informado') as location,
+            COALESCE(work_model, 'Não informado') as work_model,
+            COUNT(*) as total
+        FROM job_vacancies
+        WHERE company_id = CAST(:co AS uuid)
+          AND created_at >= NOW() - (:days || ' days')::interval
+        GROUP BY location, work_model
+        ORDER BY total DESC
+        LIMIT 20
+    """), {"co": company_id, "days": str(days)})
+    loc_rows = location_result.fetchall()
+
+    total_all = sum(r.total for r in wm_rows) if wm_rows else 0
+
+    model_map = {"remoto": "remoto", "remote": "remoto", "híbrido": "híbrido", "hybrid": "híbrido", "presencial": "presencial", "on-site": "presencial", "onsite": "presencial"}
+
+    distribution = []
+    for r in wm_rows:
+        normalized = model_map.get(r.work_model.lower().strip(), r.work_model.lower().strip())
+        distribution.append({
+            "modelo": normalized,
+            "candidatos": r.total,
+            "percentual": round((r.total / total_all * 100), 1) if total_all > 0 else 0,
+            "salarioMedio": r.avg_salary or 0,
+        })
+
+    by_title = {}
+    for r in title_rows:
+        normalized = model_map.get(r.work_model.lower().strip(), r.work_model.lower().strip())
+        if r.title not in by_title:
+            by_title[r.title] = {"cargo": r.title, "remoto": 0, "hibrido": 0, "presencial": 0, "total": 0}
+        key = "hibrido" if normalized == "híbrido" else normalized
+        by_title[r.title][key] = by_title[r.title].get(key, 0) + r.total
+        by_title[r.title]["total"] += r.total
+
+    by_location = {}
+    for r in loc_rows:
+        normalized = model_map.get(r.work_model.lower().strip(), r.work_model.lower().strip())
+        if r.location not in by_location:
+            by_location[r.location] = {"regiao": r.location, "remoto": 0, "hibrido": 0, "presencial": 0, "total": 0}
+        key = "hibrido" if normalized == "híbrido" else normalized
+        by_location[r.location][key] = by_location[r.location].get(key, 0) + r.total
+        by_location[r.location]["total"] += r.total
+
+    return {
+        "distribution": distribution,
+        "by_title": list(by_title.values()),
+        "by_location": list(by_location.values()),
+        "total": total_all,
+        "period": period,
+    }

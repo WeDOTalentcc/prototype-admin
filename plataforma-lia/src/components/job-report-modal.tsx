@@ -4,6 +4,8 @@ import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 
 import React, { useState, useRef, useEffect, useCallback } from "react"
 import { useJobReport } from "@/hooks/use-job-report"
+import { useMLPredictions } from "@/hooks/use-ml-predictions"
+import { useAuthStore } from "@/stores/auth-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -37,12 +39,24 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     recommendations: true
   })
   const { data: reportApiData, loading: reportLoading, fetch: fetchReport } = useJobReport()
+  const { timeToFill, salary, loading: mlLoading, fetchTimeToFill, fetchSalary } = useMLPredictions()
+  const user = useAuthStore((s) => s.user)
 
   useEffect(() => {
     if (isOpen && job?.jobId) {
       fetchReport(job.jobId as any)
+      const companyId = (user as any)?.company_id || "default"
+      const jobData = {
+        title: job.title,
+        department: job.department,
+        location: job.location,
+        seniority: (job as any).seniority,
+        work_model: (job as any).workModel,
+      }
+      fetchTimeToFill(companyId, jobData)
+      fetchSalary(companyId, jobData)
     }
-  }, [isOpen, job?.jobId, fetchReport])
+  }, [isOpen, job?.jobId, fetchReport, fetchTimeToFill, fetchSalary, user])
 
   if (!isOpen) return null
 
@@ -90,14 +104,25 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     }),
     funnelMetrics,
     channelPerformance,
-    timeline: [
-      { date: "01/03", event: "Vaga publicada", status: "completed" },
-      { date: "05/03", event: "Primeira triagem LIA", status: "completed" },
-      { date: "10/03", event: "Início das entrevistas", status: "completed" },
-      { date: "15/03", event: "Testes técnicos", status: "in-progress" },
-      { date: "20/03", event: "Decisão final", status: "pending" },
-      { date: "25/03", event: "Contratação prevista", status: "pending" }
-    ],
+    timeline: (() => {
+      const openDate = (job as any).openDate ? new Date((job as any).openDate) : new Date()
+      const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+      const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000)
+      const now = new Date()
+      const daysOpen = Math.floor((now.getTime() - openDate.getTime()) / 86400000)
+      const predictedDays = timeToFill?.predicted_days || 30
+      const predictedEnd = addDays(openDate, predictedDays)
+
+      const events = [
+        { date: fmt(openDate), event: "Vaga publicada", status: "completed" as const },
+        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event: "Primeira triagem LIA", status: daysOpen >= 3 ? "completed" as const : "pending" as const },
+        { date: fmt(addDays(openDate, Math.min(7, daysOpen))), event: "Início das entrevistas", status: daysOpen >= 7 ? "completed" as const : daysOpen >= 3 ? "in-progress" as const : "pending" as const },
+        { date: fmt(addDays(openDate, Math.round(predictedDays * 0.6))), event: "Testes técnicos", status: daysOpen >= predictedDays * 0.6 ? "completed" as const : daysOpen >= 7 ? "in-progress" as const : "pending" as const },
+        { date: fmt(addDays(openDate, Math.round(predictedDays * 0.85))), event: "Decisão final", status: daysOpen >= predictedDays * 0.85 ? "completed" as const : "pending" as const },
+        { date: fmt(predictedEnd), event: `Contratação prevista (${predictedDays}d)`, status: "pending" as const },
+      ]
+      return events
+    })(),
     topCandidates,
     budget: {
       total: 50000,
@@ -111,12 +136,32 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
         { category: "LIA/Automação", amount: 2500 }
       ]
     },
+    predictions: {
+      timeToFill: timeToFill ? {
+        predictedDays: timeToFill.predicted_days,
+        rangeMin: timeToFill.range_min,
+        rangeMax: timeToFill.range_max,
+        confidence: timeToFill.confidence,
+        confidenceLevel: timeToFill.confidence_level,
+        comparisonToMarket: timeToFill.comparison_to_market,
+        factors: timeToFill.factors,
+      } : null,
+      salary: salary ? {
+        suggestedMin: salary.suggested_min,
+        suggestedMax: salary.suggested_max,
+        marketPercentile: salary.market_percentile,
+        competitiveAnalysis: salary.competitive_analysis,
+        confidence: salary.confidence,
+        confidenceLevel: salary.confidence_level,
+        factors: salary.factors,
+      } : null,
+    },
     qualityMetrics: {
       nps: 87,
       candidateSatisfaction: 4.6,
       hiringManagerSatisfaction: 4.8,
-      timeToFillBenchmark: "Abaixo da média do mercado",
-      qualityOfHireBenchmark: "Acima da média do mercado"
+      timeToFillBenchmark: timeToFill?.comparison_to_market || "Calculando...",
+      qualityOfHireBenchmark: salary?.competitive_analysis || "Calculando..."
     }
   }
 
@@ -473,6 +518,73 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 </div>
               )}
             </div>
+
+            {/* Predições ML */}
+            {(reportData.predictions.timeToFill || reportData.predictions.salary) && (
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
+                  <Brain className="w-3 h-3 text-wedo-purple" />
+                  Análise Preditiva (ML)
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {reportData.predictions.timeToFill && (
+                    <div className="p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-micro font-medium text-wedo-purple">Previsão Time-to-Fill</span>
+                        <Badge className="bg-wedo-purple/20 text-wedo-purple text-micro px-1 py-0">
+                          {Math.round(reportData.predictions.timeToFill.confidence * 100)}% confiança
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-bold text-wedo-purple">
+                        {reportData.predictions.timeToFill.predictedDays} dias
+                        <span className="text-micro font-normal ml-1">
+                          ({reportData.predictions.timeToFill.rangeMin}-{reportData.predictions.timeToFill.rangeMax})
+                        </span>
+                      </p>
+                      <p className="text-micro text-lia-text-secondary mt-0.5">{reportData.predictions.timeToFill.comparisonToMarket}</p>
+                      {reportData.predictions.timeToFill.factors.length > 0 && (
+                        <div className="mt-1.5 space-y-0.5">
+                          <p className="text-micro font-medium text-lia-text-primary">Fatores de risco:</p>
+                          {reportData.predictions.timeToFill.factors.slice(0, 3).map((f, i) => (
+                            <div key={i} className="flex items-center gap-1 text-micro">
+                              <span className={f.impact === "high" ? "text-status-error" : f.impact === "medium" ? "text-status-warning" : "text-status-success"}>
+                                {f.impact === "high" ? "▲" : f.impact === "medium" ? "●" : "▼"}
+                              </span>
+                              <span className="text-lia-text-secondary">{f.name}: {f.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {reportData.predictions.salary && (
+                    <div className="p-2 bg-status-success/10 rounded-md border border-status-success/30">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-micro font-medium text-status-success">Faixa Salarial Ótima</span>
+                        <Badge className="bg-status-success/20 text-status-success text-micro px-1 py-0">
+                          P{reportData.predictions.salary.marketPercentile}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-bold text-status-success">
+                        {formatBRL(reportData.predictions.salary.suggestedMin)} — {formatBRL(reportData.predictions.salary.suggestedMax)}
+                      </p>
+                      <p className="text-micro text-lia-text-secondary mt-0.5">{reportData.predictions.salary.competitiveAnalysis}</p>
+                      {reportData.predictions.salary.factors.length > 0 && (
+                        <div className="mt-1.5 space-y-0.5">
+                          <p className="text-micro font-medium text-lia-text-primary">Fatores de impacto:</p>
+                          {reportData.predictions.salary.factors.slice(0, 3).map((f, i) => (
+                            <div key={i} className="flex items-center gap-1 text-micro">
+                              <span className={f.impact === "high" ? "text-status-error" : f.impact === "medium" ? "text-status-warning" : "text-status-success"}>●</span>
+                              <span className="text-lia-text-secondary">{f.name}: {f.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Análise de Custos */}
             {selectedSections.costs && (
