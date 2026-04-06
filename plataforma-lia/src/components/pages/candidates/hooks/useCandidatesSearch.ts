@@ -525,7 +525,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     if ((filters.skills as Record<string, unknown>)?.skills && ((filters.skills as Record<string, unknown>).skills as string[]).length > 0) {
       parts.push(`skills: ${((filters.skills as Record<string, unknown>).skills as string[]).join(', ')}`)
     }
-    if (((filters as unknown as Record<string, unknown>)?.locations as Record<string, unknown> | undefined)?.locations && ((((filters as unknown as Record<string, unknown>)?.locations as Record<string, unknown> | undefined)?.locations) as string[] | undefined)?.length > 0) {
+    if (((((filters as unknown as Record<string, unknown>)?.locations as Record<string, unknown> | undefined)?.locations) as string[] | undefined)?.length ?? 0) {
       parts.push(`localização: ${((((filters as unknown as Record<string, unknown>).locations as Record<string, unknown>)?.locations as string[] | undefined)?.join(', ') ?? '')}`)
     }
     if (filters.general?.minExperience || filters.general?.maxExperience) {
