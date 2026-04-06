@@ -353,7 +353,7 @@ export function LegacyChatPage() {
               <>
               {/* Sugestões de Tarefas (empty state) — fora do card do prompt */}
               {isEmptyChat && (
-                <div className="mb-4">
+                <div className="mb-6">
                   <PromptSuggestionsDock
                     onSelect={(command) => setInput(command)}
                     isEmpty={true}
