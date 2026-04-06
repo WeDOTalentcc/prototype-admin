@@ -307,7 +307,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   const [selectedActivity, setSelectedActivity] = useState<PendingTask | null>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
-  const [pendingTaskFilter, setPendingTaskFilter] = useState<'all' | 'feedback' | 'entrevista' | 'sourcing'>('all')
+  const [pendingTaskFilter, setPendingTaskFilter] = useState<'all' | 'feedback' | 'sourcing'>('all')
 
   const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([])
   const [activeAlerts, setActiveAlerts] = useState<ActiveAlert[]>([])

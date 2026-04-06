@@ -11,7 +11,6 @@ import { CandidatesPage } from "@/components/pages/candidates-page"
 import { ChatPage } from "@/components/pages/chat-page"
 import { JobsPage } from "@/components/pages/jobs-page"
 import { TasksPage } from "@/components/pages/tasks-page"
-import { TasksPageMVP } from "@/components/pages/tasks-page-mvp"
 import { IndicatorsPage } from "@/components/pages/indicators-page"
 import { CommunicationHub } from "@/components/settings/CommunicationHub"
 import { TemplatesPage } from "@/components/pages/templates-page"
@@ -30,7 +29,7 @@ interface DashboardAppProps {
 }
 
 export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
-  const [currentPage, setCurrentPage] = useState(initialPage)
+  const [currentPage, setCurrentPage] = useState(initialPage === "Painel de Controle" ? "Tarefas" : initialPage)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
@@ -46,7 +45,8 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
 
   useEffect(() => {
     if (splitView.active && splitView.page) {
-      setCurrentPage(splitView.page)
+      const normalized = splitView.page === "Painel de Controle" ? "Tarefas" : splitView.page
+      setCurrentPage(normalized)
     }
   }, [splitView.active, splitView.page])
 
@@ -76,7 +76,8 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
       router.push("/login")
       return
     }
-    setCurrentPage(page)
+    const normalized = page === "Painel de Controle" ? "Tarefas" : page
+    setCurrentPage(normalized)
   }
 
   const handleRecentItemClick = (item: RecentItem) => {
@@ -153,8 +154,6 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         return <TemplatesPage />
       case "Tarefas":
         return <TasksPage onNavigate={handleNavigate} />
-      case "Painel de Controle":
-        return <TasksPageMVP onNavigate={handleNavigate} />
       case "Configurações":
         return <SettingsPageEnhanced />
       default:

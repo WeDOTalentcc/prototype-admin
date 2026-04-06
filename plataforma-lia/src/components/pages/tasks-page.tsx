@@ -10,6 +10,8 @@ import { DailyBriefingCard } from "@/components/daily-briefing-card"
 import { ActivityFeed } from "@/components/activity-feed"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { useTasksCore } from "./use-tasks-core"
+import { useTasksInterviews } from "./useTasksInterviews"
+import { useJWTAuth } from "@/contexts/auth-context"
 import { TasksMetricsBar } from "./tasks/TasksMetricsBar"
 import { MyTasksCard } from "./tasks/MyTasksCard"
 import { ActiveAlertsCard } from "./tasks/ActiveAlertsCard"
@@ -20,6 +22,7 @@ interface TasksPageProps {
 }
 
 export function TasksPage({ onNavigate }: TasksPageProps = {}) {
+  const { user } = useJWTAuth()
   const { state, actions } = useTasksCore(onNavigate)
   const {
     pendingTasks, activeAlerts, filteredPendingTasks, filteredAndSortedJobs, metrics,
@@ -33,6 +36,20 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
     handleConfirmTask, handleRejectTask, handleAlertAction, handleLIAAction,
     refetch,
   } = actions
+
+  const {
+    todayInterviews,
+    pastInterviews,
+    isLoading: interviewsLoading,
+    error: interviewsError,
+    copiedId,
+    fetchInterviews,
+    handleOpenMeeting,
+    handleCopyLink,
+    handleReschedule,
+    handleReject: handleInterviewReject,
+    handleOpenJob,
+  } = useTasksInterviews(onNavigate)
 
   const [subtitleText, setSubtitleText] = useState<string | null>(null)
   const [activityActorFilter, setActivityActorFilter] = useState<'todos' | 'lia' | 'recrutador'>('todos')
@@ -126,6 +143,18 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     setPendingTaskFilter={setPendingTaskFilter}
                     handleConfirmTask={handleConfirmTask}
                     handleRejectTask={handleRejectTask}
+                    todayInterviews={todayInterviews}
+                    pastInterviews={pastInterviews}
+                    interviewsLoading={interviewsLoading}
+                    interviewsError={interviewsError}
+                    copiedId={copiedId}
+                    fetchInterviews={fetchInterviews}
+                    onOpenMeeting={handleOpenMeeting}
+                    onCopyLink={handleCopyLink}
+                    onReschedule={handleReschedule}
+                    onReject={handleInterviewReject}
+                    onOpenJob={handleOpenJob}
+                    userName={user?.name?.split(' ')[0] || 'Recrutador'}
                   />
 
                   <ActiveAlertsCard
