@@ -71,7 +71,6 @@ PENDING_MIGRATION = {
     "app/api/v1/candidate_search/jd_search.py",
     "app/api/v1/candidate_search/misc_search.py",
     "app/api/v1/candidates.py",
-    "app/api/v1/chat.py",
     "app/api/v1/communication.py",
     "app/api/v1/communication_matrix.py",
     "app/api/v1/communication_optout.py",
