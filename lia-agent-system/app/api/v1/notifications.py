@@ -13,14 +13,13 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.notifications.dependencies import get_notifications_repo
+from app.domains.notifications.repositories.notifications_repository import NotificationsRepository
 from app.services.notification_service import (
     NotificationChannel,
     NotificationType,
     ProactiveNotificationType,
-    notification_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,7 +64,7 @@ class MarkDeliveredRequest(BaseModel):
 class RecruiterActionNotificationRequest(BaseModel):
     """Request model for sending recruiter notifications about job actions."""
     recruiter_ids: list[str]
-    action: str  # 'pause', 'activate', 'unpublish', etc.
+    action: str  # pause, activate, unpublish, etc.
     job_titles: list[str]
     job_ids: list[str]
     channels: list[str] = ["bell"]  # email, teams, bell
@@ -142,20 +141,19 @@ async def get_notifications(
     notification_type: str | None = None,
     limit: int = 50,
     offset: int = 0,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Get notifications for a user.
     """
     try:
-        result = await notification_service.get_notifications(
+        result = await repo.get_notifications(
             user_id=user_id,
             unread_only=unread_only,
             category=category,
             notification_type=notification_type,
             limit=limit,
             offset=offset,
-            db=db
         )
         return {
             "success": True,
@@ -169,13 +167,13 @@ async def get_notifications(
 @router.get("/summary", response_model=None)
 async def get_notification_summary(
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Get notification summary for header badge.
     """
     try:
-        summary = await notification_service.get_notification_summary(user_id, db)
+        summary = await repo.get_notification_summary(user_id)
         return {
             "success": True,
             "data": summary
@@ -188,15 +186,15 @@ async def get_notification_summary(
 @router.post("", response_model=None)
 async def create_notification(
     request: CreateNotificationRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Create a new notification.
     """
     try:
         notification_type_enum = NotificationType(request.notification_type) if request.notification_type in [t.value for t in NotificationType] else NotificationType.INFO
-        
-        notification = await notification_service.create_notification(
+
+        notification = await repo.create_notification(
             user_id=request.user_id,
             title=request.title,
             message=request.message,
@@ -207,7 +205,6 @@ async def create_notification(
             related_candidate_id=request.related_candidate_id,
             action_url=request.action_url,
             action_label=request.action_label,
-            db=db
         )
         return {
             "success": True,
@@ -222,17 +219,17 @@ async def create_notification(
 async def mark_notification_as_read(
     notification_id: str,
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Mark a notification as read.
     """
     try:
-        success = await notification_service.mark_as_read(notification_id, user_id, db)
+        success = await repo.mark_as_read(notification_id, user_id)
         if success:
-            return {"success": True, "message": "Notificação marcada como lida"}
+            return {"success": True, "message": "Notifica\u00e7\u00e3o marcada como lida"}
         else:
-            raise HTTPException(status_code=404, detail="Notificação não encontrada")
+            raise HTTPException(status_code=404, detail="Notifica\u00e7\u00e3o n\u00e3o encontrada")
     except HTTPException:
         raise
     except Exception as e:
@@ -244,16 +241,16 @@ async def mark_notification_as_read(
 async def mark_all_as_read(
     user_id: str = "default_user",
     category: str | None = None,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Mark all notifications as read for a user.
     """
     try:
-        count = await notification_service.mark_all_as_read(user_id, category, db)
+        count = await repo.mark_all_as_read(user_id, category)
         return {
             "success": True,
-            "message": f"{count} notificações marcadas como lidas"
+            "message": f"{count} notifica\u00e7\u00f5es marcadas como lidas"
         }
     except Exception as e:
         logger.error(f"Error marking all as read: {e}")
@@ -264,17 +261,17 @@ async def mark_all_as_read(
 async def dismiss_notification(
     notification_id: str,
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Dismiss a notification.
     """
     try:
-        success = await notification_service.dismiss_notification(notification_id, user_id, db)
+        success = await repo.dismiss_notification(notification_id, user_id)
         if success:
-            return {"success": True, "message": "Notificação descartada"}
+            return {"success": True, "message": "Notifica\u00e7\u00e3o descartada"}
         else:
-            raise HTTPException(status_code=404, detail="Notificação não encontrada")
+            raise HTTPException(status_code=404, detail="Notifica\u00e7\u00e3o n\u00e3o encontrada")
     except HTTPException:
         raise
     except Exception as e:
@@ -285,7 +282,7 @@ async def dismiss_notification(
 @router.post("/recruiter-action", response_model=None)
 async def send_recruiter_action_notification(
     request: RecruiterActionNotificationRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Send notifications to recruiters about job actions (pause, activate, unpublish, etc.).
@@ -297,61 +294,61 @@ async def send_recruiter_action_notification(
         raise HTTPException(status_code=400, detail="job_titles and job_ids are required")
     if len(request.job_titles) != len(request.job_ids):
         raise HTTPException(status_code=400, detail="job_titles and job_ids must have the same length")
-    
+
     try:
         action_labels = {
-            'pause': 'pausada',
-            'activate': 'reativada',
-            'unpublish': 'despublicada',
-            'publish': 'publicada',
-            'close': 'encerrada',
-            'assign': 'atribuída'
+            "pause": "pausada",
+            "activate": "reativada",
+            "unpublish": "despublicada",
+            "publish": "publicada",
+            "close": "encerrada",
+            "assign": "atribu\u00edda"
         }
         action_label = action_labels.get(request.action, request.action)
-        
+
         jobs_text = ", ".join(request.job_titles[:3])
         if len(request.job_titles) > 3:
             jobs_text += f" e mais {len(request.job_titles) - 3}"
-        
+
         title = f"Vaga {action_label}: {jobs_text}"
-        
+
         message_parts = [f"A(s) vaga(s) {jobs_text} foi(ram) {action_label}."]
-        
+
         if request.reason:
             message_parts.append(f"Motivo: {request.reason}")
-        
+
         actions_taken = []
         if request.cancelled_screenings:
-            actions_taken.append("triagens canceladas")
+            actions_taken.append("tria\u00e7ens canceladas")
         if request.cancelled_interviews:
             actions_taken.append("entrevistas desmarcadas")
         if request.cancelled_tests:
             actions_taken.append("testes cancelados")
-        
+
         if actions_taken:
-            message_parts.append(f"Ações executadas: {', '.join(actions_taken)}.")
-        
+            message_parts.append(f"A\u00e7\u00f5es executadas: {, .join(actions_taken)}.")
+
         if request.notified_candidates_count > 0:
             message_parts.append(f"{request.notified_candidates_count} candidato(s) notificado(s).")
-        
+
         if request.performed_by:
-            message_parts.append(f"Ação realizada por: {request.performed_by}")
-        
+            message_parts.append(f"A\u00e7\u00e3o realizada por: {request.performed_by}")
+
         message = " ".join(message_parts)
-        
+
         channel_map = {
-            'email': NotificationChannel.EMAIL,
-            'teams': NotificationChannel.TEAMS,
-            'bell': NotificationChannel.BELL
+            "email": NotificationChannel.EMAIL,
+            "teams": NotificationChannel.TEAMS,
+            "bell": NotificationChannel.BELL
         }
         channels = [channel_map[c] for c in request.channels if c in channel_map]
-        
+
         if not channels:
             channels = [NotificationChannel.BELL]
-        
+
         results = []
         for recruiter_id in request.recruiter_ids:
-            result = await notification_service.send_multi_channel_notification(
+            result = await repo.send_multi_channel_notification(
                 user_id=recruiter_id,
                 title=title,
                 message=message,
@@ -369,13 +366,12 @@ async def send_recruiter_action_notification(
                     "notified_candidates_count": request.notified_candidates_count
                 },
                 related_job_id=request.job_ids[0] if request.job_ids else None,
-                db=db
             )
             results.append({"recruiter_id": recruiter_id, "result": result})
-        
+
         return {
             "success": True,
-            "message": f"Notificação enviada para {len(request.recruiter_ids)} recrutador(es)",
+            "message": f"Notifica\u00e7\u00e3o enviada para {len(request.recruiter_ids)} recrutador(es)",
             "data": {
                 "notifications_sent": len(results),
                 "channels": request.channels,
@@ -390,13 +386,13 @@ async def send_recruiter_action_notification(
 @router.get("/unread-count", response_model=None)
 async def get_unread_count(
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Get the count of unread notifications for the bell badge.
     """
     try:
-        summary = await notification_service.get_notification_summary(user_id, db)
+        summary = await repo.get_notification_summary(user_id)
         return {
             "success": True,
             "data": {
@@ -415,18 +411,17 @@ async def get_chat_notifications(
     thread_id: str | None = None,
     undelivered_only: bool = True,
     limit: int = 20,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Get pending chat notifications for inline display in chat.
     """
     try:
-        result = await notification_service.get_chat_notifications(
+        result = await repo.get_chat_notifications(
             user_id=user_id,
             thread_id=thread_id,
             undelivered_only=undelivered_only,
             limit=limit,
-            db=db
         )
         return {
             "success": True,
@@ -441,19 +436,17 @@ async def get_chat_notifications(
 async def mark_chat_notification_delivered(
     notification_id: str,
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Mark a single chat notification as delivered.
     """
     try:
-        success = await notification_service.mark_chat_notification_delivered(
-            notification_id, user_id, db
-        )
+        success = await repo.mark_chat_notification_delivered(notification_id, user_id)
         if success:
-            return {"success": True, "message": "Notificação marcada como entregue"}
+            return {"success": True, "message": "Notifica\u00e7\u00e3o marcada como entregue"}
         else:
-            raise HTTPException(status_code=404, detail="Notificação não encontrada")
+            raise HTTPException(status_code=404, detail="Notifica\u00e7\u00e3o n\u00e3o encontrada")
     except HTTPException:
         raise
     except Exception as e:
@@ -465,18 +458,16 @@ async def mark_chat_notification_delivered(
 async def mark_chat_notifications_delivered(
     request: MarkDeliveredRequest,
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Mark multiple chat notifications as delivered.
     """
     try:
-        count = await notification_service.mark_chat_notifications_delivered(
-            request.notification_ids, user_id, db
-        )
+        count = await repo.mark_chat_notifications_delivered(request.notification_ids, user_id)
         return {
             "success": True,
-            "message": f"{count} notificações marcadas como entregues"
+            "message": f"{count} notifica\u00e7\u00f5es marcadas como entregues"
         }
     except Exception as e:
         logger.error(f"Error marking chat notifications as delivered: {e}")
@@ -486,7 +477,7 @@ async def mark_chat_notifications_delivered(
 @router.post("/send", response_model=None)
 async def send_multi_channel_notification(
     request: MultiChannelNotificationRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Send a notification to multiple channels (chat, bell, teams).
@@ -498,25 +489,25 @@ async def send_multi_channel_notification(
                 channels.append(NotificationChannel(ch))
             except ValueError:
                 pass
-        
+
         if not channels:
             channels = [NotificationChannel.CHAT, NotificationChannel.BELL]
-        
+
         notification_type_enum = NotificationType.INFO
         if request.notification_type:
             try:
                 notification_type_enum = NotificationType(request.notification_type)
             except ValueError:
                 pass
-        
+
         proactive_type_enum = None
         if request.proactive_type:
             try:
                 proactive_type_enum = ProactiveNotificationType(request.proactive_type)
             except ValueError:
                 pass
-        
-        result = await notification_service.send_multi_channel_notification(
+
+        result = await repo.send_multi_channel_notification(
             user_id=request.user_id,
             title=request.title,
             message=request.message,
@@ -529,9 +520,8 @@ async def send_multi_channel_notification(
             related_candidate_id=request.related_candidate_id,
             suggested_actions=request.suggested_actions,
             thread_id=request.thread_id,
-            db=db
         )
-        
+
         return {
             "success": True,
             "data": result
@@ -552,7 +542,7 @@ async def send_proactive_notification(
     related_candidate_id: str | None = None,
     suggested_actions: list[str] | None = None,
     priority: str = "normal",
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Send a proactive notification (convenience endpoint).
@@ -564,11 +554,11 @@ async def send_proactive_notification(
             proactive_type_enum = ProactiveNotificationType(proactive_type)
         except ValueError:
             pass
-        
+
         if not proactive_type_enum:
             raise HTTPException(status_code=400, detail=f"Invalid proactive_type: {proactive_type}")
-        
-        result = await notification_service.send_proactive_notification(
+
+        result = await repo.send_proactive_notification(
             user_id=user_id,
             proactive_type=proactive_type_enum,
             title=title,
@@ -578,9 +568,8 @@ async def send_proactive_notification(
             related_candidate_id=related_candidate_id,
             suggested_actions=suggested_actions,
             priority=priority,
-            db=db
         )
-        
+
         return {
             "success": True,
             "data": result
@@ -607,23 +596,20 @@ class UpdateThresholdRequest(BaseModel):
 @router.post("/proactive/check", response_model=None)
 async def trigger_proactive_check(
     request: ProactiveAlertCheckRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
     """
     Trigger a proactive alert check for a user.
-    
+
     This checks all conditions (pipeline, productivity, communication,
     predictive, system) and sends notifications for any triggered alerts.
     """
     try:
-        from app.domains.automation.services.proactive_alert_service import proactive_alert_service
-        
-        triggered_alerts = await proactive_alert_service.check_all_conditions(
+        triggered_alerts = await repo.check_proactive_conditions(
             user_id=request.user_id,
             company_id=request.company_id,
-            db=db
         )
-        
+
         return {
             "success": True,
             "data": {
@@ -650,15 +636,15 @@ async def get_proactive_alert_history(
 ):
     """
     Get history of proactive alerts sent to a user.
-    
+
     This shows which alerts were triggered and when to help
     understand notification patterns.
     """
     try:
         from app.domains.automation.services.proactive_alert_service import proactive_alert_service
-        
+
         history = await proactive_alert_service.get_alert_history(user_id)
-        
+
         return {
             "success": True,
             "data": history
@@ -674,23 +660,23 @@ async def update_alert_threshold(
 ):
     """
     Update threshold configuration for an alert condition.
-    
+
     This allows customizing when alerts are triggered for
     each specific condition.
     """
     try:
         from app.domains.automation.services.proactive_alert_service import AlertCondition, proactive_alert_service
-        
+
         try:
             condition = AlertCondition(request.condition)
         except ValueError:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Invalid condition: {request.condition}. Valid conditions are: {[c.value for c in AlertCondition]}"
             )
-        
+
         proactive_alert_service.update_threshold(condition, request.threshold_config)
-        
+
         return {
             "success": True,
             "message": f"Threshold updated for {request.condition}"
@@ -706,18 +692,18 @@ async def update_alert_threshold(
 async def get_alert_thresholds():
     """
     Get all alert threshold configurations.
-    
+
     Returns the current configuration for all alert conditions
     including thresholds, cooldowns, and severity levels.
     """
     try:
         from app.domains.automation.services.proactive_alert_service import AlertCondition, ThresholdConfig
-        
+
         thresholds = {}
         for condition in AlertCondition:
             config = ThresholdConfig.get_threshold(condition)
             thresholds[condition.value] = config
-        
+
         return {
             "success": True,
             "data": thresholds
@@ -730,18 +716,17 @@ async def get_alert_thresholds():
 @router.post("/job-created", response_model=None)
 async def send_job_created_notification(
     request: JobCreatedNotificationRequest,
-    db: AsyncSession = Depends(get_db)
 ):
     """
     Send job created notification to recruiter and manager.
-    
+
     Sends notification in workplan format with all job details including:
     - Job title, department, location
     - Technical requirements and behavioral competencies
     - Interview stages with SLAs
     - Deadlines (screening, shortlist, closing)
     - Publishing platforms
-    
+
     Channels: email and/or teams
     Recipients: recruiter (required) and manager/hiring manager (optional)
     """
@@ -750,37 +735,37 @@ async def send_job_created_notification(
 
         from app.domains.communication.services.email_service import email_service
         from app.domains.communication.services.teams_service import teams_service
-        
+
         notifications_sent = {
             "recruiter": {"email": False, "teams": False},
             "manager": {"email": False, "teams": False}
         }
         errors = []
-        
-        urgency_labels = {1: "Muito Baixa", 2: "Baixa", 3: "Média", 4: "Alta", 5: "Urgente"}
-        urgency_label = urgency_labels.get(request.urgency_level, "Média")
-        
+
+        urgency_labels = {1: "Muito Baixa", 2: "Baixa", 3: "M\u00e9dia", 4: "Alta", 5: "Urgente"}
+        urgency_label = urgency_labels.get(request.urgency_level, "M\u00e9dia")
+
         tech_reqs_list = "\n".join([
-            f"  • {r.name} ({r.level}){' - Obrigatório' if r.required else ''}"
+            f"  \u2022 {r.name} ({r.level}){ - Obrigat\u00f3rio if r.required else }"
             for r in request.technical_requirements
         ]) if request.technical_requirements else "  Nenhum definido"
-        
+
         competencies_list = "\n".join([
-            f"  • {c.name} (Peso: {c.weight})"
+            f"  \u2022 {c.name} (Peso: {c.weight})"
             for c in request.behavioral_competencies
         ]) if request.behavioral_competencies else "  Nenhum definido"
-        
+
         languages_list = ", ".join([
             f"{l.name} ({l.level})" for l in request.languages
-        ]) if request.languages else "Não especificado"
-        
+        ]) if request.languages else "N\u00e3o especificado"
+
         benefits_list = ", ".join(request.benefits) if request.benefits else "A definir"
-        
+
         stages_list = "\n".join([
             f"  {s.order}. {s.stageName}" + (f" (SLA: {s.sla} dias)" if s.sla else "")
             for s in request.interview_stages
-        ]) if request.interview_stages else "  Pipeline padrão"
-        
+        ]) if request.interview_stages else "  Pipeline padr\u00e3o"
+
         platforms = []
         if request.publishing_platforms.linkedin:
             platforms.append("LinkedIn")
@@ -789,7 +774,7 @@ async def send_job_created_notification(
         if request.publishing_platforms.website:
             platforms.append("Website")
         platforms_text = ", ".join(platforms) if platforms else "Nenhuma"
-        
+
         salary_text = "A definir"
         if request.salary_range:
             if request.salary_range.min and request.salary_range.max:
@@ -797,70 +782,70 @@ async def send_job_created_notification(
             elif request.salary_range.min:
                 salary_text = f"A partir de R$ {request.salary_range.min:,.0f}"
             elif request.salary_range.max:
-                salary_text = f"Até R$ {request.salary_range.max:,.0f}"
-        
+                salary_text = f"At\u00e9 R$ {request.salary_range.max:,.0f}"
+
         workplan_content = f"""
-═══════════════════════════════════════════════════════════
-📋 WORKPLAN - NOVA VAGA CRIADA
-═══════════════════════════════════════════════════════════
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+\ud83d\udccb WORKPLAN - NOVA VAGA CRIADA
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 
-🎯 INFORMAÇÕES GERAIS
-───────────────────────────────────────────────────────────
-Título:           {request.job_title}
-Área/Departamento: {request.department or 'A definir'}
-Localização:       {request.location or 'A definir'}
-Modelo de Trabalho: {request.work_model or 'A definir'}
-Senioridade:       {request.seniority_level or 'A definir'}
-Urgência:          {urgency_label}
-{"🔒 Vaga Confidencial" if request.is_confidential else ""}
-{"🌈 Vaga Afirmativa" if request.is_affirmative else ""}
+\ud83c\udfaf INFORMA\u00c7\u00d5ES GERAIS
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+T\u00edtulo:           {request.job_title}
+\u00c1rea/Departamento: {request.department or A definir}
+Localiza\u00e7\u00e3o:       {request.location or A definir}
+Modelo de Trabalho: {request.work_model or A definir}
+Senioridade:       {request.seniority_level or A definir}
+Urg\u00eancia:          {urgency_label}
+{\ud83d\udd12 Vaga Confidencial if request.is_confidential else }
+{\ud83c\udf08 Vaga Afirmativa if request.is_affirmative else }
 
-💰 REMUNERAÇÃO
-───────────────────────────────────────────────────────────
+\ud83d\udcb0 REMUNERA\u00c7\u00c3O
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 Faixa Salarial:    {salary_text}
-Benefícios:        {benefits_list}
+Benef\u00edcios:        {benefits_list}
 
-🛠️ REQUISITOS TÉCNICOS
-───────────────────────────────────────────────────────────
+\ud83d\udee0\ufe0f REQUISITOS T\u00c9CNICOS
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 {tech_reqs_list}
 
-🎭 COMPETÊNCIAS COMPORTAMENTAIS
-───────────────────────────────────────────────────────────
+\ud83c\udfa5 COMPET\u00caNCIAS COMPORTAMENTAIS
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 {competencies_list}
 
-🌐 IDIOMAS
-───────────────────────────────────────────────────────────
+\ud83c\udf10 IDIOMAS
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 {languages_list}
 
-📅 CRONOGRAMA E PRAZOS
-───────────────────────────────────────────────────────────
+\ud83d\udcc5 CRONOGRAMA E PRAZOS
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 Prazo Triagem:     {request.deadline_screening}
 Prazo Shortlist:   {request.deadline_shortlist}
 Prazo Fechamento:  {request.deadline_closing}
 
-🔄 ETAPAS DO PROCESSO
-───────────────────────────────────────────────────────────
+\ud83d\udd04 ETAPAS DO PROCESSO
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 {stages_list}
 
-📢 PUBLICAÇÃO
-───────────────────────────────────────────────────────────
+\ud83d\udce2 PUBLICA\u00c7\u00c3O
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 Plataformas:       {platforms_text}
 
-📝 DESCRIÇÃO DA VAGA
-───────────────────────────────────────────────────────────
+\ud83d\udcdd DESCRI\u00c7\u00c3O DA VAGA
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 {request.job_description}
 
-═══════════════════════════════════════════════════════════
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 ID da Vaga: {request.job_id}
-Criado em: {datetime.now().strftime('%d/%m/%Y às %H:%M')}
+Criado em: {datetime.now().strftime(%d/%m/%Y \u00e0s %H:%M)}
 Recrutador: {request.recruiter_name or request.recruiter_email}
-{f"Gestor: {request.manager_name or request.manager_email}" if request.manager_email else ""}
-═══════════════════════════════════════════════════════════
+{fGestor: {request.manager_name or request.manager_email} if request.manager_email else }
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 """
-        
-        email_subject = f"🚀 Nova Vaga Criada: {request.job_title} | {request.department or 'Empresa'}"
-        teams_title = f"📋 Nova Vaga: {request.job_title}"
-        
+
+        email_subject = f"\ud83d\ude80 Nova Vaga Criada: {request.job_title} | {request.department or Empresa}"
+        teams_title = f"\ud83d\udccb Nova Vaga: {request.job_title}"
+
         recipients = []
         if request.recruiter_email:
             recipients.append({
@@ -874,41 +859,41 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
                 "name": request.manager_name,
                 "role": "manager"
             })
-        
+
         for recipient in recipients:
             role = recipient["role"]
-            
+
             if "email" in request.channels:
                 try:
                     html_content = f"""
                     <html>
-                    <body style="font-family: 'Open Sans', Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <body style="font-family: Open Sans, Arial, sans-serif; line-height: 1.6; color: #333;">
                         <div style="max-width: 700px; margin: 0 auto; padding: 20px;">
                             <div style="background: linear-gradient(135deg, #60BED1 0%, #4A9BA8 100%); padding: 20px; border-radius: 8px 8px 0 0;">
                                 <h1 style="color: white; margin: 0; font-size: 24px;">
-                                    🚀 Nova Vaga Criada
+                                    \ud83d\ude80 Nova Vaga Criada
                                 </h1>
                                 <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">
                                     {request.job_title}
                                 </p>
                             </div>
                             <div style="background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-                                <pre style="font-family: 'Courier New', monospace; font-size: 13px; background: white; padding: 20px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; border: 1px solid #e5e7eb;">{workplan_content}</pre>
+                                <pre style="font-family: Courier New, monospace; font-size: 13px; background: white; padding: 20px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; border: 1px solid #e5e7eb;">{workplan_content}</pre>
                                 <div style="margin-top: 20px; text-align: center;">
-                                    <a href="https://lia.wedotalent.com/jobs/{request.job_id}" 
+                                    <a href="https://lia.wedotalent.com/jobs/{request.job_id}"
                                        style="display: inline-block; background: #60BED1; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
                                         Ver Vaga no LIA
                                     </a>
                                 </div>
                             </div>
                             <p style="color: #6b7280; font-size: 12px; text-align: center; margin-top: 20px;">
-                                Este é um email automático do LIA - Sistema de Recrutamento Inteligente
+                                Este \u00e9 um email autom\u00e1tico do LIA - Sistema de Recrutamento Inteligente
                             </p>
                         </div>
                     </body>
                     </html>
                     """
-                    
+
                     await email_service.send_email(
                         to_email=recipient["email"],
                         subject=email_subject,
@@ -916,12 +901,12 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
                         text_content=workplan_content
                     )
                     notifications_sent[role]["email"] = True
-                    logger.info(f"📧 Email sent to {role}: {recipient['email']}")
+                    logger.info(f"\ud83d\udce7 Email sent to {role}: {recipient[email]}")
                 except Exception as e:
-                    error_msg = f"Failed to send email to {role} ({recipient['email']}): {str(e)}"
+                    error_msg = f"Failed to send email to {role} ({recipient[email]}): {str(e)}"
                     logger.error(error_msg)
                     errors.append(error_msg)
-            
+
             if "teams" in request.channels:
                 try:
                     await teams_service.send_message(
@@ -932,27 +917,27 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
                         action_label="Ver Vaga"
                     )
                     notifications_sent[role]["teams"] = True
-                    logger.info(f"📨 Teams message sent to {role}: {recipient['email']}")
+                    logger.info(f"\ud83d\udce8 Teams message sent to {role}: {recipient[email]}")
                 except Exception as e:
-                    error_msg = f"Failed to send Teams message to {role} ({recipient['email']}): {str(e)}"
+                    error_msg = f"Failed to send Teams message to {role} ({recipient[email]}): {str(e)}"
                     logger.error(error_msg)
                     errors.append(error_msg)
-        
+
         success = any([
             notifications_sent["recruiter"]["email"],
             notifications_sent["recruiter"]["teams"],
             notifications_sent["manager"]["email"],
             notifications_sent["manager"]["teams"]
         ])
-        
-        logger.info(f"📬 Job created notification sent: {request.job_title} - Results: {notifications_sent}")
-        
+
+        logger.info(f"\ud83d\udcec Job created notification sent: {request.job_title} - Results: {notifications_sent}")
+
         return {
             "success": success,
             "notifications_sent": notifications_sent,
             "errors": errors if errors else None
         }
-        
+
     except Exception as e:
         logger.error(f"Error sending job created notification: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
