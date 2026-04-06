@@ -279,7 +279,7 @@ async def handle_action_flow(
                 if pending.intent in destructive_actions:
                     is_demo_user = current_user.email == "demo@wedotalent.com"
                     if is_demo_user:
-                        logger.warning(f"Demo user {current_user.id} ({current_user.email}) executing destructive action: {pending.intent}")
+                        logger.warning(f"Demo user {current_user.id} executing destructive action: {actionable_intent}")
                     # For demo mode, we allow execution with warning. For production, add additional checks as needed.
                 
                 context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id}
@@ -408,7 +408,7 @@ async def handle_action_flow(
         if actionable_intent in destructive_actions:
             is_demo_user = current_user.email == "demo@wedotalent.com"
             if is_demo_user:
-                logger.warning(f"Demo user {current_user.id} ({current_user.email}) executing destructive action: {actionable_intent}")
+                logger.warning(f"Demo user {current_user.id} executing destructive action: {actionable_intent}")
             # For demo mode, we allow execution with warning. For production, add additional checks as needed.
         
         context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id}

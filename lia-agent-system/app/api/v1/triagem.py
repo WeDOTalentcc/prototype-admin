@@ -164,9 +164,7 @@ async def create_invite(
     triagem_url = f"/triagem/{session.token}"
 
     logger.info(
-        f"[Triagem] Invite created: token={session.token}, "
-        f"candidate={request.candidate_name}, job={request.job_title}, "
-        f"channel={request.invite_channel}"
+        f"[Triagem] Invite created: job={request.job_title}, channel={request.invite_channel}"
     )
 
     return JSONResponse(

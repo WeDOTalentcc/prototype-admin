@@ -471,7 +471,7 @@ class MockEmailProvider(MessageProvider):
         body_html: Optional[str] = None,
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
-        """Simulate sending an email. Raises error in production."""
+        """Simulate sending an email. Returns failure in production."""
         if self._environment == "production":
             logger.critical(f"[MOCK EMAIL] BLOCKED in production — email to {to} was NOT sent. Configure a real email provider.")
             return False, None, {"mock": True, "blocked": True, "reason": "MockEmailProvider is not allowed in production"}
@@ -771,7 +771,7 @@ class MockWhatsAppProvider(MessageProvider):
         body_html: Optional[str] = None,
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
-        """Simulate sending a WhatsApp message. Raises error in production."""
+        """Simulate sending a WhatsApp message. Returns failure in production."""
         if self._environment == "production":
             logger.critical(f"[MOCK WHATSAPP] BLOCKED in production — message to {to} was NOT sent.")
             return False, None, {"mock": True, "blocked": True, "reason": "MockWhatsAppProvider is not allowed in production"}
