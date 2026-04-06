@@ -12,3 +12,11 @@ from app.domains.interview_scheduling.repositories.interview_repository import (
 
 def get_interview_repo(db: AsyncSession = Depends(get_db)) -> InterviewRepository:
     return InterviewRepository(db)
+
+from app.domains.interview_scheduling.repositories.scheduling_repository import (
+    SchedulingRepository,
+)
+
+
+def get_scheduling_repo(db: AsyncSession = Depends(get_db)) -> SchedulingRepository:
+    return SchedulingRepository(db)

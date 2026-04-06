@@ -16,9 +16,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel, EmailStr
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.domains.interview_scheduling.dependencies import get_scheduling_repo
+from app.domains.interview_scheduling.repositories.scheduling_repository import SchedulingRepository
 from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
 from app.shared.compliance.audit_service import audit_service
 from app.shared.pii_masking import get_masked_logger
@@ -127,11 +127,11 @@ def interview_to_response(interview) -> InterviewResponse:
 @router.post("/interviews", response_model=InterviewResponse)
 async def create_interview(
     request: CreateInterviewRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Create a new interview appointment.
-    
+
     Current Status: Funcional - Aguardando Configuração Calendar
     - Interview is saved to database
     - ICS file can be generated for download
@@ -139,7 +139,7 @@ async def create_interview(
     """
     try:
         interview = await scheduling_service.create_interview(
-            db=db,
+            db=repo.db,
             candidate_id=request.candidate_id,
             candidate_name=request.candidate_name,
             candidate_email=request.candidate_email,
@@ -156,7 +156,7 @@ async def create_interview(
             additional_interviewers=request.additional_interviewers,
             created_by="api"
         )
-        
+
         try:
             await audit_service.log_decision(
                 company_id=None,
@@ -180,9 +180,9 @@ async def create_interview(
             logger.warning(f"Audit log failed for create_interview: {audit_err}")
 
         return interview_to_response(interview)
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to create interview: {e}")
+        logger.error(f"Failed to create interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -213,19 +213,19 @@ class InterviewWithTeamsResponse(BaseModel):
 @router.post("/interviews/with-teams", response_model=InterviewWithTeamsResponse)
 async def create_interview_with_teams(
     request: CreateInterviewWithTeamsRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Create an interview with Microsoft Teams meeting.
-    
+
     This endpoint:
     1. Creates a Teams meeting with auto-generated join link
     2. Sends calendar invites to all attendees via Outlook
     3. Stores the interview in the database
-    
+
     Requires Microsoft Graph configuration (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID).
     If not configured, falls back to standard interview creation with ICS file available.
-    
+
     Returns:
         InterviewWithTeamsResponse containing:
         - interview: Full interview details
@@ -233,7 +233,7 @@ async def create_interview_with_teams(
     """
     try:
         interview, teams_metadata = await scheduling_service.create_interview_with_teams(
-            db=db,
+            db=repo.db,
             organizer_email=request.organizer_email,
             candidate_id=request.candidate_id,
             candidate_name=request.candidate_name,
@@ -249,14 +249,14 @@ async def create_interview_with_teams(
             send_calendar_invites=request.send_calendar_invites,
             interviewer_name=request.interviewer_name
         )
-        
+
         return InterviewWithTeamsResponse(
             interview=interview_to_response(interview),
             teams_metadata=teams_metadata
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to create interview with Teams: {e}")
+        logger.error(f"Failed to create interview with Teams: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -270,14 +270,14 @@ async def list_interviews(
     to_date: datetime | None = Query(None, description="Filter to this date"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     List interviews with optional filters.
     """
     try:
         interviews, total = await scheduling_service.list_interviews(
-            db=db,
+            db=repo.db,
             candidate_id=candidate_id,
             vacancy_id=vacancy_id,
             interviewer_email=interviewer_email,
@@ -287,37 +287,37 @@ async def list_interviews(
             skip=skip,
             limit=limit
         )
-        
+
         return InterviewListResponse(
             total=total,
             items=[interview_to_response(i) for i in interviews]
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to list interviews: {e}")
+        logger.error(f"Failed to list interviews: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/interviews/{interview_id}", response_model=InterviewResponse)
 async def get_interview(
     interview_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Get a specific interview by ID.
     """
     try:
-        interview = await scheduling_service.get_interview(db, interview_id)
-        
+        interview = await scheduling_service.get_interview(repo.db, interview_id)
+
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-        
+
         return interview_to_response(interview)
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Failed to get interview: {e}")
+        logger.error(f"Failed to get interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -325,28 +325,28 @@ async def get_interview(
 async def update_interview(
     interview_id: str,
     request: UpdateInterviewRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Update an existing interview.
-    
+
     Only provided fields will be updated.
     """
     try:
         update_data = request.model_dump(exclude_unset=True)
-        
+
         interview = await scheduling_service.update_interview(
-            db=db,
+            db=repo.db,
             interview_id=interview_id,
             **update_data
         )
-        
+
         return interview_to_response(interview)
-        
+
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"❌ Failed to update interview: {e}")
+        logger.error(f"Failed to update interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -354,20 +354,20 @@ async def update_interview(
 async def cancel_interview(
     interview_id: str,
     reason: str | None = Query(None, description="Cancellation reason"),
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Cancel an interview.
-    
+
     The interview is not deleted but marked as cancelled.
     """
     try:
         interview = await scheduling_service.cancel_interview(
-            db=db,
+            db=repo.db,
             interview_id=interview_id,
             cancellation_reason=reason
         )
-        
+
         return {
             "success": True,
             "message": "Entrevista cancelada com sucesso",
@@ -375,34 +375,34 @@ async def cancel_interview(
             "status": interview.status,
             "cancelled_at": interview.cancelled_at.isoformat() if interview.cancelled_at else None
         }
-        
+
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"❌ Failed to cancel interview: {e}")
+        logger.error(f"Failed to cancel interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/interviews/{interview_id}/ics", response_model=None)
 async def download_interview_ics(
     interview_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Download ICS calendar file for an interview.
-    
+
     This allows candidates and interviewers to add the interview to their calendars.
     """
     try:
-        interview = await scheduling_service.get_interview(db, interview_id)
-        
+        interview = await scheduling_service.get_interview(repo.db, interview_id)
+
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-        
+
         ics_content = scheduling_service.generate_ics_content(interview)
-        
+
         filename = f"entrevista_{interview.candidate_name.replace(' ', '_')}_{interview.start_time.strftime('%Y%m%d')}.ics"
-        
+
         return Response(
             content=ics_content,
             media_type="text/calendar",
@@ -410,11 +410,11 @@ async def download_interview_ics(
                 "Content-Disposition": f'attachment; filename="{filename}"'
             }
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Failed to generate ICS: {e}")
+        logger.error(f"Failed to generate ICS: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -454,16 +454,16 @@ class SendInterviewInviteResponse(BaseModel):
 @router.post("/interviews/send-invite", response_model=SendInterviewInviteResponse)
 async def send_interview_invite(
     request: SendInterviewInviteRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Send an interview invite email with a Bookings link.
-    
+
     This endpoint sends an email to the candidate with a link to schedule their interview
     through Microsoft Bookings or similar scheduling service.
-    
+
     Uses the template with situation='interview_invite' from the database.
-    
+
     Template Variables:
     - candidato_nome: Candidate name
     - vaga: Job title
@@ -473,13 +473,13 @@ async def send_interview_invite(
     - duracao_entrevista: Duration in minutes
     - entrevistador_nome: Interviewer name
     - link_calendario: Bookings link for scheduling
-    
+
     Returns:
         SendInterviewInviteResponse with success status and details
     """
     try:
         result = await scheduling_service.send_interview_invite(
-            db=db,
+            db=repo.db,
             candidate_id=request.candidate_id,
             candidate_email=request.candidate_email,
             candidate_name=request.candidate_name,
@@ -492,7 +492,7 @@ async def send_interview_invite(
             interview_format=request.interview_format,
             duration_minutes=request.duration_minutes
         )
-        
+
         return SendInterviewInviteResponse(
             success=result.get("success", False),
             message=result.get("message", ""),
@@ -501,9 +501,9 @@ async def send_interview_invite(
             template_used=result.get("template_used"),
             error=result.get("error")
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to send interview invite: {e}")
+        logger.error(f"Failed to send interview invite: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -526,16 +526,16 @@ class SendInterviewConfirmationRequest(BaseModel):
 @router.post("/interviews/send-confirmation", response_model=SendInterviewInviteResponse)
 async def send_interview_confirmation(
     request: SendInterviewConfirmationRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
     Send an interview confirmation email with meeting link.
-    
+
     This endpoint sends a confirmation email to the candidate with the interview details
     and meeting link (Teams, Zoom, etc.).
-    
+
     Uses the template with situation='interview_confirmed' from the database.
-    
+
     Template Variables:
     - candidato_nome: Candidate name
     - vaga: Job title
@@ -547,13 +547,13 @@ async def send_interview_confirmation(
     - formato_entrevista: Interview format
     - entrevistador_nome: Interviewer name
     - link_entrevista: Meeting link
-    
+
     Returns:
         SendInterviewInviteResponse with success status and details
     """
     try:
         result = await scheduling_service.send_interview_confirmation(
-            db=db,
+            db=repo.db,
             candidate_id=request.candidate_id,
             candidate_email=request.candidate_email,
             candidate_name=request.candidate_name,
@@ -567,7 +567,7 @@ async def send_interview_confirmation(
             interview_format=request.interview_format,
             duration_minutes=request.duration_minutes
         )
-        
+
         return SendInterviewInviteResponse(
             success=result.get("success", False),
             message=result.get("message", ""),
@@ -576,7 +576,7 @@ async def send_interview_confirmation(
             template_used=result.get("template_used"),
             error=result.get("error")
         )
-        
+
     except Exception as e:
-        logger.error(f"❌ Failed to send interview confirmation: {e}")
+        logger.error(f"Failed to send interview confirmation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
