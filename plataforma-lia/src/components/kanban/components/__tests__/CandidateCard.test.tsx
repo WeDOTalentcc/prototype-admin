@@ -136,7 +136,7 @@ describe('CandidateCard', () => {
     expect(onClick).toHaveBeenCalled()
   })
 
-  it('calls onSelect when checkbox is clicked', () => {
+  it('calls onSelect when selection checkbox area is toggled', () => {
     const onSelect = vi.fn()
     render(
       <CandidateCard

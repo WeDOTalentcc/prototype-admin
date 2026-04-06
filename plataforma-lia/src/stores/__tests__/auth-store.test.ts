@@ -144,7 +144,6 @@ describe('auth-store', () => {
     expect(getState().isLoading).toBe(false)
     expect(getState().isAuthenticated).toBe(false)
   })
-
   it('login failure does not set authenticated', async () => {
     vi.mocked(authService.login).mockRejectedValue(new Error('Invalid credentials'))
 

@@ -45,7 +45,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
     try {
       await login(email, password)
-      router.push("/")
+      router.push(getSafeRedirectUrl(null))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Senha incorreta. Verifique suas credenciais.")
     } finally {
