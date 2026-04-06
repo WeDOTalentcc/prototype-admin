@@ -366,6 +366,13 @@ async def trigger_ats_sync(
         if not connection:
             raise HTTPException(status_code=404, detail="Connection not found")
 
+        VALID_SYNC_TYPES = ("full", "candidates", "jobs")
+        if request.sync_type not in VALID_SYNC_TYPES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported sync_type '{request.sync_type}'. Must be one of: {', '.join(VALID_SYNC_TYPES)}"
+            )
+
         sync_job = ATSSyncJob(
             connection_id=connection.id,
             provider=connection.provider,
@@ -769,6 +776,7 @@ async def _process_gupy_webhook(
             select(ATSCandidate).where(
                 ATSCandidate.ats_candidate_id == ats_candidate_id,
                 ATSCandidate.provider == ATSProvider.GUPY,
+                ATSCandidate.connection_id == connection_id,
             )
         )
         candidate = existing.scalar_one_or_none()
@@ -811,6 +819,7 @@ async def _process_gupy_webhook(
                 select(ATSCandidate).where(
                     ATSCandidate.ats_candidate_id == ats_candidate_id,
                     ATSCandidate.provider == ATSProvider.GUPY,
+                    ATSCandidate.connection_id == connection_id,
                 )
             )
             candidate = result.scalar_one_or_none()
@@ -835,6 +844,7 @@ async def _process_gupy_webhook(
             select(ATSJobMapping).where(
                 ATSJobMapping.ats_job_id == ats_job_id,
                 ATSJobMapping.provider == ATSProvider.GUPY,
+                ATSJobMapping.connection_id == connection_id,
             )
         )
         job = existing.scalar_one_or_none()
@@ -882,6 +892,7 @@ async def _process_pandape_webhook(
             select(ATSCandidate).where(
                 ATSCandidate.ats_candidate_id == ats_candidate_id,
                 ATSCandidate.provider == ATSProvider.PANDAPE,
+                ATSCandidate.connection_id == connection_id,
             )
         )
         candidate = existing.scalar_one_or_none()
@@ -922,6 +933,7 @@ async def _process_pandape_webhook(
                 select(ATSCandidate).where(
                     ATSCandidate.ats_candidate_id == ats_candidate_id,
                     ATSCandidate.provider == ATSProvider.PANDAPE,
+                    ATSCandidate.connection_id == connection_id,
                 )
             )
             candidate = result.scalar_one_or_none()
@@ -946,6 +958,7 @@ async def _process_pandape_webhook(
             select(ATSJobMapping).where(
                 ATSJobMapping.ats_job_id == ats_job_id,
                 ATSJobMapping.provider == ATSProvider.PANDAPE,
+                ATSJobMapping.connection_id == connection_id,
             )
         )
         job = existing.scalar_one_or_none()
@@ -994,6 +1007,7 @@ async def _process_merge_webhook(
             select(ATSCandidate).where(
                 ATSCandidate.ats_candidate_id == ats_candidate_id,
                 ATSCandidate.provider == ATSProvider.MERGE,
+                ATSCandidate.connection_id == connection_id,
             )
         )
         candidate = existing.scalar_one_or_none()
@@ -1038,6 +1052,7 @@ async def _process_merge_webhook(
             select(ATSJobMapping).where(
                 ATSJobMapping.ats_job_id == ats_job_id,
                 ATSJobMapping.provider == ATSProvider.MERGE,
+                ATSJobMapping.connection_id == connection_id,
             )
         )
         job = existing.scalar_one_or_none()
