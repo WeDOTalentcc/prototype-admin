@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch (error: any) {
-    console.error("[work-model-analytics proxy]", error?.message)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.error("[work-model-analytics proxy]", message)
     return NextResponse.json({ error: "proxy_error" }, { status: 502 })
   }
 }

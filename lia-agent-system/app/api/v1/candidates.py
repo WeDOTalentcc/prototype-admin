@@ -10,12 +10,23 @@ from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
+from app.domains.candidates.dependencies import (
+    get_candidate_favorites_repo,
+    get_candidate_hidden_repo,
+    get_candidate_repo,
+    get_vacancy_candidate_repo,
+)
+from app.domains.candidates.repositories.candidate_favorites_repository import (
+    CandidateFavoritesRepository,
+    CandidateHiddenRepository,
+)
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 from app.domains.sourcing.services.pearch_service import pearch_service
 from app.models.candidate import (
     Candidate,
@@ -56,29 +67,29 @@ STAGE_PROGRESSION_ORDER = {
 }
 
 REJECTION_STAGES = {
-    "reprovado", "rejected", "descartado", "discarded", "não aprovado", 
+    "reprovado", "rejected", "descartado", "discarded", "não aprovado",
     "recusado", "declined", "dropout", "desistiu", "cancelado", "arquivado"
 }
 
 def get_stage_rank(stage: str) -> int:
     """
-    Get numeric rank for a stage. 
-    Higher = further in pipeline. 
+    Get numeric rank for a stage.
+    Higher = further in pipeline.
     -1 = rejection stage
     -2 = unknown stage (treat transitions as neutral)
     """
     stage_lower = stage.lower().strip() if stage else ""
-    
+
     if not stage_lower or stage_lower == "unknown":
         return -2
-    
+
     if any(rej in stage_lower for rej in REJECTION_STAGES):
         return -1
-    
+
     for key, rank in STAGE_PROGRESSION_ORDER.items():
         if key in stage_lower or stage_lower in key:
             return rank
-    
+
     return -2
 
 def determine_feedback_action(stage_from: str, stage_to: str) -> str:
@@ -88,25 +99,25 @@ def determine_feedback_action(stage_from: str, stage_to: str) -> str:
     Returns: 'advance', 'reject', or 'neutral'
     """
     stage_to_lower = (stage_to or "").lower().strip()
-    
+
     if any(rej in stage_to_lower for rej in REJECTION_STAGES):
         return "reject"
-    
+
     from_rank = get_stage_rank(stage_from)
     to_rank = get_stage_rank(stage_to)
-    
+
     if to_rank == -1:
         return "reject"
-    
+
     if from_rank == -2 or to_rank == -2:
         return "neutral"
-    
+
     if to_rank > from_rank:
         return "advance"
-    
+
     if to_rank < from_rank:
         return "neutral"
-    
+
     return "neutral"
 
 
@@ -127,7 +138,7 @@ def normalize_array_field(value) -> list:
     """
     if value is None:
         return []
-    
+
     # If it's already a proper list with real items (not single chars from iteration)
     if isinstance(value, list):
         # Check if it looks like a PostgreSQL array was iterated as chars: ['{', '"', 'S', 'o', 'f', 't', ...]
@@ -136,11 +147,11 @@ def normalize_array_field(value) -> list:
             array_str = ''.join(value)
             return parse_pg_array_string(array_str)
         return value
-    
+
     # If it's a string, try to parse it
     if isinstance(value, str):
         return parse_pg_array_string(value)
-    
+
     return []
 
 
@@ -151,25 +162,25 @@ def extract_company_info_from_work_history(work_history: list) -> dict:
     """
     company_industries = []
     company_size = None
-    
+
     if not work_history or not isinstance(work_history, list):
         return {"company_industries": company_industries, "company_size": company_size}
-    
+
     for exp in work_history:
         if not isinstance(exp, dict):
             continue
-        
+
         exp_industries = exp.get("industries", [])
         if exp_industries and isinstance(exp_industries, list) and not company_industries:
             company_industries = exp_industries
-        
+
         exp_size = exp.get("company_size") or exp.get("company_size_range")
         if exp_size and not company_size:
             company_size = exp_size
-        
+
         if company_industries and company_size:
             break
-    
+
     return {"company_industries": company_industries, "company_size": company_size}
 
 
@@ -180,21 +191,21 @@ def parse_pg_array_string(array_str: str) -> list:
     """
     if not array_str:
         return []
-    
+
     array_str = array_str.strip()
-    
+
     # Handle PostgreSQL array format: {"item1","item2","item3"}
     if array_str.startswith('{') and array_str.endswith('}'):
         # Remove the outer braces
         inner = array_str[1:-1]
         if not inner:
             return []
-        
+
         # Parse the comma-separated quoted values
         items = []
         current_item = ""
         in_quotes = False
-        
+
         for char in inner:
             if char == '"' and not in_quotes:
                 in_quotes = True
@@ -206,13 +217,13 @@ def parse_pg_array_string(array_str: str) -> list:
                 current_item = ""
             else:
                 current_item += char
-        
+
         # Don't forget the last item
         if current_item:
             items.append(current_item.strip())
-        
+
         return items
-    
+
     # Try JSON format
     try:
         import json
@@ -221,15 +232,15 @@ def parse_pg_array_string(array_str: str) -> list:
             return parsed
     except Exception:
         pass
-    
+
     # Try comma-separated
     if ',' in array_str:
         return [item.strip() for item in array_str.split(',') if item.strip()]
-    
+
     # Single item
     if array_str:
         return [array_str]
-    
+
     return []
 
 
@@ -243,7 +254,7 @@ async def list_candidates(
     ids: str | None = None,
     skip: int = 0,
     limit: int = 50,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     List all candidates from the proprietary database.
@@ -251,42 +262,23 @@ async def list_candidates(
     ids: Optional comma-separated list of candidate UUIDs to filter by
     """
     try:
-        query = select(Candidate).where(Candidate.is_active == True)
-        
+        id_list: list[str] | None = None
         if ids:
             import re
             uuid_pattern = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', re.IGNORECASE)
             id_list = [i.strip() for i in ids.split(",") if i.strip() and uuid_pattern.match(i.strip())]
-            if id_list:
-                query = query.where(Candidate.id.in_(id_list))
-        
-        if search:
-            # Normalize search term (remove accents for comparison)
-            import unicodedata
-            normalized_search = unicodedata.normalize('NFKD', search).encode('ASCII', 'ignore').decode('ASCII')
-            search_term = f"%{normalized_search.lower()}%"
-            query = query.where(
-                or_(
-                    func.lower(func.unaccent(Candidate.name)).like(search_term),
-                    func.lower(func.unaccent(Candidate.current_title)).like(search_term),
-                    func.lower(func.unaccent(Candidate.current_company)).like(search_term),
-                    func.lower(func.unaccent(Candidate.location_city)).like(search_term),
-                    func.lower(func.unaccent(Candidate.location_state)).like(search_term),
-                    func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, ' '))).like(search_term)
-                )
-            )
-        
-        if status:
-            query = query.where(Candidate.status == status)
-        
-        if source:
-            query = query.where(Candidate.source == source)
-        
-        query = query.offset(skip).limit(limit).order_by(Candidate.created_at.desc())
-        
-        result = await db.execute(query)
-        candidates = result.scalars().all()
-        
+            if not id_list:
+                id_list = None
+
+        candidates = await candidate_repo.list_candidates(
+            search=search,
+            status=status,
+            source=source,
+            ids=id_list,
+            skip=skip,
+            limit=limit,
+        )
+
         return {
             "total": len(candidates),
             "skip": skip,
@@ -388,7 +380,7 @@ async def list_candidates(
                 for c in candidates
             ]
         }
-        
+
     except Exception as e:
         logger.error(f"Error listing candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -397,20 +389,17 @@ async def list_candidates(
 @router.get("/{candidate_id}", response_model=None)
 async def get_candidate(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Get a specific candidate by ID.
     """
     try:
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == uuid.UUID(candidate_id))
-        )
-        candidate = result.scalar_one_or_none()
-        
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        
+
         return {
             "id": str(candidate.id),
             "name": candidate.name,
@@ -523,7 +512,7 @@ async def get_candidate(
             "last_contacted_at": candidate.last_contacted_at.isoformat() if candidate.last_contacted_at else None,
             "last_activity_at": candidate.last_activity_at.isoformat() if candidate.last_activity_at else None
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -535,7 +524,7 @@ async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: st
     """Background task to enrich candidate from LinkedIn."""
     from app.core.database import AsyncSessionLocal
     from app.services.candidate_enrichment_service import CandidateEnrichmentService
-    
+
     try:
         async with AsyncSessionLocal() as db:
             enrichment_service = CandidateEnrichmentService()
@@ -559,7 +548,7 @@ async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: st
 async def create_candidate(
     candidate_data: CandidateCreate,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Create a new candidate.
@@ -567,7 +556,7 @@ async def create_candidate(
     """
     try:
         logger.info(f"Creating candidate: {candidate_data.name}")
-        
+
         candidate = Candidate(
             id=uuid.uuid4(),
             name=candidate_data.name,
@@ -595,19 +584,15 @@ async def create_candidate(
             work_model_preference=candidate_data.work_model_preference,
             contract_type_preference=candidate_data.contract_type_preference,
             source=candidate_data.source or "manual",
-            status="new",
-            tags=candidate_data.tags or [],
             notes=candidate_data.notes,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
         )
-        
-        db.add(candidate)
-        await db.commit()
-        await db.refresh(candidate)
-        
+
+        candidate = await candidate_repo.create(candidate)
+
         logger.info(f"Candidate created: {candidate.id}")
-        
+
         enrichment_scheduled = False
         if candidate_data.auto_enrich and candidate_data.linkedin_url:
             background_tasks.add_task(
@@ -617,7 +602,7 @@ async def create_candidate(
             )
             enrichment_scheduled = True
             logger.info(f"Background enrichment scheduled for candidate {candidate.id}")
-        
+
         return {
             "id": str(candidate.id),
             "name": candidate.name,
@@ -633,9 +618,8 @@ async def create_candidate(
             "message": "Candidate created successfully",
             "enrichment_scheduled": enrichment_scheduled
         }
-        
+
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating candidate: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -644,32 +628,28 @@ async def create_candidate(
 async def update_candidate(
     candidate_id: str,
     candidate_data: CandidateUpdate,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Update an existing candidate.
     """
     try:
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == uuid.UUID(candidate_id))
-        )
-        candidate = result.scalar_one_or_none()
-        
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        
+
         update_data = candidate_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             if hasattr(candidate, field):
                 setattr(candidate, field, value)
-        
+
         candidate.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(candidate)
-        
+
+        candidate = await candidate_repo.update(candidate)
+
         logger.info(f"Candidate updated: {candidate_id}")
-        
+
         return {
             "id": str(candidate.id),
             "name": candidate.name,
@@ -678,11 +658,10 @@ async def update_candidate(
             "updated_at": candidate.updated_at.isoformat() if candidate.updated_at else None,
             "message": "Candidate updated successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating candidate: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -691,62 +670,30 @@ async def update_candidate(
 async def update_candidate_stage(
     candidate_id: str,
     stage_data: CandidateStageUpdate,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
 ):
     """
     Update candidate pipeline stage (used when moving candidates in Kanban).
     This is a lightweight endpoint for stage transitions.
-    
+
     The stage is stored in VacancyCandidate (the relationship between candidate and job).
     If job_vacancy_id is provided, updates that specific relationship.
     Otherwise, updates the most recent VacancyCandidate for this candidate.
     """
     try:
         # First verify candidate exists
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == uuid.UUID(candidate_id))
-        )
-        candidate = result.scalar_one_or_none()
-        
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        
+
         # Find the VacancyCandidate to update
-        if stage_data.job_vacancy_id:
-            # Update stage for specific job vacancy
-            try:
-                vacancy_uuid = uuid.UUID(str(stage_data.job_vacancy_id))
-            except ValueError:
-                logger.warning(f"Invalid job_vacancy_id format: {stage_data.job_vacancy_id} - falling back to most recent vacancy")
-                vacancy_uuid = None
-            
-            if vacancy_uuid:
-                vc_result = await db.execute(
-                    select(VacancyCandidate).where(
-                        VacancyCandidate.candidate_id == uuid.UUID(candidate_id),
-                        VacancyCandidate.vacancy_id == vacancy_uuid
-                    )
-                )
-                vacancy_candidate = vc_result.scalar_one_or_none()
-            else:
-                # Fallback: find most recent VacancyCandidate
-                vc_result = await db.execute(
-                    select(VacancyCandidate)
-                    .where(VacancyCandidate.candidate_id == uuid.UUID(candidate_id))
-                    .order_by(VacancyCandidate.updated_at.desc())
-                    .limit(1)
-                )
-                vacancy_candidate = vc_result.scalar_one_or_none()
-        else:
-            # Find most recent VacancyCandidate for this candidate
-            vc_result = await db.execute(
-                select(VacancyCandidate)
-                .where(VacancyCandidate.candidate_id == uuid.UUID(candidate_id))
-                .order_by(VacancyCandidate.updated_at.desc())
-                .limit(1)
-            )
-            vacancy_candidate = vc_result.scalar_one_or_none()
-        
+        vacancy_candidate = await vc_repo.get_for_candidate_and_job(
+            candidate_id=candidate_id,
+            job_vacancy_id=str(stage_data.job_vacancy_id) if stage_data.job_vacancy_id else None,
+        )
+
         if not vacancy_candidate:
             # No VacancyCandidate found - update candidate status instead as fallback
             # Human Review Gate applies here too
@@ -765,12 +712,11 @@ async def update_candidate_stage(
             previous_stage = candidate.status or "unknown"
             candidate.status = stage_data.stage
             candidate.updated_at = datetime.utcnow()
-            
-            await db.commit()
-            await db.refresh(candidate)
-            
+
+            candidate = await candidate_repo.update(candidate)
+
             logger.info(f"Candidate {candidate_id} status updated (no vacancy): {previous_stage} -> {stage_data.stage}")
-            
+
             return {
                 "id": str(candidate.id),
                 "name": candidate.name,
@@ -780,7 +726,7 @@ async def update_candidate_stage(
                 "updated_at": candidate.updated_at.isoformat() if candidate.updated_at else None,
                 "message": "Candidate status updated successfully (no vacancy association)"
             }
-        
+
         # Human Review Gate — block automated rejection without a human reviewer
         # Compliance: LGPD art. 20, EU AI Act art. 14
         is_rejection = get_stage_rank(stage_data.stage) == -1
@@ -830,17 +776,16 @@ async def update_candidate_stage(
             vacancy_candidate.status = stage_data.sub_status
 
         vacancy_candidate.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(vacancy_candidate)
-        
+
+        vacancy_candidate = await vc_repo.update(vacancy_candidate)
+
         logger.info(f"Candidate {candidate_id} stage updated for vacancy {vacancy_candidate.vacancy_id}: {previous_stage} -> {stage_data.stage}")
-        
+
         # Record implicit feedback for calibration learning loop
         feedback_action = determine_feedback_action(previous_stage, stage_data.stage)
         if feedback_action != "neutral":
             try:
-                calibration_service = CalibrationService(db)
+                calibration_service = CalibrationService(candidate_repo.db)
                 await calibration_service.record_implicit_feedback(
                     candidate_id=candidate_id,
                     job_id=str(vacancy_candidate.vacancy_id),
@@ -860,7 +805,6 @@ async def update_candidate_stage(
 
                 # Connect DB calibration to in-memory scoring calibration so future
                 # evaluations for this job reflect recruiter approval/rejection patterns.
-                # approve → nudge score up; reject → nudge score down.
                 if lia_score_at_transition is not None:
                     from uuid import uuid4
 
@@ -886,7 +830,6 @@ async def update_candidate_stage(
                     )
 
                 # D6-G2: ML Feedback Loop — registra sinal de decisão do recrutador
-                # Best-effort: não bloqueia o fluxo principal
                 try:
                     import asyncio as _asyncio
 
@@ -898,7 +841,7 @@ async def update_candidate_stage(
                         _job_id = str(vacancy_candidate.vacancy_id)
                         _asyncio.create_task(
                             _ml_fb.record_decision(
-                                db=db,
+                                db=candidate_repo.db,
                                 company_id=_company_id,
                                 job_id=_job_id,
                                 candidate_id=candidate_id,
@@ -911,7 +854,7 @@ async def update_candidate_stage(
 
             except Exception as calibration_error:
                 logger.warning(f"Failed to record implicit feedback: {calibration_error}")
-        
+
         return {
             "id": str(candidate.id),
             "name": candidate.name,
@@ -923,11 +866,10 @@ async def update_candidate_stage(
             "message": "Candidate stage updated successfully",
             "feedback_recorded": feedback_action if feedback_action != "neutral" else None
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating candidate stage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -935,33 +877,26 @@ async def update_candidate_stage(
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Soft delete (deactivate) a candidate.
     """
     try:
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == uuid.UUID(candidate_id))
-        )
-        candidate = result.scalar_one_or_none()
-        
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        
-        candidate.is_active = False
-        candidate.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        
+
+        await candidate_repo.soft_delete(candidate)
+
         logger.info(f"Candidate deactivated: {candidate_id}")
-        
+
         return {"message": "Candidate deactivated successfully", "id": candidate_id}
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting candidate: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -979,11 +914,11 @@ class EnrichmentRequest(BaseModel):
 async def enrich_candidate(
     candidate_id: str,
     request: EnrichmentRequest = EnrichmentRequest(),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Enrich candidate data from LinkedIn using Apify scrapers.
-    
+
     This endpoint scrapes the candidate's LinkedIn profile and fills in missing data:
     - Basic info: name, avatar, headline, current title/company
     - Location: city, state, country
@@ -992,22 +927,12 @@ async def enrich_candidate(
     - Contact: emails (personal, business), phone discovery
     - Experience: work history records
     - Education: education records
-    
+
     Requires APIFY_API_KEY to be configured.
-    
-    Example request:
-    ```json
-    {
-      "linkedin_url": "https://linkedin.com/in/john-doe",
-      "include_experiences": true,
-      "include_education": true,
-      "include_email_discovery": true
-    }
-    ```
     """
     try:
         from app.services.candidate_enrichment_service import candidate_enrichment_service
-        
+
         result = await candidate_enrichment_service.enrich_candidate(
             db=db,
             candidate_id=uuid.UUID(candidate_id),
@@ -1016,12 +941,12 @@ async def enrich_candidate(
             include_education=request.include_education,
             include_email_discovery=request.include_email_discovery
         )
-        
+
         if not result["success"]:
             raise HTTPException(status_code=400, detail=result.get("error", "Enrichment failed"))
-        
+
         logger.info(f"Candidate enriched: {candidate_id} - {len(result.get('fields_updated', []))} fields updated")
-        
+
         return {
             "success": True,
             "candidate_id": candidate_id,
@@ -1031,7 +956,7 @@ async def enrich_candidate(
             "source": result.get("source", "apify"),
             "message": f"Enrichment completed: {len(result.get('fields_updated', []))} fields updated"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -1045,117 +970,23 @@ async def enrich_candidate(
 async def search_candidates_local(
     request: CandidateSearchRequest,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Search candidates in proprietary PostgreSQL database (FREE - no credits consumed).
-    
+
     This is ALWAYS the first search tier. Only suggest global search if local results
     are insufficient.
-    
-    Example request:
-    ```json
-    {
-      "filters": {
-        "query": "Python developer",
-        "required_skills": ["Python", "Django"],
-        "seniority_levels": ["senior"],
-        "locations": ["São Paulo", "Remote"],
-        "limit": 50
-      }
-    }
-    ```
     """
     start_time = datetime.utcnow()
     filters = request.filters
-    
+
     try:
-        # Build query
-        query = select(Candidate).where(Candidate.is_active == filters.is_active)
-        
-        # Text search (name, skills, title) - accent-insensitive using unaccent()
-        if filters.query:
-            # Normalize search term (remove accents for comparison)
-            import unicodedata
-            normalized_query = unicodedata.normalize('NFKD', filters.query).encode('ASCII', 'ignore').decode('ASCII')
-            search_term = f"%{normalized_query.lower()}%"
-            query = query.where(
-                or_(
-                    func.lower(func.unaccent(Candidate.name)).like(search_term),
-                    func.lower(func.unaccent(Candidate.current_title)).like(search_term),
-                    func.lower(func.unaccent(Candidate.resume_text)).like(search_term),
-                    func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, ','))).like(search_term)
-                )
-            )
-        
-        # Skills filters
-        if filters.required_skills:
-            for skill in filters.required_skills:
-                query = query.where(
-                    func.array_to_string(Candidate.technical_skills, ',').ilike(f"%{skill}%")
-                )
-        
-        # Seniority
-        if filters.seniority_levels:
-            query = query.where(Candidate.seniority_level.in_(filters.seniority_levels))
-        
-        # Experience years
-        if filters.min_years_experience is not None:
-            query = query.where(Candidate.years_of_experience >= filters.min_years_experience)
-        if filters.max_years_experience is not None:
-            query = query.where(Candidate.years_of_experience <= filters.max_years_experience)
-        
-        # Location
-        if filters.locations:
-            location_conditions = []
-            for loc in filters.locations:
-                location_conditions.append(
-                    or_(
-                        Candidate.location_city.ilike(f"%{loc}%"),
-                        Candidate.location_country.ilike(f"%{loc}%")
-                    )
-                )
-            query = query.where(or_(*location_conditions))
-        
-        if filters.remote_only:
-            query = query.where(Candidate.is_remote == True)
-        
-        # Salary
-        if filters.min_salary is not None:
-            query = query.where(Candidate.desired_salary_max >= filters.min_salary)
-        if filters.max_salary is not None:
-            query = query.where(Candidate.desired_salary_min <= filters.max_salary)
-        
-        # Status
-        if filters.statuses:
-            query = query.where(Candidate.status.in_(filters.statuses))
-        
-        # Source
-        if filters.sources:
-            query = query.where(Candidate.source.in_(filters.sources))
-        
-        # Tags
-        if filters.tags:
-            for tag in filters.tags:
-                query = query.where(
-                    func.array_to_string(Candidate.tags, ',').ilike(f"%{tag}%")
-                )
-        
-        # Count total
-        count_query = select(func.count()).select_from(query.subquery())
-        result = await db.execute(count_query)
-        total_count = result.scalar()
-        
-        # Apply pagination
-        query = query.offset(filters.offset).limit(filters.limit)
-        
-        # Execute query
-        result = await db.execute(query)
-        candidates_db = result.scalars().all()
-        
+        candidates_db, total_count = await candidate_repo.search_local(filters)
+
         # Convert to response schema
         candidates = [CandidateResponse.model_validate(c) for c in candidates_db]
-        
+
         # Record search
         search_duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
         search_record = CandidateSearch(
@@ -1166,17 +997,15 @@ async def search_candidates_local(
             search_filters=filters.model_dump(),
             local_results_count=len(candidates),
             global_results_count=0,
-            total_results=total_count or 0,  # FIXED: Save full match count for analytics
+            total_results=total_count or 0,
             used_global_search=False,
             credits_consumed=0,
             search_source="local",
             search_duration_ms=search_duration_ms,
             created_at=datetime.utcnow()
         )
-        db.add(search_record)
-        await db.commit()
-        await db.refresh(search_record)
-        
+        search_record = await candidate_repo.record_search(search_record)
+
         logger.info(f"Local search completed: {len(candidates)} results in {search_duration_ms}ms")
 
         try:
@@ -1210,10 +1039,9 @@ async def search_candidates_local(
             search_id=uuid.UUID(str(search_record.id)),
             credits_consumed=0
         )
-        
+
     except Exception as e:
         logger.error(f"Local search failed: {e}")
-        await db.rollback()
         raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
 
 
@@ -1223,11 +1051,6 @@ async def search_candidates_local(
 async def search_candidates(request: PearchSearchRequest):
     """
     Search for candidates using natural language query.
-    
-    Examples:
-    - "Senior Python engineers with ML experience in San Francisco"
-    - "Full stack developers with React and Node.js, remote"
-    - "Data scientists with healthcare experience, 5+ years"
     """
     try:
         _search_type = getattr(request, "search_type", None) or getattr(request, "type", "fast")
@@ -1244,9 +1067,8 @@ async def search_candidates(request: PearchSearchRequest):
         _gs_duration_ms = round((_time.monotonic() - _gs_start) * 1000, 1)
         try:
             _result_count = len(getattr(result, "candidates", [])) if result else 0
-            _gs_company = getattr(current_user, "company_id", None)
             await audit_service.log_decision(
-                company_id=str(_gs_company) if _gs_company else None,
+                company_id=None,
                 agent_name="candidate_search",
                 decision_type="search_candidates",
                 action="global_search",
@@ -1282,9 +1104,6 @@ async def search_candidates_get(
 ):
     """
     Search for candidates using GET request (convenient for testing).
-    
-    Example:
-    GET /api/v1/candidates/search?query=Senior Python engineer in NYC&limit=5
     """
     try:
         return await pearch_service.search_candidates(
@@ -1308,8 +1127,6 @@ async def search_by_job_description(
 ):
     """
     Search candidates by pasting a full job description.
-    
-    LIA will analyze the job description and find matching candidates.
     """
     try:
         return await pearch_service.search_by_job_description(
@@ -1331,7 +1148,7 @@ async def health_check():
     """
     import os
     api_key_configured = bool(os.getenv("PEARCH_API_KEY"))
-    
+
     return {
         "service": "Pearch AI Candidate Search",
         "status": "configured" if api_key_configured else "not_configured",
@@ -1358,7 +1175,7 @@ class ViewedCandidateResponse(BaseModel):
 async def mark_candidate_viewed(
     candidate_id: str,
     body: ViewedCandidateCreate = None,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Mark a candidate as viewed by the current user.
@@ -1367,41 +1184,23 @@ async def mark_candidate_viewed(
     try:
         user_id = "default_user"
         source = body.source if body else None
-        
-        result = await db.execute(
-            select(ViewedCandidate).where(
-                ViewedCandidate.candidate_id == candidate_id,
-                ViewedCandidate.user_id == user_id
-            )
+
+        viewed, created = await candidate_repo.upsert_viewed(
+            candidate_id=candidate_id,
+            user_id=user_id,
+            source=source,
         )
-        existing = result.scalar_one_or_none()
-        
-        if existing:
-            existing.viewed_at = datetime.utcnow()
-            if source:
-                existing.source = source
-            await db.commit()
-            await db.refresh(existing)
-            
+
+        if not created:
             return {
-                "id": str(existing.id),
-                "candidate_id": existing.candidate_id,
-                "user_id": existing.user_id,
-                "viewed_at": existing.viewed_at.isoformat() if existing.viewed_at else None,
-                "source": existing.source,
+                "id": str(viewed.id),
+                "candidate_id": viewed.candidate_id,
+                "user_id": viewed.user_id,
+                "viewed_at": viewed.viewed_at.isoformat() if viewed.viewed_at else None,
+                "source": viewed.source,
                 "message": "Viewed timestamp updated"
             }
         else:
-            viewed = ViewedCandidate(
-                id=uuid.uuid4(),
-                candidate_id=candidate_id,
-                user_id=user_id,
-                source=source
-            )
-            db.add(viewed)
-            await db.commit()
-            await db.refresh(viewed)
-            
             return {
                 "id": str(viewed.id),
                 "candidate_id": viewed.candidate_id,
@@ -1410,9 +1209,8 @@ async def mark_candidate_viewed(
                 "source": viewed.source,
                 "message": "Candidate marked as viewed"
             }
-            
+
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error marking candidate as viewed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1421,7 +1219,7 @@ async def mark_candidate_viewed(
 async def list_viewed_candidates(
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     List all candidates viewed by the current user.
@@ -1429,20 +1227,11 @@ async def list_viewed_candidates(
     """
     try:
         user_id = "default_user"
-        
-        query = select(ViewedCandidate).where(
-            ViewedCandidate.user_id == user_id
-        ).order_by(ViewedCandidate.viewed_at.desc()).offset(skip).limit(limit)
-        
-        result = await db.execute(query)
-        viewed_list = result.scalars().all()
-        
-        count_query = select(func.count(ViewedCandidate.id)).where(
-            ViewedCandidate.user_id == user_id
+
+        viewed_list, total = await candidate_repo.list_viewed(
+            user_id=user_id, skip=skip, limit=limit
         )
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
         return {
             "total": total,
             "skip": skip,
@@ -1459,7 +1248,7 @@ async def list_viewed_candidates(
             ],
             "candidate_ids": [v.candidate_id for v in viewed_list]
         }
-        
+
     except Exception as e:
         logger.error(f"Error listing viewed candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1468,34 +1257,26 @@ async def list_viewed_candidates(
 @router.delete("/{candidate_id}/viewed", response_model=None)
 async def unmark_candidate_viewed(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """
     Remove viewed status from a candidate for the current user.
     """
     try:
         user_id = "default_user"
-        
-        result = await db.execute(
-            select(ViewedCandidate).where(
-                ViewedCandidate.candidate_id == candidate_id,
-                ViewedCandidate.user_id == user_id
-            )
+
+        deleted = await candidate_repo.delete_viewed(
+            candidate_id=candidate_id, user_id=user_id
         )
-        viewed = result.scalar_one_or_none()
-        
-        if not viewed:
+
+        if not deleted:
             raise HTTPException(status_code=404, detail="Viewed record not found")
-        
-        await db.delete(viewed)
-        await db.commit()
-        
+
         return {"message": "Viewed status removed", "candidate_id": candidate_id}
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error unmarking candidate as viewed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1518,7 +1299,7 @@ async def toggle_favorite(
     candidate_id: str,
     body: FavoriteCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
+    favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
     """
     Toggle favorite status for a candidate.
@@ -1529,19 +1310,12 @@ async def toggle_favorite(
         if not current_user.company_id:
             raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
         company_id = current_user.company_id
-        
-        result = await db.execute(
-            select(CandidateFavorite).where(
-                CandidateFavorite.candidate_id == candidate_id,
-                CandidateFavorite.user_id == user_id
-            )
-        )
-        existing = result.scalar_one_or_none()
-        
+
+        existing = await favorites_repo.get(candidate_id=candidate_id, user_id=user_id)
+
         if existing:
-            await db.delete(existing)
-            await db.commit()
-            
+            await favorites_repo.remove(existing)
+
             return {
                 "action": "removed",
                 "candidate_id": candidate_id,
@@ -1558,10 +1332,8 @@ async def toggle_favorite(
                 is_pinned=body.is_pinned if body else False,
                 source=body.source if body else None
             )
-            db.add(favorite)
-            await db.commit()
-            await db.refresh(favorite)
-            
+            favorite = await favorites_repo.add(favorite)
+
             return {
                 "action": "added",
                 "id": str(favorite.id),
@@ -1573,9 +1345,8 @@ async def toggle_favorite(
                 "created_at": favorite.created_at.isoformat() if favorite.created_at else None,
                 "message": "Candidate added to favorites"
             }
-            
+
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error toggling favorite: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1584,33 +1355,26 @@ async def toggle_favorite(
 async def update_favorite(
     candidate_id: str,
     body: FavoriteUpdate,
-    db: AsyncSession = Depends(get_db)
+    favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
     """
     Update favorite note or pinned status.
     """
     try:
         user_id = "default_user"
-        
-        result = await db.execute(
-            select(CandidateFavorite).where(
-                CandidateFavorite.candidate_id == candidate_id,
-                CandidateFavorite.user_id == user_id
-            )
-        )
-        favorite = result.scalar_one_or_none()
-        
+
+        favorite = await favorites_repo.get(candidate_id=candidate_id, user_id=user_id)
+
         if not favorite:
             raise HTTPException(status_code=404, detail="Favorite not found")
-        
+
         if body.note is not None:
             favorite.note = body.note
         if body.is_pinned is not None:
             favorite.is_pinned = body.is_pinned
-        
-        await db.commit()
-        await db.refresh(favorite)
-        
+
+        favorite = await favorites_repo.update(favorite)
+
         return {
             "id": str(favorite.id),
             "candidate_id": favorite.candidate_id,
@@ -1619,11 +1383,10 @@ async def update_favorite(
             "updated_at": favorite.updated_at.isoformat() if favorite.updated_at else None,
             "message": "Favorite updated successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating favorite: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1632,7 +1395,7 @@ async def update_favorite(
 async def list_favorites(
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
     """
     List all favorited candidates for the current user.
@@ -1640,23 +1403,11 @@ async def list_favorites(
     """
     try:
         user_id = "default_user"
-        
-        query = select(CandidateFavorite).where(
-            CandidateFavorite.user_id == user_id
-        ).order_by(
-            CandidateFavorite.is_pinned.desc(),
-            CandidateFavorite.created_at.desc()
-        ).offset(skip).limit(limit)
-        
-        result = await db.execute(query)
-        favorites_list = result.scalars().all()
-        
-        count_query = select(func.count(CandidateFavorite.id)).where(
-            CandidateFavorite.user_id == user_id
+
+        favorites_list, total = await favorites_repo.list_for_user(
+            user_id=user_id, skip=skip, limit=limit
         )
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
         return {
             "total": total,
             "skip": skip,
@@ -1676,7 +1427,7 @@ async def list_favorites(
             ],
             "candidate_ids": [f.candidate_id for f in favorites_list]
         }
-        
+
     except Exception as e:
         logger.error(f"Error listing favorites: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1685,34 +1436,26 @@ async def list_favorites(
 @router.delete("/{candidate_id}/favorite", response_model=None)
 async def remove_favorite(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db)
+    favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
     """
     Remove a candidate from favorites.
     """
     try:
         user_id = "default_user"
-        
-        result = await db.execute(
-            select(CandidateFavorite).where(
-                CandidateFavorite.candidate_id == candidate_id,
-                CandidateFavorite.user_id == user_id
-            )
-        )
-        favorite = result.scalar_one_or_none()
-        
+
+        favorite = await favorites_repo.get(candidate_id=candidate_id, user_id=user_id)
+
         if not favorite:
             raise HTTPException(status_code=404, detail="Favorite not found")
-        
-        await db.delete(favorite)
-        await db.commit()
-        
+
+        await favorites_repo.remove(favorite)
+
         return {"message": "Removed from favorites", "candidate_id": candidate_id, "is_favorite": False}
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error removing favorite: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1729,7 +1472,7 @@ async def toggle_hidden(
     candidate_id: str,
     body: HiddenCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
+    hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
 ):
     """
     Toggle hidden status for a candidate.
@@ -1740,19 +1483,12 @@ async def toggle_hidden(
         if not current_user.company_id:
             raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
         company_id = current_user.company_id
-        
-        result = await db.execute(
-            select(CandidateHidden).where(
-                CandidateHidden.candidate_id == candidate_id,
-                CandidateHidden.user_id == user_id
-            )
-        )
-        existing = result.scalar_one_or_none()
-        
+
+        existing = await hidden_repo.get(candidate_id=candidate_id, user_id=user_id)
+
         if existing:
-            await db.delete(existing)
-            await db.commit()
-            
+            await hidden_repo.remove(existing)
+
             return {
                 "action": "shown",
                 "candidate_id": candidate_id,
@@ -1768,10 +1504,8 @@ async def toggle_hidden(
                 reason=body.reason if body else None,
                 source=body.source if body else None
             )
-            db.add(hidden)
-            await db.commit()
-            await db.refresh(hidden)
-            
+            hidden = await hidden_repo.add(hidden)
+
             return {
                 "action": "hidden",
                 "id": str(hidden.id),
@@ -1782,9 +1516,8 @@ async def toggle_hidden(
                 "created_at": hidden.created_at.isoformat() if hidden.created_at else None,
                 "message": "Candidate hidden"
             }
-            
+
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error toggling hidden: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1793,27 +1526,18 @@ async def toggle_hidden(
 async def list_hidden(
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
 ):
     """
     List all hidden candidates for the current user.
     """
     try:
         user_id = "default_user"
-        
-        query = select(CandidateHidden).where(
-            CandidateHidden.user_id == user_id
-        ).order_by(CandidateHidden.created_at.desc()).offset(skip).limit(limit)
-        
-        result = await db.execute(query)
-        hidden_list = result.scalars().all()
-        
-        count_query = select(func.count(CandidateHidden.id)).where(
-            CandidateHidden.user_id == user_id
+
+        hidden_list, total = await hidden_repo.list_for_user(
+            user_id=user_id, skip=skip, limit=limit
         )
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
         return {
             "total": total,
             "skip": skip,
@@ -1831,7 +1555,7 @@ async def list_hidden(
             ],
             "candidate_ids": [h.candidate_id for h in hidden_list]
         }
-        
+
     except Exception as e:
         logger.error(f"Error listing hidden candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1840,34 +1564,26 @@ async def list_hidden(
 @router.delete("/{candidate_id}/hide", response_model=None)
 async def remove_hidden(
     candidate_id: str,
-    db: AsyncSession = Depends(get_db)
+    hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
 ):
     """
     Remove a candidate from the hidden list (make visible).
     """
     try:
         user_id = "default_user"
-        
-        result = await db.execute(
-            select(CandidateHidden).where(
-                CandidateHidden.candidate_id == candidate_id,
-                CandidateHidden.user_id == user_id
-            )
-        )
-        hidden = result.scalar_one_or_none()
-        
+
+        hidden = await hidden_repo.get(candidate_id=candidate_id, user_id=user_id)
+
         if not hidden:
             raise HTTPException(status_code=404, detail="Hidden record not found")
-        
-        await db.delete(hidden)
-        await db.commit()
-        
+
+        await hidden_repo.remove(hidden)
+
         return {"message": "Candidate is now visible", "candidate_id": candidate_id, "is_hidden": False}
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error removing hidden status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1876,11 +1592,12 @@ async def remove_hidden(
 async def screening_decision(
     candidate_id: str,
     request: ScreeningDecisionRequest,
-    db: AsyncSession = Depends(get_db)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
 ):
     """
     Record screening decision for a candidate (approve or reject).
-    
+
     - If approved: moves to "Entrevista" stage
     - If rejected: moves to "Reprovado Triagem" stage
     - Creates activity record for audit trail
@@ -1923,19 +1640,16 @@ async def screening_decision(
                     },
                 )
 
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
-        candidate = result.scalar_one_or_none()
-        
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        
+
         # Validate contact info before approving (required for screening)
         if request.decision == "approved":
             has_valid_email = candidate.email and '@' in candidate.email
             has_valid_phone = candidate.phone and len(candidate.phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')) >= 8
-            
+
             if not has_valid_email and not has_valid_phone:
                 raise HTTPException(
                     status_code=400,
@@ -1947,34 +1661,20 @@ async def screening_decision(
                         "phone": candidate.phone
                     }
                 )
-        
+
         # First, get the current stage of the candidate in the vacancy
         current_stage = None
         vacancy_candidate = None
         if request.job_id:
-            try:
-                job_uuid = uuid.UUID(str(request.job_id))
-                vacancy_result = await db.execute(
-                    select(VacancyCandidate).where(
-                        VacancyCandidate.candidate_id == candidate_id,
-                        VacancyCandidate.vacancy_id == job_uuid
-                    )
-                )
-                vacancy_candidate = vacancy_result.scalar_one_or_none()
-            except ValueError:
-                logger.warning(f"Invalid job_id format: {request.job_id} - falling back to most recent vacancy")
-                vacancy_result = await db.execute(
-                    select(VacancyCandidate)
-                    .where(VacancyCandidate.candidate_id == candidate_id)
-                    .order_by(VacancyCandidate.updated_at.desc())
-                    .limit(1)
-                )
-                vacancy_candidate = vacancy_result.scalar_one_or_none()
-        
+            vacancy_candidate = await vc_repo.get_for_candidate_and_job(
+                candidate_id=candidate_id,
+                job_vacancy_id=request.job_id,
+            )
+
         # Get current stage
         if vacancy_candidate:
             current_stage = vacancy_candidate.stage
-        
+
         is_awaiting_screening = (
             vacancy_candidate
             and vacancy_candidate.status == "awaiting_screening"
@@ -1985,7 +1685,7 @@ async def screening_decision(
             try:
                 from app.domains.automation.services.automation_handlers import handle_recruiter_override_approve
                 override_result = await handle_recruiter_override_approve(
-                    db=db,
+                    db=candidate_repo.db,
                     candidate_id=str(candidate_id),
                     vacancy_id=str(vacancy_candidate.vacancy_id),
                     company_id=vacancy_candidate.company_id,
@@ -2006,7 +1706,7 @@ async def screening_decision(
 
         early_stages = ["Novo", "Pipeline", "Funil", "Aplicado", "novo", "pipeline", "funil", "aplicado", "new", "applied"]
         screening_stages = ["Triagem", "triagem", "screening", "Screening"]
-        
+
         if request.decision == "approved":
             if current_stage and current_stage.lower() in [s.lower() for s in early_stages]:
                 new_stage = "Triagem"
@@ -2017,7 +1717,7 @@ async def screening_decision(
             else:
                 new_stage = "Triagem"
                 activity_description = "Candidato aprovado e movido para Triagem"
-            
+
             new_status = "approved_screening"
             activity_type = "screening_approved"
             activity_title = f"Candidato Aprovado - {candidate.name}"
@@ -2029,7 +1729,7 @@ async def screening_decision(
             activity_description = "Candidato reprovado na triagem"
             if request.reason:
                 activity_description += f". Motivo: {request.reason}"
-        
+
         # Update vacancy candidate if found
         if vacancy_candidate:
             vacancy_candidate.stage = new_stage
@@ -2041,11 +1741,11 @@ async def screening_decision(
             if request.decision == "rejected":
                 vacancy_candidate.rejected_by_human = True
                 vacancy_candidate.human_reviewer_id = request.reviewer_id
+            await vc_repo.update(vacancy_candidate)
 
         candidate.status = new_status
-        
-        await db.commit()
-        
+        await candidate_repo.update(candidate)
+
         try:
             await activity_service.create_activity(
                 activity_type=activity_type,
@@ -2072,8 +1772,8 @@ async def screening_decision(
             )
         except Exception as activity_error:
             logger.warning(f"Failed to create activity: {activity_error}")
-        
-        logger.info(f"✅ Screening decision recorded: {candidate.name} -> {request.decision}")
+
+        logger.info(f"Screening decision recorded: {candidate.name} -> {request.decision}")
 
         try:
             _vc_company = getattr(vacancy_candidate, "company_id", None) if vacancy_candidate else None
@@ -2117,7 +1817,7 @@ async def screening_decision(
                     payload={"slots_available": 1, "reason": "candidate_rejected"},
                     source="screening_decision",
                 )
-                await engine.process_event(slot_event, db, auto_execute=True)
+                await engine.process_event(slot_event, candidate_repo.db, auto_execute=True)
             except Exception as slot_error:
                 logger.warning(f"Failed to process screening queue after rejection: {slot_error}")
 
@@ -2130,11 +1830,10 @@ async def screening_decision(
             "new_stage": new_stage,
             "new_status": new_status,
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error recording screening decision: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -2216,12 +1915,11 @@ class CommunicationPreferencesUpdate(BaseModel):
 @router.get("/{candidate_id}/communication-preferences", response_model=None)
 async def get_communication_preferences(
     candidate_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Retorna preferências de canal de comunicação do candidato."""
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
-    candidate = result.scalar_one_or_none()
+    candidate = await candidate_repo.get_by_id(candidate_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidato não encontrado")
 
@@ -2237,12 +1935,11 @@ async def get_communication_preferences(
 async def update_communication_preferences(
     candidate_id: uuid.UUID,
     request: CommunicationPreferencesUpdate,
-    db: AsyncSession = Depends(get_db),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Atualiza preferências de canal de comunicação do candidato."""
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
-    candidate = result.scalar_one_or_none()
+    candidate = await candidate_repo.get_by_id(candidate_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidato não encontrado")
 
@@ -2252,8 +1949,7 @@ async def update_communication_preferences(
         candidate.channel_opt_out = request.channel_opt_out
 
     candidate.updated_at = datetime.utcnow()
-    await db.commit()
-    await db.refresh(candidate)
+    candidate = await candidate_repo.update(candidate)
 
     return {
         "success": True,

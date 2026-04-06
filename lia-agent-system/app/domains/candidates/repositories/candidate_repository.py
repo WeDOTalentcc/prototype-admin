@@ -1,0 +1,266 @@
+"""
+CandidateRepository — session-in-constructor pattern.
+Covers all DB operations needed by app/api/v1/candidates.py.
+"""
+import logging
+import uuid
+import unicodedata
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.models.candidate import (
+    Candidate,
+    CandidateSearch,
+    ViewedCandidate,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class CandidateRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    # ── Basic CRUD ──────────────────────────────────────────────────────────
+
+    async def get_by_id(self, candidate_id: UUID) -> Candidate | None:
+        result = await self.db.execute(
+            select(Candidate).where(Candidate.id == candidate_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_id_str(self, candidate_id: str) -> Candidate | None:
+        return await self.get_by_id(uuid.UUID(candidate_id))
+
+    async def get_by_email(self, email: str) -> Candidate | None:
+        result = await self.db.execute(
+            select(Candidate).where(Candidate.email == email)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_candidates(
+        self,
+        search: str | None = None,
+        status: str | None = None,
+        source: str | None = None,
+        ids: list[str] | None = None,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> list[Candidate]:
+        query = select(Candidate).where(Candidate.is_active == True)
+
+        if ids:
+            query = query.where(Candidate.id.in_(ids))
+
+        if search:
+            normalized = unicodedata.normalize("NFKD", search).encode("ASCII", "ignore").decode("ASCII")
+            term = f"%{normalized.lower()}%"
+            query = query.where(
+                or_(
+                    func.lower(func.unaccent(Candidate.name)).like(term),
+                    func.lower(func.unaccent(Candidate.current_title)).like(term),
+                    func.lower(func.unaccent(Candidate.current_company)).like(term),
+                    func.lower(func.unaccent(Candidate.location_city)).like(term),
+                    func.lower(func.unaccent(Candidate.location_state)).like(term),
+                    func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, " "))).like(term),
+                )
+            )
+
+        if status:
+            query = query.where(Candidate.status == status)
+
+        if source:
+            query = query.where(Candidate.source == source)
+
+        query = query.offset(skip).limit(limit).order_by(Candidate.created_at.desc())
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def search_local(
+        self,
+        filters: Any,
+    ) -> tuple[list[Candidate], int]:
+        """
+        Full structured local search used by /search/local endpoint.
+        Returns (candidates, total_count).
+        """
+        query = select(Candidate).where(Candidate.is_active == filters.is_active)
+
+        if filters.query:
+            normalized = unicodedata.normalize("NFKD", filters.query).encode("ASCII", "ignore").decode("ASCII")
+            term = f"%{normalized.lower()}%"
+            query = query.where(
+                or_(
+                    func.lower(func.unaccent(Candidate.name)).like(term),
+                    func.lower(func.unaccent(Candidate.current_title)).like(term),
+                    func.lower(func.unaccent(Candidate.resume_text)).like(term),
+                    func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, ","))).like(term),
+                )
+            )
+
+        if filters.required_skills:
+            for skill in filters.required_skills:
+                query = query.where(
+                    func.array_to_string(Candidate.technical_skills, ",").ilike(f"%{skill}%")
+                )
+
+        if filters.seniority_levels:
+            query = query.where(Candidate.seniority_level.in_(filters.seniority_levels))
+
+        if filters.min_years_experience is not None:
+            query = query.where(Candidate.years_of_experience >= filters.min_years_experience)
+        if filters.max_years_experience is not None:
+            query = query.where(Candidate.years_of_experience <= filters.max_years_experience)
+
+        if filters.locations:
+            loc_conds = []
+            for loc in filters.locations:
+                loc_conds.append(
+                    or_(
+                        Candidate.location_city.ilike(f"%{loc}%"),
+                        Candidate.location_country.ilike(f"%{loc}%"),
+                    )
+                )
+            query = query.where(or_(*loc_conds))
+
+        if filters.remote_only:
+            query = query.where(Candidate.is_remote == True)
+
+        if filters.min_salary is not None:
+            query = query.where(Candidate.desired_salary_max >= filters.min_salary)
+        if filters.max_salary is not None:
+            query = query.where(Candidate.desired_salary_min <= filters.max_salary)
+
+        if filters.statuses:
+            query = query.where(Candidate.status.in_(filters.statuses))
+
+        if filters.sources:
+            query = query.where(Candidate.source.in_(filters.sources))
+
+        if filters.tags:
+            for tag in filters.tags:
+                query = query.where(
+                    func.array_to_string(Candidate.tags, ",").ilike(f"%{tag}%")
+                )
+
+        # Count total
+        count_query = select(func.count()).select_from(query.subquery())
+        count_result = await self.db.execute(count_query)
+        total_count = count_result.scalar() or 0
+
+        # Paginate
+        query = query.offset(filters.offset).limit(filters.limit)
+        result = await self.db.execute(query)
+        candidates = list(result.scalars().all())
+
+        return candidates, total_count
+
+    async def create(self, candidate: Candidate) -> Candidate:
+        self.db.add(candidate)
+        await self.db.commit()
+        await self.db.refresh(candidate)
+        return candidate
+
+    async def update(self, candidate: Candidate) -> Candidate:
+        await self.db.commit()
+        await self.db.refresh(candidate)
+        return candidate
+
+    async def soft_delete(self, candidate: Candidate) -> None:
+        candidate.is_active = False
+        candidate.updated_at = datetime.utcnow()
+        await self.db.commit()
+
+    # ── Relations ───────────────────────────────────────────────────────────
+
+    async def get_with_experiences(self, candidate_id: UUID) -> Candidate | None:
+        result = await self.db.execute(
+            select(Candidate)
+            .options(
+                selectinload(Candidate.experiences),
+                selectinload(Candidate.education_records),
+            )
+            .where(Candidate.id == candidate_id)
+        )
+        return result.scalar_one_or_none()
+
+    # ── CandidateSearch (analytics) ─────────────────────────────────────────
+
+    async def record_search(self, search_record: CandidateSearch) -> CandidateSearch:
+        self.db.add(search_record)
+        await self.db.commit()
+        await self.db.refresh(search_record)
+        return search_record
+
+    # ── ViewedCandidate ─────────────────────────────────────────────────────
+
+    async def get_viewed(self, candidate_id: str, user_id: str) -> ViewedCandidate | None:
+        result = await self.db.execute(
+            select(ViewedCandidate).where(
+                ViewedCandidate.candidate_id == candidate_id,
+                ViewedCandidate.user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def upsert_viewed(
+        self,
+        candidate_id: str,
+        user_id: str,
+        source: str | None = None,
+    ) -> tuple[ViewedCandidate, bool]:
+        """
+        Returns (record, created).
+        created=True if a new record was inserted, False if updated.
+        """
+        existing = await self.get_viewed(candidate_id, user_id)
+        if existing:
+            existing.viewed_at = datetime.utcnow()
+            if source:
+                existing.source = source
+            await self.db.commit()
+            await self.db.refresh(existing)
+            return existing, False
+        else:
+            viewed = ViewedCandidate(
+                id=uuid.uuid4(),
+                candidate_id=candidate_id,
+                user_id=user_id,
+                source=source,
+            )
+            self.db.add(viewed)
+            await self.db.commit()
+            await self.db.refresh(viewed)
+            return viewed, True
+
+    async def delete_viewed(self, candidate_id: str, user_id: str) -> bool:
+        record = await self.get_viewed(candidate_id, user_id)
+        if not record:
+            return False
+        await self.db.delete(record)
+        await self.db.commit()
+        return True
+
+    async def list_viewed(
+        self, user_id: str, skip: int = 0, limit: int = 100
+    ) -> tuple[list[ViewedCandidate], int]:
+        query = (
+            select(ViewedCandidate)
+            .where(ViewedCandidate.user_id == user_id)
+            .order_by(ViewedCandidate.viewed_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await self.db.execute(query)
+        items = list(result.scalars().all())
+
+        count_result = await self.db.execute(
+            select(func.count(ViewedCandidate.id)).where(ViewedCandidate.user_id == user_id)
+        )
+        total = count_result.scalar() or 0
+        return items, total

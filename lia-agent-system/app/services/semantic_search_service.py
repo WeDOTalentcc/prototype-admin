@@ -1,2 +1,2 @@
-# Re-export for backward compatibility — canonical location: app.shared.intelligence.semantic_search_service
-from app.shared.intelligence.semantic_search_service import *  # noqa: F401,F403
+"""Backwards-compatibility shim — canonical implementation in domain layer."""
+from app.shared.services.semantic_search_service import *  # noqa: F401, F403

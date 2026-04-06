@@ -1,2 +1,2 @@
-# Re-export for backward compatibility — canonical location: app.shared.governance.feature_flag_service
-from app.shared.governance.feature_flag_service import *  # noqa: F401,F403
+"""Backwards-compatibility shim — canonical implementation in domain layer."""
+from app.shared.services.feature_flag_service import *  # noqa: F401, F403

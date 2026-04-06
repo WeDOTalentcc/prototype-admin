@@ -10,12 +10,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, or_, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm.attributes import flag_modified
 
 from app.auth.workos_models import CompanyWorkOSConfig
-from app.core.database import get_db
+from app.domains.clients.dependencies import get_client_repo
+from app.domains.clients.repositories.client_account_repository import ClientAccountRepository
 from app.domains.communication.services.email_service import EmailService
 from app.domains.job_management.services.template_seeder import clone_templates_for_client
 from app.models.client_account import CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS, ClientAccount, ClientStatus
@@ -140,7 +138,7 @@ async def get_dashboard_summary(
     start_date: datetime | None = Query(None, description="Start date for period filter"),
     end_date: datetime | None = Query(None, description="End date for period filter"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Get unified dashboard summary with KPIs and client lists.
@@ -165,58 +163,16 @@ async def get_dashboard_summary(
         if not start_date:
             start_date = end_date - timedelta(days=30)
         
-        total_query = select(func.count(ClientAccount.id)).where(ClientAccount.is_deleted == False)
-        total_result = await db.execute(total_query)
-        total_clients = total_result.scalar() or 0
+        total_clients = await repo.count_total()
+        active_clients = await repo.count_by_status(ClientStatus.ACTIVE.value)
+        trial_clients_count = await repo.count_by_status(ClientStatus.TRIAL.value)
+        churned_clients_count = await repo.count_by_status(ClientStatus.CHURNED.value)
         
-        active_query = select(func.count(ClientAccount.id)).where(
-            and_(
-                ClientAccount.status == ClientStatus.ACTIVE.value,
-                ClientAccount.is_deleted == False
-            )
-        )
-        active_result = await db.execute(active_query)
-        active_clients = active_result.scalar() or 0
-        
-        trial_query = select(func.count(ClientAccount.id)).where(
-            and_(
-                ClientAccount.status == ClientStatus.TRIAL.value,
-                ClientAccount.is_deleted == False
-            )
-        )
-        trial_result = await db.execute(trial_query)
-        trial_clients_count = trial_result.scalar() or 0
-        
-        churned_query = select(func.count(ClientAccount.id)).where(
-            and_(
-                ClientAccount.status == ClientStatus.CHURNED.value,
-                ClientAccount.is_deleted == False
-            )
-        )
-        churned_result = await db.execute(churned_query)
-        churned_clients_count = churned_result.scalar() or 0
-        
-        new_clients_query = select(ClientAccount).where(
-            and_(
-                ClientAccount.created_at >= start_date,
-                ClientAccount.created_at <= end_date,
-                ClientAccount.is_deleted == False
-            )
-        ).order_by(ClientAccount.created_at.desc())
-        new_clients_result = await db.execute(new_clients_query)
-        new_clients_list = new_clients_result.scalars().all()
+        new_clients_list = await repo.list_created_between(start_date, end_date)
         new_clients_period = len(new_clients_list)
         
+        active_clients_list = await repo.list_by_status(ClientStatus.ACTIVE.value)
         mrr = 0.0
-        active_clients_query = select(ClientAccount).where(
-            and_(
-                ClientAccount.status == ClientStatus.ACTIVE.value,
-                ClientAccount.is_deleted == False
-            )
-        )
-        active_clients_result = await db.execute(active_clients_query)
-        active_clients_list = active_clients_result.scalars().all()
-        
         for client in active_clients_list:
             plan_id = client.plan_id or "starter"
             mrr += PLAN_PRICES.get(plan_id.lower(), 299.0)
@@ -226,25 +182,8 @@ async def get_dashboard_summary(
         denominator = active_clients + churned_clients_count
         churn_rate = (churned_clients_count / denominator * 100) if denominator > 0 else 0.0
         
-        trial_clients_list_query = select(ClientAccount).where(
-            and_(
-                ClientAccount.status == ClientStatus.TRIAL.value,
-                ClientAccount.is_deleted == False
-            )
-        ).order_by(ClientAccount.created_at.desc())
-        trial_clients_result = await db.execute(trial_clients_list_query)
-        trial_clients_list = trial_clients_result.scalars().all()
-        
-        churned_clients_query = select(ClientAccount).where(
-            and_(
-                ClientAccount.status == ClientStatus.CHURNED.value,
-                ClientAccount.updated_at >= start_date,
-                ClientAccount.updated_at <= end_date,
-                ClientAccount.is_deleted == False
-            )
-        ).order_by(ClientAccount.updated_at.desc())
-        churned_clients_result = await db.execute(churned_clients_query)
-        churned_clients_list = churned_clients_result.scalars().all()
+        trial_clients_list = await repo.list_by_status(ClientStatus.TRIAL.value)
+        churned_clients_list = await repo.list_churned_between(start_date, end_date)
         
         new_clients_data = []
         for client in new_clients_list:
@@ -290,7 +229,7 @@ async def get_dashboard_summary(
                 "reason": reason
             })
         
-        logger.info(f"📊 Dashboard summary: {total_clients} total, {active_clients} active, {trial_clients_count} trial, {churned_clients_count} churned")
+        logger.info(f"Dashboard summary: {total_clients} total, {active_clients} active, {trial_clients_count} trial, {churned_clients_count} churned")
         
         return {
             "success": True,
@@ -314,7 +253,7 @@ async def get_dashboard_summary(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting dashboard summary: {str(e)}", exc_info=True)
+        logger.error(f"Error getting dashboard summary: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get dashboard summary: {str(e)}"
@@ -324,7 +263,7 @@ async def get_dashboard_summary(
 @router.get("/stats/overview", summary="Platform statistics overview", response_model=None)
 async def get_platform_stats(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Get platform-wide statistics for all clients.
@@ -340,44 +279,10 @@ async def get_platform_stats(
                 detail="Only admin users can access platform statistics"
             )
         
-        total_query = select(func.count(ClientAccount.id)).where(ClientAccount.is_deleted == False)
-        total_result = await db.execute(total_query)
-        total_clients = total_result.scalar() or 0
-        
-        status_stats = {}
-        for status_opt in ClientStatus:
-            status_query = select(func.count(ClientAccount.id)).where(
-                and_(
-                    ClientAccount.status == status_opt.value,
-                    ClientAccount.is_deleted == False
-                )
-            )
-            status_result = await db.execute(status_query)
-            status_stats[status_opt.value] = status_result.scalar() or 0
-        
-        plan_query = select(
-            ClientAccount.plan_id,
-            func.count(ClientAccount.id).label('count')
-        ).where(
-            and_(
-                ClientAccount.is_deleted == False,
-                ClientAccount.plan_id.isnot(None)
-            )
-        ).group_by(ClientAccount.plan_id)
-        plan_result = await db.execute(plan_query)
-        plan_stats = {row.plan_id: row.count for row in plan_result}
-        
-        size_query = select(
-            ClientAccount.company_size,
-            func.count(ClientAccount.id).label('count')
-        ).where(
-            and_(
-                ClientAccount.is_deleted == False,
-                ClientAccount.company_size.isnot(None)
-            )
-        ).group_by(ClientAccount.company_size)
-        size_result = await db.execute(size_query)
-        size_stats = {row.company_size: row.count for row in size_result}
+        total_clients = await repo.count_total()
+        status_stats = await repo.get_status_distribution()
+        plan_stats = await repo.get_plan_distribution()
+        size_stats = await repo.get_company_size_distribution()
         
         return {
             "success": True,
@@ -392,7 +297,7 @@ async def get_platform_stats(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting platform stats: {str(e)}", exc_info=True)
+        logger.error(f"Error getting platform stats: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get platform statistics: {str(e)}"
@@ -409,7 +314,7 @@ async def list_clients(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     List all clients with optional filters.
@@ -418,47 +323,28 @@ async def list_clients(
     """
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
+        company_id_filter = None if is_admin else current_user.get("company_id")
         
-        conditions = [ClientAccount.is_deleted == False]
+        clients = await repo.list_all(
+            status=status,
+            plan_id=plan_id,
+            search=search,
+            industry=industry,
+            company_size=company_size,
+            company_id=company_id_filter,
+            limit=limit,
+            offset=offset,
+        )
+        total = await repo.count_all(
+            status=status,
+            plan_id=plan_id,
+            search=search,
+            industry=industry,
+            company_size=company_size,
+            company_id=company_id_filter,
+        )
         
-        if status:
-            conditions.append(ClientAccount.status == status)
-        
-        if plan_id:
-            conditions.append(ClientAccount.plan_id == plan_id)
-        
-        if industry:
-            conditions.append(ClientAccount.industry == industry)
-        
-        if company_size:
-            conditions.append(ClientAccount.company_size == company_size)
-        
-        if search:
-            search_term = f"%{search}%"
-            conditions.append(
-                or_(
-                    ClientAccount.name.ilike(search_term),
-                    ClientAccount.trade_name.ilike(search_term),
-                    ClientAccount.cnpj.ilike(search_term)
-                )
-            )
-        
-        if not is_admin:
-            user_company_id = current_user.get("company_id")
-            conditions.append(ClientAccount.id == user_company_id)
-        
-        query = select(ClientAccount).where(and_(*conditions))
-        query = query.order_by(ClientAccount.created_at.desc())
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        clients = result.scalars().all()
-        
-        count_query = select(func.count(ClientAccount.id)).where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
-        logger.info(f"📋 Listed {len(clients)} clients (total: {total})")
+        logger.info(f"Listed {len(clients)} clients (total: {total})")
         
         return {
             "success": True,
@@ -471,7 +357,7 @@ async def list_clients(
         }
         
     except Exception as e:
-        logger.error(f"❌ Error listing clients: {str(e)}", exc_info=True)
+        logger.error(f"Error listing clients: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list clients: {str(e)}"
@@ -482,7 +368,7 @@ async def list_clients(
 async def get_client(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Get a specific client by ID.
@@ -499,14 +385,7 @@ async def get_client(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.get_by_id(client_uuid)
         
         if not client:
             raise HTTPException(
@@ -528,7 +407,7 @@ async def get_client(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting client: {str(e)}", exc_info=True)
+        logger.error(f"Error getting client: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get client: {str(e)}"
@@ -539,7 +418,7 @@ async def get_client(
 async def get_client_stats(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Get statistics for a specific client.
@@ -558,14 +437,7 @@ async def get_client_stats(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.get_by_id(client_uuid)
         
         if not client:
             raise HTTPException(
@@ -610,7 +482,7 @@ async def get_client_stats(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting client stats: {str(e)}", exc_info=True)
+        logger.error(f"Error getting client stats: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get client statistics: {str(e)}"
@@ -621,7 +493,7 @@ async def get_client_stats(
 async def create_client(
     data: ClientCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Create a new client.
@@ -645,79 +517,54 @@ async def create_client(
             )
         
         if data.cnpj:
-            existing_query = select(ClientAccount).where(
-                and_(
-                    ClientAccount.cnpj == data.cnpj,
-                    ClientAccount.is_deleted == False
-                )
-            )
-            existing_result = await db.execute(existing_query)
-            if existing_result.scalar_one_or_none():
+            existing = await repo.get_by_cnpj(data.cnpj)
+            if existing:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail=f"Client with CNPJ {data.cnpj} already exists"
                 )
         
-        client = ClientAccount(
-            name=data.name,
-            trade_name=data.trade_name,
-            cnpj=data.cnpj,
-            primary_email=data.primary_email,
-            primary_phone=data.primary_phone,
-            website=data.website,
-            address=data.address.model_dump() if data.address else None,
-            status=data.status,
-            plan_id=data.plan_id,
-            contract_start_date=data.contract_start_date,
-            contract_end_date=data.contract_end_date,
-            user_limit=data.user_limit,
-            job_limit=data.job_limit,
-            ai_credits_monthly=data.ai_credits_monthly,
-            settings=data.settings or {},
-            features_enabled=data.features_enabled or [],
-            account_manager_id=data.account_manager_id,
-            implementation_manager_id=data.implementation_manager_id,
-            logo_url=data.logo_url,
-            industry=data.industry,
-            company_size=data.company_size,
-        )
-        
-        db.add(client)
-        await db.flush()
-        
-        await db.execute(
-            text("""
-                INSERT INTO company_workos_config (company_id, sso_enabled, scim_enabled)
-                VALUES (:company_id, false, false)
-                ON CONFLICT (company_id) DO NOTHING
-            """),
-            {"company_id": str(client.id)}
-        )
-        
-        config_check = await db.execute(
-            select(CompanyWorkOSConfig).where(
-                CompanyWorkOSConfig.company_id == str(client.id)
-            )
-        )
-        if not config_check.scalar_one_or_none():
-            await db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to provision WorkOS config for client"
-            )
-        
-        await db.commit()
-        await db.refresh(client)
-        
-        logger.info(f"✅ Created client: {client.name} (ID: {client.id}) with WorkOS config")
-        
-        organization_id = await provision_workos_organization(client, db)
+        client_data = {
+            "name": data.name,
+            "trade_name": data.trade_name,
+            "cnpj": data.cnpj,
+            "primary_email": data.primary_email,
+            "primary_phone": data.primary_phone,
+            "website": data.website,
+            "address": data.address.model_dump() if data.address else None,
+            "status": data.status,
+            "plan_id": data.plan_id,
+            "contract_start_date": data.contract_start_date,
+            "contract_end_date": data.contract_end_date,
+            "user_limit": data.user_limit,
+            "job_limit": data.job_limit,
+            "ai_credits_monthly": data.ai_credits_monthly,
+            "settings": data.settings or {},
+            "features_enabled": data.features_enabled or [],
+            "account_manager_id": data.account_manager_id,
+            "implementation_manager_id": data.implementation_manager_id,
+            "logo_url": data.logo_url,
+            "industry": data.industry,
+            "company_size": data.company_size,
+        }
         
         try:
-            cloned_count = await clone_templates_for_client(db, str(client.id))
-            logger.info(f"✅ Cloned {cloned_count} system templates for client {client.id}")
+            client = await repo.create(client_data)
+        except RuntimeError as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(e)
+            )
+        
+        logger.info(f"Created client: {client.name} (ID: {client.id}) with WorkOS config")
+        
+        organization_id = await provision_workos_organization(client, repo.db)
+        
+        try:
+            cloned_count = await clone_templates_for_client(repo.db, str(client.id))
+            logger.info(f"Cloned {cloned_count} system templates for client {client.id}")
         except Exception as template_error:
-            logger.warning(f"⚠️ Failed to clone templates for client {client.id}: {template_error}")
+            logger.warning(f"Failed to clone templates for client {client.id}: {template_error}")
         
         email_sent = False
         if client.primary_email:
@@ -730,24 +577,24 @@ async def create_client(
                 email_sent = await email_service.send_welcome_email(
                     client=client,
                     admin_portal_url=admin_portal_url,
-                    db=db
+                    db=repo.db
                 )
                 if email_sent:
-                    logger.info(f"✅ Welcome email sent to {client.primary_email}")
+                    logger.info(f"Welcome email sent to {client.primary_email}")
                 else:
-                    logger.warning(f"⚠️ Failed to send welcome email to {client.primary_email}")
+                    logger.warning(f"Failed to send welcome email to {client.primary_email}")
             except Exception as email_error:
-                logger.warning(f"⚠️ Error sending welcome email: {email_error}")
+                logger.warning(f"Error sending welcome email: {email_error}")
         
         hubspot_result = None
         try:
-            hubspot_result = await sync_client_to_hubspot(client, db)
+            hubspot_result = await sync_client_to_hubspot(client, repo.db)
             if hubspot_result.get("success"):
-                logger.info(f"✅ Synced client {client.id} to HubSpot")
+                logger.info(f"Synced client {client.id} to HubSpot")
             else:
-                logger.warning(f"⚠️ HubSpot sync skipped or failed: {hubspot_result.get('error')}")
+                logger.warning(f"HubSpot sync skipped or failed: {hubspot_result.get('error')}")
         except Exception as hubspot_error:
-            logger.warning(f"⚠️ Error syncing to HubSpot: {hubspot_error}")
+            logger.warning(f"Error syncing to HubSpot: {hubspot_error}")
         
         response_data = client.to_dict()
         response_data["organization_id"] = organization_id
@@ -763,8 +610,7 @@ async def create_client(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error creating client: {str(e)}", exc_info=True)
+        logger.error(f"Error creating client: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create client: {str(e)}"
@@ -776,7 +622,7 @@ async def update_client(
     client_id: str,
     data: ClientUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Update an existing client.
@@ -793,14 +639,7 @@ async def update_client(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.get_by_id(client_uuid)
         
         if not client:
             raise HTTPException(
@@ -819,15 +658,9 @@ async def update_client(
         if 'address' in update_data and update_data['address']:
             update_data['address'] = update_data['address'].model_dump() if hasattr(update_data['address'], 'model_dump') else update_data['address']
         
-        for field, value in update_data.items():
-            setattr(client, field, value)
+        client = await repo.update(client_uuid, update_data)
         
-        client.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(client)
-        
-        logger.info(f"✅ Updated client: {client.name} (ID: {client.id})")
+        logger.info(f"Updated client: {client.name} (ID: {client.id})")
         
         return {
             "success": True,
@@ -838,8 +671,7 @@ async def update_client(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error updating client: {str(e)}", exc_info=True)
+        logger.error(f"Error updating client: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update client: {str(e)}"
@@ -851,7 +683,7 @@ async def update_client_status(
     client_id: str,
     data: StatusUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Update client status.
@@ -882,33 +714,17 @@ async def update_client_status(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        result = await repo.update_status(client_uuid, data.status)
         
-        if not client:
+        if result is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Client not found: {client_id}"
             )
         
-        old_status = client.status
-        client.status = data.status
-        client.updated_at = datetime.utcnow()
+        client, old_status = result
         
-        if data.status == ClientStatus.ACTIVE.value and old_status == ClientStatus.PENDING_SETUP.value:
-            if not client.onboarding_completed_at:
-                client.onboarding_completed_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(client)
-        
-        logger.info(f"✅ Updated client status: {client.name} from {old_status} to {data.status}")
+        logger.info(f"Updated client status: {client.name} from {old_status} to {data.status}")
         
         return {
             "success": True,
@@ -919,8 +735,7 @@ async def update_client_status(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error updating client status: {str(e)}", exc_info=True)
+        logger.error(f"Error updating client status: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update client status: {str(e)}"
@@ -931,7 +746,7 @@ async def update_client_status(
 async def delete_client(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Soft delete a client.
@@ -956,14 +771,7 @@ async def delete_client(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.soft_delete(client_uuid, deleted_by=user_id)
         
         if not client:
             raise HTTPException(
@@ -971,14 +779,7 @@ async def delete_client(
                 detail=f"Client not found: {client_id}"
             )
         
-        client.is_deleted = True
-        client.deleted_at = datetime.utcnow()
-        client.deleted_by = user_id
-        client.status = ClientStatus.CHURNED.value
-        
-        await db.commit()
-        
-        logger.info(f"✅ Soft deleted client: {client.name} (ID: {client.id})")
+        logger.info(f"Soft deleted client: {client.name} (ID: {client.id})")
         
         return {
             "success": True,
@@ -988,8 +789,7 @@ async def delete_client(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error deleting client: {str(e)}", exc_info=True)
+        logger.error(f"Error deleting client: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete client: {str(e)}"
@@ -1019,7 +819,7 @@ class IntegrationUpdate(BaseModel):
 async def get_client_for_integrations(
     client_id: str,
     current_user: dict[str, Any],
-    db: AsyncSession
+    repo: ClientAccountRepository
 ) -> ClientAccount:
     """Helper to get client and validate access for integration endpoints."""
     is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
@@ -1033,14 +833,7 @@ async def get_client_for_integrations(
             detail="Invalid client ID format"
         )
     
-    query = select(ClientAccount).where(
-        and_(
-            ClientAccount.id == client_uuid,
-            ClientAccount.is_deleted == False
-        )
-    )
-    result = await db.execute(query)
-    client = result.scalar_one_or_none()
+    client = await repo.get_by_id(client_uuid)
     
     if not client:
         raise HTTPException(
@@ -1061,7 +854,7 @@ async def get_client_for_integrations(
 async def list_client_integrations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     List all integrations for a specific client.
@@ -1069,12 +862,12 @@ async def list_client_integrations(
     Integrations are stored in client.settings["integrations"].
     """
     try:
-        client = await get_client_for_integrations(client_id, current_user, db)
+        client = await get_client_for_integrations(client_id, current_user, repo)
         
         settings = client.settings or {}
         integrations = settings.get("integrations", [])
         
-        logger.info(f"📋 Listed {len(integrations)} integrations for client {client_id}")
+        logger.info(f"Listed {len(integrations)} integrations for client {client_id}")
         
         return {
             "success": True,
@@ -1087,7 +880,7 @@ async def list_client_integrations(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error listing integrations: {str(e)}", exc_info=True)
+        logger.error(f"Error listing integrations: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list integrations: {str(e)}"
@@ -1099,13 +892,13 @@ async def add_client_integration(
     client_id: str,
     data: IntegrationCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Add a new integration for a client.
     """
     try:
-        client = await get_client_for_integrations(client_id, current_user, db)
+        client = await get_client_for_integrations(client_id, current_user, repo)
         
         if data.name.lower() not in VALID_INTEGRATION_NAMES:
             raise HTTPException(
@@ -1139,12 +932,10 @@ async def add_client_integration(
         integrations.append(new_integration)
         settings["integrations"] = integrations
         client.settings = settings
-        client.updated_at = now
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Added integration '{data.name}' for client {client_id}")
+        logger.info(f"Added integration '{data.name}' for client {client_id}")
         
         return {
             "success": True,
@@ -1155,8 +946,7 @@ async def add_client_integration(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error adding integration: {str(e)}", exc_info=True)
+        logger.error(f"Error adding integration: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to add integration: {str(e)}"
@@ -1169,13 +959,13 @@ async def update_client_integration(
     integration_id: str,
     data: IntegrationUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Update an existing integration for a client.
     """
     try:
-        client = await get_client_for_integrations(client_id, current_user, db)
+        client = await get_client_for_integrations(client_id, current_user, repo)
         
         settings = client.settings or {}
         integrations = settings.get("integrations", [])
@@ -1221,12 +1011,10 @@ async def update_client_integration(
         integrations[integration_index] = integration
         settings["integrations"] = integrations
         client.settings = settings
-        client.updated_at = datetime.utcnow()
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Updated integration '{integration_id}' for client {client_id}")
+        logger.info(f"Updated integration '{integration_id}' for client {client_id}")
         
         return {
             "success": True,
@@ -1237,8 +1025,7 @@ async def update_client_integration(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error updating integration: {str(e)}", exc_info=True)
+        logger.error(f"Error updating integration: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update integration: {str(e)}"
@@ -1250,13 +1037,13 @@ async def delete_client_integration(
     client_id: str,
     integration_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Remove an integration from a client.
     """
     try:
-        client = await get_client_for_integrations(client_id, current_user, db)
+        client = await get_client_for_integrations(client_id, current_user, repo)
         
         settings = client.settings or {}
         integrations = settings.get("integrations", [])
@@ -1278,11 +1065,10 @@ async def delete_client_integration(
         integrations.pop(integration_index)
         settings["integrations"] = integrations
         client.settings = settings
-        client.updated_at = datetime.utcnow()
         
-        await db.commit()
+        await repo.save(client)
         
-        logger.info(f"✅ Removed integration '{integration_name}' from client {client_id}")
+        logger.info(f"Removed integration '{integration_name}' from client {client_id}")
         
         return {
             "success": True,
@@ -1292,8 +1078,7 @@ async def delete_client_integration(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error removing integration: {str(e)}", exc_info=True)
+        logger.error(f"Error removing integration: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to remove integration: {str(e)}"
@@ -1305,7 +1090,7 @@ async def sync_client_integration(
     client_id: str,
     integration_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Trigger synchronization for a specific integration.
@@ -1313,7 +1098,7 @@ async def sync_client_integration(
     This updates the last_sync timestamp and can trigger external sync logic.
     """
     try:
-        client = await get_client_for_integrations(client_id, current_user, db)
+        client = await get_client_for_integrations(client_id, current_user, repo)
         
         settings = client.settings or {}
         integrations = settings.get("integrations", [])
@@ -1345,12 +1130,10 @@ async def sync_client_integration(
         integrations[integration_index] = integration
         settings["integrations"] = integrations
         client.settings = settings
-        client.updated_at = now
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Synced integration '{integration.get('name')}' for client {client_id}")
+        logger.info(f"Synced integration '{integration.get('name')}' for client {client_id}")
         
         return {
             "success": True,
@@ -1361,8 +1144,7 @@ async def sync_client_integration(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error syncing integration: {str(e)}", exc_info=True)
+        logger.error(f"Error syncing integration: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to sync integration: {str(e)}"
@@ -1373,13 +1155,13 @@ async def sync_client_integration(
 async def sync_all_client_integrations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Trigger synchronization for all connected integrations.
     """
     try:
-        client = await get_client_for_integrations(client_id, current_user, db)
+        client = await get_client_for_integrations(client_id, current_user, repo)
         
         settings = client.settings or {}
         integrations = settings.get("integrations", [])
@@ -1395,12 +1177,10 @@ async def sync_all_client_integrations(
         
         settings["integrations"] = integrations
         client.settings = settings
-        client.updated_at = now
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Synced {synced_count} integrations for client {client_id}")
+        logger.info(f"Synced {synced_count} integrations for client {client_id}")
         
         return {
             "success": True,
@@ -1414,8 +1194,7 @@ async def sync_all_client_integrations(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error syncing all integrations: {str(e)}", exc_info=True)
+        logger.error(f"Error syncing all integrations: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to sync integrations: {str(e)}"
@@ -1449,7 +1228,7 @@ class AutomationUpdate(BaseModel):
 async def get_client_for_automations(
     client_id: str,
     current_user: dict[str, Any],
-    db: AsyncSession
+    repo: ClientAccountRepository
 ) -> ClientAccount:
     """Helper to get and validate client access for automations."""
     is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
@@ -1463,14 +1242,7 @@ async def get_client_for_automations(
             detail="Invalid client ID format"
         )
     
-    query = select(ClientAccount).where(
-        and_(
-            ClientAccount.id == client_uuid,
-            ClientAccount.is_deleted == False
-        )
-    )
-    result = await db.execute(query)
-    client = result.scalar_one_or_none()
+    client = await repo.get_by_id(client_uuid)
     
     if not client:
         raise HTTPException(
@@ -1491,7 +1263,7 @@ async def get_client_for_automations(
 async def list_client_automations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     List all automations for a specific client.
@@ -1499,12 +1271,12 @@ async def list_client_automations(
     Automations are stored in client.settings["automations"].
     """
     try:
-        client = await get_client_for_automations(client_id, current_user, db)
+        client = await get_client_for_automations(client_id, current_user, repo)
         
         settings = client.settings or {}
         automations = settings.get("automations", [])
         
-        logger.info(f"📋 Listed {len(automations)} automations for client {client_id}")
+        logger.info(f"Listed {len(automations)} automations for client {client_id}")
         
         return {
             "success": True,
@@ -1517,7 +1289,7 @@ async def list_client_automations(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error listing automations: {str(e)}", exc_info=True)
+        logger.error(f"Error listing automations: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list automations: {str(e)}"
@@ -1529,13 +1301,13 @@ async def create_client_automation(
     client_id: str,
     data: AutomationCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Create a new automation for a client.
     """
     try:
-        client = await get_client_for_automations(client_id, current_user, db)
+        client = await get_client_for_automations(client_id, current_user, repo)
         
         settings = client.settings or {}
         automations = settings.get("automations", [])
@@ -1559,13 +1331,10 @@ async def create_client_automation(
         automations.append(new_automation)
         settings["automations"] = automations
         client.settings = settings
-        client.updated_at = now
-        flag_modified(client, 'settings')
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Created automation '{data.name}' for client {client_id}")
+        logger.info(f"Created automation '{data.name}' for client {client_id}")
         
         return {
             "success": True,
@@ -1576,8 +1345,7 @@ async def create_client_automation(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error creating automation: {str(e)}", exc_info=True)
+        logger.error(f"Error creating automation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create automation: {str(e)}"
@@ -1590,13 +1358,13 @@ async def update_client_automation(
     automation_id: str,
     data: AutomationUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Update an existing automation.
     """
     try:
-        client = await get_client_for_automations(client_id, current_user, db)
+        client = await get_client_for_automations(client_id, current_user, repo)
         
         settings = client.settings or {}
         automations = settings.get("automations", [])
@@ -1625,13 +1393,10 @@ async def update_client_automation(
         automations[automation_index] = automation
         settings["automations"] = automations
         client.settings = settings
-        client.updated_at = now
-        flag_modified(client, 'settings')
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Updated automation '{automation.get('name')}' for client {client_id}")
+        logger.info(f"Updated automation '{automation.get('name')}' for client {client_id}")
         
         return {
             "success": True,
@@ -1642,8 +1407,7 @@ async def update_client_automation(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error updating automation: {str(e)}", exc_info=True)
+        logger.error(f"Error updating automation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update automation: {str(e)}"
@@ -1655,13 +1419,13 @@ async def delete_client_automation(
     client_id: str,
     automation_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Delete an automation.
     """
     try:
-        client = await get_client_for_automations(client_id, current_user, db)
+        client = await get_client_for_automations(client_id, current_user, repo)
         
         settings = client.settings or {}
         automations = settings.get("automations", [])
@@ -1678,13 +1442,10 @@ async def delete_client_automation(
         now = datetime.utcnow()
         settings["automations"] = automations
         client.settings = settings
-        client.updated_at = now
-        flag_modified(client, 'settings')
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Deleted automation {automation_id} for client {client_id}")
+        logger.info(f"Deleted automation {automation_id} for client {client_id}")
         
         return {
             "success": True,
@@ -1694,8 +1455,7 @@ async def delete_client_automation(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error deleting automation: {str(e)}", exc_info=True)
+        logger.error(f"Error deleting automation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete automation: {str(e)}"
@@ -1707,13 +1467,13 @@ async def toggle_client_automation(
     client_id: str,
     automation_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Toggle the is_active state of an automation.
     """
     try:
-        client = await get_client_for_automations(client_id, current_user, db)
+        client = await get_client_for_automations(client_id, current_user, repo)
         
         settings = client.settings or {}
         automations = settings.get("automations", [])
@@ -1740,14 +1500,11 @@ async def toggle_client_automation(
         automations[automation_index] = automation
         settings["automations"] = automations
         client.settings = settings
-        client.updated_at = now
-        flag_modified(client, 'settings')
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
         status_text = "activated" if automation["is_active"] else "deactivated"
-        logger.info(f"✅ Automation '{automation.get('name')}' {status_text} for client {client_id}")
+        logger.info(f"Automation '{automation.get('name')}' {status_text} for client {client_id}")
         
         return {
             "success": True,
@@ -1758,8 +1515,7 @@ async def toggle_client_automation(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error toggling automation: {str(e)}", exc_info=True)
+        logger.error(f"Error toggling automation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to toggle automation: {str(e)}"
@@ -1820,7 +1576,7 @@ class SetupSectionUpdate(BaseModel):
 async def get_client_setup(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Get setup status for a specific client.
@@ -1838,14 +1594,7 @@ async def get_client_setup(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.get_by_id(client_uuid)
         
         if not client:
             raise HTTPException(
@@ -1876,7 +1625,7 @@ async def get_client_setup(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting client setup: {str(e)}", exc_info=True)
+        logger.error(f"Error getting client setup: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get client setup: {str(e)}"
@@ -1889,7 +1638,7 @@ async def update_client_setup_section(
     section_id: str,
     data: SetupSectionUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Update progress for a specific setup section.
@@ -1920,14 +1669,7 @@ async def update_client_setup_section(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.get_by_id(client_uuid)
         
         if not client:
             raise HTTPException(
@@ -1979,13 +1721,10 @@ async def update_client_setup_section(
         setup_sections[section_index] = section
         settings["setup_sections"] = setup_sections
         client.settings = settings
-        client.updated_at = now
-        flag_modified(client, 'settings')
         
-        await db.commit()
-        await db.refresh(client)
+        await repo.save(client)
         
-        logger.info(f"✅ Updated setup section '{section_id}' for client {client_id}: progress={section['progress']}%, status={section['status']}")
+        logger.info(f"Updated setup section '{section_id}' for client {client_id}: progress={section['progress']}%, status={section['status']}")
         
         return {
             "success": True,
@@ -1999,8 +1738,7 @@ async def update_client_setup_section(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
-        logger.error(f"❌ Error updating setup section: {str(e)}", exc_info=True)
+        logger.error(f"Error updating setup section: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update setup section: {str(e)}"
@@ -2011,7 +1749,7 @@ async def update_client_setup_section(
 async def get_hubspot_sync_status(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Get HubSpot sync status for a client.
@@ -2033,7 +1771,7 @@ async def get_hubspot_sync_status(
                 detail="Access denied"
             )
         
-        status_result = await hubspot_service.get_sync_status(client_id, db)
+        status_result = await hubspot_service.get_sync_status(client_id, repo.db)
         
         return {
             "success": True,
@@ -2043,7 +1781,7 @@ async def get_hubspot_sync_status(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error getting HubSpot status: {str(e)}", exc_info=True)
+        logger.error(f"Error getting HubSpot status: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get HubSpot status: {str(e)}"
@@ -2054,7 +1792,7 @@ async def get_hubspot_sync_status(
 async def sync_client_hubspot(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Manually sync a client to HubSpot CRM.
@@ -2083,14 +1821,7 @@ async def sync_client_hubspot(
                 detail="Invalid client ID format"
             )
         
-        query = select(ClientAccount).where(
-            and_(
-                ClientAccount.id == client_uuid,
-                ClientAccount.is_deleted == False
-            )
-        )
-        result = await db.execute(query)
-        client = result.scalar_one_or_none()
+        client = await repo.get_by_id(client_uuid)
         
         if not client:
             raise HTTPException(
@@ -2098,7 +1829,7 @@ async def sync_client_hubspot(
                 detail=f"Client not found: {client_id}"
             )
         
-        sync_result = await hubspot_service.sync_client_to_hubspot(client, db)
+        sync_result = await hubspot_service.sync_client_to_hubspot(client, repo.db)
         
         if sync_result.get("success"):
             return {
@@ -2120,7 +1851,7 @@ async def sync_client_hubspot(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error syncing to HubSpot: {str(e)}", exc_info=True)
+        logger.error(f"Error syncing to HubSpot: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to sync to HubSpot: {str(e)}"
@@ -2140,7 +1871,7 @@ async def update_hubspot_onboarding(
     client_id: str,
     data: HubSpotOnboardingUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
+    repo: ClientAccountRepository = Depends(get_client_repo)
 ):
     """
     Update onboarding status on HubSpot for a client.
@@ -2173,7 +1904,7 @@ async def update_hubspot_onboarding(
         update_result = await hubspot_service.update_onboarding_status(
             client_id=client_id,
             status=status_data,
-            db=db
+            db=repo.db
         )
         
         if update_result.get("success"):
@@ -2191,7 +1922,7 @@ async def update_hubspot_onboarding(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error updating HubSpot onboarding: {str(e)}", exc_info=True)
+        logger.error(f"Error updating HubSpot onboarding: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update HubSpot onboarding status: {str(e)}"

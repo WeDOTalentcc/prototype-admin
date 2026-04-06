@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuthStore } from "@/stores/auth-store"
 import {
   BarChart3, PieChart, MapPin, Users, TrendingUp, Download,
   Filter, Calendar, Building, Target, ArrowUp, ArrowDown,
@@ -47,6 +46,14 @@ interface SeniorityData {
   salarioMedio: number
 }
 
+interface WorkModelBackendData {
+  distribution: { modelo: string; candidatos: number; percentual: number; salarioMedio: number }[]
+  by_title: CargoWorkModel[]
+  by_location: { regiao: string; remoto: number; hibrido: number; presencial: number; total: number }[]
+  total: number
+  period: string
+}
+
 const FALLBACK_DISTRIBUTION: WorkModelData[] = [
   { modelo: 'remoto', candidatos: 0, percentual: 0, crescimento: 0, salarioMedio: 0 },
   { modelo: 'híbrido', candidatos: 0, percentual: 0, crescimento: 0, salarioMedio: 0 },
@@ -58,10 +65,8 @@ export function WorkModelAnalyticsPage() {
   const [selectedRegion, setSelectedRegion] = useState<string>('all')
   const [selectedCargo, setSelectedCargo] = useState<string>('all')
   const [selectedSeniority, setSelectedSeniority] = useState<string>('all')
-  const [backendData, setBackendData] = useState<any>(null)
+  const [backendData, setBackendData] = useState<WorkModelBackendData | null>(null)
   const [dataLoading, setDataLoading] = useState(false)
-  const user = useAuthStore((s) => s.user)
-  const companyId = (user as any)?.company_id || ""
 
   const fetchAnalytics = useCallback(async () => {
     setDataLoading(true)
@@ -84,8 +89,8 @@ export function WorkModelAnalyticsPage() {
 
   const workModelDistribution: WorkModelData[] = useMemo(() => {
     if (!backendData?.distribution?.length) return FALLBACK_DISTRIBUTION
-    return backendData.distribution.map((d: any) => ({
-      modelo: d.modelo as any,
+    return backendData.distribution.map((d) => ({
+      modelo: d.modelo as WorkModelData["modelo"],
       candidatos: d.candidatos,
       percentual: d.percentual,
       crescimento: 0,
@@ -100,7 +105,7 @@ export function WorkModelAnalyticsPage() {
 
   const regionalData: RegionalData[] = useMemo(() => {
     if (!backendData?.by_location?.length) return []
-    return backendData.by_location.map((d: any) => ({
+    return backendData.by_location.map((d) => ({
       regiao: d.regiao,
       estado: d.regiao,
       remoto: d.remoto || 0,

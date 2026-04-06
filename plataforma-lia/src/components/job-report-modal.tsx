@@ -20,8 +20,20 @@ import {
   Trophy, Lightbulb
 } from "lucide-react"
 
+interface JobReportJob {
+  jobId?: string
+  title?: string
+  department?: string
+  location?: string
+  seniority?: string
+  workModel?: string
+  openDate?: string
+  stage?: string
+  [key: string]: unknown
+}
+
 interface JobReportModalProps {
-  job: Record<string, unknown>
+  job: JobReportJob
   isOpen: boolean
   onClose: () => void
 }
@@ -44,14 +56,14 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
 
   useEffect(() => {
     if (isOpen && job?.jobId) {
-      fetchReport(job.jobId as any)
-      const companyId = (user as any)?.company_id || "default"
+      fetchReport(job.jobId ?? "")
+      const companyId = (user && "company_id" in user ? user.company_id : undefined) || "default"
       const jobData = {
         title: job.title,
         department: job.department,
         location: job.location,
-        seniority: (job as any).seniority,
-        work_model: (job as any).workModel,
+        seniority: job.seniority,
+        work_model: job.workModel,
       }
       fetchTimeToFill(companyId, jobData)
       fetchSalary(companyId, jobData)
@@ -105,7 +117,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     funnelMetrics,
     channelPerformance,
     timeline: (() => {
-      const openDate = (job as any).openDate ? new Date((job as any).openDate) : new Date()
+      const openDate = job.openDate ? new Date(job.openDate) : new Date()
       const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
       const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000)
       const now = new Date()
@@ -230,7 +242,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               <div>
 
                 <h2 className="text-xs font-semibold print:text-xs">Relatório Executivo da Vaga</h2>
-                <p className="text-micro text-white/80">{reportLoading ? "Carregando..." : String((job as any).title || "")} • {String((job as any).jobId || "")}</p>
+                <p className="text-micro text-white/80">{reportLoading ? "Carregando..." : String(job.title || "")} • {String(job.jobId || "")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 print:hidden">
@@ -306,7 +318,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   <span className="flex items-center gap-0.5">
 
                     <Calendar className="w-3 h-3" />
-                    Aberta há {Math.floor((new Date().getTime() - new Date((job as any).openDate).getTime()) / (1000 * 60 * 60 * 24))} dias
+                    Aberta há {Math.floor((new Date().getTime() - new Date(job.openDate ?? Date.now()).getTime()) / (1000 * 60 * 60 * 24))} dias
                   </span>
                 </div>
               </div>
@@ -349,7 +361,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   <AlertCircle className="w-3 h-3 text-status-warning mt-0.5 flex-shrink-0" />
 
                   <p className="text-micro text-lia-text-primary">
-                    <span className="font-medium">Status:</span> Processo em fase de {(job as any).stage?.toLowerCase() || 'entrevista'} com {reportData.funnelMetrics.interview} candidatos
+                    <span className="font-medium">Status:</span> Processo em fase de {job.stage?.toLowerCase() || 'entrevista'} com {reportData.funnelMetrics.interview} candidatos
                     em entrevista e {reportData.funnelMetrics.final} finalistas. Taxa de conversão: {reportData.funnelMetrics.conversionRate}% (mercado: 2.3%).
                   </p>
                 </div>
@@ -665,7 +677,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               <div className="text-right">
 
                 <p>Versão do relatório: 2.0</p>
-                <p>ID do documento: RPT-{(job.jobId as React.ReactNode)}-{new Date().getTime()}</p>
+                <p>ID do documento: RPT-{String(job.jobId || "")}-{new Date().getTime()}</p>
               </div>
             </div>
           </div>

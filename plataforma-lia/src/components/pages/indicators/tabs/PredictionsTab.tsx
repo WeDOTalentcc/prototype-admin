@@ -18,7 +18,7 @@ interface PredictionsTabProps {
 export function PredictionsTab({ recruiters }: PredictionsTabProps) {
   const user = useAuthStore((s) => s.user)
   const { insights, timeToFill, salary, loading, fetchInsights, fetchTimeToFill, fetchSalary } = useMLPredictions()
-  const companyId = (user as any)?.company_id || "default"
+  const companyId = (user && "company_id" in user ? user.company_id : undefined) || "default"
 
   useEffect(() => {
     fetchInsights(companyId)
@@ -36,7 +36,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
   return (
     <div className="space-y-6">
       {/* Sistema de Machine Learning */}
-      <RecruitmentMLDashboard candidates={recruiters as any} />
+      <RecruitmentMLDashboard />
 
       {/* KPIs Preditivos — dados reais do backend ML */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
