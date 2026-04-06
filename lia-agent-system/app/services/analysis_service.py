@@ -604,6 +604,12 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
 
         async with AsyncSessionLocal() as db:
             if vacancy_id:
+                try:
+                    parsed_vid = UUID(vacancy_id)
+                except (ValueError, AttributeError):
+                    vacancy_id = None
+
+            if vacancy_id:
                 vc_result = await db.execute(
                     select(VacancyCandidate).where(
                         VacancyCandidate.candidate_id == UUID(candidate_id),
