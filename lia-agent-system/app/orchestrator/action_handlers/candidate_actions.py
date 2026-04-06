@@ -251,7 +251,7 @@ async def _analyze_profile(params: Dict[str, Any], context: Dict[str, Any]):
                     sql_text(
                         "SELECT 1 FROM vacancy_candidates "
                         "WHERE candidate_id = CAST(:cid AS uuid) "
-                        "AND company_id = CAST(:co AS uuid) LIMIT 1"
+                        "AND company_id = :co LIMIT 1"
                     ),
                     {"cid": candidate_id, "co": str(company_id)},
                 )
@@ -262,6 +262,18 @@ async def _analyze_profile(params: Dict[str, Any], context: Dict[str, Any]):
                         error_detail="Candidate does not belong to caller's company",
                         action_type="analyze_profile",
                     )
+
+            if vacancy_id and company_id:
+                vac_authz = await db.execute(
+                    sql_text(
+                        "SELECT 1 FROM vacancy_candidates "
+                        "WHERE vacancy_id = CAST(:vid AS uuid) "
+                        "AND company_id = :co LIMIT 1"
+                    ),
+                    {"vid": vacancy_id, "co": str(company_id)},
+                )
+                if vac_authz.fetchone() is None:
+                    vacancy_id = None
 
             result = await db.execute(
                 select(Candidate).where(Candidate.id == UUID(candidate_id))

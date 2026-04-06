@@ -9,6 +9,7 @@ Melhorias sobre o IntentClassifier básico:
 """
 import json
 import logging
+from app.prompts import PromptLoader
 import re
 from enum import Enum
 from typing import Optional, Dict, Any, List, Tuple
