@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback } from "react"
-import { Send, Brain, Mic, Loader2 } from "lucide-react"
+import { Send, Mic, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ChatInputBarProps {
@@ -66,10 +66,6 @@ export function ChatInputBar({
         className
       )}
     >
-      <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mb-0.5">
-        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-      </div>
-
       <textarea
         ref={textareaRef}
         value={message}

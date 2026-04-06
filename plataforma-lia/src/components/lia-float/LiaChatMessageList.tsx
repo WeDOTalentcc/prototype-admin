@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useMemo } from "react"
+import { useAuthStore } from "@/stores/auth-store"
 import {
   Brain, Clock, Loader2, User, Sun, AlertTriangle, Users, Plus, FileText,
   TrendingUp, Search, Activity, ClipboardCheck, DollarSign, Edit, GitMerge,
@@ -263,6 +264,9 @@ function StreamingBubble({ content }: { content: string }) {
 }
 
 function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversationId: string | null }) {
+  const authUser = useAuthStore((s) => s.user)
+  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+  const userInitials = userDisplayName.charAt(0).toUpperCase()
   const isUser = msg.sender === "user"
 
   const renderedHtml = useMemo(() => {
@@ -285,8 +289,8 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
             {msg.timestamp}
           </span>
         </div>
-        <div className="w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center flex-shrink-0 mt-0.5">
-          <User className="w-3.5 h-3.5 text-lia-text-tertiary" />
+        <div className="w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-medium text-lia-text-tertiary">
+          {userInitials}
         </div>
       </div>
     )

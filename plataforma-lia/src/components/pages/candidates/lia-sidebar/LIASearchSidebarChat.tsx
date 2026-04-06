@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useAuthStore } from "@/stores/auth-store"
 import { Button } from "@/components/ui/button"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { ActionResultCard } from "@/components/chat/action-result-card"
@@ -122,6 +123,10 @@ export function LIASearchSidebarChat({
   onCalibrationLike,
   onCalibrationDislike,
 }: LIASearchSidebarChatProps) {
+  const authUser = useAuthStore((s) => s.user)
+  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+  const userInitials = userDisplayName.charAt(0).toUpperCase()
+
   return (
     <div
       ref={chatScrollRef}
@@ -345,13 +350,13 @@ export function LIASearchSidebarChat({
             /* User Message - Alinhado à direita, balão cinza claro com avatar */
             <div className="flex items-start gap-2 max-w-[70%]">
               <div className="w-7 h-7 rounded-full bg-lia-bg-elevated flex items-center justify-center flex-shrink-0 text-xs font-medium text-lia-text-secondary">
-                U
+                {userInitials}
               </div>
               <div
                 className="px-2.5 py-2 rounded-md bg-lia-bg-tertiary"
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-micro font-bold text-lia-text-primary">Você</span>
+                  <span className="text-micro font-bold text-lia-text-primary">{userDisplayName}</span>
                   <span className="text-micro text-lia-text-tertiary">agora</span>
                 </div>
                 <p className="text-xs text-lia-text-primary leading-relaxed">{msg.content}</p>

@@ -4,7 +4,7 @@ import React from "react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { LiaSearchQueriesGuide } from "@/components/ui/lia-search-queries-guide"
 import {
-  Brain, X, Target, Send, Star, FileText
+  X, Target, Send, Star, FileText
 } from "lucide-react"
 
 type ChatMessage = {
@@ -125,11 +125,6 @@ export function LIASearchSidebarInput({
       )}
       {/* Input Inline Padronizado - Design Specs v3.1 */}
       <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-primary border border-lia-border-subtle">
-        <div
-          className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
-        >
-          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-        </div>
         <input
           type="text"
           placeholder={isCreatingArchetype

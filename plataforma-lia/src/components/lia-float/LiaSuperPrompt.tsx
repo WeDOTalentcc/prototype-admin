@@ -6,6 +6,7 @@ import {
   Mic, Paperclip, MessageSquare, LayoutDashboard,
   Plus, Eraser, History, Clock, User
 } from "lucide-react"
+import { useAuthStore } from "@/stores/auth-store"
 import { AgentControlCenter } from "@/components/agent-control-center"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { LIAIcon } from "@/components/ui/lia-icon"
@@ -97,7 +98,7 @@ export function LiaSuperPrompt() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, isStreaming])
+  }, [messages, isStreaming, streamingContent])
 
   const handleSendMessage = useCallback(async (text?: string) => {
     const messageText = text || input.trim()
@@ -450,10 +451,7 @@ export function LiaSuperPrompt() {
                   {/* Input */}
                   <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
                     <div className="max-w-3xl mx-auto">
-                      <div className="flex items-center gap-2 px-4 py-2.5">
-                        <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-                        </div>
+                      <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
                         <textarea
                           ref={inputRef}
                           value={input}
@@ -500,6 +498,9 @@ export function LiaSuperPrompt() {
 }
 
 function SuperPromptBubble({ message, conversationId }: { message: { id: string; sender: string; content: string; timestamp: string }; conversationId: string | null }) {
+  const authUser = useAuthStore((s) => s.user)
+  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+  const userInitials = userDisplayName.charAt(0).toUpperCase()
   const isUser = message.sender === "user"
   const html = useMemo(() => {
     if (isUser) return escapeHtml(message.content).replace(/\n/g, "<br/>")
@@ -526,8 +527,8 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
               {message.timestamp}
             </span>
           </div>
-          <div className="flex-shrink-0 w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center mt-1">
-            <User className="w-3.5 h-3.5 text-lia-text-secondary" />
+          <div className="flex-shrink-0 w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center mt-1 text-xs font-medium text-lia-text-secondary">
+            {userInitials}
           </div>
         </div>
       </div>

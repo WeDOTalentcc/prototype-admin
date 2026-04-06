@@ -9,6 +9,7 @@ import { MAX_FILE_SIZE_MB, MAX_FILE_SIZE_BYTES, ALLOWED_FILE_TYPES } from "./cha
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { toast } from "sonner"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { useAuthStore } from "@/stores/auth-store"
 
 interface UseChatMessagesOptions {
   initialMessages: Message[]
@@ -21,7 +22,8 @@ export function useChatMessages({
   setContextData,
   setIsPanelOpen,
 }: UseChatMessagesOptions) {
-  const { chatMessages: unifiedMessages, addChatMessage } = useLiaChatContext()
+  const { chatMessages: unifiedMessages, addChatMessage, chatStreamingContent } = useLiaChatContext()
+  const authUser = useAuthStore((s) => s.user)
 
   const [messages, setMessages] = useState<Message[]>(() => {
     if (unifiedMessages.length > 0) {
@@ -76,7 +78,7 @@ export function useChatMessages({
   useEffect(() => {
     scrollToBottom()
     checkNewMessageIndicator()
-  }, [messages, checkNewMessageIndicator])
+  }, [messages, chatStreamingContent, checkNewMessageIndicator])
 
   useEffect(() => {
     setMessages(
@@ -291,6 +293,8 @@ export function useChatMessages({
   }, [messages])
 
   return {
+    // Auth
+    authUser,
     // State
     messages, setMessages,
     input, setInput,

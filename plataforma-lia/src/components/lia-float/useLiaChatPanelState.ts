@@ -143,7 +143,7 @@ export function useLiaChatPanelState() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, isStreaming, hitlPending])
+  }, [messages, isStreaming, chatStreamingContent, hitlPending])
 
   const handleCvFileAttach = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

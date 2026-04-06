@@ -5,6 +5,7 @@ import {
   Loader2, Clock, Globe, CheckCircle, XCircle
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuthStore } from "@/stores/auth-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -56,6 +57,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
   onLoadMoreCandidates,
   onSendMessage,
 }: Props) {
+  const authUser = useAuthStore((s) => s.user)
+  const userDisplayName = authUser?.name || authUser?.email || "Usuário"
+  const userInitials = userDisplayName.charAt(0).toUpperCase()
+
   return (
     <div className={`${messagesContainerClass} space-y-4`}>
       {messages.map((message, index) => {
@@ -91,10 +96,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 <Avatar className="w-10 h-10 mt-1 flex-shrink-0">
                   <AvatarImage
                     src={undefined}
-                    alt="Usuário"
+                    alt={userDisplayName}
                   />
                   <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium">
-                    AS
+                    {userInitials}
                   </AvatarFallback>
                 </Avatar>
               )}
@@ -109,7 +114,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                       message.sender === "lia" ? "lia-name -ml-1" : ""
                     }`}
                   >
-                    {message.sender === "lia" ? "Lia" : "Ana Silva"}
+                    {message.sender === "lia" ? "Lia" : userDisplayName}
                   </span>
                   <span
                     className="text-xs text-lia-text-tertiary"
