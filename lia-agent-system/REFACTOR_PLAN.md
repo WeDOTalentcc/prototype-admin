@@ -1156,7 +1156,7 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
 | 2 — Extract DB to repos | ⬜ TODO | | | | |
 | 3 — Model consolidation | ✅ DONE | ~393,600 | ~393,200 | 8 files→lia_models | 2026-04-06 |
-| 4 — DDD migration | ⬜ TODO | | | | |
+| 4 — DDD migration | 🔄 PARTIAL | — | — | 132 shims + domain copy | 2026-04-06 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
 | 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
 | 7 — Fix tests | ✅ DONE | — | — | rename only | 2026-04-06 |
