@@ -1,11 +1,14 @@
 """
 LIA Analysis Service - AI-powered candidate analysis using Claude.
 Uses Replit AI Integrations for Anthropic access.
+
+Enhanced with BARS rubric evaluation and WSI inferential trait extraction
+for unified profile analysis (Task #35).
 """
 import os
 import json
 import logging
-from typing import List, Optional
+from typing import List, Optional, Dict, Any, Tuple
 from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
 
@@ -13,6 +16,7 @@ from app.schemas.analysis import (
     CandidateInput, CandidateAnalysisResult, AnalysisRequest, 
     AnalysisResponse, AnalysisType, ScoreBreakdown
 )
+from app.shared.prompts.loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +33,47 @@ ARCHETYPES = [
     "Operador Resiliente",
     "Arquiteto Metódico"
 ]
+
+ARCHETYPE_BIG_FIVE_MAP = {
+    "Catalisador Visionário": {"openness": 80, "extraversion": 70, "conscientiousness": 55, "agreeableness": 50, "neuroticism": 35},
+    "Executor Confiável": {"conscientiousness": 80, "agreeableness": 70, "openness": 50, "extraversion": 50, "neuroticism": 30},
+    "Guardião de Clientes": {"agreeableness": 80, "extraversion": 70, "conscientiousness": 60, "openness": 50, "neuroticism": 35},
+    "Estrategista Analítico": {"openness": 75, "conscientiousness": 75, "extraversion": 40, "agreeableness": 50, "neuroticism": 30},
+    "Mediador Adaptável": {"agreeableness": 75, "openness": 70, "extraversion": 55, "conscientiousness": 50, "neuroticism": 40},
+    "Rainmaker Audacioso": {"extraversion": 80, "openness": 70, "conscientiousness": 60, "agreeableness": 40, "neuroticism": 35},
+    "Operador Resiliente": {"conscientiousness": 80, "openness": 45, "extraversion": 45, "agreeableness": 55, "neuroticism": 20},
+    "Arquiteto Metódico": {"conscientiousness": 85, "openness": 65, "extraversion": 35, "agreeableness": 50, "neuroticism": 25},
+}
+
+WSI_TRAIT_INFERENCE_PROMPT = """Analise o CV/texto abaixo e extraia indicadores comportamentais Big Five (OCEAN) e o arquétipo profissional mais provável.
+
+## CV/Texto do Candidato:
+{cv_text}
+
+## Instrução:
+Com base APENAS nas evidências textuais do CV, infira:
+1. Scores Big Five (0-100 para cada trait)
+2. O arquétipo profissional mais provável dentre: {archetypes}
+3. Evidências textuais que suportam cada inferência
+4. Traits profissionais observáveis
+
+IMPORTANTE: Se o CV tiver menos de 200 palavras, seja conservador nos scores (mais próximos de 50).
+
+Retorne SOMENTE JSON válido:
+{{
+    "big_five": {{
+        "openness": <0-100>,
+        "conscientiousness": <0-100>,
+        "extraversion": <0-100>,
+        "agreeableness": <0-100>,
+        "neuroticism": <0-100>
+    }},
+    "archetype": "<um dos 8 arquétipos>",
+    "archetype_confidence": <0.0-1.0>,
+    "evidences": ["evidência 1", "evidência 2", "evidência 3"],
+    "professional_traits": ["trait 1", "trait 2", "trait 3"],
+    "reasoning": "<explicação breve da inferência>"
+}}"""
 
 LIA_ANALYSIS_PROMPT = PromptLoader.get_domain_prompt("analysis")
 
@@ -259,6 +304,277 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
             recommendations=recommendations,
             alerts=alerts
         )
+
+    def _compute_confidence(self, cv_text: Optional[str]) -> str:
+        if not cv_text:
+            return "low"
+        word_count = len(cv_text.split())
+        if word_count < 200:
+            return "low"
+        elif word_count < 500:
+            return "medium"
+        return "high"
+
+    async def _infer_wsi_traits(self, cv_text: str) -> Dict[str, Any]:
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        clean_text = strip_pii_for_llm_prompt(cv_text[:4000])
+
+        prompt = WSI_TRAIT_INFERENCE_PROMPT.format(
+            cv_text=clean_text,
+            archetypes=", ".join(ARCHETYPES),
+        )
+
+        try:
+            message = self.client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=1024,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            response_text = message.content[0].text
+            json_start = response_text.find("{")
+            json_end = response_text.rfind("}") + 1
+            if json_start != -1 and json_end > json_start:
+                response_text = response_text[json_start:json_end]
+            return json.loads(response_text)
+        except Exception as e:
+            logger.error(f"WSI trait inference failed: {e}", exc_info=True)
+            return {
+                "big_five": {"openness": 50, "conscientiousness": 50, "extraversion": 50, "agreeableness": 50, "neuroticism": 50},
+                "archetype": "Executor Confiável",
+                "archetype_confidence": 0.3,
+                "evidences": [],
+                "professional_traits": [],
+                "reasoning": "Inferência falhou — usando valores padrão.",
+            }
+
+    async def _run_bars_evaluation(
+        self,
+        candidate_data: Dict[str, Any],
+        vacancy_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        try:
+            from app.core.database import AsyncSessionLocal
+            from sqlalchemy import select
+            from app.models.rubric import JobRequirement
+            from app.models.job_vacancy import JobVacancy
+            from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
+            from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+            from uuid import UUID
+
+            async with AsyncSessionLocal() as db:
+                req_result = await db.execute(
+                    select(JobRequirement).where(
+                        JobRequirement.job_vacancy_id == UUID(vacancy_id)
+                    )
+                )
+                db_requirements = req_result.scalars().all()
+
+                if not db_requirements:
+                    logger.info(f"No job requirements found for vacancy {vacancy_id}, skipping BARS")
+                    return None
+
+                requirements = []
+                for req in db_requirements:
+                    priority = RequirementPriorityEnum.IMPORTANT
+                    if hasattr(req.priority, "value"):
+                        try:
+                            priority = RequirementPriorityEnum(req.priority.value.lower())
+                        except ValueError:
+                            pass
+                    elif isinstance(req.priority, str):
+                        try:
+                            priority = RequirementPriorityEnum(req.priority.lower())
+                        except ValueError:
+                            pass
+                    requirements.append(JobRequirementCreate(
+                        requirement=req.requirement,
+                        description=req.description,
+                        priority=priority,
+                        category=req.category,
+                    ))
+
+                job_result = await db.execute(
+                    select(JobVacancy).where(JobVacancy.id == UUID(vacancy_id))
+                )
+                job = job_result.scalar_one_or_none()
+                job_title = job.title if job else "Vaga"
+
+            evaluation = await rubric_evaluation_service.evaluate_candidate(
+                candidate_data=candidate_data,
+                requirements=requirements,
+            )
+
+            return {
+                "bars_score": round(evaluation.score, 2),
+                "recommendation": evaluation.recommendation,
+                "strengths": evaluation.strengths,
+                "concerns": evaluation.concerns,
+                "reasoning": evaluation.reasoning,
+                "job_title": job_title,
+                "evaluations_summary": [
+                    {
+                        "requirement": e.requirement[:80],
+                        "level": e.level.value if hasattr(e.level, "value") else str(e.level),
+                        "points": e.points,
+                        "weighted_points": e.weighted_points,
+                    }
+                    for e in evaluation.evaluations[:10]
+                ],
+            }
+        except Exception as e:
+            logger.error(f"BARS evaluation failed for vacancy {vacancy_id}: {e}", exc_info=True)
+            return None
+
+    async def analyze_profile_enriched(
+        self,
+        candidate_data: Dict[str, Any],
+        vacancy_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        from datetime import datetime
+
+        candidate_id = str(candidate_data.get("id", ""))
+        candidate_name = candidate_data.get("name", "Candidato")
+        cv_text = (
+            candidate_data.get("resume_text")
+            or candidate_data.get("cv_text")
+            or candidate_data.get("self_introduction")
+            or ""
+        )
+
+        confidence = self._compute_confidence(cv_text)
+        logger.info(
+            f"[ENRICHED_ANALYSIS] Starting for candidate={candidate_id}, "
+            f"confidence={confidence}, has_vacancy={bool(vacancy_id)}"
+        )
+
+        candidate_input = CandidateInput(
+            id=candidate_id,
+            name=candidate_name,
+            position=candidate_data.get("current_title"),
+            location=candidate_data.get("location_city"),
+            company=candidate_data.get("current_company"),
+            cv_text=cv_text or None,
+            skills=candidate_data.get("technical_skills", []),
+            experience_years=candidate_data.get("years_of_experience"),
+            seniority_level=candidate_data.get("seniority_level"),
+        )
+
+        context = ""
+        bars_result = None
+        if vacancy_id:
+            bars_result = await self._run_bars_evaluation(candidate_data, vacancy_id)
+            if bars_result:
+                context = f"""## CONTEXTO DA VAGA:
+Título: {bars_result.get('job_title', 'N/A')}
+Score BARS (CV vs requisitos): {bars_result['bars_score']}%
+Recomendação BARS: {bars_result['recommendation']}
+
+Para esta análise CONTEXTUAL, avalie o candidato em relação a esta vaga específica."""
+            else:
+                context = """## ANÁLISE GERAL (sem requisitos formais):
+Avalie o potencial geral do candidato."""
+        else:
+            context = """## ANÁLISE GERAL (sem vaga específica):
+Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fortes e roles mais adequados."""
+
+        try:
+            lia_result = await self._analyze_single_candidate(candidate_input, context)
+        except Exception as e:
+            logger.error(f"LIA analysis failed for {candidate_id}: {e}")
+            lia_result = self._create_fallback_result(candidate_input)
+
+        wsi_traits = {}
+        if cv_text and len(cv_text.strip()) > 50:
+            wsi_traits = await self._infer_wsi_traits(cv_text)
+        else:
+            wsi_traits = {
+                "big_five": {"openness": 50, "conscientiousness": 50, "extraversion": 50, "agreeableness": 50, "neuroticism": 50},
+                "archetype": lia_result.archetype,
+                "archetype_confidence": 0.2,
+                "evidences": [],
+                "professional_traits": [],
+                "reasoning": "CV insuficiente para inferência de traits.",
+            }
+
+        big_five = wsi_traits.get("big_five", {})
+        inferred_archetype = wsi_traits.get("archetype", lia_result.archetype)
+        archetype_confidence = wsi_traits.get("archetype_confidence", 0.5)
+
+        overall_score = lia_result.lia_score
+        if bars_result:
+            overall_score = round(lia_result.lia_score * 0.4 + bars_result["bars_score"] * 0.6, 1)
+
+        if overall_score >= 85:
+            overall_recommendation = "Altamente Recomendado"
+            overall_level = "highly_recommended"
+        elif overall_score >= 70:
+            overall_recommendation = "Recomendado"
+            overall_level = "recommended"
+        elif overall_score >= 55:
+            overall_recommendation = "Potencial"
+            overall_level = "potential"
+        elif overall_score >= 40:
+            overall_recommendation = "Baixo Match"
+            overall_level = "low_match"
+        else:
+            overall_recommendation = "Não Recomendado"
+            overall_level = "not_recommended"
+
+        result = {
+            "success": True,
+            "candidate_id": candidate_id,
+            "candidate_name": candidate_name,
+            "analyzed_at": datetime.utcnow().isoformat(),
+            "confidence": confidence,
+            "confidence_note": {
+                "low": "CV com menos de 200 palavras — resultados inferidos com baixa confiança. Recomenda-se triagem conversacional (WSI live).",
+                "medium": "CV com conteúdo moderado — inferências razoáveis, triagem conversacional pode enriquecer.",
+                "high": "CV detalhado — inferências de alta confiança.",
+            }[confidence],
+            "overall_assessment": {
+                "score": overall_score,
+                "recommendation": overall_recommendation,
+                "recommendation_level": overall_level,
+                "methodology": "BARS + WSI Inferential + LIA AI Analysis",
+            },
+            "technical_fit": {
+                "source": "bars" if bars_result else "lia_ai",
+                "bars_score": bars_result["bars_score"] if bars_result else None,
+                "bars_recommendation": bars_result["recommendation"] if bars_result else None,
+                "strengths": bars_result["strengths"] if bars_result else lia_result.strengths,
+                "concerns": bars_result["concerns"] if bars_result else lia_result.gaps,
+                "evaluations": bars_result.get("evaluations_summary", []) if bars_result else [],
+                "job_title": bars_result.get("job_title") if bars_result else None,
+                "vacancy_id": vacancy_id,
+            },
+            "behavioral_profile": {
+                "archetype": inferred_archetype,
+                "archetype_confidence": archetype_confidence,
+                "big_five": big_five,
+                "professional_traits": wsi_traits.get("professional_traits", []),
+                "evidences": wsi_traits.get("evidences", []),
+                "reasoning": wsi_traits.get("reasoning", ""),
+                "expected_big_five": ARCHETYPE_BIG_FIVE_MAP.get(inferred_archetype, {}),
+            },
+            "lia_analysis": {
+                "lia_score": lia_result.lia_score,
+                "fit_score": lia_result.fit_score,
+                "archetype": lia_result.archetype,
+                "strengths": lia_result.strengths,
+                "gaps": lia_result.gaps,
+                "explanation": lia_result.explanation,
+                "score_breakdown": lia_result.score_breakdown.dict() if lia_result.score_breakdown else None,
+                "potential_roles": lia_result.potential_roles,
+            },
+        }
+
+        logger.info(
+            f"[ENRICHED_ANALYSIS] Completed for candidate={candidate_id}: "
+            f"overall={overall_score}, confidence={confidence}, "
+            f"archetype={inferred_archetype}, bars={'yes' if bars_result else 'no'}"
+        )
+
+        return result
 
 
 analysis_service = AnalysisService()

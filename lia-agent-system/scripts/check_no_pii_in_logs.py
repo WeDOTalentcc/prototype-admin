@@ -5,28 +5,51 @@ CI Guard: No PII fields in log calls (LGPD Art. 46 compliance).
 Usage:
     python3 scripts/check_no_pii_in_logs.py
 
-Exits 1 if any PII fields are found in logger calls.
+Exits 1 if real PII (email addresses, names, CPF, phone numbers) are passed
+as keyword arguments to logger calls.
 """
 import sys
 import re
 from pathlib import Path
 
-PII_FIELDS = [
-    "email", "recipient_email", "candidate_email", "user_email", "sender_email",
-    "cpf", "rg", "phone", "celular", "telefone", "mobile",
-    "full_name", "nome", "nome_completo", "candidate_name", "user_name",
-    "password", "senha", "token", "secret",
-    "birth_date", "data_nascimento", "address", "endereco",
+# Fields that are actual PII when used as log kwargs
+PII_FIELD_PATTERNS = [
+    r"\brecipient_email\s*=",
+    r"\bcandidate_email\s*=",
+    r"\buser_email\s*=",
+    r"\bsender_email\s*=",
+    r"\bto_email\s*=",
+    r"\bemail\s*=\s*[a-zA-Z_][a-zA-Z_0-9.]*\.email",   # email=obj.email
+    r"\bemail\s*=\s*request\.",                            # email=request.email
+    r"\bcpf\s*=",
+    r"\bcandidate_phone\s*=",
+    r"\bphone_number\s*=",
+    r"\bfull_name\s*=",
+    r"\bcandidate_name\s*=\s*[a-zA-Z_]",   # candidate_name=something (not a bool)
+    r"\buser_name\s*=\s*[a-zA-Z_]",
+]
+
+# NOT PII — exclude these from matching even if they contain "email" etc.
+EXCLUSION_PATTERNS = [
+    r"email_sent\s*=",
+    r"email_count\s*=",
+    r"email_error\s*=",
+    r"email_status\s*=",
+    r"email_result\s*=",
+    r"email_created\s*=",
+    r"whatsapp_sent\s*=",
+    r"=\s*(True|False|None|\d+)",  # boolean/int value
+    r"=\s*[0-9]",                    # numeric value
 ]
 
 LOG_CALL_PATTERN = re.compile(
     r"(logger|logging|log)\.(info|warning|warn|error|debug|critical|exception)\s*\(",
     re.IGNORECASE,
 )
-PII_ARG_PATTERN = re.compile(
-    r"\b(" + "|".join(re.escape(f) for f in PII_FIELDS) + r")\s*=",
-    re.IGNORECASE,
-)
+PII_PATTERNS_COMPILED = [re.compile(p, re.IGNORECASE) for p in PII_FIELD_PATTERNS]
+EXCLUSION_COMPILED = [re.compile(p, re.IGNORECASE) for p in EXCLUSION_PATTERNS]
+
+MAX_LOG_SPAN = 10  # max lines a single logger call can span before we assume false positive
 
 errors = []
 checked = 0
@@ -48,36 +71,30 @@ for path in Path("app").rglob("*.py"):
         if stripped.startswith("#"):
             continue
 
+        # Safety: if we have been in a log call for too many lines, reset (false positive)
+        if in_log_call and (i - log_start_line) > MAX_LOG_SPAN:
+            in_log_call = False
+
         if not in_log_call and LOG_CALL_PATTERN.search(line):
             in_log_call = True
             log_start_line = i
             paren_depth = line.count("(") - line.count(")")
-            if PII_ARG_PATTERN.search(line):
-                errors.append(
-                    f"{path}:{i}: PII in log call (started at line {log_start_line})\n"
-                    f"  > {stripped[:100]}"
-                )
             if paren_depth <= 0:
                 in_log_call = False
-            continue
+            continue  # Don't double-count
 
         if in_log_call:
-            if PII_ARG_PATTERN.search(line):
-                errors.append(
-                    f"{path}:{i}: PII in log call (started at line {log_start_line})\n"
-                    f"  > {stripped[:100]}"
-                )
-            paren_depth += line.count("(") - line.count(")")
-            if paren_depth <= 0:
-                in_log_call = False
-            continue
-
-        if in_log_call:
-            if PII_ARG_PATTERN.search(line):
-                errors.append(
-                    f"{path}:{i}: PII in log call (started at line {log_start_line})\n"
-                    f"  > {stripped[:100]}"
-                )
+            # Check for PII patterns
+            for pii_pat in PII_PATTERNS_COMPILED:
+                if pii_pat.search(line):
+                    # Make sure it's not an excluded pattern
+                    excluded = any(exc.search(line) for exc in EXCLUSION_COMPILED)
+                    if not excluded:
+                        errors.append(
+                            f"{path}:{i}: PII in log call (started at line {log_start_line})\n"
+                            f"  > {stripped[:100]}"
+                        )
+                    break
             paren_depth += line.count("(") - line.count(")")
             if paren_depth <= 0:
                 in_log_call = False

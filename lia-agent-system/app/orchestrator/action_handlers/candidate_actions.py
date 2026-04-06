@@ -224,21 +224,106 @@ async def _start_screening(params: Dict[str, Any], context: Dict[str, Any]):
 async def _analyze_profile(params: Dict[str, Any], context: Dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
+        from app.core.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from app.models.candidate import Candidate
+        from uuid import UUID
+        from app.services.analysis_service import analysis_service
+
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
-        logger.info(f"Profile analysis queued for candidate: {candidate_id}")
+        vacancy_id = params.get("vacancy_id") or params.get("job_vacancy_id") or (context or {}).get("job_vacancy_id")
+
+        if not candidate_id:
+            return ActionResult(
+                status="error",
+                message="ID do candidato não fornecido para análise.",
+                error_detail="candidate_id missing",
+                action_type="analyze_profile",
+            )
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(Candidate).where(Candidate.id == UUID(candidate_id))
+            )
+            candidate = result.scalar_one_or_none()
+
+        if not candidate:
+            return ActionResult(
+                status="error",
+                message=f"Candidato **{candidate_name}** não encontrado.",
+                error_detail=f"Candidate {candidate_id} not found",
+                action_type="analyze_profile",
+            )
+
+        candidate_data = {
+            "id": str(candidate.id),
+            "name": candidate.name,
+            "email": candidate.email,
+            "current_title": candidate.current_title,
+            "current_company": candidate.current_company,
+            "years_of_experience": candidate.years_of_experience,
+            "seniority_level": candidate.seniority_level,
+            "technical_skills": candidate.technical_skills or [],
+            "soft_skills": candidate.soft_skills or [],
+            "certifications": candidate.certifications or [],
+            "languages": candidate.languages or {},
+            "location_city": candidate.location_city,
+            "location_state": candidate.location_state,
+            "resume_text": getattr(candidate, "resume_text", None),
+            "self_introduction": candidate.self_introduction,
+            "cv_text": getattr(candidate, "resume_text", None) or candidate.self_introduction or "",
+        }
+
+        logger.info(f"[ANALYZE_PROFILE] Running enriched analysis for candidate={candidate_id}, vacancy={vacancy_id}")
+        analysis_result = await analysis_service.analyze_profile_enriched(
+            candidate_data=candidate_data,
+            vacancy_id=vacancy_id,
+        )
+
+        overall = analysis_result.get("overall_assessment", {})
+        behavioral = analysis_result.get("behavioral_profile", {})
+        technical = analysis_result.get("technical_fit", {})
+        confidence = analysis_result.get("confidence", "medium")
+
+        score = overall.get("score", 0)
+        archetype = behavioral.get("archetype", "N/A")
+        recommendation = overall.get("recommendation", "Análise pendente")
+
+        confidence_label = {"low": "baixa", "medium": "média", "high": "alta"}.get(confidence, confidence)
+        bars_line = ""
+        if technical.get("bars_score") is not None:
+            bars_line = f"\n- **Fit Técnico (BARS):** {technical['bars_score']}% — {technical.get('bars_recommendation', 'N/A')}"
+
+        big_five = behavioral.get("big_five", {})
+        big_five_line = ""
+        if big_five:
+            traits = [f"O={big_five.get('openness', '?')}", f"C={big_five.get('conscientiousness', '?')}",
+                      f"E={big_five.get('extraversion', '?')}", f"A={big_five.get('agreeableness', '?')}",
+                      f"N={big_five.get('neuroticism', '?')}"]
+            big_five_line = f"\n- **Big Five:** {', '.join(traits)}"
+
+        message = (
+            f"Análise de perfil concluída para **{candidate_name}**:\n\n"
+            f"- **Score Geral:** {score}% — {recommendation}\n"
+            f"- **Arquétipo:** {archetype}\n"
+            f"- **Confiança:** {confidence_label}"
+            f"{bars_line}{big_five_line}\n\n"
+            f"{'⚠️ ' + analysis_result.get('confidence_note', '') if confidence == 'low' else ''}"
+        )
+
         return ActionResult(
             status="executed",
-            message=f"Análise de perfil iniciada para **{candidate_name}**.",
-            data={
-                "action": "analyze_profile",
-                "candidate_id": candidate_id,
-                "candidate_name": candidate_name,
-                "queued_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
+            message=message.strip(),
+            data=analysis_result,
             action_type="analyze_profile",
         )
     except Exception as e:
-        logger.warning(f"Direct analyze_profile failed: {e}")
-        return None
+        logger.error(f"analyze_profile failed: {e}", exc_info=True)
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message=f"Erro ao analisar perfil de **{params.get('candidate_name', 'o candidato')}**: {str(e)[:100]}",
+            error_detail=str(e),
+            action_type="analyze_profile",
+        )
