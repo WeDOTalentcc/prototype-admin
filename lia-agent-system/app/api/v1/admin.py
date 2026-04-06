@@ -4,13 +4,11 @@ Admin API endpoints - Administrative operations including seed data.
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models.alert import AlertRule, AlertSeverity, AlertType
-from app.models.task import TaskPriority, TaskTemplate, TaskType
-from app.services.seed_service import clear_demo_data, seed_demo_data
+from app.domains.admin.dependencies import get_admin_repo
+from app.domains.admin.repositories.admin_repository import AdminRepository
+from app.models.alert import AlertSeverity, AlertType
+from app.models.task import TaskPriority, TaskType
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)
@@ -221,203 +219,110 @@ DEFAULT_ALERT_RULES = [
 ]
 
 
-async def seed_task_templates(session: AsyncSession) -> dict:
-    """
-    Seed default task templates.
-    
-    Returns:
-        dict with created, skipped counts and details
-    """
-    results = {"created": 0, "skipped": 0, "details": []}
-    
-    for template_data in DEFAULT_TASK_TEMPLATES:
-        existing = await session.execute(
-            select(TaskTemplate).where(TaskTemplate.name == template_data["name"])
-        )
-        existing_template = existing.scalar_one_or_none()
-        
-        if existing_template:
-            logger.info(f"⏭️  TaskTemplate '{template_data['name']}' already exists, skipping")
-            results["skipped"] += 1
-            results["details"].append({
-                "name": template_data["name"],
-                "status": "skipped",
-                "reason": "already_exists"
-            })
-        else:
-            template = TaskTemplate(**template_data)
-            session.add(template)
-            logger.info(f"✅ Created TaskTemplate: {template_data['name']}")
-            results["created"] += 1
-            results["details"].append({
-                "name": template_data["name"],
-                "status": "created"
-            })
-    
-    await session.flush()
-    return results
-
-
-async def seed_alert_rules(session: AsyncSession) -> dict:
-    """
-    Seed default alert rules.
-    
-    Returns:
-        dict with created, skipped counts and details
-    """
-    results = {"created": 0, "skipped": 0, "details": []}
-    
-    for rule_data in DEFAULT_ALERT_RULES:
-        existing = await session.execute(
-            select(AlertRule).where(AlertRule.name == rule_data["name"])
-        )
-        existing_rule = existing.scalar_one_or_none()
-        
-        if existing_rule:
-            logger.info(f"⏭️  AlertRule '{rule_data['name']}' already exists, skipping")
-            results["skipped"] += 1
-            results["details"].append({
-                "name": rule_data["name"],
-                "status": "skipped",
-                "reason": "already_exists"
-            })
-        else:
-            rule = AlertRule(**rule_data)
-            session.add(rule)
-            logger.info(f"✅ Created AlertRule: {rule_data['name']}")
-            results["created"] += 1
-            results["details"].append({
-                "name": rule_data["name"],
-                "status": "created"
-            })
-    
-    await session.flush()
-    return results
-
-
-async def run_all_seeds(session: AsyncSession) -> dict:
-    """
-    Run all seed functions.
-    
-    Returns:
-        dict with results from all seed operations
-    """
-    logger.info("🌱 Starting database seeding...")
-    
-    results = {
-        "task_templates": await seed_task_templates(session),
-        "alert_rules": await seed_alert_rules(session),
-    }
-    
-    total_created = results["task_templates"]["created"] + results["alert_rules"]["created"]
-    total_skipped = results["task_templates"]["skipped"] + results["alert_rules"]["skipped"]
-    
-    logger.info(f"🎉 Seeding completed! Created: {total_created}, Skipped: {total_skipped}")
-    
-    return results
-
-
 @router.post("/seed-data", response_model=None)
-async def seed_database(db: AsyncSession = Depends(get_db)):
+async def seed_database(repo: AdminRepository = Depends(get_admin_repo)):
     """
     Seed the database with default Task Templates and Alert Rules.
-    
+
     This endpoint is idempotent - running it multiple times will only
     create records that don't already exist.
-    
+
     Returns:
         Summary of seeding operations including created and skipped counts
     """
     try:
-        logger.info("🌱 API: Starting database seeding via admin endpoint")
-        
-        results = await run_all_seeds(db)
-        
+        logger.info("API: Starting database seeding via admin endpoint")
+
+        results = {
+            "task_templates": await repo.seed_task_templates(DEFAULT_TASK_TEMPLATES),
+            "alert_rules": await repo.seed_alert_rules(DEFAULT_ALERT_RULES),
+        }
+
         total_created = results["task_templates"]["created"] + results["alert_rules"]["created"]
         total_skipped = results["task_templates"]["skipped"] + results["alert_rules"]["skipped"]
-        
+
         return {
             "success": True,
             "message": f"Seeding completed. Created: {total_created}, Skipped: {total_skipped}",
-            "results": results
+            "results": results,
         }
     except Exception as e:
-        logger.error(f"❌ Seeding failed: {str(e)}")
+        logger.error("Seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed database: {str(e)}"
+            detail=f"Failed to seed database: {str(e)}",
         )
 
 
 @router.post("/seed-data/task-templates", response_model=None)
-async def seed_task_templates_only(db: AsyncSession = Depends(get_db)):
+async def seed_task_templates_only(repo: AdminRepository = Depends(get_admin_repo)):
     """
     Seed only Task Templates.
-    
+
     Returns:
         Summary of task template seeding operations
     """
     try:
-        logger.info("🌱 API: Seeding task templates only")
-        results = await seed_task_templates(db)
-        
+        logger.info("API: Seeding task templates only")
+        results = await repo.seed_task_templates(DEFAULT_TASK_TEMPLATES)
+
         return {
             "success": True,
             "message": f"Task templates seeded. Created: {results['created']}, Skipped: {results['skipped']}",
-            "results": results
+            "results": results,
         }
     except Exception as e:
-        logger.error(f"❌ Task template seeding failed: {str(e)}")
+        logger.error("Task template seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed task templates: {str(e)}"
+            detail=f"Failed to seed task templates: {str(e)}",
         )
 
 
 @router.post("/seed-data/alert-rules", response_model=None)
-async def seed_alert_rules_only(db: AsyncSession = Depends(get_db)):
+async def seed_alert_rules_only(repo: AdminRepository = Depends(get_admin_repo)):
     """
     Seed only Alert Rules.
-    
+
     Returns:
         Summary of alert rule seeding operations
     """
     try:
-        logger.info("🌱 API: Seeding alert rules only")
-        results = await seed_alert_rules(db)
-        
+        logger.info("API: Seeding alert rules only")
+        results = await repo.seed_alert_rules(DEFAULT_ALERT_RULES)
+
         return {
             "success": True,
             "message": f"Alert rules seeded. Created: {results['created']}, Skipped: {results['skipped']}",
-            "results": results
+            "results": results,
         }
     except Exception as e:
-        logger.error(f"❌ Alert rule seeding failed: {str(e)}")
+        logger.error("Alert rule seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed alert rules: {str(e)}"
+            detail=f"Failed to seed alert rules: {str(e)}",
         )
 
 
 @router.post("/seed-data/demo", response_model=None)
-async def seed_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
+async def seed_demo_data_endpoint(repo: AdminRepository = Depends(get_admin_repo)):
     """
     Seed demo data for vagas (jobs) and candidatos (candidates).
-    
+
     Creates:
     - 10 realistic job vacancies with [DEMO] prefix
     - 15 candidates with [DEMO] prefix in their names
     - Vacancy-candidate relationships with various stages
-    
+
     All demo data is clearly marked and can be easily identified/removed.
-    
+
     Returns:
         Summary of demo data seeding operations
     """
     try:
-        logger.info("🌱 API: Seeding demo data (jobs + candidates)")
-        results = await seed_demo_data(db)
-        
+        logger.info("API: Seeding demo data (jobs + candidates)")
+        results = await repo.seed_demo()
+
         if results["success"]:
             return {
                 "success": True,
@@ -425,41 +330,41 @@ async def seed_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
                 "data": {
                     "jobs_created": results["jobs_created"],
                     "candidates_created": results["candidates_created"],
-                    "relationships_created": results["relationships_created"]
-                }
+                    "relationships_created": results["relationships_created"],
+                },
             }
         else:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to seed demo data: {results.get('error', 'Unknown error')}"
+                detail=f"Failed to seed demo data: {results.get('error', 'Unknown error')}",
             )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Demo data seeding failed: {str(e)}")
+        logger.error("Demo data seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed demo data: {str(e)}"
+            detail=f"Failed to seed demo data: {str(e)}",
         )
 
 
 @router.delete("/seed-data/demo", response_model=None)
-async def clear_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
+async def clear_demo_data_endpoint(repo: AdminRepository = Depends(get_admin_repo)):
     """
     Clear all demo data from the database.
-    
+
     Removes:
     - All job vacancies with [DEMO] prefix
     - All candidates with source = 'SEED_DATA'
     - All vacancy-candidate relationships with source = 'SEED_DATA'
-    
+
     Returns:
         Summary of cleared demo data
     """
     try:
-        logger.info("🗑️ API: Clearing demo data")
-        results = await clear_demo_data(db)
-        
+        logger.info("API: Clearing demo data")
+        results = await repo.clear_demo()
+
         if results["success"]:
             return {
                 "success": True,
@@ -467,19 +372,19 @@ async def clear_demo_data_endpoint(db: AsyncSession = Depends(get_db)):
                 "data": {
                     "jobs_deleted": results["jobs_deleted"],
                     "candidates_deleted": results["candidates_deleted"],
-                    "relationships_deleted": results["relationships_deleted"]
-                }
+                    "relationships_deleted": results["relationships_deleted"],
+                },
             }
         else:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to clear demo data: {results.get('error', 'Unknown error')}"
+                detail=f"Failed to clear demo data: {results.get('error', 'Unknown error')}",
             )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Demo data clearing failed: {str(e)}")
+        logger.error("Demo data clearing failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to clear demo data: {str(e)}"
+            detail=f"Failed to clear demo data: {str(e)}",
         )
