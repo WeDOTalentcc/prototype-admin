@@ -184,7 +184,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
 
   if (isEmpty) {
     return (
-      <div className="w-full max-w-2xl mx-auto">
+      <div className="w-full">
         <div className="grid grid-cols-2 gap-1.5">
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon

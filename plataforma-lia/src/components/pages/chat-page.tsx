@@ -355,7 +355,7 @@ export function LegacyChatPage() {
               <>
               {/* Sugestões de Tarefas (empty state) — fora do card do prompt */}
               {isEmptyChat && (
-                <div className="mb-3">
+                <div className="mb-4">
                   <PromptSuggestionsDock
                     onSelect={(command) => setInput(command)}
                     isEmpty={true}
@@ -558,7 +558,7 @@ export function LegacyChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
+                      className="w-full resize-none rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
                       rows={1}
                     />
                   </div>
@@ -611,8 +611,8 @@ export function LegacyChatPage() {
 
         {/* Recentes — empty state only */}
         {isEmptyChat && recentChatItems.length > 0 && (
-          <div className="px-6 pb-4 flex-shrink-0 bg-white">
-            <div className="max-w-2xl mx-auto">
+          <div className="px-6 pt-1 pb-5 flex-shrink-0 bg-white">
+            <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold text-lia-text-primary tracking-[0.2em] uppercase">
                   Recentes
