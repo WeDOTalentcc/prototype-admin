@@ -2,9 +2,6 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 """
 Analytics routes: metrics, analytics deep-dive, history, stats/overview,
 archetypes (already in crud.py), job report.
@@ -12,6 +9,10 @@ archetypes (already in crud.py), job report.
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import *
+from app.domains.job_vacancies_analytics.dependencies import get_job_vacancies_analytics_repo
+from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
+    JobVacanciesAnalyticsRepository,
+)
 
 router = APIRouter()
 
@@ -58,68 +59,24 @@ class JobVacancyMetricsResponse(BaseModel):
 @router.get("/job-vacancies/{job_vacancy_id}/metrics", response_model=JobVacancyMetricsResponse)
 async def get_job_vacancy_metrics(
     job_vacancy_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
     """Get performance metrics for a specific job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
 
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(
-                    JobVacancy.id == job_vacancy_id,
-                    JobVacancy.company_id == company_id
-                )
-            )
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_job_by_id_and_company(job_vacancy_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
-        stage_counts_result = await db.execute(
-            select(
-                VacancyCandidate.stage,
-                func.count(VacancyCandidate.id).label("count")
-            )
-            .where(VacancyCandidate.vacancy_id == job_vacancy_id)
-            .group_by(VacancyCandidate.stage)
-        )
-        stage_counts = {row.stage: row.count for row in stage_counts_result.all()}
-
-        total_count_result = await db.execute(
-            select(func.count(VacancyCandidate.id))
-            .where(VacancyCandidate.vacancy_id == job_vacancy_id)
-        )
-        total_candidates = total_count_result.scalar() or 0
-
-        source_counts_result = await db.execute(
-            select(
-                VacancyCandidate.source,
-                func.count(VacancyCandidate.id).label("count")
-            )
-            .where(VacancyCandidate.vacancy_id == job_vacancy_id)
-            .group_by(VacancyCandidate.source)
-        )
-        source_breakdown = {row.source: row.count for row in source_counts_result.all()}
+        stage_counts = await repo.get_stage_counts_for_vacancy(job_vacancy_id)
+        total_candidates = await repo.get_total_candidates_for_vacancy(job_vacancy_id)
+        source_breakdown = await repo.get_source_counts_for_vacancy(job_vacancy_id)
 
         seven_days_ago = datetime.utcnow() - timedelta(days=7)
-        applications_7d_result = await db.execute(
-            select(func.count(VacancyCandidate.id))
-            .where(
-                and_(
-                    VacancyCandidate.vacancy_id == job_vacancy_id,
-                    VacancyCandidate.created_at >= seven_days_ago
-                )
-            )
-        )
-        applications_7d = applications_7d_result.scalar() or 0
-
-        last_activity_result = await db.execute(
-            select(func.max(VacancyCandidate.updated_at))
-            .where(VacancyCandidate.vacancy_id == job_vacancy_id)
-        )
-        last_activity = last_activity_result.scalar()
+        applications_7d = await repo.get_applications_since(job_vacancy_id, seven_days_ago)
+        last_activity = await repo.get_last_activity_for_vacancy(job_vacancy_id)
 
         fallback_funnel = job.funnel_data or {}
 
@@ -250,26 +207,18 @@ class JobAnalyticsResponse(BaseModel):
 @router.get("/job-vacancies/{job_id}/analytics", response_model=JobAnalyticsResponse)
 async def get_job_analytics(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
     """Returns detailed analytics for a job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
 
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-            )
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
-        candidates_result = await db.execute(
-            select(VacancyCandidate).where(VacancyCandidate.vacancy_id == job_id)
-        )
-        vacancy_candidates = candidates_result.scalars().all()
+        vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
         total_candidates = len(vacancy_candidates)
 
         stage_counts: dict[str, int] = {}
@@ -320,12 +269,7 @@ async def get_job_analytics(
                     avg_days=0.0
                 ))
 
-        history_result = await db.execute(
-            select(CandidateStageHistory)
-            .where(CandidateStageHistory.vacancy_id == job_id)
-            .order_by(CandidateStageHistory.created_at.asc())
-        )
-        stage_history = history_result.scalars().all()
+        stage_history = await repo.get_stage_history_for_vacancy(job_id)
 
         time_in_stage: dict[str, list[float]] = {}
         rejection_reasons: list[str] = []
@@ -377,21 +321,7 @@ async def get_job_analytics(
         top_source = sources_list[0].source if sources_list else "unknown"
 
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-        daily_apps_result = await db.execute(
-            select(
-                func.date(VacancyCandidate.created_at).label("date"),
-                func.count(VacancyCandidate.id).label("count")
-            )
-            .where(
-                and_(
-                    VacancyCandidate.vacancy_id == job_id,
-                    VacancyCandidate.created_at >= thirty_days_ago
-                )
-            )
-            .group_by(func.date(VacancyCandidate.created_at))
-            .order_by(func.date(VacancyCandidate.created_at))
-        )
-        daily_apps_rows = daily_apps_result.all()
+        daily_apps_rows = await repo.get_daily_applications(job_id, thirty_days_ago)
 
         daily_applications = [
             DailyApplicationItem(date=str(row.date), count=row.count)
@@ -401,28 +331,8 @@ async def get_job_analytics(
         seven_days_ago = datetime.utcnow() - timedelta(days=7)
         fourteen_days_ago = datetime.utcnow() - timedelta(days=14)
 
-        this_week_result = await db.execute(
-            select(func.count(VacancyCandidate.id))
-            .where(
-                and_(
-                    VacancyCandidate.vacancy_id == job_id,
-                    VacancyCandidate.created_at >= seven_days_ago
-                )
-            )
-        )
-        this_week_count = this_week_result.scalar() or 0
-
-        last_week_result = await db.execute(
-            select(func.count(VacancyCandidate.id))
-            .where(
-                and_(
-                    VacancyCandidate.vacancy_id == job_id,
-                    VacancyCandidate.created_at >= fourteen_days_ago,
-                    VacancyCandidate.created_at < seven_days_ago
-                )
-            )
-        )
-        last_week_count = last_week_result.scalar() or 0
+        this_week_count = await repo.get_applications_in_range(job_id, seven_days_ago)
+        last_week_count = await repo.get_applications_in_range(job_id, fourteen_days_ago, seven_days_ago)
 
         weekly_trend = 0.0
         if last_week_count > 0:
@@ -438,16 +348,7 @@ async def get_job_analytics(
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
         top_rejection_reasons = sorted(reason_counts.keys(), key=lambda x: reason_counts[x], reverse=True)[:5]
 
-        company_jobs_result = await db.execute(
-            select(JobVacancy)
-            .where(
-                and_(
-                    JobVacancy.company_id == company_id,
-                    JobVacancy.status.in_(["Concluída", "Encerrada"])
-                )
-            )
-        )
-        company_jobs = company_jobs_result.scalars().all()
+        company_jobs = await repo.get_completed_jobs_for_company(company_id)
 
         company_hire_times = []
         company_conversion_rates = []
@@ -534,29 +435,26 @@ async def get_job_vacancy_history(
     job_id: UUID,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
     """Get audit history for a job vacancy."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
+    from app.core.database import get_db as _get_db
+    from fastapi import Request
 
     try:
         company_id = get_user_company_id(current_user)
         offset = (page - 1) * page_size
 
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-            )
-        )
-        job = result.scalar_one_or_none()
+        job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
         history = await job_audit_service.get_history(
             job_id=str(job_id),
             company_id=company_id,
-            db=db,
+            db=repo.db,
             limit=page_size,
             offset=offset
         )
@@ -735,8 +633,8 @@ def _generate_insights(
 @router.get("/job-vacancies/stats/overview", response_model=StatsOverviewResponse)
 async def get_job_vacancies_stats_overview(
     recruiter_email: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
     """Get aggregated metrics for the job vacancies dashboard."""
     try:
@@ -746,10 +644,7 @@ async def get_job_vacancies_stats_overview(
 
         recruiter_filter_email = recruiter_email or current_user.email
 
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.company_id == company_id)
-        )
-        all_company_jobs = result.scalars().all()
+        all_company_jobs = await repo.get_all_company_jobs(company_id)
 
         my_jobs_list = [
             j for j in all_company_jobs
@@ -959,25 +854,17 @@ class JobReportResponse(BaseModel):
 @router.get("/jobs/{job_id}/report", response_model=JobReportResponse)
 async def get_job_report(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
     """Returns JSON data for the JobReportModal."""
     company_id = get_user_company_id(current_user)
 
-    job_result = await db.execute(
-        select(JobVacancy).where(
-            and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-        )
-    )
-    job = job_result.scalar_one_or_none()
+    job = await repo.get_job_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
-    vc_result = await db.execute(
-        select(VacancyCandidate).where(VacancyCandidate.vacancy_id == job_id)
-    )
-    vacancy_candidates = vc_result.scalars().all()
+    vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
     total = len(vacancy_candidates)
 
     stage_map: dict[str, int] = {}
@@ -1003,36 +890,13 @@ async def get_job_report(
     conversion_rate = round(hired_count / total * 100, 1) if total > 0 else 0.0
 
     avg_time_to_hire = 0.0
-    try:
-        time_result = await db.execute(
-            select(func.avg(CandidateStageHistory.time_in_previous_stage_hours))
-            .where(
-                and_(
-                    CandidateStageHistory.vacancy_id == job_id,
-                    CandidateStageHistory.to_stage_name.in_(["hired", "contratado"]),
-                )
-            )
-        )
-        avg_hours = time_result.scalar()
-        if avg_hours:
-            avg_time_to_hire = round(avg_hours / 24, 1)
-    except Exception:
-        pass
+    avg_hours = await repo.get_avg_time_to_hire(job_id)
+    if avg_hours:
+        avg_time_to_hire = round(avg_hours / 24, 1)
 
-    top_vc_result = await db.execute(
-        select(VacancyCandidate, Candidate)
-        .join(Candidate, VacancyCandidate.candidate_id == Candidate.id)
-        .where(
-            and_(
-                VacancyCandidate.vacancy_id == job_id,
-                VacancyCandidate.lia_score.isnot(None),
-            )
-        )
-        .order_by(VacancyCandidate.lia_score.desc())
-        .limit(5)
-    )
+    top_vc_rows = await repo.get_top_candidates_with_score(job_id, limit=5)
     top_candidates = []
-    for vc, cand in top_vc_result.all():
+    for vc, cand in top_vc_rows:
         top_candidates.append(
             JobReportTopCandidate(
                 name=cand.name or "Candidato",
@@ -1073,10 +937,8 @@ async def get_job_report(
 async def get_work_model_analytics(
     period: str = Query("90d"),
     current_user=Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
-    from sqlalchemy import text
-
     company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
     if not company_id:
         raise HTTPException(status_code=403, detail="Company not associated with user")
@@ -1084,46 +946,9 @@ async def get_work_model_analytics(
     period_map = {"30d": 30, "90d": 90, "6m": 180, "1y": 365}
     days = period_map.get(period, 90)
 
-    wm_result = await db.execute(text("""
-        SELECT
-            COALESCE(work_model, 'Não informado') as work_model,
-            COUNT(*) as total,
-            AVG(CASE WHEN salary_max > 0 THEN salary_max ELSE NULL END)::int as avg_salary
-        FROM job_vacancies
-        WHERE company_id = CAST(:co AS uuid)
-          AND created_at >= NOW() - (:days || ' days')::interval
-        GROUP BY COALESCE(work_model, 'Não informado')
-        ORDER BY total DESC
-    """), {"co": company_id, "days": str(days)})
-    wm_rows = wm_result.fetchall()
-
-    title_result = await db.execute(text("""
-        SELECT
-            COALESCE(title, 'Sem título') as title,
-            COALESCE(work_model, 'Não informado') as work_model,
-            COUNT(*) as total
-        FROM job_vacancies
-        WHERE company_id = CAST(:co AS uuid)
-          AND created_at >= NOW() - (:days || ' days')::interval
-        GROUP BY title, work_model
-        ORDER BY total DESC
-        LIMIT 10
-    """), {"co": company_id, "days": str(days)})
-    title_rows = title_result.fetchall()
-
-    location_result = await db.execute(text("""
-        SELECT
-            COALESCE(location, 'Não informado') as location,
-            COALESCE(work_model, 'Não informado') as work_model,
-            COUNT(*) as total
-        FROM job_vacancies
-        WHERE company_id = CAST(:co AS uuid)
-          AND created_at >= NOW() - (:days || ' days')::interval
-        GROUP BY location, work_model
-        ORDER BY total DESC
-        LIMIT 20
-    """), {"co": company_id, "days": str(days)})
-    loc_rows = location_result.fetchall()
+    wm_rows = await repo.get_work_model_distribution(company_id, days)
+    title_rows = await repo.get_work_model_by_title(company_id, days)
+    loc_rows = await repo.get_work_model_by_location(company_id, days)
 
     total_all = sum(r.total for r in wm_rows) if wm_rows else 0
 
