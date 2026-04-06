@@ -11,7 +11,6 @@ from app.api.v1 import global_policies
 from app.api.v1 import technical_tests
 from app.api.v1 import data_subject_requests
 from app.api.v1 import consent_management
-from app.api.v1 import insurance
 from app.api.v1 import task_planner
 from app.api.v1 import cache
 from app.api.v1 import ml_predictions
