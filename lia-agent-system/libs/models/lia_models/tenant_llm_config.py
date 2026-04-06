@@ -1,0 +1,46 @@
+"""
+TenantLLMConfig — Per-tenant LLM provider configuration.
+
+Allows each client to:
+- Choose their primary LLM provider (Gemini, Claude, OpenAI)
+- Add their own API keys
+- Configure routing (different LLM per operation type)
+- Set fallback order
+- Add multiple providers
+"""
+import uuid
+from datetime import datetime
+
+from lia_config.database import Base
+from sqlalchemy import JSON, Boolean, Column, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID
+
+
+class TenantLLMConfig(Base):
+    """Per-tenant LLM configuration."""
+
+    __tablename__ = "tenant_llm_configs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(String(255), nullable=False, unique=True, index=True)
+
+    # Primary provider
+    primary_provider = Column(String(50), default="gemini")  # gemini, claude, openai
+    fallback_order = Column(JSON, default=["gemini", "claude", "openai"])
+
+    # Provider configs (API keys encrypted, models, etc.)
+    # Structure: {"gemini": {"api_key": "enc:...", "model": "gemini-2.5-flash"}, ...}
+    providers = Column(JSON, default={})
+
+    # Routing by operation type
+    # Structure: {"chat": "gemini", "embedding": "openai", "screening": "claude", "voice": "gemini"}
+    routing = Column(JSON, default={})
+
+    # Full config blob (for advanced settings)
+    config = Column(JSON, default={})
+
+    is_active = Column(Boolean, default=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)

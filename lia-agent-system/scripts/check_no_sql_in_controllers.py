@@ -76,7 +76,6 @@ PENDING_MIGRATION = {
     "app/api/v1/candidates.py",
     "app/api/v1/chat.py",
     "app/api/v1/client_users.py",
-    "app/api/v1/clients.py",
     "app/api/v1/communication.py",
     "app/api/v1/communication_matrix.py",
     "app/api/v1/communication_optout.py",
@@ -208,6 +207,9 @@ PENDING_MIGRATION = {
     "app/api/v1/wsi_observability.py",
     "app/api/v1/wsi_screening_pipeline_endpoint.py",
     "app/api/wsi_endpoints.py",
+    # Controllers that pass db to service layer (no direct db.execute)
+    "app/api/v1/affirmative.py",
+    "app/api/v1/calibration.py",
     # Re-export hub modules (not controllers — AsyncSession is re-exported for route handlers)
     "app/api/v1/job_vacancies/_shared.py",
     "app/api/v1/lia_assistant/_shared.py",
