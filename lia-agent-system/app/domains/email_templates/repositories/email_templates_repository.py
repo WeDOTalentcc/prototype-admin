@@ -15,14 +15,12 @@ from app.models.email_template import EmailLog, EmailTemplate
 
 logger = logging.getLogger(__name__)
 
-RATE_LIMIT_EMAILS_PER_MINUTE = 10
-
 
 class EmailTemplatesRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # ── EmailTemplate queries ────────────────────────────────────────────────
+    # ── EmailTemplate CRUD ────────────────────────────────────────────────
 
     async def list_templates(
         self,
@@ -36,11 +34,11 @@ class EmailTemplatesRepository:
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[EmailTemplate], int]:
-        """Return (templates, total_count) applying all filters."""
-        base = select(EmailTemplate)
+        """Return (items, total) with all filters applied."""
+        query = select(EmailTemplate)
 
         if company_id:
-            base = base.where(
+            query = query.where(
                 or_(
                     EmailTemplate.company_id == company_id,
                     EmailTemplate.company_id.is_(None),
@@ -48,15 +46,15 @@ class EmailTemplatesRepository:
             )
 
         if visibility == "recruiter":
-            base = base.where(
+            query = query.where(
                 or_(
                     EmailTemplate.visibility == "recruiter",
                     EmailTemplate.visibility == "all",
                 )
             )
-            base = base.where(~EmailTemplate.channel.in_(["bell", "teams"]))
+            query = query.where(~EmailTemplate.channel.in_(["bell", "teams"]))
         elif visibility == "admin":
-            base = base.where(
+            query = query.where(
                 or_(
                     EmailTemplate.visibility == "admin",
                     EmailTemplate.visibility == "all",
@@ -64,30 +62,28 @@ class EmailTemplatesRepository:
             )
 
         if category:
-            base = base.where(EmailTemplate.category == category)
-
+            query = query.where(EmailTemplate.category == category)
         if channel:
-            base = base.where(EmailTemplate.channel == channel)
-
+            query = query.where(EmailTemplate.channel == channel)
         if situation:
-            base = base.where(EmailTemplate.situation == situation)
-
+            query = query.where(EmailTemplate.situation == situation)
         if is_active is not None:
-            base = base.where(EmailTemplate.is_active == is_active)
-
+            query = query.where(EmailTemplate.is_active == is_active)
         if search:
             search_term = f"%{search}%"
-            base = base.where(
+            query = query.where(
                 or_(
                     EmailTemplate.name.ilike(search_term),
                     EmailTemplate.subject.ilike(search_term),
                 )
             )
 
-        count_result = await self.db.execute(base)
+        # Count total before pagination
+        count_result = await self.db.execute(query)
         total = len(count_result.scalars().all())
 
-        query = base.offset(skip).limit(limit).order_by(EmailTemplate.created_at.desc())
+        # Paginate
+        query = query.offset(skip).limit(limit).order_by(EmailTemplate.created_at.desc())
         result = await self.db.execute(query)
         templates = list(result.scalars().all())
 
@@ -102,24 +98,24 @@ class EmailTemplatesRepository:
     async def get_by_id_str(self, template_id: str) -> EmailTemplate | None:
         return await self.get_by_id(uuid_module.UUID(template_id))
 
-    async def create_template(self, template: EmailTemplate) -> EmailTemplate:
+    async def create(self, template: EmailTemplate) -> EmailTemplate:
         self.db.add(template)
         await self.db.flush()
         await self.db.refresh(template)
         return template
 
-    async def update_template(self, template: EmailTemplate) -> EmailTemplate:
+    async def update(self, template: EmailTemplate) -> EmailTemplate:
         await self.db.flush()
         await self.db.refresh(template)
         return template
 
-    async def delete_template(self, template: EmailTemplate) -> None:
+    async def delete(self, template: EmailTemplate) -> None:
         await self.db.delete(template)
 
     async def rollback(self) -> None:
         await self.db.rollback()
 
-    # ── EmailLog queries ─────────────────────────────────────────────────────
+    # ── EmailLog ──────────────────────────────────────────────────────────
 
     async def list_logs(
         self,
@@ -130,18 +126,15 @@ class EmailTemplatesRepository:
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[EmailLog], int]:
-        """Return (logs, total_count) applying all filters."""
+        """Return (items, total) with all filters applied."""
         query = select(EmailLog)
 
         if template_id:
             query = query.where(EmailLog.template_id == uuid_module.UUID(template_id))
-
         if candidate_id:
             query = query.where(EmailLog.candidate_id == candidate_id)
-
         if status:
             query = query.where(EmailLog.status == status)
-
         if recipient_email:
             query = query.where(EmailLog.recipient_email.ilike(f"%{recipient_email}%"))
 
@@ -154,21 +147,20 @@ class EmailTemplatesRepository:
 
         return logs, total
 
-    # ── Rate limit / validation helpers ────────────────────────────────────
+    # ── Rate limiting / candidate validation ─────────────────────────────
 
-    async def count_recent_emails_by_user(self, user_id: uuid_module.UUID) -> int:
-        """Count emails sent by a user in the last minute."""
-        one_minute_ago = datetime.utcnow() - timedelta(minutes=1)
+    async def count_recent_emails_by_user(
+        self, user_id: uuid_module.UUID, since: datetime
+    ) -> int:
         result = await self.db.execute(
             select(func.count(EmailLog.id)).where(
-                EmailLog.created_at >= one_minute_ago,
+                EmailLog.created_at >= since,
                 EmailLog.created_by == str(user_id),
             )
         )
         return result.scalar() or 0
 
-    async def is_known_active_candidate(self, email: str) -> bool:
-        """Return True if email belongs to an active candidate."""
+    async def candidate_email_exists(self, email: str) -> bool:
         result = await self.db.execute(
             select(Candidate.id).where(
                 Candidate.email == email,
