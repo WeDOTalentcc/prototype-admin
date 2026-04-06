@@ -146,7 +146,6 @@ PENDING_MIGRATION = {
     "app/api/v1/recruitment_stages.py",
     "app/api/v1/reports.py",
     "app/api/v1/rubric_evaluation.py",
-    "app/api/v1/saas_metrics.py",
     "app/api/v1/saturation.py",
     "app/api/v1/scheduling.py",
     "app/api/v1/screening.py",
