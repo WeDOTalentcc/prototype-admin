@@ -119,8 +119,8 @@ export function ProactiveActionsBell({
     const noVacancy: ProactiveAction[] = []
 
     for (const action of visibleActions) {
-      const vacId = action.vacancy?.id || (action.suggested_action as Record<string, unknown>)?.vacancy_id as string | undefined
-      const vacTitle = action.vacancy?.title || (action.suggested_action as Record<string, unknown>)?.vacancy_title as string | undefined
+      const vacId = action.vacancy?.id || (action.suggested_action as unknown as Record<string, unknown>)?.vacancy_id as string | undefined
+      const vacTitle = action.vacancy?.title || (action.suggested_action as unknown as Record<string, unknown>)?.vacancy_title as string | undefined
       if (vacId) {
         if (!vacancyMap.has(vacId)) {
           vacancyMap.set(vacId, [])
@@ -155,7 +155,7 @@ export function ProactiveActionsBell({
 
   const renderActionCard = (action: ProactiveAction) => {
     const isProcessing = processingId === action.id
-    const candidate = action.candidate || (action.suggested_action as Record<string, unknown>)?.candidate
+    const candidate = action.candidate || (action.suggested_action as unknown as Record<string, unknown>)?.candidate
 
     return (
       <div
@@ -173,7 +173,7 @@ export function ProactiveActionsBell({
           ) : (
             <div className={cn(
  "w-2 h-2 rounded-full mt-1.5 shrink-0",
-              (action as Record<string, unknown>).priority === 'urgent' && "bg-status-error",
+              (action as unknown as Record<string, unknown>).priority === 'urgent' && "bg-status-error",
               action.priority === 'high' && "bg-wedo-orange",
               action.priority === 'normal' && "bg-wedo-cyan",
               action.priority === 'low' && "bg-lia-border-medium"
@@ -188,7 +188,7 @@ export function ProactiveActionsBell({
                 {(candidate as any)?.score && (
                   <span className={cn(
  "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
-                    getScoreColor((candidate as Record<string, unknown>).score as number)
+                    getScoreColor((candidate as unknown as Record<string, unknown>).score as number)
                   )}>
                     {(Math.round((candidate as any).score) as React.ReactNode)}
                   </span>

@@ -117,7 +117,7 @@ export function LiaChatPanel() {
             isStreaming={state.isStreaming}
             streamingContent={state.streamingContent}
             conversationId={state.conversationId}
-            messagesEndRef={state.messagesEndRef}
+            messagesEndRef={state.messagesEndRef as React.RefObject<HTMLDivElement>}
           />
 
           {completedTasks.length > 0 && (
@@ -180,8 +180,8 @@ export function LiaChatPanel() {
               maxInputChars={state.MAX_INPUT_CHARS}
               attachedCvFile={state.attachedCvFile}
               setAttachedCvFile={state.setAttachedCvFile}
-              cvFileInputRef={state.cvFileInputRef}
-              inputRef={state.inputRef}
+              cvFileInputRef={state.cvFileInputRef as React.RefObject<HTMLInputElement>}
+              inputRef={state.inputRef as React.RefObject<HTMLInputElement>}
               handleCvFileAttach={state.handleCvFileAttach}
               handleCvFileButtonClick={state.handleCvFileButtonClick}
               handleSend={state.handleSend}

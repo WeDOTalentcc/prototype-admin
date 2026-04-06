@@ -113,7 +113,7 @@ export function useCandidatesInteractions({
     markCandidateAsViewed(candidate.id, 'profile')
     onAddRecentItem?.({
       id: candidate.id, type: 'candidato', title: candidate.name,
-      subtitle: (candidate as Record<string, unknown>).currentRole as string || candidate.location,
+      subtitle: (candidate as unknown as Record<string, unknown>).currentRole as string || candidate.location,
       meta: { candidateId: candidate.id },
     })
   }
@@ -247,7 +247,7 @@ export function useCandidatesInteractions({
       candidateId: newCandidate.id,
       tags: (newCandidate.skills as string[]).slice(0, 3),
       status: 'active' as const,
-      score: (newCandidate.liaAnalysis as Record<string, unknown>)?.score || 75,
+      score: (newCandidate.liaAnalysis as unknown as Record<string, unknown>)?.score || 75,
       workModel: newCandidate.workModel as 'remoto' | 'híbrido' | 'presencial',
       contractType: newCandidate.contractType as 'CLT' | 'PJ' | 'Freelancer',
       linkedin: newCandidate.linkedin || '',

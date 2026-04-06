@@ -86,11 +86,12 @@ const baseProps = {
   onSendMessage: vi.fn(),
 }
 
-function makeMessage(overrides: Partial<Message> & { id: string; role: 'user' | 'lia'; content: string }): Message {
+function makeMessage(overrides: { id: number; sender: 'user' | 'lia'; content: string } & Partial<Omit<Message, 'id' | 'sender' | 'content'>>): Message {
   return {
     timestamp: new Date().toISOString(),
+    type: 'text' as const,
     ...overrides,
-  } as unknown as Message
+  }
 }
 
 describe('ChatMessageList — message rendering flow', () => {
@@ -102,7 +103,7 @@ describe('ChatMessageList — message rendering flow', () => {
 
   it('renders user message content', () => {
     const msgs = [
-      makeMessage({ id: 'm1', role: 'user', content: 'Olá, preciso de ajuda' }),
+      makeMessage({ id: 1, sender: 'user', content: 'Olá, preciso de ajuda' }),
     ]
     render(<ChatMessageList messages={msgs} {...baseProps} />)
     expect(screen.getByText('Olá, preciso de ajuda')).toBeTruthy()
@@ -110,7 +111,7 @@ describe('ChatMessageList — message rendering flow', () => {
 
   it('renders LIA message content', () => {
     const msgs = [
-      makeMessage({ id: 'm2', role: 'lia', content: 'Como posso ajudar?' }),
+      makeMessage({ id: 2, sender: 'lia', content: 'Como posso ajudar?' }),
     ]
     const { container } = render(<ChatMessageList messages={msgs} {...baseProps} />)
     expect(container.innerHTML).toContain('Como posso ajudar?')
@@ -118,9 +119,9 @@ describe('ChatMessageList — message rendering flow', () => {
 
   it('renders multiple messages in order', () => {
     const msgs = [
-      makeMessage({ id: 'm1', role: 'user', content: 'Primeira mensagem' }),
-      makeMessage({ id: 'm2', role: 'lia', content: 'Segunda mensagem' }),
-      makeMessage({ id: 'm3', role: 'user', content: 'Terceira mensagem' }),
+      makeMessage({ id: 1, sender: 'user', content: 'Primeira mensagem' }),
+      makeMessage({ id: 2, sender: 'lia', content: 'Segunda mensagem' }),
+      makeMessage({ id: 3, sender: 'user', content: 'Terceira mensagem' }),
     ]
     const { container } = render(<ChatMessageList messages={msgs} {...baseProps} />)
     const html = container.innerHTML
@@ -133,7 +134,7 @@ describe('ChatMessageList — message rendering flow', () => {
 
   it('shows user avatar initials', () => {
     const msgs = [
-      makeMessage({ id: 'm1', role: 'user', content: 'test' }),
+      makeMessage({ id: 1, sender: 'user', content: 'test' }),
     ]
     render(<ChatMessageList messages={msgs} {...baseProps} />)
     expect(screen.getByText('DU')).toBeTruthy()

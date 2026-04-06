@@ -145,7 +145,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
 
   const revealContactHook = useRevealContact({
     setCreditsRemaining: (fn) =>
-      params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining ?? 0) : fn),
+      params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining) : fn),
   })
 
   const { setLastSuccessfulQuery: archetypeSetLastSuccessfulQuery } = archetypesHook.actions
@@ -156,7 +156,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     searchThreadId: params.searchThreadId,
     setSearchThreadId: params.setSearchThreadId,
     hideViewedCandidatesFilter: params.hideViewedCandidatesFilter,
-    talentFunnel: params.talentFunnel as unknown as { addToHistory: (entry: Record<string, unknown>) => void },
+    talentFunnel: params.talentFunnel,
     setCandidates: params.setCandidates,
     setSearchResults: params.setSearchResults,
     setHasSearchResults: params.setHasSearchResults,
@@ -168,7 +168,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
       params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining ?? 0) : fn),
     setShowSearchResults: params.setShowSearchResults,
     setDisplayedResultsCount: params.setDisplayedResultsCount,
-    setCurrentSearchSource: (s: string) => params.setCurrentSearchSource(s as typeof params.currentSearchSource),
+    setCurrentSearchSource: params.setCurrentSearchSource,
     setHasSearched: params.setHasSearched,
     setLastSearchEntities: params.setLastSearchEntities,
     setLastSearchMetadata: params.setLastSearchMetadata,
@@ -232,7 +232,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     isExpandingToGlobal: params.isExpandingToGlobal,
     setIsExpandingToGlobal: params.setIsExpandingToGlobal,
     displayedResultsCount: params.displayedResultsCount,
-    setDisplayedResultsCount: params.setDisplayedResultsCount as unknown as (v: number | ((prev: number) => number)) => void,
+    setDisplayedResultsCount: params.setDisplayedResultsCount,
     isLoadingMore: params.isLoadingMore,
     setIsLoadingMore: params.setIsLoadingMore,
     searchFeedbacks: params.searchFeedbacks,
@@ -243,7 +243,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     searchThreadId: params.searchThreadId,
     showExpandGlobalOption: params.showExpandGlobalOption,
     setShowExpandGlobalOption: params.setShowExpandGlobalOption,
-    setChatMessages: params.setChatMessages as unknown as (v: unknown[] | ((prev: unknown[]) => unknown[])) => void,
+    setChatMessages: params.setChatMessages,
     showSourceChangeModal: params.showSourceChangeModal,
     setShowSourceChangeModal: params.setShowSourceChangeModal,
     pendingSourceChange: params.pendingSourceChange,
@@ -259,7 +259,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     activeSearchFilters: params.activeSearchFilters,
     setActiveSearchFilters: params.setActiveSearchFilters,
     setSelectedTemplate: params.setSelectedTemplate,
-    executeSearch: (query: string, entities?: import("@/components/search/smart-search-input").ParsedEntities | null, mode?: import("@/components/search/smart-search-input").SearchMode, metadata?: import("@/components/search/smart-search-input").SearchMetadata, usePearch?: boolean) => executeSearch(query, entities ?? undefined, mode, metadata, usePearch),
+    executeSearch,
     user: params.user,
   })
 
