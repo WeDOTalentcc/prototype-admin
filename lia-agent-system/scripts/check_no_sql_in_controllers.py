@@ -46,7 +46,6 @@ PENDING_MIGRATION = {
     "app/api/v1/approvals.py",
     "app/api/v1/audit_logs.py",
     "app/api/v1/audit_timeline.py",
-    "app/api/v1/auth.py",
     "app/api/v1/autocomplete.py",
     "app/api/v1/automation/_shared.py",
     "app/api/v1/automation/event_handlers.py",
