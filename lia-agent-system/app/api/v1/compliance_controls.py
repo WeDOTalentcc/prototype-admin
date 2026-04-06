@@ -9,15 +9,16 @@ Provides endpoints for:
 - Compliance Dashboard
 """
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, desc, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.models.observability import CompanyComplianceControl, ComplianceAudit, ComplianceControlLibrary, SOXControl
+from app.domains.compliance.dependencies import get_compliance_repo
+from app.domains.compliance.repositories.compliance_controls_repository import (
+    ComplianceControlsRepository,
+)
+from app.models.observability import ComplianceControlLibrary
 from app.schemas.compliance_controls import (
     CompanyControlCreate,
     CompanyControlListResponse,
@@ -52,45 +53,22 @@ async def list_control_library(
     search: str | None = Query(None, description="Search in name/description"),
     limit: int = Query(100, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """List all controls in the library, optionally filtered by framework."""
     try:
-        conditions = []
-        
-        if framework:
-            conditions.append(ComplianceControlLibrary.framework == framework)
-        if category:
-            conditions.append(ComplianceControlLibrary.control_category == category)
-        if search:
-            search_term = f"%{search}%"
-            conditions.append(
-                or_(
-                    ComplianceControlLibrary.control_name.ilike(search_term),
-                    ComplianceControlLibrary.control_description.ilike(search_term)
-                )
-            )
-        
-        query = select(ComplianceControlLibrary)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(ComplianceControlLibrary.framework, ComplianceControlLibrary.control_id)
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        controls = result.scalars().all()
-        
-        count_query = select(func.count(ComplianceControlLibrary.id))
-        if conditions:
-            count_query = count_query.where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+        controls, total = await repo.list_control_library(
+            framework=framework,
+            category=category,
+            search=search,
+            limit=limit,
+            offset=offset,
+        )
         return ControlLibraryListResponse(
             controls=[ControlLibraryResponse(**c.to_dict()) for c in controls],
             total=total,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
     except Exception as e:
         logger.error(f"Error listing control library: {e}", exc_info=True)
@@ -100,11 +78,11 @@ async def list_control_library(
 @router.post("/controls", response_model=ControlLibraryResponse, summary="Create control library entry")
 async def create_control_library(
     data: ControlLibraryCreate,
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Create a new control in the library."""
     try:
-        control = ComplianceControlLibrary(
+        control = await repo.create_control_library(
             framework=data.framework,
             control_id=data.control_id,
             control_name=data.control_name,
@@ -114,15 +92,11 @@ async def create_control_library(
             is_mandatory=data.is_mandatory,
             implementation_guidance=data.implementation_guidance,
             evidence_requirements=data.evidence_requirements or [],
-            related_controls=data.related_controls or []
+            related_controls=data.related_controls or [],
         )
-        db.add(control)
-        await db.commit()
-        await db.refresh(control)
-        
         return ControlLibraryResponse(**control.to_dict())
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error creating control library entry: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -132,29 +106,20 @@ async def get_controls_by_framework(
     framework: str,
     limit: int = Query(200, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Get all controls for a specific framework."""
     try:
-        query = select(ComplianceControlLibrary).where(
-            ComplianceControlLibrary.framework == framework
-        ).order_by(ComplianceControlLibrary.control_id)
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        controls = result.scalars().all()
-        
-        count_query = select(func.count(ComplianceControlLibrary.id)).where(
-            ComplianceControlLibrary.framework == framework
+        controls, total = await repo.get_controls_by_framework(
+            framework=framework,
+            limit=limit,
+            offset=offset,
         )
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
         return ControlLibraryListResponse(
             controls=[ControlLibraryResponse(**c.to_dict()) for c in controls],
             total=total,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
     except Exception as e:
         logger.error(f"Error getting controls by framework: {e}", exc_info=True)
@@ -168,44 +133,31 @@ async def list_company_controls(
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """List company's compliance controls with their status."""
     try:
         company_uuid = UUID(company_id)
-        conditions = [CompanyComplianceControl.company_id == company_uuid]
-        
-        if status_filter:
-            conditions.append(CompanyComplianceControl.status == status_filter)
-        
-        query = select(CompanyComplianceControl).where(and_(*conditions))
-        query = query.order_by(desc(CompanyComplianceControl.updated_at))
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        controls = result.scalars().all()
-        
+        controls, total = await repo.list_company_controls(
+            company_uuid=company_uuid,
+            status_filter=status_filter,
+            limit=limit,
+            offset=offset,
+        )
+
         responses = []
         for ctrl in controls:
             ctrl_dict = ctrl.to_dict()
-            lib_query = select(ComplianceControlLibrary).where(
-                ComplianceControlLibrary.id == ctrl.control_library_id
-            )
-            lib_result = await db.execute(lib_query)
-            lib_control = lib_result.scalar_one_or_none()
+            lib_control = await repo.get_control_library_item(ctrl.control_library_id)
             if lib_control:
                 ctrl_dict["control"] = lib_control.to_dict()
             responses.append(CompanyControlResponse(**ctrl_dict))
-        
-        count_query = select(func.count(CompanyComplianceControl.id)).where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
         return CompanyControlListResponse(
             controls=responses,
             total=total,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
@@ -218,32 +170,25 @@ async def list_company_controls(
 async def create_company_control(
     data: CompanyControlCreate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Create a company compliance control mapping."""
     try:
         company_uuid = UUID(company_id)
-        
-        lib_query = select(ComplianceControlLibrary).where(
-            ComplianceControlLibrary.id == UUID(data.control_library_id)
-        )
-        lib_result = await db.execute(lib_query)
-        lib_control = lib_result.scalar_one_or_none()
+
+        lib_control = await repo.get_control_library_item(UUID(data.control_library_id))
         if not lib_control:
             raise HTTPException(status_code=404, detail="Control library entry not found")
-        
-        control = CompanyComplianceControl(
-            company_id=company_uuid,
+
+        control = await repo.create_company_control(
+            company_uuid=company_uuid,
             control_library_id=UUID(data.control_library_id),
             status=data.status or "not_started",
             owner_name=data.owner_name,
             owner_email=data.owner_email,
-            notes=data.notes
+            notes=data.notes,
         )
-        db.add(control)
-        await db.commit()
-        await db.refresh(control)
-        
+
         ctrl_dict = control.to_dict()
         ctrl_dict["control"] = lib_control.to_dict()
         return CompanyControlResponse(**ctrl_dict)
@@ -252,7 +197,7 @@ async def create_company_control(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error creating company control: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -262,49 +207,33 @@ async def update_company_control(
     control_id: str,
     data: CompanyControlUpdate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Update a company's compliance control status."""
     try:
         company_uuid = UUID(company_id)
         control_uuid = UUID(control_id)
-        
-        query = select(CompanyComplianceControl).where(
-            and_(
-                CompanyComplianceControl.id == control_uuid,
-                CompanyComplianceControl.company_id == company_uuid
-            )
-        )
-        result = await db.execute(query)
-        control = result.scalar_one_or_none()
-        
+
+        control = await repo.get_company_control(control_uuid, company_uuid)
         if not control:
             raise HTTPException(status_code=404, detail="Control not found")
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(control, key, value)
-        
-        await db.commit()
-        await db.refresh(control)
-        
-        lib_query = select(ComplianceControlLibrary).where(
-            ComplianceControlLibrary.id == control.control_library_id
-        )
-        lib_result = await db.execute(lib_query)
-        lib_control = lib_result.scalar_one_or_none()
-        
+        control = await repo.update_company_control(control, update_data)
+
+        lib_control = await repo.get_control_library_item(control.control_library_id)
+
         ctrl_dict = control.to_dict()
         if lib_control:
             ctrl_dict["control"] = lib_control.to_dict()
-        
+
         return CompanyControlResponse(**ctrl_dict)
     except HTTPException:
         raise
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error updating company control: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -314,43 +243,32 @@ async def upload_evidence(
     control_id: str,
     data: EvidenceUpload,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Upload evidence file for a control."""
     try:
         company_uuid = UUID(company_id)
         control_uuid = UUID(control_id)
-        
-        query = select(CompanyComplianceControl).where(
-            and_(
-                CompanyComplianceControl.id == control_uuid,
-                CompanyComplianceControl.company_id == company_uuid
-            )
-        )
-        result = await db.execute(query)
-        control = result.scalar_one_or_none()
-        
+
+        control = await repo.get_company_control(control_uuid, company_uuid)
         if not control:
             raise HTTPException(status_code=404, detail="Control not found")
-        
+
         evidence_files = control.evidence_files or []
         evidence_files.append({
             "filename": data.filename,
             "url": data.url,
-            "uploaded_at": datetime.utcnow().isoformat()
+            "uploaded_at": datetime.utcnow().isoformat(),
         })
-        control.evidence_files = evidence_files
-        
-        await db.commit()
-        await db.refresh(control)
-        
+
+        control = await repo.update_company_control_evidence(control, evidence_files)
         return CompanyControlResponse(**control.to_dict())
     except HTTPException:
         raise
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error uploading evidence: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -362,34 +280,23 @@ async def list_audits(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """List compliance audits."""
     try:
         company_uuid = UUID(company_id)
-        conditions = [ComplianceAudit.company_id == company_uuid]
-        
-        if framework:
-            conditions.append(ComplianceAudit.framework == framework)
-        if audit_type:
-            conditions.append(ComplianceAudit.audit_type == audit_type)
-        
-        query = select(ComplianceAudit).where(and_(*conditions))
-        query = query.order_by(desc(ComplianceAudit.created_at))
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        audits = result.scalars().all()
-        
-        count_query = select(func.count(ComplianceAudit.id)).where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+        audits, total = await repo.list_audits(
+            company_uuid=company_uuid,
+            framework=framework,
+            audit_type=audit_type,
+            limit=limit,
+            offset=offset,
+        )
         return ComplianceAuditListResponse(
             audits=[ComplianceAuditResponse(**a.to_dict()) for a in audits],
             total=total,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
@@ -402,31 +309,26 @@ async def list_audits(
 async def create_audit(
     data: ComplianceAuditCreate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Create a new compliance audit."""
     try:
         company_uuid = UUID(company_id)
-        
-        audit = ComplianceAudit(
-            company_id=company_uuid,
+        audit = await repo.create_audit(
+            company_uuid=company_uuid,
             framework=data.framework,
             audit_type=data.audit_type,
             auditor_organization=data.auditor_organization,
             auditor_name=data.auditor_name,
             audit_start_date=data.audit_start_date,
             audit_end_date=data.audit_end_date,
-            scope_description=data.scope_description
+            scope_description=data.scope_description,
         )
-        db.add(audit)
-        await db.commit()
-        await db.refresh(audit)
-        
         return ComplianceAuditResponse(**audit.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error creating audit: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -434,34 +336,28 @@ async def create_audit(
 @router.get("/audits/dashboard", response_model=ComplianceDashboardResponse, summary="Get compliance dashboard")
 async def get_compliance_dashboard(
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Get comprehensive compliance dashboard across all frameworks."""
     try:
         company_uuid = UUID(company_id)
-        
-        ctrl_query = select(
-            CompanyComplianceControl, ComplianceControlLibrary
-        ).join(
-            ComplianceControlLibrary,
-            CompanyComplianceControl.control_library_id == ComplianceControlLibrary.id
-        ).where(CompanyComplianceControl.company_id == company_uuid)
-        
-        result = await db.execute(ctrl_query)
-        controls = result.all()
-        
+
+        controls, upcoming_reviews, overdue_reviews, recent_audits, sox_summary = (
+            await repo.get_compliance_dashboard_stats(company_uuid)
+        )
+
         by_framework = {}
         total_controls = 0
         total_implemented = 0
-        
+
         for company_ctrl, lib_ctrl in controls:
             fw = lib_ctrl.framework
             if fw not in by_framework:
                 by_framework[fw] = FrameworkStats()
-            
+
             by_framework[fw].total_controls += 1
             total_controls += 1
-            
+
             status = company_ctrl.status
             if status == "implemented":
                 by_framework[fw].implemented += 1
@@ -475,53 +371,20 @@ async def get_compliance_dashboard(
                 total_implemented += 1
             elif status == "not_applicable":
                 by_framework[fw].not_applicable += 1
-        
+
         for fw in by_framework:
             applicable = by_framework[fw].total_controls - by_framework[fw].not_applicable
             if applicable > 0:
                 implemented = by_framework[fw].implemented + by_framework[fw].verified
                 by_framework[fw].compliance_percentage = round(implemented / applicable * 100, 1)
-        
-        today = date.today()
-        next_30_days = today + timedelta(days=30)
-        
-        upcoming_query = select(func.count(CompanyComplianceControl.id)).where(
-            and_(
-                CompanyComplianceControl.company_id == company_uuid,
-                CompanyComplianceControl.next_review_date.isnot(None),
-                CompanyComplianceControl.next_review_date <= next_30_days,
-                CompanyComplianceControl.next_review_date >= today
-            )
-        )
-        upcoming_result = await db.execute(upcoming_query)
-        upcoming_reviews = upcoming_result.scalar() or 0
-        
-        overdue_query = select(func.count(CompanyComplianceControl.id)).where(
-            and_(
-                CompanyComplianceControl.company_id == company_uuid,
-                CompanyComplianceControl.next_review_date.isnot(None),
-                CompanyComplianceControl.next_review_date < today
-            )
-        )
-        overdue_result = await db.execute(overdue_query)
-        overdue_reviews = overdue_result.scalar() or 0
-        
-        audit_query = select(ComplianceAudit).where(
-            ComplianceAudit.company_id == company_uuid
-        ).order_by(desc(ComplianceAudit.created_at)).limit(5)
-        audit_result = await db.execute(audit_query)
-        recent_audits = [ComplianceAuditResponse(**a.to_dict()) for a in audit_result.scalars().all()]
-        
-        sox_query = select(
-            SOXControl.test_result,
-            func.count(SOXControl.id).label("count")
-        ).where(SOXControl.company_id == company_uuid).group_by(SOXControl.test_result)
-        sox_result = await db.execute(sox_query)
-        sox_summary = {row.test_result: row.count for row in sox_result}
-        
+
+        recent_audit_responses = [
+            ComplianceAuditResponse(**a.to_dict()) for a in recent_audits
+        ]
+
         applicable_total = total_controls - sum(s.not_applicable for s in by_framework.values())
         overall_pct = round(total_implemented / applicable_total * 100, 1) if applicable_total > 0 else 0.0
-        
+
         return ComplianceDashboardResponse(
             by_framework={k: v.model_dump() for k, v in by_framework.items()},
             total_controls=total_controls,
@@ -529,8 +392,8 @@ async def get_compliance_dashboard(
             overall_compliance_percentage=overall_pct,
             upcoming_reviews=upcoming_reviews,
             overdue_reviews=overdue_reviews,
-            recent_audits=recent_audits,
-            sox_summary=sox_summary if sox_summary else None
+            recent_audits=recent_audit_responses,
+            sox_summary=sox_summary if sox_summary else None,
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
@@ -546,34 +409,23 @@ async def list_sox_controls(
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """List SOX controls for a company."""
     try:
         company_uuid = UUID(company_id)
-        conditions = [SOXControl.company_id == company_uuid]
-        
-        if section:
-            conditions.append(SOXControl.section == section)
-        if test_result:
-            conditions.append(SOXControl.test_result == test_result)
-        
-        query = select(SOXControl).where(and_(*conditions))
-        query = query.order_by(SOXControl.section, SOXControl.control_id)
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        controls = result.scalars().all()
-        
-        count_query = select(func.count(SOXControl.id)).where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+        controls, total = await repo.list_sox_controls(
+            company_uuid=company_uuid,
+            section=section,
+            test_result=test_result,
+            limit=limit,
+            offset=offset,
+        )
         return SOXControlListResponse(
             controls=[SOXControlResponse(**c.to_dict()) for c in controls],
             total=total,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
@@ -586,31 +438,26 @@ async def list_sox_controls(
 async def create_sox_control(
     data: SOXControlCreate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Create a new SOX control."""
     try:
         company_uuid = UUID(company_id)
-        
-        control = SOXControl(
-            company_id=company_uuid,
+        control = await repo.create_sox_control(
+            company_uuid=company_uuid,
             section=data.section,
             control_id=data.control_id,
             control_name=data.control_name,
             control_objective=data.control_objective,
             key_control=data.key_control,
             frequency=data.frequency,
-            control_owner=data.control_owner
+            control_owner=data.control_owner,
         )
-        db.add(control)
-        await db.commit()
-        await db.refresh(control)
-        
         return SOXControlResponse(**control.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error creating SOX control: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -620,46 +467,33 @@ async def update_sox_control(
     control_id: str,
     data: SOXControlUpdate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Update a SOX control."""
     try:
         company_uuid = UUID(company_id)
         control_uuid = UUID(control_id)
-        
-        query = select(SOXControl).where(
-            and_(
-                SOXControl.id == control_uuid,
-                SOXControl.company_id == company_uuid
-            )
-        )
-        result = await db.execute(query)
-        control = result.scalar_one_or_none()
-        
+
+        control = await repo.get_sox_control(control_uuid, company_uuid)
         if not control:
             raise HTTPException(status_code=404, detail="SOX control not found")
-        
+
         update_data = data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(control, key, value)
-        
-        await db.commit()
-        await db.refresh(control)
-        
+        control = await repo.update_sox_control(control, update_data)
         return SOXControlResponse(**control.to_dict())
     except HTTPException:
         raise
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error updating SOX control: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/seed", response_model=SeedDataResponse, summary="Seed control library data")
 async def seed_control_library(
-    db: AsyncSession = Depends(get_db)
+    repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
     """Seed the control library with ISO 27001, SOC 2 TSC, and SOX controls."""
     try:
@@ -758,7 +592,7 @@ async def seed_control_library(
             {"control_id": "A.8.33", "control_name": "Test information", "control_category": "Development Security", "domain": "Technological Controls"},
             {"control_id": "A.8.34", "control_name": "Protection of information systems during audit testing", "control_category": "Audit", "domain": "Technological Controls"},
         ]
-        
+
         soc2_controls = [
             {"control_id": "CC1.1", "control_name": "COSO Principle 1: Demonstrates Commitment to Integrity and Ethical Values", "control_category": "Control Environment", "domain": "Common Criteria"},
             {"control_id": "CC1.2", "control_name": "COSO Principle 2: Board Exercises Oversight Responsibility", "control_category": "Control Environment", "domain": "Common Criteria"},
@@ -822,7 +656,7 @@ async def seed_control_library(
             {"control_id": "P7.1", "control_name": "Privacy: Maintains Accurate Personal Information", "control_category": "Privacy", "domain": "Additional Criteria"},
             {"control_id": "P8.1", "control_name": "Privacy: Complaints Process", "control_category": "Privacy", "domain": "Additional Criteria"},
         ]
-        
+
         sox_controls_seed = [
             {"section": "302", "control_id": "SOX-302-01", "control_name": "CEO/CFO Certification of Financial Statements", "control_objective": "Ensure executive certification of accuracy", "key_control": True, "frequency": "quarterly"},
             {"section": "302", "control_id": "SOX-302-02", "control_name": "Disclosure Controls and Procedures", "control_objective": "Maintain effective disclosure controls", "key_control": True, "frequency": "quarterly"},
@@ -848,19 +682,12 @@ async def seed_control_library(
             {"section": "802", "control_id": "SOX-802-02", "control_name": "Document Destruction Prevention", "control_objective": "Prevent destruction during investigations", "key_control": True, "frequency": "monthly"},
             {"section": "802", "control_id": "SOX-802-03", "control_name": "Electronic Records Management", "control_objective": "Proper electronic records storage", "key_control": True, "frequency": "monthly"},
         ]
-        
+
         iso_count = 0
         for ctrl in iso_27001_controls:
-            existing = await db.execute(
-                select(ComplianceControlLibrary).where(
-                    and_(
-                        ComplianceControlLibrary.framework == "ISO_27001",
-                        ComplianceControlLibrary.control_id == ctrl["control_id"]
-                    )
-                )
-            )
-            if not existing.scalar_one_or_none():
-                db.add(ComplianceControlLibrary(
+            exists = await repo.check_control_library_exists("ISO_27001", ctrl["control_id"])
+            if not exists:
+                await repo.add_library_entry_no_commit(ComplianceControlLibrary(
                     framework="ISO_27001",
                     control_id=ctrl["control_id"],
                     control_name=ctrl["control_name"],
@@ -868,22 +695,15 @@ async def seed_control_library(
                     domain=ctrl["domain"],
                     is_mandatory=True,
                     evidence_requirements=["Policy document", "Implementation evidence", "Review records"],
-                    related_controls=[]
+                    related_controls=[],
                 ))
                 iso_count += 1
-        
+
         soc2_count = 0
         for ctrl in soc2_controls:
-            existing = await db.execute(
-                select(ComplianceControlLibrary).where(
-                    and_(
-                        ComplianceControlLibrary.framework == "SOC_2_TYPE_II",
-                        ComplianceControlLibrary.control_id == ctrl["control_id"]
-                    )
-                )
-            )
-            if not existing.scalar_one_or_none():
-                db.add(ComplianceControlLibrary(
+            exists = await repo.check_control_library_exists("SOC_2_TYPE_II", ctrl["control_id"])
+            if not exists:
+                await repo.add_library_entry_no_commit(ComplianceControlLibrary(
                     framework="SOC_2_TYPE_II",
                     control_id=ctrl["control_id"],
                     control_name=ctrl["control_name"],
@@ -891,22 +711,15 @@ async def seed_control_library(
                     domain=ctrl["domain"],
                     is_mandatory=True,
                     evidence_requirements=["Control description", "Testing evidence", "Exception reports"],
-                    related_controls=[]
+                    related_controls=[],
                 ))
                 soc2_count += 1
-        
+
         sox_count = 0
         for ctrl in sox_controls_seed:
-            existing = await db.execute(
-                select(ComplianceControlLibrary).where(
-                    and_(
-                        ComplianceControlLibrary.framework == "SOX",
-                        ComplianceControlLibrary.control_id == ctrl["control_id"]
-                    )
-                )
-            )
-            if not existing.scalar_one_or_none():
-                db.add(ComplianceControlLibrary(
+            exists = await repo.check_control_library_exists("SOX", ctrl["control_id"])
+            if not exists:
+                await repo.add_library_entry_no_commit(ComplianceControlLibrary(
                     framework="SOX",
                     control_id=ctrl["control_id"],
                     control_name=ctrl["control_name"],
@@ -915,21 +728,21 @@ async def seed_control_library(
                     domain="SOX Compliance",
                     is_mandatory=ctrl.get("key_control", True),
                     evidence_requirements=["Test results", "Supporting documentation", "Approval records"],
-                    related_controls=[]
+                    related_controls=[],
                 ))
                 sox_count += 1
-        
-        await db.commit()
-        
+
+        await repo.commit()
+
         total = iso_count + soc2_count + sox_count
         return SeedDataResponse(
             message=f"Successfully seeded {total} controls",
             iso_27001_controls=iso_count,
             soc_2_controls=soc2_count,
             sox_controls=sox_count,
-            total_controls=total
+            total_controls=total,
         )
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Error seeding control library: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
