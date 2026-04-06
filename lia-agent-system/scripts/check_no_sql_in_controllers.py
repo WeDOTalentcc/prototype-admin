@@ -97,7 +97,6 @@ PENDING_MIGRATION = {
     "app/api/v1/fairness_reports.py",
     "app/api/v1/finetuning_export.py",
     "app/api/v1/global_policies.py",
-    "app/api/v1/goals.py",
     "app/api/v1/granular_consent.py",
     "app/api/v1/guardrails.py",
     "app/api/v1/health_check.py",
