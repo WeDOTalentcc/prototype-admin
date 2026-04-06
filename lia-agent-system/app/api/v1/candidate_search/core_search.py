@@ -649,16 +649,24 @@ async def search_candidates(
             else:
                 expansion_message = f"Pool local limitado ({local_only_count} candidatos). Busca global pode encontrar mais perfis adequados."
         
+        _credit_warning = None
         try:
             from app.services.credit_service import CreditService
             _cs = CreditService()
             _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
             if _company_id:
                 _action = "bulk_search" if request.search_pearch else "search"
-                await _cs.consume_action(db, _company_id, _action, reference_type="search", reference_id=result.thread_id)
+                _success, _remaining = await _cs.consume_action(db, _company_id, _action, reference_type="search", reference_id=result.thread_id)
+                if not _success:
+                    _credit_warning = f"Créditos insuficientes (saldo: {_remaining}). Resultados foram retornados, mas a ação não foi debitada."
+                    logger.warning("[Credits] Insufficient credits for %s action=%s balance=%d", _company_id, _action, _remaining)
+                else:
+                    _balance_data = await _cs.get_balance(db, _company_id)
+                    if _balance_data.get("low_balance_warning"):
+                        _credit_warning = f"Atenção: saldo de créditos baixo ({_remaining} restantes). Considere adquirir mais créditos."
                 await db.commit()
         except Exception as _credit_err:
-            logger.warning("[Credits] Non-blocking credit deduction failed: %s", _credit_err)
+            logger.warning("[Credits] Credit deduction error (non-fatal): %s", _credit_err)
 
         return SearchResponseDTO(
             query=result.query,
@@ -669,7 +677,7 @@ async def search_candidates(
             total_count=result.total_count,
             credits_remaining=result.pearch_credits_remaining,
             search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0),
-            warning_message=result.warning_message,
+            warning_message=_credit_warning or result.warning_message,
             can_load_more=result.pearch_count >= request.pearch_limit,
             should_expand_to_global=should_expand,
             expansion_message=expansion_message,
