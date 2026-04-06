@@ -3,7 +3,7 @@
 import { Building2, Code, Users, Briefcase } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface ExperienceEntry {
+export interface ExperienceEntry {
   title?: string
   position?: string
   role?: string

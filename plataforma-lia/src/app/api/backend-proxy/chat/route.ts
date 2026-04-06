@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
     
     const response = await proxyFetchWithRetry(request, backendUrl, {
       method: 'POST',
-      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest) {
     
     const response = await proxyFetchWithRetry(request, backendUrl, {
       method: 'GET',
-      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {

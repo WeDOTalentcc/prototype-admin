@@ -16,7 +16,8 @@ export async function POST(request: NextRequest) {
   try {
     const bodyResult = await validateBody(request, _bodySchema)
     if (!bodyResult.success) return bodyResult.response
-    const { companies, query } = bodyResult.data
+    const companies = bodyResult.data.companies as string[] | undefined
+    const query = bodyResult.data.query as string | undefined
     
     if ((!companies || !Array.isArray(companies) || companies.length === 0) && !query) {
       return NextResponse.json(

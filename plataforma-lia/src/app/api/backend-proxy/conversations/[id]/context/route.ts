@@ -19,7 +19,6 @@ export async function GET(
       `${BACKEND_URL}/api/v1/conversations/${id}/context${queryParams ? `?${queryParams}` : ''}`,
       {
         method: 'GET',
-        headers: getAuthHeaders(request),
       }
     )
 

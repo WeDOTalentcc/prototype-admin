@@ -3,7 +3,7 @@
 import { GraduationCap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface EducationEntry {
+export interface EducationEntry {
   degree?: string
   title?: string
   field_of_study?: string

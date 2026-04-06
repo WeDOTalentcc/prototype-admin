@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const bodyResult = await validateBody(request, _bodySchema)
     if (!bodyResult.success) return bodyResult.response
-    const { description } = bodyResult.data
+    const description = bodyResult.data.description as unknown
     
     if (!description || description.length < 10) {
       return NextResponse.json(

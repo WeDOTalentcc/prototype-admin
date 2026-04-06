@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
   try {
     const bodyResult = await validateBody(request, _bodySchema)
     if (!bodyResult.success) return bodyResult.response
-    const { query, existing, findSimilar } = bodyResult.data
+    const query = bodyResult.data.query as unknown
+    const existing = bodyResult.data.existing as string[] | undefined
+    const findSimilar = bodyResult.data.findSimilar as unknown
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(

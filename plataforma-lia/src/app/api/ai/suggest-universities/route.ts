@@ -16,7 +16,9 @@ export async function POST(request: NextRequest) {
   try {
     const bodyResult = await validateBody(request, _bodySchema)
     if (!bodyResult.success) return bodyResult.response
-    const { query, universities, existingUniversities } = bodyResult.data
+    const query = bodyResult.data.query as string | undefined
+    const universities = bodyResult.data.universities as string[] | undefined
+    const existingUniversities = bodyResult.data.existingUniversities as string[] | undefined
     
     const searchTerm = query || ''
     const basedOnUniversities = universities || []
