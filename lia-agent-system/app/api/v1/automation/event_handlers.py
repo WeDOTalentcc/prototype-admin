@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.analytics.services.activity_service import ActivityService, get_activity_service as get_activity_service_canonical
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 
 from ._shared import (
@@ -55,6 +56,7 @@ async def handle_screening_completed(
     request: ScreeningCompletedRequest,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle the screening_completed trigger for conversational screening (voice/chat/WhatsApp).
@@ -277,7 +279,7 @@ async def handle_screening_completed(
         notification_created = False
         
         try:
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="screening_wsi_completed",
                 title=f"Triagem WSI Concluída - {candidate_name}",
                 description=(
@@ -527,7 +529,8 @@ Responda em JSON:
 @router.post("/handle-trigger/interview-scheduled", response_model=None)
 async def handle_interview_scheduled(
     request: InterviewScheduledRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle interview_scheduled trigger.
@@ -704,7 +707,7 @@ async def handle_interview_scheduled(
         try:
             activity_service = get_activity_service()
             
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="interview_scheduled",
                 title=f"Entrevista Agendada - {candidate_name}",
                 description=(
@@ -810,7 +813,8 @@ async def handle_interview_scheduled(
 @router.post("/handle-trigger/interview-completed", response_model=None)
 async def handle_interview_completed(
     request: InterviewCompletedRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle interview_completed trigger.
@@ -1017,7 +1021,7 @@ Responda em JSON:
                 "reject": "❌ Não recomendado"
             }.get(recommendation, "Pendente")
             
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="interview_completed",
                 title=f"Entrevista Concluída - {candidate_name}",
                 description=(
@@ -1129,6 +1133,7 @@ async def handle_candidate_inactive(
     request: CandidateInactiveRequest,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle candidate_inactive trigger.
@@ -1274,7 +1279,7 @@ async def handle_candidate_inactive(
             try:
                 activity_service = get_activity_service()
                 failure_details = "; ".join([f"{f['channel']}: {f['error']}" for f in communication_failures])
-                await activity_service.create_activity(
+                await activity_svc.create_activity(
                     activity_type="follow_up_failed",
                     title=f"Falha no Follow-up - {candidate_name}",
                     description=(
@@ -1304,7 +1309,7 @@ async def handle_candidate_inactive(
         try:
             activity_service = get_activity_service()
             
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="candidate_inactive",
                 title=f"Candidato Inativo - {candidate_name}",
                 description=(
@@ -1440,6 +1445,7 @@ async def handle_candidate_no_show(
     request: CandidateNoShowRequest,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle candidate_no_show trigger.
@@ -1667,7 +1673,7 @@ async def handle_candidate_no_show(
         try:
             activity_service = get_activity_service()
             
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="candidate_no_show",
                 title=f"No-Show: {candidate_name} - {job_title}",
                 description=(
@@ -1803,6 +1809,7 @@ async def handle_ats_sync(
     request: ATSSyncRequest,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle stage change ATS synchronization trigger.
@@ -1927,8 +1934,7 @@ async def handle_ats_sync(
         
         if sync_status == "failed":
             try:
-                notification_service = get_activity_service()
-                await notification_service.create_activity(
+                await activity_svc.create_activity(
                     activity_type="ats_sync_failed",
                     title=f"Falha na Sincronização com {request.ats_platform.upper()}",
                     description=(
@@ -2070,6 +2076,7 @@ async def handle_offer_sent(
     request: OfferSentPayload,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle when an offer is sent to a candidate.
@@ -2125,8 +2132,7 @@ async def handle_offer_sent(
             logger.error(f"❌ [OFFER_SENT] Failed to send offer email: {e}")
         
         try:
-            activity_service = get_activity_service()
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="offer_sent",
                 title=f"Proposta enviada para {request.candidate_name or 'candidato'}",
                 description=(
@@ -2236,6 +2242,7 @@ async def handle_candidate_hired(
     request: CandidateHiredPayload,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle when a candidate is hired.
@@ -2343,8 +2350,7 @@ async def handle_candidate_hired(
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to sync ATS: {e}")
         
         try:
-            activity_service = get_activity_service()
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="candidate_hired",
                 title=f"🎉 {request.candidate_name or 'Candidato'} contratado!",
                 description=(
@@ -2436,6 +2442,7 @@ async def handle_candidate_rejected(
     request: CandidateRejectedPayload,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
     """
     Handle when a candidate is rejected.
@@ -2508,8 +2515,7 @@ async def handle_candidate_rejected(
         
         if request.add_to_talent_pool:
             try:
-                activity_service = get_activity_service()
-                await activity_service.create_activity(
+                await activity_svc.create_activity(
                     activity_type="added_to_talent_pool",
                     title="Candidato adicionado ao banco de talentos",
                     description=(
