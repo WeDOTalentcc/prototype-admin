@@ -153,16 +153,19 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 │                    FLUXO: DESENVOLVIMENTO → PRODUÇÃO                     │
 │                                                                          │
 │                                                                          │
-│  1. DESENVOLVIMENTO                                                      │
-│  ─────────────────                                                       │
+│  1. DESENVOLVIMENTO  (responsabilidade do time de engenharia)            │
+│  ───────────────────────────────────────────────────────────            │
 │                                                                          │
-│   Replit (ambiente central)   ←→   VS Code / Cursor (time)             │
-│   ┌──────────────────────┐         ┌──────────────────────┐            │
-│   │  plataforma-lia/     │         │  Clone do repo       │            │
-│   │  lia-agent-system/   │         │  git clone <repo>    │            │
-│   │  Porta 5000 + 8001   │         │  npm run dev         │            │
-│   └──────────┬───────────┘         └──────────────────────┘            │
-│              │                                                           │
+│   Time de engenharia (ambiente central — todos os devs)                 │
+│   ┌──────────────────────────────────────────────────────────┐         │
+│   │  Replit  ──── ou ────  VS Code / Cursor / qualquer IDE   │         │
+│   │  (mesmo repositório GitHub, mesmas branches, mesmo fluxo)│         │
+│   │  plataforma-lia/ · lia-agent-system/ · Porta 5000 + 8001 │         │
+│   └──────────────────────────┬───────────────────────────────┘         │
+│                               │                                          │
+│   + Você (PM/produto)         │  contribui com features e protótipos    │
+│     no mesmo fluxo ───────────┘  sem ser responsável pelo processo      │
+│                                                                          │
 │              │ git push → branch feature/*                              │
 │              ▼                                                           │
 │                                                                          │
@@ -596,24 +599,25 @@ Dev (Replit ou VS Code/Cursor)
 ### Como o Replit se encaixa após o deploy
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Replit — Papéis pós-deploy            │
-│                                                         │
-│  PROTOTIPAGEM (PM / Design)                             │
-│  ├── Criar novas telas e componentes                   │
-│  ├── Testar fluxos de UX rapidamente                   │
-│  └── Validar com cliente antes de implementar          │
-│                                                         │
-│  DESENVOLVIMENTO REAL (Engenharia)                      │
-│  ├── Replit como ambiente de dev compartilhado         │
-│  ├── VS Code / Cursor via SSH ou clone do repo         │
-│  └── Todos apontam para o mesmo repositório GitHub     │
-│                                                         │
-│  DEBUGGING (Qualquer membro do time)                   │
-│  ├── Reproduzir bugs de produção localmente            │
-│  ├── Testar hotfixes antes de subir para staging       │
-│  └── Explorar logs e traces em tempo real              │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│               Replit — Ambiente central do time                  │
+│                                                                  │
+│  DESENVOLVIMENTO (responsabilidade do time de engenharia)        │
+│  ├── Ambiente padrão compartilhado pelo time                    │
+│  ├── Alternativa: VS Code / Cursor apontando para GitHub        │
+│  ├── Todos usam as mesmas branches, PRs e CI/CD                 │
+│  └── Time é dono do fluxo: feature → develop → staging → prod  │
+│                                                                  │
+│  PROTÓTIPO E PRODUTO (você, PM)                                 │
+│  ├── Contribui com features e novas telas no Replit             │
+│  ├── Valida fluxos de UX antes de passar para o time            │
+│  └── Participa do mesmo fluxo de PR sem ser responsável por ele │
+│                                                                  │
+│  DEBUGGING (qualquer membro do time)                            │
+│  ├── Reproduzir bugs de produção localmente                     │
+│  ├── Testar hotfixes antes de subir para staging                │
+│  └── Explorar logs e traces em tempo real                       │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
