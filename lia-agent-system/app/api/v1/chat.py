@@ -192,6 +192,21 @@ async def _try_extract_params_with_llm(
     return None
 
 
+
+async def resolve_candidate_by_name(
+    candidate_name: str,
+    company_id: str | None = None,
+    job_id: str | None = None,
+    db=None,
+) -> dict | None:
+    """Module-level wrapper around ChatRepository.resolve_candidate_by_name for testability."""
+    if db is None:
+        return None
+    from app.domains.chat.repositories.chat_repository import ChatRepository
+    repo = ChatRepository(db)
+    return await repo.resolve_candidate_by_name(candidate_name, company_id=company_id, job_id=job_id)
+
+
 async def handle_action_flow(
     conversation_id: str,
     user_message_text: str,
@@ -199,8 +214,13 @@ async def handle_action_flow(
     entities: dict[str, Any],
     user_id: str,
     current_user: User,
-    repo: ChatRepository,
+    repo: ChatRepository | None = None,
+    db=None,
 ) -> dict[str, Any] | None:
+    # Support both repo and db kwargs for backwards compatibility
+    if repo is None and db is not None:
+        from app.domains.chat.repositories.chat_repository import ChatRepository as _CR
+        repo = _CR(db)
     pending = pending_action_store.get(conversation_id)
 
     # Multi-turno: coletar parâmetro faltante se já há ação pendente
@@ -208,10 +228,11 @@ async def handle_action_flow(
         next_param = pending.next_missing_param()
         answer = user_message_text.strip()
         if next_param == "candidate_id":
-            cand_info = await repo.resolve_candidate_by_name(
+            cand_info = await resolve_candidate_by_name(
                 answer,
                 company_id=str(current_user.company_id) if current_user.company_id else None,
                 job_id=pending.collected_params.get("job_id"),
+                db=db if db is not None else (repo.db if repo else None),
             )
             if cand_info:
                 pending.add_param("candidate_id", cand_info["id"])

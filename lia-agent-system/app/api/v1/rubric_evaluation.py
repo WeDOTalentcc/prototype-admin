@@ -445,7 +445,12 @@ async def get_score_breakdown(
     job_id: UUID,
     candidate_id: UUID,
     repo: ScreeningRepository = Depends(get_screening_repo),
+    db=None,
 ) -> dict:
+    # Support db kwarg for backwards compatibility (tests inject db directly)
+    if db is not None and not hasattr(repo, 'get_latest_evaluation'):
+        from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository as _SR
+        repo = _SR(db)
     """
     Retorna detalhamento completo do score de um candidato em uma vaga (E1).
 

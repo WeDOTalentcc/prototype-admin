@@ -47,7 +47,12 @@ class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     @property
     def domain_name(self) -> str:
-        return "talent"
+        return self.__dict__.get('_domain_name_override', "talent")
+
+    @domain_name.setter
+    def domain_name(self, value: str) -> None:
+        self.__dict__['_domain_name_override'] = value
+
 
     @property
     def available_tools(self) -> list[str]:

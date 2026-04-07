@@ -1,0 +1,575 @@
+"""
+CRUD endpoints for candidates: list, get, create, update, stage-update, delete, enrich.
+"""
+import uuid
+from datetime import datetime
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+
+from ._shared import (
+    ActivityService,
+    AuditService,
+    Candidate,
+    CandidateCreate,
+    CandidateRepository,
+    CandidateStageUpdate,
+    CandidateUpdate,
+    CalibrationService,
+    VacancyCandidateRepository,
+    check_rejection_reason,
+    determine_feedback_action,
+    extract_company_info_from_work_history,
+    get_activity_service,
+    get_audit_service,
+    get_candidate_repo,
+    get_stage_rank,
+    get_vacancy_candidate_repo,
+    logger,
+    normalize_array_field,
+)
+from pydantic import BaseModel
+
+router = APIRouter()
+
+
+# ---------------------------------------------------------------------------
+# Response helper: serialize a candidate ORM object to dict
+# ---------------------------------------------------------------------------
+def _serialize_candidate(c, *, full: bool = False) -> dict:
+    """Return a dict representation of a Candidate ORM object."""
+    base = {
+        "id": str(c.id),
+        "name": c.name,
+        "email": c.email,
+        "secondary_email": c.secondary_email,
+        "phone": c.phone,
+        "mobile_phone": c.mobile_phone,
+        "secondary_phone": c.secondary_phone,
+        "linkedin_url": c.linkedin_url,
+        "github_url": c.github_url,
+        "portfolio_url": c.portfolio_url,
+        "avatar_url": c.avatar_url,
+        "date_of_birth": str(c.date_of_birth) if c.date_of_birth else None,
+        "gender": c.gender,
+        "nationality": c.nationality,
+        "marital_status": c.marital_status,
+        "cpf": c.cpf,
+        "current_title": c.current_title,
+        "current_company": c.current_company,
+        "seniority_level": c.seniority_level,
+        "years_of_experience": c.years_of_experience,
+        "self_introduction": c.self_introduction,
+        "technical_skills": c.technical_skills or [],
+        "soft_skills": c.soft_skills or [],
+        "languages": c.languages or {},
+        "certifications": c.certifications or [],
+        "interests": c.interests or [],
+        "location_city": c.location_city,
+        "location_state": c.location_state,
+        "location_country": c.location_country,
+        "address_street": c.address_street,
+        "address_number": c.address_number,
+        "address_district": c.address_district,
+        "address_zip": c.address_zip,
+        "address_complement": c.address_complement,
+        "is_remote": c.is_remote,
+        "willing_to_relocate": c.willing_to_relocate,
+        "mobility": c.mobility,
+        "work_model_preference": c.work_model_preference,
+        "contract_type_preference": c.contract_type_preference,
+        "current_salary": c.current_salary,
+        "desired_salary_min": c.desired_salary_min,
+        "desired_salary_max": c.desired_salary_max,
+        "salary_currency": c.salary_currency,
+        "salary_expectation_clt": c.salary_expectation_clt,
+        "salary_expectation_pj": c.salary_expectation_pj,
+        "salary_expectation_freelance": c.salary_expectation_freelance,
+        "resume_url": c.resume_url,
+        "source": c.source,
+        "ats_source_name": c.ats_source_name,
+        "ats_candidate_id": c.ats_candidate_id,
+        "pearch_profile_id": c.pearch_profile_id,
+        "is_open_to_work": c.is_open_to_work,
+        "is_decision_maker": c.is_decision_maker,
+        "is_top_universities": c.is_top_universities,
+        "is_hiring": c.is_hiring,
+        "headline": c.headline,
+        "expertise": normalize_array_field(c.expertise),
+        "linkedin_followers_count": c.linkedin_followers_count,
+        "linkedin_connections_count": c.linkedin_connections_count,
+        "pearch_insights": c.pearch_insights or {},
+        "outreach_message": c.outreach_message,
+        "best_personal_email": c.best_personal_email,
+        "best_business_email": c.best_business_email,
+        "personal_emails": c.personal_emails or [],
+        "business_emails": c.business_emails or [],
+        "phone_types": c.phone_types or {},
+        "estimated_age": c.estimated_age,
+        "middle_name": c.middle_name,
+        "company_followers_count": c.company_followers_count,
+        "company_keywords": c.company_keywords or [],
+        "lia_score": c.lia_score,
+        "lia_insights": c.lia_insights or {},
+        "skills_match_percentage": c.skills_match_percentage,
+        "status": c.status,
+        "is_active": c.is_active,
+        "is_blacklisted": c.is_blacklisted,
+        "blacklist_reason": c.blacklist_reason,
+        "preferred_contact_method": c.preferred_contact_method,
+        "best_time_to_contact": c.best_time_to_contact,
+        "communication_consent": c.communication_consent,
+        "completed_register": c.completed_register,
+        "accept_terms": c.accept_terms,
+        "work_history": c.work_history or [],
+        **extract_company_info_from_work_history(c.work_history or []),
+        "tags": c.tags or [],
+        "notes": c.notes,
+        "additional_data": c.additional_data or {},
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+        "updated_at": c.updated_at.isoformat() if c.updated_at else None,
+        "last_contacted_at": c.last_contacted_at.isoformat() if c.last_contacted_at else None,
+        "last_activity_at": c.last_activity_at.isoformat() if c.last_activity_at else None,
+    }
+    if full:
+        base["resume_text"] = c.resume_text
+        base["cover_letter"] = c.cover_letter
+    return base
+
+
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("", response_model=None)
+async def list_candidates(
+    search: str | None = None,
+    status: str | None = None,
+    source: str | None = None,
+    ids: str | None = None,
+    skip: int = 0,
+    limit: int = 50,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """List all candidates from the proprietary database."""
+    try:
+        id_list: list[str] | None = None
+        if ids:
+            import re
+            uuid_pattern = re.compile(
+                r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                re.IGNORECASE,
+            )
+            id_list = [
+                i.strip() for i in ids.split(",")
+                if i.strip() and uuid_pattern.match(i.strip())
+            ]
+            if not id_list:
+                id_list = None
+
+        candidates = await candidate_repo.list_candidates(
+            search=search, status=status, source=source, ids=id_list,
+            skip=skip, limit=limit,
+        )
+        return {
+            "total": len(candidates),
+            "skip": skip,
+            "limit": limit,
+            "items": [_serialize_candidate(c) for c in candidates],
+        }
+    except Exception as e:
+        logger.error(f"Error listing candidates: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{candidate_id}", response_model=None)
+async def get_candidate(
+    candidate_id: str,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Get a specific candidate by ID."""
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        return _serialize_candidate(candidate, full=True)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: str):
+    """Background task to enrich candidate from LinkedIn."""
+    from app.core.database import AsyncSessionLocal
+    from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await candidate_enrichment_service.enrich_candidate(
+                db=db, candidate_id=candidate_id, linkedin_url=linkedin_url,
+                include_experiences=True, include_education=True,
+                include_email_discovery=True,
+            )
+            if result.get("success"):
+                logger.info(
+                    f"Background enrichment completed for candidate {candidate_id}: "
+                    f"{len(result.get('fields_updated', []))} fields updated"
+                )
+            else:
+                logger.warning(
+                    f"Background enrichment failed for candidate {candidate_id}: {result.get('error')}"
+                )
+    except Exception as e:
+        logger.error(f"Background enrichment error for candidate {candidate_id}: {e}")
+
+
+@router.post("", response_model=None)
+async def create_candidate(
+    candidate_data: CandidateCreate,
+    background_tasks: BackgroundTasks,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
+    try:
+        logger.info(f"Creating candidate: {candidate_data.name}")
+        candidate = Candidate(
+            id=uuid.uuid4(),
+            name=candidate_data.name,
+            email=candidate_data.email,
+            phone=candidate_data.phone,
+            linkedin_url=candidate_data.linkedin_url,
+            github_url=candidate_data.github_url,
+            portfolio_url=candidate_data.portfolio_url,
+            current_title=candidate_data.current_title,
+            current_company=candidate_data.current_company,
+            seniority_level=candidate_data.seniority_level,
+            years_of_experience=candidate_data.years_of_experience,
+            technical_skills=candidate_data.technical_skills or [],
+            soft_skills=candidate_data.soft_skills or [],
+            languages=candidate_data.languages or {},
+            certifications=candidate_data.certifications or [],
+            location_city=candidate_data.location_city,
+            location_state=candidate_data.location_state,
+            location_country=candidate_data.location_country,
+            is_remote=candidate_data.is_remote,
+            willing_to_relocate=candidate_data.willing_to_relocate,
+            desired_salary_min=candidate_data.desired_salary_min,
+            desired_salary_max=candidate_data.desired_salary_max,
+            salary_currency=candidate_data.salary_currency or "BRL",
+            work_model_preference=candidate_data.work_model_preference,
+            contract_type_preference=candidate_data.contract_type_preference,
+            source=candidate_data.source or "manual",
+            notes=candidate_data.notes,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        candidate = await candidate_repo.create(candidate)
+        logger.info(f"Candidate created: {candidate.id}")
+
+        enrichment_scheduled = False
+        if candidate_data.auto_enrich and candidate_data.linkedin_url:
+            background_tasks.add_task(
+                _background_enrich_candidate, candidate.id, candidate_data.linkedin_url
+            )
+            enrichment_scheduled = True
+            logger.info(f"Background enrichment scheduled for candidate {candidate.id}")
+
+        return {
+            "id": str(candidate.id),
+            "name": candidate.name,
+            "email": candidate.email,
+            "phone": candidate.phone,
+            "current_title": candidate.current_title,
+            "current_company": candidate.current_company,
+            "seniority_level": candidate.seniority_level,
+            "location_city": candidate.location_city,
+            "source": candidate.source,
+            "status": candidate.status,
+            "created_at": candidate.created_at.isoformat() if candidate.created_at else None,
+            "message": "Candidate created successfully",
+            "enrichment_scheduled": enrichment_scheduled,
+        }
+    except Exception as e:
+        logger.error(f"Error creating candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/{candidate_id}", response_model=None)
+async def update_candidate(
+    candidate_id: str,
+    candidate_data: CandidateUpdate,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Update an existing candidate."""
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        update_data = candidate_data.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            if hasattr(candidate, field):
+                setattr(candidate, field, value)
+        candidate.updated_at = datetime.utcnow()
+        candidate = await candidate_repo.update(candidate)
+        logger.info(f"Candidate updated: {candidate_id}")
+        return {
+            "id": str(candidate.id),
+            "name": candidate.name,
+            "email": candidate.email,
+            "status": candidate.status,
+            "updated_at": candidate.updated_at.isoformat() if candidate.updated_at else None,
+            "message": "Candidate updated successfully",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/{candidate_id}/stage", response_model=None)
+async def update_candidate_stage(
+    candidate_id: str,
+    stage_data: CandidateStageUpdate,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service),
+):
+    """Update candidate pipeline stage (used when moving candidates in Kanban)."""
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+
+        vacancy_candidate = await vc_repo.get_for_candidate_and_job(
+            candidate_id=candidate_id,
+            job_vacancy_id=str(stage_data.job_vacancy_id) if stage_data.job_vacancy_id else None,
+        )
+
+        if not vacancy_candidate:
+            if get_stage_rank(stage_data.stage) == -1 and not stage_data.user_id:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "human_review_required",
+                        "message": (
+                            "Rejeição de candidato requer identificação do revisor humano (user_id). "
+                            "Rejeições automatizadas sem revisão humana não são permitidas."
+                        ),
+                        "compliance": ["LGPD art. 20", "EU AI Act art. 14"],
+                    },
+                )
+            previous_stage = candidate.status or "unknown"
+            candidate.status = stage_data.stage
+            candidate.updated_at = datetime.utcnow()
+            candidate = await candidate_repo.update(candidate)
+            logger.info(f"Candidate {candidate_id} status updated (no vacancy): {previous_stage} -> {stage_data.stage}")
+            return {
+                "id": str(candidate.id),
+                "name": candidate.name,
+                "stage": stage_data.stage,
+                "previous_stage": previous_stage,
+                "sub_status": stage_data.sub_status,
+                "updated_at": candidate.updated_at.isoformat() if candidate.updated_at else None,
+                "message": "Candidate status updated successfully (no vacancy association)",
+            }
+
+        is_rejection = get_stage_rank(stage_data.stage) == -1
+        if is_rejection and not stage_data.user_id:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "human_review_required",
+                    "message": (
+                        "Rejeição de candidato requer identificação do revisor humano (user_id). "
+                        "Rejeições automatizadas sem revisão humana não são permitidas."
+                    ),
+                    "compliance": ["LGPD art. 20", "EU AI Act art. 14"],
+                },
+            )
+
+        if is_rejection and stage_data.sub_status:
+            fg_rejection = check_rejection_reason(
+                reason=stage_data.sub_status,
+                candidate_name=candidate.name or "",
+                company_id=str(vacancy_candidate.company_id) if hasattr(vacancy_candidate, "company_id") else "",
+            )
+            if fg_rejection.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "message": fg_rejection.blocked_result.educational_message if fg_rejection.blocked_result else "Viés detectado no motivo da rejeição.",
+                        "category": fg_rejection.blocked_result.category if fg_rejection.blocked_result else None,
+                        "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                    },
+                )
+
+        previous_stage = vacancy_candidate.stage or "unknown"
+        lia_score_at_transition = vacancy_candidate.lia_score
+        vacancy_candidate.stage = stage_data.stage
+        if is_rejection:
+            vacancy_candidate.rejected_by_human = True
+            vacancy_candidate.human_reviewer_id = stage_data.user_id
+        if stage_data.sub_status:
+            vacancy_candidate.status = stage_data.sub_status
+        vacancy_candidate.updated_at = datetime.utcnow()
+        vacancy_candidate = await vc_repo.update(vacancy_candidate)
+        logger.info(
+            f"Candidate {candidate_id} stage updated for vacancy {vacancy_candidate.vacancy_id}: "
+            f"{previous_stage} -> {stage_data.stage}"
+        )
+
+        feedback_action = determine_feedback_action(previous_stage, stage_data.stage)
+        if feedback_action != "neutral":
+            try:
+                calibration_service = CalibrationService(candidate_repo.db)
+                await calibration_service.record_implicit_feedback(
+                    candidate_id=candidate_id,
+                    job_id=str(vacancy_candidate.vacancy_id),
+                    user_id=stage_data.user_id or "system",
+                    action=feedback_action,
+                    stage_from=previous_stage,
+                    stage_to=stage_data.stage,
+                    lia_score=lia_score_at_transition,
+                    lia_ranking=None,
+                    context={
+                        "sub_status": stage_data.sub_status,
+                        "candidate_name": candidate.name,
+                        "transition_type": "kanban_move",
+                    },
+                )
+                logger.info(
+                    f"Implicit feedback recorded: {feedback_action} for candidate {candidate_id} "
+                    f"(LIA score: {lia_score_at_transition})"
+                )
+                if lia_score_at_transition is not None:
+                    from uuid import uuid4
+                    from app.domains.cv_screening.services.rubric_evaluation_service import calibration_feedback
+                    if feedback_action == "advance":
+                        adjusted_score = min(99.0, lia_score_at_transition + 10.0)
+                        recruiter_decision = "approved"
+                    else:
+                        adjusted_score = max(0.0, lia_score_at_transition - 15.0)
+                        recruiter_decision = "rejected"
+                    calibration_feedback.record_feedback(
+                        evaluation_id=str(uuid4()),
+                        candidate_id=candidate_id,
+                        job_id=str(vacancy_candidate.vacancy_id),
+                        original_score=lia_score_at_transition,
+                        recruiter_adjusted_score=adjusted_score,
+                        recruiter_decision=recruiter_decision,
+                    )
+                    logger.info(
+                        f"Scoring calibration updated for job {vacancy_candidate.vacancy_id}: "
+                        f"{recruiter_decision} (score {lia_score_at_transition:.1f} -> {adjusted_score:.1f})"
+                    )
+                try:
+                    import asyncio as _asyncio
+                    from app.services.ml_feedback_service import ml_feedback_service as _ml_fb
+                    _decision_map = {"advance": "hire", "reject": "reject"}
+                    _ml_decision = _decision_map.get(feedback_action)
+                    if _ml_decision:
+                        _company_id = str(getattr(vacancy_candidate, "company_id", "") or "")
+                        _job_id = str(vacancy_candidate.vacancy_id)
+                        _asyncio.create_task(
+                            _ml_fb.record_decision(
+                                db=candidate_repo.db,
+                                company_id=_company_id,
+                                job_id=_job_id,
+                                candidate_id=candidate_id,
+                                lia_score=float(lia_score_at_transition or 0),
+                                decision=_ml_decision,
+                            )
+                        )
+                except Exception as _ml_err:
+                    logger.debug("[D6-G2] ml_feedback record_decision skipped: %s", _ml_err)
+            except Exception as calibration_error:
+                logger.warning(f"Failed to record implicit feedback: {calibration_error}")
+
+        return {
+            "id": str(candidate.id),
+            "name": candidate.name,
+            "stage": vacancy_candidate.stage,
+            "previous_stage": previous_stage,
+            "sub_status": vacancy_candidate.status,
+            "vacancy_id": vacancy_candidate.vacancy_id,
+            "updated_at": vacancy_candidate.updated_at.isoformat() if vacancy_candidate.updated_at else None,
+            "message": "Candidate stage updated successfully",
+            "feedback_recorded": feedback_action if feedback_action != "neutral" else None,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating candidate stage: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{candidate_id}", response_model=None)
+async def delete_candidate(
+    candidate_id: str,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Soft delete (deactivate) a candidate."""
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        await candidate_repo.soft_delete(candidate)
+        logger.info(f"Candidate deactivated: {candidate_id}")
+        return {"message": "Candidate deactivated successfully", "id": candidate_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Enrichment
+# ---------------------------------------------------------------------------
+
+class EnrichmentRequest(BaseModel):
+    linkedin_url: str | None = None
+    include_experiences: bool = True
+    include_education: bool = True
+    include_email_discovery: bool = True
+
+
+@router.post("/{candidate_id}/enrich", response_model=None)
+async def enrich_candidate(
+    candidate_id: str,
+    request: EnrichmentRequest = EnrichmentRequest(),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Enrich candidate data from LinkedIn using Apify scrapers."""
+    try:
+        from app.services.candidate_enrichment_service import candidate_enrichment_service
+        result = await candidate_enrichment_service.enrich_candidate(
+            db=candidate_repo.db,
+            candidate_id=uuid.UUID(candidate_id),
+            linkedin_url=request.linkedin_url,
+            include_experiences=request.include_experiences,
+            include_education=request.include_education,
+            include_email_discovery=request.include_email_discovery,
+        )
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result.get("error", "Enrichment failed"))
+        logger.info(
+            f"Candidate enriched: {candidate_id} - {len(result.get('fields_updated', []))} fields updated"
+        )
+        return {
+            "success": True,
+            "candidate_id": candidate_id,
+            "fields_updated": result.get("fields_updated", []),
+            "experiences_added": result.get("experiences_added", 0),
+            "education_added": result.get("education_added", 0),
+            "source": result.get("source", "apify"),
+            "message": f"Enrichment completed: {len(result.get('fields_updated', []))} fields updated",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error enriching candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

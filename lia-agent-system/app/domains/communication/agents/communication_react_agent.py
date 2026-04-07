@@ -43,7 +43,12 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     @property
     def domain_name(self) -> str:
-        return "communication"
+        return self.__dict__.get('_domain_name_override', "communication")
+
+    @domain_name.setter
+    def domain_name(self, value: str) -> None:
+        self.__dict__['_domain_name_override'] = value
+
 
     @property
     def available_tools(self) -> list[str]:

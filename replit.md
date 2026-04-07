@@ -73,6 +73,8 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Credits Infrastructure**: `CreditAccount` and `CreditTransaction` models with `CreditService` for managing credit balance and transactions.
 - **Interview Flow with Company Stages**: Added `recruitment_stage_id` FK to Interview model, allowing scheduling based on company-configured stages.
 - **Chat Empty State Redesign**: Redesigned chat empty state with a centered Brain icon, LIA greeting, suggestion grid, and improved input area.
+- **WSI Detailed Report (wsi-detailed-report.tsx)**: Full 3-tab detailed WSI report component (Respostas/Parecer/Ranking) integrated into `components/wsi/`. Opens from WSIScorecard's "Ver Relatório Completo" button. Shows competency responses with STAR analysis, Bloom/Dreyfus levels, gap analysis, executive summary, strengths/gaps, recommendation, and candidate feedback.
+- **Weekly Digest Notifications**: 3 components in `components/notifications/` for delivering weekly recruitment summaries: `WeeklyDigestNotification` (bell dropdown), `WeeklyDigestChatMessage` (proactive chat message), `WeeklyDigestTeamsCard` (MS Teams adaptive card). All use shared `WeeklyDigestData` type.
 
 # Deployment Configuration
 - **Frontend Dockerfile**: `plataforma-lia/Dockerfile` — multi-stage build using `output: 'standalone'` (Node.js 22 Alpine)
