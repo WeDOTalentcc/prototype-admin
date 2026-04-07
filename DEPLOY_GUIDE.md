@@ -938,6 +938,7 @@ Usuário acessa wedotalent.cc
 
 | Área | Problema | Ação |
 |---|---|---|
+| **Mockups pendentes** | Existem mockups de componentes criados no Replit (worktrees agent-a92b041a, agent-af767ad0) que ainda não foram revisados, aprovados ou integrados ao produto | Revisar todos os mockups abertos, aprovar ou descartar, e integrar os aprovados ao código antes do deploy |
 | **Dockerfile** | Não existe ainda | Criar com `output: standalone` (Fase 1.1 deste guia) |
 | **Variáveis de ambiente** | Mistura de hardcoded e `.env.local` | Auditar e mover tudo para Secret Manager |
 | **WorkOS configuração prod** | `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` apontam para dev | Criar ambiente de prod no WorkOS e configurar redirect URIs |
@@ -949,6 +950,7 @@ Usuário acessa wedotalent.cc
 
 ### Checklist de production readiness — Frontend
 
+- [ ] Todos os mockups pendentes revisados — aprovados integrados ao código, descartados removidos
 - [ ] `Dockerfile` com `output: standalone` criado e testado
 - [ ] `next build` passa sem erros e sem warnings críticos
 - [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
@@ -1125,7 +1127,28 @@ OPÇÃO B (banco compartilhado — mais performático):
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Nível de isolamento atual:** Lógico (por `company_id`/`organization_id` em todas as tabelas). Não é isolamento físico (banco separado por cliente). Para o mercado inicial, isso é suficiente e seguro.
+**Nível de isolamento atual:** Lógico — e isso significa o seguinte:
+
+```
+ISOLAMENTO LÓGICO (o que temos):
+  Banco único. Todos os clientes compartilham o mesmo servidor PostgreSQL.
+  Cada linha das tabelas tem um company_id que separa os dados.
+
+  SELECT * FROM candidates WHERE company_id = 'empresa-a'
+  → empresa-A nunca vê dados da empresa-B... desde que o filtro funcione.
+
+  Risco: um bug de query que esqueça o filtro pode, em teoria, expor dados.
+  Mitigação: testes de isolamento, revisão de código, middleware de auth.
+
+ISOLAMENTO FÍSICO (não temos — para o futuro):
+  Cada cliente teria seu próprio banco de dados separado.
+  Impossível vazamento por bug de query.
+  Custo: muito maior. Operação: muito mais complexa.
+  Quando faz sentido: clientes enterprise, contratos com exigências
+  regulatórias (bancos, saúde, governo).
+```
+
+**Conclusão:** para o mercado inicial (PME e midmarket), isolamento lógico é suficiente, correto e é o padrão adotado pela maioria dos SaaS B2B. Isolamento físico fica no roadmap para contratos enterprise futuros (Fase 3 abaixo).
 
 ---
 
@@ -1154,6 +1177,22 @@ O produto prevê que cada empresa-cliente possa plugar seu próprio modelo de li
 1. Adicionar tabela `company_llm_configs` (chave criptografada por company_id)
 2. Modificar o `fast_router.py` para carregar a chave do tenant antes de invocar o LLM
 3. Usar KMS do GCP para criptografar as chaves armazenadas no banco
+
+**Pré-requisito crítico antes de liberar a factory: benchmarking de modelos**
+
+Quando um cliente usa um LLM diferente do Claude (ex: GPT-4o, Gemini, Llama), o produto precisa garantir que a qualidade se mantém. Isso exige um processo de avaliação formal antes de liberar cada modelo:
+
+| Dimensão | O que avaliar |
+|---|---|
+| **Assertividade** | O agente classifica intenções corretamente? Candidatos são rankeados com qualidade similar? |
+| **Formato de output** | O modelo retorna JSON estruturado de forma confiável (sem alucinações de formato)? |
+| **Compatibilidade de prompts** | Nossos prompts são Claude-específicos ou LLM-agnósticos? Precisam de adaptação? |
+| **Latência** | O tempo de resposta é aceitável para o produto (metas: triagem <3s, chat <2s)? |
+| **Custo por operação** | Triagem de 100 CVs custa quanto em cada modelo? Comparar com Claude como baseline. |
+| **Janela de contexto** | O modelo suporta a quantidade de contexto que os agentes usam (8k–32k tokens)? |
+| **Estabilidade** | O modelo produz respostas consistentes entre chamadas idênticas (baixa variância)? |
+
+Esse processo se chama *model evaluation* (ou LLM benchmarking). Deve rodar contra um dataset curado de vagas e candidatos reais (anonimizados) antes de qualquer modelo ser liberado para produção. O time de AI é responsável por esse processo.
 
 ---
 
@@ -1259,6 +1298,247 @@ Configurações obrigatórias no WorkOS dashboard:
 - [ ] Notificação por WhatsApp (se ativo)
 - [ ] LGPD: solicitação de exclusão de dados (endpoint admin)
 - [ ] Multi-tenant: criar 2 empresas separadas, confirmar isolamento de dados
+
+---
+
+## 17. Fluxo de Desenvolvimento Assistido por IA (PM + Claude Code)
+
+> Esta seção documenta o fluxo de trabalho onde o PM desenvolve features diretamente com auxílio de IA (Replit + Claude Code), e como esse código se integra ao processo do time de engenharia.
+
+### O modelo de trabalho
+
+O PM tem capacidade de criar features, corrigir bugs e evoluir o produto utilizando Replit como ambiente de desenvolvimento e Claude Code como assistente técnico. Para garantir qualidade e consistência, esse fluxo usa três pilares:
+
+1. **Specs** — documentos de especificação técnica que descrevem o comportamento esperado antes de qualquer código ser escrito
+2. **Skills** — instruções padronizadas que ensinam ao assistente de IA os padrões do projeto (Design System, arquitetura, convenções de código)
+3. **Revisão do time** — todo código gerado que for para `develop` passa por code review de um dev antes do merge
+
+### Fluxo de uma feature
+
+```
+PM identifica necessidade
+         │
+         ▼
+Escreve spec (comportamento esperado, critérios de aceite)
+         │
+         ▼
+Claude Code gera o código guiado pelos specs + skills
+         │
+         ▼
+PM valida no Replit (funcionalidade, visual, fluxo)
+         │
+         ▼
+PM abre PR → branch feature/* → develop
+         │
+         ▼
+Dev do time faz code review
+  - Verifica consistência com arquitetura
+  - Identifica efeitos colaterais não visíveis no contexto local
+  - Valida que padrões do projeto foram seguidos
+         │
+         ▼
+Aprovado → merge → staging → produção
+```
+
+### Por que o code review ainda é necessário?
+
+O código gerado por IA com bons specs é de qualidade consistente — mas o assistente não tem visibilidade do contexto completo do produto (outros módulos, banco de dados em produção, edge cases de uso real). O dev do time preenche essa lacuna:
+
+- Detecta efeitos colaterais em outras partes do sistema
+- Garante que a migration de banco está correta
+- Valida performance em escala
+- Mantém o time ciente de tudo que entra no produto
+
+### Biblioteca de documentação técnica (TODO)
+
+Existe um trabalho em andamento de consolidar uma **biblioteca de documentos técnicos padrão** — seguindo práticas de mercado — para uso não apenas do PM mas de todo o time, que trabalha cada vez mais com IA no desenvolvimento.
+
+Esta biblioteca inclui (e não se limita a):
+
+| Tipo de documento | Propósito |
+|---|---|
+| **Architecture Decision Records (ADR)** | Registra decisões arquiteturais com contexto e alternativas consideradas |
+| **Technical Specs** | Descreve comportamento técnico esperado antes de implementar |
+| **API Contracts** | Define contratos de interface entre serviços |
+| **Runbooks** | Passo a passo para operações e incidentes em produção |
+| **Onboarding técnico** | Guia de entrada para novos devs no projeto |
+| **Skills de IA** | Instruções para o assistente seguir os padrões do projeto |
+| **Playbooks de feature** | Checklist para implementar, testar e entregar uma feature |
+
+> **Próximo passo:** o PM irá repassar a biblioteca completa destes documentos para ser adicionada como **Anexo** a este guia, servindo de referência consolidada para o time.
+
+---
+
+## 18. Status de Integrações — Microsoft Office 365 e Google Workspace
+
+### Microsoft
+
+| Integração | Status | Detalhes |
+|---|---|---|
+| **Microsoft Teams** | ✅ Pronto | Bot configurado (Azure Bot Service), Adaptive Cards, webhook de screening implementado. Pendente: propagação de credenciais no Azure (401 temporário) |
+| **Microsoft SSO** | ✅ Pronto | Via WorkOS — login com conta Microsoft funcional |
+| **Outlook (email)** | ✅ Parcial | Microsoft Graph API cobre leitura/envio de email via Outlook — a integração depende da autorização via Graph no tenant do cliente |
+| **Calendário Outlook** | ✅ Parcial | Graph API suporta agendamento via Outlook Calendar — implementação similar ao Google Calendar já existente |
+| **SharePoint / OneDrive** | ❌ Não integrado | Mencionados como conceito no código mas sem integração real de API |
+| **Word / Excel** | ❌ Não integrado | Não há integração com documentos Office — não é parte do roadmap atual |
+
+### Google
+
+| Integração | Status | Detalhes |
+|---|---|---|
+| **Google SSO** | ✅ Pronto | Via WorkOS — login com conta Google funcional |
+| **Google Calendar** | ✅ Pronto | `google-api-python-client` instalado, agendamento de entrevistas via Google Calendar implementado |
+| **Google STT/TTS** | ✅ Pronto | Triagem de voz (WSI) usa Google Speech-to-Text e Text-to-Speech |
+| **Gmail** | ❌ Não integrado | Email é enviado via Resend, não via Gmail API |
+| **Google Drive / Docs / Sheets** | ❌ Não integrado | Sem integração com o Google Workspace de documentos |
+
+### O que falta para Microsoft Office / Google Workspace completo?
+
+A integração completa com documentos (Drive, Docs, SharePoint, OneDrive) não é parte do roadmap atual. Para clientes que precisam dessas integrações, o caminho é:
+1. Definir caso de uso específico (ex: "exportar relatório para Google Sheets")
+2. Criar card Jira com spec
+3. O time implementa a integração pontual via API correspondente (Google Sheets API, OneDrive API)
+
+---
+
+## 19. Status de Integração — Slack
+
+### O que existe hoje
+
+O código referencia Slack em múltiplos pontos do sistema:
+
+| Área | Arquivo | Função |
+|---|---|---|
+| **Hub de integrações** | `app/api/v1/integrations_hub.py` | Slack listado como canal de integração disponível |
+| **Journey mapping** | `app/api/v1/journey_mapping.py` | Notificações de jornada via Slack |
+| **Configuração de alertas** | `app/api/backend-proxy/alerts/config/route.ts` | Slack como destino de alertas configurável |
+| **Presets de empresa** | `CompanyPresetsModal.tsx` | Interface para configurar integração Slack por empresa |
+
+### Status
+
+```
+✅ Estrutura implementada: canais de alerta e notificação via Slack previstos na arquitetura
+⚠️  Credenciais: requer Slack App configurada e OAuth token por tenant (não está em produção)
+⚠️  Webhook de incoming: URL de webhook por workspace Slack precisa ser configurada por cliente
+❌ Não validado em produção: integração não foi homologada end-to-end
+```
+
+### Para ativar o Slack em produção por cliente
+
+1. Cliente cria um **Slack App** no workspace deles (ou usa o app WeDO se existir)
+2. Gera o **Incoming Webhook URL** para o canal desejado
+3. Configura na plataforma LIA via `CompanyPresetsModal` ou API de settings
+4. Testa com notificação de candidato movido no pipeline
+
+> Slack é uma integração leve (sem SDK pesado — apenas webhook POST) e pode ser ativada rapidamente para clientes que usam Slack como ferramenta principal.
+
+---
+
+## 20. Onboarding e Implementação no Cliente
+
+> Roteiro de referência para implantação da LIA em um novo cliente. Cobre desde a configuração técnica até a homologação de canais.
+
+### Visão geral do processo
+
+```
+FASE 1: Configuração da conta
+  ↓ SSO + WorkOS
+  ↓ Criação da organização (tenant)
+  ↓ Usuários e permissões
+
+FASE 2: Configuração dos canais
+  ↓ Botão LIA (embed no site/ATS)
+  ↓ WhatsApp Business (homologação Meta)
+  ↓ Microsoft Teams (bot no tenant do cliente)
+  ↓ Email (domínio verificado no Resend)
+  ↓ Slack (opcional — webhook por workspace)
+
+FASE 3: Integração com ATS do cliente (se houver)
+  ↓ Webhook de eventos ou API REST
+  ↓ Mapeamento de stages do funil
+
+FASE 4: Configuração da LIA
+  ↓ Persona e tom de voz
+  ↓ Templates de mensagens
+  ↓ Políticas de triagem (hiring policies)
+
+FASE 5: Homologação e go-live
+  ↓ Teste de ponta a ponta com vaga real
+  ↓ Aprovação do cliente
+  ↓ Ativação em produção
+```
+
+### Checklist de implantação — novo cliente
+
+#### Fase 1: Conta e acesso
+
+- [ ] Organização criada no WorkOS (`organizationId` gerado)
+- [ ] SSO configurado (Google, Microsoft ou SAML do cliente)
+- [ ] Usuários administradores criados e acessando a plataforma
+- [ ] Permissões de papéis configuradas (admin, recrutador, gestor)
+
+#### Fase 2: Canais de comunicação
+
+**Botão LIA (embed)**
+- [ ] Script do botão gerado para o site/ATS do cliente
+- [ ] URL de destino configurada (landing page de candidatos)
+- [ ] Teste: candidato clica no botão → inicia fluxo de triagem
+- [ ] (Opcional) Integração com ATS via iframe ou redirect com parâmetros
+
+**WhatsApp Business — Homologação Meta**
+- [ ] Cliente possui conta no **Meta Business Suite** verificada
+- [ ] **WhatsApp Business Account (WABA)** criado e aprovado pela Meta
+- [ ] Número de telefone dedicado registrado no WABA
+- [ ] **Número de telefone verificado** na API do WhatsApp Cloud
+- [ ] `WHATSAPP_ACCESS_TOKEN` e `WHATSAPP_PHONE_NUMBER_ID` configurados
+- [ ] `WHATSAPP_VERIFY_TOKEN` configurado e webhook registrado no Meta dashboard
+- [ ] URL do webhook apontando para `https://wedotalent.cc/api/v1/whatsapp/webhook`
+- [ ] Teste de ponta a ponta: mensagem enviada → resposta da LIA recebida
+- [ ] Templates de mensagem aprovados pela Meta (para mensagens ativas — fora da janela de 24h)
+
+> **Atenção:** A homologação do WhatsApp com a Meta pode levar de 3 a 10 dias úteis dependendo da verificação do negócio. Iniciar este processo com antecedência.
+
+**Microsoft Teams**
+- [ ] Tenant Azure do cliente identificado (`AZURE_TENANT_ID`)
+- [ ] Bot da LIA registrado no Azure Bot Service do cliente (ou WeDO com permissão)
+- [ ] App do Teams instalado no workspace do cliente
+- [ ] Canal de triagem configurado no Teams
+- [ ] Teste: candidato recebe mensagem do bot → responde → LIA processa
+
+**Email (Resend)**
+- [ ] Domínio de email do cliente verificado no Resend (registros DNS: SPF, DKIM)
+- [ ] Endereço de remetente configurado (ex: `lia@empresa-cliente.com.br`)
+- [ ] Teste de envio: email de triagem enviado e recebido sem ir para spam
+
+**Slack (opcional)**
+- [ ] Slack App configurada no workspace do cliente
+- [ ] Webhook URL do canal de notificações configurado na plataforma
+- [ ] Teste: movimentação de candidato gera notificação no Slack
+
+#### Fase 3: Integração com ATS do cliente (se aplicável)
+
+- [ ] ATS do cliente identificado (Greenhouse, Lever, Workday, SAP, interno, etc.)
+- [ ] Método de integração definido: webhook, API REST ou exportação manual
+- [ ] Mapeamento de stages: estágios do ATS → estágios da LIA
+- [ ] Teste de sincronização: candidato criado na LIA aparece no ATS
+- [ ] Definir quem é o sistema de registro (source of truth): LIA ou ATS?
+
+#### Fase 4: Configuração da LIA para o cliente
+
+- [ ] Persona da LIA definida (nome, tom de voz, idioma)
+- [ ] Templates de mensagem para cada canal aprovados pelo cliente
+- [ ] **Hiring policies** configuradas (critérios de triagem automática)
+- [ ] Vagas padrão criadas para testes
+- [ ] Limite de triagens simultâneas configurado (controle de saturação)
+
+#### Fase 5: Homologação e go-live
+
+- [ ] Sessão de homologação com cliente — testar fluxo completo com vaga real
+- [ ] Candidato de teste passa pelo funil completo (inscrição → triagem → retorno)
+- [ ] Todos os canais ativos respondem corretamente
+- [ ] Cliente aprova o comportamento da LIA (tom, qualidade das respostas)
+- [ ] Monitoramento ativo nas primeiras 48h (Sentry, logs)
+- [ ] Contato de suporte do cliente definido para escalonamento
 
 ---
 
