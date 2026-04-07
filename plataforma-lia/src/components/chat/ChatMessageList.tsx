@@ -534,10 +534,11 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                             border: `1px solid ${buttonStyle.borderColor}`}}
                         >
                           {IconComponent && (
-                            <IconComponent
-                              className="w-3 h-3 mr-1"
-                              style={{color: iconColor} as React.CSSProperties}
-                            />
+                            <span style={{color: iconColor} as React.CSSProperties}>
+                              <IconComponent
+                                className="w-3 h-3 mr-1"
+                              />
+                            </span>
                           )}
                           {action.label}
                         </Button>

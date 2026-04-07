@@ -734,12 +734,24 @@ async def teams_health():
     }
 
 
+def _parse_teams_timestamp(ts: str | None) -> datetime | None:
+    """Parse ISO 8601 timestamp string from Teams activity into datetime."""
+    if not ts:
+        return None
+    try:
+        # Teams sends e.g. "2026-04-07T01:23:01.5130745Z" — strip sub-second precision > 6 digits
+        ts_clean = ts.rstrip("Z").split(".")[0]
+        return datetime.fromisoformat(ts_clean)
+    except Exception:
+        return datetime.utcnow()
+
+
 async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSession):
     """Store conversation reference for proactive messaging."""
     try:
         conversation_id = activity.get("conversation", {}).get("id")
         from_user = activity.get("from", {})
-        
+
         # Check if conversation already exists
         result = await db.execute(
             select(TeamsConversation).where(
@@ -747,9 +759,10 @@ async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSessi
             )
         )
         existing = result.scalar_one_or_none()
-        
+
+        last_msg_at = _parse_teams_timestamp(activity.get("timestamp"))
+
         if not existing:
-            # Create new conversation record
             teams_conv = TeamsConversation(
                 conversation_id=conversation_id,
                 service_url=activity.get("serviceUrl", ""),
@@ -758,17 +771,15 @@ async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSessi
                 user_id=from_user.get("id", ""),
                 user_name=from_user.get("name"),
                 user_aad_object_id=from_user.get("aadObjectId"),
-                conversation_reference=activity,  # Store full activity as reference
-                last_message_at=activity.get("timestamp")
+                conversation_reference=activity,
+                last_message_at=last_msg_at,
             )
             db.add(teams_conv)
-            
             logger.info(f"Stored new Teams conversation: {conversation_id}")
         else:
-            # Update last message timestamp
-            existing.last_message_at = activity.get("timestamp")
+            existing.last_message_at = last_msg_at
             existing.conversation_reference = activity
-            
+
     except Exception as e:
         logger.error(f"Error storing conversation reference: {e}", exc_info=True)
 
