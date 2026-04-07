@@ -1,4 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
+import { execSync } from 'child_process';
+
+function getSystemChromiumPath(): string | undefined {
+  try {
+    return execSync('which chromium', { encoding: 'utf-8' }).trim();
+  } catch {
+    return undefined;
+  }
+}
+
+const systemChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH || getSystemChromiumPath();
 
 export default defineConfig({
   testDir: './e2e/tests',
@@ -21,6 +32,7 @@ export default defineConfig({
     screenshot: 'on',
     video: 'retain-on-failure',
     viewport: { width: 1920, height: 1080 },
+    ...(systemChromium ? { launchOptions: { executablePath: systemChromium } } : {}),
   },
 
   projects: [

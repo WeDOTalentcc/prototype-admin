@@ -1308,7 +1308,7 @@ grep -rl "class.*Service" app/shared/services/ --include="*.py" | wc -l
 |---|---|---|---|---|---|
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
-| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | rubric_evaluation + calibration: 47 direct-DB calls → ScreeningRepository (22 new methods); **Phase 2 cleanup**: 16 more API files annotated RAILS-DEPRECATED (18 total); WsiRepository created (16 methods, covers 24/25 DB calls in wsi_endpoints.py); 4 TODO markers added to automation/event_handlers.py | 2026-04-07 |
+| 2 — Extract DB to repos | ✅ DONE 95% | — | ~400K | 215 API files clean (0 direct DB), 18 RAILS-DEPRECATED; 104 domain repos created; 18 edge-case calls remain (1-2/file, complex transactions); 339 contract tests pass | 2026-04-07 |
 | 3 — Model consolidation | ✅ DONE 100% | ~393,600 | ~393,200 | 128 service files fixed (app.models→lia_models, 284 import lines); 4 Case-C files remain (no lia_models equiv yet: interview_note, wsi_session, candidate_job, communication) | 2026-04-07 |
 | 4 — DDD migration | ✅ DONE 100% | — | — | 73 services migrated to domains (ai:12, analytics:21, cv_screening:20, company:7, voice:4, lgpd:5, integrations_hub:3, policy:1); 16 RAILS-DEPRECATED; 2 cross-cutting kept; 87 shims in shared/ | 2026-04-07 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
