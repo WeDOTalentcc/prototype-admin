@@ -16,7 +16,6 @@ import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -31,8 +30,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 @router.get("/pending-suggestions", response_model=None)
-# TODO(phase2): extract DB calls to AISuggestionRepository
 async def get_pending_suggestions(
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
     candidate_id: str | None = Query(None, description="Filter by candidate ID"),
@@ -43,36 +42,23 @@ async def get_pending_suggestions(
 ):
     """
     Get all pending AI suggestions for a company.
-    
-    Returns suggestions that are waiting for user approval/rejection.
-    Supports filtering by candidate, vacancy, and suggestion type.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        query = select(AISuggestion).where(
-            AISuggestion.company_id == company_id,
-            AISuggestion.status == "pending"
+        repo = AISuggestionRepository(db)
+        suggestions = await repo.list_pending_for_company(
+            company_id,
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            suggestion_type=suggestion_type,
+            limit=limit,
         )
-        
-        if candidate_id:
-            query = query.where(AISuggestion.candidate_id == candidate_id)
-        if vacancy_id:
-            query = query.where(AISuggestion.vacancy_id == vacancy_id)
-        if suggestion_type:
-            query = query.where(AISuggestion.suggestion_type == suggestion_type)
-        
-        query = query.order_by(AISuggestion.created_at.desc()).limit(limit)
-        
-        result = await db.execute(query)
-        suggestions = result.scalars().all()
-        
+
         return {
             "success": True,
             "count": len(suggestions),
             "suggestions": [s.to_dict() for s in suggestions]
         }
-        
+
     except Exception as e:
         logger.error(f"Error fetching pending suggestions: {e}", exc_info=True)
         raise HTTPException(
@@ -90,39 +76,31 @@ async def approve_suggestion(
 ):
     """
     Approve an AI suggestion.
-    
-    Changes the suggestion status to 'approved' and records the reviewer.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        result = await db.execute(
-            select(AISuggestion).where(
-                AISuggestion.id == suggestion_id,
-                AISuggestion.company_id == company_id
-            )
-        )
-        suggestion = result.scalar_one_or_none()
-        
+        repo = AISuggestionRepository(db)
+        suggestion = await repo.get_pending_by_id_and_company(suggestion_id, company_id)
+
         if not suggestion:
             raise HTTPException(
                 status_code=404,
                 detail="Suggestion not found or belongs to different company"
             )
-        
+
         if suggestion.status != "pending":
             raise HTTPException(
                 status_code=400,
                 detail=f"Suggestion already processed with status: {suggestion.status}"
             )
-        
-        suggestion.status = "approved"
-        suggestion.reviewed_by = reviewer_id
-        suggestion.reviewed_at = datetime.utcnow()
-        
-        
+
+        await repo.update(suggestion, {
+            "status": "approved",
+            "reviewed_by": reviewer_id,
+            "reviewed_at": datetime.utcnow(),
+        })
+
         logger.info(f"✅ [SUGGESTION] Approved suggestion {suggestion_id} by {reviewer_id}")
-        
+
         return {
             "success": True,
             "suggestion_id": suggestion_id,
@@ -130,7 +108,7 @@ async def approve_suggestion(
             "reviewed_by": reviewer_id,
             "reviewed_at": suggestion.reviewed_at.isoformat()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -151,40 +129,32 @@ async def reject_suggestion(
 ):
     """
     Reject an AI suggestion.
-    
-    Changes the suggestion status to 'rejected' and records the reason.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        result = await db.execute(
-            select(AISuggestion).where(
-                AISuggestion.id == suggestion_id,
-                AISuggestion.company_id == company_id
-            )
-        )
-        suggestion = result.scalar_one_or_none()
-        
+        repo = AISuggestionRepository(db)
+        suggestion = await repo.get_pending_by_id_and_company(suggestion_id, company_id)
+
         if not suggestion:
             raise HTTPException(
                 status_code=404,
                 detail="Suggestion not found or belongs to different company"
             )
-        
+
         if suggestion.status != "pending":
             raise HTTPException(
                 status_code=400,
                 detail=f"Suggestion already processed with status: {suggestion.status}"
             )
-        
-        suggestion.status = "rejected"
-        suggestion.reviewed_by = reviewer_id
-        suggestion.reviewed_at = datetime.utcnow()
-        suggestion.rejection_reason = reason
-        
-        
+
+        await repo.update(suggestion, {
+            "status": "rejected",
+            "reviewed_by": reviewer_id,
+            "reviewed_at": datetime.utcnow(),
+            "rejection_reason": reason,
+        })
+
         logger.info(f"❌ [SUGGESTION] Rejected suggestion {suggestion_id} by {reviewer_id}: {reason}")
-        
+
         return {
             "success": True,
             "suggestion_id": suggestion_id,
@@ -193,7 +163,7 @@ async def reject_suggestion(
             "reviewed_at": suggestion.reviewed_at.isoformat(),
             "rejection_reason": reason
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -211,49 +181,39 @@ async def bulk_approve_suggestions(
 ):
     """
     Bulk approve AI suggestions.
-    
-    Approves multiple suggestions at once for efficiency.
-    Returns count of successfully approved suggestions.
     """
     try:
-        from app.models.automation import AISuggestion
-        
+        repo = AISuggestionRepository(db)
         approved_count = 0
         failed_ids = []
-        
+
         for suggestion_id in request.suggestion_ids:
             try:
-                result = await db.execute(
-                    select(AISuggestion).where(
-                        AISuggestion.id == suggestion_id,
-                        AISuggestion.company_id == request.company_id,
-                        AISuggestion.status == "pending"
-                    )
-                )
-                suggestion = result.scalar_one_or_none()
-                
+                suggestion = await repo.get_pending_by_id_and_company(suggestion_id, request.company_id)
+
                 if suggestion:
-                    suggestion.status = "approved"
-                    suggestion.reviewed_by = request.reviewer_id
-                    suggestion.reviewed_at = datetime.utcnow()
+                    await repo.update(suggestion, {
+                        "status": "approved",
+                        "reviewed_by": request.reviewer_id,
+                        "reviewed_at": datetime.utcnow(),
+                    })
                     approved_count += 1
                 else:
                     failed_ids.append(suggestion_id)
-                    
+
             except Exception as e:
                 logger.warning(f"Failed to approve suggestion {suggestion_id}: {e}")
                 failed_ids.append(suggestion_id)
-        
-        
+
         logger.info(f"✅ [BULK_APPROVE] Approved {approved_count} suggestions, {len(failed_ids)} failed")
-        
+
         return {
             "success": True,
             "approved_count": approved_count,
             "failed_count": len(failed_ids),
             "failed_ids": failed_ids
         }
-        
+
     except Exception as e:
         logger.error(f"Error in bulk approve: {e}", exc_info=True)
         raise HTTPException(
@@ -269,43 +229,33 @@ async def bulk_reject_suggestions(
 ):
     """
     Bulk reject AI suggestions.
-    
-    Rejects multiple suggestions at once for efficiency.
-    Returns count of successfully rejected suggestions.
     """
     try:
-        from app.models.automation import AISuggestion
-        
+        repo = AISuggestionRepository(db)
         rejected_count = 0
         failed_ids = []
-        
+
         for suggestion_id in request.suggestion_ids:
             try:
-                result = await db.execute(
-                    select(AISuggestion).where(
-                        AISuggestion.id == suggestion_id,
-                        AISuggestion.company_id == request.company_id,
-                        AISuggestion.status == "pending"
-                    )
-                )
-                suggestion = result.scalar_one_or_none()
-                
+                suggestion = await repo.get_pending_by_id_and_company(suggestion_id, request.company_id)
+
                 if suggestion:
-                    suggestion.status = "rejected"
-                    suggestion.reviewed_by = request.reviewer_id
-                    suggestion.reviewed_at = datetime.utcnow()
-                    suggestion.rejection_reason = request.reason
+                    await repo.update(suggestion, {
+                        "status": "rejected",
+                        "reviewed_by": request.reviewer_id,
+                        "reviewed_at": datetime.utcnow(),
+                        "rejection_reason": request.reason,
+                    })
                     rejected_count += 1
                 else:
                     failed_ids.append(suggestion_id)
-                    
+
             except Exception as e:
                 logger.warning(f"Failed to reject suggestion {suggestion_id}: {e}")
                 failed_ids.append(suggestion_id)
-        
-        
+
         logger.info(f"❌ [BULK_REJECT] Rejected {rejected_count} suggestions, {len(failed_ids)} failed")
-        
+
         return {
             "success": True,
             "rejected_count": rejected_count,
@@ -313,7 +263,7 @@ async def bulk_reject_suggestions(
             "failed_ids": failed_ids,
             "rejection_reason": request.reason
         }
-        
+
     except Exception as e:
         logger.error(f"Error in bulk reject: {e}", exc_info=True)
         raise HTTPException(
@@ -332,20 +282,8 @@ async def get_ai_suggestions_by_vacancy(
     Get AI suggestions for a specific vacancy.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        query = select(AISuggestion).where(AISuggestion.vacancy_id == vacancy_id)
-        
-        if status:
-            query = query.where(AISuggestion.status == status)
-        else:
-            query = query.where(AISuggestion.status == "pending")
-        
-        query = query.order_by(AISuggestion.created_at.desc())
-        
-        result = await db.execute(query)
-        suggestions = result.scalars().all()
-        
+        repo = AISuggestionRepository(db)
+        suggestions = await repo.list_by_vacancy(vacancy_id, status=status)
         return {
             "success": True,
             "suggestions": [s.to_dict() for s in suggestions]
@@ -365,20 +303,8 @@ async def get_ai_suggestions_by_candidate(
     Get AI suggestions for a specific candidate.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        query = select(AISuggestion).where(AISuggestion.candidate_id == candidate_id)
-        
-        if status:
-            query = query.where(AISuggestion.status == status)
-        else:
-            query = query.where(AISuggestion.status == "pending")
-        
-        query = query.order_by(AISuggestion.created_at.desc())
-        
-        result = await db.execute(query)
-        suggestions = result.scalars().all()
-        
+        repo = AISuggestionRepository(db)
+        suggestions = await repo.list_by_candidate(candidate_id, status=status)
         return {
             "success": True,
             "suggestions": [s.to_dict() for s in suggestions]
@@ -397,28 +323,25 @@ async def approve_ai_suggestion(
     Approve an AI suggestion and execute the suggested action.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        result = await db.execute(
-            select(AISuggestion).where(AISuggestion.id == suggestion_id)
-        )
-        suggestion = result.scalar_one_or_none()
-        
+        repo = AISuggestionRepository(db)
+        suggestion = await repo.get_by_id(suggestion_id)
+
         if not suggestion:
             raise HTTPException(status_code=404, detail="Suggestion not found")
-        
+
         if suggestion.status != "pending":
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Suggestion already {suggestion.status}"
             )
-        
-        suggestion.status = "approved"
-        suggestion.reviewed_at = datetime.utcnow()
-        
-        
+
+        await repo.update(suggestion, {
+            "status": "approved",
+            "reviewed_at": datetime.utcnow(),
+        })
+
         logger.info(f"✅ [AI_SUGGESTION] Approved suggestion {suggestion_id}")
-        
+
         return {
             "success": True,
             "message": "Suggestion approved",
@@ -442,29 +365,26 @@ async def reject_ai_suggestion(
     Reject an AI suggestion with an optional reason.
     """
     try:
-        from app.models.automation import AISuggestion
-        
-        result = await db.execute(
-            select(AISuggestion).where(AISuggestion.id == suggestion_id)
-        )
-        suggestion = result.scalar_one_or_none()
-        
+        repo = AISuggestionRepository(db)
+        suggestion = await repo.get_by_id(suggestion_id)
+
         if not suggestion:
             raise HTTPException(status_code=404, detail="Suggestion not found")
-        
+
         if suggestion.status != "pending":
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Suggestion already {suggestion.status}"
             )
-        
-        suggestion.status = "rejected"
-        suggestion.reviewed_at = datetime.utcnow()
-        suggestion.rejection_reason = request.reason
-        
-        
+
+        await repo.update(suggestion, {
+            "status": "rejected",
+            "reviewed_at": datetime.utcnow(),
+            "rejection_reason": request.reason,
+        })
+
         logger.info(f"❌ [AI_SUGGESTION] Rejected suggestion {suggestion_id}: {request.reason}")
-        
+
         return {
             "success": True,
             "message": "Suggestion rejected",

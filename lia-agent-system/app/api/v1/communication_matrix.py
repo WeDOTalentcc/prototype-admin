@@ -13,12 +13,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
+from app.domains.communication.repositories.communication_matrix_repository import CommunicationMatrixRepository
 from app.models.communication_matrix import (
     DEFAULT_MATRIX_ENTRIES,
     MODULE_LABELS,
@@ -48,7 +48,6 @@ class ResetMatrixRequest(BaseModel):
 
 
 @router.get("", summary="List communication matrix entries", response_model=None)
-# TODO(phase2): extract to repository — complex communication matrix queries
 async def list_matrix_entries(
     module: str | None = Query(None, description="Filter by module type"),
     is_active: bool | None = Query(None, description="Filter by active status"),
@@ -58,32 +57,11 @@ async def list_matrix_entries(
     company_id = current_user.company_id
     """
     List all communication matrix entries.
-    
-    Can be filtered by module and active status.
-    Returns entries for the specified company or platform defaults if no company_id.
     """
     try:
-        query = select(CommunicationMatrixEntry)
-        
-        if company_id:
-            query = query.where(CommunicationMatrixEntry.company_id == company_id)
-        else:
-            query = query.where(CommunicationMatrixEntry.company_id.is_(None))
-        
-        if module:
-            query = query.where(CommunicationMatrixEntry.module == module)
-        
-        if is_active is not None:
-            query = query.where(CommunicationMatrixEntry.is_active == is_active)
-        
-        query = query.order_by(
-            CommunicationMatrixEntry.module,
-            CommunicationMatrixEntry.display_order
-        )
-        
-        result = await db.execute(query)
-        entries = result.scalars().all()
-        
+        repo = CommunicationMatrixRepository(db)
+        entries = await repo.list_entries(company_id, module=module, is_active=is_active)
+
         entries_by_module: dict[str, list[dict]] = {}
         for entry in entries:
             entry_dict = entry.to_dict()
@@ -91,7 +69,7 @@ async def list_matrix_entries(
             if module_key not in entries_by_module:
                 entries_by_module[module_key] = []
             entries_by_module[module_key].append(entry_dict)
-        
+
         modules_data = []
         for mod_key, mod_entries in entries_by_module.items():
             mod_info = MODULE_LABELS.get(mod_key, {"label": mod_key, "description": "", "icon": "folder"})
@@ -104,9 +82,9 @@ async def list_matrix_entries(
                 "total_entries": len(mod_entries),
                 "active_entries": sum(1 for e in mod_entries if e["is_active"]),
             })
-        
+
         logger.info(f"📋 Listed {len(entries)} matrix entries across {len(modules_data)} modules")
-        
+
         return {
             "success": True,
             "data": {
@@ -114,7 +92,7 @@ async def list_matrix_entries(
                 "total_entries": len(entries),
             }
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error listing matrix entries: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -138,7 +116,7 @@ async def list_modules():
                 "description": mod_info.get("description", ""),
                 "icon": mod_info.get("icon", "folder"),
             })
-        
+
         return {
             "success": True,
             "data": {
@@ -147,7 +125,7 @@ async def list_modules():
                 "channel_types": [c.value for c in ChannelType],
             }
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error listing modules: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -173,24 +151,21 @@ async def get_matrix_entry(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid entry ID format"
             )
-        
-        query = select(CommunicationMatrixEntry).where(
-            CommunicationMatrixEntry.id == uuid_id
-        )
-        result = await db.execute(query)
-        entry = result.scalar_one_or_none()
-        
+
+        repo = CommunicationMatrixRepository(db)
+        entry = await repo.get_by_id(uuid_id)
+
         if not entry:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Matrix entry not found"
             )
-        
+
         return {
             "success": True,
             "data": entry.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -210,13 +185,6 @@ async def update_matrix_entry(
 ):
     """
     Update a communication matrix entry.
-    
-    Can update:
-    - channels: List of communication channels
-    - is_automatic: Whether this is sent automatically
-    - template_id: Reference to email/message template
-    - requires_approval: Whether approval is required
-    - is_active: Whether this communication is enabled
     """
     try:
         try:
@@ -226,19 +194,17 @@ async def update_matrix_entry(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid entry ID format"
             )
-        
-        query = select(CommunicationMatrixEntry).where(
-            CommunicationMatrixEntry.id == uuid_id
-        )
-        result = await db.execute(query)
-        entry = result.scalar_one_or_none()
-        
+
+        repo = CommunicationMatrixRepository(db)
+        entry = await repo.get_by_id(uuid_id)
+
         if not entry:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Matrix entry not found"
             )
-        
+
+        # Validate channels before update
         if data.channels is not None:
             valid_channels = [c.value for c in ChannelType]
             for channel in data.channels:
@@ -247,31 +213,21 @@ async def update_matrix_entry(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=f"Invalid channel: {channel}. Valid channels: {valid_channels}"
                     )
-            entry.channels = data.channels
-        
-        if data.is_automatic is not None:
-            entry.is_automatic = data.is_automatic
-        
+
+        update_data = {k: v for k, v in data.model_dump().items() if v is not None}
         if data.template_id is not None:
-            entry.template_id = data.template_id if data.template_id else None
-        
-        if data.requires_approval is not None:
-            entry.requires_approval = data.requires_approval
-        
-        if data.is_active is not None:
-            entry.is_active = data.is_active
-        
-        await db.flush()
-        await db.refresh(entry)
-        
+            update_data["template_id"] = data.template_id if data.template_id else None
+
+        entry = await repo.update_entry(entry, update_data)
+
         logger.info(f"✅ Updated matrix entry: {entry.trigger_name} (ID: {entry.id})")
-        
+
         return {
             "success": True,
             "message": "Entrada da matriz atualizada com sucesso",
             "data": entry.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -292,12 +248,6 @@ async def reset_matrix_to_defaults(
     company_id = current_user.company_id
     """
     Reset the communication matrix to platform defaults.
-    
-    This will:
-    1. Delete all existing entries for the specified company_id (or platform defaults)
-    2. Re-create all entries from the default seed data
-    
-    Requires confirm=true to execute.
     """
     try:
         if not data.confirm:
@@ -305,18 +255,10 @@ async def reset_matrix_to_defaults(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Confirmation required. Set confirm=true to reset."
             )
-        
-        if company_id:
-            delete_query = delete(CommunicationMatrixEntry).where(
-                CommunicationMatrixEntry.company_id == company_id
-            )
-        else:
-            delete_query = delete(CommunicationMatrixEntry).where(
-                CommunicationMatrixEntry.company_id.is_(None)
-            )
-        
-        await db.execute(delete_query)
-        
+
+        repo = CommunicationMatrixRepository(db)
+        await repo.delete_for_company(company_id)
+
         created_count = 0
         for entry_data in DEFAULT_MATRIX_ENTRIES:
             entry = CommunicationMatrixEntry(
@@ -332,12 +274,11 @@ async def reset_matrix_to_defaults(
                 is_active=entry_data.get("is_active", True),
                 display_order=entry_data["display_order"],
             )
-            db.add(entry)
+            await repo.create(entry)
             created_count += 1
-        
-        
+
         logger.info(f"🔄 Reset matrix: deleted and recreated {created_count} entries for company_id={company_id}")
-        
+
         return {
             "success": True,
             "message": f"Matriz de comunicação resetada com sucesso. {created_count} entradas criadas.",
@@ -346,7 +287,7 @@ async def reset_matrix_to_defaults(
                 "company_id": company_id,
             }
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -366,22 +307,11 @@ async def seed_matrix_entries(
     company_id = current_user.company_id
     """
     Seed the communication matrix with default entries if it's empty.
-    
-    Unlike reset, this will only add entries if none exist.
     """
     try:
-        if company_id:
-            count_query = select(CommunicationMatrixEntry).where(
-                CommunicationMatrixEntry.company_id == company_id
-            )
-        else:
-            count_query = select(CommunicationMatrixEntry).where(
-                CommunicationMatrixEntry.company_id.is_(None)
-            )
-        
-        result = await db.execute(count_query)
-        existing_entries = result.scalars().all()
-        
+        repo = CommunicationMatrixRepository(db)
+        existing_entries = await repo.list_entries(company_id)
+
         if len(existing_entries) > 0:
             return {
                 "success": True,
@@ -391,7 +321,7 @@ async def seed_matrix_entries(
                     "entries_created": 0,
                 }
             }
-        
+
         created_count = 0
         for entry_data in DEFAULT_MATRIX_ENTRIES:
             entry = CommunicationMatrixEntry(
@@ -407,12 +337,11 @@ async def seed_matrix_entries(
                 is_active=entry_data.get("is_active", True),
                 display_order=entry_data["display_order"],
             )
-            db.add(entry)
+            await repo.create(entry)
             created_count += 1
-        
-        
+
         logger.info(f"🌱 Seeded matrix with {created_count} entries for company_id={company_id}")
-        
+
         return {
             "success": True,
             "message": f"Matriz de comunicação populada com sucesso. {created_count} entradas criadas.",
@@ -421,7 +350,7 @@ async def seed_matrix_entries(
                 "company_id": company_id,
             }
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error seeding matrix: {str(e)}", exc_info=True)
         await db.rollback()
@@ -439,16 +368,11 @@ async def copy_defaults_to_company(
     company_id = current_user.company_id
     """
     Copy platform default matrix entries to a specific company.
-    
-    This allows companies to have their own customizable copy of the communication matrix.
     """
     try:
-        check_query = select(CommunicationMatrixEntry).where(
-            CommunicationMatrixEntry.company_id == company_id
-        )
-        result = await db.execute(check_query)
-        existing = result.scalars().all()
-        
+        repo = CommunicationMatrixRepository(db)
+        existing = await repo.list_entries(company_id)
+
         if len(existing) > 0:
             return {
                 "success": False,
@@ -457,7 +381,7 @@ async def copy_defaults_to_company(
                     "entries_existing": len(existing),
                 }
             }
-        
+
         created_count = 0
         for entry_data in DEFAULT_MATRIX_ENTRIES:
             entry = CommunicationMatrixEntry(
@@ -473,12 +397,11 @@ async def copy_defaults_to_company(
                 is_active=entry_data.get("is_active", True),
                 display_order=entry_data["display_order"],
             )
-            db.add(entry)
+            await repo.create(entry)
             created_count += 1
-        
-        
+
         logger.info(f"📋 Copied {created_count} default entries to company {company_id}")
-        
+
         return {
             "success": True,
             "message": f"Matriz copiada com sucesso para a empresa. {created_count} entradas criadas.",
@@ -487,7 +410,7 @@ async def copy_defaults_to_company(
                 "company_id": company_id,
             }
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error copying matrix to company: {str(e)}", exc_info=True)
         await db.rollback()

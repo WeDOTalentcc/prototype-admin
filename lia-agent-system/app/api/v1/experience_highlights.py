@@ -13,12 +13,12 @@ from uuid import uuid4
 import anthropic
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
+from app.domains.cv_screening.repositories.experience_highlight_repository import ExperienceHighlightRepository
 
 logger = logging.getLogger(__name__)
 
@@ -51,33 +51,6 @@ class GenerateHighlightRequest(BaseModel):
     force_regenerate: bool = False
 
 
-# TODO(phase2): extract to repository — experience highlights extraction
-async def ensure_highlights_table(db: AsyncSession):
-    """Ensure the experience_highlights cache table exists."""
-    await db.execute(text("""
-        CREATE TABLE IF NOT EXISTS candidate_experience_highlights (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            candidate_id VARCHAR(255) NOT NULL,
-            company_id VARCHAR(255) NOT NULL,
-            highlight_text TEXT NOT NULL,
-            model_used VARCHAR(100) NOT NULL DEFAULT 'claude-sonnet-4-6',
-            generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            expires_at TIMESTAMP NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT uq_candidate_highlight UNIQUE (candidate_id, company_id)
-        )
-    """))
-    await db.execute(text("""
-        CREATE INDEX IF NOT EXISTS idx_exp_highlights_candidate 
-        ON candidate_experience_highlights(candidate_id)
-    """))
-    await db.execute(text("""
-        CREATE INDEX IF NOT EXISTS idx_exp_highlights_expires 
-        ON candidate_experience_highlights(expires_at)
-    """))
-
-
 def generate_highlight_prompt(data: GenerateHighlightRequest) -> str:
     """Generate the prompt for Claude to create the experience highlight."""
     work_history_text = ""
@@ -89,7 +62,7 @@ def generate_highlight_prompt(data: GenerateHighlightRequest) -> str:
             end = job.get('end_date', job.get('endDate', 'Present'))
             description = job.get('description', job.get('summary', ''))
             location = job.get('location', '')
-            
+
             work_history_text += f"""
 Experience {i+1}:
 - Title: {title}
@@ -100,7 +73,7 @@ Experience {i+1}:
 """
 
     skills_text = ", ".join(data.technical_skills[:15]) if data.technical_skills else "N/A"
-    
+
     prompt = f"""Gere um resumo conciso da experiência do candidato para recrutadores entenderem rapidamente seu perfil profissional.
 
 PERFIL DO CANDIDATO:
@@ -140,10 +113,10 @@ async def generate_highlight_with_ai(data: GenerateHighlightRequest) -> str:
     if not api_key:
         logger.warning("ANTHROPIC_API_KEY not found, using fallback highlight")
         return generate_fallback_highlight(data)
-    
+
     try:
         client = anthropic.Anthropic(api_key=api_key)
-        
+
         message = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=200,
@@ -154,14 +127,14 @@ async def generate_highlight_with_ai(data: GenerateHighlightRequest) -> str:
                 }
             ]
         )
-        
+
         highlight_text = message.content[0].text.strip()
-        
+
         if highlight_text.startswith('"') and highlight_text.endswith('"'):
             highlight_text = highlight_text[1:-1]
-        
+
         return highlight_text
-        
+
     except Exception as e:
         logger.error(f"Error generating highlight with AI: {e}")
         return generate_fallback_highlight(data)
@@ -175,22 +148,22 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
     location = data.location
     years = data.years_of_experience
     skills = data.technical_skills[:3] if data.technical_skills else []
-    
+
     parts = [f"{name} é um(a) {title}"]
-    
+
     if company:
         parts[0] += f" na {company}"
-    
+
     if location:
         parts.append(f"com sede em {location}")
-    
+
     if years:
         parts.append(f"com {years} anos de experiência")
-    
+
     if skills:
         skills_text = ", ".join(skills[:3])
         parts.append(f"especializado(a) em {skills_text}")
-    
+
     return ". ".join(parts) + "."
 
 
@@ -205,23 +178,14 @@ async def get_experience_highlight(
     Get cached experience highlight for a candidate.
     Returns 404 if no cached highlight exists.
     """
-    await ensure_highlights_table(db)
-    
-    result = await db.execute(text("""
-        SELECT id, candidate_id, highlight_text, model_used, generated_at, expires_at
-        FROM candidate_experience_highlights
-        WHERE candidate_id = :candidate_id 
-        AND company_id = :company_id
-        AND expires_at > CURRENT_TIMESTAMP
-        ORDER BY generated_at DESC
-        LIMIT 1
-    """), {"candidate_id": candidate_id, "company_id": company_id})
-    
-    row = result.fetchone()
-    
+    repo = ExperienceHighlightRepository(db)
+    await repo.ensure_table()
+
+    row = await repo.get_valid_highlight(candidate_id, company_id)
+
     if not row:
         raise HTTPException(status_code=404, detail="No cached highlight found")
-    
+
     return ExperienceHighlightResponse(
         id=str(row[0]),
         candidate_id=str(row[1]),
@@ -242,24 +206,12 @@ async def generate_experience_highlight(
     company_id = current_user.company_id
     """
     Generate or retrieve cached experience highlight for a candidate.
-    
-    - If a valid cached highlight exists and force_regenerate is False, returns cached version
-    - Otherwise generates a new highlight using Claude AI and caches it for 30+ days
     """
-    await ensure_highlights_table(db)
-    
+    repo = ExperienceHighlightRepository(db)
+    await repo.ensure_table()
+
     if not request.force_regenerate:
-        result = await db.execute(text("""
-            SELECT id, candidate_id, highlight_text, model_used, generated_at, expires_at
-            FROM candidate_experience_highlights
-            WHERE candidate_id = :candidate_id 
-            AND company_id = :company_id
-            AND expires_at > CURRENT_TIMESTAMP
-            ORDER BY generated_at DESC
-            LIMIT 1
-        """), {"candidate_id": request.candidate_id, "company_id": company_id})
-        
-        row = result.fetchone()
+        row = await repo.get_valid_highlight(request.candidate_id, company_id)
         if row:
             return ExperienceHighlightResponse(
                 id=str(row[0]),
@@ -270,36 +222,23 @@ async def generate_experience_highlight(
                 expires_at=row[5],
                 is_cached=True
             )
-    
+
     highlight_text = await generate_highlight_with_ai(request)
-    
+
     now = datetime.utcnow()
     expires_at = now + timedelta(days=CACHE_TTL_DAYS)
     highlight_id = str(uuid4())
-    
-    result = await db.execute(text("""
-        INSERT INTO candidate_experience_highlights 
-        (id, candidate_id, company_id, highlight_text, model_used, generated_at, expires_at)
-        VALUES (:id, :candidate_id, :company_id, :highlight_text, :model_used, :generated_at, :expires_at)
-        ON CONFLICT (candidate_id, company_id) 
-        DO UPDATE SET 
-            highlight_text = EXCLUDED.highlight_text,
-            model_used = EXCLUDED.model_used,
-            generated_at = EXCLUDED.generated_at,
-            expires_at = EXCLUDED.expires_at,
-            updated_at = CURRENT_TIMESTAMP
-        RETURNING id, candidate_id, highlight_text, model_used, generated_at, expires_at
-    """), {
-        "id": highlight_id,
-        "candidate_id": request.candidate_id,
-        "company_id": company_id,
-        "highlight_text": highlight_text,
-        "model_used": "claude-sonnet-4-6",
-        "generated_at": now,
-        "expires_at": expires_at
-    })
-    row = result.fetchone()
-    
+
+    row = await repo.upsert_highlight(
+        highlight_id=highlight_id,
+        candidate_id=request.candidate_id,
+        company_id=company_id,
+        highlight_text=highlight_text,
+        model_used="claude-sonnet-4-6",
+        generated_at=now,
+        expires_at=expires_at,
+    )
+
     return ExperienceHighlightResponse(
         id=str(row[0]),
         candidate_id=str(row[1]),
@@ -319,14 +258,11 @@ async def delete_experience_highlight(
 ):
     company_id = current_user.company_id
     """Delete cached highlight for a candidate (admin use)."""
-    await ensure_highlights_table(db)
-    
-    result = await db.execute(text("""
-        DELETE FROM candidate_experience_highlights
-        WHERE candidate_id = :candidate_id AND company_id = :company_id
-    """), {"candidate_id": candidate_id, "company_id": company_id})
-    
-    return {"deleted": result.rowcount > 0, "candidate_id": candidate_id}
+    repo = ExperienceHighlightRepository(db)
+    await repo.ensure_table()
+
+    deleted = await repo.delete_highlight(candidate_id, company_id)
+    return {"deleted": deleted > 0, "candidate_id": candidate_id}
 
 
 @router.post("/batch-generate", response_model=None)
@@ -337,15 +273,14 @@ async def batch_generate_highlights(
 ) -> list[ExperienceHighlightResponse]:
     """
     Generate highlights for multiple candidates at once.
-    Useful for pre-generating highlights for search results.
     Limited to 10 candidates per request.
     """
     if len(candidates) > 10:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Maximum 10 candidates per batch request"
         )
-    
+
     results = []
     for candidate_data in candidates:
         try:
@@ -366,5 +301,5 @@ async def batch_generate_highlights(
                 expires_at=datetime.utcnow() + timedelta(days=1),
                 is_cached=False
             ))
-    
+
     return results
