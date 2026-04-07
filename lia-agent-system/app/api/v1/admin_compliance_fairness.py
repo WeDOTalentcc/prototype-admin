@@ -43,6 +43,7 @@ FOUR_FIFTHS_THRESHOLD = 0.80
 _SIGNING_KEY_ENV = "REPORT_SIGNING_KEY"
 
 
+# TODO(phase2): extract to repository — admin compliance fairness
 def _sign_payload(payload: str) -> str:
     """
     HMAC-SHA256 signature over the report payload for auditability.

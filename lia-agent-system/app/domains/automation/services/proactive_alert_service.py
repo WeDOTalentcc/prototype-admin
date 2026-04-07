@@ -466,7 +466,7 @@ class ProactiveAlertService:
         alerts = []
         
         try:
-            from app.models.communication import CommunicationLog
+            from lia_models.communication import CommunicationLog
             
             today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
             week_ago = today - timedelta(days=7)

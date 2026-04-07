@@ -83,6 +83,7 @@ class GuardrailUpdateRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 @router.get("", response_model=list[GuardrailResponse])
+# TODO(phase2): extract to repository — guardrail policy management
 async def list_guardrails(
     domain: str | None = Query(None, description="Filtrar por domínio"),
     company_id: str | None = Query(None, description="Filtrar por tenant"),

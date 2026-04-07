@@ -70,6 +70,7 @@ class TestProviderResponse(BaseModel):
 # === Endpoints ===
 
 @router.get("", response_model=LLMConfigResponse)
+# TODO(phase2): extract to repository — LLM config management
 async def get_llm_config(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),

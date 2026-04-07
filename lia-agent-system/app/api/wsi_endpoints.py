@@ -219,6 +219,7 @@ class VoiceScreeningStatusResponse(BaseModel):
 # Note: analyze_jd endpoint removed for MVP - will be implemented in Job Intake Agent
 
 
+# TODO(phase2): extract to WsiRepository — WSI endpoint DB calls
 def _convert_snapshot_to_wsi_questions(snapshot: list) -> list:
     converted = []
     for idx, q in enumerate(snapshot):

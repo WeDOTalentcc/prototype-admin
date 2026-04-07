@@ -1377,7 +1377,7 @@ class ConversationManager:
                 TriggerType,
             )
             from lia_models.candidate import Candidate, VacancyCandidate
-            from app.models.candidate_job import CandidateJob
+            from lia_models.candidate_job import CandidateJob
             
             cv_data = conversation.cv_parsed_data or {}
             

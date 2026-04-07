@@ -58,6 +58,7 @@ class AgentQualityDetail(BaseModel):
 # ---------------------------------------------------------------------------
 
 @router.get("", response_model=list[AgentQualityTrend])
+# TODO(phase2): extract to repository — agent quality metrics
 async def list_agent_quality_trends(
     company_id: str = Query(..., description="ID do tenant"),
     agent_id: str | None = Query(None, description="Filtrar por agente específico"),

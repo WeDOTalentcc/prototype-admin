@@ -5,11 +5,12 @@ CRUD endpoints for company-specific stage automation rules.
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.automation import DEFAULT_STAGE_AUTOMATION_RULES, StageAutomationRule
+from app.domains.automation.repositories.automation_rule_repository import (
+    AutomationRuleRepository,
+)
 
 router = APIRouter(prefix="/automation-rules", tags=["automation-rules"])
 
@@ -65,39 +66,19 @@ async def get_company_rules(
     company_id: str,
     is_active: bool | None = None,
     trigger_type: str | None = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Get all automation rules for a company with optional filters."""
-    query = select(StageAutomationRule).where(
-        StageAutomationRule.company_id == company_id
-    )
-    
-    if is_active is not None:
-        query = query.where(StageAutomationRule.is_active == is_active)
-    if trigger_type:
-        query = query.where(StageAutomationRule.trigger_type == trigger_type)
-    
-    query = query.order_by(StageAutomationRule.created_at.desc())
-    
-    result = await db.execute(query)
-    rules = result.scalars().all()
+    repo = AutomationRuleRepository(db)
+    rules = await repo.list_for_company(company_id, is_active=is_active, trigger_type=trigger_type)
     return {"rules": [rule.to_dict() for rule in rules], "total": len(rules)}
 
 
 @router.get("/company/{company_id}/{rule_id}", response_model=None)
-async def get_rule(
-    company_id: str,
-    rule_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def get_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
     """Get a specific automation rule."""
-    result = await db.execute(
-        select(StageAutomationRule).where(
-            StageAutomationRule.id == rule_id,
-            StageAutomationRule.company_id == company_id
-        )
-    )
-    rule = result.scalar_one_or_none()
+    repo = AutomationRuleRepository(db)
+    rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     return {"rule": rule.to_dict()}
@@ -105,28 +86,15 @@ async def get_rule(
 
 @router.post("/company/{company_id}", response_model=None)
 async def create_rule(
-    company_id: str, 
+    company_id: str,
     rule: AutomationRuleCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Create a new automation rule for a company."""
-    new_rule = StageAutomationRule(
-        company_id=company_id,
-        trigger_type=rule.trigger_type,
-        is_active=rule.is_active,
-        auto_execute=rule.auto_execute,
-        confidence_threshold=str(rule.confidence_threshold),
-        conditions=rule.conditions,
-        actions=rule.actions,
-        source_stage=rule.source_stage,
-        target_stage=rule.target_stage,
-        name=rule.name,
-        description=rule.description,
-        priority=rule.priority,
-    )
-    db.add(new_rule)
-    await db.flush()
-    await db.refresh(new_rule)
+    repo = AutomationRuleRepository(db)
+    data = rule.model_dump()
+    data["confidence_threshold"] = str(data["confidence_threshold"])
+    new_rule = await repo.create(company_id, data)
     return {"success": True, "rule_id": str(new_rule.id), "rule": new_rule.to_dict()}
 
 
@@ -135,72 +103,39 @@ async def update_rule(
     company_id: str,
     rule_id: str,
     updates: AutomationRuleUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Update an automation rule."""
-    result = await db.execute(
-        select(StageAutomationRule).where(
-            StageAutomationRule.id == rule_id,
-            StageAutomationRule.company_id == company_id
-        )
-    )
-    rule = result.scalar_one_or_none()
+    repo = AutomationRuleRepository(db)
+    rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
-    
     update_data = updates.model_dump(exclude_unset=True)
     if "confidence_threshold" in update_data:
         update_data["confidence_threshold"] = str(update_data["confidence_threshold"])
-    
-    for key, value in update_data.items():
-        setattr(rule, key, value)
-    
-    await db.flush()
-    await db.refresh(rule)
+    rule = await repo.update(rule, update_data)
     return {"success": True, "rule": rule.to_dict()}
 
 
 @router.delete("/company/{company_id}/{rule_id}", response_model=None)
-async def delete_rule(
-    company_id: str,
-    rule_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
     """Delete an automation rule."""
-    result = await db.execute(
-        select(StageAutomationRule).where(
-            StageAutomationRule.id == rule_id,
-            StageAutomationRule.company_id == company_id
-        )
-    )
-    rule = result.scalar_one_or_none()
+    repo = AutomationRuleRepository(db)
+    rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
-    
-    await db.delete(rule)
+    await repo.delete(rule)
     return {"success": True, "deleted_id": rule_id}
 
 
 @router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
-async def toggle_rule(
-    company_id: str,
-    rule_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
     """Toggle the active status of an automation rule."""
-    result = await db.execute(
-        select(StageAutomationRule).where(
-            StageAutomationRule.id == rule_id,
-            StageAutomationRule.company_id == company_id
-        )
-    )
-    rule = result.scalar_one_or_none()
+    repo = AutomationRuleRepository(db)
+    rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
-    
-    rule.is_active = not rule.is_active
-    await db.flush()
-    await db.refresh(rule)
+    rule = await repo.toggle(rule)
     return {"success": True, "is_active": rule.is_active, "rule": rule.to_dict()}
 
 
@@ -208,44 +143,19 @@ async def toggle_rule(
 async def seed_default_rules(
     company_id: str,
     force: bool = False,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Seed default automation rules for a new company."""
-    existing_result = await db.execute(
-        select(StageAutomationRule).where(
-            StageAutomationRule.company_id == company_id
-        )
-    )
-    existing_rules = existing_result.scalars().all()
-    
-    if existing_rules and not force:
+    repo = AutomationRuleRepository(db)
+    existing = await repo.list_for_company(company_id)
+    if existing and not force:
         return {
             "success": False,
             "message": "Company already has automation rules. Use force=true to add defaults anyway.",
-            "existing_count": len(existing_rules)
+            "existing_count": len(existing),
         }
-    
-    created_rules = []
-    for rule_data in DEFAULT_STAGE_AUTOMATION_RULES:
-        rule = StageAutomationRule(
-            company_id=company_id,
-            trigger_type=rule_data["trigger_type"],
-            name=rule_data.get("name"),
-            auto_execute=rule_data.get("auto_execute", False),
-            is_active=True,
-            conditions=rule_data.get("conditions", {}),
-            actions=rule_data.get("actions", []),
-            priority=rule_data.get("priority", "normal"),
-            confidence_threshold="0.8",
-        )
-        db.add(rule)
-        created_rules.append(rule_data["trigger_type"])
-    
-    return {
-        "success": True,
-        "rules_created": len(created_rules),
-        "trigger_types": created_rules
-    }
+    created = await repo.seed_defaults(company_id)
+    return {"success": True, "rules_created": len(created), "trigger_types": created}
 
 
 @router.get("/trigger-types", response_model=None)

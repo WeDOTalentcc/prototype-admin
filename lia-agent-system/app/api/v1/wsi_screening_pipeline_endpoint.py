@@ -31,6 +31,7 @@ router = APIRouter(prefix="/wsi", tags=["WSI Screening Pipeline"])
 
 
 @router.post("/screening-pipeline", response_model=WSIScreeningPipelineResponse)
+# TODO(phase2): extract to repository — WSI screening pipeline DB calls
 async def generate_screening_pipeline(
     request: WSIScreeningPipelineRequest,
     db: AsyncSession = Depends(get_db),

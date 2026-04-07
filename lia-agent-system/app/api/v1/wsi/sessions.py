@@ -28,6 +28,7 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 @router.get("/session/{session_id}", response_model=None)
+# TODO(phase2): extract to repository — WSI session management
 async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
     """Get WSI session details with questions and responses."""
     try:

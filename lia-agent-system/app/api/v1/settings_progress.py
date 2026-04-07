@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/settings", tags=["settings"])
 
 
+# TODO(phase2): extract to repository — multi-model settings aggregation
 async def get_default_company(db: AsyncSession) -> CompanyProfile:
     """Get default company or first available."""
     result = await db.execute(

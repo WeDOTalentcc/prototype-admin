@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.domains.communication.repositories.teams_repository import TeamsRepository
 from app.domains.communication.services.teams_auth import bot_auth
 from app.domains.communication.services.teams_simple import simple_teams_bot
 from app.models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage

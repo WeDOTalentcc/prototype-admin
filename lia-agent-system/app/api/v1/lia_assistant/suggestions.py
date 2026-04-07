@@ -22,6 +22,7 @@ router = APIRouter()
 
 
 @router.get("/suggestions", response_model=SuggestionsResponse)
+# TODO(phase2): extract to repository — LIA assistant suggestion storage
 async def get_dynamic_suggestions(
     limit: int = Query(default=6, ge=1, le=12),
     db: AsyncSession = Depends(get_db),

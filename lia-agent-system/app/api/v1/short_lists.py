@@ -63,6 +63,7 @@ class ShortListCandidateResponse(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+# TODO(phase2): extract to repository — multi-model candidate list operations
 def _encode_meta(job_id: str, description: str | None = None) -> str:
     """Encoda job_id no campo description com prefixo shortlist:."""
     base = f"{_SHORTLIST_PREFIX}{job_id}"

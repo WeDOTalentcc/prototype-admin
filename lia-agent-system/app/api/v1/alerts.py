@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.notifications.repositories.alert_repository import AlertRepository
 from app.domains.job_management.services.job_alert_service import job_alert_service
 from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
 

@@ -52,6 +52,7 @@ class ProfileAnalysisResponse(BaseModel):
     candidate_id: str
 
 
+# TODO(phase2): extract to repository — LIA profile analysis storage
 def format_candidate_info(data: CandidateData) -> str:
     """Format candidate data for the prompt."""
     info_parts = []

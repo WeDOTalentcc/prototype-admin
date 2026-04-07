@@ -74,6 +74,7 @@ class TimelineResponse(BaseModel):
 
 
 @router.get("/executions/{execution_id}/timeline", response_model=TimelineResponse)
+# TODO(phase2): extract to repository — audit timeline queries
 async def get_execution_timeline(
     execution_id: str,
     db: AsyncSession = Depends(get_db),

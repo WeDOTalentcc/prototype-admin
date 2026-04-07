@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
 
+# TODO(phase2): extract to repository — calendar slot/booking DB calls
 def check_graph_configured():
     """Dependency to check if Microsoft Graph is configured."""
     if not settings.AZURE_CLIENT_ID or not settings.AZURE_CLIENT_SECRET or not settings.AZURE_TENANT_ID:

@@ -21,6 +21,7 @@ router = APIRouter(prefix="/pipeline-policy", tags=["pipeline-policy"])
 
 
 @router.get("/{company_id}/validate-transition", response_model=None)
+# TODO(phase2): extract to repository — pipeline policy management
 async def validate_transition(
     company_id: str,
     candidate_id: str = Query(...),

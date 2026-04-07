@@ -17,6 +17,7 @@ from sqlalchemy import Date, and_, cast, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.ai.repositories.ai_consumption_repository import AiConsumptionRepository
 from app.models.ai_consumption import AiConsumption
 from app.schemas.ai_consumption import (
     AiConsumptionRecord,

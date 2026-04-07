@@ -28,6 +28,7 @@ class WeeklyDigestPreferenceRequest(BaseModel):
 
 
 @router.get("/weekly/preview", response_model=None)
+# TODO(phase2): extract to repository — digest generation DB calls
 async def preview_weekly_digest(
     recruiter_id: str | None = None,
     current_user: User = Depends(get_current_user_or_demo),

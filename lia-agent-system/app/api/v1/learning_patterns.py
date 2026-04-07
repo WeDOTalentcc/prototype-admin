@@ -19,6 +19,7 @@ SKILL_PROMOTION_THRESHOLD = 5
 
 
 @router.get("/{company_id}/detected", response_model=None)
+# TODO(phase2): extract to repository — learning pattern storage
 async def get_detected_patterns(
     company_id: str,
     field: str | None = None,

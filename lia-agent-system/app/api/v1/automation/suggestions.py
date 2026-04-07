@@ -20,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.automation.repositories.ai_suggestion_repository import AISuggestionRepository
 
 from ._shared import (
     BulkSuggestionRequest,
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/pending-suggestions", response_model=None)
+# TODO(phase2): extract DB calls to AISuggestionRepository
 async def get_pending_suggestions(
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
     candidate_id: str | None = Query(None, description="Filter by candidate ID"),

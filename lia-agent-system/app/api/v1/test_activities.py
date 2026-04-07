@@ -16,6 +16,7 @@ router = APIRouter(prefix="/test", tags=["Testing"])
 
 
 @router.post("/populate-activities", response_model=None)
+# TODO(phase2): extract to repository — test activity logging
 async def populate_activities(
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service),

@@ -32,6 +32,7 @@ MAX_RAW_TEXT_RESPONSE_LENGTH = 5000
 router = APIRouter(prefix="/cv", tags=["cv-parser"])
 
 
+# TODO(phase2): extract to repository — CV parser result storage
 def parse_date_of_birth(dob_string: str | None) -> date | None:
     """Parse date of birth from various formats."""
     if not dob_string:

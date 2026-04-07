@@ -106,6 +106,7 @@ class SimilarJobsRequest(BaseModel):
 
 
 @router.post("/wizard-suggestions", response_model=None)
+# TODO(phase2): extract to repository — job learning pattern storage
 async def get_wizard_suggestions(request: WizardSuggestionsRequest):
     """
     Get all wizard suggestions in a single call.

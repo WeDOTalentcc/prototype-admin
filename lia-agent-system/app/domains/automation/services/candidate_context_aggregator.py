@@ -174,7 +174,7 @@ class CandidateContextAggregator:
     async def _extract_interview_notes_from_db(self, vacancy_candidate_id: str) -> list:
         """Extract interview notes from InterviewNote table if available."""
         try:
-            from app.models.interview_note import InterviewNote
+            from lia_models.interview import InterviewNote
             result = await self.db.execute(
                 select(InterviewNote).where(InterviewNote.vacancy_candidate_id == vacancy_candidate_id)
             )

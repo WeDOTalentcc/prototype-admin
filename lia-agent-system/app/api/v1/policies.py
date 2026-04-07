@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/policies", tags=["policies"])
 
 
+# TODO(phase2): extract DB calls to GlobalPolicyRepository
 def get_user_from_headers(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),

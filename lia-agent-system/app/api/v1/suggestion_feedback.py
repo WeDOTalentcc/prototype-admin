@@ -70,6 +70,7 @@ class AdjustmentResponse(BaseModel):
 
 
 @router.post("/record", response_model=None)
+# TODO(phase2): extract to repository — suggestion feedback
 async def record_suggestion_feedback(
     request: SuggestionFeedbackRequest,
     db: AsyncSession = Depends(get_db),

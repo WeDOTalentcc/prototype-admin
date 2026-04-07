@@ -44,6 +44,7 @@ router = APIRouter()
 
 
 @router.post("/jd-evaluate", response_model=None)
+# TODO(phase2): extract to repository — complex WSI scoring logic
 async def evaluate_jd(request: JDEvaluateRequest):
     """Evaluate job description quality using 9 dimensions (spec F1.B).
     Hard block if score < 30 (band=Crítico). 5 quality bands."""

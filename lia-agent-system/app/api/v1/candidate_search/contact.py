@@ -58,6 +58,7 @@ class RevealCostEstimate(BaseModel):
 
 
 @router.get("/reveal/cost", response_model=None)
+# TODO(phase2): extract to repository — candidate contact enrichment
 async def get_reveal_cost(
     reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'")
 ) -> RevealCostEstimate:

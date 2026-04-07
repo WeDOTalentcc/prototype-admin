@@ -490,6 +490,7 @@ class QuestionType:
     GENERAL = "general"
 
 
+# TODO(phase2): extract to repository — LIA assistant shared DB access
 def detect_question_type(text: str) -> str:
     """Detect the type of question being asked."""
     text_lower = text.lower()

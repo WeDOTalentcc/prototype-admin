@@ -59,6 +59,8 @@ from lia_models.lia_opinion import LiaOpinion, OpinionType, OpinionSource, Recom
 from lia_models.candidate_feedback import CandidateFeedback, FeedbackType
 from lia_models.search_feedback import SearchFeedback
 from lia_models.candidate_list import CandidateList, CandidateListMember
+from lia_models.communication import CommunicationLog  # alias of CommunicationHistory
+from lia_models.candidate_job import CandidateJob
 from lia_models.communication_history import (
     CommunicationHistory,
     CommunicationType,
@@ -468,6 +470,8 @@ __all__ = [
     "DecisionType",
     "CandidateList",
     "CandidateListMember",
+    "CommunicationLog",
+    "CandidateJob",
     "CommunicationHistory",
     "CommunicationType",
     "CommunicationChannel",

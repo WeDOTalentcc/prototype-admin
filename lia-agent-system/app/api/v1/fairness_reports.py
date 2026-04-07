@@ -48,6 +48,7 @@ class FairnessTrendResponse(BaseModel):
 
 
 @router.get("/reports/summary", response_model=FairnessSummaryResponse)
+# TODO(phase2): extract to repository — complex fairness aggregation
 async def get_fairness_summary(
     company_id: str | None = Query(None, description="Filter by company UUID"),
     days: int = Query(30, ge=1, le=365, description="Look-back period in days"),

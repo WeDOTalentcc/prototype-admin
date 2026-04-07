@@ -65,6 +65,7 @@ class CommunicationSettingsResponse(BaseModel):
     updated_at: str | None = None
 
 
+# TODO(phase2): extract to repository — communication settings
 def get_company_id(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     company_id: str | None = Query(None, description="Company ID")

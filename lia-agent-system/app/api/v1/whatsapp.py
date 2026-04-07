@@ -76,6 +76,7 @@ class PhoneNumberMapping:
         cls._mapping_cache[phone_number_id] = company_id
 
 
+# TODO(phase2): extract to repository — WhatsApp session/message DB writes
 def verify_meta_webhook_signature(payload: bytes, signature: str) -> bool:
     """
     Verify Meta's X-Hub-Signature-256 header.

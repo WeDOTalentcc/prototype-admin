@@ -51,6 +51,7 @@ class GenerateHighlightRequest(BaseModel):
     force_regenerate: bool = False
 
 
+# TODO(phase2): extract to repository — experience highlights extraction
 async def ensure_highlights_table(db: AsyncSession):
     """Ensure the experience_highlights cache table exists."""
     await db.execute(text("""

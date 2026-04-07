@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/big-five", tags=["big-five"])
 
 
+# TODO(phase2): extract ClientAccount lookup to BigFiveRepository.get_client()
 def get_user_from_headers(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),

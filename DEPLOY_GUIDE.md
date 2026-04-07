@@ -254,6 +254,19 @@ NEXT_PUBLIC_BACKEND_URL=https://api-staging.wedotalent.cc
 
 ## 6. Passo a Passo de Deploy
 
+> **O que fazer agora vs. o que fazer no momento do deploy:**
+>
+> | O que fazer **agora** (desenvolvimento em curso) | O que fazer **na hora do deploy** (esta seção) |
+> |---|---|
+> | Continuar desenvolvendo features no Replit | Criar o Dockerfile do Next.js (Fase 1.1 abaixo) |
+> | Finalizar fluxos críticos e resolução de mockups | Configurar variáveis de produção no Secret Manager |
+> | Integrar e testar com Rails API localmente | Push para GitHub + ativar GitHub Actions |
+> | Validar fluxos no ambiente Replit | Provisionar GCP: Cloud Run, Cloud SQL, Redis |
+> | Preparar specs e documentação | Configurar domínio `wedotalent.cc` e SSL |
+> | Resolver pendências de UI listadas na Seção 12 | Rodar smoke tests no staging existente |
+>
+> As fases abaixo são o **manual de referência para o time de infra** no momento do go-live — não são ações urgentes para o desenvolvimento atual.
+
 ### Fase 1 — Preparação do código (Replit)
 
 #### 1.1 Dockerfile do Next.js

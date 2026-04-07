@@ -3,18 +3,18 @@ Company Benefits API endpoints.
 CRUD operations for company-specific benefits management.
 """
 import logging
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from app.models.company_benefit import DEFAULT_BRAZILIAN_BENEFITS, CompanyBenefit
+from app.domains.company.repositories.company_benefit_repository import (
+    CompanyBenefitRepository,
+)
 
 router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
@@ -57,68 +57,49 @@ class CompanyBenefitResponse(BaseModel):
     order: int = 0
     created_at: str | None = None
     updated_at: str | None = None
-    
+
     class Config:
         from_attributes = True
 
 
+def _to_response(b) -> CompanyBenefitResponse:
+    return CompanyBenefitResponse(
+        id=str(b.id),
+        company_id=b.company_id,
+        name=b.name,
+        category=b.category,
+        description=b.description,
+        icon=b.icon,
+        value=b.value,
+        value_type=b.value_type,
+        is_active=b.is_active,
+        is_highlighted=b.is_highlighted,
+        order=b.order,
+        created_at=b.created_at.isoformat() if b.created_at else None,
+        updated_at=b.updated_at.isoformat() if b.updated_at else None,
+    )
+
+
 @router.get("/", response_model=list[CompanyBenefitResponse])
 async def list_company_benefits(
-    company_id: str | None = Query(None, description="Filter by company ID"),
-    category: str | None = Query(None, description="Filter by category"),
-    active_only: bool = Query(True, description="Return only active benefits"),
-    search: str | None = Query(None, description="Search by name"),
+    company_id: str | None = Query(None),
+    category: str | None = Query(None),
+    active_only: bool = Query(True),
+    search: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """
-    List company benefits.
-    Returns benefits for the specified company or the current user's company.
-    """
+    """List company benefits."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
-        
-        query = select(CompanyBenefit).where(CompanyBenefit.company_id == effective_company_id)
-        
-        if active_only:
-            query = query.where(CompanyBenefit.is_active)
-        
-        if category:
-            query = query.where(CompanyBenefit.category == category)
-        
-        if search:
-            search_term = f"%{search.lower()}%"
-            query = query.where(
-                or_(
-                    func.lower(CompanyBenefit.name).like(search_term),
-                    func.lower(CompanyBenefit.description).like(search_term)
-                )
-            )
-        
-        query = query.order_by(CompanyBenefit.order, CompanyBenefit.name)
-        
-        result = await db.execute(query)
-        benefits = result.scalars().all()
-        
-        return [
-            CompanyBenefitResponse(
-                id=str(b.id),
-                company_id=b.company_id,
-                name=b.name,
-                category=b.category,
-                description=b.description,
-                icon=b.icon,
-                value=b.value,
-                value_type=b.value_type,
-                is_active=b.is_active,
-                is_highlighted=b.is_highlighted,
-                order=b.order,
-                created_at=b.created_at.isoformat() if b.created_at else None,
-                updated_at=b.updated_at.isoformat() if b.updated_at else None
-            )
-            for b in benefits
-        ]
-        
+        repo = CompanyBenefitRepository(db)
+        benefits = await repo.list_for_company(
+            effective_company_id,
+            active_only=active_only,
+            category=category,
+            search=search,
+        )
+        return [_to_response(b) for b in benefits]
     except Exception as e:
         logger.error(f"Error listing company benefits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -127,50 +108,17 @@ async def list_company_benefits(
 @router.post("/", response_model=CompanyBenefitResponse)
 async def create_company_benefit(
     benefit: CompanyBenefitCreate,
-    company_id: str | None = Query(None, description="Company ID"),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """
-    Create a new company benefit.
-    """
+    """Create a new company benefit."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
-        
-        new_benefit = CompanyBenefit(
-            company_id=effective_company_id,
-            name=benefit.name,
-            category=benefit.category,
-            description=benefit.description,
-            icon=benefit.icon,
-            value=benefit.value,
-            value_type=benefit.value_type,
-            is_highlighted=benefit.is_highlighted,
-            order=benefit.order
-        )
-        
-        db.add(new_benefit)
-        await db.flush()
-        await db.refresh(new_benefit)
-        
-        logger.info(f"✅ Created company benefit: {new_benefit.name} for company: {effective_company_id}")
-        
-        return CompanyBenefitResponse(
-            id=str(new_benefit.id),
-            company_id=new_benefit.company_id,
-            name=new_benefit.name,
-            category=new_benefit.category,
-            description=new_benefit.description,
-            icon=new_benefit.icon,
-            value=new_benefit.value,
-            value_type=new_benefit.value_type,
-            is_active=new_benefit.is_active,
-            is_highlighted=new_benefit.is_highlighted,
-            order=new_benefit.order,
-            created_at=new_benefit.created_at.isoformat() if new_benefit.created_at else None,
-            updated_at=new_benefit.updated_at.isoformat() if new_benefit.updated_at else None
-        )
-        
+        repo = CompanyBenefitRepository(db)
+        new_benefit = await repo.create(effective_company_id, benefit.model_dump())
+        logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
+        return _to_response(new_benefit)
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating company benefit: {e}")
@@ -181,36 +129,15 @@ async def create_company_benefit(
 async def get_company_benefit(
     benefit_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """
-    Get a specific company benefit by ID.
-    """
+    """Get a specific company benefit by ID."""
     try:
-        result = await db.execute(
-            select(CompanyBenefit).where(CompanyBenefit.id == benefit_id)
-        )
-        benefit = result.scalar_one_or_none()
-        
+        repo = CompanyBenefitRepository(db)
+        benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        
-        return CompanyBenefitResponse(
-            id=str(benefit.id),
-            company_id=benefit.company_id,
-            name=benefit.name,
-            category=benefit.category,
-            description=benefit.description,
-            icon=benefit.icon,
-            value=benefit.value,
-            value_type=benefit.value_type,
-            is_active=benefit.is_active,
-            is_highlighted=benefit.is_highlighted,
-            order=benefit.order,
-            created_at=benefit.created_at.isoformat() if benefit.created_at else None,
-            updated_at=benefit.updated_at.isoformat() if benefit.updated_at else None
-        )
-        
+        return _to_response(benefit)
     except HTTPException:
         raise
     except Exception as e:
@@ -223,47 +150,17 @@ async def update_company_benefit(
     benefit_id: UUID,
     updates: CompanyBenefitUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """
-    Update a company benefit.
-    """
+    """Update a company benefit."""
     try:
-        result = await db.execute(
-            select(CompanyBenefit).where(CompanyBenefit.id == benefit_id)
-        )
-        benefit = result.scalar_one_or_none()
-        
+        repo = CompanyBenefitRepository(db)
+        benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        
-        update_data = updates.model_dump(exclude_unset=True)
-        update_data["updated_at"] = datetime.utcnow()
-        
-        for key, value in update_data.items():
-            setattr(benefit, key, value)
-        
-        await db.flush()
-        await db.refresh(benefit)
-        
-        logger.info(f"✅ Updated company benefit: {benefit.name}")
-        
-        return CompanyBenefitResponse(
-            id=str(benefit.id),
-            company_id=benefit.company_id,
-            name=benefit.name,
-            category=benefit.category,
-            description=benefit.description,
-            icon=benefit.icon,
-            value=benefit.value,
-            value_type=benefit.value_type,
-            is_active=benefit.is_active,
-            is_highlighted=benefit.is_highlighted,
-            order=benefit.order,
-            created_at=benefit.created_at.isoformat() if benefit.created_at else None,
-            updated_at=benefit.updated_at.isoformat() if benefit.updated_at else None
-        )
-        
+        benefit = await repo.update(benefit, updates.model_dump(exclude_unset=True))
+        logger.info(f"Updated company benefit: {benefit.name}")
+        return _to_response(benefit)
     except HTTPException:
         raise
     except Exception as e:
@@ -275,35 +172,24 @@ async def update_company_benefit(
 @router.delete("/{benefit_id}", response_model=None)
 async def delete_company_benefit(
     benefit_id: UUID,
-    hard_delete: bool = Query(False, description="Permanently delete instead of soft delete"),
+    hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """
-    Delete a company benefit (soft delete by default).
-    """
+    """Delete a company benefit (soft delete by default)."""
     try:
-        result = await db.execute(
-            select(CompanyBenefit).where(CompanyBenefit.id == benefit_id)
-        )
-        benefit = result.scalar_one_or_none()
-        
+        repo = CompanyBenefitRepository(db)
+        benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        
         if hard_delete:
-            await db.delete(benefit)
+            await repo.hard_delete(benefit)
             message = f"Benefit '{benefit.name}' permanently deleted"
         else:
-            benefit.is_active = False
-            benefit.updated_at = datetime.utcnow()
+            await repo.soft_delete(benefit)
             message = f"Benefit '{benefit.name}' deactivated"
-        
-        
-        logger.info(f"✅ {message}")
-        
+        logger.info(f"  {message}")
         return {"success": True, "message": message}
-        
     except HTTPException:
         raise
     except Exception as e:
@@ -314,58 +200,30 @@ async def delete_company_benefit(
 
 @router.post("/seed-defaults", response_model=None)
 async def seed_default_benefits(
-    company_id: str | None = Query(None, description="Company ID to seed benefits for"),
+    company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """
-    Seed default Brazilian benefits for a company.
-    Only adds benefits that don't already exist (by name).
-    """
+    """Seed default Brazilian benefits for a company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
-        
-        result = await db.execute(
-            select(func.count(CompanyBenefit.id)).where(
-                CompanyBenefit.company_id == effective_company_id
-            )
-        )
-        existing_count = result.scalar() or 0
-        
+        repo = CompanyBenefitRepository(db)
+        existing_count = await repo.count_for_company(effective_company_id)
         if existing_count > 0:
             return {
                 "success": True,
                 "message": f"Benefits already exist for company ({existing_count} benefits)",
                 "created": 0,
-                "total": existing_count
+                "total": existing_count,
             }
-        
-        created_count = 0
-        for benefit_data in DEFAULT_BRAZILIAN_BENEFITS:
-            existing = await db.execute(
-                select(CompanyBenefit).where(
-                    CompanyBenefit.company_id == effective_company_id,
-                    CompanyBenefit.name == benefit_data["name"]
-                )
-            )
-            if not existing.scalar_one_or_none():
-                benefit = CompanyBenefit(
-                    company_id=effective_company_id,
-                    **benefit_data
-                )
-                db.add(benefit)
-                created_count += 1
-        
-        
-        logger.info(f"✅ Seeded {created_count} default benefits for company: {effective_company_id}")
-        
+        created_count = await repo.seed_defaults(effective_company_id)
+        logger.info(f"Seeded {created_count} default benefits for company: {effective_company_id}")
         return {
             "success": True,
             "message": f"Successfully seeded {created_count} default benefits",
             "created": created_count,
-            "total": len(DEFAULT_BRAZILIAN_BENEFITS)
+            "total": created_count,
         }
-        
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default benefits: {e}")
@@ -374,10 +232,8 @@ async def seed_default_benefits(
 
 @router.get("/categories/list", response_model=None)
 async def list_benefit_categories():
-    """
-    List available benefit categories.
-    """
-    categories = [
+    """List available benefit categories."""
+    return [
         {"id": "health", "name": "Saúde", "icon": "🏥"},
         {"id": "food", "name": "Alimentação", "icon": "🍽️"},
         {"id": "transport", "name": "Transporte", "icon": "🚌"},
@@ -388,4 +244,3 @@ async def list_benefit_categories():
         {"id": "flexibility", "name": "Flexibilidade", "icon": "⏰"},
         {"id": "other", "name": "Outros", "icon": "📦"},
     ]
-    return categories

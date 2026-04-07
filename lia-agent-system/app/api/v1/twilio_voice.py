@@ -78,6 +78,7 @@ class InitiateCallResponse(BaseModel):
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+# TODO(phase2): extract to repository — Twilio call log storage
 def _twiml_response(xml: str) -> Response:
     """Return TwiML XML response with correct content type."""
     return Response(content=xml, media_type="application/xml")

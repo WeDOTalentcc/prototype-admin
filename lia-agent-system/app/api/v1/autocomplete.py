@@ -31,6 +31,7 @@ class PremiumAutocompleteResponse(BaseModel):
 
 
 @router.get("/premium", response_model=PremiumAutocompleteResponse)
+# TODO(phase2): extract to repository — autocomplete DB queries
 async def get_premium_suggestions(
     query: str = Query(..., min_length=2),
     user_id: str = Query(..., description="User ID — required for per-user history"),

@@ -65,6 +65,7 @@ class FastTrackWizardResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 @router.post("/fast-track/wizard", response_model=FastTrackWizardResponse)
+# TODO(phase2): extract to repository — LIA fasttrack DB calls
 async def fast_track_wizard_step(
     request: FastTrackWizardRequest,
     db: AsyncSession = Depends(get_db),

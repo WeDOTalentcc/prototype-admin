@@ -48,6 +48,7 @@ class ResetMatrixRequest(BaseModel):
 
 
 @router.get("", summary="List communication matrix entries", response_model=None)
+# TODO(phase2): extract to repository — complex communication matrix queries
 async def list_matrix_entries(
     module: str | None = Query(None, description="Filter by module type"),
     is_active: bool | None = Query(None, description="Filter by active status"),

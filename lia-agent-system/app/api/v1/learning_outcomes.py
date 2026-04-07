@@ -15,6 +15,7 @@ from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.recruitment.repositories.learning_outcome_repository import LearningOutcomeRepository
 from app.domains.job_management.services.outcome_tracker import outcome_tracker
 from app.models.feedback_learning import JobOutcome, JobOutcomeType
 

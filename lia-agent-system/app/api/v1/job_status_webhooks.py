@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
+from app.domains.job_management.repositories.webhook_repository import WebhookRepository
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 

@@ -15,18 +15,19 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
+from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+    HiringPolicyRepository,
+)
 from app.models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
     COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
-    CompanyHiringPolicy,
 )
 from app.schemas.company_hiring_policy import (
     CompanyHiringPolicyBlockUpdate,
@@ -63,18 +64,13 @@ BLOCK_QUESTION_COUNTS = {
 TOTAL_QUESTIONS = 19
 
 
-def _calculate_progress(policy: CompanyHiringPolicy) -> int:
-    """Calculate setup progress based on explicitly answered questions."""
+def _calculate_progress(policy) -> int:
     answered = policy.answered_questions or []
-    filled = len(answered)
-    total = TOTAL_QUESTIONS
-    return min(int((filled / total) * 100), 100)
+    return min(int((len(answered) / TOTAL_QUESTIONS) * 100), 100)
 
 
-def _blocks_completed(policy: CompanyHiringPolicy) -> dict[str, bool]:
-    """Check which blocks have been completed based on answered questions."""
+def _blocks_completed(policy) -> dict[str, bool]:
     answered = set(policy.answered_questions or [])
-
     block_questions = {
         "pipeline_rules": {"min_interviews_before_offer", "manager_approval_for_offer", "max_days_in_stage", "pipeline_template"},
         "scheduling_rules": {"allowed_days", "allowed_hours", "default_duration_minutes", "self_scheduling_enabled"},
@@ -82,31 +78,18 @@ def _blocks_completed(policy: CompanyHiringPolicy) -> dict[str, bool]:
         "screening_rules": {"salary_expectation_filter", "experience_policy", "default_screening_questions"},
         "automation_rules": {"auto_screening", "auto_scheduling", "auto_stage_advance", "autonomy_level"},
     }
-
-    result = {}
-    for block, questions in block_questions.items():
-        result[block] = questions.issubset(answered)
+    result = {block: questions.issubset(answered) for block, questions in block_questions.items()}
     result["pipeline_templates"] = "pipeline_template" in answered
-
     return result
 
 
 @router.get("/{company_id}", response_model=CompanyHiringPolicyResponse)
-async def get_policy(
-    company_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def get_policy(company_id: str, db: AsyncSession = Depends(get_db)):
     """Get hiring policy for a company. Returns defaults if none exists."""
-    result = await db.execute(
-        select(CompanyHiringPolicy).where(
-            CompanyHiringPolicy.company_id == company_id
-        )
-    )
-    policy = result.scalar_one_or_none()
-
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
     if policy:
         return policy.to_dict()
-
     return {
         "id": "",
         "company_id": company_id,
@@ -131,49 +114,18 @@ async def upsert_policy(
     company_id: str,
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Create or update full hiring policy for a company."""
-    result = await db.execute(
-        select(CompanyHiringPolicy).where(
-            CompanyHiringPolicy.company_id == company_id
-        )
-    )
-    policy = result.scalar_one_or_none()
-
+    repo = HiringPolicyRepository(db)
     update_data = payload.model_dump(exclude_none=True)
+    effective_user = user_id or payload.updated_by
 
-    if policy:
-        for key, value in update_data.items():
-            if key in VALID_BLOCKS:
-                existing = getattr(policy, key) or {}
-                if isinstance(existing, dict) and isinstance(value, dict):
-                    existing.update(value)
-                    setattr(policy, key, existing)
-                else:
-                    setattr(policy, key, value)
-        policy.updated_by = user_id or payload.updated_by
-        policy.updated_at = datetime.utcnow()
-    else:
-        policy = CompanyHiringPolicy(
-            id=uuid.uuid4(),
-            company_id=company_id,
-            pipeline_rules=update_data.get("pipeline_rules", PIPELINE_RULES_DEFAULTS.copy()),
-            scheduling_rules=update_data.get("scheduling_rules", SCHEDULING_RULES_DEFAULTS.copy()),
-            communication_rules=update_data.get("communication_rules", COMMUNICATION_RULES_DEFAULTS.copy()),
-            screening_rules=update_data.get("screening_rules", SCREENING_RULES_DEFAULTS.copy()),
-            automation_rules=update_data.get("automation_rules", AUTOMATION_RULES_DEFAULTS.copy()),
-            pipeline_templates=update_data.get("pipeline_templates", []),
-            created_by=user_id or payload.updated_by,
-            updated_by=user_id or payload.updated_by,
-        )
-        db.add(policy)
-
+    policy = await repo.upsert(company_id, update_data, VALID_BLOCKS, user_id=effective_user)
     policy.setup_progress = _calculate_progress(policy)
     if policy.setup_progress >= 100 and not policy.setup_completed_at:
         policy.setup_completed_at = datetime.utcnow()
-
-    await db.flush()
+    await repo.flush()
     invalidate_policy_cache(company_id)
 
     try:
@@ -190,23 +142,11 @@ async def update_policy_partial(
     company_id: str,
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Partially update hiring policy — merges provided blocks."""
-    result = await db.execute(
-        select(CompanyHiringPolicy).where(
-            CompanyHiringPolicy.company_id == company_id
-        )
-    )
-    policy = result.scalar_one_or_none()
-
-    if not policy:
-        policy = CompanyHiringPolicy(
-            id=uuid.uuid4(),
-            company_id=company_id,
-            created_by=user_id,
-        )
-        db.add(policy)
+    repo = HiringPolicyRepository(db)
+    policy = await repo.create_if_missing(company_id, user_id)
 
     update_data = payload.model_dump(exclude_none=True)
     for key, value in update_data.items():
@@ -223,8 +163,7 @@ async def update_policy_partial(
     policy.setup_progress = _calculate_progress(policy)
     if policy.setup_progress >= 100 and not policy.setup_completed_at:
         policy.setup_completed_at = datetime.utcnow()
-
-    await db.flush()
+    await repo.flush()
     invalidate_policy_cache(company_id)
 
     try:
@@ -240,29 +179,17 @@ async def update_policy_block(
     company_id: str,
     payload: CompanyHiringPolicyBlockUpdate,
     user_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Update a single block of the hiring policy."""
     if payload.block not in VALID_BLOCKS:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid block: {payload.block}. Valid: {VALID_BLOCKS}"
+            detail=f"Invalid block: {payload.block}. Valid: {VALID_BLOCKS}",
         )
 
-    result = await db.execute(
-        select(CompanyHiringPolicy).where(
-            CompanyHiringPolicy.company_id == company_id
-        )
-    )
-    policy = result.scalar_one_or_none()
-
-    if not policy:
-        policy = CompanyHiringPolicy(
-            id=uuid.uuid4(),
-            company_id=company_id,
-            created_by=user_id,
-        )
-        db.add(policy)
+    repo = HiringPolicyRepository(db)
+    policy = await repo.create_if_missing(company_id, user_id)
 
     existing = getattr(policy, payload.block) or {}
     if isinstance(existing, dict) and isinstance(payload.data, dict):
@@ -276,8 +203,7 @@ async def update_policy_block(
     policy.setup_progress = _calculate_progress(policy)
     if policy.setup_progress >= 100 and not policy.setup_completed_at:
         policy.setup_completed_at = datetime.utcnow()
-
-    await db.flush()
+    await repo.flush()
     invalidate_policy_cache(company_id)
 
     try:
@@ -289,33 +215,17 @@ async def update_policy_block(
 
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
-async def get_policy_progress(
-    company_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db)):
     """Get setup progress for a company's hiring policy."""
-    result = await db.execute(
-        select(CompanyHiringPolicy).where(
-            CompanyHiringPolicy.company_id == company_id
-        )
-    )
-    policy = result.scalar_one_or_none()
-
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
     if not policy:
         return {
             "company_id": company_id,
             "setup_progress": 0,
             "setup_completed_at": None,
-            "blocks_completed": {
-                "pipeline_rules": False,
-                "scheduling_rules": False,
-                "communication_rules": False,
-                "screening_rules": False,
-                "automation_rules": False,
-                "pipeline_templates": False,
-            }
+            "blocks_completed": {b: False for b in list(BLOCK_QUESTION_COUNTS) + ["pipeline_templates"]},
         }
-
     return {
         "company_id": company_id,
         "setup_progress": policy.setup_progress or 0,
@@ -324,110 +234,21 @@ async def get_policy_progress(
     }
 
 
-async def _fetch_conversation_history(
-    db: AsyncSession, company_id: str, session_id: str, limit: int = 10
-) -> list[dict[str, Any]]:
-    """Fetch recent conversation history from the DB for policy chat."""
-    try:
-        query = text("""
-            SELECT m.role, m.content
-            FROM messages m
-            JOIN conversations c ON m.conversation_id = c.id
-            WHERE c.context_type = 'policy'
-              AND c.context_id = :company_id
-              AND c.session_id = :session_id
-            ORDER BY m.created_at DESC
-            LIMIT :limit
-        """)
-        result = await db.execute(query, {
-            "company_id": company_id,
-            "session_id": session_id,
-            "limit": limit,
-        })
-        rows = result.fetchall()
-        history = [{"role": row[0], "content": row[1]} for row in reversed(rows)]
-        return history
-    except Exception as e:
-        logger.warning(f"[policy_chat] Failed to fetch conversation history: {e}")
-        return []
-
-
-async def _persist_chat_messages(
-    db: AsyncSession, company_id: str, session_id: str,
-    user_message: str, assistant_reply: str, user_id: str | None = None,
-) -> None:
-    """Persist user and assistant messages to the DB."""
-    try:
-        find_conv = text("""
-            SELECT id FROM conversations
-            WHERE context_type = 'policy'
-              AND context_id = :company_id
-              AND session_id = :session_id
-            LIMIT 1
-        """)
-        result = await db.execute(find_conv, {
-            "company_id": company_id,
-            "session_id": session_id,
-        })
-        row = result.fetchone()
-
-        if row:
-            conv_id = row[0]
-        else:
-            conv_id = str(uuid.uuid4())
-            insert_conv = text("""
-                INSERT INTO conversations (id, user_id, context_type, context_id, session_id, status, is_active, created_at, updated_at)
-                VALUES (:id, :user_id, 'policy', :company_id, :session_id, 'active', true, NOW(), NOW())
-            """)
-            await db.execute(insert_conv, {
-                "id": conv_id,
-                "user_id": user_id or "default_user",
-                "company_id": company_id,
-                "session_id": session_id,
-            })
-
-        insert_msg = text("""
-            INSERT INTO messages (id, conversation_id, role, content, created_at)
-            VALUES (:id, :conv_id, :role, :content, NOW())
-        """)
-        await db.execute(insert_msg, {
-            "id": str(uuid.uuid4()),
-            "conv_id": conv_id,
-            "role": "user",
-            "content": user_message,
-        })
-        await db.execute(insert_msg, {
-            "id": str(uuid.uuid4()),
-            "conv_id": conv_id,
-            "role": "assistant",
-            "content": assistant_reply,
-        })
-
-        await db.flush()
-    except Exception as e:
-        logger.warning(f"[policy_chat] Failed to persist chat messages: {e}")
-
-
 @router.post("/{company_id}/chat", response_model=PolicyChatResponse)
 async def policy_chat(
     company_id: str,
     payload: PolicyChatMessage,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
-    """Conversational endpoint for hiring policy configuration.
-
-    Uses the PolicyReActAgent (ReAct-based) for intelligent, consultive
-    policy configuration with compliance validation. Falls back to the
-    legacy PolicySetupAgent if the ReAct agent fails.
-    """
+    """Conversational endpoint for hiring policy configuration."""
     current_policy = await get_company_policy(company_id, db)
 
     session_id = payload.session_id or str(uuid.uuid4())
+    repo = HiringPolicyRepository(db)
+
     conversation_history = payload.conversation_history or []
     if not conversation_history:
-        conversation_history = await _fetch_conversation_history(
-            db, company_id, session_id
-        )
+        conversation_history = await repo.fetch_conversation_history(company_id, session_id)
 
     try:
         react_agent = PolicyReActAgent()
@@ -453,8 +274,8 @@ async def policy_chat(
         }
 
     try:
-        await _persist_chat_messages(
-            db, company_id, session_id,
+        await repo.persist_chat_messages(
+            company_id, session_id,
             user_message=payload.message,
             assistant_reply=result.get("reply", ""),
             user_id=payload.user_id,
@@ -471,21 +292,13 @@ async def policy_chat(
 
     answered_field = result.get("answered_field")
     if answered_field:
-        policy_result = await db.execute(
-            select(CompanyHiringPolicy).where(
-                CompanyHiringPolicy.company_id == company_id
-            )
-        )
-        policy = policy_result.scalar_one_or_none()
+        policy = await repo.get_by_company(company_id)
         if policy:
-            existing_answered = list(policy.answered_questions or [])
-            if answered_field not in existing_answered:
-                existing_answered.append(answered_field)
-                policy.answered_questions = existing_answered
-                policy.setup_progress = _calculate_progress(policy)
-                if policy.setup_progress >= 100 and not policy.setup_completed_at:
-                    policy.setup_completed_at = datetime.utcnow()
-            await db.flush()
+            policy = await repo.update_answered_questions(policy, answered_field)
+            policy.setup_progress = _calculate_progress(policy)
+            if policy.setup_progress >= 100 and not policy.setup_completed_at:
+                policy.setup_completed_at = datetime.utcnow()
+            await repo.flush()
 
     return PolicyChatResponse(
         reply=result["reply"],

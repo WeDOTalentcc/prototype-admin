@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["system"])
 
 
+# TODO(phase2): extract to repository — system health check queries
 async def _check_redis() -> dict:
     """Check Redis connectivity (critical for rate limiting, DLQ, token budget)."""
     try:

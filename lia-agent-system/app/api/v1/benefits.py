@@ -123,6 +123,7 @@ BENEFIT_TEMPLATES_DATA = [
 
 
 @router.get("/templates", response_model=BenefitTemplateListResponse)
+# TODO(phase2): extract to repository — company benefit template operations
 async def get_benefit_templates(
     category: str | None = Query(None, description="Filter by category"),
     search: str | None = Query(None, description="Search by name"),

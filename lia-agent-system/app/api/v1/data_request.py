@@ -258,6 +258,7 @@ class FieldResponse(BaseModel):
     is_default: bool = False
 
 
+# TODO(phase2): extract to repository — data subject request handling
 def _get_company_id() -> UUID:
     """Get company ID from context. Placeholder for auth integration."""
     return UUID("00000000-0000-0000-0000-000000000001")

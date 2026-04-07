@@ -70,6 +70,7 @@ class AnalysisStatusResponse(BaseModel):
     error: str | None = None
 
 
+# TODO(phase2): extract to repository — multi-model interview/opinion join
 async def create_opinion_from_analysis(
     analysis_result,
     company_id: str,

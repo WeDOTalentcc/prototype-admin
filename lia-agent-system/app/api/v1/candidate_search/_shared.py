@@ -42,6 +42,7 @@ from app.services.archetype_builder_service import (
 logger = logging.getLogger(__name__)
 
 
+# TODO(phase2): extract to repository — candidate search shared DB access
 def _normalize_priority(priority_value) -> RequirementPriorityEnum:
     """Normalize priority value to RequirementPriorityEnum, handling ORM enums and strings."""
     if priority_value is None:

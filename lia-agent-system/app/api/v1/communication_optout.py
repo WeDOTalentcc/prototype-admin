@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 
 
+# TODO(phase2): extract to repository — communication opt-out
 def _get_consent_event_model():
     from app.domains.analytics.models.observability import ConsentEvent
     return ConsentEvent
