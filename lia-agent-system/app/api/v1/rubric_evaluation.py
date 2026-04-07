@@ -27,7 +27,7 @@ from app.schemas.rubric import (
     RubricEvaluationResult,
 )
 from app.services.consent_checker_service import ConsentCheckerService
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger
 
@@ -58,6 +58,7 @@ async def evaluate_candidate(
     request: EvaluateCandidateRequest,
     db: AsyncSession = Depends(get_db),
     x_company_id: str | None = Header(None),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Evaluate a single candidate against job requirements using structured rubrics.
@@ -196,7 +197,7 @@ async def evaluate_candidate(
         _evals = evaluation_result.evaluations or []
         dimension_summary = [f"{e.requirement}: {e.score}/5" for e in _evals[:5]]
         _n_dimensions = len(_evals)
-        await audit_service.log_decision(
+        await audit_svc.log_decision(
             company_id=x_company_id or None,
             agent_name="rubric_evaluation",
             decision_type="score_candidate",
