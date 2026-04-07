@@ -304,7 +304,7 @@ export function HiringPoliciesHub() {
           {POLICY_BLOCKS.map((block) => {
             const IconComp = ICON_MAP[block.iconName]
             const isExpanded = expandedBlocks.has(block.key)
-            const blockData = policy ? (policy as Record<string, unknown>)[block.key] as Record<string, unknown> | null : null
+            const blockData = policy ? (policy as unknown as Record<string, unknown>)[block.key] as Record<string, unknown> | null : null
             const isCompleted = progress?.blocks_completed?.[block.key] ?? false
 
             return (

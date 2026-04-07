@@ -34,8 +34,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
 
       <GoalsManagement
         key={hub.goalsRefreshKey}
-        users={hub.effectiveUsers}
-        onGoalUpdate={(hub.onGoalUpdate || (() => {})) as (userId: string, goals: Record<string, unknown>) => void}
+        users={hub.effectiveUsers as unknown as { id: string; name: string; email?: string; role?: string; department?: string; isActive?: boolean; avatar?: string }[]}
+        onGoalUpdate={(hub.onGoalUpdate || (() => {})) as unknown as (userId: string, goals: import('./use-goals-management').UserGoal[]) => void}
       />
     </div>
   )
