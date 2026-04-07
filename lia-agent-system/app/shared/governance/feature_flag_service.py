@@ -328,3 +328,8 @@ class FeatureFlagService:
 
 
 feature_flag_service = FeatureFlagService()
+
+
+# FastAPI dependency injection factory — returns singleton (cache must be shared)
+def get_feature_flag_service() -> FeatureFlagService:
+    return feature_flag_service
