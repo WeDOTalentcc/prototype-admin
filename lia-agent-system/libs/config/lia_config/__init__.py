@@ -6,4 +6,4 @@ Exports:
     database : engine, Base, AsyncSessionLocal, get_db, async_session_factory
     celery_app: celery_app instance
 """
-from lia_config.config import settings, Settings  # noqa: F401
+from .config import settings, Settings  # noqa: F401  # use relative import for path-based access

@@ -856,7 +856,12 @@ async def get_job_report(
     job_id: UUID,
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+    db=None,
 ):
+    # Support db kwarg for backwards compatibility (tests inject db directly)
+    if db is not None and not hasattr(repo, 'get_job_by_id_and_company'):
+        from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
+        repo = _JVAR(db)
     """Returns JSON data for the JobReportModal."""
     company_id = get_user_company_id(current_user)
 
