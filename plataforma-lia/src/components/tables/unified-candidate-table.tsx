@@ -60,7 +60,7 @@ export function UnifiedCandidateTable({
   const rowVirtualizer = enableVirtualScroll && useVirtualizer
     // eslint-disable-next-line react-hooks/rules-of-hooks
     ? useVirtualizer({
-        count: (sortedCandidates as { length: number }).length,
+        count: candidates.length,
         getScrollElement: () => virtualScrollRef.current,
         estimateSize: () => 56,
         overscan: 20,

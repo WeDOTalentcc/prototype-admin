@@ -280,7 +280,7 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
     e.stopPropagation()
     setEditingArchetype(arch)
     setEditArchetypeName(arch.name || "")
-    const archRecord = arch as Record<string, unknown>
+    const archRecord = arch as unknown as Record<string, unknown>
     const query = (archRecord.query as string) || (arch.criteria?.query as string) || ""
     setEditArchetypeQuery(query)
     setEditArchetypeDescription(arch.description || "")

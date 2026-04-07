@@ -346,7 +346,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
 
   const creditEstimate = React.useMemo(() => {
     if (searchSource === 'local') {
-      return { total: 0, perCandidate: 0, isLocal: true, canAfford: true }
+      return { total: 0, perCandidate: 0, isLocal: true, canAfford: true, isLoading: false as boolean }
     }
 
     const estimate = creditEstimator.calculateLocal({

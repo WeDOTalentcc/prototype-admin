@@ -53,8 +53,8 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
             const existingPositionsMap = new Map(prevDepts.map(d => [d.id, d.positions]))
             const existingByName = new Map(prevDepts.map(d => [d.name.toLowerCase(), d.positions]))
             return backendDepts.map((d: Record<string, unknown>) => ({
-              id: d.id,
-              name: d.name,
+              id: d.id as string,
+              name: d.name as string,
               positions: existingPositionsMap.get(d.id as string) || existingByName.get(String(d.name).toLowerCase()) || [],
               expanded: false
             }))
@@ -296,7 +296,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const addDepartment = async () => {
     const tempId = `temp-${Date.now()}`
     const newName = 'Novo Departamento'
-    const emptyPlanning = { jan: 0, fev: 0, mar: 0, abr: 0, mai: 0, jun: 0, jul: 0, ago: 0, set: 0, out: 0, nov: 0, dez: 0 }
+    const emptyPlanning = { jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 }
     const newDept: DepartmentData = {
       id: tempId, name: newName,
       positions: [{ id: `${tempId}-0`, name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { ...emptyPlanning } }],
@@ -318,7 +318,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const addPositionToDepartment = (deptId: string) => {
     setDepartments(prev => prev.map(d =>
       d.id === deptId
-        ? { ...d, positions: [...d.positions, { id: Date.now().toString(), name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { jan: 0, fev: 0, mar: 0, abr: 0, mai: 0, jun: 0, jul: 0, ago: 0, set: 0, out: 0, nov: 0, dez: 0 } }] }
+        ? { ...d, positions: [...d.positions, { id: Date.now().toString(), name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0 } }] }
         : d
     ))
   }

@@ -316,9 +316,9 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
         return (
           <CandidateSummaryCard
             data={chatCardData as unknown as Parameters<typeof CandidateSummaryCard>[0]['data']}
-            onScheduleInterview={() => handleCardAction("schedule")}
-            onViewDetails={() => handleCardAction("view_details")}
-            onAddToShortlist={() => handleCardAction("add_shortlist")}
+            onSchedule={() => handleCardAction("schedule")}
+            onViewProfile={() => handleCardAction("view_details")}
+            onApprove={() => handleCardAction("add_shortlist")}
           />
         )
       case "wsi_score":
@@ -333,23 +333,21 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
           <CompensationSummaryCard
             data={chatCardData as unknown as Parameters<typeof CompensationSummaryCard>[0]['data']}
             onEdit={() => handleCardAction("edit")}
-            onApprove={() => handleCardAction("approve")}
           />
         )
       case "interview_confirmation":
         return (
           <InterviewConfirmationCard
             data={chatCardData as unknown as Parameters<typeof InterviewConfirmationCard>[0]['data']}
-            onReschedule={() => handleCardAction("reschedule")}
-            onCancel={() => handleCardAction("cancel")}
-            onConfirm={() => handleCardAction("confirm")}
+            onAddToCalendar={() => handleCardAction("reschedule")}
+            onCopyLink={() => handleCardAction("cancel")}
+            onSendReminder={() => handleCardAction("confirm")}
           />
         )
       case "progress_tracker":
         return (
           <ProgressTrackerCard
             data={chatCardData as unknown as Parameters<typeof ProgressTrackerCard>[0]['data']}
-            onViewDetails={() => handleCardAction("view_details")}
           />
         )
       case "job_summary":
@@ -358,7 +356,7 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
             data={chatCardData as unknown as Parameters<typeof JobSummaryCard>[0]['data']}
             onEdit={() => handleCardAction("edit")}
             onPublish={() => handleCardAction("publish")}
-            onViewCandidates={() => handleCardAction("view_candidates")}
+            onView={() => handleCardAction("view_candidates")}
           />
         )
       case "company_benefits":

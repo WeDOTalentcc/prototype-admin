@@ -103,7 +103,7 @@ const INITIAL_EVENTS: WebhookEvent[] = [
   },
   {
     id: '3',
-    
+    integration: 'teams-rh',
     event: 'entrevista_tecnica',
     status: 'failed',
     timestamp: '2025-03-15T12:00:00Z',
@@ -135,7 +135,7 @@ export function useIntegrationsPage() {
   const [testingIntegration, setTestingIntegration] = useState<string | null>(null)
   const [newIntegration, setNewIntegration] = useState<NewIntegrationForm>({
     name: '',
-    type: 'slack',
+    type: 'teams',
     webhookUrl: '',
     channels: [''],
     events: []

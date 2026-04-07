@@ -222,15 +222,15 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.industry_time_filter && !normalized.company.industryTimeFilter) {
-    normalized.company.industryTimeFilter = normalized.industry_time_filter as SearchFilters['company']['industryTimeFilter']
+    normalized.company!.industryTimeFilter = normalized.industry_time_filter as NonNullable<SearchFilters['company']>['industryTimeFilter']
   }
   
   if (normalized.company_tags_time_filter && !normalized.company.companyTagsTimeFilter) {
-    normalized.company.companyTagsTimeFilter = normalized.company_tags_time_filter as SearchFilters['company']['companyTagsTimeFilter']
+    normalized.company!.companyTagsTimeFilter = normalized.company_tags_time_filter as NonNullable<SearchFilters['company']>['companyTagsTimeFilter']
   }
   
   if (normalized.company_hq_time_filter && !normalized.company.companyHQTimeFilter) {
-    normalized.company.companyHQTimeFilter = normalized.company_hq_time_filter as SearchFilters['company']['companyHQTimeFilter']
+    normalized.company!.companyHQTimeFilter = normalized.company_hq_time_filter as NonNullable<SearchFilters['company']>['companyHQTimeFilter']
   }
   
   const { 

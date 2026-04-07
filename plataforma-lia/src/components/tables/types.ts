@@ -161,4 +161,5 @@ export interface CandidateRowProps {
   renderActions?: () => React.ReactNode
   renderLeftOverlayActions?: () => React.ReactNode
   renderCustomCell?: (columnId: string) => React.ReactNode | null
+  style?: React.CSSProperties
 }

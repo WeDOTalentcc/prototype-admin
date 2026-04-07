@@ -141,9 +141,9 @@ export function useChatMessages({
           timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
           type: "text",
           actions: [
-            { label: "Analisar CV", icon: FileText as unknown as React.ReactNode, variant: "default" },
-            { label: "Extrair dados", icon: Database as unknown as React.ReactNode, variant: "outline" },
-            { label: "Comparar perfis", icon: Users as unknown as React.ReactNode, variant: "outline" },
+            { label: "Analisar CV", icon: FileText as React.ElementType, variant: "default" },
+            { label: "Extrair dados", icon: Database as React.ElementType, variant: "outline" },
+            { label: "Comparar perfis", icon: Users as React.ElementType, variant: "outline" },
           ],
         }
         setMessages(prev => [...prev, liaResponse])

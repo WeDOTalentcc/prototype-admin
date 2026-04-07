@@ -328,11 +328,11 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiSummaryExpanded(false)
 
     const techReqs = (job.technicalRequirements || []) as Record<string, unknown>[]
-    const techSkills = techReqs.map((r) => r.technology || r.skill || r).filter(Boolean)
+    const techSkills = (techReqs.map((r) => r.technology || r.skill || r).filter(Boolean) as string[])
     const behavComps = (job.behavioralCompetencies || []) as Record<string, unknown>[]
-    const behavComp = behavComps.map((c) => c.competency || c.name || c).filter(Boolean)
+    const behavComp = (behavComps.map((c) => c.competency || c.name || c).filter(Boolean) as string[])
     const reqs = (job.requirements || []) as Array<string | Record<string, unknown>>
-    const responsibilities = reqs.map((r) => typeof r === 'string' ? r : (r as Record<string, unknown>).requirement || (r as Record<string, unknown>).text || (r as Record<string, unknown>).name || r).filter(Boolean)
+    const responsibilities = (reqs.map((r) => typeof r === 'string' ? r : (r as Record<string, unknown>).requirement || (r as Record<string, unknown>).text || (r as Record<string, unknown>).name || r).filter(Boolean) as string[])
     setWsiGenerationContext({
       title: (job.title as string) || '',
       seniority: (job.level as string) || (job.seniority as string) || null,

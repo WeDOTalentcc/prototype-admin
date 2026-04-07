@@ -156,8 +156,8 @@ export function useArchetypes({
     if (parsedEntities.company) spec.company = parsedEntities.company
     if (parsedEntities.years_experience) spec.years_experience = parsedEntities.years_experience
     if (parsedEntities.skills && parsedEntities.skills.length > 0) spec.skills = parsedEntities.skills
-    if ((advancedFilters.locations as any)?.locations && (advancedFilters.locations as any).locations.length > 0) {
-      spec.locations = (advancedFilters.locations as any).locations
+    if ((advancedFilters as Record<string, unknown>).locations && ((advancedFilters as Record<string, unknown>).locations as string[]).length > 0) {
+      spec.locations = (advancedFilters as Record<string, unknown>).locations as string[]
     }
     if (advancedFilters.job?.titles && advancedFilters.job.titles.length > 0) {
       spec.job_titles = advancedFilters.job.titles

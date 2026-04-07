@@ -125,7 +125,7 @@ export function ArchetypeCard({
             </div>
           )}
 
-          {(arch.filters as Record<string, unknown>)?.skills && ((arch.filters as Record<string, unknown>).skills as string[]).length > 0 && (
+          {!!(arch.filters as Record<string, unknown>)?.skills && ((arch.filters as Record<string, unknown>).skills as string[]).length > 0 && (
             <div className="space-y-1">
               <span className="text-micro font-medium text-lia-text-tertiary">Skills</span>
               <div className="flex flex-wrap gap-1">
@@ -143,7 +143,7 @@ export function ArchetypeCard({
 
           <ArchetypeFilterDetails arch={arch} />
 
-          {(arch.filters as Record<string, unknown>)?.languages && ((arch.filters as Record<string, unknown>).languages as string[]).length > 0 && (
+          {!!(arch.filters as Record<string, unknown>)?.languages && ((arch.filters as Record<string, unknown>).languages as string[]).length > 0 && (
             <div className="space-y-1">
               <span className="text-micro font-medium text-lia-text-tertiary">Idiomas</span>
               <div className="flex flex-wrap gap-1">

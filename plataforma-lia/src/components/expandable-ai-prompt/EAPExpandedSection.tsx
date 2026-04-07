@@ -270,7 +270,7 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
         </div>
 
         <div className="mb-3">
-          <EAPTabContent {...core} />
+          <EAPTabContent {...(core as Parameters<typeof EAPTabContent>[0])} />
         </div>
 
         <div className="p-2.5 bg-white rounded-md mb-3 border border-lia-border-subtle">

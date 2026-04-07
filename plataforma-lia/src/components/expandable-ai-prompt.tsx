@@ -178,7 +178,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
             candidateLimit={candidateLimit}
             filledTagsCount={filledTagsCount}
             activeSearchTab={activeSearchTab}
-            setActiveSearchTab={setActiveSearchTab}
+            setActiveSearchTab={(v: string) => setActiveSearchTab(v as Parameters<typeof setActiveSearchTab>[0])}
             suggestions={suggestions}
             commandHistory={commandHistory}
             showHistory={showHistory}
@@ -229,7 +229,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
         confirmSourceChange={confirmSourceChange}
         showSaveArchetypeModal={showSaveArchetypeModal}
         setShowSaveArchetypeModal={setShowSaveArchetypeModal}
-        buildSearchSpecFromEntities={buildSearchSpecFromEntities as () => Record<string, unknown>}
+        buildSearchSpecFromEntities={buildSearchSpecFromEntities as unknown as import('@/lib/api/candidate-search').SearchSpec}
         naturalSearchValue={naturalSearchValue}
         handleArchetypeSaved={handleArchetypeSaved as () => void}
       />

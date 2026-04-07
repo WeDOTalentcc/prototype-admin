@@ -225,7 +225,6 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
   const [savedTemplates, setSavedTemplates] = useState<Record<string, unknown>[]>([])
 
   const callbacks = useEAPCallbacks({
-    toast,
     parseEntitiesFromQuery: async () => {},
     parsedEntities,
     advancedFilters: advancedFilters as any,

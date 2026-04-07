@@ -10,7 +10,7 @@ import {
 import { PromptSuggestionsPopover } from "@/components/ui/prompt-suggestions-popover"
 import { LiaQueriesGuide } from "@/components/ui/lia-queries-guide"
 import { CandidateQueriesGuide } from "@/components/ui/candidate-queries-guide"
-import { FileUploadButton } from "@/components/ui/file-upload-button"
+import { FileUploadButton, type FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { ContextBadge, PAGE_ROUTE_TO_CONTEXT_LABEL } from "@/components/lia-float/ContextBadge"
 
@@ -22,7 +22,7 @@ interface EAPInputBarProps {
   setIsExpanded: (v: boolean) => void
   handleSubmit: (e: React.FormEvent) => void
   getPlaceholder: () => string
-  handleFileAnalyzed: (file: File, analysis: Record<string, unknown>) => void
+  handleFileAnalyzed: (file: File, analysis: FileAnalysisResult) => void
   handleAudioTranscription: (text: string) => void
   searchSource: string
   setSearchSource: (v: 'local' | 'global' | 'hybrid') => void

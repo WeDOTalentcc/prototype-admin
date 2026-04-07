@@ -33,6 +33,7 @@ interface EducationEntry {
   end_date?: string
   endDate?: string
   description?: string
+  [key: string]: unknown
 }
 
 interface ExperienceEntry {
@@ -54,11 +55,13 @@ interface ExperienceEntry {
   company_size?: string
   company_size_range?: string
   is_startup?: boolean
+  [key: string]: unknown
 }
 
 interface LanguageEntry {
   language: string
   level: string
+  [key: string]: unknown
 }
 
 interface SkillCategoryEntry {
@@ -74,8 +77,8 @@ interface CandidateProfileTabProps {
   languagesData: LanguageEntry[]
   calculateAge: (date: string) => number | null
   formatCurrency: (value: number | null | undefined, currency?: string) => string | null
-  formatDate: (date: string | null | undefined) => string | null
-  formatDateShort: (date: string | null | undefined) => string | null
+  formatDate: (date: string | null | undefined) => string
+  formatDateShort: (date: string | null | undefined) => string
   getLanguageLevel: (level: string) => { label: string; percent: number; color: string }
   hasDocuments: (c: Record<string, unknown>) => boolean
   hasPearchData: (c: Record<string, unknown>) => boolean
