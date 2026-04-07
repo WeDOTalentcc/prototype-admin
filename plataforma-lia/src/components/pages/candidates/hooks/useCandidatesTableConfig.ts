@@ -198,7 +198,7 @@ export function useCandidatesTableConfig() {
   const setCandidateTableColumnOrder = useUIPreferencesStore(s => s.setCandidateTableColumnOrder)
 
   const handleSaveColumns = () => {
-    setCandidateTableColumns(tableColumns as Parameters<typeof setCandidateTableColumns>[0])
+    setCandidateTableColumns(tableColumns as unknown as Parameters<typeof setCandidateTableColumns>[0])
     setShowColumnConfig(false)
   }
 

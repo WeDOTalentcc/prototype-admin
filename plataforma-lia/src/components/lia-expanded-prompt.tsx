@@ -32,6 +32,7 @@ const CATEGORY_COLORS: Record<string, {
   badgeVariant: 'default' | 'secondary' | 'outline'
 }> = {
   vagas: {
+    borderColor: 'var(--lia-border-subtle)',
     backgroundColor: 'var(--lia-bg-secondary)',
     iconBg: 'var(--lia-bg-tertiary)',
     textColor: 'var(--lia-text-primary)',

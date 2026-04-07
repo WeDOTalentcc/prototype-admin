@@ -206,7 +206,7 @@ export function useCandidatesColumnConfig() {
   const handleToggleColumnConfig = () => setShowColumnConfig(prev => !prev)
 
   const handleSaveColumns = () => {
-    setCandidateTableColumns(tableColumns as Parameters<typeof setCandidateTableColumns>[0])
+    setCandidateTableColumns(tableColumns as unknown as Parameters<typeof setCandidateTableColumns>[0])
     setShowColumnConfig(false)
   }
 
