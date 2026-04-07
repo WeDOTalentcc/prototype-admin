@@ -56,6 +56,13 @@ except ImportError:
     _get_voice_service = None  # type: ignore[assignment]
 
 try:
+    from app.services.voice.deepgram_service import deepgram_service as _deepgram_service
+    from app.services.voice.deepgram_service import DeepgramUnconfiguredError as _DeepgramUnconfiguredError
+except ImportError:
+    _deepgram_service = None  # type: ignore[assignment]
+    _DeepgramUnconfiguredError = Exception  # type: ignore[assignment,misc]
+
+try:
     from app.services.voice_screening_analysis import analyze_voice_screening as _analyze_voice_screening
 except ImportError:
     _analyze_voice_screening = None  # type: ignore[assignment]
@@ -815,37 +822,75 @@ class VoiceScreeningOrchestrator:
             return None
 
         try:
-            if _get_voice_service is None:
-                logger.warning("[VOICE SCREENING] gemini_voice_service not available — skipping STT")
+            wav_data = mulaw_to_wav(audio_data, sample_rate=8000)
+            language = self._get_session_language(session_id)
+            text: str | None = None
+
+            # Primary STT: Gemini Flash
+            if _get_voice_service is not None:
+                try:
+                    voice_svc = _get_voice_service()
+                    result = await voice_svc.transcribe_audio(
+                        audio_data=wav_data,
+                        mime_type="audio/wav",
+                        language=language,
+                    )
+                    text = result.get("text", "").strip() or None
+                except Exception as gemini_exc:
+                    logger.warning(
+                        "[VOICE SCREENING] Gemini STT failed session=%s — attempting Deepgram fallback: %s",
+                        session_id,
+                        gemini_exc,
+                    )
+
+            # Fallback STT: Deepgram nova-2 (if Gemini unavailable or failed)
+            if text is None and _deepgram_service is not None:
+                try:
+                    if _deepgram_service.is_configured():
+                        dg_result = await _deepgram_service.transcribe(
+                            audio_data=wav_data,
+                            mime_type="audio/wav",
+                            language=language if language in ("pt-BR", "en-US") else "pt-BR",
+                        )
+                        text = dg_result.get("transcript", "").strip() or None
+                        if text:
+                            logger.debug(
+                                "[VOICE SCREENING] Deepgram STT fallback success session=%s chars=%d",
+                                session_id,
+                                len(text),
+                            )
+                except _DeepgramUnconfiguredError:
+                    pass  # Deepgram not configured — continue without transcript
+                except Exception as dg_exc:
+                    logger.warning(
+                        "[VOICE SCREENING] Deepgram STT fallback failed session=%s: %s",
+                        session_id,
+                        dg_exc,
+                    )
+
+            if text is None:
+                logger.warning(
+                    "[VOICE SCREENING] All STT providers failed or unavailable session=%s",
+                    session_id,
+                )
                 return None
 
-            wav_data = mulaw_to_wav(audio_data, sample_rate=8000)
-
-            voice_svc = _get_voice_service()
-            result = await voice_svc.transcribe_audio(
-                audio_data=wav_data,
-                mime_type="audio/wav",
-                language=self._get_session_language(session_id),
+            masked_text = mask_pii(text)
+            logger.debug(
+                "[VOICE SCREENING] STT segment session=%s: %s",
+                session_id,
+                masked_text[:100],
             )
 
-            text = result.get("text", "").strip()
-            if text:
-                masked_text = mask_pii(text)
-                logger.debug(
-                    "[VOICE SCREENING] STT segment session=%s: %s",
-                    session_id,
-                    masked_text[:100],
-                )
+            session = self._sessions.get(session_id)
+            if session:
+                session.transcript_segments.append({
+                    "text": text,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "role": "candidate",
+                })
 
-                session = self._sessions.get(session_id)
-                if session:
-                    session.transcript_segments.append({
-                        "text": text,
-                        "timestamp": datetime.utcnow().isoformat(),
-                        "role": "candidate",
-                    })
-
-            return text if text else None
+            return text
 
         except Exception as e:
             logger.error(

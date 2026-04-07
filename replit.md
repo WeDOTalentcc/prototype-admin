@@ -115,4 +115,6 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - OpenAI (Whisper, TTS — PSTN fallback only)
 - Twilio (Voice — PSTN fallback only)
 - Google Gemini Live Audio API (VoIP browser screening)
+- Deepgram (STT/transcrição de voz — nova-2, pt-BR/en-US) — env: `DEEPGRAM_API_KEY`
+- OpenMic.ai (triagem automatizada por voz) — env: `OPENMIC_API_KEY`, `OPENMIC_WEBHOOK_SECRET`
 - Celery

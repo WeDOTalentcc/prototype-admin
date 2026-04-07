@@ -1478,3 +1478,40 @@ async def _run_retention_cleanup_async() -> dict:
     }
     logger.info("Retention cleanup complete: %s", result_dict)
     return result_dict
+
+
+# ---------------------------------------------------------------------------
+# OpenMic Voice Screening — WSI Pipeline Task
+# ---------------------------------------------------------------------------
+
+@celery_app.task(name="voice.openmic.wsi_pipeline", bind=True, max_retries=3, queue="evaluation_normal")
+def run_openmic_wsi_pipeline_task(self, task_data: dict) -> dict:
+    """
+    Process OpenMic voice screening result through the WSI scoring pipeline.
+
+    Triggered by the OpenMic webhook after a call completes. Delegates to
+    `app.services.voice.wsi_pipeline.run_voice_wsi_pipeline` which handles:
+    1. (Optional) Deepgram re-transcription if transcript is missing/short.
+    2. WSI deterministic scoring from transcript.
+    3. Persist result to `voice_wsi_results` table.
+    4. Notify recruiter via Bell notification.
+
+    Args:
+        task_data: Dict with call_id, candidate_id, job_id, company_id,
+                   transcript, audio_url, duration_seconds, source.
+
+    Returns:
+        Dict with wsi_score, classification, candidate_id, job_id, status.
+    """
+    from app.services.voice.wsi_pipeline import run_voice_wsi_pipeline
+
+    try:
+        return asyncio.run(run_voice_wsi_pipeline(task_data))
+    except Exception as exc:
+        logger.error(
+            "voice.openmic.wsi_pipeline falhou call_id=%s candidate_id=%s: %s",
+            task_data.get("call_id", "unknown"),
+            task_data.get("candidate_id", "unknown"),
+            exc,
+        )
+        raise self.retry(exc=exc, countdown=60)

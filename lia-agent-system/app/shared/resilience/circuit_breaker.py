@@ -474,6 +474,26 @@ GEMINI_LIVE_CIRCUIT = CircuitBreaker(
     )
 )
 
+DEEPGRAM_CIRCUIT = CircuitBreaker(
+    "deepgram",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=30.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+OPENMIC_CIRCUIT = CircuitBreaker(
+    "openmic",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=60.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
 ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
@@ -490,6 +510,8 @@ ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "vindi": VINDI_CIRCUIT,
     "twilio_voice": TWILIO_VOICE_CIRCUIT,
     "gemini_live": GEMINI_LIVE_CIRCUIT,
+    "deepgram": DEEPGRAM_CIRCUIT,
+    "openmic": OPENMIC_CIRCUIT,
 }
 
 
@@ -600,6 +622,20 @@ CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
         "tier": "critical",
         "description": "Screening por voz — Gemini Live Audio (VoIP)",
     },
+    "deepgram": {
+        "availability_target": 0.999,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 0.1,
+        "tier": "high",
+        "description": "Transcrição de voz STT — Deepgram Nova-2",
+    },
+    "openmic": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 10000,
+        "error_budget_pct": 1.0,
+        "tier": "high",
+        "description": "Triagem automatizada por voz — OpenMic.ai",
+    },
 }
 
 # F1-03: respostas de modo degradado — retornadas quando o circuit está OPEN
@@ -665,6 +701,14 @@ DEGRADED_MODE_RESPONSES: dict[str, str] = {
     "gemini_live": (
         "O screening por voz via navegador está temporariamente indisponível. "
         "Tentando pipeline alternativo (Twilio). Caso indisponível, use chat ou WhatsApp."
+    ),
+    "deepgram": (
+        "A transcrição de voz está temporariamente indisponível. "
+        "Tente novamente em alguns instantes ou use transcrição manual."
+    ),
+    "openmic": (
+        "O screening automatizado por voz está temporariamente indisponível. "
+        "A triagem será conduzida via chat ou WhatsApp como alternativa."
     ),
 }
 

@@ -116,6 +116,61 @@ def _check_circuit_breakers() -> dict:
         return {"status": "unknown", "error": str(exc)[:200]}
 
 
+def _check_voice_services() -> dict:
+    """Check Deepgram STT and OpenMic.ai configuration and circuit breaker status."""
+    try:
+        deepgram_configured = bool(os.getenv("DEEPGRAM_API_KEY"))
+        openmic_configured = bool(os.getenv("OPENMIC_API_KEY"))
+        openmic_webhook_secret = bool(os.getenv("OPENMIC_WEBHOOK_SECRET"))
+
+        from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
+        deepgram_circuit = ALL_CIRCUITS.get("deepgram")
+        openmic_circuit = ALL_CIRCUITS.get("openmic")
+
+        deepgram_circuit_state = deepgram_circuit.state.value if deepgram_circuit else "unknown"
+        openmic_circuit_state = openmic_circuit.state.value if openmic_circuit else "unknown"
+
+        deepgram_status = (
+            "healthy" if (deepgram_configured and deepgram_circuit_state != "open")
+            else "degraded" if deepgram_configured
+            else "not_configured"
+        )
+        openmic_status = (
+            "healthy" if (openmic_configured and openmic_circuit_state != "open")
+            else "degraded" if openmic_configured
+            else "not_configured"
+        )
+
+        any_circuit_open = (
+            deepgram_circuit_state == "open" or openmic_circuit_state == "open"
+        )
+        overall_status = (
+            "healthy"
+            if (deepgram_configured and openmic_configured and not any_circuit_open)
+            else "degraded"
+        )
+
+        return {
+            "status": overall_status,
+            "deepgram": {
+                "configured": deepgram_configured,
+                "circuit_state": deepgram_circuit_state,
+                "status": deepgram_status,
+                "model": "nova-2",
+                "languages": ["pt-BR", "en-US"],
+            },
+            "openmic": {
+                "configured": openmic_configured,
+                "webhook_secret_configured": openmic_webhook_secret,
+                "circuit_state": openmic_circuit_state,
+                "status": openmic_status,
+                "webhook_endpoint": "/api/v1/openmic/webhook",
+            },
+        }
+    except Exception as exc:
+        return {"status": "unknown", "error": str(exc)[:200]}
+
+
 def _check_dlq() -> dict:
     """Check DLQ service availability (sync check only)."""
     try:
@@ -230,7 +285,12 @@ async def system_health(db: AsyncSession = Depends(get_db)):
         "gemini": "configured" if (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")) else "not_configured",
         "workos": "configured" if os.getenv("WORKOS_API_KEY") else "not_configured",
         "mailgun": "configured" if (os.getenv("MAILGUN_API_KEY") and os.getenv("MAILGUN_DOMAIN")) else "not_configured",
+        "deepgram": "configured" if os.getenv("DEEPGRAM_API_KEY") else "not_configured",
+        "openmic": "configured" if os.getenv("OPENMIC_API_KEY") else "not_configured",
     }
+
+    # --- Voice services (Deepgram STT + OpenMic) ---
+    components["voice_services"] = _check_voice_services()
 
     status_code = 200 if overall_healthy else 503
 

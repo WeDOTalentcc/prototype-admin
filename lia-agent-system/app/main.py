@@ -75,6 +75,31 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("⚠️  Pearch AI NOT configured (PEARCH_API_KEY missing)")
         logger.warning("   Candidate search features will not work until API key is added")
+
+    # Production safety guard: OPENMIC_ALLOW_UNSIGNED_WEBHOOK must never be true in prod
+    _allow_unsigned = os.getenv("OPENMIC_ALLOW_UNSIGNED_WEBHOOK", "false").lower()
+    _is_production = os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging")
+    if _allow_unsigned == "true" and _is_production:
+        logger.critical(
+            "🚨 SECURITY: OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true is set in a production environment! "
+            "This disables webhook signature verification. Remove this env var immediately."
+        )
+        raise RuntimeError(
+            "OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true is not permitted in production. "
+            "This bypasses webhook HMAC validation and must only be used in local development."
+        )
+    elif _allow_unsigned == "true":
+        logger.warning(
+            "⚠️  OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true — webhook signature check bypassed "
+            "(dev mode only). Remove before deploying to production."
+        )
+    elif not os.getenv("OPENMIC_WEBHOOK_SECRET"):
+        logger.warning(
+            "⚠️  OPENMIC_WEBHOOK_SECRET not set — OpenMic webhook endpoint will return 503 "
+            "for all incoming requests. Set OPENMIC_WEBHOOK_SECRET to enable the endpoint."
+        )
+    else:
+        logger.info("✅ OpenMic webhook configured (HMAC-SHA256 signature validation enabled)")
     
     # Initialize database
     try:
