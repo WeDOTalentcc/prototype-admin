@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User, UserRole
 from app.core.database import get_db
+from app.domains.auth.repositories.user_repository import UserRepository
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +45,8 @@ async def preview_weekly_digest(
         uid = recruiter_id
         name = "Recrutador"
         try:
-            from sqlalchemy import select
-            result = await db.execute(select(User).where(User.id == recruiter_id))
-            user = result.scalar_one_or_none()
+            user_repo = UserRepository(db)
+            user = await user_repo.get_by_id(recruiter_id)
             if user:
                 name = getattr(user, "name", getattr(user, "email", "Recrutador"))
         except Exception:
@@ -82,15 +82,13 @@ async def send_weekly_digest(
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
-    from sqlalchemy import select
-
     from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
 
     name = "Recrutador"
-    result = await db.execute(select(User).where(User.id == recruiter_id))
-    user = result.scalar_one_or_none()
+    user_repo = UserRepository(db)
+    user = await user_repo.get_by_id(recruiter_id)
     if user:
         name = getattr(user, "name", getattr(user, "email", "Recrutador"))
     else:
@@ -196,13 +194,11 @@ async def send_daily_digest_to_user(
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
-    from sqlalchemy import select
-
     from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
 
     svc = WeeklyDigestService()
-    result = await db.execute(select(User).where(User.id == recruiter_id))
-    user = result.scalar_one_or_none()
+    user_repo = UserRepository(db)
+    user = await user_repo.get_by_id(recruiter_id)
     if not user:
         raise HTTPException(status_code=404, detail="Recrutador não encontrado")
 

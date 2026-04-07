@@ -29,79 +29,72 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Kanban Candidate Movement System**: Features AI-powered sub-status prediction and WSI score integration.
 - **5-Chat + 2-Channel Architecture**: Comprises dedicated chats for Job Creation, Talent, Jobs Management, Pipeline/Kanban, and Policy, integrated with WhatsApp and MS Teams.
 - **Closed-Loop Action Execution**: Enables full closed-loop actions across chats using `ActionExecutorService` and `PendingActionState` with LLM-powered smart parameter extraction.
-- **Unified Learning System**: A central hub for learning operations, dynamic company catalogs, and an integrated learning loop.
-- **Autonomous Agents System**: Manages background jobs and proactive LIA-initiated suggestions.
 - **Unified Tool Calling System**: Allows LIA to execute real actions with tenant scoping and persistent conversation memory.
 - **Talent Funnel Search Optimization**: Leverages Elasticsearch, PG Vector, and WRF for advanced search with LLM job classification and candidate scoring.
 - **LangGraph Agent System**: All agents use LangGraph natively.
 - **Progressive Automation & CompanyHiringPolicy**: Implements `CompanyHiringPolicy` to control automation levels with a confidence-based decision engine and conversational onboarding.
-- **WSI Saturation Intelligence**: Manages and displays candidate pipeline saturation for organic and sourcing pools.
 - **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT).
 - **Multi-Channel Communication Dispatcher**: Sends messages to all available channels (email + WhatsApp) by default.
 - **Celery Scheduler & Automations**: Handles background automations for follow-ups, abandoned WSI checks, and feedback sending.
-- **Broker Abstraction Layer (Task #67)**: `BrokerInterface` ABC with implementations: `RedisBroker` (default, on-prem), `RabbitMQBroker` (chat messaging), `PubSubBroker` (GCP stub). Factory via `BROKER_BACKEND` env var (default: `redis`). Celery broker controlled separately via `CELERY_BROKER_URL`. Health check exposed in `GET /health` as `components.broker`. GCP migration guide: `lia-agent-system/docs/infra/gcp-migration-guide.md`.
-- **Voice Analysis Integration**: VoIP browser calls use Gemini Live Audio API (single WebSocket, ~$0.065/interview). Twilio remains as PSTN fallback only. Legacy pipeline: OpenAI Whisper STT + OpenAI TTS for PSTN calls via Twilio.
-- **Microsoft Teams Notifications**: TeamsBot provides adaptive cards for various notifications. Azure Bot "LIA-WeDOTalent" App ID: `246eb1e7-a437-4cb2-a231-0325b567be5f`. App Registration tenant: `bd25f438-71ab-4f63-a88f-abc8da37a1f6` (must match "App Tenant ID" in Azure Bot Configuration). Credentials: `MICROSOFT_APP_ID` + `MICROSOFT_APP_PASSWORD` secrets. Bot messaging endpoint must be updated on each workspace restart (use `$REPLIT_DEV_DOMAIN`).
+- **Broker Abstraction Layer**: Utilizes a `BrokerInterface` with `RedisBroker` (default), `RabbitMQBroker`, and `PubSubBroker` for messaging.
+- **Voice Analysis Integration**: VoIP browser calls use Gemini Live Audio API. Twilio serves as PSTN fallback.
+- **Microsoft Teams Notifications**: TeamsBot provides adaptive cards for various notifications.
 - **Apify Candidate Enrichment**: Enriches candidate profiles via LinkedIn and email discovery.
 - **Gate 2 Re-Discovery Embedding**: Automatically generates Gemini embeddings for rejected candidates for future vector-similarity matching.
 - **A/B Testing Email Templates**: Manages A/B testing for email templates with variant assignment, metric recording, and analysis.
 - **Template Learning Integration**: Recommends best-performing templates based on open rates.
-- **WRF Dynamic K Quality-Adaptive**: Enhances WRF with adaptive K computation based on match score distribution.
 - **LLM Job Classification Filter**: Post-vector-search filter using Gemini Flash LLM to validate candidate-job compatibility.
 - **FairnessGuard L3 Sector-Dependent**: Uses sector-specific rules for Layer 3 (LLM semantic) bias analysis.
-- **Vue/Vuetify Standardization Skill**: A 10-step workflow for standardizing Vue 3 + Vuetify 3 + Nuxt 3 components against DS v4.2.1.
 - **Weekly Digest — Proactive Insights**: Aggregates data into a consolidated weekly report delivered via Teams, Chat, and Bell notifications.
 - **Production Readiness**: Includes a unified health endpoint, `RequestIdMiddleware` for distributed tracing, structured JSON logging, global exception handlers, auth protection, and rate limiting middleware.
 - **FairnessGuard in Agent Outputs**: Integrated `FairnessGuard.check()` and `check_implicit_bias()` across various agent outputs to prevent bias.
 - **LGPD Log Retention**: Implemented scheduled deletion for `ai_consumption` logs after 365 days.
 - **BiasAuditService + API**: Calculates adverse impact using the Four-Fifths Rule across demographic dimensions.
 - **Proactive Predictive Briefing**: LIA proactively presents a briefing with pipeline stats, candidate alerts, and ML predictions.
-- **Polling Optimization**: Frontend polling intervals reduced to prevent 429 cascading.
-- **SearchPresetsModal Unification (T004)**: Unifies multiple preset modals into a single generic `SearchPresetsModal<T>` component.
-- **Split-Screen Dinâmico (Task #12)**: Tezi/Manus-style dynamic contextual panel that opens to the right of the LIA float chat when context-specific visualizations are needed. Supports 5 panel types: calibration, candidate_review, profile, job_creation, scheduling. Backend agents can trigger panels via `panel_update` WebSocket events or `output.metadata.panel_update`. Panel lifecycle is scoped to chat session (cleared on new chat/close).
+- **Split-Screen Dinâmico**: Dynamic contextual panel that opens to the right of the LIA float chat for context-specific visualizations (calibration, candidate_review, profile, job_creation, scheduling).
 - **Super Prompt Flutuante (LiaSuperPrompt)**: Expanding the mini chat opens a ~95% viewport overlay with tabs, dynamic contextual suggestions, and controls.
 - **HTTP Chat Fallback**: When WebSocket is unavailable, floating LIA chat falls back to HTTP.
-- **ReAct JSON Strip (`_strip_react_json`)**: Defense-in-depth against raw ReAct JSON leaking to users, extracting only the `response` field.
-- **WSI Pipeline Unification (Fonte Única de Verdade)**: Reads screening questions exclusively from `job_screening_questions` DB table, with fallbacks and standardized nomenclature.
-- **WSI Competency Minimums**: Minimum technical skills raised to 9 and behavioral competencies to 5, with pipeline adjustments and frontend warnings.
+- **ReAct JSON Strip**: Defense-in-depth against raw ReAct JSON leaking to users, extracting only the `response` field.
+- **WSI Pipeline Unification**: Reads screening questions exclusively from `job_screening_questions` DB table, with fallbacks and standardized nomenclature.
 - **Design Token Migration**: Full codebase migration from hardcoded Tailwind color classes to semantic Design System LIA v4.2.1 tokens.
-- **Admin Panel Removed**: The entire `/admin` section (~19,000 lines, 93 files) was removed as it was isolated from the main platform. This included all admin pages, components, hooks, services, API proxy routes, and client management. External references were fixed (MetricCard inlined in agent-control-center, ai-consumption service relocated).
-- **Security Audit**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
-- **Backend Security Hardening (Task #34)**: Removed `demo-user` fallback from 4 endpoints (credits, search_feedback, sourcing_orchestrator, pipeline_orchestrator) — all now require authenticated `request.state.user_id`. Body payload can no longer override identity (prevents cross-tenant spoofing). Email provider chain enforced as Mailgun → Resend → Mock(dev-only). Mock email/WhatsApp providers return failure with CRITICAL logging in production. Also removed residual `"demo_user"` string fallback from `lia_field_toggles.py` (2 endpoints: `get_empty_field_notifications` and `update_empty_field_preference`) — now uses `str(current_user.id)` from the authenticated User object. Fixed incorrect `dict` type annotation on those endpoints (should be User ORM object from `get_current_user_or_demo`).
-- **Profile Analysis BARS+WSI (Task #35)**: Enriched `AnalysisService` with unified BARS rubric evaluation + WSI Big Five trait inference from CV text. `_analyze_profile` chat handler now calls real `AnalysisService.analyze_profile_enriched()` instead of returning a stub. Results include: BARS technical score (0-100), WSI inferred archetype, Big Five trait estimates, confidence flag (low/medium/high based on CV word count), and composite overall score (60% BARS + 40% LIA when job context available). Fixed missing PromptLoader import in `analysis_service.py`.
+- **Security Audit & Hardening**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, added API security measures, enforced `request.state.user_id` for critical endpoints, and implemented robust email provider chaining.
+- **Profile Analysis BARS+WSI**: Enriched `AnalysisService` with unified BARS rubric evaluation + WSI Big Five trait inference from CV text.
 - **Zustand State Management**: Introduced zustand for centralized state management, covering auth, kanban, and candidate data.
-- **@ts-ignore Elimination**: Removed all `@ts-ignore` comments from the frontend codebase.
-- **God Components Split**: Split large components into hooks + sub-components for better maintainability and readability.
-- **Performance: React.lazy + Error Boundaries**: Implemented lazy loading for modals and error boundaries for major pages.
-- **localStorage → Zustand Migration**: Migrated most `localStorage` usages to Zustand stores.
-- **StackOne Removal**: Removed all StackOne integration code; Merge.dev is now the sole universal ATS connector.
+- **Performance Improvements**: Implemented lazy loading for modals and error boundaries for major pages.
 - **Sentry Error Monitoring**: Activated Sentry integration for both backend and frontend.
-- **Dead Integration Cleanup**: Removed unused integrations like OpenMic.ai, Deepgram, SynthFlow, Neon, Prometheus, and Grafana.
 - **WSI Threshold Alignment**: Unified all WSI approval/decision thresholds across the codebase.
-- **WSI Constants Consolidation**: Centralized Bloom/Dreyfus labels and seniority→framework mappings into `wsi_constants.py` as a single source of truth.
-- **Sidebar Infinite Loop Fix**: Fixed state synchronization issues in `useSidebarState.ts`.
-- **Refinamento UX (Task #13)**: Mode Labels above prompt input showing active task mode (pill badge with per-domain icons/colors), Switch Task modal (Cmd+K) for quick session switching with keyboard navigation and search, Background Agents status panel (collapsible section showing running/completed background tasks with progress bars), inline completion notifications for background tasks, and `background_task_update` WebSocket event type with `send_background_task_update()` backend helper.
-- **Unified LIA Chat System (Task #19)**: Replaced 4 fragmented chat systems (float panel, ChatPage, Kanban, Candidates) with a single `LiaChatContext` providing a shared message store, persistent `conversation_id` across mode transitions, and a single backend communication channel via `useLiaChatConnection`. All float panel components (`useLiaChatPanelState`, `LiaSuperPrompt`, `LiaSplitPanel`) now use the unified context. Domain-specific handlers (Kanban, Candidates) use `sendOrchestratedMessage` with `extractResponseMetadata` for metadata extraction. Chat Page uses unified WS connection with REST/SSE fallback threading `chatConversationId`.
-- **Backend Port 8001 Migration**: Moved uvicorn from port 8000 to 8001 to avoid conflicts.
-- **Dev Auto-Login**: Implemented auto-authentication for demo users in development mode.
-- **Multi-Tenancy company_id Isolation**: Added `client_account_id` FK to `CompanyProfile` model (migration 058), created tenant resolution endpoint (`GET /api/v1/company/resolve-tenant`), built centralized `useCompanyId` React hook with module-level caching (5min TTL), replaced all hardcoded `company_id=default` across 30+ frontend files, added explicit backend warnings for missing `company_id` in `pipeline_actions.py` and `email_adapter.py`, deprecated `LLMProviderFactory.generate_with_fallback`, and added tenant info display (company name, plan, status) to the settings page header.
-- **Reports & Predictions Real Data (Task #36)**: Frontend reports/predictions pages now fetch real data from backend endpoints instead of displaying mock/placeholder data.
-- **Event Handlers + Post-Screening Automation (Task #37)**: Stage automation engine with registered handlers for automatic post-screening transitions and notifications.
-- **ATS Integration Frontend-Backend Wiring (Task #38)**: Full ATS integration with Gupy, Pandapé, and Merge.dev. Frontend `/integracoes-ats` page connected to real backend endpoints. Security: SSRF allowlist per provider, mandatory HMAC-SHA256 webhook signatures, `connection_id`-scoped multi-tenant isolation in all upsert queries.
-- **Mailgun Webhooks (Task #39)**: `POST /api/v1/webhooks/mailgun` endpoint with HMAC-SHA256 signature validation via `MAILGUN_WEBHOOK_SIGNING_KEY`. Updates `CommunicationLog` status on delivery events (delivered, failed, bounced, opened, complained, unsubscribed). Auth-exempt (public path) since Mailgun sends events without JWT.
-- **Credits Infrastructure (Task #40)**: `CreditAccount` and `CreditTransaction` models in billing module. `CreditService` with `get_or_create_account()` (auto-provisions 100 free credits), `consume()`, `add_credits()`, `get_transactions()`. API: `GET /credits/balance`, `POST /credits/add` (admin-only), `POST /credits/consume`, `GET /credits/transactions`. Immutable ledger tracks all balance changes.
-- **Interview Flow with Company Stages (Task #41)**: Added `recruitment_stage_id` FK to Interview model linking to company-configured `RecruitmentStage`. `POST /interviews/schedule` now accepts `recruitment_stage_id` and resolves `application_stage` from it. New `GET /interviews/stages?company_id=` endpoint returns active interview-type stages (excluding initial/final/rejection/hired) for frontend stage selection.
-- **Chat Empty State Redesign (Task #45)**: Redesigned chat empty state with centered Brain icon in cyan container, bold "LIA" greeting, 2-column suggestion grid (8 cards with icons), and taller input area with focus glow effect and reorganized action buttons.
+- **Refinamento UX**: Mode Labels above prompt input, Switch Task modal (Cmd+K), Background Agents status panel, and inline completion notifications for background tasks.
+- **Unified LIA Chat System**: Replaced fragmented chat systems with a single `LiaChatContext` for shared message store, persistent `conversation_id`, and a single backend communication channel.
+- **Multi-Tenancy `company_id` Isolation**: Added `client_account_id` FK to `CompanyProfile` model, created tenant resolution endpoint, built centralized `useCompanyId` React hook, and replaced hardcoded `company_id`.
+- **Reports & Predictions Real Data**: Frontend reports/predictions pages now fetch real data from backend endpoints.
+- **Event Handlers + Post-Screening Automation**: Stage automation engine with registered handlers for automatic post-screening transitions and notifications.
+- **ATS Integration Frontend-Backend Wiring**: Full ATS integration with Gupy, Pandapé, and Merge.dev. Includes security measures like SSRF allowlist and HMAC-SHA256 webhook signatures.
+- **Mailgun Webhooks**: `POST /api/v1/webhooks/mailgun` endpoint with HMAC-SHA256 signature validation. Updates `CommunicationLog` status.
+- **Credits Infrastructure**: `CreditAccount` and `CreditTransaction` models with `CreditService` for managing credit balance and transactions.
+- **Interview Flow with Company Stages**: Added `recruitment_stage_id` FK to Interview model, allowing scheduling based on company-configured stages.
+- **Chat Empty State Redesign**: Redesigned chat empty state with a centered Brain icon, LIA greeting, suggestion grid, and improved input area.
+
+# Deployment Configuration
+- **Frontend Dockerfile**: `plataforma-lia/Dockerfile` — multi-stage build using `output: 'standalone'` (Node.js 22 Alpine)
+- **next.config.js**: `output: 'standalone'`, rewrites use `BACKEND_URL` env var (defaults to `http://127.0.0.1:8001`)
+- **Backend**: FastAPI on port 8001, started via uvicorn (`lia-agent-system/app/main.py`)
+- **Environment variables**: See `plataforma-lia/.env.example` and `lia-agent-system/.env.example` for full list
+
+# E2E Testing Status
+- 20 Playwright test files in `plataforma-lia/e2e/tests/` (auth, chat, kanban, wizard, search)
+- Playwright config at `plataforma-lia/playwright.config.ts`
+- Tests require Chromium system libraries not available in Replit — use Replit's built-in testing tool instead
+- Auth fixture uses WorkOS SSO credentials; dev environment uses auto-login
 
 # External Dependencies
 - Anthropic (Claude API)
 - WorkOS
-- Google Gemini
+- Google Gemini (API, Live Audio API)
 - Pearch AI
 - Microsoft Graph
 - Gupy ATS
 - Pandapé ATS
-- Merge
+- Merge (ATS connector)
 - HubSpot
 - Stripe
 - Apify
@@ -114,7 +107,5 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Sentry (error monitoring)
 - OpenAI (Whisper, TTS — PSTN fallback only)
 - Twilio (Voice — PSTN fallback only)
-- Google Gemini Live Audio API (VoIP browser screening)
-- Deepgram (STT/transcrição de voz — nova-2, pt-BR/en-US) — env: `DEEPGRAM_API_KEY`
-- OpenMic.ai (triagem automatizada por voz) — env: `OPENMIC_API_KEY`, `OPENMIC_WEBHOOK_SECRET`
+- Deepgram (STT/transcrição de voz)
 - Celery

@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.company.repositories.benefit_template_repository import BenefitTemplateRepository
+from app.domains.company.repositories.benefit_repository import BenefitRepository
 from app.models.company import Benefit, BenefitTemplate
 
 logger = logging.getLogger(__name__)
@@ -373,6 +374,7 @@ async def import_benefits(
             raise HTTPException(status_code=400, detail="Empty file uploaded")
 
         rows = parse_file_content(file.filename or "file.csv", content)
+        benefit_repo = BenefitRepository(db)
 
         if not rows:
             raise HTTPException(status_code=400, detail="No data found in file")
@@ -462,7 +464,7 @@ async def import_benefits(
                     is_active=True
                 )
 
-                db.add(benefit)
+                benefit_repo.db.add(benefit)
                 imported_count += 1
 
             except Exception as row_error:

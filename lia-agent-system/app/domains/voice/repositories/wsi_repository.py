@@ -591,8 +591,8 @@ class WsiRepository:
     async def get_session_id_by_call_sid(self, call_sid: str) -> str | None:
         """Look up a wsi_session id by its associated Twilio call_id. Returns None if not found."""
         result = await self.db.execute(
-            text(SELECT id FROM wsi_sessions WHERE call_id = :call_sid LIMIT 1),
-            {call_sid: call_sid},
+            text("SELECT id FROM wsi_sessions WHERE call_id = :call_sid LIMIT 1"),
+            {"call_sid": call_sid},
         )
         row = result.fetchone()
         return row[0] if row else None
@@ -601,9 +601,9 @@ class WsiRepository:
         """Update wsi_session.call_id to bind a Twilio call SID to a screening session."""
         await self.db.execute(
             text(
-                UPDATE wsi_sessions SET call_id = :call_id, updated_at = CURRENT_TIMESTAMP 
-                WHERE id = :session_id
+                "UPDATE wsi_sessions SET call_id = :call_id, updated_at = CURRENT_TIMESTAMP "
+                "WHERE id = :session_id"
             ),
-            {call_id: call_sid, session_id: session_id},
+            {"call_id": call_sid, "session_id": session_id},
         )
         await self.db.commit()

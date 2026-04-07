@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
+from app.domains.interview_scheduling.repositories.calendar_credentials_repository import CalendarCredentialsRepository
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.schemas.calendar import (
     AvailabilityRequest,
@@ -459,27 +460,14 @@ async def google_oauth_callback(
         })
 
         async with AsyncSessionLocal() as db:
-            existing = await db.execute(
-                __import__("sqlalchemy", fromlist=["select"]).select(CompanyCalendarCredentials).where(
-                    CompanyCalendarCredentials.company_id == uuid.UUID(company_id_str),
-                    CompanyCalendarCredentials.provider == "google",
-                )
+            repo = CalendarCredentialsRepository(db)
+            await repo.upsert_credentials(
+                company_id=uuid.UUID(company_id_str),
+                provider="google",
+                encrypted_credentials=encrypt_value(token_data),
+                is_active=True,
+                timezone=settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE,
             )
-            record = existing.scalar_one_or_none()
-
-            if record:
-                record.encrypted_credentials = encrypt_value(token_data)
-                record.is_active = True
-            else:
-                record = CompanyCalendarCredentials(
-                    id=uuid.uuid4(),
-                    company_id=uuid.UUID(company_id_str),
-                    provider="google",
-                    encrypted_credentials=encrypt_value(token_data),
-                    is_active=True,
-                    timezone=settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE,
-                )
-                db.add(record)
             await db.commit()
 
         return {"status": "connected", "company_id": company_id_str, "provider": "google"}

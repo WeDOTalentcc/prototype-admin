@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.lgpd.repositories.data_request_repository import DataRequestRepository
 from app.domains.communication.services.data_request_service import data_request_service
 from app.domains.communication.services.data_request_whatsapp_service import data_request_whatsapp_service
 from app.models.data_request import (
@@ -326,17 +327,8 @@ async def list_data_requests(
             )
         else:
             if candidate_id is None and vacancy_id is None:
-                from sqlalchemy import select
-
-                from app.models.data_request import DataRequest
-                
-                query = select(DataRequest).where(DataRequest.company_id == company_id)
-                if status_enum:
-                    query = query.where(DataRequest.status == status_enum)
-                query = query.order_by(DataRequest.created_at.desc()).limit(100)
-                
-                result = await db.execute(query)
-                requests = list(result.scalars().all())
+                repo = DataRequestRepository(db)
+                requests = await repo.list_all_for_company(company_id, status_enum=status_enum)
             else:
                 requests = []
         
@@ -854,42 +846,19 @@ async def update_vacancy_triggers(
     or provide custom stage_configs for vacancy-specific configuration.
     """
     try:
-        from sqlalchemy import select
-
-        from app.models.data_request import VacancyDataRequestConfig
-        
         _get_company_id()
-        
-        result = await db.execute(
-            select(VacancyDataRequestConfig).where(
-                VacancyDataRequestConfig.vacancy_id == vacancy_id
-            )
+
+        repo = DataRequestRepository(db)
+        await repo.upsert_vacancy_trigger_config(
+            vacancy_id=vacancy_id,
+            use_company_defaults=request.use_company_defaults,
+            custom_template_id=request.custom_template_id,
+            stage_configs={
+                stage: config.model_dump()
+                for stage, config in request.stage_configs.items()
+            } if request.stage_configs else {},
         )
-        vacancy_config = result.scalar_one_or_none()
-        
-        if not vacancy_config:
-            vacancy_config = VacancyDataRequestConfig(
-                vacancy_id=vacancy_id,
-                use_company_defaults=request.use_company_defaults,
-                custom_template_id=request.custom_template_id,
-                stage_configs={
-                    stage: config.model_dump()
-                    for stage, config in request.stage_configs.items()
-                } if request.stage_configs else {},
-            )
-            db.add(vacancy_config)
-        else:
-            vacancy_config.use_company_defaults = request.use_company_defaults
-            vacancy_config.custom_template_id = request.custom_template_id
-            if request.stage_configs:
-                vacancy_config.stage_configs = {
-                    stage: config.model_dump()
-                    for stage, config in request.stage_configs.items()
-                }
-        
-        await db.flush()
-        await db.refresh(vacancy_config)
-        
+
         return await get_vacancy_triggers(vacancy_id, db)
         
     except HTTPException:

@@ -1350,27 +1350,14 @@ async def teams_tab_auth(
             raise HTTPException(status_code=401, detail="Could not retrieve user profile from Azure AD")
 
         # Look up WeDOTalent user by AAD object ID first, then email
-        # TODO(phase2): complex transaction — User model lookups with SSO backfill, left as direct DB
+        teams_repo = TeamsRepository(db)
         user: User | None = None
-        stmt = select(User).where(User.azure_ad_object_id == aad_object_id).limit(1)
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
+        user = await teams_repo.get_user_by_aad_object_id(aad_object_id)
 
         if not user:
-            from app.shared.encryption.encrypted_field_mixin import _sha256_hash
-            from sqlalchemy import or_
-            stmt = select(User).where(
-                or_(
-                    User.email_hash == _sha256_hash(email),
-                    User._email_raw == email,
-                )
-            ).limit(1)
-            result = await db.execute(stmt)
-            user = result.scalar_one_or_none()
+            user = await teams_repo.get_user_by_email_hash_or_raw(email)
             if user and not user.azure_ad_object_id:
-                # Backfill AAD ID
-                user.azure_ad_object_id = aad_object_id
-                db.add(user)
+                await teams_repo.backfill_aad_object_id(user, aad_object_id)
 
         if not user:
             raise HTTPException(
@@ -1429,12 +1416,10 @@ async def teams_tab_events(
     if not teams_user_id and payload.platform_user_id:
         # Look up AAD object ID from User record
         try:
-            from app.auth.models import User
-            stmt = select(User).where(User.id == payload.platform_user_id).limit(1)
-            result = await db.execute(stmt)
-            user = result.scalar_one_or_none()
-            if user and user.azure_ad_object_id:
-                teams_user_id = user.azure_ad_object_id
+            tab_repo = TeamsRepository(db)
+            _tab_user = await tab_repo.get_user_by_platform_id(payload.platform_user_id)
+            if _tab_user and _tab_user.azure_ad_object_id:
+                teams_user_id = _tab_user.azure_ad_object_id
         except Exception as e:
             logger.warning(f"[TeamsTabEvents] Could not resolve platform_user_id: {e}")
 

@@ -2,11 +2,11 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'export' removido — incompativel com rotas SSR (workos/session). Deploy via Node server.
-  distDir: 'out',
-  trailingSlash: true,
+  output: 'standalone',
   outputFileTracingRoot: __dirname,
   allowedDevOrigins: [
     'localhost:5000',
@@ -186,21 +186,19 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://127.0.0.1:8001/api/v1/:path*',
+        destination: `${BACKEND_URL}/api/v1/:path*`,
       },
       {
         source: '/api/backend-proxy/wizard/:path*',
-        destination: 'http://127.0.0.1:8001/api/v1/wizard/:path*',
+        destination: `${BACKEND_URL}/api/v1/wizard/:path*`,
       },
       {
-        // SSE streaming — bypass Next.js API route (incompatível com static export)
         source: '/api/lia/chat/stream',
-        destination: 'http://127.0.0.1:8001/api/v1/chat/stream',
+        destination: `${BACKEND_URL}/api/v1/chat/stream`,
       },
       {
-        // WebSocket proxy — permite wss://<domain>/ws/... sem expor porta 8001 diretamente
         source: '/ws/:path*',
-        destination: 'http://127.0.0.1:8001/ws/:path*',
+        destination: `${BACKEND_URL}/ws/:path*`,
       },
     ];
   },

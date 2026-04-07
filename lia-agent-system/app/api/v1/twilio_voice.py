@@ -323,14 +323,11 @@ async def twiml_call_status(
             from app.core.database import AsyncSessionLocal
             try:
                 async with AsyncSessionLocal() as db:
-                    from sqlalchemy import text as _text
-                    result = await db.execute(
-                        _text("SELECT id FROM wsi_sessions WHERE call_id = :call_sid LIMIT 1"),
-                        {"call_sid": CallSid},
-                    )
-                    row = result.fetchone()
-                    if row:
-                        matched_session = await voice_screening_orchestrator.get_or_restore_session(row[0], db)
+                    from app.domains.voice.repositories.wsi_repository import WsiRepository
+                    wsi_repo = WsiRepository(db)
+                    session_id = await wsi_repo.get_session_id_by_call_sid(CallSid)
+                    if session_id:
+                        matched_session = await voice_screening_orchestrator.get_or_restore_session(session_id, db)
             except Exception as e:
                 logger.warning("[TWILIO VOICE] DB session lookup by call_sid failed: %s", e)
 
@@ -437,15 +434,9 @@ async def audio_stream_websocket(
                             if twilio_call_sid and not session.call_sid:
                                 session.call_sid = twilio_call_sid
                                 try:
-                                    from sqlalchemy import text as _sql_text
-                                    await db.execute(
-                                        _sql_text(
-                                            "UPDATE wsi_sessions SET call_id = :call_id, updated_at = CURRENT_TIMESTAMP "
-                                            "WHERE id = :session_id"
-                                        ),
-                                        {"call_id": twilio_call_sid, "session_id": session_id},
-                                    )
-                                    await db.commit()
+                                    from app.domains.voice.repositories.wsi_repository import WsiRepository
+                                    wsi_repo = WsiRepository(db)
+                                    await wsi_repo.bind_call_sid_to_session(session_id, twilio_call_sid)
                                 except Exception as _bind_err:
                                     logger.warning("[TWILIO VOICE WS] Failed to bind call_sid to wsi_session: %s", _bind_err)
                             await voice_screening_orchestrator._persist_session_state(session, db)
