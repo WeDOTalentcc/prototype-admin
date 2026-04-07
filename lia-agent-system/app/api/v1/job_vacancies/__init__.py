@@ -14,7 +14,7 @@ Sub-modules:
 
 from fastapi import APIRouter
 
-from .analytics import router as _analytics_router
+from .analytics import router as _analytics_router, get_job_report  # noqa: F401
 from .crud import router as _crud_router
 from .export import router as _export_router
 from .lifecycle import router as _lifecycle_router
@@ -35,4 +35,4 @@ router.include_router(_export_router)
 # router_public is already exported above — used as:
 #   app.include_router(job_vacancies.router_public, prefix="/api/v1/public-vacancies", ...)
 
-__all__ = ["router", "router_public"]
+__all__ = ["router", "router_public", "get_job_report"]
