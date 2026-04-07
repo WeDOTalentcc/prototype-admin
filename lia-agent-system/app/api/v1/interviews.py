@@ -13,8 +13,8 @@ from app.domains.interview_scheduling.dependencies import get_interview_repo
 from app.domains.interview_scheduling.repositories.interview_repository import InterviewRepository
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.models.interview import Interview, InterviewFeedback
-from app.services.activity_service import activity_service
-from app.shared.compliance.audit_service import audit_service
+from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -73,6 +73,8 @@ async def schedule_interview(
     request: ScheduleInterviewRequest,
     request_obj: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service),
 ):
     """
     Schedule a new interview with automatic Microsoft Calendar integration.
@@ -187,7 +189,7 @@ async def schedule_interview(
                     uuid.UUID(request.job_vacancy_id)
                 )
             if audit_company_id:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=audit_company_id,
                     agent_name="interviews_module",
                     decision_type="schedule_interview",
@@ -750,7 +752,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
 
         # Create activity feed entry if candidate_id provided
         if request.candidate_id:
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 db=repo.db,
                 activity_type="interview_scheduled",
                 title=f"Entrevista {request.interview_type} agendada",

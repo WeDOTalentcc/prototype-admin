@@ -39,16 +39,15 @@ from app.schemas.candidate import (
     CandidateStageUpdate,
     CandidateUpdate,
 )
-from app.services.activity_service import ActivityService
+from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.services.calibration_service import CalibrationService
 from app.services.consent_checker_service import ConsentCheckerService
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
 
-activity_service = ActivityService()
 
 STAGE_PROGRESSION_ORDER = {
     "sourcing": 0, "funil": 0, "funnel": 0, "sourced": 0, "novo": 0, "new": 0,
@@ -666,6 +665,8 @@ async def update_candidate_stage(
     stage_data: CandidateStageUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
+    activity_svc: ActivityService = Depends(get_activity_service),
 ):
     """
     Update candidate pipeline stage (used when moving candidates in Kanban).
@@ -965,6 +966,7 @@ async def search_candidates_local(
     request: CandidateSearchRequest,
     current_user: User = Depends(get_current_user_or_demo),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Search candidates in proprietary PostgreSQL database (FREE - no credits consumed).
@@ -1005,7 +1007,7 @@ async def search_candidates_local(
         try:
             _company = getattr(current_user, "company_id", None)
             active_filters = [k for k, v in (filters.model_dump() or {}).items() if v]
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=str(_company) if _company else None,
                 agent_name="candidate_search",
                 decision_type="search_candidates",
@@ -1042,7 +1044,10 @@ async def search_candidates_local(
 # ==================== GLOBAL SEARCH (PEARCH AI - PAID) ====================
 
 @router.post("/search", response_model=PearchSearchResponse)
-async def search_candidates(request: PearchSearchRequest):
+async def search_candidates(
+    request: PearchSearchRequest,
+    audit_svc: AuditService = Depends(get_audit_service),
+):
     """
     Search for candidates using natural language query.
     """
@@ -1061,7 +1066,7 @@ async def search_candidates(request: PearchSearchRequest):
         _gs_duration_ms = round((_time.monotonic() - _gs_start) * 1000, 1)
         try:
             _result_count = len(getattr(result, "candidates", [])) if result else 0
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=None,
                 agent_name="candidate_search",
                 decision_type="search_candidates",
@@ -1741,7 +1746,7 @@ async def screening_decision(
         await candidate_repo.update(candidate)
 
         try:
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type=activity_type,
                 title=activity_title,
                 description=activity_description,
@@ -1773,7 +1778,7 @@ async def screening_decision(
             _vc_company = getattr(vacancy_candidate, "company_id", None) if vacancy_candidate else None
             _vc_score = getattr(vacancy_candidate, "wsi_score", None) if vacancy_candidate else None
             _vc_ranking = getattr(vacancy_candidate, "ranking_position", None) if vacancy_candidate else None
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=str(_vc_company) if _vc_company else None,
                 agent_name="screening_module",
                 decision_type="approved" if request.decision == "approved" else "rejected",
