@@ -75,18 +75,18 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 │                │  ← permanece inalterado │                       │
 │                └────────────────────────┘                       │
 │                                                                  │
-│  Ambiente:   Servidor próprio / VPS                             │
-│  Deploy:     Manual (sem CI/CD)                                 │
+│  Ambiente:   Servidor próprio / VPS + Staging já existe         │
+│  Deploy:     A confirmar com o time (manual ou CI/CD parcial)  │
 │  Domínio:    wedotalent.cc                                      │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 **Limitações do stack legado:**
 - Frontend Vue/Nuxt sem sistema de design padronizado
-- Agente Python básico sem LangGraph / sem memória contextual
-- Deploy manual sem pipeline de CI/CD
-- Sem ambiente de staging separado
-- Sem observabilidade centralizada (logs, traces, alertas)
+- Agente Python com LangGraph implementado, porém aquém das capacidades esperadas — cobertura de domínios e robustez limitadas em relação à nova LIA
+- Deploy: status a confirmar com o time — possivelmente manual ou com CI/CD parcial
+- Ambiente de staging já existe (criado pelo time) — nível de integração e automação a verificar
+- Observabilidade: status a levantar com o time — logs centralizados, traces e alertas podem ou não estar configurados
 
 ---
 
