@@ -22,9 +22,11 @@ from unittest.mock import AsyncMock, MagicMock, patch, call
 
 def _make_service():
     from app.services.agent_health_alert_service import AgentHealthAlertService
+    import app.shared.services.agent_health_alert_service as _mod
     svc = AgentHealthAlertService()
-    # Forçar fallback in-memory (sem Redis)
-    svc._redis = None
+    # Forçar fallback in-memory (sem Redis) — patch _get_redis to always return None
+    from unittest.mock import AsyncMock
+    svc._get_redis = AsyncMock(return_value=None)
     return svc
 
 
