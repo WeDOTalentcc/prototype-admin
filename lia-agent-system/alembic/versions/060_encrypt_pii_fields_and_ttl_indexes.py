@@ -178,13 +178,20 @@ def upgrade() -> None:
     ]
     for table, col in ttl_tables:
         idx_name = f"ix_{table}_{col}_ttl"
+        # Check table existence before creating index to avoid aborting the transaction
+        # (asyncpg does not support error recovery within a transaction block)
+        table_exists = conn.execute(sa.text(
+            "SELECT 1 FROM information_schema.tables "
+            "WHERE table_schema = 'public' AND table_name = :t"
+        ), {"t": table}).scalar()
+        if not table_exists:
+            continue
         try:
             conn.execute(sa.text(
                 f"CREATE INDEX IF NOT EXISTS {idx_name} ON {table} ({col})"  # noqa: S608
             ))
         except ProgrammingError as exc:
-            # Table does not exist yet (optional tables) — skip gracefully
-            if "does not exist" in str(exc).lower() or "undefined_table" in str(exc).lower():
+            if "already exists" in str(exc).lower():
                 pass
             else:
                 raise
