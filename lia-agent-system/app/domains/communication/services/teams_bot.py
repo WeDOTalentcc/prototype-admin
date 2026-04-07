@@ -14,11 +14,10 @@ import httpx
 from botbuilder.core import (
     BotFrameworkAdapter,
     BotFrameworkAdapterSettings,
-    ConversationReference,
     MessageFactory,
     TurnContext,
 )
-from botbuilder.schema import Activity, ActivityTypes
+from botbuilder.schema import Activity, ActivityTypes, ConversationReference
 
 from app.core.config import settings
 
@@ -383,6 +382,257 @@ class TeamsBot:
             card["actions"] = [
                 {"type": "Action.OpenUrl", "title": "Ver Detalhes", "url": data["details_url"]}
             ]
+        return card
+
+    async def notify_high_match(
+        self,
+        candidate_name: str,
+        job_title: str,
+        match_score: float,
+        key_matches: list[str] | None = None,
+        candidate_profile_url: str | None = None,
+        conversation_reference: ConversationReference | None = None,
+    ) -> bool:
+        """Notify recruiter about a high-match candidate via Teams Adaptive Card."""
+        data = {
+            "candidate_name": candidate_name,
+            "job_title": job_title,
+            "match_score": f"{match_score:.0f}%",
+            "detected_at": datetime.utcnow().strftime("%d/%m/%Y %H:%M UTC"),
+        }
+        if key_matches:
+            data["key_matches"] = key_matches[:5]
+        if candidate_profile_url:
+            data["candidate_profile_url"] = candidate_profile_url
+
+        card = self._card_high_match(data)
+        return await self._deliver_card(card, conversation_reference)
+
+    async def notify_sla_violated(
+        self,
+        job_title: str,
+        sla_type: str,
+        expected_time: str,
+        actual_time: str,
+        candidates_affected: int,
+        action_url: str | None = None,
+        conversation_reference: ConversationReference | None = None,
+    ) -> bool:
+        """Notify manager about SLA violation via Teams Adaptive Card."""
+        data = {
+            "job_title": job_title,
+            "sla_type": sla_type,
+            "expected_time": expected_time,
+            "actual_time": actual_time,
+            "candidates_affected": str(candidates_affected),
+            "detected_at": datetime.utcnow().strftime("%d/%m/%Y %H:%M UTC"),
+        }
+        if action_url:
+            data["action_url"] = action_url
+
+        card = self._card_sla_violated(data)
+        return await self._deliver_card(card, conversation_reference)
+
+    async def notify_goal_at_risk(
+        self,
+        recruiter_name: str,
+        goal_name: str,
+        current_progress: float,
+        target: float,
+        deadline: str,
+        suggestions: list[str] | None = None,
+        action_url: str | None = None,
+        conversation_reference: ConversationReference | None = None,
+    ) -> bool:
+        """Notify recruiter about goal at risk via Teams Adaptive Card."""
+        data = {
+            "recruiter_name": recruiter_name,
+            "goal_name": goal_name,
+            "current_progress": f"{current_progress:.0f}%",
+            "target": f"{target:.0f}%",
+            "deadline": deadline,
+        }
+        if suggestions:
+            data["suggestions"] = suggestions[:4]
+        if action_url:
+            data["action_url"] = action_url
+
+        card = self._card_goal_at_risk(data)
+        return await self._deliver_card(card, conversation_reference)
+
+    def _card_high_match(self, data: dict[str, Any]) -> dict[str, Any]:
+        facts = [
+            {"title": "Candidato:", "value": data.get("candidate_name", "")},
+            {"title": "Vaga:", "value": data.get("job_title", "")},
+            {"title": "Match:", "value": data.get("match_score", "")},
+            {"title": "Detectado em:", "value": data.get("detected_at", "")},
+        ]
+        body: list[dict[str, Any]] = [
+            {
+                "type": "TextBlock",
+                "text": "🎯 Match Alto Detectado",
+                "weight": "Bolder",
+                "size": "Large",
+                "color": "Good",
+            },
+            {"type": "FactSet", "facts": facts},
+        ]
+        key_matches = data.get("key_matches", [])
+        if key_matches:
+            body.append({
+                "type": "TextBlock",
+                "text": "**Principais compatibilidades:**",
+                "weight": "Bolder",
+                "spacing": "Medium",
+            })
+            for match in key_matches:
+                body.append({
+                    "type": "TextBlock",
+                    "text": f"• {match}",
+                    "wrap": True,
+                    "spacing": "None",
+                })
+
+        card: dict[str, Any] = {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.4",
+            "body": body,
+        }
+        actions = []
+        if data.get("candidate_profile_url"):
+            actions.append({
+                "type": "Action.OpenUrl",
+                "title": "Ver Perfil Completo",
+                "url": data["candidate_profile_url"],
+            })
+        actions.extend([
+            {
+                "type": "Action.Submit",
+                "title": "✅ Avançar Candidato",
+                "style": "positive",
+                "data": {
+                    "action": "advance_candidate",
+                    "candidate_name": data.get("candidate_name"),
+                    "job_title": data.get("job_title"),
+                },
+            },
+            {
+                "type": "Action.Submit",
+                "title": "📅 Agendar Entrevista",
+                "data": {
+                    "action": "schedule_interview",
+                    "candidate_name": data.get("candidate_name"),
+                    "job_title": data.get("job_title"),
+                },
+            },
+        ])
+        card["actions"] = actions
+        return card
+
+    def _card_sla_violated(self, data: dict[str, Any]) -> dict[str, Any]:
+        facts = [
+            {"title": "Vaga:", "value": data.get("job_title", "")},
+            {"title": "Tipo de SLA:", "value": data.get("sla_type", "")},
+            {"title": "Tempo esperado:", "value": data.get("expected_time", "")},
+            {"title": "Tempo atual:", "value": data.get("actual_time", "")},
+            {"title": "Candidatos afetados:", "value": data.get("candidates_affected", "0")},
+            {"title": "Detectado em:", "value": data.get("detected_at", "")},
+        ]
+        card: dict[str, Any] = {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.4",
+            "body": [
+                {
+                    "type": "TextBlock",
+                    "text": "⚠️ SLA Violado",
+                    "weight": "Bolder",
+                    "size": "Large",
+                    "color": "Warning",
+                },
+                {
+                    "type": "TextBlock",
+                    "text": f"O processo seletivo para **{data.get('job_title', '')}** ultrapassou o SLA definido.",
+                    "wrap": True,
+                    "spacing": "Small",
+                },
+                {"type": "FactSet", "facts": facts, "spacing": "Medium"},
+            ],
+        }
+        actions = []
+        if data.get("action_url"):
+            actions.append({
+                "type": "Action.OpenUrl",
+                "title": "Ver Processo",
+                "url": data["action_url"],
+            })
+        actions.append({
+            "type": "Action.Submit",
+            "title": "📋 Ver Candidatos Afetados",
+            "data": {"action": "view_sla_affected", "job_title": data.get("job_title")},
+        })
+        card["actions"] = actions
+        return card
+
+    def _card_goal_at_risk(self, data: dict[str, Any]) -> dict[str, Any]:
+        facts = [
+            {"title": "Meta:", "value": data.get("goal_name", "")},
+            {"title": "Progresso atual:", "value": data.get("current_progress", "")},
+            {"title": "Objetivo:", "value": data.get("target", "")},
+            {"title": "Prazo:", "value": data.get("deadline", "")},
+        ]
+        body: list[dict[str, Any]] = [
+            {
+                "type": "TextBlock",
+                "text": "⚠️ Meta em Risco",
+                "weight": "Bolder",
+                "size": "Large",
+                "color": "Warning",
+            },
+            {
+                "type": "TextBlock",
+                "text": f"Olá **{data.get('recruiter_name', '')}**, uma das suas metas está em risco.",
+                "wrap": True,
+                "spacing": "Small",
+            },
+            {"type": "FactSet", "facts": facts, "spacing": "Medium"},
+        ]
+        suggestions = data.get("suggestions", [])
+        if suggestions:
+            body.append({
+                "type": "TextBlock",
+                "text": "**Sugestões para recuperação:**",
+                "weight": "Bolder",
+                "spacing": "Medium",
+            })
+            for s in suggestions:
+                body.append({
+                    "type": "TextBlock",
+                    "text": f"• {s}",
+                    "wrap": True,
+                    "spacing": "None",
+                })
+
+        card: dict[str, Any] = {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.4",
+            "body": body,
+        }
+        actions = []
+        if data.get("action_url"):
+            actions.append({
+                "type": "Action.OpenUrl",
+                "title": "Ver Detalhes da Meta",
+                "url": data["action_url"],
+            })
+        actions.append({
+            "type": "Action.Submit",
+            "title": "📊 Analisar Situação",
+            "data": {"action": "analyze_goal", "goal_name": data.get("goal_name")},
+        })
+        card["actions"] = actions
         return card
 
     def _create_adaptive_card(self, notification_type: str, data: dict[str, Any]) -> dict[str, Any]:
