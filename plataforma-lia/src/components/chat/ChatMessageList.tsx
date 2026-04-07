@@ -96,18 +96,18 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               )}
 
               <div
-                className={`px-3.5 py-2.5 flex-1 ${isLia ? "bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px]" : "bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px]"}`}
+                className={`px-3.5 py-2.5 flex-1 ${isLia ? "bg-lia-bg-secondary border border-lia-border-subtle rounded-xl rounded-bl-[4px]" : "bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl rounded-br-[4px]"}`}
               >
                 <div className="flex items-center space-x-2 mb-1">
                   <span
-                    className={`text-xs font-semibold text-lia-text-primary font-['Inter',sans-serif] ${
+                    className={`text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] ${
                       isLia ? "lia-name -ml-1" : ""
                     }`}
                   >
                     {isLia ? "LIA" : userDisplayName}
                   </span>
                   <span
-                    className="text-xs text-lia-text-tertiary font-['Inter',sans-serif] tabular-nums"
+                    className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] tabular-nums"
                   >
                     {getRelativeTime(message.timestamp)}
                   </span>
@@ -559,7 +559,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               <LIAIcon size="sm" />
             </div>
             <div
-              className="rounded-[14px] rounded-bl-[4px] px-3 py-2.5 flex-1 bg-wedo-cyan/[0.04]"
+              className="rounded-xl rounded-bl-[4px] px-3 py-2.5 flex-1 bg-lia-bg-secondary border border-lia-border-subtle"
             >
               <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />

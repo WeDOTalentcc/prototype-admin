@@ -62,7 +62,7 @@ export function ChatInputBar({
   return (
     <div
       className={cn(
-        "flex items-end gap-2 px-3 py-2 rounded-2xl border border-lia-border-subtle bg-lia-bg-primary",
+        "flex items-end gap-2 px-3 py-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary",
         className
       )}
     >
@@ -78,7 +78,7 @@ export function ChatInputBar({
         aria-label="Mensagem para a LIA"
         className={cn(
           "flex-1 bg-transparent text-base-ui font-['Open_Sans',sans-serif]",
-          "text-lia-text-primary placeholder:text-lia-text-tertiary dark:placeholder:text-lia-text-secondary",
+          "text-lia-text-primary placeholder:text-lia-text-disabled",
           "focus:outline-none leading-relaxed min-w-0 resize-none"
         )}
         style={{maxHeight: "120px"}}

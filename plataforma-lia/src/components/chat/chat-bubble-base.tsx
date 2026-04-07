@@ -58,12 +58,12 @@ export const ChatBubbleBase = React.memo(function ChatBubbleBase({
       <div className={cn("flex flex-col gap-1 max-w-[80%]", isLia ? "items-start" : "items-end")}>
         {isLia && !hideLabel && (
           <div className="flex items-center gap-1.5 px-1">
-            <span className="text-xs font-semibold text-lia-text-primary font-['Inter',sans-serif]">
+            <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
               {label || "LIA"}
             </span>
             {labelExtra}
             {!hideTimestamp && timestamp && (
-              <span className="text-xs text-lia-text-tertiary font-['Inter',sans-serif] tabular-nums">
+              <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] tabular-nums">
                 {timestamp}
               </span>
             )}
@@ -74,8 +74,8 @@ export const ChatBubbleBase = React.memo(function ChatBubbleBase({
           className={cn(
             "px-3.5 py-2.5",
             isLia
-              ? "bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px]"
-              : "bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px]",
+              ? "bg-lia-bg-secondary border border-lia-border-subtle rounded-xl rounded-bl-[4px]"
+              : "bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl rounded-br-[4px]",
             bubbleClassName
           )}
         >
@@ -83,7 +83,7 @@ export const ChatBubbleBase = React.memo(function ChatBubbleBase({
         </div>
 
         {!isLia && !hideTimestamp && timestamp && (
-          <span className="text-xs text-lia-text-tertiary font-['Inter',sans-serif] tabular-nums px-1">
+          <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] tabular-nums px-1">
             {timestamp}
           </span>
         )}
