@@ -40,8 +40,12 @@ class SimpleTeamsBot:
             if datetime.utcnow() < self._token_expires:
                 return self._access_token
         
-        # Get new token — Single Tenant bot uses the tenant-specific endpoint
-        tenant_id = getattr(settings, "AZURE_TENANT_ID", None) or "fe109ed2-b383-472c-9bee-3cd2f968e84b"
+        # Get new token — Single Tenant bot must use the App Registration's home tenant endpoint.
+        # Use dedicated TEAMS_APP_TENANT_ID setting; AZURE_TENANT_ID is for Graph API and may differ.
+        tenant_id = (
+            getattr(settings, "TEAMS_APP_TENANT_ID", None)
+            or "fe109ed2-b383-472c-9bee-3cd2f968e84b"
+        )
         token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         logger.info(f"[Teams] Acquiring token via {token_url}")
 

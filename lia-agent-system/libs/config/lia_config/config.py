@@ -157,6 +157,9 @@ class AuthSettings(BaseSettings):
     MICROSOFT_APP_PASSWORD: Optional[str] = None
     TEAMS_WEBHOOK_URL: Optional[str] = None
     TEAMS_WEBHOOK_SECRET: Optional[str] = None
+    # Home tenant of the Bot App Registration (used for outbound token acquisition)
+    # Separate from AZURE_TENANT_ID which is used for Graph API
+    TEAMS_APP_TENANT_ID: Optional[str] = None
 
     # Secrets provider (Phase 5)
     SECRETS_PROVIDER: str = "env"            # "env" (dev) | "doppler" (prod)
