@@ -152,10 +152,12 @@ def test_learning_loop_has_trace_span():
 
 
 def test_traces_router_registered():
-    import inspect
-    import app.api.routes as routes_module  # routers registered in routes.py, not main.py (Phase 4B)
-    src = inspect.getsource(routes_module)
-    assert "traces_router" in src
+    # routers registered in routes.py, not main.py (Phase 4B migration)
+    # Read source directly to avoid triggering full module import which can fail in isolation
+    import inspect, pathlib
+    routes_src = pathlib.Path(inspect.getfile(__import__("app.api.routes", fromlist=["routes"])
+                                             )).read_text() if "app.api.routes" in __import__("sys").modules else                  (pathlib.Path(__file__).parent.parent.parent / "app/api/routes.py").read_text()
+    assert "traces_router" in routes_src
 
 
 # ── Z6-03: Presidio NER Layer 4 ──────────────────────────────────────────────
@@ -318,10 +320,12 @@ async def test_invalidate_removes_cache():
 
 
 def test_recruiter_behavior_router_registered():
-    import inspect
-    import app.api.routes as routes_module  # routers registered in routes.py, not main.py (Phase 4B)
-    src = inspect.getsource(routes_module)
-    assert "recruiter_behavior_router" in src
+    # routers registered in routes.py, not main.py (Phase 4B migration)
+    # Read source directly to avoid triggering full module import which can fail in isolation
+    import pathlib
+    routes_path = pathlib.Path(__file__).parent.parent.parent / "app/api/routes.py"
+    routes_src = routes_path.read_text()
+    assert "recruiter_behavior_router" in routes_src
 
 
 @pytest.mark.asyncio

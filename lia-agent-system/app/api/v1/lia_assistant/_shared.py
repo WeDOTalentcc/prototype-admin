@@ -12,7 +12,10 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.analytics.services.job_insights_service import JobInsightsService
+from app.domains.job_management.services.job_insights_service import job_insights_service
+from app.domains.analytics.services.market_benchmark_service import market_benchmark_service
+from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
+from app.domains.cv_screening.services.config_completeness_service import config_completeness_service as completeness_service
 
 # SourcingAgent and AvaliadorWSIAgent moved to lia_assistant_wizard_stages.py (Phase 6 deprecation)
 from app.models.job_draft import ChangeType, DraftFieldHistory, JobDraft
@@ -22,17 +25,14 @@ from app.models.structured_responses import (
     SalaryAnalysis,
     WizardOrchestrationResult,  # noqa: F401
 )
-from app.services.config_completeness_service import ConfigCompletenessService
 from app.services.enhanced_intent_classifier import (
     EnhancedIntentType,  # noqa: F401
     enhanced_intent_classifier,  # noqa: F401
 )
-from app.services.feedback_learning_service import FeedbackLearningService
 from app.services.intent_classifier import (
     ClassificationResult,
 )
 from app.services.llm import LLMService, llm_service
-from app.services.market_benchmark_service import MarketBenchmarkService
 from app.services.skills_catalog_service import skills_catalog_service
 
 logger = logging.getLogger(__name__)
@@ -41,12 +41,8 @@ _DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 USE_ENHANCED_CLASSIFIER = True
 
 # ---------------------------------------------------------------------------
-# Shared service instances
+# Shared service instances (imported from canonical singletons)
 # ---------------------------------------------------------------------------
-job_insights_service = JobInsightsService()
-market_benchmark_service = MarketBenchmarkService()
-feedback_learning_service = FeedbackLearningService()
-completeness_service = ConfigCompletenessService()
 
 # In-memory store for job drafts used by conversational routes
 _job_drafts: dict[str, Any] = {}
