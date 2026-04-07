@@ -30,7 +30,23 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> User | None:
-        result = await self.db.execute(select(User).where(User.email == email))
+        """
+        Look up a user by email using the SHA-256 hash index.
+
+        Uses email_hash for rows written after migration 060.
+        Falls back to plaintext email for pre-migration rows (transition period).
+        """
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        from sqlalchemy import or_
+        email_hash = _sha256_hash(email)
+        result = await self.db.execute(
+            select(User).where(
+                or_(
+                    User.email_hash == email_hash,
+                    User._email_raw == email,  # transition: pre-migration rows with plaintext
+                )
+            )
+        )
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> User:

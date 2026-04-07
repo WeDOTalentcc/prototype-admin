@@ -722,8 +722,15 @@ class SourcingPipelineService:
             existing_candidate = None
             
             if email:
+                from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+                from sqlalchemy import or_
                 result = await db.execute(
-                    select(Candidate).where(Candidate.email == email)
+                    select(Candidate).where(
+                        or_(
+                            Candidate.email_hash == _sha256_hash(email),
+                            Candidate._email_raw == email,
+                        )
+                    )
                 )
                 existing_candidate = result.scalar_one_or_none()
             

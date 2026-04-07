@@ -5,10 +5,11 @@ import uuid
 from datetime import datetime
 from enum import Enum as PyEnum, StrEnum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, String
+from sqlalchemy import Boolean, Column, DateTime, Enum, LargeBinary, String
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
 from app.core.database import Base
+from app.shared.encryption.encrypted_field_mixin import EncryptedFieldMixin
 
 
 class UserRole(StrEnum):
@@ -18,13 +19,33 @@ class UserRole(StrEnum):
     viewer = "viewer"
 
 
-class User(Base):
-    """User model for authentication."""
-    
+class User(EncryptedFieldMixin, Base):
+    """User model for authentication.
+
+    PII encryption (post-migration 060, via EncryptedFieldMixin):
+      - Every write to ``email`` sets ``email_encrypted`` (Fernet bytes), ``email_hash``
+        (SHA-256 hex, unique index), and NULLS the plaintext ``email`` column.
+      - Pre-migration rows retain plaintext email until pii.backfill_encrypt_existing runs.
+      - Uniqueness is enforced on ``email_hash`` (not plaintext email).
+      - Lookups: OR(email_hash == hash, email == plaintext) during transition period.
+    """
+
     __tablename__ = "users"
-    
+
+    # _pii_encrypt_fields: (raw_attr, enc_attr, hash_attr)
+    # "_email_raw" → hybrid_property "email" registered by EncryptedFieldMixin
+    _pii_encrypt_fields = [
+        ("_email_raw", "_email_encrypted", "email_hash"),
+    ]
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False, index=True)
+    # Raw DB column for email — NULL for new writes (post-migration 060).
+    # Pre-migration rows retain plaintext until pii.backfill_encrypt_existing completes.
+    # DB column name is "email" for schema backward compat. Access via hybrid "email".
+    _email_raw = Column("email", String(255), nullable=True, index=True)
+    # PII-encrypted backing columns (added by migration 060)
+    _email_encrypted = Column("email_encrypted", LargeBinary, nullable=True)
+    email_hash = Column(String(64), nullable=True, unique=True, index=True)
     password_hash = Column(String(255), nullable=True)
     name = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.viewer, nullable=False)

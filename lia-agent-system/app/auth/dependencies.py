@@ -189,8 +189,16 @@ async def get_current_user_or_demo(
             detail="Authentication required"
         )
 
+    from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+    from sqlalchemy import or_
+    _demo_email = "demo@wedotalent.com"
     result = await db.execute(
-        select(User).where(User.email == "demo@wedotalent.com")
+        select(User).where(
+            or_(
+                User.email_hash == _sha256_hash(_demo_email),
+                User._email_raw == _demo_email,
+            )
+        )
     )
     demo_user = result.scalar_one_or_none()
     
@@ -446,8 +454,16 @@ async def get_service_or_user(
     
     if credentials and service_token:
         if credentials.credentials == service_token:
+            from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+            from sqlalchemy import or_
+            _svc_email = "service@wedotalent.com"
             result = await db.execute(
-                select(User).where(User.email == "service@wedotalent.com")
+                select(User).where(
+                    or_(
+                        User.email_hash == _sha256_hash(_svc_email),
+                        User._email_raw == _svc_email,
+                    )
+                )
             )
             service_user = result.scalar_one_or_none()
             

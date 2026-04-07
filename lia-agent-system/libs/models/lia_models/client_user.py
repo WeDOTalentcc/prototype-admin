@@ -4,7 +4,7 @@ ClientUser model for managing users within a client company.
 Multi-tenant user management with roles and permissions.
 """
 from datetime import datetime, timedelta
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Index, ForeignKey
+from sqlalchemy import Column, String, DateTime, Boolean, JSON, Index, ForeignKey, LargeBinary
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
@@ -13,6 +13,7 @@ import enum
 from typing import Dict, Any, List, Optional
 
 from lia_config.database import Base
+from app.shared.encryption.encrypted_field_mixin import EncryptedFieldMixin
 
 INVITATION_TOKEN_EXPIRY_DAYS = 7
 
@@ -32,19 +33,34 @@ class ClientUserStatus(str, enum.Enum):
     PENDING = "pending"
 
 
-class ClientUser(Base):
+class ClientUser(EncryptedFieldMixin, Base):
     """
     ClientUser model.
     
     Represents a user within a client company with specific roles and permissions.
+
+    PII encryption (transparent dual-write via EncryptedFieldMixin):
+      - Every write to ``email`` also writes Fernet-encrypted bytes into
+        ``email_encrypted`` and a SHA-256 hash into ``email_hash``.
     """
     __tablename__ = "client_users"
-    
+
+    # "_email_raw" → hybrid_property "email" registered by EncryptedFieldMixin
+    _pii_encrypt_fields = [
+        ("_email_raw", "_email_encrypted", "email_hash"),
+    ]
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey('client_accounts.id'), nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), nullable=True)
     
-    email = Column(String(255), nullable=False)
+    # Raw DB column for email — NULL for new writes (post-migration 060).
+    # Pre-migration rows retain plaintext until pii.backfill_encrypt_existing completes.
+    # DB column name is "email" for schema backward compat. Access via hybrid "email".
+    _email_raw = Column("email", String(255), nullable=True)
+    # PII-encrypted backing columns (added by migration 060)
+    _email_encrypted = Column("email_encrypted", LargeBinary, nullable=True)
+    email_hash = Column(String(64), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default=ClientUserRole.VIEWER.value)
     permissions = Column(JSON, nullable=True, default=list)
@@ -70,6 +86,7 @@ class ClientUser(Base):
         Index('idx_client_user_status', 'status'),
         Index('idx_client_user_role', 'role'),
         Index('idx_client_user_not_deleted', 'is_deleted'),
+        # Retained during dual-write phase; dropped in migration 063 (Phase 4).
         Index('idx_client_user_company_email', 'company_id', 'email', unique=True),
         Index('idx_client_user_invitation_token', 'invitation_token'),
     )

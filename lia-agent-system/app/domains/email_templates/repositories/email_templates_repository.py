@@ -161,9 +161,15 @@ class EmailTemplatesRepository:
         return result.scalar() or 0
 
     async def candidate_email_exists(self, email: str) -> bool:
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        from sqlalchemy import or_
+        email_hash = _sha256_hash(email)
         result = await self.db.execute(
             select(Candidate.id).where(
-                Candidate.email == email,
+                or_(
+                    Candidate.email_hash == email_hash,
+                    Candidate._email_raw == email,
+                ),
                 Candidate.is_active,
             )
         )

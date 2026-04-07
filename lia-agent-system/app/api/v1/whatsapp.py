@@ -489,8 +489,16 @@ async def list_conversations_authenticated(
     from app.auth.models import User, UserRole
     from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
     
+    from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+    from sqlalchemy import or_
+    _demo_email = "demo@wedotalent.com"
     result = await db.execute(
-        select(User).where(User.email == "demo@wedotalent.com")
+        select(User).where(
+            or_(
+                User.email_hash == _sha256_hash(_demo_email),
+                User._email_raw == _demo_email,
+            )
+        )
     )
     user = result.scalar_one_or_none()
     

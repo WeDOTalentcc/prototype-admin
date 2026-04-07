@@ -247,6 +247,12 @@ celery_app.conf.update(
             "schedule": crontab(hour=5, minute=0),  # 02h Brasília / UTC-3
             "options": {"expires": 7200},
         },
+        # TTL de conversa diário às 03h Brasília (UTC-3 → 06h UTC) — LGPD Art. 18
+        "conversation-ttl-cleanup-daily": {
+            "task": "conversation.ttl_cleanup",
+            "schedule": crontab(hour=6, minute=0),  # 03h Brasília / UTC-3
+            "options": {"expires": 7200},
+        },
         # Briefing diário às 06h Brasília (UTC-3 → 09h UTC) — P3-1
         "briefing-daily": {
             "task": "briefing.send_daily",

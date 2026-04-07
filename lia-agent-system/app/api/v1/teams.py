@@ -1444,7 +1444,14 @@ async def teams_tab_auth(
         user = result.scalar_one_or_none()
 
         if not user:
-            stmt = select(User).where(User.email == email).limit(1)
+            from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+            from sqlalchemy import or_
+            stmt = select(User).where(
+                or_(
+                    User.email_hash == _sha256_hash(email),
+                    User._email_raw == email,
+                )
+            ).limit(1)
             result = await db.execute(stmt)
             user = result.scalar_one_or_none()
             if user and not user.azure_ad_object_id:

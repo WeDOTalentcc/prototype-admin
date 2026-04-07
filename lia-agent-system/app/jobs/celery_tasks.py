@@ -442,6 +442,7 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
 
     Aplica políticas de retenção (LGPD Art. 16):
       - 90 dias: candidatos rejeitados / retirados (dados operacionais)
+      - 90 dias: mensagens de chat/conversa (minimização LGPD Art. 18)
       - 180 dias: dados de avaliação e triagem
       - 365 dias: logs de auditoria e compliance
 
@@ -452,7 +453,9 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
 
     Returns:
         Dict com { dry_run, ran_at, candidates_deleted,
-                   vacancy_candidates_deleted, ai_consumption_deleted, errors }
+                   vacancy_candidates_deleted, ai_consumption_deleted,
+                   chat_messages_deleted, interview_notes_deleted,
+                   screening_logs_deleted, ai_decision_logs_deleted, errors }
     """
     async def _run() -> dict:
         from app.services.lgpd_cleanup_service import run_cleanup
@@ -465,6 +468,187 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
     except Exception as exc:
         logger.error("lgpd.run_cleanup_daily falhou: %s", exc)
         raise self.retry(exc=exc, countdown=300)  # retry em 5 min
+
+
+@celery_app.task(name="conversation.ttl_cleanup", bind=True, max_retries=3)
+def conversation_ttl_cleanup_task(self, dry_run: bool = False) -> dict:
+    """
+    Job Celery Beat dedicado para TTL de dados de conversa.
+
+    Aplica TTL por tipo de dado (LGPD Art. 18 — minimização e retenção):
+      - chat_messages / conversation_messages: 90 dias
+      - interview_notes: 180 dias
+      - screening_tasks: 365 dias
+      - fairness_audit_log: 365 dias (EU AI Act)
+
+    Agendado diariamente às 03h Brasília via Celery Beat
+    (beat_schedule: conversation-ttl-cleanup-daily).
+
+    Args:
+        dry_run: Se True, simula sem deletar (padrão: False em produção).
+
+    Returns:
+        Dict com { dry_run, ran_at, tables, total_deleted, errors }
+    """
+    async def _run() -> dict:
+        from app.services.lgpd_cleanup_service import run_conversation_ttl_cleanup
+        return await run_conversation_ttl_cleanup(dry_run=dry_run)
+
+    try:
+        result = asyncio.run(_run())
+        logger.info("conversation.ttl_cleanup concluído: %s", result)
+        return result
+    except Exception as exc:
+        logger.error("conversation.ttl_cleanup falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=300)  # retry em 5 min
+
+
+@celery_app.task(name="pii.backfill_encrypt_existing", bind=True, max_retries=2)
+def pii_backfill_encrypt_existing_task(
+    self,
+    batch_size: int = 500,
+    dry_run: bool = False,
+) -> dict:
+    """
+    Phase-2 backfill: encrypt existing plaintext PII bytes for rows added before migration 060.
+
+    For each row where email_encrypted IS NULL but email IS NOT NULL:
+      1. Fernet-encrypt the plaintext email → write to email_encrypted
+      2. SHA-256 hash the email → write to email_hash (pgcrypto already covers this
+         for most rows; this catches any missed rows)
+      3. Repeat for cpf → cpf_encrypted on the candidates table
+
+    Runs in batches (batch_size) to avoid long-running transactions.
+    Requires FIELD_ENCRYPTION_KEY to be set.
+
+    Safe to re-run: idempotent (WHERE email_encrypted IS NULL ensures skipping done rows).
+
+    Args:
+        batch_size: rows per batch (default 500)
+        dry_run: log counts without committing (default False)
+
+    Returns:
+        Dict with per-table encrypted counts and any errors.
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.shared.encryption.encrypted_field_mixin import _encrypt, _sha256_hash
+        from sqlalchemy import text
+
+        summary: dict = {
+            "dry_run": dry_run,
+            "batch_size": batch_size,
+            "tables": {},
+            "errors": [],
+        }
+
+        tables_config = [
+            # (table, email_col, encrypted_col, hash_col)
+            ("candidates", "email", "email_encrypted", "email_hash"),
+            ("client_users", "email", "email_encrypted", "email_hash"),
+            ("users", "email", "email_encrypted", "email_hash"),
+        ]
+
+        async with AsyncSessionLocal() as db:
+            for table, email_col, enc_col, hash_col in tables_config:
+                encrypted_count = 0
+                try:
+                    while True:
+                        rows = (await db.execute(
+                            text(
+                                f"SELECT id, {email_col} FROM {table} "  # noqa: S608
+                                f"WHERE {enc_col} IS NULL AND {email_col} IS NOT NULL "
+                                f"LIMIT :limit"
+                            ),
+                            {"limit": batch_size},
+                        )).all()
+
+                        if not rows:
+                            break
+
+                        for row in rows:
+                            enc_val = _encrypt(row[1])
+                            hash_val = _sha256_hash(row[1])
+                            if not dry_run:
+                                await db.execute(
+                                    text(
+                                        f"UPDATE {table} SET {enc_col} = :enc, {hash_col} = :hsh "  # noqa: S608
+                                        f"WHERE id = :id"
+                                    ),
+                                    {"enc": enc_val, "hsh": hash_val, "id": row[0]},
+                                )
+                        if not dry_run:
+                            await db.commit()
+
+                        encrypted_count += len(rows)
+                        logger.info(
+                            "pii.backfill_encrypt_existing%s: %s — encrypted %d rows (batch)",
+                            " (dry-run)" if dry_run else "",
+                            table,
+                            len(rows),
+                        )
+
+                        if len(rows) < batch_size:
+                            break
+
+                    summary["tables"][table] = {"encrypted": encrypted_count}
+
+                except Exception as exc:
+                    logger.error("pii.backfill_encrypt_existing: error on %s: %s", table, exc)
+                    summary["errors"].append(f"{table}: {exc}")
+                    try:
+                        await db.rollback()
+                    except Exception:
+                        pass
+
+            # Also backfill cpf_encrypted on candidates
+            cpf_encrypted_count = 0
+            try:
+                while True:
+                    rows = (await db.execute(
+                        text(
+                            "SELECT id, cpf FROM candidates "
+                            "WHERE cpf_encrypted IS NULL AND cpf IS NOT NULL "
+                            "LIMIT :limit"
+                        ),
+                        {"limit": batch_size},
+                    )).all()
+
+                    if not rows:
+                        break
+
+                    for row in rows:
+                        enc_val = _encrypt(row[1])
+                        if not dry_run:
+                            await db.execute(
+                                text(
+                                    "UPDATE candidates SET cpf_encrypted = :enc WHERE id = :id"
+                                ),
+                                {"enc": enc_val, "id": row[0]},
+                            )
+                    if not dry_run:
+                        await db.commit()
+
+                    cpf_encrypted_count += len(rows)
+
+                    if len(rows) < batch_size:
+                        break
+
+                summary["tables"]["candidates_cpf"] = {"encrypted": cpf_encrypted_count}
+
+            except Exception as exc:
+                logger.error("pii.backfill_encrypt_existing: error on candidates.cpf: %s", exc)
+                summary["errors"].append(f"candidates_cpf: {exc}")
+
+        return summary
+
+    try:
+        result = asyncio.run(_run())
+        logger.info("pii.backfill_encrypt_existing concluído: %s", result)
+        return result
+    except Exception as exc:
+        logger.error("pii.backfill_encrypt_existing falhou: %s", exc)
+        raise self.retry(exc=exc, countdown=600)  # retry em 10 min
 
 
 @celery_app.task(name="communication.email.send_bulk", bind=True, max_retries=5)

@@ -127,11 +127,21 @@ class ClientUserRepository:
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str, company_id: UUID) -> ClientUser | None:
-        """Return an active user with the given email within a company."""
+        """
+        Return an active user with the given email within a company.
+
+        Uses email_hash index for rows written after migration 060.
+        Falls back to plaintext email for pre-migration rows (transition period).
+        """
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        email_hash = _sha256_hash(email)
         query = select(ClientUser).where(
             and_(
                 ClientUser.company_id == company_id,
-                ClientUser.email == email,
+                or_(
+                    ClientUser.email_hash == email_hash,
+                    ClientUser._email_raw == email,  # transition: pre-migration rows with plaintext
+                ),
                 ClientUser.is_deleted.is_(False),
             )
         )

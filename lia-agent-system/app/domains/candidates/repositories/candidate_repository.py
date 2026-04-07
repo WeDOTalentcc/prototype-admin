@@ -38,8 +38,23 @@ class CandidateRepository:
         return await self.get_by_id(uuid.UUID(candidate_id))
 
     async def get_by_email(self, email: str) -> Candidate | None:
+        """
+        Look up a candidate by email using the SHA-256 hash index.
+
+        Rows written after migration 060 have email=None and email_hash set.
+        Rows written before still have plaintext email; the OR clause handles
+        the transition period until pii.backfill_encrypt_existing completes.
+        """
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        from sqlalchemy import or_
+        email_hash = _sha256_hash(email)
         result = await self.db.execute(
-            select(Candidate).where(Candidate.email == email)
+            select(Candidate).where(
+                or_(
+                    Candidate.email_hash == email_hash,
+                    Candidate._email_raw == email,  # transition: pre-migration rows with plaintext
+                )
+            )
         )
         return result.scalar_one_or_none()
 

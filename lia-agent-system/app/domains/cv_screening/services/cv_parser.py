@@ -497,10 +497,16 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
         """
         try:
             if parsed_cv.email:
+                from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+                from sqlalchemy import or_
+                _cv_email = parsed_cv.email
                 result = await db.execute(
                     select(Candidate).where(
-                        Candidate.email == parsed_cv.email,
-                        Candidate.is_active
+                        or_(
+                            Candidate.email_hash == _sha256_hash(_cv_email),
+                            Candidate._email_raw == _cv_email,
+                        ),
+                        Candidate.is_active,
                     )
                 )
                 existing = result.scalar_one_or_none()

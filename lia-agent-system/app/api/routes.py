@@ -19,6 +19,7 @@ from app.api.v1 import (
     activities,
     admin,
     admin_bias_audit,
+    admin_compliance_fairness,
     admin_prompts,
     admin_settings,
     admin_templates,
@@ -450,6 +451,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
     app.include_router(data_request.router, prefix="/api/v1", tags=["data-requests"])
     app.include_router(admin_lgpd_router, prefix="/api/v1")
+    app.include_router(admin_compliance_fairness.router, prefix="/api/v1")
     app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
     app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
     app.include_router(guardrails.router, prefix="/api/v1", tags=["guardrails"])

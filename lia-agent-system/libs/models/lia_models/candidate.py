@@ -3,12 +3,13 @@ Candidate models for recruitment platform.
 """
 from datetime import datetime, date
 from typing import Optional
-from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean, Float, UniqueConstraint, ForeignKey, func
+from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean, Float, UniqueConstraint, ForeignKey, LargeBinary, func
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, validates
 import uuid
 
 from lia_config.database import Base
+from app.shared.encryption.encrypted_field_mixin import EncryptedFieldMixin
 
 
 class CandidateExperience(Base):
@@ -91,20 +92,45 @@ class CandidateEducation(Base):
         return f"<CandidateEducation {self.id} - {self.institution}: {self.degree}>"
 
 
-class Candidate(Base):
+class Candidate(EncryptedFieldMixin, Base):
     """
     Represents a candidate in the recruitment system.
     Candidates can come from: ATS (via Merge.dev), manual entry, or Pearch AI global search.
+
+    PII encryption (post-migration 060, via EncryptedFieldMixin):
+      - Every write to ``email`` sets ``email_encrypted`` (Fernet bytes), ``email_hash``
+        (SHA-256 hex), and NULLS the ``email`` plaintext column.
+      - Every write to ``cpf`` sets ``cpf_encrypted`` (Fernet bytes) and NULLS ``cpf``.
+      - Pre-migration rows retain plaintext email/cpf until pii.backfill_encrypt_existing runs.
+      - Lookups: OR(email_hash == hash, email == plaintext) during transition period.
     """
     __tablename__ = "candidates"
-    
+
+    # _pii_encrypt_fields: (raw_attr, enc_attr, hash_attr)
+    # raw_attr  = Python attribute of the underlying DB column (nullable=True; NULL for new writes)
+    # enc_attr  = Python attribute of the Fernet-encrypted LargeBinary column
+    # hash_attr = Python attribute of the SHA-256 hash column (None if no hash needed)
+    # Public attribute name is derived by stripping leading "_" and "_raw" suffix:
+    #   "_email_raw" → hybrid_property "email"; "_cpf_raw" → hybrid_property "cpf"
+    _pii_encrypt_fields = [
+        ("_email_raw", "_email_encrypted", "email_hash"),
+        ("_cpf_raw",   "_cpf_encrypted",   None),
+    ]
+
     # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Basic Information
     name = Column(String(255), nullable=False, index=True)
-    email = Column(String(255), nullable=True, index=True)
+    # Raw DB columns for PII fields — always NULL for new writes (post-migration 060).
+    # Pre-migration rows retain plaintext here until pii.backfill_encrypt_existing completes.
+    # Access via hybrid_property "email" (registered by EncryptedFieldMixin) which decrypts
+    # from _email_encrypted transparently. DB column name kept as "email" for schema compat.
+    _email_raw = Column("email", String(255), nullable=True, index=True)
     secondary_email = Column(String(255), nullable=True)
+    # PII-encrypted backing columns (added by migration 060)
+    _email_encrypted = Column("email_encrypted", LargeBinary, nullable=True)
+    email_hash = Column(String(64), nullable=True, index=True)
     phone = Column(String(50), nullable=True)
     mobile_phone = Column(String(50), nullable=True)
     secondary_phone = Column(String(50), nullable=True)
@@ -131,7 +157,11 @@ class Candidate(Base):
     
     nationality = Column(String(100), nullable=True)
     marital_status = Column(String(50), nullable=True)
-    cpf = Column(String(14), nullable=True)
+    # CPF raw DB column — NULL for new writes; pre-migration rows retain plaintext.
+    # Access via hybrid_property "cpf" registered by EncryptedFieldMixin.
+    _cpf_raw = Column("cpf", String(14), nullable=True)
+    # PII-encrypted CPF (added by migration 060)
+    _cpf_encrypted = Column("cpf_encrypted", LargeBinary, nullable=True)
     
     # Professional Profile
     current_title = Column(String(255), nullable=True)

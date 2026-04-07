@@ -3,10 +3,11 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
+from app.shared.encryption.encrypted_field_mixin import _sha256_hash
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,23 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> User | None:
-        result = await self.db.execute(select(User).where(User.email == email))
+        """
+        Look up a user by email using the SHA-256 hash index.
+
+        Since the email column is nulled after encryption, lookups must use
+        email_hash for all rows written after migration 060. Rows written
+        before that migration still have plaintext email; the OR clause handles
+        that transition period until pii.backfill_encrypt_existing completes.
+        """
+        email_hash = _sha256_hash(email)
+        result = await self.db.execute(
+            select(User).where(
+                or_(
+                    User.email_hash == email_hash,
+                    User._email_raw == email,  # transition: pre-migration rows with plaintext
+                )
+            )
+        )
         return result.scalar_one_or_none()
 
     async def get_by_workos_id(self, workos_id: str) -> User | None:

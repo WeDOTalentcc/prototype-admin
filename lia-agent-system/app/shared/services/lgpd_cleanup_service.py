@@ -7,8 +7,10 @@ that have passed their `scheduled_deletion_at` date.
 Retention policy (configurable per company, defaults below):
   - Rejected candidates:       90 days  after rejection
   - Withdrawn candidates:      90 days  after withdrawal
+  - Chat messages:             90 days  after creation   (LGPD Art. 18 — minimização)
   - Interview notes / CVs:    180 days  after last activity
   - Screening logs:            365 days after creation
+  - AI logs (LLM calls):       365 days after creation    (L-6)
 
 Design principles:
   - DRY-RUN first: log deletions without executing (safe to test)
@@ -22,7 +24,7 @@ import logging
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import and_, delete, func, select
+from sqlalchemy import and_, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
@@ -31,13 +33,16 @@ from app.models.candidate import Candidate, VacancyCandidate
 
 logger = logging.getLogger(__name__)
 
-# Default retention windows (days)
+# Default retention windows (days) — maps data type → TTL
 RETENTION_DAYS = {
     "rejected": 90,
     "withdrawn": 90,
-    "interview_notes": 180,
-    "screening_logs": 365,
-    "ai_logs": 365,  # AiConsumption — logs de chamadas LLM (L-6)
+    "chat_messages": 90,       # LGPD Art. 18 — minimização de dados de conversa
+    "interview_data": 180,     # Dados de entrevista e notas WSI
+    "interview_notes": 180,    # alias kept for backwards compat
+    "screening_logs": 365,     # Logs de triagem curricular
+    "ai_logs": 365,            # AiConsumption — logs de chamadas LLM (L-6)
+    "ai_decision_logs": 365,   # Logs de decisão de IA (EU AI Act)
 }
 
 
@@ -73,9 +78,60 @@ async def schedule_deletion_for_candidate(
     return deletion_at
 
 
+async def _cleanup_by_created_at(
+    db: AsyncSession,
+    table_name: str,
+    retention_days: int,
+    dry_run: bool,
+) -> int:
+    """
+    Generic TTL cleanup: delete rows from `table_name` where
+    created_at < (now - retention_days).
+
+    Uses raw SQL to avoid importing every model — works for any table
+    that has a `created_at` column.
+
+    Returns count of rows deleted (or would be deleted in dry-run mode).
+    """
+    cutoff = datetime.utcnow() - timedelta(days=retention_days)
+
+    count_result = await db.execute(
+        text(f"SELECT COUNT(*) FROM {table_name} WHERE created_at < :cutoff"),
+        {"cutoff": cutoff},
+    )
+    count = count_result.scalar_one() or 0
+
+    if count > 0:
+        logger.info(
+            "LGPD TTL%s: %s — %d rows older than %d days (cutoff=%s)",
+            " (dry-run)" if dry_run else "",
+            table_name,
+            count,
+            retention_days,
+            cutoff.isoformat(),
+        )
+        if not dry_run:
+            await db.execute(
+                text(f"DELETE FROM {table_name} WHERE created_at < :cutoff"),
+                {"cutoff": cutoff},
+            )
+            await db.commit()
+
+    return count
+
+
 async def run_cleanup(dry_run: bool = True) -> dict:
     """
-    Delete candidates whose scheduled_deletion_at has passed.
+    Delete candidates and time-bounded data that exceeded their TTL.
+
+    Covers:
+      - Candidates (scheduled_deletion_at)
+      - VacancyCandidate (scheduled_deletion_at)
+      - AiConsumption (scheduled_deletion_at)
+      - conversation_messages / chat_messages (created_at TTL — 90 days)
+      - interview_notes (created_at TTL — 180 days)
+      - screening_tasks (created_at TTL — 365 days)
+      - fairness_audit_log (created_at TTL — 365 days, AI Act)
 
     Args:
         dry_run: If True, only logs what would be deleted without committing.
@@ -90,6 +146,10 @@ async def run_cleanup(dry_run: bool = True) -> dict:
         "candidates_deleted": 0,
         "vacancy_candidates_deleted": 0,
         "ai_consumption_deleted": 0,
+        "chat_messages_deleted": 0,
+        "interview_notes_deleted": 0,
+        "screening_logs_deleted": 0,
+        "ai_decision_logs_deleted": 0,
         "errors": [],
     }
 
@@ -223,13 +283,127 @@ async def run_cleanup(dry_run: bool = True) -> dict:
             logger.error("Error during LGPD ai_consumption cleanup: %s", exc)
             summary["errors"].append(f"ai_consumption: {exc}")
 
+        # 4. Chat / conversation messages — 90 days TTL (LGPD Art. 18)
+        # Tables covered:
+        #   "messages"              — primary chat table (lia_models/conversation.py)
+        #   "conversation_messages" — legacy/alternate name
+        #   "chat_messages"         — legacy/alternate name
+        for table in ("messages", "conversation_messages", "chat_messages"):
+            try:
+                count = await _cleanup_by_created_at(
+                    db,
+                    table_name=table,
+                    retention_days=RETENTION_DAYS["chat_messages"],
+                    dry_run=dry_run,
+                )
+                summary["chat_messages_deleted"] += count
+            except Exception as exc:
+                logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
+
+        # 5. Interview notes — 180 days TTL
+        for table in ("interview_notes",):
+            try:
+                count = await _cleanup_by_created_at(
+                    db,
+                    table_name=table,
+                    retention_days=RETENTION_DAYS["interview_data"],
+                    dry_run=dry_run,
+                )
+                summary["interview_notes_deleted"] += count
+            except Exception as exc:
+                logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
+
+        # 6. Screening task logs — 365 days TTL
+        for table in ("screening_tasks",):
+            try:
+                count = await _cleanup_by_created_at(
+                    db,
+                    table_name=table,
+                    retention_days=RETENTION_DAYS["screening_logs"],
+                    dry_run=dry_run,
+                )
+                summary["screening_logs_deleted"] += count
+            except Exception as exc:
+                logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
+
+        # 7. Fairness audit logs (AI decision logs) — 365 days TTL
+        for table in ("fairness_audit_log",):
+            try:
+                count = await _cleanup_by_created_at(
+                    db,
+                    table_name=table,
+                    retention_days=RETENTION_DAYS["ai_decision_logs"],
+                    dry_run=dry_run,
+                )
+                summary["ai_decision_logs_deleted"] += count
+            except Exception as exc:
+                logger.warning("LGPD TTL: table %s not found or error: %s", table, exc)
+
     mode = "DRY-RUN" if dry_run else "REAL"
     logger.info(
-        "LGPD cleanup [%s] complete — candidates: %d, vacancy_candidates: %d, ai_consumption: %d, errors: %d",
+        "LGPD cleanup [%s] complete — candidates: %d, vacancy_candidates: %d, "
+        "ai_consumption: %d, chat_messages: %d, interview_notes: %d, "
+        "screening_logs: %d, ai_decision_logs: %d, errors: %d",
         mode,
         summary["candidates_deleted"],
         summary["vacancy_candidates_deleted"],
         summary["ai_consumption_deleted"],
+        summary["chat_messages_deleted"],
+        summary["interview_notes_deleted"],
+        summary["screening_logs_deleted"],
+        summary["ai_decision_logs_deleted"],
+        len(summary["errors"]),
+    )
+    return summary
+
+
+async def run_conversation_ttl_cleanup(dry_run: bool = False) -> dict:
+    """
+    Dedicated TTL cleanup for conversation/chat data.
+
+    Intended to be called by the `conversation.ttl_cleanup` Celery Beat task.
+    Applies TTL rules per data type:
+      - chat_messages / conversation_messages: 90 days
+      - interview_notes: 180 days
+      - screening_tasks: 365 days
+      - fairness_audit_log: 365 days
+
+    Returns summary with per-table deletion counts.
+    """
+    summary: dict = {
+        "dry_run": dry_run,
+        "ran_at": datetime.utcnow().isoformat(),
+        "tables": {},
+        "total_deleted": 0,
+        "errors": [],
+    }
+
+    ttl_config: list[tuple[str, int]] = [
+        # Primary chat table (lia_models/conversation.py → Message.__tablename__ = "messages")
+        ("messages", RETENTION_DAYS["chat_messages"]),
+        # Legacy / alternate chat table names (handled gracefully if absent)
+        ("conversation_messages", RETENTION_DAYS["chat_messages"]),
+        ("chat_messages", RETENTION_DAYS["chat_messages"]),
+        ("interview_notes", RETENTION_DAYS["interview_data"]),
+        ("screening_tasks", RETENTION_DAYS["screening_logs"]),
+        ("fairness_audit_log", RETENTION_DAYS["ai_decision_logs"]),
+    ]
+
+    async with AsyncSessionLocal() as db:
+        for table_name, retention_days in ttl_config:
+            try:
+                count = await _cleanup_by_created_at(db, table_name, retention_days, dry_run)
+                summary["tables"][table_name] = {"deleted": count, "retention_days": retention_days}
+                summary["total_deleted"] += count
+            except Exception as exc:
+                logger.warning("conversation_ttl_cleanup: error on %s: %s", table_name, exc)
+                summary["errors"].append(f"{table_name}: {exc}")
+
+    mode = "DRY-RUN" if dry_run else "REAL"
+    logger.info(
+        "conversation_ttl_cleanup [%s] complete — total: %d, errors: %d",
+        mode,
+        summary["total_deleted"],
         len(summary["errors"]),
     )
     return summary

@@ -36,8 +36,15 @@ class ApplicationRepository:
     # ------------------------------------------------------------------
 
     async def get_candidate_by_email(self, email: str):
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        from sqlalchemy import or_
         result = await self.db.execute(
-            select(Candidate).where(Candidate.email == email)
+            select(Candidate).where(
+                or_(
+                    Candidate.email_hash == _sha256_hash(email),
+                    Candidate._email_raw == email,
+                )
+            )
         )
         return result.scalar_one_or_none()
 
