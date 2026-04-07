@@ -156,7 +156,7 @@ export function JobInfoGeralSection({
               <div>
                 <label className={labelClass}>
                   Modelo de Trabalho<ScreeningBadge />
-                  {(companyDefaults as Record<string, unknown>)?.workModel && !jobEditForm.workModel && (
+                  {Boolean((companyDefaults as Record<string, unknown>)?.workModel) && !jobEditForm.workModel && (
                     <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {(companyDefaults as Record<string, unknown>)?.workModel as string})</span>
                   )}
                 </label>
@@ -170,7 +170,7 @@ export function JobInfoGeralSection({
               <div>
                 <label className={labelClass}>
                   Tipo de Contrato<ScreeningBadge />
-                  {(companyDefaults as Record<string, unknown>)?.employmentTypes && ((companyDefaults as Record<string, unknown>)?.employmentTypes as string[]).length > 0 && !jobEditForm.type && (
+                  {Boolean((companyDefaults as Record<string, unknown>)?.employmentTypes) && ((companyDefaults as Record<string, unknown>)?.employmentTypes as string[]).length > 0 && !jobEditForm.type && (
                     <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})</span>
                   )}
                 </label>
@@ -251,7 +251,7 @@ export function JobInfoGeralSection({
       <div>
         <h3 className={groupHeaderClass}>
           Idiomas<ScreeningBadge />
-          {(companyDefaults as Record<string, unknown>)?.defaultLanguages && ((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).length > 0 && (
+          {Boolean((companyDefaults as Record<string, unknown>)?.defaultLanguages) && ((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).length > 0 && (
             <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal normal-case tracking-normal">
               (padrão empresa: {((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).join(", ")})
             </span>
