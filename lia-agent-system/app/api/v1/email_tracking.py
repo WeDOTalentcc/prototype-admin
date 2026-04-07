@@ -171,6 +171,7 @@ def _verify_mailgun_signature(request: Request, body: bytes) -> bool:
 async def tracking_webhook(
     request: Request,
     db: AsyncSession = Depends(get_async_db),
+    ab_service: ABTestingService = Depends(get_ab_testing_service),
 ):
     """
     Mailgun Event Webhook — receives delivery/open/click/bounce events.
@@ -284,8 +285,6 @@ async def tracking_webhook(
 
                 if ab_test and ab_variant and company_id:
                     try:
-                        from app.shared.learning.ab_testing_service import ABTestingService
-                        ab_service = ABTestingService()
                         await ab_service.record_metric(
                             test_name=ab_test,
                             variant_name=ab_variant,

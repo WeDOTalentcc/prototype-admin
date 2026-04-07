@@ -4,8 +4,10 @@ Proactive Actions API - Endpoints for proactive LIA suggestions.
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+
+from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService, get_autonomous_agent_service
 
 logger = logging.getLogger(__name__)
 
@@ -69,11 +71,10 @@ class MonitorTriggerResponse(BaseModel):
 async def get_pending_actions(
     company_id: str,
     limit: int = Query(default=10, le=50),
+    service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
     """Get pending proactive actions for a company."""
     try:
-        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
-        service = AutonomousAgentService()
         actions = await service.get_pending_actions(company_id, limit=limit)
         
         return [
@@ -103,11 +104,10 @@ async def get_action_history(
     company_id: str,
     status: str = Query(default="accepted"),
     limit: int = Query(default=20, le=100),
+    service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
     """Get action history (accepted/rejected) for a company."""
     try:
-        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
-        service = AutonomousAgentService()
         actions = await service.get_actions_by_status(company_id, status=status, limit=limit)
         
         return [
@@ -133,11 +133,13 @@ async def get_action_history(
 
 
 @router.post("/accept/{action_id}", response_model=AcceptRejectResponse)
-async def accept_action(action_id: str, request: AcceptRejectRequest):
+async def accept_action(
+    action_id: str,
+    request: AcceptRejectRequest,
+    service: AutonomousAgentService = Depends(get_autonomous_agent_service),
+):
     """Accept a proactive action suggestion."""
     try:
-        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
-        service = AutonomousAgentService()
         result = await service.accept_action(action_id, request.user_id)
         
         return AcceptRejectResponse(
@@ -152,11 +154,13 @@ async def accept_action(action_id: str, request: AcceptRejectRequest):
 
 
 @router.post("/reject/{action_id}", response_model=AcceptRejectResponse)
-async def reject_action(action_id: str, request: AcceptRejectRequest):
+async def reject_action(
+    action_id: str,
+    request: AcceptRejectRequest,
+    service: AutonomousAgentService = Depends(get_autonomous_agent_service),
+):
     """Reject a proactive action suggestion."""
     try:
-        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
-        service = AutonomousAgentService()
         result = await service.reject_action(action_id, request.user_id)
         
         return AcceptRejectResponse(
@@ -173,14 +177,13 @@ async def reject_action(action_id: str, request: AcceptRejectRequest):
 async def get_proactive_feed(
     company_id: str,
     limit: int = Query(default=10, le=30),
+    service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
     """
     Get proactive feed for chat integration.
     Returns pending actions formatted as chat-ready suggestions.
     """
     try:
-        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
-        service = AutonomousAgentService()
         actions = await service.get_pending_actions(company_id, limit=limit)
         
         severity_map = {
@@ -278,14 +281,13 @@ async def get_proactive_insights(
     company_id: str = Query(...),
     job_id: str | None = Query(default=None),
     limit: int = Query(default=5, le=20),
+    service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
     """
     Retorna insights proativos da LIA para o Kanban.
     Filtra por job_id quando fornecido.
     """
     try:
-        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService
-        service = AutonomousAgentService()
         actions = await service.get_pending_actions(company_id, limit=limit * 2)
 
         results = []

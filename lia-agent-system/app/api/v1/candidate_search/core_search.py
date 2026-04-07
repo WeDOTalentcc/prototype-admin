@@ -584,6 +584,7 @@ async def search_candidates(
     current_user: User = Depends(get_current_user_or_demo),
     pearch_svc: PearchService = Depends(get_pearch_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
+    _cs: CreditService = Depends(get_credit_service),
 ):
     """
     Busca candidatos usando busca híbrida (banco local + Pearch AI).
@@ -667,8 +668,6 @@ async def search_candidates(
         
         _credit_warning = None
         try:
-            from app.domains.credits.services.credit_service import CreditService
-            _cs = CreditService()
             _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
             if _company_id:
                 _action = "bulk_search" if request.search_pearch else "search"

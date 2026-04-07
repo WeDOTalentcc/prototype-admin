@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService, get_wsi_async_session_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/wsi/async", tags=["wsi-async"])
@@ -33,13 +34,12 @@ class AnswerRequest(BaseModel):
 async def create_async_invite(
     payload: InviteRequest,
     db: AsyncSession = Depends(get_db),
+    svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
     """
     Cria sessão WSI assíncrona e retorna token de acesso para o candidato.
     """
     try:
-        from app.services.wsi_async_session_service import WSIAsyncSessionService
-        svc = WSIAsyncSessionService()
         token = await svc.create_session(
             candidate_id=payload.candidate_id,
             job_id=payload.job_id,
@@ -61,13 +61,12 @@ async def create_async_invite(
 async def get_session_state(
     token: str,
     db: AsyncSession = Depends(get_db),
+    svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
     """
     Retorna estado atual da sessão WSI + próxima pergunta.
     """
     try:
-        from app.services.wsi_async_session_service import WSIAsyncSessionService
-        svc = WSIAsyncSessionService()
         session = await svc.get_session(session_id=token)
         if not session:
             raise HTTPException(status_code=404, detail="Sessão não encontrada ou expirada")
@@ -90,13 +89,12 @@ async def submit_answer(
     token: str,
     payload: AnswerRequest,
     db: AsyncSession = Depends(get_db),
+    svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
     """
     Submete resposta para a pergunta atual da sessão WSI assíncrona.
     """
     try:
-        from app.services.wsi_async_session_service import WSIAsyncSessionService
-        svc = WSIAsyncSessionService()
         # submit_response exists: (session_id, block, question_id, response_text)
         session = await svc.get_session(session_id=token)
         if not session:
@@ -132,13 +130,12 @@ async def submit_answer(
 async def complete_session(
     token: str,
     db: AsyncSession = Depends(get_db),
+    svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
     """
     Finaliza a sessão WSI assíncrona e dispara scoring.
     """
     try:
-        from app.services.wsi_async_session_service import WSIAsyncSessionService
-        svc = WSIAsyncSessionService()
         session = await svc.get_session(session_id=token)
         if not session:
             raise HTTPException(status_code=404, detail="Sessão não encontrada")

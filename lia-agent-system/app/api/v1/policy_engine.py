@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 
 from app.domains.policy.dependencies import get_policy_repo
 from app.domains.policy.repositories.policy_repository import PolicyRepository
+from app.domains.policy.services.policy_engine_service import PolicyEngineService, get_policy_engine_service
 from app.models.policy import BusinessRule, EscalationRule, RateLimitRule
 from app.schemas.policy import (
     BusinessRuleCreate,
@@ -38,7 +39,6 @@ from app.schemas.policy import (
     RateLimitRuleResponse,
     RateLimitRuleUpdate,
 )
-from app.services.policy_engine_service import PolicyEngineService
 from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
@@ -297,10 +297,10 @@ async def evaluate_policy(
     data: PolicyEvaluateRequest,
     company_id: str | None = Depends(get_verified_company_id),
     user_id: str | None = Depends(get_user_id_from_header),
+    service: PolicyEngineService = Depends(get_policy_engine_service),
 ):
     """Evaluate whether an action is allowed by policies."""
     try:
-        service = PolicyEngineService()
         result = await service.evaluate(
             action=data.action,
             context=data.context,
@@ -331,10 +331,10 @@ async def evaluate_policy(
 async def check_rate_limit(
     data: RateLimitCheckRequest,
     company_id: str | None = Depends(get_verified_company_id),
+    service: PolicyEngineService = Depends(get_policy_engine_service),
 ):
     """Check rate limit for a specific target and action."""
     try:
-        service = PolicyEngineService()
         result = await service.check_rate_limit(
             target_type=data.target_type.value,
             target_id=data.target_id,
@@ -352,10 +352,10 @@ async def check_rate_limit(
 async def trigger_escalation(
     data: EscalationTriggerRequest,
     company_id: str | None = Depends(get_verified_company_id),
+    service: PolicyEngineService = Depends(get_policy_engine_service),
 ):
     """Trigger an escalation based on a rule or trigger type."""
     try:
-        service = PolicyEngineService()
         result = await service.trigger_escalation(
             rule_id=data.rule_id,
             trigger_type=data.trigger_type.value if data.trigger_type else None,
@@ -377,6 +377,7 @@ async def apply_sector_defaults(
     company_id: str,
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
     repo: PolicyRepository = Depends(get_policy_repo),
+    service: PolicyEngineService = Depends(get_policy_engine_service),
 ):
     """
     Persiste os defaults setoriais (Alpha 1) em CompanyHiringPolicy.
@@ -395,11 +396,10 @@ async def apply_sector_defaults(
     if sector_key not in valid_sectors:
         raise HTTPException(
             status_code=400,
-            detail=f"Setor '{sector}' não reconhecido. Válidos: {sorted(valid_sectors)}",
+            detail=f"Setor {sector} não reconhecido. Válidos: {sorted(valid_sectors)}",
         )
 
     try:
-        service = PolicyEngineService()
         result = await service.save_policy_block(
             company_id=company_id,
             sector=sector_key,
@@ -412,10 +412,11 @@ async def apply_sector_defaults(
 
 
 @router.post("/seed", response_model=PolicySeedResponse, summary="Seed default policies")
-async def seed_default_policies():
+async def seed_default_policies(
+    service: PolicyEngineService = Depends(get_policy_engine_service),
+):
     """Seed the database with default policy rules."""
     try:
-        service = PolicyEngineService()
         stats = await service.load_default_rules()
 
         total_created = (

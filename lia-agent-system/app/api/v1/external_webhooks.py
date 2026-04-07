@@ -12,7 +12,7 @@ import os
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request, status
 from pydantic import BaseModel
 
 from app.domains.automation.services.webhook_adapters import (
@@ -21,6 +21,8 @@ from app.domains.automation.services.webhook_adapters import (
     TestWebhookAdapter,
     WebhookAdapter,
 )
+
+from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
 
 logger = logging.getLogger(__name__)
 
@@ -188,9 +190,7 @@ async def handle_ats_webhook(
 async def process_ats_candidate_updated(platform: str, payload: dict[str, Any]):
     """Sync candidate data from ATS to LIA."""
     try:
-        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
-        
-        sync_service = ATSSyncService()
+        sync_service = get_ats_sync_service()
         
         candidate_id = (
             payload.get("ats_candidate_id") or 
@@ -214,8 +214,6 @@ async def process_ats_candidate_updated(platform: str, payload: dict[str, Any]):
 async def process_ats_stage_changed(platform: str, payload: dict[str, Any]):
     """Sync stage change from ATS to LIA (inbound sync)."""
     try:
-        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
-        
         candidate_id = (
             payload.get("ats_candidate_id") or 
             payload.get("candidate_id") or
@@ -226,7 +224,7 @@ async def process_ats_stage_changed(platform: str, payload: dict[str, Any]):
         
         logger.info(f"[ATS SYNC] Stage change from {platform}: {candidate_id} -> {new_stage}")
         
-        sync_service = ATSSyncService()
+        sync_service = get_ats_sync_service()
         result = await sync_service.sync_stage_from_ats(
             ats_type=platform,
             ats_candidate_id=candidate_id,

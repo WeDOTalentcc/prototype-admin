@@ -17,12 +17,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.feedback_learning import SuggestionFeedback
 from app.domains.cv_screening.repositories.suggestion_feedback_repository import SuggestionFeedbackRepository
-from app.services.feedback_learning_service import FeedbackLearningService
+from app.domains.analytics.services.feedback_learning_service import feedback_learning_service as _feedback_service
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
 logger = logging.getLogger(__name__)
-
-_feedback_service = FeedbackLearningService()
 
 
 class SuggestionFeedbackRequest(BaseModel):

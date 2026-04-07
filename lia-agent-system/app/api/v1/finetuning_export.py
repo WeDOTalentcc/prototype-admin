@@ -2,11 +2,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.shared.learning.finetuning_export import FineTuningExportService
+from app.shared.learning.finetuning_export import finetuning_export_service as _service
 
 router = APIRouter(prefix="/finetuning", tags=["finetuning-export"])
-
-_service = FineTuningExportService()
 
 
 @router.get("/stats/{company_id}", response_model=None)

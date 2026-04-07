@@ -8,13 +8,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.domains.communication.services.teams_service import TeamsService
+from app.domains.communication.services.teams_service import teams_service
+from libs.messaging.lia_messaging.notification_service import notification_service
 from app.models.job_vacancy import JobVacancy
 from app.schemas.job_vacancy_state import JobVacancyState
-from app.services.notification_service import NotificationService
-
-teams_service = TeamsService()
-notification_service = NotificationService()
 
 logger = logging.getLogger(__name__)
 

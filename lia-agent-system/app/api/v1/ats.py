@@ -24,6 +24,7 @@ from app.models.ats_integration import (
     SyncStatus,
 )
 from app.shared.encryption import encrypt_value, decrypt_value
+from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
 
 logger = logging.getLogger(__name__)
 
@@ -321,6 +322,7 @@ async def trigger_ats_sync(
     request: TriggerSyncRequest,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
+    sync_service: ATSSyncService = Depends(get_ats_sync_service),
 ):
     """
     Manually trigger synchronization for an ATS connection.
@@ -358,10 +360,7 @@ async def trigger_ats_sync(
         error_message = None
 
         try:
-            from app.domains.ats_integration.services.ats_sync_service import (
-                ATSSyncService,
-                ATSSyncTrigger,
-            )
+            from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
 
             api_key = None
             if connection.api_key:
@@ -370,7 +369,6 @@ async def trigger_ats_sync(
                 except Exception:
                     api_key = connection.api_key
 
-            sync_service = ATSSyncService()
             provider_name = connection.provider.value.lower()
 
             if api_key:

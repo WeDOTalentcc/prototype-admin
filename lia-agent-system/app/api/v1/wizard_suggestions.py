@@ -22,13 +22,11 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.wizard_data_priority_service import (
     JobContext,
-    WizardDataPriorityService,
+    wizard_data_priority_service,
 )
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-wizard_priority_service = WizardDataPriorityService()
 
 def parse_company_id(company_id: str) -> UUID:
     """Convert company_id string to UUID."""

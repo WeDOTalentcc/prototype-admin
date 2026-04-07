@@ -17,7 +17,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.rag_pipeline_service import RAGPipelineService, RAGSearchResult
+from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service as _rag_service
+from app.services.rag_pipeline_service import RAGSearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +26,6 @@ router = APIRouter(
     prefix="/candidates",
     tags=["rag-search"],
 )
-
-# Instância compartilhada (stateless)
-_rag_service = RAGPipelineService()
 
 
 # ---------------------------------------------------------------------------
