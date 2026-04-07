@@ -25,32 +25,31 @@ import logging
 import os
 import random
 import uuid
-from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from enum import Enum, StrEnum
 from typing import Any
-
-
-try:
-    import httpx as _httpx_comm
-    MAILGUN_HTTPX_COMM_AVAILABLE = True
-except ImportError:
-    MAILGUN_HTTPX_COMM_AVAILABLE = False
-    _httpx_comm = None  # type: ignore[assignment]
-
-try:
-    from twilio.base.exceptions import TwilioRestException
-    from twilio.rest import Client as TwilioClient
-    TWILIO_AVAILABLE = True
-except ImportError:
-    TWILIO_AVAILABLE = False
-    TwilioClient = None
-    TwilioRestException = Exception
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text, and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal, Base
+from app.domains.communication.services.message_providers import (
+    AWSEmailProvider,
+    MailgunMessageProvider,
+    MessageProvider,
+    MockEmailProvider,
+    MockWhatsAppProvider,
+    ResendMessageProvider,
+    TwilioWhatsAppProvider,
+    WhatsAppBusinessProvider,
+)
+from app.enums.communication import (
+    ApprovalStatus,
+    CommunicationStatus,
+    MESSAGE_TYPE_TO_SITUATION,
+    MessageChannel,
+    MessageType,
+    TemplateSituation,
+)
 from app.services.notification_service import (
     NotificationService,
     NotificationType,
@@ -60,52 +59,6 @@ from app.templates.communication_templates import EmailTemplates, WhatsAppTempla
 logger = logging.getLogger(__name__)
 
 BRAZIL_TZ_OFFSET_HOURS = -3
-
-
-class MessageType(StrEnum):
-    """Types of messages that can be sent."""
-    INITIAL_CONTACT = "initial_contact"
-    SCREENING_INVITATION = "screening_invitation"
-    SCREENING_REMINDER = "screening_reminder"
-    SCREENING_PASSED = "screening_passed"
-    SCREENING_FAILED = "screening_failed"
-    INTERVIEW_INVITE = "interview_invite"
-    INTERVIEW_SCHEDULED = "interview_scheduled"
-    INTERVIEW_REMINDER = "interview_reminder"
-    INTERVIEW_CONFIRMATION = "interview_confirmation"
-    INTERVIEW_CONFIRMED = "interview_confirmed"
-    REJECTION_FEEDBACK = "rejection_feedback"
-    PROCESS_CLOSED = "process_closed"
-    OFFER = "offer"
-    GENERAL = "general"
-
-
-class MessageChannel(StrEnum):
-    """Communication channels."""
-    EMAIL = "email"
-    WHATSAPP = "whatsapp"
-    SMS = "sms"
-
-
-class ApprovalStatus(StrEnum):
-    """Status of approval requests."""
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
-    EXPIRED = "expired"
-    AUTO_APPROVED = "auto_approved"
-
-
-class CommunicationStatus(StrEnum):
-    """Status of sent communications."""
-    PENDING = "pending"
-    QUEUED = "queued"
-    SENT = "sent"
-    DELIVERED = "delivered"
-    READ = "read"
-    FAILED = "failed"
-    BOUNCED = "bounced"
-    BLOCKED = "blocked"
 
 
 MESSAGE_REQUIRES_APPROVAL = {
@@ -124,24 +77,6 @@ MESSAGE_REQUIRES_APPROVAL = {
     MessageType.PROCESS_CLOSED: True,
     MessageType.GENERAL: True,
 }
-
-MESSAGE_TYPE_TO_SITUATION = {
-    MessageType.INTERVIEW_INVITE: "interview_invite",
-    MessageType.INTERVIEW_CONFIRMED: "interview_confirmed",
-    MessageType.INTERVIEW_SCHEDULED: "interview_invite",
-    MessageType.INTERVIEW_REMINDER: "interview_reminder",
-    MessageType.INTERVIEW_CONFIRMATION: "interview_confirmed",
-    MessageType.INITIAL_CONTACT: "initial_contact",
-    MessageType.SCREENING_INVITATION: "triagem",
-    MessageType.SCREENING_REMINDER: "screening_reminder",
-    MessageType.SCREENING_PASSED: "screening_passed",
-    MessageType.SCREENING_FAILED: "screening_failed",
-    MessageType.REJECTION_FEEDBACK: "rejeicao",
-    MessageType.PROCESS_CLOSED: "process_closed",
-    MessageType.OFFER: "proposta",
-    MessageType.GENERAL: None,
-}
-
 
 class PendingApproval(Base):
     """Pending approval requests for communications requiring human review."""
@@ -393,677 +328,6 @@ class CandidateQuarantine(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
-
-class MessageProvider(ABC):
-    """Abstract base class for message providers."""
-    
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        """Provider name."""
-        pass
-    
-    @property
-    @abstractmethod
-    def channel(self) -> MessageChannel:
-        """Channel type (email, whatsapp, sms)."""
-        pass
-    
-    @abstractmethod
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """
-        Send a message.
-        
-        Returns:
-            Tuple of (success, provider_message_id, response_data)
-        """
-        pass
-    
-    @abstractmethod
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """
-        Check the status of a sent message.
-        
-        Returns:
-            Tuple of (status, additional_data)
-        """
-        pass
-    
-    @abstractmethod
-    def is_available(self) -> bool:
-        """Check if the provider is available and configured."""
-        pass
-
-
-class MockEmailProvider(MessageProvider):
-    """Mock email provider for development/testing. Blocked in production."""
-    
-    def __init__(self):
-        self._environment = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
-        if self._environment == "production":
-            logger.critical(
-                "[MOCK EMAIL] MockEmailProvider activated in PRODUCTION — "
-                "emails will NOT be delivered! Configure MAILGUN_API_KEY or RESEND_API_KEY immediately."
-            )
-
-    @property
-    def name(self) -> str:
-        return "mock_email"
-    
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.EMAIL
-    
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """Simulate sending an email. Returns failure in production."""
-        if self._environment == "production":
-            logger.critical(f"[MOCK EMAIL] BLOCKED in production — email to {to} was NOT sent. Configure a real email provider.")
-            return False, None, {"mock": True, "blocked": True, "reason": "MockEmailProvider is not allowed in production"}
-        logger.info(f"[MOCK EMAIL] To: {to}, Subject: {subject}")
-        message_id = f"mock_email_{uuid.uuid4().hex[:12]}"
-        return True, message_id, {"mock": True, "to": to, "subject": subject}
-    
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """Simulate checking email status."""
-        return "delivered", {"mock": True}
-    
-    def is_available(self) -> bool:
-        if self._environment == "production":
-            return False
-        return True
-
-
-class ResendMessageProvider(MessageProvider):
-    """Resend email provider — fallback after Mailgun."""
-    
-    def __init__(self):
-        self.api_key = os.environ.get("RESEND_API_KEY")
-        self.from_email = os.environ.get("RESEND_FROM_EMAIL", "noreply@wedotalent.com")
-        self.from_name = os.environ.get("RESEND_FROM_NAME", "WeDo Talent")
-    
-    @property
-    def name(self) -> str:
-        return "resend"
-    
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.EMAIL
-    
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        if not self.api_key:
-            return False, None, {"error": "RESEND_API_KEY not configured"}
-        try:
-            import httpx
-            sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
-            payload = {
-                "from": sender,
-                "to": [to],
-                "subject": subject or "(sem assunto)",
-                "html": body_html or body,
-            }
-            if body and not body_html:
-                payload["text"] = body
-            async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.post(
-                    "https://api.resend.com/emails",
-                    headers={
-                        "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json=payload,
-                )
-            if response.status_code in (200, 201):
-                data = response.json()
-                message_id = data.get("id", f"resend-{uuid.uuid4().hex[:12]}")
-                logger.info(f"[RESEND] Email sent to {to}. ID: {message_id}")
-                return True, message_id, {"provider": "resend", "status_code": response.status_code}
-            else:
-                logger.error(f"[RESEND] Failed for {to}: {response.status_code} {response.text}")
-                return False, None, {"error": f"Resend API error: {response.status_code}"}
-        except Exception as e:
-            logger.error(f"[RESEND] Exception sending to {to}: {e}", exc_info=True)
-            return False, None, {"error": str(e)}
-    
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        return "unknown", {"note": "Resend status tracking requires webhook setup"}
-    
-    def is_available(self) -> bool:
-        return bool(self.api_key)
-
-
-class MailgunMessageProvider(MessageProvider):
-    """
-    Mailgun email provider implementation using the Mailgun HTTP API.
-
-    Requires:
-        - MAILGUN_API_KEY environment variable
-        - MAILGUN_DOMAIN environment variable
-        - Optional: MAILGUN_FROM_EMAIL (defaults to noreply@wedotalent.com)
-        - Optional: MAILGUN_FROM_NAME (defaults to WeDo Talent)
-        - Optional: MAILGUN_API_BASE (defaults to https://api.mailgun.net/v3)
-
-    Note on check_status:
-        Mailgun delivery status is tracked via webhooks (Event Webhook).
-        The check_status method returns 'unknown' status and recommends webhook setup.
-    """
-
-    def __init__(self):
-        self.api_key = os.environ.get("MAILGUN_API_KEY")
-        self.domain = os.environ.get("MAILGUN_DOMAIN")
-        self.from_email = os.environ.get("MAILGUN_FROM_EMAIL", "noreply@wedotalent.com")
-        self.from_name = os.environ.get("MAILGUN_FROM_NAME", "WeDo Talent")
-        self.api_base = os.environ.get("MAILGUN_API_BASE", "https://api.mailgun.net/v3")
-
-    @property
-    def name(self) -> str:
-        return "mailgun"
-
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.EMAIL
-
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """
-        Send email via Mailgun HTTP API.
-
-        Args:
-            to: Recipient email address
-            subject: Email subject line
-            body: Plain text email body
-            body_html: Optional HTML email body
-            **kwargs: Additional options:
-                - reply_to: Reply-to email address
-                - categories: List of categories for tracking
-
-        Returns:
-            Tuple of (success, message_id, response_data)
-        """
-        if not MAILGUN_HTTPX_COMM_AVAILABLE:
-            logger.warning("httpx not available — Mailgun send disabled")
-            return False, None, {"error": "httpx not installed. Install with: pip install httpx"}
-
-        if not self.is_available():
-            logger.warning("Mailgun not configured (missing MAILGUN_API_KEY/MAILGUN_DOMAIN)")
-            return False, None, {"error": "Mailgun not configured — MAILGUN_API_KEY and MAILGUN_DOMAIN required"}
-
-        try:
-            import httpx
-
-            sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
-            data: dict[str, Any] = {
-                "from": sender,
-                "to": to,
-                "subject": subject or "(No Subject)",
-                "text": body,
-            }
-
-            if body_html:
-                data["html"] = body_html
-
-            reply_to = kwargs.get("reply_to")
-            if reply_to:
-                data["h:Reply-To"] = reply_to
-
-            categories = kwargs.get("categories", [])
-            for tag in categories:
-                data.setdefault("o:tag", [])
-                if isinstance(data["o:tag"], list):
-                    data["o:tag"].append(tag)
-
-            custom_args = kwargs.get("custom_args", {})
-            for key, value in custom_args.items():
-                data[f"v:{key}"] = str(value)
-
-            async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.post(
-                    f"{self.api_base}/{self.domain}/messages",
-                    auth=("api", self.api_key),
-                    data=data,
-                )
-
-            if response.status_code == 200:
-                payload = response.json()
-                message_id = payload.get("id", f"mg_{uuid.uuid4().hex[:12]}")
-                logger.info(f"[MAILGUN] Successfully sent email to: {to}, message_id: {message_id}")
-                return True, message_id, {
-                    "provider": "mailgun",
-                    "status_code": response.status_code,
-                    "message_id": message_id
-                }
-            else:
-                logger.error(f"[MAILGUN] Failed to send email to: {to}, status: {response.status_code}")
-                return False, None, {
-                    "provider": "mailgun",
-                    "error": f"Mailgun returned status {response.status_code}: {response.text}",
-                    "status_code": response.status_code,
-                }
-
-        except Exception as e:
-            logger.error(f"[MAILGUN] Error sending email to {to}: {str(e)}", exc_info=True)
-            return False, None, {
-                "provider": "mailgun",
-                "error": str(e),
-                "error_type": type(e).__name__
-            }
-
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """
-        Check Mailgun email status.
-
-        Note: Mailgun does not provide a real-time API to check individual message delivery status.
-        Email delivery tracking is handled via Mailgun's Event Webhook.
-
-        Returns:
-            Tuple of (status, additional_data) - status will be 'unknown' with webhook setup info
-        """
-        return "unknown", {
-            "provider": "mailgun",
-            "message_id": message_id,
-            "note": "Mailgun email status tracking requires Event Webhook configuration.",
-            "recommendation": "Set up a webhook endpoint to receive delivery events"
-        }
-
-    def is_available(self) -> bool:
-        """Check if Mailgun is configured."""
-        return bool(self.api_key) and bool(self.domain) and MAILGUN_HTTPX_COMM_AVAILABLE
-
-
-class AWSEmailProvider(MessageProvider):
-    """AWS SES email provider implementation."""
-    
-    def __init__(self):
-        self.aws_access_key = os.environ.get("AWS_ACCESS_KEY_ID")
-        self.aws_secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
-        self.aws_region = os.environ.get("AWS_REGION", "us-east-1")
-        self.from_email = os.environ.get("AWS_SES_FROM_EMAIL", "noreply@wedotalent.com")
-    
-    @property
-    def name(self) -> str:
-        return "aws_ses"
-    
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.EMAIL
-    
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """Send email via AWS SES."""
-        if not self.is_available():
-            logger.warning("AWS SES not configured, falling back")
-            return False, None, {"error": "AWS SES not configured"}
-        
-        try:
-            logger.info(f"[AWS SES] Sending email to: {to}")
-            message_id = f"ses_{uuid.uuid4().hex[:12]}"
-            return True, message_id, {"provider": "aws_ses"}
-        except Exception as e:
-            logger.error(f"AWS SES error: {e}")
-            return False, None, {"error": str(e)}
-    
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """Check AWS SES email status."""
-        return "delivered", {"provider": "aws_ses"}
-    
-    def is_available(self) -> bool:
-        return bool(self.aws_access_key and self.aws_secret_key)
-
-
-class MockWhatsAppProvider(MessageProvider):
-    """Mock WhatsApp provider for development/testing. Blocked in production."""
-    
-    def __init__(self):
-        self._environment = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
-        if self._environment == "production":
-            logger.critical(
-                "[MOCK WHATSAPP] MockWhatsAppProvider activated in PRODUCTION — "
-                "messages will NOT be delivered! Configure TWILIO credentials immediately."
-            )
-
-    @property
-    def name(self) -> str:
-        return "mock_whatsapp"
-    
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.WHATSAPP
-    
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """Simulate sending a WhatsApp message. Returns failure in production."""
-        if self._environment == "production":
-            logger.critical(f"[MOCK WHATSAPP] BLOCKED in production — message to {to} was NOT sent.")
-            return False, None, {"mock": True, "blocked": True, "reason": "MockWhatsAppProvider is not allowed in production"}
-        logger.info(f"[MOCK WHATSAPP] To: {to}")
-        logger.info(f"[MOCK WHATSAPP] Message: {body[:100]}...")
-        message_id = f"mock_wa_{uuid.uuid4().hex[:12]}"
-        return True, message_id, {"mock": True, "to": to}
-    
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """Simulate checking WhatsApp status."""
-        return "delivered", {"mock": True}
-    
-    def is_available(self) -> bool:
-        if self._environment == "production":
-            return False
-        return True
-
-
-class TwilioWhatsAppProvider(MessageProvider):
-    """
-    Twilio WhatsApp provider implementation using the official Twilio Python SDK.
-    
-    Requires:
-        - TWILIO_ACCOUNT_SID environment variable
-        - TWILIO_AUTH_TOKEN environment variable
-        - Optional: TWILIO_WHATSAPP_FROM (defaults to Twilio sandbox number)
-    
-    Note: For production WhatsApp messaging, you need:
-        1. A Twilio account with WhatsApp enabled
-        2. An approved WhatsApp Business Profile
-        3. Approved message templates for outbound messaging (24h window rule)
-    
-    The check_status method uses Twilio's Message API to fetch real delivery status.
-    """
-    
-    TWILIO_STATUS_MAP = {
-        "queued": "queued",
-        "sending": "pending",
-        "sent": "sent",
-        "delivered": "delivered",
-        "read": "read",
-        "failed": "failed",
-        "undelivered": "failed",
-    }
-    
-    def __init__(self):
-        self.account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
-        self.auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-        self.from_number = os.environ.get("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
-        self._client: TwilioClient | None = None
-    
-    @property
-    def client(self) -> TwilioClient | None:
-        """Lazy initialization of Twilio client."""
-        if self._client is None and self.is_available() and TWILIO_AVAILABLE:
-            self._client = TwilioClient(self.account_sid, self.auth_token)
-        return self._client
-    
-    @property
-    def name(self) -> str:
-        return "twilio_whatsapp"
-    
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.WHATSAPP
-    
-    def _format_phone_number(self, phone: str) -> str:
-        """Format phone number for WhatsApp."""
-        phone = phone.strip()
-        
-        if phone.startswith("whatsapp:"):
-            return phone
-        
-        cleaned = "".join(c for c in phone if c.isdigit() or c == "+")
-        
-        if not cleaned.startswith("+"):
-            if cleaned.startswith("55"):
-                cleaned = "+" + cleaned
-            else:
-                cleaned = "+55" + cleaned
-        
-        return f"whatsapp:{cleaned}"
-    
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """
-        Send WhatsApp message via Twilio API.
-        
-        Args:
-            to: Recipient phone number (with or without country code)
-            subject: Ignored for WhatsApp (used for logging only)
-            body: Message text content
-            body_html: Ignored for WhatsApp
-            **kwargs: Additional options:
-                - media_url: URL of media to attach (image, document, etc.)
-                - template_sid: Twilio Content Template SID for approved templates
-                - content_variables: Variables for template substitution
-        
-        Returns:
-            Tuple of (success, message_sid, response_data)
-        """
-        if not TWILIO_AVAILABLE:
-            logger.warning("Twilio SDK not installed, falling back to mock")
-            return False, None, {"error": "Twilio SDK not installed. Install with: pip install twilio"}
-        
-        if not self.is_available():
-            logger.warning("Twilio WhatsApp not configured (missing credentials), falling back")
-            return False, None, {"error": "Twilio not configured - TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN required"}
-        
-        try:
-            formatted_to = self._format_phone_number(to)
-            formatted_from = self.from_number if self.from_number.startswith("whatsapp:") else f"whatsapp:{self.from_number}"
-            
-            message_params = {
-                "from_": formatted_from,
-                "to": formatted_to,
-                "body": body
-            }
-            
-            media_url = kwargs.get("media_url")
-            if media_url:
-                if isinstance(media_url, str):
-                    message_params["media_url"] = [media_url]
-                else:
-                    message_params["media_url"] = media_url
-            
-            template_sid = kwargs.get("template_sid")
-            content_variables = kwargs.get("content_variables")
-            if template_sid:
-                message_params["content_sid"] = template_sid
-                if content_variables:
-                    import json
-                    message_params["content_variables"] = json.dumps(content_variables)
-            
-            loop = asyncio.get_event_loop()
-            message = await loop.run_in_executor(
-                None,
-                lambda: self.client.messages.create(**message_params)
-            )
-            
-            logger.info(f"[TWILIO WHATSAPP] Successfully sent message to: {formatted_to}, SID: {message.sid}")
-            
-            return True, message.sid, {
-                "provider": "twilio_whatsapp",
-                "message_sid": message.sid,
-                "status": message.status,
-                "to": formatted_to,
-                "from": formatted_from,
-                "date_created": str(message.date_created) if message.date_created else None
-            }
-            
-        except TwilioRestException as e:
-            logger.error(f"[TWILIO WHATSAPP] Twilio API error: {e.code} - {e.msg}", exc_info=True)
-            return False, None, {
-                "provider": "twilio_whatsapp",
-                "error": e.msg,
-                "error_code": e.code,
-                "error_type": "TwilioRestException",
-                "more_info": e.more_info
-            }
-        except Exception as e:
-            logger.error(f"[TWILIO WHATSAPP] Error sending message to {to}: {str(e)}", exc_info=True)
-            return False, None, {
-                "provider": "twilio_whatsapp",
-                "error": str(e),
-                "error_type": type(e).__name__
-            }
-    
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """
-        Check Twilio WhatsApp message status using Twilio's Message API.
-        
-        Twilio provides real-time status updates for messages. Possible statuses:
-        - queued: Message is queued to be sent
-        - sending: Message is being sent
-        - sent: Message was successfully sent to carrier
-        - delivered: Message was delivered to recipient
-        - read: Message was read by recipient (if read receipts enabled)
-        - failed: Message could not be sent
-        - undelivered: Carrier could not deliver the message
-        
-        Args:
-            message_id: Twilio Message SID (e.g., "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-        
-        Returns:
-            Tuple of (normalized_status, additional_data)
-        """
-        if not TWILIO_AVAILABLE:
-            return "unknown", {
-                "provider": "twilio_whatsapp",
-                "error": "Twilio SDK not installed"
-            }
-        
-        if not self.is_available():
-            return "unknown", {
-                "provider": "twilio_whatsapp",
-                "error": "Twilio not configured"
-            }
-        
-        if not message_id or not message_id.startswith("SM"):
-            return "unknown", {
-                "provider": "twilio_whatsapp",
-                "error": f"Invalid Twilio message SID format: {message_id}"
-            }
-        
-        try:
-            loop = asyncio.get_event_loop()
-            message = await loop.run_in_executor(
-                None,
-                lambda: self.client.messages(message_id).fetch()
-            )
-            
-            twilio_status = message.status
-            normalized_status = self.TWILIO_STATUS_MAP.get(twilio_status, "unknown")
-            
-            return normalized_status, {
-                "provider": "twilio_whatsapp",
-                "message_sid": message.sid,
-                "twilio_status": twilio_status,
-                "to": message.to,
-                "from": message.from_,
-                "date_sent": str(message.date_sent) if message.date_sent else None,
-                "date_updated": str(message.date_updated) if message.date_updated else None,
-                "error_code": message.error_code,
-                "error_message": message.error_message
-            }
-            
-        except TwilioRestException as e:
-            logger.error(f"[TWILIO WHATSAPP] Error checking status for {message_id}: {e.code} - {e.msg}")
-            return "unknown", {
-                "provider": "twilio_whatsapp",
-                "error": e.msg,
-                "error_code": e.code
-            }
-        except Exception as e:
-            logger.error(f"[TWILIO WHATSAPP] Error checking status for {message_id}: {str(e)}")
-            return "unknown", {
-                "provider": "twilio_whatsapp",
-                "error": str(e)
-            }
-    
-    def is_available(self) -> bool:
-        """Check if Twilio is configured and SDK is available."""
-        return bool(self.account_sid and self.auth_token) and TWILIO_AVAILABLE
-
-
-class WhatsAppBusinessProvider(MessageProvider):
-    """WhatsApp Business API provider implementation."""
-    
-    def __init__(self):
-        self.access_token = os.environ.get("WHATSAPP_BUSINESS_TOKEN")
-        self.phone_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
-    
-    @property
-    def name(self) -> str:
-        return "whatsapp_business"
-    
-    @property
-    def channel(self) -> MessageChannel:
-        return MessageChannel.WHATSAPP
-    
-    async def send(
-        self,
-        to: str,
-        subject: str | None,
-        body: str,
-        body_html: str | None = None,
-        **kwargs
-    ) -> tuple[bool, str | None, dict[str, Any] | None]:
-        """Send message via WhatsApp Business API."""
-        if not self.is_available():
-            logger.warning("WhatsApp Business API not configured, falling back")
-            return False, None, {"error": "WhatsApp Business API not configured"}
-        
-        try:
-            logger.info(f"[WHATSAPP BUSINESS] Sending to: {to}")
-            message_id = f"waba_{uuid.uuid4().hex[:12]}"
-            return True, message_id, {"provider": "whatsapp_business"}
-        except Exception as e:
-            logger.error(f"WhatsApp Business API error: {e}")
-            return False, None, {"error": str(e)}
-    
-    async def check_status(self, message_id: str) -> tuple[str, dict[str, Any] | None]:
-        """Check WhatsApp Business API message status."""
-        return "delivered", {"provider": "whatsapp_business"}
-    
-    def is_available(self) -> bool:
-        return bool(self.access_token and self.phone_number_id)
 
 
 class CommunicationService:
@@ -1891,13 +1155,10 @@ class CommunicationService:
     ) -> dict[str, Any]:
         """
         Send a message using database templates selected via MESSAGE_TYPE_TO_SITUATION.
-        
-        This method:
-        1. Maps message_type to template situation via MESSAGE_TYPE_TO_SITUATION
-        2. Looks up the active template in EmailTemplate table
-        3. Renders the template with provided variables
-        4. Sends via send_message() with all policy checks
-        
+
+        Delegates template resolution and rendering to TemplateService, then sends
+        the rendered content via send_message() with all policy checks applied.
+
         Args:
             db: Database session
             message_type: Type of message (determines template selection)
@@ -1910,128 +1171,24 @@ class CommunicationService:
             job_id: Optional job vacancy ID
             sent_by: Who is sending (default: system)
             skip_approval_check: Skip approval check for auto-approved message types
-        
+
         Returns:
             Result dict with success status and details
         """
-        from app.domains.communication.services.email_service import email_service
-        from app.models.email_template import EmailTemplate
-        
+        from app.domains.communication.services.template_service import render_message_template
+
         try:
-            situation = MESSAGE_TYPE_TO_SITUATION.get(message_type)
-            if not situation:
-                logger.warning(f"No situation mapping for message_type: {message_type}")
-                return {
-                    "success": False,
-                    "error": "no_situation_mapping",
-                    "message": f"No template situation mapping for message type: {message_type.value}"
-                }
-
-            recommended_template_id = None
-            try:
-                from app.shared.intelligence.template_learning.template_learning_service import (
-                    template_learning_service,
-                )
-                recommended_template_id = await template_learning_service.recommend_template(
-                    db=db,
-                    company_id=company_id,
-                    context={"message_type": message_type.value, "situation": situation},
-                    fallback_template_id=None,
-                )
-            except Exception as _tl_exc:
-                logger.debug("[TemplateLearning] recommend skipped: %s", _tl_exc)
-
-            ab_variant_info = None
-            ab_test_map = {
-                MessageType.SCREENING_INVITATION: "email_screening_invite",
-                MessageType.SCREENING_REMINDER: "email_follow_up_reminder",
-                MessageType.REJECTION_FEEDBACK: "email_feedback_rejection",
-            }
-            ab_test_name = ab_test_map.get(message_type)
-            if ab_test_name:
-                try:
-                    from app.shared.learning.ab_testing_service import ABTestingService
-                    _ab_svc = ABTestingService()
-                    ab_variant_info = await _ab_svc.get_variant(
-                        test_name=ab_test_name,
-                        session_id=candidate_id,
-                        db=db,
-                    )
-                except Exception as _ab_exc:
-                    logger.debug("[ABTesting] variant lookup skipped: %s", _ab_exc)
-
-            if recommended_template_id:
-                result = await db.execute(
-                    select(EmailTemplate).where(
-                        and_(
-                            EmailTemplate.id == recommended_template_id,
-                            EmailTemplate.is_active,
-                        )
-                    ).limit(1)
-                )
-                template = result.scalar_one_or_none()
-                if not template:
-                    recommended_template_id = None
-
-            if not recommended_template_id:
-                result = await db.execute(
-                    select(EmailTemplate).where(
-                        and_(
-                            EmailTemplate.situation == situation,
-                            EmailTemplate.is_active,
-                            EmailTemplate.channel == channel.value
-                        )
-                    ).limit(1)
-                )
-                template = result.scalar_one_or_none()
-            
-            if not template:
-                logger.warning(f"Template with situation='{situation}' not found for channel={channel.value}")
-                return {
-                    "success": False,
-                    "error": "template_not_found",
-                    "message": f"Template não encontrado (situation='{situation}', channel='{channel.value}')"
-                }
-            
-            ab_body_override = None
-            if ab_variant_info and ab_variant_info.get("prompt_template"):
-                try:
-                    ab_body_override, _ = email_service.render_template(
-                        ab_variant_info["prompt_template"],
-                        variables,
-                    )
-                    logger.debug(
-                        "[ABTesting] Using variant '%s' body for %s",
-                        ab_variant_info.get("variant_name"), message_type.value,
-                    )
-                except Exception as _ab_render_exc:
-                    logger.debug("[ABTesting] Variant render failed, using default: %s", _ab_render_exc)
-
-            rendered_subject, _ = email_service.render_template(
-                str(template.subject) if template.subject else "",
-                variables
-            )
-            rendered_body_html, _ = email_service.render_template(
-                str(template.body_html) if template.body_html else "",
-                variables
-            )
-            rendered_body_text, _ = email_service.render_template(
-                str(template.body_text) if template.body_text else "",
-                variables
+            rendered = await render_message_template(
+                db=db,
+                message_type=message_type,
+                channel=channel,
+                company_id=company_id,
+                candidate_id=candidate_id,
+                variables=variables,
             )
 
-            if ab_body_override:
-                rendered_body_text = ab_body_override
-                rendered_body_html = ab_body_override.replace("\n", "<br>")
-            
-            _tracking_extra = {}
-            _template_id_str = str(template.id) if hasattr(template, 'id') else template.name
-            _tracking_extra["template_id"] = _template_id_str
-            if ab_variant_info:
-                _tracking_extra["ab_test"] = ab_test_name
-                _tracking_extra["ab_variant"] = ab_variant_info.get("variant_name", "")
-            if recommended_template_id:
-                _tracking_extra["template_source"] = "learning_recommended"
+            if not rendered.get("success"):
+                return rendered
 
             send_result = await self.send_message(
                 company_id=company_id,
@@ -2040,26 +1197,25 @@ class CommunicationService:
                 candidate_phone=None,
                 message_type=message_type,
                 channel=channel,
-                subject=rendered_subject,
-                body=rendered_body_text or rendered_body_html,
-                body_html=rendered_body_html,
+                subject=rendered.get("subject"),
+                body=rendered.get("body_text") or rendered.get("body_html", ""),
+                body_html=rendered.get("body_html"),
                 job_id=job_id,
                 sent_by=sent_by,
-                db=db
+                skip_policy_checks=skip_approval_check,
+                db=db,
             )
-            
-            if send_result.get("success"):
-                logger.info(f"📧 Templated message sent: {message_type.value}")
-                send_result["template_used"] = template.name
-                send_result["template_situation"] = situation
 
-                if recommended_template_id:
-                    send_result["template_source"] = "learning_recommended"
-                if ab_variant_info:
-                    send_result["ab_variant"] = ab_variant_info.get("variant_name")
-                    send_result["ab_test"] = ab_test_name
+            if send_result.get("success"):
+                logger.info("📧 Templated message sent: %s", message_type.value)
+                send_result["template_used"] = rendered.get("template_name")
+                send_result["template_situation"] = rendered.get("template_situation")
 
                 log_id = send_result.get("log_id")
+                _tracking_extra = {
+                    "template_id": rendered.get("template_id"),
+                    "template_source": rendered.get("template_source", "default"),
+                }
                 if log_id and _tracking_extra:
                     try:
                         from sqlalchemy import update as sa_update
@@ -2082,46 +1238,41 @@ class CommunicationService:
                     )
                     template_learning_service.record_send(
                         company_id=company_id,
-                        template_id=_template_id_str,
+                        template_id=rendered.get("template_id", ""),
                         context={"message_type": message_type.value, "candidate_id": candidate_id},
                     )
                 except Exception:
                     pass
-            
+
             return send_result
-            
+
         except Exception as e:
             try:
                 await db.rollback()
             except Exception:
                 pass
-            logger.error(f"❌ Failed to send templated message: {e}")
+            logger.error("❌ Failed to send templated message: %s", e)
             return {
                 "success": False,
                 "error": "send_failed",
-                "message": str(e)
+                "message": str(e),
             }
-    
+
     def _get_email_template(self, message_type: MessageType):
-        """Get the appropriate email template function for a message type."""
-        templates = {
-            MessageType.SCREENING_REMINDER: EmailTemplates.screening_reminder,
-            MessageType.SCREENING_PASSED: EmailTemplates.screening_passed,
-            MessageType.INTERVIEW_SCHEDULED: EmailTemplates.interview_scheduled,
-            MessageType.PROCESS_CLOSED: EmailTemplates.process_closed,
-        }
-        return templates.get(message_type)
-    
+        """Get the appropriate email template function for a message type.
+
+        Delegates to template_service for a single source of truth.
+        """
+        from app.domains.communication.services.template_service import get_email_template_func
+        return get_email_template_func(message_type)
+
     def _get_whatsapp_template(self, message_type: MessageType):
-        """Get the appropriate WhatsApp template function for a message type."""
-        templates = {
-            MessageType.SCREENING_REMINDER: WhatsAppTemplates.screening_reminder,
-            MessageType.SCREENING_PASSED: WhatsAppTemplates.screening_passed,
-            MessageType.INTERVIEW_SCHEDULED: WhatsAppTemplates.interview_scheduled,
-            MessageType.INTERVIEW_REMINDER: WhatsAppTemplates.interview_reminder,
-            MessageType.PROCESS_CLOSED: WhatsAppTemplates.process_closed,
-        }
-        return templates.get(message_type)
+        """Get the appropriate WhatsApp template function for a message type.
+
+        Delegates to template_service for a single source of truth.
+        """
+        from app.domains.communication.services.template_service import get_whatsapp_template_func
+        return get_whatsapp_template_func(message_type)
     
     async def record_opt_out(
         self,

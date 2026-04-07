@@ -9,6 +9,19 @@ repos:
       - id: ruff-format
         exclude: ^(tests/|migrations/)
 
+  # ── mypy: static type checking (warn-only during gradual adoption) ───────────
+  # Non-blocking wrapper: runs mypy and prints diagnostics but always exits 0.
+  # Remove the '|| true' suffix when ready to enforce (planned: after full type coverage).
+  - repo: local
+    hooks:
+      - id: mypy-warn-only
+        name: mypy (type check — warn only, non-blocking)
+        language: system
+        entry: bash -c 'python3 -m mypy app/ --ignore-missing-imports --no-error-summary --config-file=pyproject.toml 2>&1 || true'
+        pass_filenames: false
+        always_run: false
+        files: ^app/.*\.py$
+
   # ── Local guardrails ─────────────────────────────────────────────────────────
   - repo: local
     hooks:

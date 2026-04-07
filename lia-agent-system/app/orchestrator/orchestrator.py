@@ -23,6 +23,7 @@ from app.services import COMMAND_TEMPLATES, job_analytics_prompt_service
 from app.services.response_cache_service import response_cache_service
 from app.shared.memory.conversation_state import ConversationState
 from app.tools import get_all_tool_schemas, initialize_tools, tool_registry
+from app.enums.orchestrator import CacheableIntent, OrchestratorScope
 from app.tools.scope_config import (
     PromptScope,
     filter_tools_by_scope,
@@ -33,14 +34,14 @@ from app.tools.scope_config import (
 logger = logging.getLogger(__name__)
 
 SCOPE_MAPPING = {
-    "talent_funnel": PromptScope.TALENT_FUNNEL,
-    "job_table": PromptScope.JOB_TABLE,
-    "in_job": PromptScope.IN_JOB,
-    "global": PromptScope.GLOBAL,
-    "pipeline": PromptScope.IN_JOB,
-    "candidates": PromptScope.TALENT_FUNNEL,
-    "jobs": PromptScope.JOB_TABLE,
-    "vacancies": PromptScope.JOB_TABLE,
+    OrchestratorScope.TALENT_FUNNEL: PromptScope.TALENT_FUNNEL,
+    OrchestratorScope.JOB_TABLE: PromptScope.JOB_TABLE,
+    OrchestratorScope.IN_JOB: PromptScope.IN_JOB,
+    OrchestratorScope.GLOBAL: PromptScope.GLOBAL,
+    OrchestratorScope.PIPELINE: PromptScope.IN_JOB,
+    OrchestratorScope.CANDIDATES: PromptScope.TALENT_FUNNEL,
+    OrchestratorScope.JOBS: PromptScope.JOB_TABLE,
+    OrchestratorScope.VACANCIES: PromptScope.JOB_TABLE,
 }
 
 _LIA_SYSTEM_PROMPT = (
@@ -73,11 +74,7 @@ class Orchestrator:
             domain_workflow=self._domain_workflow,
         )
         self._init_cascaded_router()
-        self._cacheable_intents = {
-            "pipeline_stats", "job_status", "candidate_count", "stage_distribution",
-            "funnel_analysis", "job_insights", "market_data", "salary_benchmark",
-            "analytics", "recommendations", "skills_analysis", "candidate_search"
-        }
+        self._cacheable_intents = {intent.value for intent in CacheableIntent}
         self._initialize_tools()
         logger.info("Orchestrator initialized with CascadedRouter + DomainWorkflow")
 

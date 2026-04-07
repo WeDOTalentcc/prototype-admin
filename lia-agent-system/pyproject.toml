@@ -121,3 +121,32 @@ extend-select = ["TID"]
 # Violations appear as TID251 and fail CI.
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "app.shared.agents" = { msg = "Import from lia_agents_core.* directly — app.shared.agents shims were removed in task-124." }
+
+# ---------------------------------------------------------------------------
+# mypy — static type checking (gradual mode)
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+# Gradual adoption: warn but don't block on missing stubs or return-any
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+# Global default: permissive for existing large files
+disallow_untyped_defs = false
+# Exclude test and migration directories from strict checks
+exclude = [
+    "^tests/",
+    "^migrations/",
+    "^scripts/",
+]
+
+# Stricter rules applied to newly created/extracted modules
+[[tool.mypy.overrides]]
+module = [
+    "app.enums.*",
+    "app.domains.communication.services.message_providers",
+    "app.domains.communication.services.template_service",
+    "app.schemas.company",
+]
+disallow_untyped_defs = true
+warn_return_any = true

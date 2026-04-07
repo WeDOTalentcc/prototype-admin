@@ -13,8 +13,6 @@ from typing import Any
 import httpx
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
@@ -51,41 +49,57 @@ from app.schemas.company import (
     ApproverCreate,
     ApproverResponse,
     ApproverUpdate,
+    AutoEnrichResponse,
     BenefitCreate,
     BenefitResponse,
     BenefitUpdate,
+    BenefitsSummaryResponse,
     BigFiveQuestionCreate,
     BigFiveQuestionResponse,
     BigFiveQuestionUpdate,
     BigFiveRoleProfileCreate,
     BigFiveRoleProfileResponse,
     BigFiveRoleProfileUpdate,
+    CatalogStatusResponse,
+    CompanyEnrichRequest,
+    CompanyEnrichResponse,
     CompanyProfileCreate,
     CompanyProfileResponse,
     CompanyProfileUpdate,
     CompanyProfileWithRelations,
+    CompanyUserResponse,
+    CompanyUsersListResponse,
     CultureAnalysisRequest,
     CultureAnalysisResponse,
     CultureValueCreate,
     CultureValueResponse,
     CultureValueUpdate,
     DepartmentCreate,
+    DepartmentImportResponse,
+    DepartmentImportRow,
     DepartmentMemberCreate,
     DepartmentMemberResponse,
     DepartmentMemberUpdate,
     DepartmentResponse,
     DepartmentUpdate,
+    EVPAnalysisResponse,
     GlobalSearchSettingsResponse,
     GlobalSearchSettingsUpdate,
     IdealProfileCreate,
     IdealProfileResponse,
     IdealProfileUpdate,
+    ManagerResponse,
+    ManagerSearchResponse,
+    OnboardingCultureProfile,
+    OnboardingData,
+    SmartWizardGreetingResponse,
     TechnicalQuestionCreate,
     TechnicalQuestionResponse,
     TechnicalQuestionUpdate,
     TechnicalTestTemplateCreate,
     TechnicalTestTemplateResponse,
     TechnicalTestTemplateUpdate,
+    TenantResolutionResponse,
 )
 from app.services.company_configuration_service import company_config_service
 from app.services.llm import llm_service
@@ -98,14 +112,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/company", tags=["company"])
 
 
-
-
-class TenantResolutionResponse(BaseModel):
-    client_account_id: str | None = None
-    company_profile_id: str | None = None
-    company_name: str | None = None
-    plan_id: str | None = None
-    status: str | None = None
 
 
 @router.get("/resolve-tenant", response_model=TenantResolutionResponse)
@@ -151,60 +157,6 @@ async def resolve_tenant(
     except Exception as e:
         logger.error(f"Error resolving tenant: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-class CompanyEnrichRequest(BaseModel):
-    linkedin_url: str | None = None
-    glassdoor_company_name: str | None = None
-
-
-class CompanyEnrichResponse(BaseModel):
-    success: bool
-    linkedin_data: dict[str, Any] = {}
-    glassdoor_data: dict[str, Any] = {}
-    enriched_culture: dict[str, Any] = {}
-    errors: list[str] = []
-
-
-class OnboardingCultureProfile(BaseModel):
-    mission: str | None = None
-    vision: str | None = None
-    values: list[str] | None = None
-    evp_bullets: list[str] | None = None
-    openness_score: int | None = None
-    conscientiousness_score: int | None = None
-    extraversion_score: int | None = None
-    agreeableness_score: int | None = None
-    stability_score: int | None = None
-
-
-class OnboardingData(BaseModel):
-    company_id: str | None = None
-    company_name: str
-    trade_name: str | None = None
-    cnpj: str | None = None
-    address: str | None = None
-    work_model: str | None = None
-    logo_url: str | None = None
-    sector: str | None = None
-    employee_count: str | None = None
-    website: str | None = None
-    linkedin_url: str | None = None
-    hiring_volume: int | None = None
-    job_types: list[str] | None = None
-    current_ats: str | None = None
-    main_challenges: list[str] | None = None
-    main_priority: str | None = None
-    platform_expectations: str | None = None
-    communication_channels: list[str] | None = None
-    allow_lia_contact: bool = True
-    additional_notes: str | None = None
-    responsible_name: str | None = None
-    responsible_email: str | None = None
-    responsible_phone: str | None = None
-    responsible_position: str | None = None
-    preferred_contact_time: str | None = None
-    culture_profile: OnboardingCultureProfile | None = None
 
 
 @router.post("/onboarding", response_model=None)
@@ -377,14 +329,6 @@ async def enrich_company_profile(
     except Exception as e:
         logger.error(f"Error enriching company profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-class AutoEnrichResponse(BaseModel):
-    success: bool
-    fields_updated: list[str] = []
-    apify_data: dict[str, Any] = {}
-    inferred_data: dict[str, Any] = {}
-    errors: list[str] = []
 
 
 @router.post("/auto-enrich/{profile_id}", response_model=AutoEnrichResponse)
@@ -699,12 +643,6 @@ async def get_company_profile_with_relations(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class EVPAnalysisResponse(BaseModel):
-    success: bool
-    evp_analysis: dict[str, Any] | None = None
-    error: str | None = None
-
-
 @router.post("/profile/{profile_id}/generate-evp", response_model=EVPAnalysisResponse)
 async def generate_evp(
     profile_id: uuid.UUID,
@@ -999,20 +937,6 @@ async def delete_department_member(
 # MANAGERS ENDPOINTS
 # =============================================
 
-class ManagerResponse(BaseModel):
-    id: str
-    name: str
-    email: str | None = None
-    role: str | None = None
-    department_id: str | None = None
-    department_name: str | None = None
-
-
-class ManagerSearchResponse(BaseModel):
-    managers: list[ManagerResponse]
-    total_count: int
-
-
 @router.get("/managers", response_model=ManagerSearchResponse)
 async def list_managers(
     company_id: str | None = Query(None),
@@ -1180,15 +1104,6 @@ async def delete_benefit(
     except Exception as e:
         logger.error(f"Error deleting benefit: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-class BenefitsSummaryResponse(BaseModel):
-    total_count: int
-    active_count: int
-    highlighted_count: int
-    categories: dict
-    formatted_text: str
-    benefits: list[dict]
 
 
 @router.get("/benefits/active", response_model=list[BenefitResponse])
@@ -2107,25 +2022,6 @@ async def delete_approver(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class DepartmentImportRow(BaseModel):
-    name: str
-    description: str | None = None
-    manager: str | None = None
-    cost_center: str | None = None
-    row_number: int
-    is_valid: bool = True
-    errors: list[str] = []
-
-
-class DepartmentImportResponse(BaseModel):
-    success: bool
-    imported_count: int
-    error_count: int
-    errors: list[dict[str, Any]]
-    items: list[dict[str, Any]]
-    ai_suggestions: dict[str, Any] | None = None
-
-
 def parse_csv_file(content: bytes) -> list[dict[str, str]]:
     text = content.decode('utf-8-sig')
     first_line = text.split('\n')[0] if text else ''
@@ -2562,21 +2458,6 @@ async def resend_invitation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class CompanyUserResponse(BaseModel):
-    id: str
-    name: str
-    email: str
-    role: str
-    is_active: bool
-    active_jobs_count: int
-    performance_score: int
-
-
-class CompanyUsersListResponse(BaseModel):
-    users: list[CompanyUserResponse]
-    total: int
-
-
 @router.get("/users/list", response_model=CompanyUsersListResponse)
 async def list_company_users(
     role: str | None = Query(None, description="Filter by role (recruiter, admin, viewer)"),
@@ -2618,24 +2499,6 @@ async def list_company_users(
 # ============================================================================
 # CATALOG STATUS - Smart Wizard Integration
 # ============================================================================
-
-class CatalogStatusResponse(BaseModel):
-    company_id: str
-    maturity_score: int
-    maturity_level: str
-    maturity_factors: list[str]
-    smart_start_enabled: bool
-    required_fields_for_wizard: list[str]
-    available_data_summary: list[str]
-    counts: dict[str, int]
-    recommendations: list[str]
-
-
-class SmartWizardGreetingResponse(BaseModel):
-    greeting_message: str
-    catalog_status: CatalogStatusResponse
-    prefill_data: dict[str, Any]
-
 
 @router.get("/catalog-status", response_model=CatalogStatusResponse)
 async def get_catalog_status(

@@ -720,3 +720,159 @@ class ApproverResponse(ApproverBase):
     
     class Config:
         from_attributes = True
+
+
+# ---------------------------------------------------------------------------
+# Tenant / Onboarding / Enrichment schemas
+# (extracted from app/api/v1/company.py to keep route module handler-only)
+# ---------------------------------------------------------------------------
+
+class TenantResolutionResponse(BaseModel):
+    client_account_id: str | None = None
+    company_profile_id: str | None = None
+    company_name: str | None = None
+    plan_id: str | None = None
+    status: str | None = None
+
+
+class CompanyEnrichRequest(BaseModel):
+    linkedin_url: str | None = None
+    glassdoor_company_name: str | None = None
+
+
+class CompanyEnrichResponse(BaseModel):
+    success: bool
+    linkedin_data: dict[str, Any] = {}
+    glassdoor_data: dict[str, Any] = {}
+    enriched_culture: dict[str, Any] = {}
+    errors: list[str] = []
+
+
+class AutoEnrichResponse(BaseModel):
+    success: bool
+    fields_updated: list[str] = []
+    apify_data: dict[str, Any] = {}
+    inferred_data: dict[str, Any] = {}
+    errors: list[str] = []
+
+
+class OnboardingCultureProfile(BaseModel):
+    mission: str | None = None
+    vision: str | None = None
+    values: list[str] | None = None
+    evp_bullets: list[str] | None = None
+    openness_score: int | None = None
+    conscientiousness_score: int | None = None
+    extraversion_score: int | None = None
+    agreeableness_score: int | None = None
+    stability_score: int | None = None
+
+
+class OnboardingData(BaseModel):
+    company_id: str | None = None
+    company_name: str
+    trade_name: str | None = None
+    cnpj: str | None = None
+    address: str | None = None
+    work_model: str | None = None
+    logo_url: str | None = None
+    sector: str | None = None
+    employee_count: str | None = None
+    website: str | None = None
+    linkedin_url: str | None = None
+    hiring_volume: int | None = None
+    job_types: list[str] | None = None
+    current_ats: str | None = None
+    main_challenges: list[str] | None = None
+    main_priority: str | None = None
+    platform_expectations: str | None = None
+    communication_channels: list[str] | None = None
+    allow_lia_contact: bool = True
+    additional_notes: str | None = None
+    responsible_name: str | None = None
+    responsible_email: str | None = None
+    responsible_phone: str | None = None
+    responsible_position: str | None = None
+    preferred_contact_time: str | None = None
+    culture_profile: OnboardingCultureProfile | None = None
+
+
+class EVPAnalysisResponse(BaseModel):
+    success: bool
+    evp_analysis: dict[str, Any] | None = None
+    error: str | None = None
+
+
+class ManagerResponse(BaseModel):
+    id: str
+    name: str
+    email: str | None = None
+    role: str | None = None
+    department_id: str | None = None
+    department_name: str | None = None
+
+
+class ManagerSearchResponse(BaseModel):
+    managers: list[ManagerResponse]
+    total_count: int
+
+
+class BenefitsSummaryResponse(BaseModel):
+    total_count: int
+    active_count: int
+    highlighted_count: int
+    categories: dict
+    formatted_text: str
+    benefits: list[dict]
+
+
+class DepartmentImportRow(BaseModel):
+    name: str
+    description: str | None = None
+    manager: str | None = None
+    cost_center: str | None = None
+    row_number: int
+    is_valid: bool = True
+    errors: list[str] = []
+
+
+class DepartmentImportResponse(BaseModel):
+    success: bool
+    imported_count: int
+    error_count: int
+    errors: list[dict[str, Any]]
+    items: list[dict[str, Any]]
+    ai_suggestions: dict[str, Any] | None = None
+
+
+class CompanyUserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    is_active: bool
+    active_jobs_count: int
+    performance_score: int
+
+
+class CompanyUsersListResponse(BaseModel):
+    users: list[CompanyUserResponse]
+    total: int
+
+
+class CatalogStatusResponse(BaseModel):
+    company_id: str
+    maturity_score: int
+    maturity_level: str
+    maturity_factors: list[str]
+    smart_start_enabled: bool
+    required_fields_for_wizard: list[str]
+    available_data_summary: list[str]
+    counts: dict[str, int]
+    recommendations: list[str]
+
+
+class SmartWizardGreetingResponse(BaseModel):
+    greeting_message: str
+    catalog_status: CatalogStatusResponse
+    prefill_data: dict[str, Any]

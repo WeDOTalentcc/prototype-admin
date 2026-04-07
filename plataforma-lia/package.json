@@ -128,8 +128,8 @@
       "eslint --fix --max-warnings=0",
       "npx tsc --noEmit --skipLibCheck"
     ],
-    "src/**/*.{ts,tsx,css,md}": [
-      "prettier --write"
+    "src/**/*.{ts,tsx,js,jsx}": [
+      "npx biome check --write"
     ]
   },
   "browserslist": {
