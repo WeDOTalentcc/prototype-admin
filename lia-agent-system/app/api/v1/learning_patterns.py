@@ -8,8 +8,8 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.company_learning import CompanySkill
-from app.models.intelligence_layer import CorrectionPattern, SuccessProfile
+from app.domains.recruitment.repositories.learning_patterns_repository import LearningPatternsRepository
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,19 +28,8 @@ async def get_detected_patterns(
 ):
     """List all detected correction patterns for a company."""
     try:
-        conditions = [CorrectionPattern.company_id == company_id]
-
-        if field:
-            conditions.append(CorrectionPattern.field == field)
-        if seniority:
-            conditions.append(CorrectionPattern.seniority == seniority.lower())
-
-        result = await db.execute(
-            select(CorrectionPattern)
-            .where(and_(*conditions))
-            .order_by(CorrectionPattern.confidence.desc())
-        )
-        patterns = result.scalars().all()
+        repo = LearningPatternsRepository(db)
+        patterns = await repo.get_correction_patterns(company_id, field=field, seniority=seniority)
 
         return {
             "company_id": company_id,
@@ -80,17 +69,8 @@ async def get_promoted_skills(
 ):
     """List promoted skills for a company (times_confirmed >= threshold)."""
     try:
-        conditions = [
-            CompanySkill.company_id == company_id,
-            CompanySkill.is_promoted,
-        ]
-
-        result = await db.execute(
-            select(CompanySkill)
-            .where(and_(*conditions))
-            .order_by(CompanySkill.times_confirmed.desc())
-        )
-        skills = result.scalars().all()
+        repo = LearningPatternsRepository(db)
+        skills = await repo.get_promoted_skills(company_id)
 
         promoted = []
         for s in skills:
@@ -135,19 +115,8 @@ async def get_success_profiles(
 ):
     """List success profiles for a company."""
     try:
-        conditions = [SuccessProfile.company_id == company_id]
-
-        if seniority:
-            conditions.append(SuccessProfile.seniority == seniority.lower())
-        if role:
-            conditions.append(SuccessProfile.role_family.ilike(f"%{role}%"))
-
-        result = await db.execute(
-            select(SuccessProfile)
-            .where(and_(*conditions))
-            .order_by(SuccessProfile.sample_size.desc())
-        )
-        profiles = result.scalars().all()
+        repo = LearningPatternsRepository(db)
+        profiles = await repo.get_success_profiles(company_id, role=role, seniority=seniority)
 
         return {
             "company_id": company_id,

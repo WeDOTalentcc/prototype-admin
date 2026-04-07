@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.tenant_llm_context import clear_tenant_config_cache
+from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
@@ -79,11 +80,8 @@ async def get_llm_config(
     company_id = current_user.company_id
 
     try:
-        from app.models.tenant_llm_config import TenantLLMConfig
-        result = await db.execute(
-            select(TenantLLMConfig).where(TenantLLMConfig.company_id == company_id)
-        )
-        config = result.scalar_one_or_none()
+        repo = LlmConfigRepository(db)
+        config = await repo.get_by_company_id(company_id)
 
         if not config:
             return LLMConfigResponse(
@@ -134,35 +132,20 @@ async def update_llm_config(
     company_id = current_user.company_id
 
     try:
-        from app.models.tenant_llm_config import TenantLLMConfig
-        result = await db.execute(
-            select(TenantLLMConfig).where(TenantLLMConfig.company_id == company_id)
+        providers_dict = {
+            name: {"api_key": prov.api_key, "model": prov.model, "is_active": prov.is_active}
+            for name, prov in request.providers.items()
+        }
+
+        repo = LlmConfigRepository(db)
+        await repo.upsert(
+            company_id=company_id,
+            primary_provider=request.primary_provider,
+            fallback_order=request.fallback_order,
+            providers_dict=providers_dict,
+            routing=request.routing.dict(),
+            created_by=str(current_user.id),
         )
-        config = result.scalar_one_or_none()
-
-        providers_dict = {}
-        for name, prov in request.providers.items():
-            providers_dict[name] = {
-                "api_key": prov.api_key,
-                "model": prov.model,
-                "is_active": prov.is_active,
-            }
-
-        if config:
-            config.primary_provider = request.primary_provider
-            config.fallback_order = request.fallback_order
-            config.providers = providers_dict
-            config.routing = request.routing.dict()
-        else:
-            config = TenantLLMConfig(
-                company_id=company_id,
-                primary_provider=request.primary_provider,
-                fallback_order=request.fallback_order,
-                providers=providers_dict,
-                routing=request.routing.dict(),
-                created_by=str(current_user.id),
-            )
-            db.add(config)
 
 
         # Clear cache so next LLM call picks up new config
