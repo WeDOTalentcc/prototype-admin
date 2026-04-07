@@ -146,12 +146,57 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 
 ## 4. Fluxo de Desenvolvimento ao Cliente
 
-### Visão completa — do código à produção
+### Visão completa — ciclo contínuo do produto
+
+O produto opera em três ciclos simultâneos que se alimentam:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              CICLO COMPLETO DO PRODUTO — DESENVOLVIMENTO → OPERAÇÃO          │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                   CICLO 1 — NOVAS FEATURES                            │   │
+│  │                                                                        │   │
+│  │  Spec / demanda                                                        │   │
+│  │  (PM ou time) ──► Desenvolvimento ──► PR + Review ──► Staging         │   │
+│  │                                                             │          │   │
+│  │                                              QA aprova?    │          │   │
+│  │                                                 Sim ────► Produção   │   │
+│  │                                                 Não ────► Fix + retry│   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                   CICLO 2 — BUGS E CORREÇÕES                          │   │
+│  │                                                                        │   │
+│  │  Bug encontrado ──► Triage ──► hotfix/* branch ──► Staging            │   │
+│  │  (QA, time ou       (Jira)       ou fix/* branch       │              │   │
+│  │   cliente)                                        QA valida?          │   │
+│  │                                                        │              │   │
+│  │                                              Sim ────► Produção       │   │
+│  │                                              Não ────► Fix + retry   │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                   CICLO 3 — FEEDBACK DO CLIENTE                       │   │
+│  │                                                                        │   │
+│  │  Cliente reporta bug ──────────────────────► Ciclo 2 (correção)      │   │
+│  │  ou faz sugestão                                                       │   │
+│  │       │                                                                │   │
+│  │  PM/time faz triage                                                    │   │
+│  │       │                                                                │   │
+│  │       ├── Bug confirmado ─────────────────► Ciclo 2                  │   │
+│  │       ├── Feature aprovada ───────────────► Ciclo 1 (nova feature)   │   │
+│  │       └── Fora do escopo / backlog ───────► Documentado no Jira      │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Ciclo 1 — Novas features: do código à produção
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    FLUXO: DESENVOLVIMENTO → PRODUÇÃO                     │
-│                                                                          │
+│                    FLUXO: NOVA FEATURE → PRODUÇÃO                        │
 │                                                                          │
 │  1. DESENVOLVIMENTO  (responsabilidade do time de engenharia)            │
 │  ───────────────────────────────────────────────────────────            │
@@ -173,21 +218,23 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 │  ───────────────                                                         │
 │                                                                          │
 │   feature/* ──────────────► develop                                     │
-│                                PR review                                 │
+│                                PR review pelo time                       │
 │                                Testes automáticos (GitHub Actions)      │
 │                                                                          │
-│                                                                          │
-│  3. STAGING                                                              │
-│  ──────────                                                              │
+│  3. STAGING + QA                                                         │
+│  ────────────────                                                        │
 │                                                                          │
 │   develop branch → deploy automático → STAGING GCP                      │
 │   ┌───────────────────────────────────────────────────────┐             │
 │   │  staging.wedotalent.cc                                │             │
-│   │  Cloud Run (staging) ← banco de dados staging         │             │
-│   │  Testes manuais pelo time + demos para cliente        │             │
+│   │  QA manual pelo time (checklist por feature)          │             │
+│   │  Demo para cliente quando aplicável                  │             │
 │   └───────────────────────────────────────────────────────┘             │
 │              │                                                           │
-│              │  Aprovação do time / QA                                   │
+│        QA aprovou?                                                       │
+│        ├── Sim → PR: develop → main                                     │
+│        └── Não → fix na branch → re-teste no staging                   │
+│              │                                                           │
 │              ▼                                                           │
 │                                                                          │
 │  4. PRODUÇÃO                                                             │
@@ -208,17 +255,22 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 
 ```
 main          ──────────────────────────────────►  PRODUÇÃO
-                       ▲
-develop       ──────────────────────────────────►  STAGING
-                  ▲          ▲
-feature/*     ────┘    ──────┘   branches de feature (PR → develop)
+                  ▲               ▲
+develop       ────┴───────────────┤   STAGING
+                  ▲               │
+feature/*     ────┘               │   branches de feature (PR → develop)
+                                  │
+hotfix/*      ────────────────────┘   correções urgentes (PR → main direto)
+                                      depois sincroniza: main → develop
 ```
 
-| Branch | Ambiente | Deploy | Banco |
-|---|---|---|---|
-| `feature/*` | Replit / local | Manual (dev) | SQLite / Postgres local |
-| `develop` | Staging GCP | Automático (push) | Cloud SQL staging |
-| `main` | Produção GCP | Automático (push) | Cloud SQL produção |
+| Branch | Ambiente | Deploy | Banco | Uso |
+|---|---|---|---|---|
+| `feature/*` | Replit / local | Manual (dev) | Postgres local | Novas features e melhorias |
+| `fix/*` | Replit / local | Manual (dev) | Postgres local | Correções não urgentes (P3/P4) |
+| `develop` | Staging GCP | Automático (push) | Cloud SQL staging | Integração contínua |
+| `hotfix/*` | Local → Produção | PR → main | Cloud SQL prod | Bugs P1/P2 em produção |
+| `main` | Produção GCP | Automático (push) | Cloud SQL produção | Código em produção |
 
 ---
 
@@ -572,7 +624,7 @@ api-staging.wedotalent.cc   → Cloud Run: lia-agent-staging
 
 ## 7. Fluxo de Trabalho do Time
 
-### Rotina diária de desenvolvimento
+### 7.1 Rotina de desenvolvimento — nova feature ou melhoria
 
 ```
 Dev (Replit ou VS Code/Cursor)
@@ -600,14 +652,151 @@ Dev (Replit ou VS Code/Cursor)
 │       Aprovado e mergeado → deploy automático no staging
 │       staging.wedotalent.cc recebe as mudanças
 │
-├── 7. Validação no staging
-│       QA manual / demos para cliente
-│       Se aprovado → PR: develop → main
+├── 7. QA no staging
+│       Time executa checklist de QA para a feature
+│       ├── Passou → PR: develop → main (aprovação manual)
+│       └── Reprovou → dev abre fix na mesma branch ou nova fix/*
+│               └── Volta para o passo 4 → re-teste no staging
 │
 └── 8. Deploy produção
         Merge para main → deploy automático produção
         wedotalent.cc recebe as mudanças
+        Monitorar Sentry + logs nas primeiras horas
 ```
+
+### 7.2 Fluxo de bug em produção — hotfix
+
+Quando um bug crítico é encontrado em produção, o fluxo é diferente do fluxo padrão — bypassa o `develop` para chegar rápido à produção:
+
+```
+Bug identificado em produção
+│
+├── 1. Criar card no Jira com prioridade (P1/P2/P3)
+│       P1 = produto fora do ar ou dado corrompido
+│       P2 = funcionalidade crítica quebrada
+│       P3 = problema menor, sem bloqueio
+│
+├── 2. Criar branch diretamente de main
+│       git checkout main && git pull
+│       git checkout -b hotfix/nome-do-bug
+│
+├── 3. Corrigir localmente e testar
+│       Reproduzir o bug antes de corrigir
+│       Confirmar que o fix resolve sem efeitos colaterais
+│
+├── 4. PR: hotfix/* → main  (revisão rápida, 1 aprovador)
+│       GitHub Actions roda testes automáticos
+│       Code review focado no fix (não no contexto geral)
+│
+├── 5. Deploy automático em produção
+│       Merge para main → Cloud Run produção atualizado
+│       Verificar no Sentry que o erro parou de aparecer
+│
+└── 6. Sincronizar com develop
+        git checkout develop && git merge main
+        Garante que a correção não será perdida na próxima feature
+```
+
+**Classificação de prioridade de bug:**
+
+| Prioridade | Definição | Tempo alvo de resposta |
+|---|---|---|
+| **P1 — Crítico** | Sistema fora do ar, dados de clientes em risco, autenticação quebrada | Fix em produção em até 4h |
+| **P2 — Alto** | Funcionalidade principal quebrada (triagem, kanban, chat) mas produto funciona | Fix em produção em até 24h |
+| **P3 — Médio** | Problema visual, funcionalidade secundária ou edge case raro | Fix na próxima sprint |
+| **P4 — Baixo** | Melhoria cosmética, mensagem de erro imprecisa | Backlog |
+
+### 7.3 Processo de QA — o que é testado e como
+
+O QA não é um passo único — é um processo por tipo de mudança:
+
+**Para novas features:**
+
+```
+Checklist de QA por feature (quem faz: QA ou dev responsável)
+│
+├── Fluxo principal funciona conforme spec?
+├── Casos de erro tratados? (campo vazio, API offline, usuário sem permissão)
+├── Funciona em diferentes tamanhos de tela? (responsividade)
+├── Multi-tenant: funciona isolado entre empresas diferentes?
+├── Performance: não há regressão perceptível de velocidade?
+├── Testes E2E automatizados passando? (Playwright em e2e/)
+└── Sem warnings críticos no console do browser / Sentry?
+```
+
+**Para hotfixes:**
+
+```
+Checklist de QA de hotfix (mais rápido — foco no bug)
+│
+├── O bug original foi corrigido?
+├── O fix não quebrou nada ao redor? (smoke test das funcionalidades adjacentes)
+└── O Sentry para de registrar o erro após o deploy?
+```
+
+**Quem faz o QA:**
+- Hoje: o próprio time de desenvolvimento (dev ou PM valida no staging)
+- Roadmap: QA dedicado para releases maiores
+
+**Onde bugs e ajustes são registrados:**
+- Jira (cards de bug com prioridade, reprodução e critério de aceite do fix)
+- PRs do GitHub linkados ao card Jira correspondente
+
+### 7.4 Ciclo de feedback do cliente — bugs, sugestões e novas features
+
+Clientes em uso do produto são uma fonte contínua de melhorias. Este fluxo descreve como esse feedback é capturado, triado e transformado em trabalho real.
+
+**Canais de entrada de feedback:**
+
+| Canal | Tipo de feedback | Quem recebe |
+|---|---|---|
+| **Email / WhatsApp direto** | Bugs críticos, dúvidas urgentes | CS / PM |
+| **Formulário ou canal dedicado** | Sugestões, melhorias, relatos de comportamento inesperado | PM |
+| **Slack compartilhado** (quando ativo) | Dúvidas rápidas, feedback informal | CS / PM |
+| **Reunião de acompanhamento** | Feedback estruturado, roadmap, prioridades | PM |
+| **Sentry / logs internos** | Bugs técnicos identificados antes do cliente (proativo) | Time de engenharia |
+
+**Fluxo de triage — o que acontece com cada feedback:**
+
+```
+Feedback entra (qualquer canal)
+         │
+         ▼
+PM ou CS registra no Jira com contexto:
+  - O que o cliente reportou (comportamento observado)
+  - O que era esperado acontecer
+  - Frequência / impacto (quantos clientes afetados?)
+  - Evidências (prints, vídeo, logs)
+         │
+         ▼
+Triage de classificação:
+  │
+  ├── É um BUG?
+  │       │
+  │       ├── P1/P2 (crítico/alto) ──► Hotfix imediato (Fluxo 7.2)
+  │       └── P3/P4 (médio/baixo) ──► Entra no backlog da próxima sprint
+  │
+  ├── É uma MELHORIA ou NOVA FEATURE?
+  │       │
+  │       ├── Alinhada com o roadmap → PM escreve spec → Ciclo 1 (feature)
+  │       └── Fora do escopo atual → Documentada no Jira (backlog)
+  │
+  └── É uma DÚVIDA DE USO?
+          └── CS resolve com documentação / suporte direto
+              Se for recorrente → virar melhoria de UX ou documentação
+```
+
+**O que faz uma feature de cliente entrar no sprint:**
+
+Não basta um cliente pedir — o PM avalia:
+1. Quantos clientes teriam benefício (impacto)
+2. Alinhamento com a direção do produto
+3. Esforço de implementação vs. valor entregue
+4. Urgência (está bloqueando o cliente de usar o produto?)
+
+**Fechamento do loop com o cliente:**
+
+Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é entregue, o cliente deve ser notificado. Isso constrói confiança e mostra que o feedback foi levado a sério. Quem fecha esse loop: CS ou PM, após o deploy em produção.
 
 ### Como o Replit se encaixa após o deploy
 
