@@ -280,6 +280,7 @@ Authorization: Bearer <token>
     openapi_url="/openapi.json",
     docs_url="/docs",
     redoc_url="/docs/redoc",
+    redirect_slashes=False,
 )
 
 # Auth enforcement — validates JWT and injects company_id (multi-tenancy)

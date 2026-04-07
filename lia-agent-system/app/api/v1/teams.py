@@ -724,6 +724,15 @@ async def receive_teams_message(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+router.add_api_route(
+    "/messages/",
+    receive_teams_message,
+    methods=["POST"],
+    response_model=None,
+    include_in_schema=False,
+)
+
+
 @router.get("/health", response_model=None)
 async def teams_health():
     """Health check for Teams integration."""
