@@ -243,10 +243,11 @@ class SimpleTeamsBot:
             if reply_to_activity_id:
                 message["replyToId"] = reply_to_activity_id
             
-            # Send message
-            url = f"{service_url}/v3/conversations/{conversation_id}/activities"
+            # Send message — strip trailing slash to avoid double-slash in URL
+            base = service_url.rstrip("/")
+            url = f"{base}/v3/conversations/{conversation_id}/activities"
             if reply_to_activity_id:
-                url = f"{service_url}/v3/conversations/{conversation_id}/activities/{reply_to_activity_id}"
+                url = f"{base}/v3/conversations/{conversation_id}/activities/{reply_to_activity_id}"
             
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -307,7 +308,9 @@ class SimpleTeamsBot:
                 ]
             }
             
-            url = f"{service_url}/v3/conversations/{conversation_id}/activities"
+            # Strip trailing slash to avoid double-slash in URL
+            base = service_url.rstrip("/")
+            url = f"{base}/v3/conversations/{conversation_id}/activities"
             
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -321,7 +324,7 @@ class SimpleTeamsBot:
                 )
                 
                 if response.status_code not in [200, 201]:
-                    logger.error(f"Failed to send card: {response.text}")
+                    logger.error(f"Failed to send card: HTTP {response.status_code} | URL: {url} | Body: {response.text[:500]}")
                     return False
                 
                 logger.info("Adaptive card sent successfully to Teams")
