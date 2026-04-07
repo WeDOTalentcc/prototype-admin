@@ -3,12 +3,19 @@ Prompt Registry with Versioning Support.
 
 This module provides a centralized registry for managing prompts with version control,
 allowing tracking of changes, comparing versions, and retrieving specific versions.
+
+YAML-first loading: prompts are loaded from YAML files in app/prompts/ when available.
+Fallback to Python-defined prompts with a warning log when YAML is not found.
 """
 
 import difflib
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
+
+_logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -38,7 +45,9 @@ class PromptMetadata:
     description: str = ""
     agent_number: int | None = None
     versions: dict[str, PromptVersion] = field(default_factory=dict)
-    
+    variables: dict[str, Any] = field(default_factory=dict)
+    few_shot_examples: list[dict[str, Any]] = field(default_factory=list)
+
     @property
     def latest_version(self) -> str | None:
         """Get the latest version string."""
@@ -285,14 +294,236 @@ class PromptRegistry:
             "latest_version": metadata.latest_version,
             "versions": self.get_all_versions(name)
         }
-    
+
+    def get_variables(self, name: str) -> dict[str, Any]:
+        """
+        Returns template variables for the named prompt (loaded from YAML).
+
+        Variables are key-value pairs that can be interpolated into the prompt
+        at runtime using ``render_prompt()``.
+
+        Args:
+            name: Prompt registry key
+
+        Returns:
+            Dict of variable name → default value (empty dict if none defined)
+        """
+        meta = self._prompts.get(name)
+        return dict(meta.variables) if meta else {}
+
+    def get_few_shot_examples(self, name: str) -> list[dict[str, Any]]:
+        """
+        Returns few-shot examples for the named prompt (loaded from YAML).
+
+        Each example is a dict with at least ``input`` and ``output`` keys,
+        representing a sample turn the agent should emulate.
+
+        Args:
+            name: Prompt registry key
+
+        Returns:
+            List of example dicts (empty list if none defined)
+        """
+        meta = self._prompts.get(name)
+        return list(meta.few_shot_examples) if meta else []
+
+    def render_prompt(
+        self,
+        name: str,
+        variables: dict[str, Any] | None = None,
+        version: str = "latest",
+    ) -> str | None:
+        """
+        Render the prompt by interpolating runtime variables.
+
+        Variable placeholders use Python ``str.format_map`` syntax:
+        ``{variable_name}``. YAML-defined default values are used for any
+        variable not supplied at call time.
+
+        Args:
+            name: Prompt registry key
+            variables: Runtime overrides; merged over YAML defaults
+            version: Prompt version (default: latest)
+
+        Returns:
+            Rendered prompt string, or None if prompt not found
+        """
+        content = self.get_prompt(name, version=version)
+        if content is None:
+            return None
+
+        meta = self._prompts.get(name)
+        defaults = dict(meta.variables) if meta else {}
+        merged = {**defaults, **(variables or {})}
+
+        if not merged:
+            return content
+
+        try:
+            return content.format_map(merged)
+        except KeyError as exc:
+            _logger.warning(
+                f"render_prompt('{name}'): missing variable {exc} — "
+                "returning unrendered content"
+            )
+            return content
+
     def is_initialized(self) -> bool:
         """Check if the registry has been initialized."""
         return self._initialized
-    
+
     def mark_initialized(self) -> None:
         """Mark the registry as initialized."""
         self._initialized = True
+
+    def load_from_yaml(
+        self,
+        yaml_path: str,
+        name: str | None = None,
+        version: str = "1.0.0",
+        author: str = "yaml",
+        changelog: str = "Loaded from YAML",
+        description: str = "",
+        agent_number: int | None = None,
+    ) -> bool:
+        """
+        Load a prompt from a YAML file (YAML-first strategy).
+
+        The YAML file must have a 'system_prompt' key at the top level,
+        or a 'prompts.<name>' key for shared multi-prompt files.
+
+        Args:
+            yaml_path: Path to the YAML file (absolute or relative to app/prompts/)
+            name: Registry key for this prompt. Defaults to YAML file stem.
+            version: Semantic version string
+            author: Author label
+            changelog: Description of this version
+            description: Human-readable description
+            agent_number: Optional agent number for ordering
+
+        Returns:
+            True if loaded successfully, False on failure (with warning log).
+        """
+        try:
+            import yaml
+
+            path = Path(yaml_path)
+            if not path.is_absolute():
+                prompts_root = Path(__file__).parent.parent.parent / "prompts"
+                path = prompts_root / yaml_path
+                if not path.suffix:
+                    path = path.with_suffix(".yaml")
+
+            if not path.exists():
+                _logger.warning(
+                    f"YAML prompt not found: {path} — falling back to Python-defined prompt"
+                )
+                return False
+
+            with open(path, encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            prompt_name = name or path.stem
+            content = data.get("system_prompt", "")
+
+            if not content:
+                _logger.warning(
+                    f"YAML {path} has no 'system_prompt' key — "
+                    f"falling back to Python-defined prompt for '{prompt_name}'"
+                )
+                return False
+
+            meta_block = data.get("metadata", {})
+            resolved_version = meta_block.get("version", version)
+            resolved_description = (
+                description
+                or meta_block.get("description", "")
+                or data.get("description", "")
+            )
+
+            self.register_prompt(
+                name=prompt_name,
+                content=content,
+                version=resolved_version,
+                author=author,
+                changelog=changelog,
+                description=resolved_description,
+                agent_number=agent_number,
+            )
+
+            if prompt_name in self._prompts:
+                meta = self._prompts[prompt_name]
+                variables = data.get("variables", {})
+                if isinstance(variables, dict):
+                    meta.variables = variables
+                few_shot = data.get("few_shot_examples", [])
+                if isinstance(few_shot, list):
+                    meta.few_shot_examples = few_shot
+                if variables:
+                    _logger.info(
+                        f"  Loaded {len(variables)} variables for '{prompt_name}'"
+                    )
+                if few_shot:
+                    _logger.info(
+                        f"  Loaded {len(few_shot)} few-shot examples for '{prompt_name}'"
+                    )
+
+            _logger.info(f"Loaded prompt '{prompt_name}' from YAML: {path.name}")
+            return True
+
+        except Exception as exc:
+            _logger.warning(
+                f"Failed to load YAML prompt '{yaml_path}': {exc} — "
+                "falling back to Python-defined prompt"
+            )
+            return False
+
+    def get_or_fallback(
+        self,
+        name: str,
+        fallback_content: str,
+        version: str = "1.0.0",
+        yaml_path: str | None = None,
+    ) -> str:
+        """
+        Get a prompt by name, trying YAML first, then fallback_content.
+
+        If the prompt is not yet registered, attempts to load from YAML
+        (if yaml_path provided), then registers fallback_content with a
+        warning log if YAML loading fails.
+
+        Args:
+            name: Prompt registry key
+            fallback_content: Python-defined prompt string (fallback)
+            version: Version for fallback registration
+            yaml_path: Optional YAML path override
+
+        Returns:
+            Prompt content string
+        """
+        existing = self.get_prompt(name)
+        if existing:
+            return existing
+
+        if yaml_path:
+            loaded = self.load_from_yaml(yaml_path, name=name, version=version)
+            if loaded:
+                content = self.get_prompt(name)
+                if content:
+                    return content
+
+        _logger.warning(
+            f"Prompt '{name}' not found in YAML — using Python-defined fallback. "
+            "Migrate to YAML for better versioning and A/B testing support."
+        )
+        self.register_prompt(
+            name=name,
+            content=fallback_content,
+            version=version,
+            author="python_fallback",
+            changelog="Python-defined fallback (YAML migration pending)",
+        )
+        return fallback_content
 
 
 prompt_registry = PromptRegistry()
@@ -301,12 +532,15 @@ prompt_registry = PromptRegistry()
 def init_prompts() -> None:
     """
     Inicializa o registro com todos os prompts existentes.
-    
+
+    Estratégia YAML-first: tenta carregar de YAML; usa fallback Python com warning
+    se o YAML não existir ou não tiver 'system_prompt'.
+
     Esta função deve ser chamada uma vez na inicialização da aplicação.
     """
     if prompt_registry.is_initialized():
         return
-    
+
     from app.shared.prompts.agent_prompts import (
         ANALYST_FEEDBACK_PROMPT,
         ATS_INTEGRATOR_PROMPT,
@@ -324,153 +558,60 @@ def init_prompts() -> None:
         SOURCING_PROMPT,
         WSI_EVALUATOR_PROMPT,
     )
-    
-    prompt_registry.register_prompt(
-        name="orchestrator",
-        content=ORCHESTRATOR_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionada persona LIA, vocabulário HR, persistência de dados",
-        description="Orquestrador central que coordena todos os agentes especializados",
-        agent_number=0
-    )
-    
-    prompt_registry.register_prompt(
-        name="job_planner",
-        content=JOB_PLANNER_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionada metodologia WSI, campos de persistência, formato estruturado",
-        description="Especialista em definição e estruturação de vagas",
-        agent_number=1
-    )
-    
-    prompt_registry.register_prompt(
-        name="sourcing",
-        content=SOURCING_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionado fluxo de busca dual, persistência de candidatos, outreach",
-        description="Especialista em busca e captação de candidatos",
-        agent_number=2
-    )
-    
-    prompt_registry.register_prompt(
-        name="cv_screening",
-        content=CV_SCREENING_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionada metodologia de scoring, red flags, campos de persistência",
-        description="Especialista em análise de CVs e screening inicial",
-        agent_number=3
-    )
-    
-    prompt_registry.register_prompt(
-        name="interviewer",
-        content=INTERVIEWER_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionada metodologia CBI/STAR, adaptação dinâmica, coleta de dados sensíveis",
-        description="Especialista em entrevistas estruturadas WSI",
-        agent_number=4
-    )
-    
-    prompt_registry.register_prompt(
-        name="wsi_evaluator",
-        content=WSI_EVALUATOR_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionada metodologia Bloom+Dreyfus+BigFive, comparação side-by-side",
-        description="Especialista em avaliação científica de candidatos",
-        agent_number=5
-    )
-    
-    prompt_registry.register_prompt(
-        name="scheduling",
-        content=SCHEDULING_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionada integração Microsoft Graph, status de agendamento",
-        description="Especialista em agendamento de entrevistas",
-        agent_number=6
-    )
-    
-    prompt_registry.register_prompt(
-        name="analyst_feedback",
-        content=ANALYST_FEEDBACK_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionados KPIs, relatórios de funil, feedback estruturado",
-        description="Especialista em KPIs, relatórios e comunicação",
-        agent_number=7
-    )
-    
-    prompt_registry.register_prompt(
-        name="ats_integrator",
-        content=ATS_INTEGRATOR_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionadas regras de sincronização, mapeamento Gupy/Pandapé",
-        description="Especialista em integração com sistemas ATS",
-        agent_number=8
-    )
-    
-    prompt_registry.register_prompt(
-        name="recruiter_assistant",
-        content=RECRUITER_ASSISTANT_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionado daily briefing, calibração, acompanhamento de metas",
-        description="Assistente pessoal do recrutador para tarefas do dia-a-dia",
-        agent_number=9
-    )
-    
-    prompt_registry.register_prompt(
-        name="proactive_insights",
-        content=PROACTIVE_INSIGHTS_PROMPT,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Adicionadas regras de análise, formato de insights estruturado",
-        description="Gerador de insights proativos para buscas de candidatos",
-        agent_number=10
-    )
-    
-    prompt_registry.register_prompt(
-        name="lia_persona",
-        content=LIA_PERSONA,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Persona unificada para todos os agentes",
-        description="Componente compartilhado: Identidade e tom de comunicação da LIA"
-    )
-    
-    prompt_registry.register_prompt(
-        name="hr_vocabulary",
-        content=HR_VOCABULARY,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Vocabulário técnico de RH brasileiro padronizado",
-        description="Componente compartilhado: Termos técnicos de RH"
-    )
-    
-    prompt_registry.register_prompt(
-        name="data_persistence_guidelines",
-        content=DATA_PERSISTENCE_GUIDELINES,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Diretrizes de persistência e sincronização ATS",
-        description="Componente compartilhado: Regras de persistência de dados"
-    )
-    
-    prompt_registry.register_prompt(
-        name="ethical_guidelines",
-        content=ETHICAL_GUIDELINES,
-        version="2.0.0",
-        author="wedotalent",
-        changelog="v2.0 - Diretrizes éticas para avaliação sem viés",
-        description="Componente compartilhado: Diretrizes éticas obrigatórias"
-    )
-    
+
+    _domain_prompts: list[tuple[str, str, str, int | None]] = [
+        ("orchestrator", "domains/orchestrator", ORCHESTRATOR_PROMPT, 0),
+        ("job_planner", "domains/job_management", JOB_PLANNER_PROMPT, 1),
+        ("sourcing", "domains/sourcing", SOURCING_PROMPT, 2),
+        ("cv_screening", "domains/cv_screening", CV_SCREENING_PROMPT, 3),
+        ("interviewer", "domains/wsi_interview", INTERVIEWER_PROMPT, 4),
+        ("wsi_evaluator", "domains/wsi_evaluation", WSI_EVALUATOR_PROMPT, 5),
+        ("scheduling", "domains/interview_scheduling", SCHEDULING_PROMPT, 6),
+        ("analyst_feedback", "domains/analytics", ANALYST_FEEDBACK_PROMPT, 7),
+        ("ats_integrator", "domains/ats_integration", ATS_INTEGRATOR_PROMPT, 8),
+        ("recruiter_assistant", "domains/recruiter_assistant", RECRUITER_ASSISTANT_PROMPT, 9),
+        ("proactive_insights", "domains/analysis", PROACTIVE_INSIGHTS_PROMPT, 10),
+    ]
+
+    for name, yaml_path, fallback, agent_num in _domain_prompts:
+        loaded = prompt_registry.load_from_yaml(
+            yaml_path=yaml_path,
+            name=name,
+            version="2.0.0",
+            author="yaml",
+            changelog="Loaded from YAML (YAML-first strategy)",
+            agent_number=agent_num,
+        )
+        if not loaded:
+            _logger.warning(
+                f"[PromptRegistry] Prompt '{name}' loaded from Python fallback — "
+                f"migrate to YAML at app/prompts/{yaml_path}.yaml"
+            )
+            prompt_registry.register_prompt(
+                name=name,
+                content=fallback,
+                version="2.0.0",
+                author="python_fallback",
+                changelog="Python-defined fallback (YAML migration pending)",
+                agent_number=agent_num,
+            )
+
+    _shared_prompts: list[tuple[str, str]] = [
+        ("lia_persona", LIA_PERSONA),
+        ("hr_vocabulary", HR_VOCABULARY),
+        ("data_persistence_guidelines", DATA_PERSISTENCE_GUIDELINES),
+        ("ethical_guidelines", ETHICAL_GUIDELINES),
+    ]
+
+    for name, content in _shared_prompts:
+        prompt_registry.register_prompt(
+            name=name,
+            content=content,
+            version="2.0.0",
+            author="wedotalent",
+            changelog="Shared component — loaded from YAML-backed Python module",
+        )
+
     prompt_registry.mark_initialized()
 
 

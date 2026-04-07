@@ -11,15 +11,14 @@ repos:
         name: ruff-format
         files: ^lia-agent-system/
 
-  # ── mypy: static type checking (warn-only during gradual adoption) ────────
-  # Non-blocking wrapper: runs mypy and prints diagnostics but always exits 0.
-  # Remove the '|| true' suffix when ready to enforce (planned: after full type coverage).
+  # ── mypy: static type checking (enforced — type coverage gate active) ────
+  # Blocking: mypy errors will prevent commit. Run `mypy app/` to check locally.
   - repo: local
     hooks:
-      - id: mypy-backend-warn-only
-        name: mypy (BE type check — warn only, non-blocking)
+      - id: mypy-backend
+        name: mypy (BE type check — enforced)
         language: system
-        entry: bash -c 'cd lia-agent-system && python3 -m mypy app/ --ignore-missing-imports --no-error-summary --config-file=pyproject.toml 2>&1 || true'
+        entry: bash -c 'cd lia-agent-system && python3 -m mypy app/ --ignore-missing-imports --no-error-summary --config-file=pyproject.toml 2>&1'
         pass_filenames: false
         always_run: false
         files: ^lia-agent-system/app/.*\.py$

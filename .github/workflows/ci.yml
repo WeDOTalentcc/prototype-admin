@@ -49,8 +49,8 @@ jobs:
       - name: Lint with ruff
         run: ruff check app/ --output-format=github
 
-      - name: Type check with mypy (non-blocking)
-        run: mypy app/ --ignore-missing-imports --no-error-summary || true
+      - name: Type check with mypy
+        run: mypy app/ --ignore-missing-imports --no-error-summary
 
       - name: Verify LangSmith config
         run: python -c "from app.config.langsmith import configure_langsmith, is_langsmith_enabled; print('LangSmith enabled:', is_langsmith_enabled())"
@@ -201,6 +201,58 @@ jobs:
       - name: Validate RAGAS golden queries structure
         run: python -m pytest tests/ragas/ -v --no-cov
         working-directory: lia-agent-system
+
+  # ── Prompt Evals — LLM-as-judge (runs on PRs that change prompts) ──────────
+  prompt-evals:
+    name: Prompt Evals (LLM-as-judge)
+    runs-on: ubuntu-latest
+    needs: [backend]
+    # Trigger path filter: only run when prompt files or golden datasets change
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect prompt file changes
+        id: prompt-changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            prompts:
+              - 'lia-agent-system/app/prompts/**'
+              - 'tests/golden/**'
+              - 'tests/eval_runner.py'
+
+      - name: Set up Python
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install eval dependencies
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        run: pip install anthropic pyyaml
+
+      - name: Validate golden dataset structure (always runs if prompts changed)
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        run: python tests/eval_runner.py --dry-run
+        working-directory: .
+
+      - name: Run LLM-as-judge evals (blocks PR on failure)
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        run: python tests/eval_runner.py --threshold 0.85 --output eval_report.json
+        working-directory: .
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload eval report
+        if: always() && steps.prompt-changes.outputs.prompts == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-eval-report
+          path: eval_report.json
+          retention-days: 30
 
   # ── Acessibilidade — Axe-core WCAG 2.1 AA (não-bloqueante) ────────────────
   accessibility-check:

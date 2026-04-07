@@ -1,12 +1,22 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ToolDefinition
-from lia_agents_core.observability import ReActObserver
+try:
+    from lia_agents_core.react_loop import ReActConfig, ReActLoop, ToolDefinition
+    from lia_agents_core.observability import ReActObserver
+    _LIA_CORE_AVAILABLE = True
+except ImportError:
+    _LIA_CORE_AVAILABLE = False
+    ReActConfig = None
+    ReActLoop = None
+    ToolDefinition = None
+    ReActObserver = None
 
 
 @pytest.fixture
 def mock_tool():
+    if not _LIA_CORE_AVAILABLE:
+        pytest.skip("lia_agents_core not installed — skipping ToolDefinition fixture")
     fn = AsyncMock(return_value={"result": "ok", "success": True})
     return ToolDefinition(
         name="mock_tool",
@@ -28,6 +38,8 @@ def mock_memory_service():
 
 @pytest.fixture
 def base_react_config(mock_tool):
+    if not _LIA_CORE_AVAILABLE:
+        pytest.skip("lia_agents_core not installed — skipping ReActConfig fixture")
     return ReActConfig(
         system_prompt="You are a test agent.",
         available_tools=[mock_tool],
@@ -39,6 +51,8 @@ def base_react_config(mock_tool):
 
 @pytest.fixture
 def observer():
+    if not _LIA_CORE_AVAILABLE:
+        pytest.skip("lia_agents_core not installed — skipping ReActObserver fixture")
     return ReActObserver(
         session_id="test-session",
         domain="test",
