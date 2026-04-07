@@ -1155,7 +1155,7 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
 | 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 12 files→repos, 174 pending | 2026-04-06 |
-| 3 — Model consolidation | ✅ DONE | ~393,600 | ~393,200 | 8 files→lia_models | 2026-04-06 |
+| 3 — Model consolidation | ✅ DONE 100% | ~393,600 | ~393,200 | 23 domain models shimmed, app/models/__init__ fixed, encrypt_value fix (+628 tests) | 2026-04-07 |
 | 4 — DDD migration | ✅ DONE | — | — | 138 services shimmed, all app/services/ are shims | 2026-04-06 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
 | 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
