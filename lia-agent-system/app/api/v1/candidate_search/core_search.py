@@ -663,7 +663,7 @@ async def search_candidates(
         
         _credit_warning = None
         try:
-            from app.services.credit_service import CreditService
+            from app.domains.credits.services.credit_service import CreditService
             _cs = CreditService()
             _company_id = getattr(current_user, "company_id", None) or getattr(getattr(current_user, "state", None), "company_id", None)
             if _company_id:

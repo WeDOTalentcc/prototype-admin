@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.domains.credits.dependencies import get_credits_repo
 from app.domains.credits.repositories.credits_repository import CreditsRepository
-from app.services.credit_service import ACTION_CREDIT_COSTS
+from app.domains.credits.services.credit_service import ACTION_CREDIT_COSTS
 from lia_models.billing import CreditTransactionType
 
 logger = logging.getLogger(__name__)

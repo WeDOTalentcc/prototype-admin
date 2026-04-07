@@ -1,2 +1,2 @@
-"""Backwards-compatibility shim — canonical implementation in domain layer."""
-from app.shared.services.rails_adapter import *  # noqa: F401, F403
+"""Backwards-compatibility shim — canonical implementation moved to domain layer."""
+from app.domains.integrations_hub.services.rails_adapter import *  # noqa: F401, F403

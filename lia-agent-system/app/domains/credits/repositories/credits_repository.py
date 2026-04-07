@@ -6,7 +6,7 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.credit_service import ACTION_CREDIT_COSTS, CreditService
+from app.domains.credits.services.credit_service import ACTION_CREDIT_COSTS, CreditService
 from lia_models.billing import CreditTransactionType
 
 logger = logging.getLogger(__name__)

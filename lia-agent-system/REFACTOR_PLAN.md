@@ -531,6 +531,30 @@ def get_candidate_service(db: AsyncSession = Depends(get_db)) -> CandidateServic
 - All domains have the structure: `services/`, `repositories/`, `schemas/`
 - LOC reduction: **≥ 18,000** via deduplication of dual-layer logic
 
+### Rails-Deprecated Services (DO NOT MIGRATE)
+
+The following  files are **Rails-deprecated**: they perform CRUD that will be
+handled exclusively by the Rails ATS API (). Do **not** move these to a domain;
+they should be deleted once the FastAPI→Rails handoff is complete.
+
+| Service file | Rails endpoint replacing it |
+|---|---|
+|  |  |
+|  |  |
+|  |  |
+|  |  |
+|  |  |
+|  | Rails managed via jobs/mailers |
+|  | Rails managed interviews |
+|  | Rails managed notifications |
+|  |  |
+|  |  |
+
+**Rails integration bridge:** 
+maps Fork UUID ↔ Rails bigint IDs and proxies reads/writes to the Rails API.
+The adapter tries Rails first and falls back to local PostgreSQL, so no data loss
+occurs during the transition period.
+
 ---
 
 ## Phase 5 — Response Models & API Contract Hardening
@@ -1156,7 +1180,7 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
 | 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 12 files→repos, 174 pending | 2026-04-06 |
 | 3 — Model consolidation | ✅ DONE 100% | ~393,600 | ~393,200 | 23 domain models shimmed, app/models/__init__ fixed, encrypt_value fix (+628 tests) | 2026-04-07 |
-| 4 — DDD migration | ✅ DONE | — | — | 138 services shimmed, all app/services/ are shims | 2026-04-06 |
+| 4 — DDD migration | ✅ DONE 100% | — | — | 138 shims + credit_service→credits domain, rails_adapter→integrations_hub; Rails-deprecated services catalogued | 2026-04-07 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
 | 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
 | 7 — Fix tests | ✅ DONE | — | — | rename only | 2026-04-06 |
