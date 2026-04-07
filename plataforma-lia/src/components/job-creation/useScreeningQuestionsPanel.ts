@@ -135,7 +135,7 @@ export function useScreeningQuestionsPanel({
     if (onQuestionsChangeRef.current) {
       const pipelineSelected = getSelectedQuestions()
       const companySelected = (questionsByBlock[2] || []).filter(q => q.is_selected)
-      onQuestionsChangeRef.current([...companySelected, ...pipelineSelected] as unknown[])
+      onQuestionsChangeRef.current([...companySelected, ...pipelineSelected] as unknown as Record<string, unknown>[])
     }
   }, [pipelineQuestions, companyQuestions, getSelectedQuestions, questionsByBlock])
 

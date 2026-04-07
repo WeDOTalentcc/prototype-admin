@@ -537,14 +537,12 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
           const suggestedSkills = toolResult.result.skills
           suggestedSkills.forEach((skill, index: number) => {
             if (!ctx.technicalSkills.find(s => s.name.toLowerCase() === skill.name?.toLowerCase())) {
-              ctx.setTechnicalSkills(prev => [
-                ...prev,
-                {
+              ctx.setTechnicalSkills(prev => [...prev, {
                   id: `tool-skill-${Date.now()}-${index}`,
                   name: skill.name || '',
-                  level: (skill.level || 'Intermediário') as 'Básico' | 'Intermediário' | 'Avançado' | 'Expert',
+                  level: ((skill.level === 'Expert' ? 'Avançado' : skill.level) || 'Intermediário') as 'Básico' | 'Intermediário' | 'Avançado',
                   required: skill.required ?? true,
-                  category: (skill.category || 'tool') as 'language' | 'framework' | 'tool' | 'concept' | 'methodology',
+                  category: ((['language', 'framework', 'database', 'tool', 'general'] as string[]).includes(skill.category || '') ? (skill.category as 'language' | 'framework' | 'database' | 'tool' | 'general') : 'tool'),
                   weight: skill.weight || 3
                 }
               ])

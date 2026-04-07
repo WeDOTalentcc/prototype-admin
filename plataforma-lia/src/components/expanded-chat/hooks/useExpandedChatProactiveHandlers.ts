@@ -154,7 +154,7 @@ Quer que eu avance para a etapa de **Competências**, ou prefere ajustar algo an
           seniority: detectedCriteria.senioridadeIdiomas || '',
           location: basicInfoFields.localidade,
           department: basicInfoFields.area,
-          company_id: basicInfoFields.companyId || ''
+          company_id: (basicInfoFields as unknown as Record<string, unknown>).companyId as string || ''
         })
         
         if (benchmarkData && (benchmarkData.internal || benchmarkData.market)) {

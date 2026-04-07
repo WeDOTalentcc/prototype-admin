@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { type ParsedEntities } from "@/components/search/smart-search-input"
+import { type ParsedEntities, type SmartSearchInputProps } from "@/components/search/smart-search-input"
 
 import { useJWTAuth } from "@/contexts/auth-context"
 import { useCandidatesStore } from "@/stores/candidates-store"

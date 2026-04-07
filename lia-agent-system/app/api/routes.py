@@ -61,8 +61,13 @@ from app.api.v1 import (
     communication_settings,
     communications,
     company,
+    company_approvers,
+    company_users,
     company_benefits,
+    company_assessments,
     company_culture,
+    company_culture_config,
+    company_departments,
     compliance_controls,
     consent_management,
     conversations,
@@ -329,8 +334,13 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Company ───────────────────────────────────────────────────────────────
     app.include_router(company.router, prefix="/api/v1", tags=["company"])
+    app.include_router(company_approvers.router, prefix="/api/v1", tags=["company"])
+    app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
+    app.include_router(company_culture_config.router, prefix="/api/v1", tags=["company"])
+    app.include_router(company_departments.router, prefix="/api/v1", tags=["company"])
+    app.include_router(company_assessments.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_benefits.router, prefix="/api/v1", tags=["company-benefits"])
     app.include_router(goals.router, prefix="/api/v1", tags=["goals"])
     app.include_router(benefits.router, prefix="/api/v1", tags=["benefits"])

@@ -4,6 +4,7 @@
  */
 
 import { test, expect } from '../../fixtures/auth.fixture';
+import type { Locator } from '@playwright/test';
 
 test.describe('Chat Flutuante (LiaChatPanel) — Auditoria de Usabilidade', () => {
 
@@ -66,7 +67,7 @@ test.describe('Chat Flutuante (LiaChatPanel) — Auditoria de Usabilidade', () =
       'input[placeholder*="Envie mensagem"]',
     ];
 
-    let input = null;
+    let input: Locator | null = null;
     for (const selector of inputSelectors) {
       const el = authenticatedPage.locator(selector).first();
       if (await el.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -172,7 +173,7 @@ test.describe('Chat Flutuante (LiaChatPanel) — Auditoria de Usabilidade', () =
       '[data-testid="lia-float-button"]',
     ];
 
-    let floatButton = null;
+    let floatButton: Locator | null = null;
     for (const sel of floatTriggerSelectors) {
       const btn = authenticatedPage.locator(sel).first();
       if (await btn.isVisible({ timeout: 3000 }).catch(() => false)) {

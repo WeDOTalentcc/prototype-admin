@@ -17,7 +17,7 @@
  */
 
 import { test, expect } from '../../fixtures/auth.fixture';
-import type { Page } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 
 async function openSuperPrompt(page: Page): Promise<boolean> {
   const expandSelectors = [
@@ -174,7 +174,7 @@ test.describe('Chat Expandido/SuperPrompt (LiaSuperPrompt) — Auditoria de Usab
       '[aria-label="Mensagem para a LIA"]',
     ];
 
-    let inputEl = null;
+    let inputEl: Locator | null = null;
     for (const sel of textareaSelectors) {
       const el = authenticatedPage.locator(sel).first();
       if (await el.isVisible({ timeout: 3000 }).catch(() => false)) {

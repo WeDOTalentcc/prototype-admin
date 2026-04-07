@@ -684,10 +684,8 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
         }}
         onAddToJob={handleAddCandidateToJob}
 
-        onFavorite={(candidateId) => {
-          handleSendMessage(`Adicionar candidato ${selectedCandidateForDetail?.name || candidateId} aos favoritos`)
-        }}
-        onSaveToBase={handleSaveToBase}
+
+        onSaveToBase={(candidateId: string) => { handleSaveToBase(candidateId) }}
       />
 
       {/* Credit Confirmation Dialog */}

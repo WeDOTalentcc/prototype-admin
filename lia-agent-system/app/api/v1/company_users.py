@@ -1,0 +1,432 @@
+"""
+Company Users API endpoints — user management, global search settings,
+catalog status, and Smart Wizard greeting.
+"""
+import logging
+import os
+import uuid
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
+from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
+from app.auth.security import generate_secure_token, get_password_hash
+from app.domains.communication.services.email_service import email_service
+from app.domains.company.dependencies import (
+    get_company_profile_repo,
+    get_department_repo,
+    get_global_settings_repo,
+    get_user_repo,
+)
+from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
+from app.domains.company.repositories.department_repository import DepartmentRepository
+from app.domains.company.repositories.global_settings_repository import GlobalSettingsRepository
+from app.domains.company.repositories.user_repository import UserRepository
+from app.schemas.company import (
+    CatalogStatusResponse,
+    CompanyUserResponse,
+    CompanyUsersListResponse,
+    GlobalSearchSettingsResponse,
+    GlobalSearchSettingsUpdate,
+    SmartWizardGreetingResponse,
+)
+from app.services.company_configuration_service import company_config_service
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/company", tags=["company"])
+
+
+@router.get("/global-search-settings", response_model=GlobalSearchSettingsResponse)
+async def get_global_search_settings(
+    company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
+    gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
+):
+    """Get global search settings for a specific company (multi-tenant isolated)."""
+    try:
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
+
+        settings = await gs_repo.get_for_company(company_id)
+        if not settings:
+            settings = await gs_repo.create_or_update(company_id, {
+                "default_limit": 50,
+                "search_type": "fast",
+                "show_emails": False,
+                "show_phone_numbers": False,
+                "high_freshness": False,
+                "auto_expand_global": False,
+                "confirm_before_search": True,
+                "global_search_enabled": True,
+            })
+            logger.info(f"Created default global search settings for company {company_id}")
+
+        return settings
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching global search settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/global-search-settings", response_model=GlobalSearchSettingsResponse)
+async def update_global_search_settings(
+    data: GlobalSearchSettingsUpdate,
+    company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
+    gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
+):
+    """Update global search settings for a specific company (multi-tenant isolated)."""
+    try:
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
+
+        update_data = data.model_dump(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+        settings = await gs_repo.create_or_update(company_id, update_data)
+        logger.info(f"Updated global search settings for company {company_id}")
+        return settings
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating global search settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==========================================
+# User Management Endpoints
+# ==========================================
+
+@router.get("/users", response_model=list[UserManagementResponse])
+async def list_users(
+    company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
+    user_repo: UserRepository = Depends(get_user_repo),
+):
+    """List all users for a company."""
+    if not company_id or company_id in ("default", "unknown"):
+        raise HTTPException(status_code=400, detail="Valid company_id is required")
+    try:
+        return await user_repo.list_for_company(company_id, is_active=None)
+    except Exception as e:
+        logger.error(f"Error listing users: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/users", response_model=UserManagementResponse, status_code=201)
+async def create_user(
+    data: UserManagementCreate,
+    company_id: str | None = Query(None),
+    user_repo: UserRepository = Depends(get_user_repo),
+):
+    """Create a new user with invitation token."""
+    try:
+        existing = await user_repo.get_by_email(data.email)
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        resolved_company_id = data.company_id or company_id
+        if not resolved_company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
+
+        invitation_token = generate_secure_token()
+
+        user = await user_repo.create({
+            "email": data.email,
+            "name": data.name,
+            "role": data.role,
+            "company_id": resolved_company_id,
+            "password_hash": get_password_hash("temporary_placeholder"),
+            "is_active": False,
+            "email_verified": False,
+            "invitation_token": invitation_token,
+            "invitation_sent_at": datetime.utcnow(),
+            "permissions": data.permissions or [],
+        })
+
+        invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
+        await email_service.send_user_notification(
+            db=user_repo.db,
+            notification_type="invitation",
+            recipient_email=user.email,
+            variables={"user_name": user.name, "invitation_link": invitation_link},
+        )
+
+        logger.info(f"Created user with invitation: {user.email} for company {resolved_company_id}")
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/users/{user_id}", response_model=UserManagementResponse)
+async def update_user(
+    user_id: str,
+    data: UserManagementUpdate,
+    user_repo: UserRepository = Depends(get_user_repo),
+):
+    """Update a user."""
+    try:
+        user_uuid = uuid.UUID(user_id)
+        user = await user_repo.get_by_id(user_uuid)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if data.email and data.email != user.email:
+            existing = await user_repo.get_by_email(data.email)
+            if existing and existing.id != user_uuid:
+                raise HTTPException(status_code=400, detail="Email already in use")
+
+        update_data = data.model_dump(exclude_unset=True)
+        # Handle permissions specially
+        if 'permissions' in update_data and update_data['permissions'] is None:
+            update_data['permissions'] = user.permissions
+        update_data['updated_at'] = datetime.utcnow()
+
+        user = await user_repo.update(user_uuid, update_data)
+        logger.info(f"Updated user: {user.email} with permissions: {user.permissions}")
+        return user
+    except HTTPException:
+        raise
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    except Exception as e:
+        logger.error(f"Error updating user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/users/{user_id}", status_code=204, response_model=None)
+async def delete_user(
+    user_id: str,
+    user_repo: UserRepository = Depends(get_user_repo),
+):
+    """Delete a user."""
+    try:
+        user_uuid = uuid.UUID(user_id)
+        user = await user_repo.get_by_id(user_uuid)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        email = user.email
+        await user_repo.delete(user_uuid)
+        logger.info(f"Deleted user: {email}")
+        return None
+    except HTTPException:
+        raise
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    except Exception as e:
+        logger.error(f"Error deleting user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/users/{user_id}/resend-invitation", response_model=None)
+async def resend_invitation(
+    user_id: str,
+    user_repo: UserRepository = Depends(get_user_repo),
+):
+    """Resend invitation email to a user who hasn't activated their account yet."""
+    try:
+        user_uuid = uuid.UUID(user_id)
+        user = await user_repo.get_by_id(user_uuid)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user.is_active:
+            raise HTTPException(status_code=400, detail="User has already activated their account")
+
+        invitation_token = generate_secure_token()
+        user = await user_repo.update(user_uuid, {
+            "invitation_token": invitation_token,
+            "invitation_sent_at": datetime.utcnow(),
+        })
+
+        invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
+        await email_service.send_user_notification(
+            db=user_repo.db,
+            notification_type="invitation",
+            recipient_email=user.email,
+            variables={"user_name": user.name, "invitation_link": invitation_link},
+        )
+
+        logger.info(f"Resent invitation to user: {user.email}")
+        return {"success": True, "message": "Invitation email resent successfully"}
+    except HTTPException:
+        raise
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    except Exception as e:
+        logger.error(f"Error resending invitation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users/list", response_model=CompanyUsersListResponse)
+async def list_company_users(
+    role: str | None = Query(None, description="Filter by role (recruiter, admin, viewer)"),
+    is_active: bool = Query(True, description="Filter by active status"),
+    user_repo: UserRepository = Depends(get_user_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """List users belonging to the same company as the current user."""
+    try:
+        if not current_user.company_id:
+            raise HTTPException(status_code=400, detail="User has no company_id assigned")
+        company_id = current_user.company_id
+
+        users = await user_repo.list_for_company(str(company_id), role=role, is_active=is_active)
+        user_emails = [u.email for u in users]
+        jobs_by_email = await user_repo.count_active_jobs_by_email(user_emails)
+
+        user_responses = []
+        for user in users:
+            active_jobs_count = jobs_by_email.get(user.email, 0)
+            performance_score = 85 + (hash(str(user.id)) % 15)
+            user_responses.append(CompanyUserResponse(
+                id=str(user.id),
+                name=user.name,
+                email=user.email,
+                role=user.role.value if hasattr(user.role, 'value') else str(user.role),
+                is_active=user.is_active,
+                active_jobs_count=active_jobs_count,
+                performance_score=performance_score,
+            ))
+
+        logger.info(f"Listed {len(user_responses)} users for company {company_id}")
+        return CompanyUsersListResponse(users=user_responses, total=len(user_responses))
+    except Exception as e:
+        logger.error(f"Error listing company users: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# CATALOG STATUS - Smart Wizard Integration
+# ============================================================================
+
+@router.get("/catalog-status", response_model=CatalogStatusResponse)
+async def get_catalog_status(
+    company_id: str = Query(default=""),
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+):
+    """Get the maturity status of company's catalog data for Smart Wizard."""
+    try:
+        status = await company_config_service.get_catalog_status(company_id, profile_repo.db)
+        return CatalogStatusResponse(**status)
+    except Exception as e:
+        logger.error(f"Error getting catalog status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/smart-wizard-greeting", response_model=SmartWizardGreetingResponse)
+async def get_smart_wizard_greeting(
+    company_id: str = Query(default=""),
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+):
+    """Get personalized greeting for the Smart Wizard based on catalog status."""
+    import asyncio
+
+    try:
+        status, config = await asyncio.gather(
+            company_config_service.get_catalog_status(company_id, profile_repo.db),
+            company_config_service.get_configuration(company_id, profile_repo.db),
+        )
+
+        base_intro = """Olá! Sou a LIA, sua assistente de recrutamento.
+
+Como você gostaria de começar?
+
+🆕 **Criar vaga do zero** — Me conte sobre a posição que você precisa preencher
+
+📋 **Usar vaga existente** — Posso duplicar e adaptar uma vaga anterior
+
+📝 **Usar template** — Escolha entre nossos modelos prontos por área/cargo
+
+"""
+
+        if status["maturity_level"] == "complete":
+            greeting = base_intro + """💡 **Dica:** Já tenho suas políticas configuradas, então posso sugerir salários, benefícios e competências automaticamente!
+
+Qual opção você prefere?"""
+        elif status["maturity_level"] == "partial":
+            greeting = base_intro + """💡 **Dica:** Encontrei alguns dados da sua empresa que podem agilizar o processo.
+
+Qual opção você prefere?"""
+        else:
+            greeting = base_intro + """💡 **Dica:** Você pode descrever a vaga em linguagem natural que eu extraio as informações automaticamente.
+
+Qual opção você prefere?"""
+
+        departments_list = []
+        try:
+            from uuid import UUID as UUID_type
+
+            resolved_company_uuid = None
+            try:
+                resolved_company_uuid = UUID_type(company_id)
+            except (ValueError, TypeError):
+                profile = await profile_repo.get_default()
+                if profile:
+                    resolved_company_uuid = profile.id
+
+            if resolved_company_uuid:
+                departments = await dept_repo.list_for_company(resolved_company_uuid)
+                departments_list = [
+                    {"id": str(d.id), "name": d.name, "manager": d.manager_name}
+                    for d in departments
+                ]
+        except Exception as e:
+            logger.warning(f"Error fetching departments for prefill: {e}")
+
+        tech_stack = []
+        try:
+            from uuid import UUID as UUID_type
+
+            try:
+                company_uuid = UUID_type(company_id)
+                profile = await profile_repo.get_by_id(company_uuid)
+            except (ValueError, TypeError):
+                profile = await profile_repo.get_default()
+
+            if profile and hasattr(profile, 'tech_stack') and profile.tech_stack:
+                tech_stack = profile.tech_stack if isinstance(profile.tech_stack, list) else []
+        except Exception as e:
+            logger.warning(f"Error fetching tech stack: {e}")
+
+        screening_questions_list = [
+            {
+                "id": str(idx),
+                "question": q.get("question", q.get("text", "")),
+                "category": q.get("category", "general"),
+            }
+            for idx, q in enumerate(config.screening_questions or [])
+        ]
+
+        prefill_data = {
+            "benefits": [
+                {"name": b.get("name"), "category": b.get("category", "outros")}
+                for b in (config.benefits or [])[:15]
+            ],
+            "departments": departments_list,
+            "screening_questions": screening_questions_list,
+            "tech_stack": tech_stack,
+            "culture_values": [v.get("name") for v in (config.culture_values or [])[:10]],
+            "default_work_model": "hybrid",
+            "default_employment_type": "CLT",
+            "default_pipeline": config.default_pipeline,
+        }
+
+        return SmartWizardGreetingResponse(
+            greeting_message=greeting,
+            catalog_status=CatalogStatusResponse(**status),
+            prefill_data=prefill_data,
+        )
+    except Exception as e:
+        logger.error(f"Error getting smart wizard greeting: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -100,6 +100,61 @@ const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string
     description: 'Adicione os candidatos selecionados a uma lista.',
     icon: <Users className="w-4 h-4 text-lia-text-secondary" />
   },
+  add_to_vacancy: {
+    title: 'Adicionar à Vaga',
+    description: 'Adicione os candidatos selecionados a uma vaga.',
+    icon: <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
+  },
+  share_search: {
+    title: 'Compartilhar Busca',
+    description: 'Compartilhe a busca com outros recrutadores.',
+    icon: <FileText className="w-4 h-4 text-lia-text-secondary" />
+  },
+  favorites: {
+    title: 'Adicionar aos Favoritos',
+    description: 'Adicione os candidatos selecionados aos favoritos.',
+    icon: <Users className="w-4 h-4 text-lia-text-secondary" />
+  },
+  wsi_screening: {
+    title: 'Triagem WSI',
+    description: 'Aplique triagem WSI nos candidatos selecionados.',
+    icon: <FileText className="w-4 h-4 text-lia-text-secondary" />
+  },
+  hide: {
+    title: 'Ocultar Candidatos',
+    description: 'Oculte os candidatos selecionados da visualização.',
+    icon: <XCircle className="w-4 h-4 text-lia-text-secondary" />
+  },
+  save_to_base: {
+    title: 'Salvar na Base',
+    description: 'Salve os candidatos selecionados na base de dados.',
+    icon: <FileText className="w-4 h-4 text-lia-text-secondary" />
+  },
+  publish: {
+    title: 'Publicar',
+    description: 'Publique os candidatos selecionados.',
+    icon: <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
+  },
+  insights: {
+    title: 'Ver Insights',
+    description: 'Veja insights sobre os candidatos selecionados.',
+    icon: <FileText className="w-4 h-4 text-lia-text-secondary" />
+  },
+  duplicate: {
+    title: 'Duplicar',
+    description: 'Duplique os candidatos selecionados.',
+    icon: <FileText className="w-4 h-4 text-lia-text-secondary" />
+  },
+  toggle_status: {
+    title: 'Alternar Status',
+    description: 'Alterne o status dos candidatos selecionados.',
+    icon: <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
+  },
+  assign_recruiter: {
+    title: 'Atribuir Recrutador',
+    description: 'Atribua um recrutador aos candidatos selecionados.',
+    icon: <Users className="w-4 h-4 text-lia-text-secondary" />
+  },
 }
 
 const getRandomAvatarUrl = (_candidateId: string, _name: string): string | undefined => {

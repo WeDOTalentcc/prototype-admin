@@ -190,13 +190,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
 }
 
 
-interface CollectionModelContentProps {
-  config: Record<string, unknown>
-  isEditing: boolean
-  updateGeneralConfig: (key: string, value: unknown) => void
-  updateCollectionMessages?: (key: string, value: unknown) => void
-}
-
-export function CollectionModelContent({ config, isEditing, updateGeneralConfig }: CollectionModelContentProps) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function CollectionModelContent(_props: Record<string, any>) {
   return null
 }

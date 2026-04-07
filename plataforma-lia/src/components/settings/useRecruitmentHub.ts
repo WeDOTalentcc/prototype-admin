@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import {
   RecruitmentStage,
+  SubStatus,
   DEFAULT_STAGES
 } from "@/components/settings/RecruitmentJourneyConfig"
 import {

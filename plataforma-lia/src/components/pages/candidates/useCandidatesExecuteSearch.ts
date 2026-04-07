@@ -345,7 +345,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
               location_city: c.location?.split(',')[0]?.trim(),
               location_state: c.location?.split(',')[1]?.trim(),
               linkedin_url: c.linkedin_url,
-              avatar_url: c.avatar_url || c.picture_url,
+              avatar_url: (c.avatar_url || c.picture_url) as string | undefined,
               technical_skills: c.skills || [],
               skills: c.skills || [],
               seniority_level: c.seniority_level,
@@ -357,7 +357,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
               score: c.match_score ? Math.round(c.match_score * 25) : 75,
               contractType: 'CLT' as const,
               linkedin: c.linkedin_url || '',
-              avatar: c.avatar_url,
+              avatar: c.avatar_url as string | undefined,
               experiences: c.experiences || c.work_history || [],
               workHistory: (c.experiences || c.work_history || []).map((exp: RawExperience) => ({
                 company: exp.company_info?.name || exp.company || '',
@@ -424,14 +424,14 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
             mobile_phone: c.mobile_phone ?? undefined,
             current_title: c.current_title || '',
             current_company: c.current_company || '',
-            current_salary: c.current_salary,
-            desired_salary_min: c.desired_salary_min,
-            desired_salary_max: c.desired_salary_max,
+            current_salary: c.current_salary ?? undefined,
+            desired_salary_min: c.desired_salary_min ?? undefined,
+            desired_salary_max: c.desired_salary_max ?? undefined,
             location: [c.location_city, c.location_state].filter(Boolean).join(', '),
             location_city: c.location_city,
             location_state: c.location_state,
             linkedin_url: c.linkedin_url,
-            avatar_url: c.avatar_url || c.picture_url,
+            avatar_url: (c.avatar_url || c.picture_url) as string | undefined,
             technical_skills: c.technical_skills || [],
             skills: c.technical_skills || [],
             seniority_level: c.seniority_level,
@@ -444,7 +444,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
             contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
             linkedin: c.linkedin_url || '',
             education: c.education || c.educations || [],
-            avatar: c.avatar_url || c.picture_url,
+            avatar: (c.avatar_url || c.picture_url) as string | undefined,
             liaAnalysis: {
               score: c.lia_score || 75,
               strengths: c.lia_insights?.strengths || [],
@@ -462,7 +462,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
             is_startup: c.is_startup || c.company_info?.is_startup,
             expertise: c.expertise,
             outreach_message: c.outreach_message
-          }))
+          })) as unknown as Candidate[]
         }
       }
 

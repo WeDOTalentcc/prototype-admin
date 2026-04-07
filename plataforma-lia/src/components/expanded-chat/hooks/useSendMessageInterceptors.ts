@@ -321,6 +321,7 @@ export function useSendMessageInterceptors(ctx: SendMessageHandlersContext) {
 
   const { handleWSIRegenConfirmation: _handleWSIRegenConfirmation, handleSensitiveFieldsConfirmation: _handleSensitiveFieldsConfirmation } = useMessageConfirmationHandlers({
     user,
+    resolvedCompanyId: null,
     isInJobCreationMode,
     setMessages,
     setIsLoading,
