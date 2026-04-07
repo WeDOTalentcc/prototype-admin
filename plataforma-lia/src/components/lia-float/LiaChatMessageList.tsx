@@ -35,7 +35,7 @@ export interface LiaChatMessageListProps {
   isStreaming: boolean
   streamingContent: string
   conversationId: string | null
-  messagesEndRef: React.RefObject<HTMLDivElement>
+  messagesEndRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function LiaChatMessageList({

@@ -163,6 +163,9 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
         startSearch: (q: string, e: ParsedEntities, m?: SearchMode, meta?: SearchMetadata) => Promise<void>
         reset: () => void
         submitProfile: (profile: string) => void
+        submitSearch: (params: Record<string, unknown>) => void
+        showResults: () => void
+        startProfileCollection: () => void
       },
       activeSearchFilters: session.activeSearchFilters,
       setIsSmartSearchMode: session.setIsSmartSearchMode,
@@ -312,7 +315,7 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
       case "candidate_summary":
         return (
           <CandidateSummaryCard
-            data={chatCardData as Record<string, unknown>}
+            data={chatCardData as unknown as Parameters<typeof CandidateSummaryCard>[0]['data']}
             onScheduleInterview={() => handleCardAction("schedule")}
             onViewDetails={() => handleCardAction("view_details")}
             onAddToShortlist={() => handleCardAction("add_shortlist")}
@@ -321,14 +324,14 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
       case "wsi_score":
         return (
           <WSIScoreCard
-            data={chatCardData as Record<string, unknown>}
+            data={chatCardData as unknown as Parameters<typeof WSIScoreCard>[0]['data']}
             onViewDetails={() => handleCardAction("view_details")}
           />
         )
       case "compensation_summary":
         return (
           <CompensationSummaryCard
-            data={chatCardData as Record<string, unknown>}
+            data={chatCardData as unknown as Parameters<typeof CompensationSummaryCard>[0]['data']}
             onEdit={() => handleCardAction("edit")}
             onApprove={() => handleCardAction("approve")}
           />
@@ -336,7 +339,7 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
       case "interview_confirmation":
         return (
           <InterviewConfirmationCard
-            data={chatCardData as Record<string, unknown>}
+            data={chatCardData as unknown as Parameters<typeof InterviewConfirmationCard>[0]['data']}
             onReschedule={() => handleCardAction("reschedule")}
             onCancel={() => handleCardAction("cancel")}
             onConfirm={() => handleCardAction("confirm")}
@@ -345,14 +348,14 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
       case "progress_tracker":
         return (
           <ProgressTrackerCard
-            data={chatCardData as Record<string, unknown>}
+            data={chatCardData as unknown as Parameters<typeof ProgressTrackerCard>[0]['data']}
             onViewDetails={() => handleCardAction("view_details")}
           />
         )
       case "job_summary":
         return (
           <JobSummaryCard
-            data={chatCardData as Record<string, unknown>}
+            data={chatCardData as unknown as Parameters<typeof JobSummaryCard>[0]['data']}
             onEdit={() => handleCardAction("edit")}
             onPublish={() => handleCardAction("publish")}
             onViewCandidates={() => handleCardAction("view_candidates")}

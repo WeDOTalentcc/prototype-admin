@@ -134,7 +134,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       const searchResults = (workflowData as Record<string, unknown> | undefined)?.search_results as Record<string, unknown> | undefined
       
       const localCount = searchResults?.local_count || searchResults?.local_candidates?.length || 0
-      const globalCandidates = searchResults?.global_candidates || []
+      const globalCandidates = (searchResults?.global_candidates as unknown[]) || []
       
       // Update preview with real counts
       setSearchPreviewData({
@@ -180,7 +180,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
               source: searchResults.source,
               localCount,
               totalCount,
-              candidates: [...(searchResults.local_candidates || []), ...globalCandidates]
+              candidates: [...((searchResults.local_candidates as unknown[]) || []), ...globalCandidates]
             }
           })
           setIsPanelOpen(true)

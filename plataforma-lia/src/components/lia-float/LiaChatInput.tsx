@@ -12,8 +12,8 @@ export interface LiaChatInputProps {
   maxInputChars: number
   attachedCvFile: File | null
   setAttachedCvFile: (v: File | null) => void
-  cvFileInputRef: React.RefObject<HTMLInputElement>
-  inputRef: React.RefObject<HTMLInputElement>
+  cvFileInputRef: React.RefObject<HTMLInputElement | null>
+  inputRef: React.RefObject<HTMLInputElement | null>
   handleCvFileAttach: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleCvFileButtonClick: () => void
   handleSend: () => void
