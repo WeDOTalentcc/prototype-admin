@@ -289,13 +289,13 @@ class TestAccumulateScore:
         assert 1.0 <= state.technical_score <= 5.0
 
     def test_score_below_min_clamped_before_average(self):
-        """Score 0.5 é clamped para 1.0; rolling avg com initial=0.0: (0+1)/2=0.5.
-        Sem clamp seria (0+0.5)/2=0.25 — verifica que clamp aconteceu."""
+        """Score 0.5 é clamped para 1.0; primeiro score (n=0): (0*0+1)/(0+1)=1.0.
+        Sem clamp seria (0*0+0.5)/(0+1)=0.5 — verifica que clamp agiu (resultado > 0.5)."""
         nodes = self._get_nodes()
         state = self._make_fresh_state()
         nodes._accumulate_score(state, "technical", 0.5, 10.0)
-        assert state.technical_score == pytest.approx(0.5)
-        assert state.technical_score > 0.25  # confirma que clamp agiu
+        assert state.technical_score == pytest.approx(1.0)
+        assert state.technical_score > 0.5  # confirma que clamp agiu
 
     def test_behavioral_accumulates_correctly(self):
         nodes = self._get_nodes()

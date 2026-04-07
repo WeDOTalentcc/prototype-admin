@@ -274,24 +274,28 @@ class TestCompactDistribution:
 
         call_tracker = []
 
-        async def fake_cbi(comp):
+        async def fake_cbi(comp, **kwargs):
             q = MagicMock()
             q.framework = "CBI"
+            q.question_text = "Conte sobre uma situação em que você aplicou essa competência e qual foi o resultado obtido."
             return q
 
-        async def fake_dreyfus(comp):
+        async def fake_dreyfus(comp, **kwargs):
             q = MagicMock()
             q.framework = "Dreyfus"
+            q.question_text = "Descreva uma situação em que você utilizou essa habilidade para resolver um problema complexo no trabalho."
             return q
 
-        async def fake_bloom(comp):
+        async def fake_bloom(comp, **kwargs):
             q = MagicMock()
             q.framework = "Bloom"
+            q.question_text = "Conte sobre uma situação em que você demonstrou essa competência e como impactou os resultados da equipe."
             return q
 
-        async def fake_bigfive(comp, ocean_trait=None):
+        async def fake_bigfive(comp, ocean_trait=None, **kwargs):
             q = MagicMock()
             q.framework = "BigFive"
+            q.question_text = "Conte sobre uma situação em que você demonstrou essa característica e qual foi o impacto no seu ambiente de trabalho."
             call_tracker.append("bigfive")
             return q
 
@@ -303,7 +307,7 @@ class TestCompactDistribution:
         service.question_templates = ""
 
         competencies = _make_competencies(n_tech=9, n_behav=5)
-        await service.generate_all(competencies, mode="compact")
+        await service.generate_all(competencies, mode="compact", seniority="senior")
 
         assert len(call_tracker) == 2, f"Expected 2 BigFive calls, got {len(call_tracker)}"
 
@@ -315,25 +319,29 @@ class TestCompactDistribution:
         bigfive_calls = []
         bloom_calls = []
 
-        async def fake_cbi(comp):
+        async def fake_cbi(comp, **kwargs):
             q = MagicMock()
             q.framework = "CBI"
+            q.question_text = "Conte sobre uma situação em que você aplicou essa competência e qual foi o resultado obtido."
             return q
 
-        async def fake_dreyfus(comp):
+        async def fake_dreyfus(comp, **kwargs):
             q = MagicMock()
             q.framework = "Dreyfus"
+            q.question_text = "Descreva uma situação em que você utilizou essa habilidade para resolver um problema complexo no trabalho."
             return q
 
-        async def fake_bloom(comp):
+        async def fake_bloom(comp, **kwargs):
             q = MagicMock()
             q.framework = "Bloom"
+            q.question_text = "Descreva uma situação em que você aplicou essa competência para superar um desafio importante no trabalho."
             bloom_calls.append("bloom")
             return q
 
-        async def fake_bigfive(comp, ocean_trait=None):
+        async def fake_bigfive(comp, ocean_trait=None, **kwargs):
             q = MagicMock()
             q.framework = "BigFive"
+            q.question_text = "Descreva uma situação em que você utilizou essa característica de personalidade para influenciar positivamente a equipe."
             bigfive_calls.append("bigfive")
             return q
 

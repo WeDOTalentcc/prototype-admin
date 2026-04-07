@@ -528,7 +528,7 @@ class TestF66TraitAffinity:
             _make_competency("Comunicação", "behavioral", weight=0.08),
         ]
 
-        await gen.generate_all(technical + behavioral, mode="compact", job_description="JD test")
+        await gen.generate_all(technical + behavioral, mode="compact", job_description="JD test", seniority="senior")
 
         assert len(bigfive_calls) == 2
         # primeira BigFive deve ter trait=conscientiousness → competência "Organização"

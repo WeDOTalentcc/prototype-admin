@@ -30,6 +30,7 @@ def _make_session_row(
     row.candidate_id = candidate_id
     row.job_vacancy_id = job_vacancy_id
     row.created_at = datetime.now(timezone.utc) - timedelta(hours=age_hours)
+    row.last_activity = datetime.now(timezone.utc) - timedelta(hours=age_hours)
     row.reminder_count = reminder_count
     return row
 

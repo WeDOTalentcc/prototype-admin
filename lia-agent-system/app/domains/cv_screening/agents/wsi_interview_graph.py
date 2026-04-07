@@ -100,6 +100,7 @@ class WSIInterviewState:
     technical_score: float = 0.0
     behavioral_score: float = 0.0
     situational_score: float = 0.0
+    eligibility_score: float = 0.0
     # Contadores para acumulação ponderada correta (spec F8 — média simples por bloco)
     technical_score_count: int = 0
     behavioral_score_count: int = 0
@@ -202,6 +203,7 @@ def _wsi_state_to_dict(state: "WSIInterviewState") -> dict:
         "technical_score": state.technical_score,
         "behavioral_score": state.behavioral_score,
         "situational_score": state.situational_score,
+        "eligibility_score": state.eligibility_score,
         "technical_score_count": state.technical_score_count,
         "behavioral_score_count": state.behavioral_score_count,
         "wsi_final_score": state.wsi_final_score,
@@ -243,6 +245,7 @@ def _wsi_state_from_dict(d: dict) -> "WSIInterviewState":
         technical_score=d.get("technical_score", 0.0),
         behavioral_score=d.get("behavioral_score", 0.0),
         situational_score=d.get("situational_score", 0.0),
+        eligibility_score=d.get("eligibility_score", 0.0),
         technical_score_count=d.get("technical_score_count", 0),
         behavioral_score_count=d.get("behavioral_score_count", 0),
         wsi_final_score=d.get("wsi_final_score"),
