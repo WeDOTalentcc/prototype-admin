@@ -275,9 +275,7 @@ async def execute_action(
             logger.info(f"💬 [WHATSAPP] Sent message for candidate {request.candidate_id}: {result_data['message_id']}")
         
         elif action_type == "triagem_wsi":
-            activity_service = get_activity_service()
-            
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="wsi_screening_invite",
                 title="Convite para Triagem WSI Enviado",
                 description="Convite para triagem WSI enviado para candidato",
