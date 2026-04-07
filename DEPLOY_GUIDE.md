@@ -732,6 +732,519 @@ gcloud run services update lia-agent \
 
 ---
 
+## 11. Mapa Completo de Integrações
+
+> Análise extraída diretamente do código-fonte (`requirements.txt`, `package.json`, serviços e rotas). Cada integração tem status, função e o que é necessário para o deploy.
+
+### 11.1 Modelos de Linguagem (LLMs)
+
+| Integração | Status no código | Função | Chave necessária | GCP |
+|---|---|---|---|---|
+| **Claude (Anthropic)** | ✅ Core — em produção | Triagem de CVs, agente principal, análise de candidatos, WSI | `ANTHROPIC_API_KEY` | Secret Manager |
+| **Gemini (Google AI)** | ✅ Core — em produção | Voz conversacional, chat LIA, busca semântica, insights | `GEMINI_API_KEY` | Secret Manager |
+| **OpenAI** | ⚠️ Opcional | Fine-tuning export, busca por JD, triagem backup | `OPENAI_API_KEY` | Secret Manager (se ativo) |
+| **LangSmith** | ⚠️ Opcional | Tracing de LLM calls, observabilidade de agentes | `LANGSMITH_API_KEY` | Secret Manager (se ativo) |
+
+**LangGraph** (framework dos agentes) roda localmente — não é uma integração externa, é parte do código.
+
+---
+
+### 11.2 Voz e Transcrição (Google + Twilio)
+
+```
+Fluxo de triagem por voz:
+Candidato → Twilio Voice (ligação) → Google Cloud Speech-to-Text (STT)
+        → LIA Agent (Gemini / Claude análise) → resposta em áudio (TTS)
+        → grava resultado no banco → notifica recrutador
+```
+
+| Integração | Arquivo principal | Função | Configuração GCP |
+|---|---|---|---|
+| **Google Cloud Speech-to-Text** | `app/api/v1/gemini_voice.py` | Transcrição das triagens por voz em tempo real | Habilitar API no projeto GCP |
+| **Google Cloud Text-to-Speech** | `app/api/v1/voice.py` | LIA fala com o candidato durante triagem | Habilitar API no projeto GCP |
+| **Twilio Voice** | `app/api/v1/twilio_voice.py` | Ligações reais (inbound/outbound), gravação | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` |
+| **Twilio WhatsApp** | `app/domains/communication/services/whatsapp_twilio_service.py` | WhatsApp via Twilio (alternativa ao Meta API) | mesmas credenciais Twilio |
+
+> **Ação GCP:** Habilitar as APIs `speech.googleapis.com` e `texttospeech.googleapis.com` no projeto GCP. A autenticação usa o Service Account do Cloud Run — sem API key adicional.
+
+---
+
+### 11.3 Comunicação e Notificações
+
+| Canal | Integração | Arquivo principal | Status | Configuração |
+|---|---|---|---|---|
+| **Email transacional** | Resend | `app/api/v1/email.py` | ✅ Ativo | `RESEND_API_KEY` |
+| **WhatsApp (Meta)** | WhatsApp Business API | `app/domains/communication/services/whatsapp_meta_service.py` | ⚠️ Config pendente | `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN` |
+| **Microsoft Teams** | Bot Framework + Graph API | `app/domains/communication/services/teams_service.py` | ✅ Ativo (dev mode) | `MICROSOFT_APP_ID`, `MICROSOFT_APP_PASSWORD`, `AZURE_TENANT_ID` |
+| **Teams SSO** | MSAL + Microsoft Graph | `app/domains/communication/services/teams_sso_service.py` | ✅ Ativo | mesmas credenciais MS |
+| **Teams Recordings** | Microsoft Graph | `app/domains/communication/services/teams_recording_service.py` | ✅ Ativo | `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` |
+
+---
+
+### 11.4 Agendamento e Calendário
+
+| Integração | Arquivo | Função | Configuração |
+|---|---|---|---|
+| **Google Calendar** | `app/domains/interview_scheduling/services/calendar_service.py` | Criar/gerenciar entrevistas no Google Calendar | `GOOGLE_CALENDAR_CREDENTIALS` (service account JSON) |
+| **Microsoft Calendar** | `app/domains/integrations_hub/services/microsoft_graph_service.py` | Agendamento via Outlook / Teams | mesmas credenciais Microsoft Graph |
+| **APScheduler** | `app/jobs/scheduled_reports.py` | Jobs internos (relatórios agendados, alertas proativos) | sem config externa |
+| **Celery** | `app/core/celery_app.py` | Tasks assíncronas longas (triagem em batch, exportações) | `CELERY_BROKER_URL` (RabbitMQ) |
+
+---
+
+### 11.5 Infraestrutura de Filas e Cache
+
+```
+Arquitetura de filas da LIA:
+                                    ┌─────────────┐
+FastAPI request ──► Celery task ──► │  RabbitMQ   │ ──► Celery worker processa
+                                    └─────────────┘
+                                          │
+                              ┌───────────▼──────────┐
+                              │         Redis         │
+                              │  - Cache de sessões   │
+                              │  - Token budgets      │
+                              │  - HITL TTL store     │
+                              │  - Celery result back │
+                              └───────────────────────┘
+```
+
+| Serviço | Uso no código | Deploy no GCP |
+|---|---|---|
+| **Redis** | Cache, token budget, HITL store, Celery results | Cloud Memorystore (Redis) |
+| **RabbitMQ (aio-pika)** | Message broker para Celery, jd_search, agent_chat_ws | Cloud Run sidecar ou VM dedicada |
+| **Celery** | Workers assíncronos para triagem em batch, drift detection | Cloud Run (worker) separado |
+
+> **Nota:** RabbitMQ é o único serviço que não tem managed service direto no GCP. Opções: (1) VM e2-small dedicada, (2) substituir por Cloud Pub/Sub (maior esforço de migração), (3) CloudAMQP (serviço gerenciado externo).
+
+---
+
+### 11.6 CRM e Sourcing Externo
+
+| Integração | Arquivo | Função | Status | Config |
+|---|---|---|---|---|
+| **HubSpot** | `app/domains/company/services/hubspot_service.py` | Sync de empresas e contatos com CRM | ⚠️ Config pendente | `HUBSPOT_ACCESS_TOKEN` |
+| **PEARCH** | `app/domains/sourcing/services/pearch_service.py` | Busca externa de candidatos (banco proprietário) | ⚠️ Config pendente | `PEARCH_API_KEY` |
+| **GitHub** | `app/domains/sourcing/services/github_service.py` | Sourcing de devs via GitHub API | ✅ Ativo | `GITHUB_TOKEN` (injetado pelo Replit) |
+
+---
+
+### 11.7 Autenticação e Multi-tenant (WorkOS)
+
+```
+Fluxo de autenticação na LIA:
+
+Usuário acessa wedotalent.cc
+         │
+         ▼
+┌─────────────────────────┐
+│   WorkOS SSO            │  ← Gerencia organizações (multi-tenant)
+│   - Google SSO          │     Cada empresa = 1 organização WorkOS
+│   - Microsoft SSO       │     session cookie: workos_session
+│   - SAML Enterprise     │
+└──────────┬──────────────┘
+           │ workosProfile.organizationId
+           ▼
+┌─────────────────────────┐
+│   Next.js Backend Proxy │  ← /api/backend-proxy/* lê workos_session
+│   getWorkOSSession()    │     injeta organizationId em todas as requests
+└──────────┬──────────────┘
+           │
+           ▼
+┌─────────────────────────┐
+│   FastAPI / Rails API   │  ← filtra dados pelo organizationId (tenant)
+└─────────────────────────┘
+```
+
+| Componente | Arquivo | Notas |
+|---|---|---|
+| **WorkOS SDK** | `plataforma-lia/src/lib/workos-session.ts` | Gerencia sessão multi-tenant |
+| **Organização** | todos os `/api/backend-proxy/*.ts` | injeta `organizationId` nas chamadas |
+| **SSO Providers** | WorkOS dashboard | Google, Microsoft, SAML configurados por empresa |
+
+> **Para o deploy:** Configurar `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` no Secret Manager. Registrar o domínio `wedotalent.cc` como redirect URI no WorkOS dashboard.
+
+---
+
+### 11.8 Observabilidade
+
+| Ferramenta | Camada | Arquivo | Config |
+|---|---|---|---|
+| **Sentry** | Frontend + Backend | `sentry.client.config.ts`, `sentry-sdk[fastapi]` | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` |
+| **Cloud Logging** | Backend | automático no Cloud Run | sem config adicional |
+| **LangSmith** | Agentes LLM | `app/config/langsmith.py` | `LANGSMITH_API_KEY` (opcional) |
+| **APM Cloud Monitoring** | GCP | via dashboards GCP | alertas configurados manualmente |
+
+---
+
+### 11.9 Plano de Ação para Integrações — O que falta plugar
+
+| Prioridade | Integração | Status atual | Ação necessária |
+|---|---|---|---|
+| 🔴 Crítico | WorkOS | Código pronto, sem credenciais prod | Criar conta WorkOS Prod, configurar domínio, adicionar secrets |
+| 🔴 Crítico | Claude (Anthropic) | Funciona no Replit | Mover chave para Secret Manager GCP |
+| 🔴 Crítico | Gemini (Google AI) | Funciona no Replit | Habilitar Vertex AI no projeto GCP + Secret Manager |
+| 🔴 Crítico | PostgreSQL (Cloud SQL) | Banco local no Replit | Provisionar Cloud SQL, rodar migrations |
+| 🔴 Crítico | Redis (Memorystore) | redis local no Replit | Provisionar Cloud Memorystore |
+| 🟡 Importante | Google Voice/STT | Código pronto | Habilitar APIs `speech.googleapis.com`, `texttospeech.googleapis.com` |
+| 🟡 Importante | Twilio Voice + WhatsApp | Config pendente no Replit | Adicionar `TWILIO_*` ao Secret Manager |
+| 🟡 Importante | Microsoft Teams Bot | Funciona (dev mode) | Registrar webhook URL de produção no Azure Bot Service |
+| 🟡 Importante | Resend (email) | Código pronto | `RESEND_API_KEY` no Secret Manager |
+| 🟡 Importante | RabbitMQ | Código pronto | Provisionar CloudAMQP ou VM e2-small |
+| 🟡 Importante | Sentry | Código pronto | Criar projeto Sentry, adicionar DSN |
+| 🟢 Desejável | HubSpot | Código pronto, config pendente | `HUBSPOT_ACCESS_TOKEN` quando necessário |
+| 🟢 Desejável | PEARCH | Código pronto, config pendente | `PEARCH_API_KEY` (contato com PEARCH) |
+| 🟢 Desejável | LangSmith | Código pronto | `LANGSMITH_API_KEY` quando quiser observabilidade de agentes |
+| 🟢 Desejável | OpenAI | Fallback implementado | `OPENAI_API_KEY` se quiser usar GPT como fallback |
+
+---
+
+## 12. Avaliação — Frontend (Next.js / React / Tailwind)
+
+> Status atual do `plataforma-lia/` para production readiness.
+
+### O que está sólido
+
+| Área | Situação |
+|---|---|
+| **Arquitetura** | Next.js 15 App Router, Server Components, Server Actions — padrão moderno |
+| **Design System** | Tailwind + shadcn/ui, componentes padronizados com variantes CVA |
+| **Tipagem** | TypeScript strict mode ativo, tipos bem definidos |
+| **Auth** | WorkOS SSO integrado, `workos_session` cookie, middleware de proteção de rotas |
+| **Proxy de API** | `/api/backend-proxy/*` centraliza todas as chamadas ao backend (boa separação) |
+| **Observabilidade** | Sentry integrado no frontend |
+| **Teams** | `@microsoft/teams-js` integrado, rotas de tab e auth criadas |
+| **WebSockets** | Chat em tempo real via WS implementado |
+| **Testes E2E** | Pasta `e2e/` com Playwright configurado |
+
+### O que precisa de atenção antes do deploy
+
+| Área | Problema | Ação |
+|---|---|---|
+| **Dockerfile** | Não existe ainda | Criar com `output: standalone` (Fase 1.1 deste guia) |
+| **Variáveis de ambiente** | Mistura de hardcoded e `.env.local` | Auditar e mover tudo para Secret Manager |
+| **WorkOS configuração prod** | `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` apontam para dev | Criar ambiente de prod no WorkOS e configurar redirect URIs |
+| **Error Boundaries** | Parcialmente implementado (`error-boundary.tsx`) | Verificar cobertura em pages críticas |
+| **Hydration** | Possíveis mismatches em páginas com dados de sessão | Testar com `next build` e revisar warnings |
+| **Bundle size** | Não auditado ainda | Rodar `next build` e checar `bundle-analyzer` |
+| **Cache headers** | Não configurado | Configurar `Cache-Control` para assets estáticos via Cloud CDN |
+| **CSP / Headers de segurança** | Não configurado em `next.config.js` | Adicionar `Content-Security-Policy`, `X-Frame-Options` |
+
+### Checklist de production readiness — Frontend
+
+- [ ] `Dockerfile` com `output: standalone` criado e testado
+- [ ] `next build` passa sem erros e sem warnings críticos
+- [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
+- [ ] Redirect URIs do WorkOS registrados para `wedotalent.cc`
+- [ ] Sentry DSN de produção configurado (`NEXT_PUBLIC_SENTRY_DSN`)
+- [ ] Todas as variáveis `NEXT_PUBLIC_*` auditadas (sem secrets expostos no cliente)
+- [ ] Headers de segurança adicionados no `next.config.js`
+- [ ] Error boundary verificado em pages críticas (funil, chat, vagas)
+- [ ] Teste E2E passando (login → criar vaga → chat LIA → mover candidato)
+- [ ] Teams Tab URL atualizada para domínio de produção
+
+---
+
+## 13. Avaliação — Camada de IA (Python / FastAPI / LangGraph)
+
+> Status atual do `lia-agent-system/` para production readiness.
+
+### Arquitetura de agentes
+
+```
+Requisição do usuário
+        │
+        ▼
+┌───────────────────┐
+│  FastAPI Router   │  ← 70+ endpoints organizados por domínio
+│  (Port 8001)      │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│  Intent Classifier │  ← Claude classifica a intenção da mensagem
+│  (fast_router.py) │     antes de invocar o agente correto
+└────────┬──────────┘
+         │
+    ┌────┴────────────────────────────┐
+    │           DOMÍNIOS (40+)        │
+    │                                 │
+    │  ┌─────────────┐ ┌──────────┐  │
+    │  │ CV Screening│ │ Sourcing │  │
+    │  │  (LangGraph)│ │ (Graph)  │  │
+    │  └─────────────┘ └──────────┘  │
+    │  ┌─────────────┐ ┌──────────┐  │
+    │  │Job Management│ │Analytics │  │
+    │  └─────────────┘ └──────────┘  │
+    │  ┌─────────────────────────┐   │
+    │  │ Communication (Teams/WA)│   │
+    │  └─────────────────────────┘   │
+    └─────────────────────────────────┘
+         │
+         ▼
+┌───────────────────┐
+│  PostgreSQL       │  ← 69 ferramentas registradas
+│  + pgvector       │     (candidate_tools, job_tools, analytics...)
+│  Redis + RabbitMQ │
+└───────────────────┘
+```
+
+### O que está sólido
+
+| Área | Situação |
+|---|---|
+| **LangGraph** | Grafos de agentes implementados por domínio (cv_screening, sourcing, interview_scheduling) |
+| **Tool Registry** | 69 ferramentas registradas e organizadas por domínio |
+| **Policy Engine** | Controle de acesso e regras de negócio centralizadas |
+| **Circuit Breakers** | Resiliência implementada para chamadas LLM e serviços externos |
+| **PII Masking** | LGPD: mascaramento de dados pessoais no logger ativo |
+| **HITL** | Human-in-the-loop implementado (aprovações antes de ações críticas) |
+| **Alembic** | Migrations versionadas para o banco |
+| **Dockerfile** | `Dockerfile` e `Dockerfile.prod` já existem |
+| **Sentry** | `sentry-sdk[fastapi]` integrado |
+| **WSI** | Voice Screening Interface implementado (triagem por voz) |
+
+### O que precisa de atenção antes do deploy
+
+| Área | Problema | Ação |
+|---|---|---|
+| **Shims de compatibilidade** | Funções privadas não exportadas pelos shims (import *) | ✅ Corrigido para os que encontramos — rodar `python3 -c "from app.main import app"` para validar todos |
+| **GOOGLE_APPLICATION_CREDENTIALS** | Speech/TTS precisam de service account | Configurar Workload Identity no Cloud Run |
+| **RabbitMQ** | Sem serviço gerenciado no GCP | Provisionar (ver Seção 11.5) |
+| **Banco compartilhado** | `DATABASE_URL` precisa apontar para Cloud SQL com Rails | Configurar variável de ambiente (não requer mudança de código) |
+| **Redis prod** | Sem autenticação configurada no código | Adicionar `REDIS_URL` com senha para Memorystore |
+| **Celery workers** | Não configurado para Cloud Run | Adicionar segundo serviço Cloud Run para workers Celery |
+| **LANGSMITH** | Opcional mas recomendado para debug em prod | Adicionar `LANGSMITH_API_KEY` |
+| **Secrets hardcoded** | Verificar se há chaves hardcoded em algum arquivo | Auditar com `grep -r "sk-ant\|AIza\|ghp_" app/` |
+
+### Checklist de production readiness — IA
+
+- [ ] `python3 -c "from app.main import app"` passa sem erros
+- [ ] `alembic upgrade head` roda clean no banco de produção
+- [ ] Todas as variáveis LLM (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`) no Secret Manager
+- [ ] Service Account com permissão para Speech API e TTS configurado
+- [ ] RabbitMQ provisionado e `CELERY_BROKER_URL` configurado
+- [ ] `REDIS_URL` apontando para Cloud Memorystore (com senha)
+- [ ] Celery worker rodando como serviço separado no Cloud Run
+- [ ] Circuit breakers validados para cada LLM (Claude, Gemini, OpenAI)
+- [ ] Sentry DSN backend configurado (`SENTRY_DSN`)
+- [ ] Teams webhook URL atualizada para URL de produção do Cloud Run
+
+---
+
+## 14. Avaliação — Rails API e Banco de Dados
+
+> `ats-api-copia` — o core de dados que permanece inalterado.
+
+### O que o Rails API provê
+
+| Recurso | Endpoint | Notas |
+|---|---|---|
+| Autenticação | `POST /v1/sessions` | Cria sessão (token JWT ou cookie) |
+| Perfil | `GET /v1/me` | Dados do usuário logado |
+| Candidatos | `GET/POST /v1/users/candidates` | CRUD de candidatos |
+| Vagas | `GET/POST /v1/users/jobs` | CRUD de vagas |
+| Aplicações | `GET /v1/users/applies` | Candidatos × Vagas |
+| Processos seletivos | `GET /v1/users/selective_processes` | Funil por vaga |
+| Mensagens | `GET/POST /v1/users/messages` | Histórico de comunicação |
+
+### Estratégia de integração LIA ↔ Rails
+
+```
+OPÇÃO A (atual — mais simples):
+  lia-agent-system ──REST──► ats-api-copia (Rails)
+  Simples, mantém fronteira clara entre serviços.
+  Latência adicional de ~5-20ms por request.
+
+OPÇÃO B (banco compartilhado — mais performático):
+  lia-agent-system ──SQL──► PostgreSQL (mesma instância que o Rails)
+  Zero latência de rede interna.
+  Requer acesso read/write direto às tabelas Rails.
+  Risco: quebrar integridade se escrita não seguir convenções Rails.
+```
+
+**Recomendação:** usar Opção A para o MVP de produção (REST). A Opção B pode ser adotada progressivamente para queries de leitura pesada (analytics, busca de candidatos).
+
+### Checklist de production readiness — Rails + Banco
+
+- [ ] Cloud SQL provisionado (PostgreSQL 16)
+- [ ] Banco Rails migrado para Cloud SQL (`rails db:migrate`)
+- [ ] Banco LIA criado na mesma instância (`lia_db`)
+- [ ] Migrations Alembic do FastAPI rodadas (`alembic upgrade head`)
+- [ ] Backups automáticos habilitados no Cloud SQL (retenção 7 dias)
+- [ ] Point-in-time recovery habilitado
+- [ ] IP do Cloud Run autorizado a conectar no Cloud SQL
+- [ ] Connection pooling configurado (pgBouncer ou Cloud SQL Proxy)
+- [ ] URL do Rails API configurada em `RAILS_API_URL` no Secret Manager
+
+---
+
+## 15. Arquitetura Multi-tenant e LLM Factory
+
+> O conceito central do produto: cada empresa usa a LIA com seu próprio contexto, dados e — futuramente — seu próprio modelo de linguagem.
+
+### 15.1 Como o multi-tenant funciona hoje
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                ISOLAMENTO POR TENANT (HOJE)                  │
+│                                                              │
+│  Empresa A (Tenant A)          Empresa B (Tenant B)         │
+│  organizationId: org_aaa       organizationId: org_bbb       │
+│                                                              │
+│  WorkOS SSO → workos_session   WorkOS SSO → workos_session   │
+│       │                               │                      │
+│       ▼                               ▼                      │
+│  /api/backend-proxy            /api/backend-proxy            │
+│  (injeta org_aaa em todas      (injeta org_bbb em todas      │
+│   as chamadas ao backend)       as chamadas ao backend)      │
+│       │                               │                      │
+│       ▼                               ▼                      │
+│  FastAPI filtra por            FastAPI filtra por            │
+│  company_id = org_aaa          company_id = org_bbb          │
+│       │                               │                      │
+│  MESMO banco PostgreSQL ──────────────┘                      │
+│  Dados isolados por company_id                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Nível de isolamento atual:** Lógico (por `company_id`/`organization_id` em todas as tabelas). Não é isolamento físico (banco separado por cliente). Para o mercado inicial, isso é suficiente e seguro.
+
+---
+
+### 15.2 LLM Factory — O conceito
+
+O produto prevê que cada empresa-cliente possa plugar seu próprio modelo de linguagem:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      LLM FACTORY                                │
+│                                                                 │
+│  empresa-a → ANTHROPIC_API_KEY = sk-ant-xxx  → Claude          │
+│  empresa-b → usa LIA SaaS (chave WeDO)       → Claude/Gemini   │
+│  empresa-c → OPENAI_API_KEY = sk-openai-xxx  → GPT-4o          │
+│  empresa-d → GEMINI_API_KEY = AIza-xxx       → Gemini Pro      │
+│                                                                 │
+│  Resolvido por:                                                 │
+│  app/orchestrator/fast_router.py — seleciona o LLM             │
+│  app/shared/resilience/circuit_breaker.py — fallback automático │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Status no código:** O `fast_router.py` e o `circuit_breaker.py` já implementam fallback entre modelos. A factory per-tenant (onde cada empresa usa sua própria chave) está no roadmap mas **não está completamente implementada** — hoje o sistema usa chaves globais (da WeDO).
+
+**Para implementar LLM Factory completa:**
+1. Adicionar tabela `company_llm_configs` (chave criptografada por company_id)
+2. Modificar o `fast_router.py` para carregar a chave do tenant antes de invocar o LLM
+3. Usar KMS do GCP para criptografar as chaves armazenadas no banco
+
+---
+
+### 15.3 WorkOS — Multi-tenant em produção
+
+```
+Plano WorkOS necessário para produção:
+  - Tier: Enterprise (suporta múltiplas organizações, SAML, SCIM)
+  - Configurações por ambiente: Dev, Staging, Production (3 ambientes)
+  - SSO providers por organização: Google, Microsoft, SAML genérico
+
+Configurações obrigatórias no WorkOS dashboard:
+  - Redirect URIs:
+      https://wedotalent.cc/api/auth/workos/callback
+      https://staging.wedotalent.cc/api/auth/workos/callback
+      http://localhost:5000/api/auth/workos/callback (dev)
+  - Allowed origins:
+      https://wedotalent.cc
+      https://staging.wedotalent.cc
+```
+
+---
+
+### 15.4 Evolução da arquitetura — Roadmap de multi-tenancy
+
+| Fase | Descrição | Complexidade |
+|---|---|---|
+| **Fase 1 (atual)** | Isolamento lógico por `company_id`, chaves LLM globais | ✅ Implementado |
+| **Fase 2** | LLM Factory: cada empresa usa sua própria chave | Média (2-3 sprints) |
+| **Fase 3** | Banco isolado por cliente (schema separado) | Alta (mídia enterprises) |
+| **Fase 4** | Modelo fine-tuned por cliente (dados próprios) | Alta (roadmap longo) |
+
+---
+
+## 16. Checklist Final — Go-Live
+
+> Lista consolidada de todos os itens deste documento. Use como board de acompanhamento antes do go-live.
+
+### Código (Replit + time dev)
+
+**Frontend:**
+- [ ] Dockerfile Next.js criado com `output: standalone`
+- [ ] `next build` sem erros
+- [ ] WorkOS prod configurado (API key + redirect URIs)
+- [ ] Headers de segurança em `next.config.js`
+- [ ] Sentry DSN frontend
+- [ ] Teams Tab URL atualizada para prod
+- [ ] Teste E2E completo passando
+
+**AI Agent:**
+- [ ] `python3 -c "from app.main import app"` sem erros
+- [ ] Migrations Alembic clean
+- [ ] Todos os secrets movidos para Secret Manager
+- [ ] Celery worker configurado como serviço separado
+- [ ] Service Account para Google Speech/TTS
+- [ ] Teams webhook URL atualizada para URL prod Cloud Run
+
+### Infraestrutura (time infra)
+
+**GCP:**
+- [ ] Projeto GCP criado com billing ativo
+- [ ] APIs habilitadas: Cloud Run, Cloud SQL, Cloud Memorystore, Speech, TTS, Secret Manager, Container Registry
+- [ ] Cloud SQL PostgreSQL 16 provisionado
+- [ ] Cloud Memorystore (Redis) provisionado
+- [ ] RabbitMQ provisionado (CloudAMQP ou VM)
+- [ ] Secret Manager populado (todos os secrets)
+- [ ] Cloud Run: `lia-frontend` deployado
+- [ ] Cloud Run: `lia-agent` deployado
+- [ ] Cloud Run: `celery-worker` deployado (serviço adicional)
+- [ ] Load Balancer configurado com SSL
+- [ ] DNS: `wedotalent.cc` + `staging.wedotalent.cc` + APIs
+
+**Staging:**
+- [ ] Cloud Run staging deployado (frontend + agent)
+- [ ] Banco staging separado do banco de produção
+- [ ] GitHub Actions: develop → staging automático
+- [ ] GitHub Actions: main → prod automático
+
+### Integrações (time produto + infra)
+
+- [ ] WorkOS: ambiente de produção criado e configurado
+- [ ] Anthropic: `ANTHROPIC_API_KEY` no Secret Manager prod
+- [ ] Google AI: `GEMINI_API_KEY` no Secret Manager prod
+- [ ] Google Speech/TTS: APIs habilitadas no projeto GCP
+- [ ] Twilio: credenciais prod no Secret Manager
+- [ ] Microsoft Teams: webhook URL de prod registrado no Azure
+- [ ] Resend: `RESEND_API_KEY` no Secret Manager
+- [ ] Sentry: projetos criados (frontend + backend), DSNs configurados
+- [ ] WhatsApp Meta: (se pronto) credenciais de prod
+
+### Validação funcional (time completo)
+
+- [ ] Login Google SSO (via WorkOS)
+- [ ] Login Microsoft SSO (via WorkOS)
+- [ ] Criação de vaga
+- [ ] Upload de CV + triagem por Claude
+- [ ] Triagem por voz (Twilio + Google STT)
+- [ ] Chat com LIA no funil
+- [ ] Bot Teams respondendo em prod
+- [ ] Mover candidato no kanban
+- [ ] Geração de relatório
+- [ ] Notificação por email (Resend)
+- [ ] Notificação por WhatsApp (se ativo)
+- [ ] LGPD: solicitação de exclusão de dados (endpoint admin)
+- [ ] Multi-tenant: criar 2 empresas separadas, confirmar isolamento de dados
+
+---
+
 ## Repositórios e Contatos
 
 | Repositório | URL | Responsável |
@@ -745,3 +1258,4 @@ gcloud run services update lia-agent \
 
 *Última atualização: Abril 2026*
 *Domínio: wedotalent.cc · Região GCP: us-central1 · Stack: Next.js 15 + FastAPI + Rails 7*
+*Integrações mapeadas: Claude, Gemini, OpenAI, WorkOS, Twilio Voice, Google STT/TTS, Teams, WhatsApp, Resend, HubSpot, PEARCH, Redis, RabbitMQ, Celery, Sentry, LangSmith*
