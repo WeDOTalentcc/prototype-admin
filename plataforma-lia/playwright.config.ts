@@ -24,10 +24,7 @@ export default defineConfig({
   timeout: 45000,
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ||
-      (process.env.REPLIT_DEV_DOMAIN
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : 'http://localhost:5000'),
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
     trace: 'on-first-retry',
     screenshot: 'on',
     video: 'retain-on-failure',

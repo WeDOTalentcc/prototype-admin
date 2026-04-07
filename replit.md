@@ -83,8 +83,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 # E2E Testing Status
 - 20 Playwright test files in `plataforma-lia/e2e/tests/` (auth, chat, kanban, wizard, search)
 - Playwright config at `plataforma-lia/playwright.config.ts`
-- Tests require Chromium system libraries not available in Replit — use Replit's built-in testing tool instead
-- Auth fixture uses WorkOS SSO credentials; dev environment uses auto-login
+- Chromium system libraries installed via Nix; config uses system Chromium automatically
+- Auth fixture bypasses WorkOS by setting cookies directly (dev mode middleware skips JWT verification)
+- Proven results: auth 6/6, kanban 6/7, wizard 12/13 — chat tests too heavy for Replit timeout
+- Pendência: rodar suíte completa com WorkOS real em CI (GitHub Actions)
 
 # External Dependencies
 - Anthropic (Claude API)

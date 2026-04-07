@@ -1121,15 +1121,26 @@ Usuário acessa wedotalent.cc
 | **Observabilidade** | Sentry integrado no frontend |
 | **Teams** | `@microsoft/teams-js` integrado, rotas de tab e auth criadas |
 | **WebSockets** | Chat em tempo real via WS implementado |
-| **Testes E2E** | Pasta `e2e/` com Playwright configurado |
+| **Testes E2E** | Pasta `e2e/` com 20 arquivos Playwright — auth fixture via cookie bypass (dev mode) |
+
+#### Resultados E2E (07/04/2026 — Replit, Chromium do sistema via Nix)
+
+| Grupo | Passaram | Falharam | Notas |
+|---|---|---|---|
+| **Auth** (login.spec.ts) | 6/6 | 0 | Testa UI da página de login |
+| **Kanban** (move-candidate.spec.ts) | 6/7 | 1 | Falha: `data-testid="kanban-column"` não existe na página |
+| **Wizard steps 1-3** | 12/13 | 1 | Falha: texto esperado diferente do renderizado |
+| **Wizard steps 4-7** | — | — | Timeout no Replit (45s/teste × muitos testes) |
+| **Chat** (9 arquivos) | — | — | Pesados demais para Replit (precisam CI dedicado) |
+
+**Pendência**: Rodar suíte completa com credenciais WorkOS reais em CI (GitHub Actions) para validação de produção.
 
 ### O que precisa de atenção antes do deploy
 
 | Área | Problema | Ação |
 |---|---|---|
 | **Mockups pendentes** | Existem mockups de componentes criados no Replit (worktrees agent-a92b041a, agent-af767ad0) que ainda não foram revisados, aprovados ou integrados ao produto | Revisar todos os mockups abertos, aprovar ou descartar, e integrar os aprovados ao código antes do deploy |
-| **Dockerfile** | Não existe ainda | Criar com `output: standalone` (Fase 1.1 deste guia) |
-| **Variáveis de ambiente** | Mistura de hardcoded e `.env.local` | Auditar e mover tudo para Secret Manager |
+| **Variáveis de ambiente** | `.env.example` documentado, `.env.local` tem 2 vars (restante vem de integrações Replit) | Em prod: mover tudo para Secret Manager |
 | **WorkOS configuração prod** | `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` apontam para dev | Criar ambiente de prod no WorkOS e configurar redirect URIs |
 | **Error Boundaries** | Parcialmente implementado (`error-boundary.tsx`) | Verificar cobertura em pages críticas |
 | **Hydration** | Possíveis mismatches em páginas com dados de sessão | Testar com `next build` e revisar warnings |
@@ -1140,7 +1151,7 @@ Usuário acessa wedotalent.cc
 ### Checklist de production readiness — Frontend
 
 - [ ] Todos os mockups pendentes revisados — aprovados integrados ao código, descartados removidos
-- [ ] `Dockerfile` com `output: standalone` criado e testado
+- [x] `Dockerfile` com `output: standalone` criado (`plataforma-lia/Dockerfile`)
 - [ ] `next build` passa sem erros e sem warnings críticos
 - [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
 - [ ] Redirect URIs do WorkOS registrados para `wedotalent.cc`

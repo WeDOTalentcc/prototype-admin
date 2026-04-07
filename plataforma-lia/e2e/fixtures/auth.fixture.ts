@@ -6,39 +6,48 @@ export interface AuthFixture {
 }
 
 export const test = base.extend<AuthFixture>({
-  authenticatedPage: async ({ page }, use) => {
-    await page.goto('/login');
+  authenticatedPage: async ({ page, context }, use) => {
+    await context.addCookies([
+      {
+        name: 'lia_access_token',
+        value: 'e2e-test-token',
+        domain: 'localhost',
+        path: '/',
+      },
+      {
+        name: 'lia_auth_method',
+        value: 'jwt',
+        domain: 'localhost',
+        path: '/',
+      },
+    ]);
+
+    await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
-    
-    const emailInput = page.locator('input[type="email"], input[name="email"]');
-    const passwordInput = page.locator('input[type="password"], input[name="password"]');
-    
-    if (await emailInput.isVisible()) {
-      await emailInput.fill(process.env.TEST_USER_EMAIL || 'teste@wedotalent.com');
-      await passwordInput.fill(process.env.TEST_USER_PASSWORD || 'teste123');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('**/dashboard**', { timeout: 10000 }).catch(() => {});
-    }
-    
     await use(page);
   },
 
-  login: async ({ page }, use) => {
-    const loginFn = async (email?: string, password?: string) => {
-      await page.goto('/login');
+  login: async ({ page, context }, use) => {
+    const loginFn = async (_email?: string, _password?: string) => {
+      await context.addCookies([
+        {
+          name: 'lia_access_token',
+          value: 'e2e-test-token',
+          domain: 'localhost',
+          path: '/',
+        },
+        {
+          name: 'lia_auth_method',
+          value: 'jwt',
+          domain: 'localhost',
+          path: '/',
+        },
+      ]);
+
+      await page.goto('/dashboard');
       await page.waitForLoadState('networkidle');
-      
-      const emailInput = page.locator('input[type="email"], input[name="email"]');
-      const passwordInput = page.locator('input[type="password"], input[name="password"]');
-      
-      if (await emailInput.isVisible()) {
-        await emailInput.fill(email || process.env.TEST_USER_EMAIL || 'teste@wedotalent.com');
-        await passwordInput.fill(password || process.env.TEST_USER_PASSWORD || 'teste123');
-        await page.click('button[type="submit"]');
-        await page.waitForLoadState('networkidle');
-      }
     };
-    
+
     await use(loginFn);
   },
 });
