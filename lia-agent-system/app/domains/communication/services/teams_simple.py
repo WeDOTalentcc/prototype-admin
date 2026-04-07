@@ -44,7 +44,8 @@ class SimpleTeamsBot:
         # Use dedicated TEAMS_APP_TENANT_ID setting; AZURE_TENANT_ID is for Graph API and may differ.
         tenant_id = (
             getattr(settings, "TEAMS_APP_TENANT_ID", None)
-            or "fe109ed2-b383-472c-9bee-3cd2f968e84b"
+            or getattr(settings, "AZURE_TENANT_ID", None)
+            or "botframework.com"
         )
         token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         logger.info(f"[Teams] Acquiring token via {token_url}")
@@ -69,7 +70,21 @@ class SimpleTeamsBot:
             expires_in = token_data.get("expires_in", 3600)
             from datetime import timedelta
             self._token_expires = datetime.utcnow() + timedelta(seconds=expires_in - 300)  # 5 min buffer
-            
+
+            # Decode token payload (no verification) to log key claims for debugging
+            try:
+                import base64, json as _json
+                payload_b64 = self._access_token.split(".")[1]
+                payload_b64 += "=" * (4 - len(payload_b64) % 4)
+                claims = _json.loads(base64.b64decode(payload_b64))
+                logger.info(
+                    f"[Teams] Token claims: appid={claims.get('appid')} "
+                    f"tid={claims.get('tid')} aud={claims.get('aud')} "
+                    f"iss={claims.get('iss', '')[:60]}"
+                )
+            except Exception:
+                pass
+
             return self._access_token
     
     async def process_activity(self, activity: dict[str, Any]) -> Any | None:
@@ -266,7 +281,11 @@ class SimpleTeamsBot:
                 )
                 
                 if response.status_code not in [200, 201]:
-                    logger.error(f"Failed to send message: {response.text}")
+                    logger.error(
+                        f"Failed to send message: HTTP {response.status_code} | URL: {url} "
+                        f"| WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} "
+                        f"| Body: {response.text[:500]}"
+                    )
                     return False
                 
                 logger.info("Message sent successfully to Teams")
@@ -329,7 +348,10 @@ class SimpleTeamsBot:
                 )
                 
                 if response.status_code not in [200, 201]:
-                    logger.error(f"Failed to send card: HTTP {response.status_code} | URL: {url} | Body: {response.text[:500]}")
+                    logger.error(
+                        f"Failed to send card: HTTP {response.status_code} | URL: {url} "
+                        f"| Headers: {dict(response.headers)} | Body: {response.text[:500]}"
+                    )
                     return False
                 
                 logger.info("Adaptive card sent successfully to Teams")
