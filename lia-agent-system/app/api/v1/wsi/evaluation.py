@@ -16,6 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.voice.repositories.wsi_repository import WsiRepository
 
 from ._shared import (
     _BIAS_TERMS,
@@ -292,10 +293,8 @@ async def analyze_response(
 
     question_text = ""
     try:
-        result = await db.execute(text("""
-            SELECT question_text, competency FROM wsi_questions WHERE id = :question_id
-        """), {"question_id": request.question_id})
-        row = result.fetchone()
+        _repo = WsiRepository(db)
+        row = await _repo.get_question_text_and_competency(request.question_id)
         if row:
             question_text = row[0]
     except Exception:
@@ -372,31 +371,22 @@ Return ONLY valid JSON:
 
     analysis_id = str(uuid.uuid4())
     try:
-        await db.execute(text("""
-            INSERT INTO wsi_response_analyses (
-                id, session_id, question_id, candidate_id, job_vacancy_id,
-                competency, response_text, bloom_level, dreyfus_level,
-                evidences, red_flags, final_score, justification
-            )
-            VALUES (:id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
-                    :competency, :response_text, :bloom_level, :dreyfus_level,
-                    :evidences::jsonb, :red_flags::jsonb, :final_score, :justification)
-            ON CONFLICT (id) DO NOTHING
-        """), {
-            "id": analysis_id,
-            "session_id": request.session_id,
-            "question_id": request.question_id,
-            "candidate_id": request.candidate_id,
-            "job_vacancy_id": "",
-            "competency": "General",
-            "response_text": request.response_text,
-            "bloom_level": bloom_score,
-            "dreyfus_level": dreyfus_level,
-            "evidences": json.dumps(data.get("evidences", [])),
-            "red_flags": json.dumps(data.get("red_flags", [])),
-            "final_score": data.get("score", 3.0),
-            "justification": data.get("feedback", "")
-        })
+        _repo = WsiRepository(db)
+        await _repo.insert_response_analysis_simple(
+            analysis_id=analysis_id,
+            session_id=request.session_id,
+            question_id=request.question_id,
+            candidate_id=request.candidate_id,
+            job_vacancy_id="",
+            competency="General",
+            response_text=request.response_text,
+            bloom_level=bloom_score,
+            dreyfus_level=dreyfus_level,
+            evidences=data.get("evidences", []),
+            red_flags=data.get("red_flags", []),
+            final_score=data.get("score", 3.0),
+            justification=data.get("feedback", ""),
+        )
     except Exception as e:
         logger.warning(f"Failed to save analysis: {e}")
 

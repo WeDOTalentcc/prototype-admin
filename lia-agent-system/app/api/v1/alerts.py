@@ -7,7 +7,6 @@ from typing import Any, cast
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -30,6 +29,10 @@ def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-
     return x_company_id
 
 
+def get_alert_repo(db: AsyncSession = Depends(get_db)) -> AlertRepository:
+    return AlertRepository(db)
+
+
 class AlertResponse(BaseModel):
     """Response model for an alert."""
     id: str
@@ -46,7 +49,7 @@ class AlertResponse(BaseModel):
     acknowledged_at: datetime | None
     resolved_at: datetime | None
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -170,18 +173,12 @@ DEFAULT_ALERTS = [
 @router.get("/config", response_model=AlertConfigResponse)
 async def get_alert_config(
     company_id: str = Depends(require_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Get current alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
     try:
-        result = await db.execute(
-            select(AlertConfig).where(
-                AlertConfig.is_active,
-                AlertConfig.company_id == company_id
-            ).order_by(AlertConfig.created_at.desc()).limit(1)
-        )
-        config = result.scalar_one_or_none()
-        
+        config = await repo.get_active_config_for_company(company_id)
+
         if config:
             alerts_value = cast(list[dict[Any, Any]], config.alerts) if config.alerts else DEFAULT_ALERTS
             freq_value = cast(str, config.briefing_frequency) if config.briefing_frequency else "daily"
@@ -189,7 +186,7 @@ async def get_alert_config(
                 alerts=alerts_value,
                 briefing_frequency=freq_value
             )
-        
+
         return AlertConfigResponse(
             alerts=DEFAULT_ALERTS,
             briefing_frequency="daily"
@@ -203,44 +200,35 @@ async def get_alert_config(
 async def update_alert_config(
     data: AlertConfigRequest,
     company_id: str = Depends(require_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: AlertRepository = Depends(get_alert_repo),
 ):
     """Update alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
     try:
-        result = await db.execute(
-            select(AlertConfig).where(
-                AlertConfig.is_active,
-                AlertConfig.company_id == company_id
-            ).order_by(AlertConfig.created_at.desc()).limit(1)
-        )
-        config = result.scalar_one_or_none()
-        
+        config = await repo.get_active_config_for_company(company_id)
+
         alerts_data = [a.model_dump() for a in data.alerts]
-        
+
         if config:
-            config.alerts = alerts_data  # type: ignore[assignment]
-            config.briefing_frequency = data.briefing_frequency  # type: ignore[assignment]
-            config.updated_at = datetime.utcnow()  # type: ignore[assignment]
+            updated = await repo.update_config(config, {
+                "alerts": alerts_data,
+                "briefing_frequency": data.briefing_frequency,
+                "updated_at": datetime.utcnow(),
+            })
         else:
-            config = AlertConfig(
-                company_id=company_id,
-                alerts=alerts_data,
-                briefing_frequency=data.briefing_frequency,
-                is_active=True
-            )
-            db.add(config)
-        
-        await db.flush()
-        await db.refresh(config)
-        
+            updated = await repo.create_config({
+                "company_id": company_id,
+                "alerts": alerts_data,
+                "briefing_frequency": data.briefing_frequency,
+                "is_active": True,
+            })
+
         logger.info(f"Alert config updated successfully for company {company_id}")
-        
+
         return AlertConfigResponse(
-            alerts=cast(list[dict[Any, Any]], config.alerts),
-            briefing_frequency=cast(str, config.briefing_frequency)
+            alerts=cast(list[dict[Any, Any]], updated.alerts),
+            briefing_frequency=cast(str, updated.briefing_frequency)
         )
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating alert config: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -301,25 +289,22 @@ DEFAULT_ALERT_PREFERENCES = [
 async def get_alert_preferences(
     user_id: str = Query(..., description="User ID (required)"),
     company_id: str = Depends(require_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: AlertRepository = Depends(get_alert_repo),
 ):
-    """Get user's alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
+    """Get users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
     try:
-        result = await db.execute(
-            select(AlertPreference).where(
-                AlertPreference.company_id == company_id,
-                AlertPreference.user_id == user_id
-            )
+        preferences = await repo.list_preferences_for_company_user(
+            company_id=company_id,
+            user_id=user_id,
         )
-        preferences = result.scalars().all()
-        
+
         if preferences:
             return {
                 "preferences": [pref.to_dict() for pref in preferences],
                 "user_id": user_id,
                 "company_id": company_id
             }
-        
+
         default_prefs = []
         for pref in DEFAULT_ALERT_PREFERENCES:
             default_prefs.append({
@@ -328,7 +313,7 @@ async def get_alert_preferences(
                 "user_id": user_id,
                 **pref
             })
-        
+
         return {
             "preferences": default_prefs,
             "user_id": user_id,
@@ -343,61 +328,37 @@ async def get_alert_preferences(
 async def create_alert_preferences(
     data: AlertPreferenceRequest,
     company_id: str = Depends(require_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: AlertRepository = Depends(get_alert_repo),
 ):
-    """Create or update user's alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
+    """Create or update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
     try:
         if not data.preferences:
             raise HTTPException(status_code=400, detail="Preferences list cannot be empty")
-        
-        created_preferences = []
+
         user_id = data.preferences[0].user_id
-        
         if not user_id:
             raise HTTPException(status_code=400, detail="user_id is required in preferences")
-        
+
+        created_preferences = []
         for pref_data in data.preferences:
-            result = await db.execute(
-                select(AlertPreference).where(
-                    AlertPreference.company_id == company_id,
-                    AlertPreference.user_id == pref_data.user_id,
-                    AlertPreference.alert_type == pref_data.alert_type
-                )
+            pref = await repo.upsert_preference_by_type(
+                company_id=company_id,
+                user_id=pref_data.user_id,
+                alert_type=pref_data.alert_type,
+                data={
+                    "is_enabled": pref_data.is_enabled,
+                    "threshold": pref_data.threshold,
+                    "channel_email": pref_data.channels.email,
+                    "channel_bell": pref_data.channels.bell,
+                    "channel_teams": pref_data.channels.teams,
+                    "channel_whatsapp": pref_data.channels.whatsapp,
+                    "cooldown_hours": pref_data.cooldown_hours,
+                },
             )
-            existing = result.scalar_one_or_none()
-            
-            if existing:
-                existing.is_enabled = pref_data.is_enabled  # type: ignore
-                existing.threshold = pref_data.threshold  # type: ignore
-                existing.channel_email = pref_data.channels.email  # type: ignore
-                existing.channel_bell = pref_data.channels.bell  # type: ignore
-                existing.channel_teams = pref_data.channels.teams  # type: ignore
-                existing.channel_whatsapp = pref_data.channels.whatsapp  # type: ignore
-                existing.cooldown_hours = pref_data.cooldown_hours  # type: ignore
-                existing.updated_at = datetime.utcnow()  # type: ignore
-                created_preferences.append(existing)
-            else:
-                new_pref = AlertPreference(
-                    company_id=company_id,
-                    user_id=pref_data.user_id,
-                    alert_type=pref_data.alert_type,
-                    is_enabled=pref_data.is_enabled,
-                    threshold=pref_data.threshold,
-                    channel_email=pref_data.channels.email,
-                    channel_bell=pref_data.channels.bell,
-                    channel_teams=pref_data.channels.teams,
-                    channel_whatsapp=pref_data.channels.whatsapp,
-                    cooldown_hours=pref_data.cooldown_hours
-                )
-                db.add(new_pref)
-                created_preferences.append(new_pref)
-        
-        
-        for pref in created_preferences:
-            await db.refresh(pref)
-        
+            created_preferences.append(pref)
+
         logger.info(f"Alert preferences created/updated for user {user_id} in company {company_id}")
-        
+
         return {
             "preferences": [pref.to_dict() for pref in created_preferences],
             "user_id": user_id,
@@ -407,7 +368,6 @@ async def create_alert_preferences(
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating alert preferences: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -416,7 +376,7 @@ async def create_alert_preferences(
 async def update_alert_preferences(
     data: AlertPreferenceRequest,
     company_id: str = Depends(require_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: AlertRepository = Depends(get_alert_repo),
 ):
-    """Update user's alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
-    return await create_alert_preferences(data, company_id, db)
+    """Update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
+    return await create_alert_preferences(data, company_id, repo)

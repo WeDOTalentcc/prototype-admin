@@ -8,7 +8,6 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -26,6 +25,12 @@ from app.models.recruitment_email_template import RecruitmentEmailTemplate, Recr
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/recruitment-email-templates", tags=["recruitment-email-templates"])
+
+
+def get_recruitment_email_template_repo(
+    db: AsyncSession = Depends(get_db),
+) -> RecruitmentEmailTemplateRepository:
+    return RecruitmentEmailTemplateRepository(db)
 
 
 class TemplateResponse(BaseModel):
@@ -134,7 +139,7 @@ async def list_recruitment_email_templates(
             template_type=template_type,
             is_active=is_active
         )
-        
+
         return TemplateListResponse(
             total=len(templates),
             items=[template_to_response(t) for t in templates]
@@ -206,13 +211,13 @@ async def get_template_by_stage(
             company_id=company_id,
             template_type=template_type
         )
-        
+
         if not template:
             raise HTTPException(
                 status_code=404,
-                detail=f"No template found for stage '{stage_name}' with type '{template_type}'"
+                detail=f"No template found for stage {stage_name} with type {template_type}"
             )
-        
+
         return template_to_response(template)
     except HTTPException:
         raise
@@ -224,22 +229,17 @@ async def get_template_by_stage(
 @router.get("/{template_id}", response_model=TemplateResponse)
 async def get_template_by_id(
     template_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
     """
     Get a specific template by ID.
     """
     try:
-        result = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                RecruitmentEmailTemplate.id == uuid_module.UUID(template_id)
-            )
-        )
-        template = result.scalar_one_or_none()
-        
+        template = await repo.get_by_id(uuid_module.UUID(template_id))
+
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
-        
+
         return template_to_response(template)
     except HTTPException:
         raise
@@ -252,40 +252,29 @@ async def get_template_by_id(
 async def update_template(
     template_id: str,
     update_data: TemplateUpdateRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
     """
     Update a recruitment email template.
     System templates cannot be modified directly.
     """
     try:
-        result = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                RecruitmentEmailTemplate.id == uuid_module.UUID(template_id)
-            )
-        )
-        template = result.scalar_one_or_none()
-        
+        template = await repo.get_by_id(uuid_module.UUID(template_id))
+
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
-        
+
         if template.is_system:
             raise HTTPException(
                 status_code=403,
                 detail="System templates cannot be modified. Clone to company first."
             )
-        
+
         update_fields = update_data.model_dump(exclude_unset=True)
-        
-        for field, value in update_fields.items():
-            setattr(template, field, value)
-        
-        template.version = (template.version or 1) + 1
-        
-        await db.flush()
-        await db.refresh(template)
-        
-        return template_to_response(template)
+        update_fields["version"] = (template.version or 1) + 1
+
+        updated = await repo.update(template, update_fields)
+        return template_to_response(updated)
     except HTTPException:
         raise
     except Exception as e:
@@ -305,7 +294,7 @@ async def seed_templates(
     """
     try:
         created_templates = await seed_default_templates(db=db, company_id=company_id)
-        
+
         return SeedResponse(
             message=f"Successfully seeded {len(created_templates)} templates" + (f" for company {company_id}" if company_id else " as system templates"),
             created_count=len(created_templates),
@@ -327,7 +316,7 @@ async def clone_system_templates(
     """
     try:
         created_templates = await clone_templates_for_company(db=db, company_id=company_id)
-        
+
         return SeedResponse(
             message=f"Successfully cloned {len(created_templates)} templates for company {company_id}",
             created_count=len(created_templates),
@@ -342,28 +331,23 @@ async def clone_system_templates(
 async def preview_template_with_data(
     template_id: str,
     preview_request: TemplatePreviewRequest,
-    db: AsyncSession = Depends(get_db)
+    repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
     """
     Preview a template with provided or sample data.
     """
     try:
-        result = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                RecruitmentEmailTemplate.id == uuid_module.UUID(template_id)
-            )
-        )
-        template = result.scalar_one_or_none()
-        
+        template = await repo.get_by_id(uuid_module.UUID(template_id))
+
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
-        
+
         variables = {**SAMPLE_DATA}
         if preview_request.variables:
             variables.update(preview_request.variables)
-        
+
         rendered = render_template(template, variables)
-        
+
         return TemplatePreviewResponse(
             subject=rendered["subject"],
             body_html=rendered["body_html"],
@@ -395,19 +379,19 @@ async def preview_stage_template(
             company_id=company_id,
             template_type=template_type
         )
-        
+
         if not template:
             raise HTTPException(
                 status_code=404,
-                detail=f"No template found for stage '{stage_name}'"
+                detail=f"No template found for stage {stage_name}"
             )
-        
+
         variables = {**SAMPLE_DATA}
         if preview_request.variables:
             variables.update(preview_request.variables)
-        
+
         rendered = render_template(template, variables)
-        
+
         return TemplatePreviewResponse(
             subject=rendered["subject"],
             body_html=rendered["body_html"],
@@ -424,31 +408,26 @@ async def preview_stage_template(
 @router.delete("/{template_id}", response_model=None)
 async def delete_template(
     template_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
     """
     Delete a recruitment email template.
     System templates cannot be deleted.
     """
     try:
-        result = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                RecruitmentEmailTemplate.id == uuid_module.UUID(template_id)
-            )
-        )
-        template = result.scalar_one_or_none()
-        
+        template = await repo.get_by_id(uuid_module.UUID(template_id))
+
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
-        
+
         if template.is_system:
             raise HTTPException(
                 status_code=403,
                 detail="System templates cannot be deleted"
             )
-        
-        await db.delete(template)
-        
+
+        await repo.delete(template)
+
         return {"message": "Template deleted successfully", "id": template_id}
     except HTTPException:
         raise

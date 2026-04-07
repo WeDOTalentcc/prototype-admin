@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.communication.repositories.whatsapp_repository import WhatsappRepository
 from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
 from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
 from app.domains.communication.services.whatsapp_provider import ProviderType
@@ -51,13 +52,9 @@ class PhoneNumberMapping:
             return cls._mapping_cache[phone_number_id]
         
         try:
-            from app.models.company import Company
-            result = await db.execute(
-                select(Company.id).where(Company.whatsapp_phone_number_id == phone_number_id)
-            )
-            company = result.scalar_one_or_none()
-            if company:
-                company_id = str(company)
+            _repo = WhatsappRepository(db)
+            company_id = await _repo.get_company_id_by_meta_phone(phone_number_id)
+            if company_id:
                 cls._mapping_cache[phone_number_id] = company_id
                 return company_id
         except Exception as e:
@@ -350,14 +347,10 @@ async def receive_twilio_webhook(
 async def _get_company_from_twilio_number(twilio_number: str, db: AsyncSession) -> str | None:
     """Get company_id from Twilio WhatsApp number."""
     try:
-        from app.models.company import Company
-        
-        result = await db.execute(
-            select(Company.id).where(Company.twilio_whatsapp_number == twilio_number)
-        )
-        company = result.scalar_one_or_none()
+        _repo = WhatsappRepository(db)
+        company = await _repo.get_company_id_by_twilio_number(twilio_number)
         if company:
-            return str(company)
+            return company
     except Exception as e:
         logger.warning(f"Could not query company by Twilio number: {e}")
     
@@ -450,22 +443,13 @@ async def list_conversations(
     - Admins can optionally specify a different company_id
     - Falls back to demo_company for unauthenticated requests in development
     """
-    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
-    
     if not company_id:
         raise HTTPException(status_code=400, detail="company_id is required")
     target_company_id = company_id
-    
-    query = select(WhatsAppConversation).where(
-        WhatsAppConversation.company_id == target_company_id
-    ).order_by(WhatsAppConversation.created_at.desc()).limit(limit)
-    
-    if status:
-        query = query.where(WhatsAppConversation.state == ConversationState(status))
-    
-    result = await db.execute(query)
-    conversations = result.scalars().all()
-    
+
+    repo = WhatsappRepository(db)
+    conversations = await repo.list_conversations(target_company_id, status, limit)
+
     return {
         "count": len(conversations),
         "conversations": [c.to_dict() for c in conversations]
@@ -518,16 +502,9 @@ async def list_conversations_authenticated(
             raise HTTPException(status_code=400, detail="company_id is required")
         target_company_id = company_id
     
-    query = select(WhatsAppConversation).where(
-        WhatsAppConversation.company_id == target_company_id
-    ).order_by(WhatsAppConversation.created_at.desc()).limit(limit)
-    
-    if status:
-        query = query.where(WhatsAppConversation.state == ConversationState(status))
-    
-    result = await db.execute(query)
-    conversations = result.scalars().all()
-    
+    repo = WhatsappRepository(db)
+    conversations = await repo.list_conversations(target_company_id, status, limit)
+
     return {
         "count": len(conversations),
         "conversations": [c.to_dict() for c in conversations]

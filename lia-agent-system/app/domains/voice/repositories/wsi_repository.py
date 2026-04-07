@@ -415,3 +415,171 @@ class WsiRepository:
         """), {"job_vacancy_id": job_vacancy_id})
         return result.fetchall()
 
+
+    # ------------------------------------------------------------------
+    # Phase-2 additions
+    # ------------------------------------------------------------------
+
+    async def get_question_text_and_competency(self, question_id: str) -> Any:
+        """Fetch (question_text, competency) for a question — used in analyze-response."""
+        result = await self.db.execute(text("""
+            SELECT question_text, competency FROM wsi_questions WHERE id = :question_id
+        """), {"question_id": question_id})
+        return result.fetchone()
+
+    async def insert_response_analysis_simple(
+        self,
+        analysis_id: str,
+        session_id: str,
+        question_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        competency: str,
+        response_text: str,
+        bloom_level: int,
+        dreyfus_level: int,
+        evidences: list,
+        red_flags: list,
+        final_score: float,
+        justification: str,
+    ) -> None:
+        """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING)."""
+        await self.db.execute(text("""
+            INSERT INTO wsi_response_analyses (
+                id, session_id, question_id, candidate_id, job_vacancy_id,
+                competency, response_text, bloom_level, dreyfus_level,
+                evidences, red_flags, final_score, justification
+            )
+            VALUES (:id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
+                    :competency, :response_text, :bloom_level, :dreyfus_level,
+                    :evidences::jsonb, :red_flags::jsonb, :final_score, :justification)
+            ON CONFLICT (id) DO NOTHING
+        """), {
+            "id": analysis_id,
+            "session_id": session_id,
+            "question_id": question_id,
+            "candidate_id": candidate_id,
+            "job_vacancy_id": job_vacancy_id,
+            "competency": competency,
+            "response_text": response_text,
+            "bloom_level": bloom_level,
+            "dreyfus_level": dreyfus_level,
+            "evidences": json.dumps(evidences),
+            "red_flags": json.dumps(red_flags),
+            "final_score": final_score,
+            "justification": justification,
+        })
+
+    async def upsert_result(
+        self,
+        result_id: str,
+        session_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        technical_wsi: float,
+        behavioral_wsi: float,
+        overall_wsi: float,
+        classification: str,
+    ) -> None:
+        """Insert WSI result, silently skip if id already exists (ON CONFLICT DO NOTHING)."""
+        await self.db.execute(text("""
+            INSERT INTO wsi_results (
+                id, session_id, candidate_id, job_vacancy_id,
+                technical_wsi, behavioral_wsi, overall_wsi, classification
+            )
+            VALUES (:id, :session_id, :candidate_id, :job_vacancy_id,
+                    :technical_wsi, :behavioral_wsi, :overall_wsi, :classification)
+            ON CONFLICT (id) DO NOTHING
+        """), {
+            "id": result_id,
+            "session_id": session_id,
+            "candidate_id": candidate_id,
+            "job_vacancy_id": job_vacancy_id,
+            "technical_wsi": technical_wsi,
+            "behavioral_wsi": behavioral_wsi,
+            "overall_wsi": overall_wsi,
+            "classification": classification,
+        })
+
+    async def upsert_question(
+        self,
+        question_id: str,
+        session_id: str,
+        competency: str,
+        framework: str,
+        question_type: str,
+        question_text: str,
+        weight: float,
+        expected_signals: list,
+        scoring_criteria: dict,
+        sequence_order: int,
+    ) -> None:
+        """Insert or ignore a WSI question record (ON CONFLICT DO NOTHING)."""
+        await self.db.execute(text("""
+            INSERT INTO wsi_questions (
+                id, session_id, competency, framework, question_type,
+                question_text, weight, expected_signals, scoring_criteria, sequence_order
+            )
+            VALUES (:id, :session_id, :competency, :framework, :question_type,
+                    :question_text, :weight, :expected_signals::jsonb, :scoring_criteria::jsonb, :sequence_order)
+            ON CONFLICT (id) DO NOTHING
+        """), {
+            "id": question_id,
+            "session_id": session_id,
+            "competency": competency,
+            "framework": framework,
+            "question_type": question_type,
+            "question_text": question_text,
+            "weight": weight,
+            "expected_signals": json.dumps(expected_signals),
+            "scoring_criteria": json.dumps(scoring_criteria),
+            "sequence_order": sequence_order,
+        })
+
+    async def get_job_vacancy_context(self, job_id: str, company_id: str) -> Any:
+        """Fetch (title, description, seniority_level) for a job vacancy."""
+        result = await self.db.execute(text("""
+            SELECT title, description, seniority_level
+            FROM job_vacancies WHERE id = :job_id AND company_id = :company_id
+            LIMIT 1
+        """), {"job_id": job_id, "company_id": company_id})
+        return result.fetchone()
+
+    async def upsert_job_screening_question(
+        self,
+        question_id: str,
+        job_id: str,
+        question_text: str,
+        category: str,
+        question_type: str,
+        weight: float,
+        skill_targeted: str,
+        block_id,
+        source: str,
+    ) -> None:
+        """Insert or update a job_screening_questions record."""
+        await self.db.execute(text("""
+            INSERT INTO job_screening_questions (
+                id, job_vacancy_id, question_text, category, question_type,
+                weight, skill_targeted, block_id, source, is_active
+            )
+            VALUES (:id, :job_id, :text, :category, :type, :weight, :skill_targeted, :block_id, :source, true)
+            ON CONFLICT (id) DO UPDATE SET
+                question_text = EXCLUDED.question_text,
+                category = EXCLUDED.category,
+                question_type = EXCLUDED.question_type,
+                weight = EXCLUDED.weight,
+                skill_targeted = EXCLUDED.skill_targeted,
+                block_id = EXCLUDED.block_id,
+                updated_at = NOW()
+        """), {
+            "id": question_id,
+            "job_id": job_id,
+            "text": question_text,
+            "category": category,
+            "type": question_type,
+            "weight": weight,
+            "skill_targeted": skill_targeted,
+            "block_id": block_id,
+            "source": source,
+        })

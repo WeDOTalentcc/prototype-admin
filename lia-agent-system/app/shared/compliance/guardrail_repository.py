@@ -181,3 +181,44 @@ class GuardrailRepository:
         await db.commit()
         logger.info(f"[GuardrailRepository] Guardrail {guardrail_id} desativado (soft delete)")
         return True
+
+    @staticmethod
+    async def list_filtered(
+        db,
+        domain=None,
+        company_id=None,
+        is_active=None,
+        level=None,
+    ):
+        """List guardrails with optional filters on domain, company_id, is_active, level."""
+        from sqlalchemy import select as _select
+        from app.models.guardrail import Guardrail
+
+        stmt = _select(Guardrail)
+
+        if domain is not None:
+            stmt = stmt.where(Guardrail.domain == domain)
+        if company_id is not None:
+            stmt = stmt.where(Guardrail.company_id == company_id)
+        if is_active is not None:
+            stmt = stmt.where(Guardrail.is_active == is_active)
+        if level is not None:
+            stmt = stmt.where(Guardrail.level == level)
+
+        stmt = stmt.order_by(Guardrail.level, Guardrail.domain, Guardrail.created_at)
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def find_by_rule_domain_company(db, rule, domain=None, company_id=None):
+        """Find a guardrail by exact rule + domain + company_id match. Returns None if not found."""
+        from sqlalchemy import select as _select
+        from app.models.guardrail import Guardrail
+
+        stmt = _select(Guardrail).where(
+            Guardrail.rule == rule,
+            Guardrail.domain == domain,
+            Guardrail.company_id == company_id,
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()

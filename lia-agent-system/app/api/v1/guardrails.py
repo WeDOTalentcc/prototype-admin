@@ -18,7 +18,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import select
+# sqlalchemy select moved to GuardrailRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -92,21 +92,13 @@ async def list_guardrails(
     db: AsyncSession = Depends(get_db),
 ):
     """Lista guardrails com filtros opcionais."""
-    stmt = select(Guardrail)
-
-    if domain is not None:
-        stmt = stmt.where(Guardrail.domain == domain)
-    if company_id is not None:
-        stmt = stmt.where(Guardrail.company_id == company_id)
-    if is_active is not None:
-        stmt = stmt.where(Guardrail.is_active == is_active)
-    if level is not None:
-        stmt = stmt.where(Guardrail.level == level)
-
-    stmt = stmt.order_by(Guardrail.level, Guardrail.domain, Guardrail.created_at)
-    result = await db.execute(stmt)
-    guardrails = result.scalars().all()
-
+    guardrails = await GuardrailRepository.list_filtered(
+        db,
+        domain=domain,
+        company_id=company_id,
+        is_active=is_active,
+        level=level,
+    )
     return [GuardrailResponse.from_orm(g) for g in guardrails]
 
 
@@ -270,13 +262,12 @@ async def seed_default_guardrails(
 
     for item in all_defaults:
         # Verificar se já existe guardrail com mesma rule e domain
-        stmt = select(Guardrail).where(
-            Guardrail.rule == item["rule"],
-            Guardrail.domain == item.get("domain"),
-            Guardrail.company_id == company_id,
+        existing = await GuardrailRepository.find_by_rule_domain_company(
+            db,
+            rule=item["rule"],
+            domain=item.get("domain"),
+            company_id=company_id,
         )
-        result = await db.execute(stmt)
-        existing = result.scalar_one_or_none()
 
         if existing:
             skipped += 1

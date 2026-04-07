@@ -14,6 +14,7 @@ from ._shared import (
     get_db,
     get_pearch_service,
 )
+from app.domains.candidates.repositories.candidate_filter_repository import CandidateFilterRepository
 
 router = APIRouter()
 
@@ -270,9 +271,6 @@ async def get_filter_suggestions(
     via include_global=true (processada de forma assíncrona).
     """
 
-    from sqlalchemy import text
-
-    
     query_lower = request.query.lower().strip()
     suggestions: list[FilterSuggestion] = []
     
@@ -324,23 +322,9 @@ async def get_filter_suggestions(
         }
         
         # Buscar dados do banco baseado na categoria
+        _filter_repo = CandidateFilterRepository(db)
         if request.category == "titles":
-            # Buscar títulos únicos com contagem
-            result = await db.execute(
-                text("""
-                    SELECT current_title, COUNT(*) as count
-                    FROM candidates
-                    WHERE current_title IS NOT NULL 
-                    AND current_title != ''
-                    AND is_active = true
-                    AND LOWER(current_title) LIKE :query
-                    GROUP BY current_title
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit * 2}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_titles(query_lower, request.limit)
             
             # Agrupar títulos similares
             title_counts = {}
@@ -380,21 +364,7 @@ async def get_filter_suggestions(
                 ))
         
         elif request.category == "companies":
-            result = await db.execute(
-                text("""
-                    SELECT current_company, COUNT(*) as count
-                    FROM candidates
-                    WHERE current_company IS NOT NULL 
-                    AND current_company != ''
-                    AND is_active = true
-                    AND LOWER(current_company) LIKE :query
-                    GROUP BY current_company
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_companies(query_lower, request.limit)
             
             for row in rows:
                 suggestions.append(FilterSuggestion(
@@ -404,24 +374,7 @@ async def get_filter_suggestions(
                 ))
         
         elif request.category == "skills":
-            # Buscar skills do array technical_skills
-            result = await db.execute(
-                text("""
-                    SELECT skill, COUNT(*) as count
-                    FROM (
-                        SELECT UNNEST(technical_skills) as skill
-                        FROM candidates
-                        WHERE is_active = true
-                        AND technical_skills IS NOT NULL
-                    ) skills_expanded
-                    WHERE LOWER(skill) LIKE :query
-                    GROUP BY skill
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_skills(query_lower, request.limit)
             
             for row in rows:
                 skill = row[0]
@@ -435,31 +388,7 @@ async def get_filter_suggestions(
                 ))
         
         elif request.category == "locations":
-            # Combinar cidade e estado
-            result = await db.execute(
-                text("""
-                    SELECT 
-                        CASE 
-                            WHEN location_state IS NOT NULL AND location_state != ''
-                            THEN CONCAT(location_city, ', ', location_state)
-                            ELSE location_city
-                        END as location,
-                        COUNT(*) as count
-                    FROM candidates
-                    WHERE location_city IS NOT NULL 
-                    AND location_city != ''
-                    AND is_active = true
-                    AND (
-                        LOWER(location_city) LIKE :query
-                        OR LOWER(location_state) LIKE :query
-                    )
-                    GROUP BY location_city, location_state
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_locations(query_lower, request.limit)
             
             for row in rows:
                 location = row[0]
@@ -477,21 +406,7 @@ async def get_filter_suggestions(
                 ))
         
         elif request.category == "countries":
-            result = await db.execute(
-                text("""
-                    SELECT location_country, COUNT(*) as count
-                    FROM candidates
-                    WHERE location_country IS NOT NULL 
-                    AND location_country != ''
-                    AND is_active = true
-                    AND LOWER(location_country) LIKE :query
-                    GROUP BY location_country
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_countries(query_lower, request.limit)
             
             for row in rows:
                 suggestions.append(FilterSuggestion(
@@ -501,24 +416,7 @@ async def get_filter_suggestions(
                 ))
         
         elif request.category == "universities":
-            # Universities would be in additional_data or a dedicated field
-            # For now, search in resume_text with common university patterns
-            result = await db.execute(
-                text("""
-                    SELECT 
-                        COALESCE(additional_data->>'university', 'Não especificado') as university,
-                        COUNT(*) as count
-                    FROM candidates
-                    WHERE is_active = true
-                    AND additional_data->>'university' IS NOT NULL
-                    AND LOWER(additional_data->>'university') LIKE :query
-                    GROUP BY additional_data->>'university'
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_universities(query_lower, request.limit)
             
             for row in rows:
                 if row[0] and row[0] != 'Não especificado':
@@ -554,20 +452,7 @@ async def get_filter_suggestions(
                             break
         
         elif request.category == "languages":
-            # Languages is a JSON field
-            result = await db.execute(
-                text("""
-                    SELECT key as language, COUNT(*) as count
-                    FROM candidates, jsonb_object_keys(COALESCE(languages, '{}'::jsonb)) as key
-                    WHERE is_active = true
-                    AND LOWER(key) LIKE :query
-                    GROUP BY key
-                    ORDER BY count DESC
-                    LIMIT :limit
-                """),
-                {"query": f"%{query_lower}%", "limit": request.limit}
-            )
-            rows = result.fetchall()
+            rows = await _filter_repo.get_languages(query_lower, request.limit)
             
             for row in rows:
                 lang = row[0]

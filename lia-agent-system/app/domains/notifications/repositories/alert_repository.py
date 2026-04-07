@@ -65,3 +65,65 @@ class AlertRepository:
         await self.db.flush()
         await self.db.refresh(pref)
         return pref
+
+    async def get_active_config_for_company(self, company_id: str) -> AlertConfig | None:
+        result = await self.db.execute(
+            select(AlertConfig).where(
+                AlertConfig.is_active,
+                AlertConfig.company_id == company_id,
+            ).order_by(AlertConfig.created_at.desc()).limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_preferences_for_company_user(
+        self,
+        company_id: str,
+        user_id: str,
+    ) -> list[AlertPreference]:
+        result = await self.db.execute(
+            select(AlertPreference).where(
+                AlertPreference.company_id == company_id,
+                AlertPreference.user_id == user_id,
+            )
+        )
+        return list(result.scalars().all())
+
+    async def get_preference_by_type(
+        self,
+        company_id: str,
+        user_id: str,
+        alert_type: str,
+    ) -> AlertPreference | None:
+        result = await self.db.execute(
+            select(AlertPreference).where(
+                AlertPreference.company_id == company_id,
+                AlertPreference.user_id == user_id,
+                AlertPreference.alert_type == alert_type,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def upsert_preference_by_type(
+        self,
+        company_id: str,
+        user_id: str,
+        alert_type: str,
+        data: dict,
+    ) -> AlertPreference:
+        from datetime import datetime
+        existing = await self.get_preference_by_type(company_id, user_id, alert_type)
+        if existing:
+            for key, value in data.items():
+                setattr(existing, key, value)
+            existing.updated_at = datetime.utcnow()  # type: ignore
+        else:
+            existing = AlertPreference(
+                company_id=company_id,
+                user_id=user_id,
+                alert_type=alert_type,
+                **data,
+            )
+            self.db.add(existing)
+        await self.db.flush()
+        await self.db.refresh(existing)
+        return existing

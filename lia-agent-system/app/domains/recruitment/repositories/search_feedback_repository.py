@@ -70,3 +70,57 @@ class SearchFeedbackRepository:
         avg_q = select(f.avg(SearchFeedback.rating)).where(SearchFeedback.company_id == company_id)
         avg = (await self.db.execute(avg_q)).scalar()
         return {"total": total, "avg_rating": float(avg) if avg else None}
+
+    async def get_by_user_and_candidate(
+        self,
+        user_id: str,
+        candidate_id: str,
+        job_id: str | None,
+    ) -> SearchFeedback | None:
+        from sqlalchemy import and_
+        job_filter = (
+            SearchFeedback.job_id == job_id if job_id else SearchFeedback.job_id.is_(None)
+        )
+        result = await self.db.execute(
+            select(SearchFeedback).where(
+                and_(
+                    SearchFeedback.user_id == user_id,
+                    SearchFeedback.candidate_id == candidate_id,
+                    job_filter,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_id_and_user(
+        self,
+        feedback_id: str,
+        user_id: str,
+    ) -> SearchFeedback | None:
+        from sqlalchemy import and_
+        result = await self.db.execute(
+            select(SearchFeedback).where(
+                and_(SearchFeedback.id == feedback_id, SearchFeedback.user_id == user_id)
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def list_for_user(
+        self,
+        user_id: str,
+        job_id: str | None = None,
+    ) -> list[SearchFeedback]:
+        q = select(SearchFeedback).where(SearchFeedback.user_id == user_id)
+        if job_id:
+            q = q.where(SearchFeedback.job_id == job_id)
+        q = q.order_by(SearchFeedback.created_at.desc())
+        result = await self.db.execute(q)
+        return list(result.scalars().all())
+
+    async def list_for_job(self, job_id: str) -> list[SearchFeedback]:
+        result = await self.db.execute(
+            select(SearchFeedback)
+            .where(SearchFeedback.job_id == job_id)
+            .order_by(SearchFeedback.created_at.desc())
+        )
+        return list(result.scalars().all())

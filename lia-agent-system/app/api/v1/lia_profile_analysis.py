@@ -7,10 +7,11 @@ from typing import Any
 from anthropic import Anthropic
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import and_, desc, select
+# sqlalchemy ORM imports moved to ProfileAnalysisRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.cv_screening.repositories.profile_analysis_repository import ProfileAnalysisRepository
 from app.models.lia_profile_analysis import LiaProfileAnalysis
 from app.schemas.lia_profile_analysis import (
     CandidateAnalysesSummary,
@@ -190,47 +191,36 @@ async def save_profile_analysis(
 ):
     """Save a generated profile analysis to the database."""
     try:
-        existing_query = select(LiaProfileAnalysis).where(
-            and_(
-                LiaProfileAnalysis.candidate_id == request.candidate_id,
-                LiaProfileAnalysis.analysis_type == request.analysis_type,
-                LiaProfileAnalysis.company_id == company_id,
-                LiaProfileAnalysis.is_active
-            )
+        repo = ProfileAnalysisRepository(db)
+        existing = await repo.get_active_by_candidate_type_company(
+            candidate_id=request.candidate_id,
+            analysis_type=request.analysis_type,
+            company_id=company_id,
         )
-        result = await db.execute(existing_query)
-        existing = result.scalar_one_or_none()
-        
+
         if existing:
-            existing.content = request.content
-            existing.candidate_name = request.candidate_name
-            await db.flush()
-            await db.refresh(existing)
+            updated = await repo.update_content(existing, request.content, request.candidate_name)
             return LiaProfileAnalysisResponse(
-                id=str(existing.id),
-                candidate_id=existing.candidate_id,
-                analysis_type=existing.analysis_type,
-                content=existing.content,
-                candidate_name=existing.candidate_name,
-                is_active=existing.is_active,
-                created_at=existing.created_at,
-                created_by=existing.created_by,
-                company_id=existing.company_id
+                id=str(updated.id),
+                candidate_id=updated.candidate_id,
+                analysis_type=updated.analysis_type,
+                content=updated.content,
+                candidate_name=updated.candidate_name,
+                is_active=updated.is_active,
+                created_at=updated.created_at,
+                created_by=updated.created_by,
+                company_id=updated.company_id,
             )
-        
-        new_analysis = LiaProfileAnalysis(
+
+        new_analysis = await repo.create(
             candidate_id=request.candidate_id,
             analysis_type=request.analysis_type,
             content=request.content,
             candidate_name=request.candidate_name,
             created_by=request.created_by,
-            company_id=company_id
+            company_id=company_id,
         )
-        
-        db.add(new_analysis)
-        await db.flush()
-        await db.refresh(new_analysis)
-        
+
         return LiaProfileAnalysisResponse(
             id=str(new_analysis.id),
             candidate_id=new_analysis.candidate_id,
@@ -240,7 +230,7 @@ async def save_profile_analysis(
             is_active=new_analysis.is_active,
             created_at=new_analysis.created_at,
             created_by=new_analysis.created_by,
-            company_id=new_analysis.company_id
+            company_id=new_analysis.company_id,
         )
         
     except Exception as e:
@@ -256,16 +246,8 @@ async def get_candidate_analyses(
 ):
     """Get all saved analyses for a candidate."""
     try:
-        query = select(LiaProfileAnalysis).where(
-            and_(
-                LiaProfileAnalysis.candidate_id == candidate_id,
-                LiaProfileAnalysis.company_id == company_id,
-                LiaProfileAnalysis.is_active
-            )
-        ).order_by(desc(LiaProfileAnalysis.created_at))
-        
-        result = await db.execute(query)
-        analyses = result.scalars().all()
+        repo = ProfileAnalysisRepository(db)
+        analyses = await repo.get_all_active_for_candidate(candidate_id, company_id)
         
         has_bullet_points = False
         has_short_paragraph = False
@@ -315,21 +297,11 @@ async def delete_candidate_analysis(
 ):
     """Delete a specific analysis for a candidate."""
     try:
-        query = select(LiaProfileAnalysis).where(
-            and_(
-                LiaProfileAnalysis.candidate_id == candidate_id,
-                LiaProfileAnalysis.analysis_type == analysis_type,
-                LiaProfileAnalysis.company_id == company_id,
-                LiaProfileAnalysis.is_active
-            )
-        )
-        result = await db.execute(query)
-        analysis = result.scalar_one_or_none()
-        
+        repo = ProfileAnalysisRepository(db)
+        analysis = await repo.soft_delete(candidate_id, analysis_type, company_id)
+
         if not analysis:
             raise HTTPException(status_code=404, detail="Analysis not found")
-        
-        analysis.is_active = False
         
         return {"success": True, "message": "Analysis deleted"}
         

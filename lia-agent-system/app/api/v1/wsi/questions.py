@@ -19,6 +19,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.domains.cv_screening.services.screening_question_set_service import (
     ScreeningQuestionSetService,
@@ -114,42 +115,31 @@ async def generate_questions(
         qs_version = active_qs.version if active_qs else None
         qs_id = str(active_qs.id) if active_qs else None
 
-        await db.execute(text("""
-            INSERT INTO wsi_sessions (id, candidate_id, job_vacancy_id, screening_type, mode, status, question_set_version, question_set_id)
-            VALUES (:session_id, :candidate_id, :job_vacancy_id, :screening_type, :mode, :status, :question_set_version, :question_set_id)
-            ON CONFLICT (id) DO NOTHING
-        """), {
-            "session_id": session_id,
-            "candidate_id": "pending",
-            "job_vacancy_id": request.job_vacancy_id or "",
-            "screening_type": "text",
-            "mode": "compact",
-            "status": "in_progress",
-            "question_set_version": qs_version,
-            "question_set_id": qs_id,
-        })
+        _repo = WsiRepository(db)
+        await _repo.upsert_session(
+            session_id=session_id,
+            candidate_id="pending",
+            job_vacancy_id=request.job_vacancy_id or "",
+            screening_type="text",
+            mode="compact",
+            status="in_progress",
+            question_set_version=qs_version,
+            question_set_id=qs_id,
+        )
 
         for idx, q in enumerate(questions):
-            await db.execute(text("""
-                INSERT INTO wsi_questions (
-                    id, session_id, competency, framework, question_type,
-                    question_text, weight, expected_signals, scoring_criteria, sequence_order
-                )
-                VALUES (:id, :session_id, :competency, :framework, :question_type,
-                        :question_text, :weight, :expected_signals::jsonb, :scoring_criteria::jsonb, :sequence_order)
-                ON CONFLICT (id) DO NOTHING
-            """), {
-                "id": q.id,
-                "session_id": session_id,
-                "competency": q.skill_targeted,
-                "framework": wsi_questions[idx].framework if idx < len(wsi_questions) else "CBI",
-                "question_type": q.question_type,
-                "question_text": q.text,
-                "weight": wsi_questions[idx].weight if idx < len(wsi_questions) else 1.0 / max(len(questions), 1),
-                "expected_signals": json.dumps(wsi_questions[idx].expected_signals if idx < len(wsi_questions) else []),
-                "scoring_criteria": json.dumps(dict(wsi_questions[idx].scoring_criteria) if idx < len(wsi_questions) else {}),
-                "sequence_order": idx + 1
-            })
+            await _repo.upsert_question(
+                question_id=q.id,
+                session_id=session_id,
+                competency=q.skill_targeted,
+                framework=wsi_questions[idx].framework if idx < len(wsi_questions) else "CBI",
+                question_type=q.question_type,
+                question_text=q.text,
+                weight=wsi_questions[idx].weight if idx < len(wsi_questions) else 1.0 / max(len(questions), 1),
+                expected_signals=wsi_questions[idx].expected_signals if idx < len(wsi_questions) else [],
+                scoring_criteria=dict(wsi_questions[idx].scoring_criteria) if idx < len(wsi_questions) else {},
+                sequence_order=idx + 1,
+            )
     except Exception as e:
         logger.warning(f"Failed to save to DB: {e}")
 
@@ -243,28 +233,18 @@ async def save_questions(
     try:
         for q in request.questions:
             q_id = q.get("id", f"q_{uuid.uuid4().hex[:12]}")
-            await db.execute(text("""
-                INSERT INTO job_screening_questions (id, job_vacancy_id, question_text, category, question_type, weight, skill_targeted, block_id, source, is_active)
-                VALUES (:id, :job_id, :text, :category, :type, :weight, :skill_targeted, :block_id, :source, true)
-                ON CONFLICT (id) DO UPDATE SET
-                    question_text = EXCLUDED.question_text,
-                    category = EXCLUDED.category,
-                    question_type = EXCLUDED.question_type,
-                    weight = EXCLUDED.weight,
-                    skill_targeted = EXCLUDED.skill_targeted,
-                    block_id = EXCLUDED.block_id,
-                    updated_at = NOW()
-            """), {
-                "id": q_id,
-                "job_id": request.job_id,
-                "text": q.get("text", q.get("question", "")),
-                "category": q.get("category", "general"),
-                "type": q.get("type", "open"),
-                "weight": q.get("weight", 0.75),
-                "skill_targeted": q.get("skill_targeted", ""),
-                "block_id": q.get("block_id"),
-                "source": request.source
-            })
+            _repo = WsiRepository(db)
+            await _repo.upsert_job_screening_question(
+                question_id=q_id,
+                job_id=request.job_id,
+                question_text=q.get("text", q.get("question", "")),
+                category=q.get("category", "general"),
+                question_type=q.get("type", "open"),
+                weight=q.get("weight", 0.75),
+                skill_targeted=q.get("skill_targeted", ""),
+                block_id=q.get("block_id"),
+                source=request.source,
+            )
         try:
             await sqs_svc.save_question_set(
                 db=db,

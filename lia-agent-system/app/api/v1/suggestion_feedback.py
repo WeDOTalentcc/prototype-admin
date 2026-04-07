@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.feedback_learning import SuggestionFeedback
+from app.domains.cv_screening.repositories.suggestion_feedback_repository import SuggestionFeedbackRepository
 from app.services.feedback_learning_service import FeedbackLearningService
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
@@ -76,17 +77,16 @@ async def record_suggestion_feedback(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        feedback = SuggestionFeedback(
+        _repo = SuggestionFeedbackRepository(db)
+        feedback = await _repo.record(
             company_id=request.company_id,
             field_name=request.field_name,
             suggested_value=request.suggested_value,
             actual_value=request.actual_value,
-            accepted=1 if request.accepted else 0,
+            accepted=request.accepted,
             context=request.context,
             created_by=request.created_by,
         )
-        db.add(feedback)
-        await db.flush()
 
         logger.info(
             f"SuggestionFeedback: recorded {'accepted' if request.accepted else 'rejected'} "
@@ -109,32 +109,9 @@ async def get_suggestion_stats(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        base_filter = SuggestionFeedback.company_id == company_id
-
-        total_q = await db.execute(
-            select(func.count()).select_from(SuggestionFeedback).where(base_filter)
-        )
-        total = total_q.scalar() or 0
-
-        accepted_q = await db.execute(
-            select(func.count()).select_from(SuggestionFeedback).where(
-                and_(base_filter, SuggestionFeedback.accepted == 1)
-            )
-        )
-        accepted_total = accepted_q.scalar() or 0
-
-        field_query = (
-            select(
-                SuggestionFeedback.field_name,
-                func.count().label("total"),
-                func.sum(case((SuggestionFeedback.accepted == 1, 1), else_=0)).label("accepted"),
-            )
-            .where(base_filter)
-            .group_by(SuggestionFeedback.field_name)
-            .order_by(func.count().desc())
-        )
-        field_result = await db.execute(field_query)
-        field_rows = field_result.all()
+        _repo = SuggestionFeedbackRepository(db)
+        total, accepted_total = await _repo.get_total_and_accepted(company_id)
+        field_rows = await _repo.get_stats_by_field(company_id)
 
         by_field = []
         for field_name, field_total, field_accepted in field_rows:

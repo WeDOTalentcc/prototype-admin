@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.domains.analytics.repositories.fairness_report_repository import FairnessReportRepository
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -61,27 +62,9 @@ async def get_fairness_summary(
     Returns total blocks and warnings per category for the specified period.
     Useful for recruiter coaching and compliance dashboards.
     """
-    from app.models.fairness_audit import FairnessAuditLog
-
     since = datetime.now(UTC) - timedelta(days=days)
-
-    stmt = select(
-        FairnessAuditLog.category,
-        func.count().filter(FairnessAuditLog.is_blocked.is_(True)).label("blocks"),
-        func.count().filter(FairnessAuditLog.is_blocked.is_(False)).label("warnings"),
-        func.max(FairnessAuditLog.created_at).label("last_occurrence"),
-    ).where(
-        FairnessAuditLog.created_at >= since
-    )
-
-    if company_id:
-        import uuid
-        stmt = stmt.where(FairnessAuditLog.company_id == uuid.UUID(company_id))
-
-    stmt = stmt.group_by(FairnessAuditLog.category)
-
-    result = await db.execute(stmt)
-    rows = result.all()
+    repo = FairnessReportRepository(db)
+    rows = await repo.get_summary_by_category(since, company_id)
 
     total_blocks = sum(r.blocks for r in rows)
     total_events = sum(r.blocks + r.warnings for r in rows)
@@ -119,28 +102,9 @@ async def get_fairness_trend(
     Returns a time-series suitable for charting bias detection trends.
     Useful for identifying if training/coaching is reducing discrimination attempts.
     """
-    from sqlalchemy import Date, cast
-
-    from app.models.fairness_audit import FairnessAuditLog
-
     since = datetime.now(UTC) - timedelta(days=days)
-
-    stmt = select(
-        cast(FairnessAuditLog.created_at, Date).label("day"),
-        func.count().filter(FairnessAuditLog.is_blocked.is_(True)).label("blocks"),
-        func.count().filter(FairnessAuditLog.is_blocked.is_(False)).label("warnings"),
-    ).where(
-        FairnessAuditLog.created_at >= since
-    )
-
-    if company_id:
-        import uuid
-        stmt = stmt.where(FairnessAuditLog.company_id == uuid.UUID(company_id))
-
-    stmt = stmt.group_by(cast(FairnessAuditLog.created_at, Date)).order_by("day")
-
-    result = await db.execute(stmt)
-    rows = result.all()
+    repo = FairnessReportRepository(db)
+    rows = await repo.get_daily_trend(since, company_id)
 
     trend = [
         FairnessTrendPoint(
@@ -195,32 +159,16 @@ async def get_fairness_audit_logs(
     Retorna eventos de bloqueio e soft-warning com metadados de contexto.
     Queries originais NÃO são expostas (apenas query_hash SHA-256).
     """
-    import uuid as _uuid
-
-    from app.models.fairness_audit import FairnessAuditLog
-
     since = datetime.now(UTC) - timedelta(days=days)
-
-    stmt = select(FairnessAuditLog).where(FairnessAuditLog.created_at >= since)
-
-    if company_id:
-        try:
-            stmt = stmt.where(FairnessAuditLog.company_id == _uuid.UUID(company_id))
-        except ValueError:
-            pass
-
-    if category:
-        stmt = stmt.where(FairnessAuditLog.category == category)
-
-    if blocked_only:
-        stmt = stmt.where(FairnessAuditLog.is_blocked.is_(True))
-
-    # Count total
-    count_stmt = select(func.count()).select_from(stmt.subquery())
-    total = (await db.execute(count_stmt)).scalar() or 0
-
-    stmt = stmt.order_by(FairnessAuditLog.created_at.desc()).limit(limit).offset(offset)
-    rows = (await db.execute(stmt)).scalars().all()
+    repo = FairnessReportRepository(db)
+    total, rows = await repo.get_audit_logs_paginated(
+        since=since,
+        company_id=company_id,
+        category=category,
+        blocked_only=blocked_only,
+        limit=limit,
+        offset=offset,
+    )
 
     items = [
         FairnessAuditLogEntry(
@@ -265,25 +213,10 @@ async def export_fairness_report(
 
     from fastapi.responses import JSONResponse, StreamingResponse
 
-    # Reuse summary logic
-    from app.models.fairness_audit import FairnessAuditLog
+    # Reuse summary logic via repository
     since = datetime.now(UTC) - timedelta(days=days)
-
-    stmt = select(
-        FairnessAuditLog.category,
-        func.count().filter(FairnessAuditLog.is_blocked.is_(True)).label("blocks"),
-        func.count().filter(FairnessAuditLog.is_blocked.is_(False)).label("warnings"),
-        func.max(FairnessAuditLog.created_at).label("last_occurrence"),
-    ).where(FairnessAuditLog.created_at >= since)
-
-    if company_id:
-        import uuid
-        stmt = stmt.where(FairnessAuditLog.company_id == uuid.UUID(company_id))
-
-    stmt = stmt.group_by(FairnessAuditLog.category)
-
-    result = await db.execute(stmt)
-    rows = result.all()
+    repo = FairnessReportRepository(db)
+    rows = await repo.get_export_data(since, company_id)
 
     if format == "json":
         data = {

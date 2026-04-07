@@ -16,6 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.services.interview_session_store import interview_session_store
 
 logger = logging.getLogger(__name__)
@@ -32,20 +33,13 @@ router = APIRouter()
 async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
     """Get WSI session details with questions and responses."""
     try:
-        result = await db.execute(text("""
-            SELECT id, candidate_id, job_vacancy_id, screening_type, mode, status, started_at, completed_at
-            FROM wsi_sessions WHERE id = :session_id
-        """), {"session_id": session_id})
-        session = result.fetchone()
+        _repo = WsiRepository(db)
+        session = await _repo.get_session(session_id)
 
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
 
-        questions_result = await db.execute(text("""
-            SELECT id, competency, framework, question_type, question_text, weight
-            FROM wsi_questions WHERE session_id = :session_id ORDER BY sequence_order
-        """), {"session_id": session_id})
-        questions = questions_result.fetchall()
+        questions = await _repo.get_questions_for_session(session_id)
 
         return {
             "session": {
@@ -79,17 +73,8 @@ async def get_candidate_results(
 ):
     """Get WSI results for a specific candidate."""
     try:
-        result = await db.execute(text("""
-            SELECT r.id, r.job_vacancy_id, r.overall_wsi, r.classification, r.created_at,
-                   s.screening_type
-            FROM wsi_results r
-            JOIN wsi_sessions s ON r.session_id = s.id
-            WHERE r.candidate_id = :candidate_id
-            ORDER BY r.created_at DESC
-            LIMIT :limit
-        """), {"candidate_id": candidate_id, "limit": limit})
-
-        results = result.fetchall()
+        _repo = WsiRepository(db)
+        results = await _repo.get_results_for_candidate(candidate_id, limit)
 
         return {
             "candidate_id": candidate_id,
@@ -148,12 +133,8 @@ async def start_interview_graph_session(
 
     # Pré-carrega contexto da vaga para o grafo (que não tem acesso direto ao DB)
     try:
-        job_result = await db.execute(text("""
-            SELECT title, description, seniority_level
-            FROM job_vacancies WHERE id = :job_id AND company_id = :company_id
-            LIMIT 1
-        """), {"job_id": request.job_id, "company_id": request.company_id})
-        job_row = job_result.fetchone()
+        _repo = WsiRepository(db)
+        job_row = await _repo.get_job_vacancy_context(request.job_id, request.company_id)
         if job_row:
             state.job_requirements = {
                 "title": job_row[0] or "",

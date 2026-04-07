@@ -24,65 +24,64 @@ class SubmitFeedbackRequest(BaseModel):
     reason: str | None = None
 
 
+def get_search_feedback_repo(db: AsyncSession = Depends(get_db)) -> SearchFeedbackRepository:
+    return SearchFeedbackRepository(db)
+
+
 @router.post("/", response_model=None)
-async def submit_feedback(request: Request, body: SubmitFeedbackRequest, db: AsyncSession = Depends(get_db)):
+async def submit_feedback(
+    request: Request,
+    body: SubmitFeedbackRequest,
+    repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
+):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
-    job_filter = SearchFeedback.job_id == body.job_id if body.job_id else SearchFeedback.job_id.is_(None)
-    result = await db.execute(
-        select(SearchFeedback).where(
-            and_(
-                SearchFeedback.user_id == user_id,
-                SearchFeedback.candidate_id == body.candidate_id,
-                job_filter,
-            )
-        )
+    existing = await repo.get_by_user_and_candidate(
+        user_id=user_id,
+        candidate_id=body.candidate_id,
+        job_id=body.job_id,
     )
-    existing = result.scalar_one_or_none()
 
     if existing:
         if existing.feedback_type == body.feedback_type:
-            await db.delete(existing)
-            await db.flush()
+            await repo.delete(existing)
             return {"action": "removed", "feedback": None}
         else:
-            existing.feedback_type = body.feedback_type
-            existing.search_query = body.search_query
-            existing.candidate_score = body.candidate_score
-            existing.candidate_name = body.candidate_name
-            existing.reason = body.reason
-            await db.flush()
-            return {"action": "toggled", "feedback": existing.to_dict()}
+            updated = await repo.update(existing, {
+                "feedback_type": body.feedback_type,
+                "search_query": body.search_query,
+                "candidate_score": body.candidate_score,
+                "candidate_name": body.candidate_name,
+                "reason": body.reason,
+            })
+            return {"action": "toggled", "feedback": updated.to_dict()}
 
-    feedback = SearchFeedback(
-        candidate_id=body.candidate_id,
-        feedback_type=body.feedback_type,
-        job_id=body.job_id,
-        user_id=user_id,
-        search_query=body.search_query,
-        candidate_score=body.candidate_score,
-        candidate_name=body.candidate_name,
-        reason=body.reason,
-    )
-    db.add(feedback)
-    await db.flush()
-    return {"action": "created", "feedback": feedback.to_dict()}
+    created = await repo.create({
+        "candidate_id": body.candidate_id,
+        "feedback_type": body.feedback_type,
+        "job_id": body.job_id,
+        "user_id": user_id,
+        "search_query": body.search_query,
+        "candidate_score": body.candidate_score,
+        "candidate_name": body.candidate_name,
+        "reason": body.reason,
+    })
+    return {"action": "created", "feedback": created.to_dict()}
 
 
 @router.get("/user/all", response_model=None)
-async def get_user_feedbacks(request: Request, job_id: str | None = None, db: AsyncSession = Depends(get_db)):
+async def get_user_feedbacks(
+    request: Request,
+    job_id: str | None = None,
+    repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
+):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
-    query = select(SearchFeedback).where(SearchFeedback.user_id == user_id)
-    if job_id:
-        query = query.where(SearchFeedback.job_id == job_id)
-    query = query.order_by(SearchFeedback.created_at.desc())
-    result = await db.execute(query)
-    feedbacks = result.scalars().all()
+    feedbacks = await repo.list_for_user(user_id=user_id, job_id=job_id)
     return {
         "feedbacks": [f.to_dict() for f in feedbacks],
         "total": len(feedbacks),
@@ -90,11 +89,11 @@ async def get_user_feedbacks(request: Request, job_id: str | None = None, db: As
 
 
 @router.get("/{job_id}", response_model=None)
-async def get_job_feedbacks(job_id: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(SearchFeedback).where(SearchFeedback.job_id == job_id).order_by(SearchFeedback.created_at.desc())
-    )
-    feedbacks = result.scalars().all()
+async def get_job_feedbacks(
+    job_id: str,
+    repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
+):
+    feedbacks = await repo.list_for_job(job_id=job_id)
 
     likes = sum(1 for f in feedbacks if f.feedback_type == "like")
     dislikes = sum(1 for f in feedbacks if f.feedback_type == "dislike")
@@ -108,19 +107,17 @@ async def get_job_feedbacks(job_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.delete("/{feedback_id}", response_model=None)
-async def delete_feedback(request: Request, feedback_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_feedback(
+    request: Request,
+    feedback_id: str,
+    repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
+):
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
 
-    result = await db.execute(
-        select(SearchFeedback).where(
-            and_(SearchFeedback.id == feedback_id, SearchFeedback.user_id == user_id)
-        )
-    )
-    feedback = result.scalar_one_or_none()
+    feedback = await repo.get_by_id_and_user(feedback_id=feedback_id, user_id=user_id)
     if not feedback:
         raise HTTPException(status_code=404, detail="Feedback not found")
-    await db.delete(feedback)
-    await db.flush()
+    await repo.delete(feedback)
     return {"deleted": True, "id": feedback_id}

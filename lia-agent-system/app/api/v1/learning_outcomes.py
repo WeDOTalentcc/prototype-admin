@@ -11,7 +11,6 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -21,6 +20,10 @@ from app.models.feedback_learning import JobOutcome, JobOutcomeType
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)
+
+
+def get_learning_outcome_repo(db: AsyncSession = Depends(get_db)) -> LearningOutcomeRepository:
+    return LearningOutcomeRepository(db)
 
 
 class OutcomeRecordRequest(BaseModel):
@@ -101,19 +104,21 @@ async def list_outcomes(
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0, ge=0),
     outcome_type: str | None = Query(default=None),
-    db: AsyncSession = Depends(get_db),
+    repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
     try:
-        query = select(JobOutcome).where(JobOutcome.company_id == company_id)
+        ot = None
         if outcome_type:
             try:
                 ot = JobOutcomeType(outcome_type)
-                query = query.where(JobOutcome.outcome == ot)
             except ValueError:
                 pass
-        query = query.order_by(JobOutcome.created_at.desc()).offset(offset).limit(limit)
-        result = await db.execute(query)
-        outcomes = result.scalars().all()
+        outcomes = await repo.list_paginated(
+            company_id=company_id,
+            outcome_type=ot,
+            limit=limit,
+            offset=offset,
+        )
         return [
             OutcomeResponse(
                 id=str(o.id),
@@ -143,46 +148,15 @@ async def list_outcomes(
 @router.get("/outcomes/{company_id}/stats", response_model=OutcomeStatsResponse)
 async def get_outcome_stats(
     company_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
     try:
-        base_filter = JobOutcome.company_id == company_id
-
-        total_q = await db.execute(
-            select(func.count()).select_from(JobOutcome).where(base_filter)
-        )
-        total = total_q.scalar() or 0
-
-        filled_q = await db.execute(
-            select(func.count()).select_from(JobOutcome).where(
-                and_(base_filter, JobOutcome.outcome == JobOutcomeType.FILLED)
-            )
-        )
-        filled = filled_q.scalar() or 0
-
-        cancelled_q = await db.execute(
-            select(func.count()).select_from(JobOutcome).where(
-                and_(base_filter, JobOutcome.outcome == JobOutcomeType.CANCELLED)
-            )
-        )
-        cancelled = cancelled_q.scalar() or 0
-
-        expired_q = await db.execute(
-            select(func.count()).select_from(JobOutcome).where(
-                and_(base_filter, JobOutcome.outcome == JobOutcomeType.EXPIRED)
-            )
-        )
-        expired = expired_q.scalar() or 0
-
-        avg_q = await db.execute(
-            select(
-                func.avg(JobOutcome.time_to_fill_days),
-                func.avg(JobOutcome.candidate_count_total),
-                func.avg(JobOutcome.candidate_count_screened),
-                func.avg(JobOutcome.candidate_count_interviewed),
-            ).where(base_filter)
-        )
-        avg_row = avg_q.one_or_none()
+        stats = await repo.get_stats(company_id)
+        total = stats["total"]
+        filled = stats["filled"]
+        cancelled = stats["cancelled"]
+        expired = stats["expired"]
+        avg_row = stats["avg_row"]
 
         return OutcomeStatsResponse(
             total_outcomes=total,
@@ -204,32 +178,10 @@ async def get_outcome_stats(
 async def get_outcome_patterns(
     company_id: str,
     group_by: str = Query(default="role", regex="^(role|seniority|department)$"),
-    db: AsyncSession = Depends(get_db),
+    repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
     try:
-        group_col = getattr(JobOutcome, group_by)
-        base_filter = and_(
-            JobOutcome.company_id == company_id,
-            group_col.isnot(None),
-        )
-
-        query = (
-            select(
-                group_col,
-                func.count().label("sample_size"),
-                func.avg(JobOutcome.time_to_fill_days).label("avg_ttf"),
-                func.avg(JobOutcome.candidate_count_total).label("avg_candidates"),
-                func.sum(case((JobOutcome.outcome == JobOutcomeType.FILLED, 1), else_=0)).label("filled"),
-            )
-            .where(base_filter)
-            .group_by(group_col)
-            .having(func.count() >= 1)
-            .order_by(func.count().desc())
-            .limit(20)
-        )
-
-        result = await db.execute(query)
-        rows = result.all()
+        rows = await repo.get_patterns(company_id=company_id, group_by=group_by)
 
         patterns = []
         for row in rows:

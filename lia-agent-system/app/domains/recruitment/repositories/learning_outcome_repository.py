@@ -59,3 +59,103 @@ class LearningOutcomeRepository:
     async def delete(self, outcome: JobOutcome) -> None:
         await self.db.delete(outcome)
         await self.db.flush()
+
+    async def list_paginated(
+        self,
+        company_id: str,
+        *,
+        outcome_type=None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[JobOutcome]:
+        q = select(JobOutcome).where(JobOutcome.company_id == company_id)
+        if outcome_type is not None:
+            q = q.where(JobOutcome.outcome == outcome_type)
+        q = q.order_by(JobOutcome.created_at.desc()).offset(offset).limit(limit)
+        result = await self.db.execute(q)
+        return list(result.scalars().all())
+
+    async def get_stats(self, company_id: str) -> dict:
+        from sqlalchemy import and_, case, func
+        from app.models.feedback_learning import JobOutcomeType
+
+        base_filter = JobOutcome.company_id == company_id
+
+        total = (
+            await self.db.execute(
+                select(func.count()).select_from(JobOutcome).where(base_filter)
+            )
+        ).scalar() or 0
+
+        filled = (
+            await self.db.execute(
+                select(func.count()).select_from(JobOutcome).where(
+                    and_(base_filter, JobOutcome.outcome == JobOutcomeType.FILLED)
+                )
+            )
+        ).scalar() or 0
+
+        cancelled = (
+            await self.db.execute(
+                select(func.count()).select_from(JobOutcome).where(
+                    and_(base_filter, JobOutcome.outcome == JobOutcomeType.CANCELLED)
+                )
+            )
+        ).scalar() or 0
+
+        expired = (
+            await self.db.execute(
+                select(func.count()).select_from(JobOutcome).where(
+                    and_(base_filter, JobOutcome.outcome == JobOutcomeType.EXPIRED)
+                )
+            )
+        ).scalar() or 0
+
+        avg_row = (
+            await self.db.execute(
+                select(
+                    func.avg(JobOutcome.time_to_fill_days),
+                    func.avg(JobOutcome.candidate_count_total),
+                    func.avg(JobOutcome.candidate_count_screened),
+                    func.avg(JobOutcome.candidate_count_interviewed),
+                ).where(base_filter)
+            )
+        ).one_or_none()
+
+        return {
+            "total": total,
+            "filled": filled,
+            "cancelled": cancelled,
+            "expired": expired,
+            "avg_row": avg_row,
+        }
+
+    async def get_patterns(self, company_id: str, group_by: str, limit: int = 20) -> list:
+        from sqlalchemy import and_, case, func
+        from app.models.feedback_learning import JobOutcomeType
+
+        group_col = getattr(JobOutcome, group_by)
+        base_filter = and_(
+            JobOutcome.company_id == company_id,
+            group_col.isnot(None),
+        )
+
+        query = (
+            select(
+                group_col,
+                func.count().label("sample_size"),
+                func.avg(JobOutcome.time_to_fill_days).label("avg_ttf"),
+                func.avg(JobOutcome.candidate_count_total).label("avg_candidates"),
+                func.sum(
+                    case((JobOutcome.outcome == JobOutcomeType.FILLED, 1), else_=0)
+                ).label("filled"),
+            )
+            .where(base_filter)
+            .group_by(group_col)
+            .having(func.count() >= 1)
+            .order_by(func.count().desc())
+            .limit(limit)
+        )
+
+        result = await self.db.execute(query)
+        return result.all()
