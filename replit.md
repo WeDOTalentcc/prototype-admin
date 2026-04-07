@@ -40,7 +40,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Multi-Channel Communication Dispatcher**: Sends messages to all available channels (email + WhatsApp) by default.
 - **Celery Scheduler & Automations**: Handles background automations for follow-ups, abandoned WSI checks, and feedback sending.
 - **Voice Analysis Integration**: VoIP browser calls use Gemini Live Audio API (single WebSocket, ~$0.065/interview). Twilio remains as PSTN fallback only. Legacy pipeline: OpenAI Whisper STT + OpenAI TTS for PSTN calls via Twilio.
-- **Microsoft Teams Notifications**: TeamsBot provides adaptive cards for various notifications.
+- **Microsoft Teams Notifications**: TeamsBot provides adaptive cards for various notifications. Azure Bot "LIA-WeDOTalent" App ID: `246eb1e7-a437-4cb2-a231-0325b567be5f`. App Registration tenant: `bd25f438-71ab-4f63-a88f-abc8da37a1f6` (must match "App Tenant ID" in Azure Bot Configuration). Credentials: `MICROSOFT_APP_ID` + `MICROSOFT_APP_PASSWORD` secrets. Bot messaging endpoint must be updated on each workspace restart (use `$REPLIT_DEV_DOMAIN`).
 - **Apify Candidate Enrichment**: Enriches candidate profiles via LinkedIn and email discovery.
 - **Gate 2 Re-Discovery Embedding**: Automatically generates Gemini embeddings for rejected candidates for future vector-similarity matching.
 - **A/B Testing Email Templates**: Manages A/B testing for email templates with variant assignment, metric recording, and analysis.
