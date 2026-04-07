@@ -10,20 +10,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.activity_feed import ActivityFeed
-from app.services.activity_service import activity_service
+from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 
 router = APIRouter(prefix="/test", tags=["Testing"])
 
 
 @router.post("/populate-activities", response_model=None)
-async def populate_activities(db: AsyncSession = Depends(get_db)):
+async def populate_activities(
+    db: AsyncSession = Depends(get_db),
+    activity_svc: ActivityService = Depends(get_activity_service),
+):
     """
     Create sample activities for all types to test the Activity Feed UI.
     """
     created_activities = []
     
     # 1. Interview Scheduled (entrevista - verde)
-    interview_activity = await activity_service.create_interview_scheduled(
+    interview_activity = await activity_svc.create_interview_scheduled(
         candidate_id="test-candidate-001",
         candidate_name="Ana Costa",
         job_title="Backend Sênior Node.js",
@@ -35,7 +38,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     created_activities.append(interview_activity)
     
     # 2. Email Sent (email - azul-acinzentado)
-    email_activity = await activity_service.create_email_sent(
+    email_activity = await activity_svc.create_email_sent(
         recipient_id="test-candidate-002",
         recipient_name="João Pedro Santos",
         recipient_type="candidate",
@@ -46,7 +49,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     created_activities.append(email_activity)
     
     # 3. Offer Sent (oferta - lilás)
-    offer_activity = await activity_service.create_offer_sent(
+    offer_activity = await activity_svc.create_offer_sent(
         candidate_id="test-candidate-003",
         candidate_name="Mariana Oliveira",
         job_title="Frontend Pleno React",
@@ -56,7 +59,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     created_activities.append(offer_activity)
     
     # 4. Approval Pending (minha - cinza)
-    approval_activity = await activity_service.create_approval_pending(
+    approval_activity = await activity_svc.create_approval_pending(
         item_type="candidate",
         item_id="test-candidate-004",
         item_name="Lucas Mendes - DevOps Engineer",
@@ -66,7 +69,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     created_activities.append(approval_activity)
     
     # 5. Candidate Moved by LIA (ia - rosa/bege)
-    lia_move_activity = await activity_service.create_candidate_moved(
+    lia_move_activity = await activity_svc.create_candidate_moved(
         candidate_id="test-candidate-005",
         candidate_name="Fernanda Lima",
         from_stage="Triagem Inicial",
@@ -77,7 +80,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     created_activities.append(lia_move_activity)
     
     # 6. Candidate Moved by Recruiter (minha - cinza)
-    recruiter_move_activity = await activity_service.create_candidate_moved(
+    recruiter_move_activity = await activity_svc.create_candidate_moved(
         candidate_id="test-candidate-006",
         candidate_name="Rafael Souza",
         from_stage="Entrevista RH",
@@ -88,7 +91,7 @@ async def populate_activities(db: AsyncSession = Depends(get_db)):
     created_activities.append(recruiter_move_activity)
     
     # 7. LIA Suggestion (ia - rosa/bege)
-    lia_suggestion_activity = await activity_service.create_lia_suggestion(
+    lia_suggestion_activity = await activity_svc.create_lia_suggestion(
         suggestion_type="candidate_match",
         target_id="test-job-001",
         target_name="Tech Lead - Python/AWS",

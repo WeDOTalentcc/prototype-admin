@@ -10,6 +10,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ._shared import *
+from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.domains.job_management.dependencies import get_job_vacancy_lifecycle_repo
 from app.domains.job_management.repositories.job_vacancy_lifecycle_repository import JobVacancyLifecycleRepository
 
@@ -476,7 +477,8 @@ async def close_vacancy(
     vacancy_id: str,
     request: Request,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    activity_svc: ActivityService = Depends(get_activity_service),
 ) -> dict[str, Any]:
     """Close a vacancy after hiring a candidate."""
     try:
@@ -580,10 +582,7 @@ async def close_vacancy(
             logger.warning(f"Event dispatch failed for job close: {e}")
 
         try:
-            from app.services.activity_service import ActivityService
-            activity_service = ActivityService()
-
-            await activity_service.create_activity(
+            await activity_svc.create_activity(
                 activity_type="vacancy_closed",
                 title=f"Vaga Fechada: {vacancy.title}",
                 description=f"Candidato contratado. {len(other_candidate_ids)} candidatos notificados.",
