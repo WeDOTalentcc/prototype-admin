@@ -49,9 +49,23 @@ def get_verified_company_id(
             )
         return jwt_company
 
-    # Fallback for development/demo (when AuthEnforcementMiddleware allows through)
+    # Fallback for development mode only — when AuthEnforcementMiddleware allows through
+    # In production, JWT must always be present; non-JWT resolution is blocked.
+    import os
+    is_production = os.getenv("ENVIRONMENT", "development").lower() in ("production", "staging")
+
+    if is_production and not jwt_company:
+        logger.warning(
+            f"[TenantGuard] Production: rejected non-JWT company resolution "
+            f"for path={request.url.path}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required: JWT with company context is mandatory"
+        )
+
     if requested_company:
-        logger.debug(f"[TenantGuard] Using header/query company_id: {requested_company}")
+        logger.debug(f"[TenantGuard] Dev mode: using header/query company_id: {requested_company}")
         return requested_company
 
     raise HTTPException(

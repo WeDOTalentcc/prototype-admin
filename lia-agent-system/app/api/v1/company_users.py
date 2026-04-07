@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
+from app.shared.tenant_guard import get_verified_company_id
 from app.auth.security import generate_secure_token, get_password_hash
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.company.dependencies import (
@@ -313,13 +314,19 @@ async def list_company_users(
 
 @router.get("/catalog-status", response_model=CatalogStatusResponse)
 async def get_catalog_status(
-    company_id: str = Query(default=""),
+    company_id: str = Depends(get_verified_company_id),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
-    """Get the maturity status of company's catalog data for Smart Wizard."""
+    """Get the maturity status of company's catalog data for Smart Wizard.
+
+    company_id is resolved from the JWT token via get_verified_company_id.
+    Cross-tenant access is blocked automatically.
+    """
     try:
         status = await company_config_service.get_catalog_status(company_id, profile_repo.db)
         return CatalogStatusResponse(**status)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting catalog status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -327,11 +334,15 @@ async def get_catalog_status(
 
 @router.get("/smart-wizard-greeting", response_model=SmartWizardGreetingResponse)
 async def get_smart_wizard_greeting(
-    company_id: str = Query(default=""),
+    company_id: str = Depends(get_verified_company_id),
     dept_repo: DepartmentRepository = Depends(get_department_repo),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
-    """Get personalized greeting for the Smart Wizard based on catalog status."""
+    """Get personalized greeting for the Smart Wizard based on catalog status.
+
+    company_id is resolved from the JWT token via get_verified_company_id.
+    Cross-tenant access is blocked automatically.
+    """
     import asyncio
 
     try:

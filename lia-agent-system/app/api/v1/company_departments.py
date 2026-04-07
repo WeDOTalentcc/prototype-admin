@@ -11,6 +11,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from app.auth.dependencies import get_current_user_or_demo
+from app.shared.tenant_guard import get_verified_company_id
 from app.domains.company.dependencies import (
     get_company_profile_repo,
     get_department_repo,
@@ -417,25 +418,24 @@ async def download_benefits_import_template():
 @router.post("/departments/import", response_model=DepartmentImportResponse)
 async def import_departments(
     file: UploadFile = File(...),
-    company_id: str = Query(""),
+    company_id: str = Depends(get_verified_company_id),
     dept_repo: DepartmentRepository = Depends(get_department_repo),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
-    """Import departments from Excel/CSV file with AI processing."""
+    """Import departments from Excel/CSV file with AI processing.
+
+    company_id is resolved from the JWT token via get_verified_company_id.
+    Cross-tenant import attempts are rejected with 403.
+    """
+
     try:
         logger.info(f"Starting departments import from file: {file.filename}")
 
         resolved_company_id = None
-        if company_id and company_id not in ("default", "unknown"):
-            try:
-                resolved_company_id = uuid.UUID(company_id)
-            except ValueError:
-                pass
-
-        if not resolved_company_id:
-            profile = await profile_repo.get_default()
-            if profile:
-                resolved_company_id = profile.id
+        try:
+            resolved_company_id = uuid.UUID(company_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: {company_id}")
 
         rows = await parse_import_file(file)
 

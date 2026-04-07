@@ -1,5 +1,5 @@
 """
-AuthEnforcementMiddleware — Global authentication and tenant context.
+AuthEnforcementMiddleware — Global authentication, tenant context, and prompt injection guard.
 
 Multi-tenancy security: Every non-public request MUST have a valid JWT.
 The middleware:
@@ -7,6 +7,7 @@ The middleware:
 2. Loads the user from DB
 3. Injects user + company_id into request.state
 4. Rejects unauthenticated requests with 401
+5. Checks all incoming text bodies for prompt injection before reaching agents
 
 This replaces per-endpoint auth and eliminates the X-Company-ID header
 trust vulnerability (where a user could forge a different company_id).
@@ -20,6 +21,18 @@ _current_company_id: ContextVar[str] = ContextVar("_current_company_id", default
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+
+# Eagerly import security guard at module scope (avoids per-request import overhead)
+try:
+    from app.shared.robustness.security_patterns import (
+        check_input_security as _check_input_security,
+        get_block_response as _get_block_response,
+    )
+    _SECURITY_GUARD_AVAILABLE = True
+except ImportError:
+    _check_input_security = None  # type: ignore[assignment]
+    _get_block_response = None  # type: ignore[assignment]
+    _SECURITY_GUARD_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +80,15 @@ PUBLIC_PREFIXES = (
 class AuthEnforcementMiddleware(BaseHTTPMiddleware):
     """Global auth middleware that enforces JWT on all non-public routes."""
 
+    # Paths where we perform prompt injection checks on body content
+    AGENT_PATHS = (
+        "/api/v1/chat",
+        "/api/v1/jobs",
+        "/api/v1/candidates",
+        "/api/v1/wsi",
+        "/api/v1/search",
+    )
+
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
 
@@ -77,6 +99,56 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         # Allow OPTIONS (CORS preflight)
         if request.method == "OPTIONS":
             return await call_next(request)
+
+        # ── Prompt injection guard on agent-bound routes ──────────────────────
+        # For POST/PUT JSON requests to agent-facing endpoints, check the body.
+        # Restricted to application/json content-type to avoid scanning binary
+        # or multipart data (e.g. file uploads) and minimize false positives.
+        content_type = request.headers.get("content-type", "")
+        is_json_body = "application/json" in content_type or content_type == ""
+        if (
+            request.method in ("POST", "PUT")
+            and path.startswith(self.AGENT_PATHS)
+            and is_json_body
+        ):
+            body_bytes = b""
+            if not _SECURITY_GUARD_AVAILABLE:
+                logger.error("[PromptInjectionGuard] Security guard unavailable — blocking agent route")
+                return JSONResponse(
+                    {"detail": "Serviço temporariamente indisponível."},
+                    status_code=503,
+                )
+            try:
+                body_bytes = await request.body()
+                body_text = body_bytes.decode("utf-8", errors="replace")
+
+                if body_text:
+                    result = _check_input_security(body_text)
+                    if result.is_blocked:
+                        logger.warning(
+                            f"[PromptInjectionGuard] Blocked on {path}: "
+                            f"threats={result.threat_categories}, "
+                            f"risk={result.risk_level}, "
+                            f"patterns={result.matched_pattern_names}"
+                        )
+                        return JSONResponse(
+                            {"detail": _get_block_response(result, language="pt")},
+                            status_code=400,
+                        )
+
+            except Exception as guard_err:
+                logger.error(f"[PromptInjectionGuard] Guard error on {path}: {guard_err}")
+                # Fail-closed: unknown guard errors block agent-bound requests
+                return JSONResponse(
+                    {"detail": "Solicitação não pôde ser processada."},
+                    status_code=400,
+                )
+
+            # Reconstruct request with consumed body for downstream handlers
+            async def receive():
+                return {"type": "http.request", "body": body_bytes, "more_body": False}
+
+            request = Request(request.scope, receive)
 
         # Extract Bearer token
         auth_header = request.headers.get("Authorization", "")

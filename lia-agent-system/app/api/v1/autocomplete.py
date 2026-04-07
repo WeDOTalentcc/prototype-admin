@@ -3,12 +3,13 @@ Premium Autocomplete API - Company-specific search suggestions.
 """
 import logging
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -32,20 +33,27 @@ class PremiumAutocompleteResponse(BaseModel):
 @router.get("/premium", response_model=PremiumAutocompleteResponse)
 async def get_premium_suggestions(
     query: str = Query(..., min_length=2),
-    company_id: str = Query("demo"),
-    user_id: str = Query("default_user"),
+    user_id: str = Query(..., description="User ID — required for per-user history"),
     limit: int = Query(10, ge=1, le=20),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get premium autocomplete suggestions based on company history.
-    
+
     Returns suggestions from:
     - User's recent searches
     - Popular searches in the company
     - Team members' searches
     - LIA-recommended queries
+
+    company_id is resolved from the JWT token — not from caller-supplied query params.
     """
+    if not user_id or user_id in ("default_user", "anonymous", ""):
+        raise HTTPException(
+            status_code=400,
+            detail="Valid user_id is required.",
+        )
     suggestions: list[PremiumSuggestion] = []
     query_lower = query.lower()
     
