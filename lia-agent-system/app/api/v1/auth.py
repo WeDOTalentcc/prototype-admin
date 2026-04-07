@@ -37,7 +37,7 @@ from app.auth.security import (
 from app.domains.auth.dependencies import get_user_repo
 from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.communication.services.email_service import email_service
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -91,7 +91,8 @@ async def register(
 async def login(
     login_data: UserLogin,
     request: Request,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Login with email and password.
@@ -105,7 +106,7 @@ async def login(
 
     if not user or not verify_password(login_data.password, user.password_hash):
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=None,
                 agent_name="auth_module",
                 decision_type="reject_candidate",
@@ -140,7 +141,7 @@ async def login(
 
     try:
         _company = getattr(user, "company_id", None)
-        await audit_service.log_decision(
+        await audit_svc.log_decision(
             company_id=str(_company) if _company else None,
             agent_name="auth_module",
             decision_type="move_stage",
