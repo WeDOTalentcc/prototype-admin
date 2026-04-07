@@ -1,6 +1,11 @@
 """
 Agent Health Alert Service — Sprint I2
 
+# CROSS-CUTTING: kept in app/shared/services because it monitors ALL agent types
+# (wizard, pipeline, automation, etc.) across multiple domains. Moving it into any
+# single domain would break the single-responsibility boundary. The service is
+# deliberately domain-agnostic.
+
 Monitora falhas consecutivas de agentes ReAct e dispara alertas automáticos
 via Bell + Teams quando thresholds são atingidos.
 

@@ -1,5 +1,10 @@
 """
 TenantContextService — contexto rico por tenant para personalização da LIA.
+
+# CROSS-CUTTING: kept in app/shared/services because it is consumed by the central
+# orchestrator (main_orchestrator.py) to inject tenant context into ALL LIA responses
+# regardless of domain. It depends on company + job_vacancy data and has no single
+# domain owner.
 Injeta nome, setor, nível de autonomia e estado atual no contexto do orquestrador.
 """
 from __future__ import annotations
