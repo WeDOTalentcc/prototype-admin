@@ -1845,3 +1845,7 @@ class CommunicationService:
 
 
 communication_service = CommunicationService()
+
+
+def get_communication_service() -> CommunicationService:
+    return communication_service

@@ -34,8 +34,8 @@ from app.domains.cv_screening.services.wsi_service import (
     Competency,
     ResponseAnalysis,
     WSIQuestion,
-    wsi_service,
 )
+from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.domains.cv_screening.services.wsi_voice_orchestrator import (
     wsi_voice_orchestrator,
 )
@@ -250,6 +250,7 @@ async def generate_questions(
     request: GenerateQuestionsRequest,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+    wsi_svc: WSIService = Depends(get_wsi_service),
 ):
     """
     Generate WSI questions for screening session.
@@ -272,7 +273,7 @@ async def generate_questions(
                 comp = Competency(**comp_dict)
                 competencies_list.append(comp)
             
-            questions = await wsi_service.generate_screening_questions(
+            questions = await wsi_svc.generate_screening_questions(
                 competencies=competencies_list,
                 mode=request.mode,
                 job_description=request.job_description,
@@ -410,7 +411,8 @@ async def analyze_response(
 @router.post("/calculate-wsi", response_model=CalculateWSIResponse)
 async def calculate_wsi(
     request: CalculateWSIRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    wsi_svc: WSIService = Depends(get_wsi_service),
 ):
     """
     Calculate final WSI scores.
@@ -444,7 +446,7 @@ async def calculate_wsi(
             for row in rows
         ]
         
-        wsi_result = wsi_service.calculate_wsi(
+        wsi_result = wsi_svc.calculate_wsi(
             candidate_id=request.candidate_id,
             job_vacancy_id=request.job_vacancy_id,
             responses=responses,

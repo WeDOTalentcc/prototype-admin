@@ -18,7 +18,7 @@ from app.auth.models import User  # noqa: F401
 from app.auth.models import User as ImportUser  # noqa: F401
 from app.core.database import get_db  # noqa: F401
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service  # noqa: F401
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
 from app.domains.sourcing.services.pearch_service import PearchService, get_pearch_service, pearch_service  # noqa: F401
 from app.domains.sourcing.services.search_analytics import search_analytics_service  # noqa: F401
 from app.models.pearch import (  # noqa: F401

@@ -19,7 +19,7 @@ from pydantic import BaseModel, EmailStr, Field
 from app.domains.recruitment.dependencies import get_application_repo
 from app.domains.recruitment.repositories.application_repository import ApplicationRepository
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.services.candidate_feedback_service import candidate_feedback_service
 from app.services.lia_score_service import LIAScoreService
@@ -102,9 +102,9 @@ async def apply_to_vacancy(
     vacancy_id: str,
     application: CandidateApplicationRequest,
     cv_file: UploadFile | None = File(None),
-    repo: ApplicationRepository = Depends(get_application_repo)
-,
+    repo: ApplicationRepository = Depends(get_application_repo),
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Processa inscricao de candidato em uma vaga.
@@ -295,7 +295,7 @@ async def apply_to_vacancy(
                     "location_city": candidate_data.get("location"),
                 }
 
-                await rubric_evaluation_service.evaluate_and_create_activity(
+                await rubric_svc.evaluate_and_create_activity(
                     candidate_id=str(candidate.id),
                     candidate_name=candidate_data.get("name", "Candidato"),
                     candidate_data=application_candidate_data,

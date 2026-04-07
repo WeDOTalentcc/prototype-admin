@@ -25,7 +25,9 @@ from ._shared import (
     ScreenCandidateRequest,
     TriggerEventRequest,
     UpdateTriggerRequest,
+    AutomationService,
     automation_service,
+    get_automation_service,
     automation_trigger_service,
     get_activity_service,
     get_cv_scoring_service,
@@ -125,6 +127,7 @@ async def get_automation_status():
 
 @router.get("/stage-suggestions", response_model=None)
 async def get_stage_suggestions(
+    auto_svc: AutomationService = Depends(get_automation_service),
     from_stage: str | None = Query(None, description="Previous stage name"),
     to_stage: str = Query(..., description="Target stage name"),
     candidate_id: str | None = Query(None, description="Candidate ID"),
@@ -161,7 +164,7 @@ async def get_stage_suggestions(
             "company_id": company_id
         }
         
-        suggestions = automation_service.get_ai_suggestions(transition_data)
+        suggestions = auto_svc.get_ai_suggestions(transition_data)
         
         logger.info(
             f"📋 [STAGE_SUGGESTIONS] Generated {len(suggestions)} suggestions "

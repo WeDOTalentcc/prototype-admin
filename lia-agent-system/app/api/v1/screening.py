@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
-from app.domains.cv_screening.dependencies import get_screening_repo
+from app.domains.cv_screening.dependencies import get_screening_repo, WSIService, get_wsi_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.models.screening import ScreeningTask
 from app.schemas.screening import (
@@ -103,14 +103,13 @@ def _wsi_questions_to_screening_response(wsi_questions, request) -> ScreeningQue
 @router.post("/questions", response_model=ScreeningQuestionResponse)
 async def generate_screening_questions(
     request: ScreeningQuestionRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    wsi_svc: WSIService = Depends(get_wsi_service),
 ) -> ScreeningQuestionResponse:
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.email}")
 
-        from app.domains.cv_screening.services.wsi_service import WSIService
-        wsi_svc = WSIService()
         mode = "full" if request.question_count > 10 else "compact"
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.skills or [],
@@ -141,14 +140,13 @@ async def generate_screening_questions(
 @router.post("/questions/regenerate", response_model=list[ScreeningQuestion])
 async def regenerate_questions(
     request: RegenerateQuestionsRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    wsi_svc: WSIService = Depends(get_wsi_service),
 ) -> list[ScreeningQuestion]:
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
 
-        from app.domains.cv_screening.services.wsi_service import WSIService
-        wsi_svc = WSIService()
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.context.skills or [],
             behavioral=[],

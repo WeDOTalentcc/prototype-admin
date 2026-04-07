@@ -48,6 +48,8 @@ from ._shared import (
     get_pearch_service,
     get_user_company_id,
     logger,
+    RubricEvaluationService,
+    get_rubric_evaluation_service,
     rubric_evaluation_service,
 )
 
@@ -547,6 +549,7 @@ def _build_candidate_data_from_dto(candidate_dto: "CandidateSearchResultDTO") ->
 async def _evaluate_candidates_with_rubrics(
     candidates: list["CandidateSearchResultDTO"],
     requirements: list[JobRequirementCreate],
+    rubric_svc=None,
 ) -> list["CandidateSearchResultDTO"]:
     """
     Evaluate candidates using rubric evaluation service.
@@ -555,7 +558,8 @@ async def _evaluate_candidates_with_rubrics(
     for candidate in candidates:
         try:
             candidate_data = _build_candidate_data_from_dto(candidate)
-            result = await rubric_evaluation_service.evaluate_candidate(
+            _svc = rubric_svc if rubric_svc is not None else rubric_evaluation_service
+            result = await _svc.evaluate_candidate(
                 candidate_data=candidate_data,
                 requirements=requirements,
             )
@@ -573,9 +577,9 @@ async def _evaluate_candidates_with_rubrics(
 async def search_candidates(
     request: SearchRequestDTO,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-,
+    current_user: User = Depends(get_current_user_or_demo),
     pearch_svc: PearchService = Depends(get_pearch_service),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Busca candidatos usando busca híbrida (banco local + Pearch AI).
@@ -626,7 +630,11 @@ async def search_candidates(
                 requirements = await _get_job_requirements(db, request.job_id)
                 if requirements:
                     logger.info(f"Evaluating {len(candidates)} candidates with rubrics for job_id={request.job_id}")
-                    candidates = await _evaluate_candidates_with_rubrics(candidates, requirements)
+                    candidates = await _evaluate_candidates_with_rubrics(
+                candidates,
+                requirements,
+                rubric_svc=rubric_svc,
+            )
                 else:
                     logger.info(f"No requirements found for job_id={request.job_id}, skipping rubric evaluation")
             except Exception as e:
@@ -698,7 +706,8 @@ async def search_candidates(
 async def evaluate_candidates_for_job(
     request: EvaluateForJobRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Avalia candidatos em batch contra os requisitos de uma vaga usando rubricas.
@@ -805,7 +814,7 @@ async def evaluate_candidates_for_job(
                     continue
                 
                 # Evaluate with rubrics
-                eval_result = await rubric_evaluation_service.evaluate_candidate(
+                eval_result = await rubric_svc.evaluate_candidate(
                     candidate_data=candidate_data,
                     requirements=requirements,
                 )

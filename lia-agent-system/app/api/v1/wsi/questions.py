@@ -19,6 +19,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.domains.cv_screening.services.screening_question_set_service import (
     ScreeningQuestionSetService,
     get_screening_question_set_service,
@@ -60,6 +61,7 @@ async def generate_questions(
     request: GenerateQuestionsRequest,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+    wsi_svc: WSIService = Depends(get_wsi_service),
 ):
     """
     Generate WSI screening questions using the canonical F6 pipeline
@@ -78,8 +80,6 @@ async def generate_questions(
         job_desc_parts.append("Responsabilidades: " + ", ".join(requirements))
     job_description = "\n".join(job_desc_parts) if job_desc_parts else None
 
-    from app.domains.cv_screening.services.wsi_service import WSIService
-    wsi_svc = WSIService()
     requested_count = request.max_questions or request.num_questions
     mode = "full" if requested_count > 10 else "compact"
     wsi_questions = await wsi_svc.generate_from_simple_inputs(

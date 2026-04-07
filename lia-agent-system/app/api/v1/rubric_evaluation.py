@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
 from app.models.rubric import JobRequirement, RubricEvaluation
@@ -59,6 +59,7 @@ async def evaluate_candidate(
     db: AsyncSession = Depends(get_db),
     x_company_id: str | None = Header(None),
     audit_svc: AuditService = Depends(get_audit_service),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Evaluate a single candidate against job requirements using structured rubrics.
@@ -154,7 +155,7 @@ async def evaluate_candidate(
             for req in db_requirements
         ]
     
-    evaluation_result = await rubric_evaluation_service.evaluate_candidate(
+    evaluation_result = await rubric_svc.evaluate_candidate(
         candidate_data=candidate_data,
         requirements=requirements,
     )
@@ -234,6 +235,7 @@ async def evaluate_candidate(
 async def batch_evaluate_candidates(
     request: BatchEvaluateRequest,
     db: AsyncSession = Depends(get_db),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Evaluate multiple candidates against the same job requirements.
@@ -302,7 +304,7 @@ async def batch_evaluate_candidates(
         else:
             errors.append({"candidate_id": str(cid), "error": "Candidate not found"})
     
-    batch_results = await rubric_evaluation_service.batch_evaluate(
+    batch_results = await rubric_svc.batch_evaluate(
         candidates=candidates_data,
         requirements=requirements,
         sort_by_score=True,
@@ -527,6 +529,7 @@ async def get_score_breakdown(
 async def evaluate_candidate_legacy(
     request: EvaluateCandidateRequest,
     db: AsyncSession = Depends(get_db),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Evaluate candidate and return result in legacy LIA Score format.
@@ -534,8 +537,8 @@ async def evaluate_candidate_legacy(
     This endpoint is for backward compatibility during the transition
     from the old LIA Score system to the new Rubric Evaluation system.
     """
-    response = await evaluate_candidate(request, db)
+    response = await evaluate_candidate(request, db, rubric_svc=rubric_svc)
     
-    legacy_result = rubric_evaluation_service.to_legacy_format(response.result)
+    legacy_result = rubric_svc.to_legacy_format(response.result)
     
     return legacy_result.model_dump()

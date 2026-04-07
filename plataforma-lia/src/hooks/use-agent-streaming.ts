@@ -24,7 +24,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 const WS_BASE_URL =
   process.env.NEXT_PUBLIC_WS_URL ||
   (typeof window !== 'undefined'
-    ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:8001`
+    ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
     : 'ws://127.0.0.1:8001')
 
 export type StreamingEventType =

@@ -1251,3 +1251,7 @@ class AutomationService:
 
 
 automation_service = AutomationService()
+
+
+def get_automation_service() -> AutomationService:
+    return automation_service

@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.automation.services.automation_service import automation_service
+from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
 from app.models.automation import ActionType, TriggerType
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,8 @@ async def list_automations(
     trigger_type: str | None = Query(None, description="Filter by trigger type"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     List all automations for a company.
@@ -86,7 +87,7 @@ async def list_automations(
     Returns paginated list of automation configurations.
     """
     try:
-        result = await automation_service.list_automations(
+        result = await auto_svc.list_automations(
             company_id=company_id,
             is_active=is_active,
             trigger_type=trigger_type,
@@ -115,7 +116,8 @@ async def create_automation(
     data: CreateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
     user_id: str | None = Query(None, description="User creating the automation"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Create a new automation.
@@ -140,7 +142,7 @@ async def create_automation(
                 detail=f"Invalid action_type. Must be one of: {', '.join(valid_action_types)}"
             )
         
-        automation = await automation_service.create_automation(
+        automation = await auto_svc.create_automation(
             company_id=company_id,
             name=data.name,
             description=data.description,
@@ -178,7 +180,8 @@ async def create_automation(
 async def get_automation(
     automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Get a single automation by ID.
@@ -186,7 +189,7 @@ async def get_automation(
     Returns full automation details or 404 if not found.
     """
     try:
-        automation = await automation_service.get_automation(
+        automation = await auto_svc.get_automation(
             automation_id=automation_id,
             company_id=company_id,
             db=db
@@ -219,7 +222,8 @@ async def update_automation(
     data: UpdateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
     user_id: str | None = Query(None, description="User updating the automation"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Update an existing automation.
@@ -245,7 +249,7 @@ async def update_automation(
                     detail=f"Invalid action_type. Must be one of: {', '.join(valid_action_types)}"
                 )
         
-        automation = await automation_service.update_automation(
+        automation = await auto_svc.update_automation(
             automation_id=automation_id,
             company_id=company_id,
             updates=updates,
@@ -281,7 +285,8 @@ async def update_automation(
 async def delete_automation(
     automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Delete an automation.
@@ -289,7 +294,7 @@ async def delete_automation(
     This permanently removes the automation configuration.
     """
     try:
-        success = await automation_service.delete_automation(
+        success = await auto_svc.delete_automation(
             automation_id=automation_id,
             company_id=company_id,
             db=db
@@ -323,7 +328,8 @@ async def test_automation(
     automation_id: str,
     data: TestAutomationRequest = None,
     company_id: str = Query(..., description="Company ID (required)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Test an automation without executing the actual action.
@@ -336,7 +342,7 @@ async def test_automation(
     try:
         test_data = data.test_data if data else None
         
-        result = await automation_service.test_automation(
+        result = await auto_svc.test_automation(
             automation_id=automation_id,
             company_id=company_id,
             test_data=test_data,
@@ -371,7 +377,8 @@ async def test_automation(
 async def trigger_automations(
     data: TriggerAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Manually trigger automations for a specific event.
@@ -380,7 +387,7 @@ async def trigger_automations(
     and execute their actions if conditions are met.
     """
     try:
-        result = await automation_service.trigger_automation(
+        result = await auto_svc.trigger_automation(
             trigger_type=data.trigger_type,
             trigger_data=data.trigger_data,
             company_id=company_id,
@@ -409,7 +416,8 @@ async def get_automation_logs(
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    auto_svc: AutomationService = Depends(get_automation_service),
 ):
     """
     Get execution logs for a specific automation.
@@ -417,7 +425,7 @@ async def get_automation_logs(
     Returns history of when the automation was triggered and results.
     """
     try:
-        result = await automation_service.get_execution_logs(
+        result = await auto_svc.get_execution_logs(
             company_id=company_id,
             automation_id=automation_id,
             limit=limit,

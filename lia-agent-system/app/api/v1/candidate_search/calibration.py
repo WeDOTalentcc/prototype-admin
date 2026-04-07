@@ -14,6 +14,8 @@ from ._shared import (
     _normalize_priority,
     get_db,
     logger,
+    RubricEvaluationService,
+    get_rubric_evaluation_service,
     rubric_evaluation_service,
 )
 
@@ -453,7 +455,8 @@ class AddCandidatesToVacancyResponse(BaseModel):
 async def add_candidates_to_vacancy(
     vacancy_id: str,
     request: AddCandidatesToVacancyRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
     """
     Adiciona candidatos a uma vaga e verifica meta automaticamente.
@@ -592,7 +595,7 @@ async def add_candidates_to_vacancy(
                                     "resume_text": getattr(candidate, 'resume_text', None),
                                 }
                                 
-                                await rubric_evaluation_service.evaluate_and_create_activity(
+                                await rubric_svc.evaluate_and_create_activity(
                                     candidate_id=cand_id,
                                     candidate_name=candidate.name or "Candidato",
                                     candidate_data=candidate_data,

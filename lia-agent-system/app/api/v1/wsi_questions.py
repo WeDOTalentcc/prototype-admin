@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field, validator
 
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
@@ -172,15 +173,14 @@ def validate_question_coverage(
 async def generate_wsi_questions(
     request: GenerateQuestionsRequest,
     audit_svc: AuditService = Depends(get_audit_service),
+    wsi_svc: WSIService = Depends(get_wsi_service),
 ):
     """
     Generate WSI questions based on job competencies using Gemini LLM.
     Falls back to template-based generation if LLM is unavailable.
     """
     try:
-        from app.domains.cv_screening.services.wsi_service import WSIService as _WSISvc
-        _wsi = _WSISvc()
-        _raw = await _wsi.generate_from_simple_inputs(
+        _raw = await wsi_svc.generate_from_simple_inputs(
             skills=request.technical_skills,
             behavioral=request.behavioral_competencies,
             seniority=request.seniority or "pleno",
@@ -273,7 +273,10 @@ async def generate_wsi_questions(
 
 
 @router.post("/regenerate-questions", response_model=QuestionsResponse)
-async def regenerate_wsi_questions(request: RegenerateQuestionsRequest):
+async def regenerate_wsi_questions(
+    request: RegenerateQuestionsRequest,
+    wsi_svc: WSIService = Depends(get_wsi_service),
+):
     """
     Regenerate WSI questions when competencies change.
 
@@ -318,9 +321,7 @@ async def regenerate_wsi_questions(request: RegenerateQuestionsRequest):
         behav_to_generate = new_behav[:max(behav_needed, 1)]
 
         if tech_to_generate or behav_to_generate:
-            from app.domains.cv_screening.services.wsi_service import WSIService as _WSISvc
-            _wsi = _WSISvc()
-            _raw = await _wsi.generate_from_simple_inputs(
+            _raw = await wsi_svc.generate_from_simple_inputs(
                 skills=tech_to_generate,
                 behavioral=behav_to_generate,
                 seniority=request.seniority or "pleno",

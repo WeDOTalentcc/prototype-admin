@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
         content: body.message || body.content || '',
         user_id: body.user_id,
         conversation_id: body.conversation_id,
+        context: body.context,
       }),
     })
 
@@ -30,8 +31,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const data = await response.json()
-    return NextResponse.json(data)
+    const data = await response.json() as Record<string, unknown>
+
+    const content =
+      (data.content as string | undefined) ||
+      ((data.message as Record<string, unknown> | undefined)?.content as string | undefined) ||
+      ((data.message as Record<string, unknown> | undefined)?.text as string | undefined) ||
+      ''
+
+    const conversationId =
+      (data.conversation_id as string | undefined) ||
+      ((data.message as Record<string, unknown> | undefined)?.conversation_id as string | undefined) ||
+      ((data.conversation as Record<string, unknown> | undefined)?.id as string | undefined)
+
+    return NextResponse.json({
+      content,
+      conversation_id: conversationId,
+      message_metadata: data.message_metadata,
+    })
   } catch {
     return NextResponse.json(
       { content: 'Erro ao conectar com o backend.', error: 'connection_error' },

@@ -1895,3 +1895,8 @@ class TriagemSessionService:
 
 
 triagem_service = TriagemSessionService()
+
+
+def get_triagem_service() -> "TriagemSessionService":
+    """Return the module-level TriagemSessionService singleton."""
+    return triagem_service

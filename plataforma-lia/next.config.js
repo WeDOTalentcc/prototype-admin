@@ -197,6 +197,11 @@ const nextConfig = {
         source: '/api/lia/chat/stream',
         destination: 'http://127.0.0.1:8001/api/v1/chat/stream',
       },
+      {
+        // WebSocket proxy — permite wss://<domain>/ws/... sem expor porta 8001 diretamente
+        source: '/ws/:path*',
+        destination: 'http://127.0.0.1:8001/ws/:path*',
+      },
     ];
   },
 };

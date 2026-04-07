@@ -35,7 +35,8 @@ from ._shared import (
     InterviewScheduledRequest,
     OfferSentPayload,
     ScreeningCompletedRequest,
-    communication_service,
+    CommunicationService,
+    get_communication_service,
     get_activity_service,
     get_ats_sync_service,
     get_calendar_service,
@@ -57,6 +58,7 @@ async def handle_screening_completed(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
+    comm_svc: CommunicationService = Depends(get_communication_service),
 ):
     """
     Handle the screening_completed trigger for conversational screening (voice/chat/WhatsApp).
@@ -249,7 +251,7 @@ async def handle_screening_completed(
         try:
             # Use centralized communication_service for screening results
             # This ensures approval policy is respected and communication is logged
-            comm_result = await communication_service.send_screening_result(
+            comm_result = await comm_svc.send_screening_result(
                 db=db,
                 candidate_id=request.candidate_id,
                 vacancy_id=request.vacancy_id,

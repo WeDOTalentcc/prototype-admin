@@ -2021,3 +2021,8 @@ async def generate_wsi_questions_tool(job_id: str, count: int = 5, **kwargs) -> 
         max_questions=count,
     )
     return [q.dict() if hasattr(q, "dict") else q for q in result]
+
+
+def get_wsi_service() -> "WSIService":
+    """Return the module-level WSIService singleton. No db needed — pure LLM service."""
+    return wsi_service

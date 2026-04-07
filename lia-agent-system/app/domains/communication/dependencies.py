@@ -19,3 +19,9 @@ def get_email_repo(
     db: AsyncSession = Depends(get_db),
 ) -> EmailRepository:
     return EmailRepository(db)
+
+
+from app.domains.communication.services.communication_service import CommunicationService, communication_service as _comm_singleton
+
+def get_communication_service() -> CommunicationService:
+    return _comm_singleton

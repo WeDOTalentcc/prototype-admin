@@ -13,6 +13,7 @@ from ._shared import *
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.domains.job_management.dependencies import get_job_vacancy_lifecycle_repo
 from app.domains.job_management.repositories.job_vacancy_lifecycle_repository import JobVacancyLifecycleRepository
+from app.domains.communication.services.communication_service import CommunicationService, get_communication_service
 
 router = APIRouter()
 
@@ -479,6 +480,7 @@ async def close_vacancy(
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_user_or_demo),
     activity_svc: ActivityService = Depends(get_activity_service),
+    comm_svc: CommunicationService = Depends(get_communication_service),
 ) -> dict[str, Any]:
     """Close a vacancy after hiring a candidate."""
     try:
@@ -498,11 +500,10 @@ async def close_vacancy(
             raise HTTPException(status_code=404, detail="Vacancy not found")
 
         from app.domains.communication.services.communication_service import (
-            CommunicationService,
             MessageChannel,
             MessageType,
         )
-        communication_service = CommunicationService()
+        communication_service = comm_svc
 
         notifications_sent = {"hired": None, "others": []}
 

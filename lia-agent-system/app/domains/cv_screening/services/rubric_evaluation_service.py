@@ -1382,3 +1382,7 @@ class RubricEvaluationService:
 
 
 rubric_evaluation_service = RubricEvaluationService()
+
+
+def get_rubric_evaluation_service() -> RubricEvaluationService:
+    return rubric_evaluation_service
