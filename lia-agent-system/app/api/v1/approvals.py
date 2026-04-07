@@ -13,7 +13,7 @@ from app.domains.approvals.dependencies import get_approvals_repo
 from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
 from app.domains.communication.services.email_service import email_service
 from app.models.approval import ApprovalRequest
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -235,7 +235,8 @@ async def approve_request(
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     approved_by: str = Query(..., description="Email of the approver"),
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
+    repo: ApprovalsRepository = Depends(get_approvals_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """Approve an approval request."""
     try:
@@ -276,7 +277,7 @@ async def approve_request(
         logger.info(f"Approval request {approval_id} approved by {approved_by}")
 
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=company_id,
                 agent_name="approvals_module",
                 decision_type="approve_candidate",
@@ -310,7 +311,8 @@ async def reject_request(
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     rejected_by: str = Query(..., description="Email of the rejector"),
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
+    repo: ApprovalsRepository = Depends(get_approvals_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """Reject an approval request."""
     try:
@@ -351,7 +353,7 @@ async def reject_request(
         logger.info(f"Approval request {approval_id} rejected by {rejected_by}")
 
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=company_id,
                 agent_name="approvals_module",
                 decision_type="reject_candidate",
