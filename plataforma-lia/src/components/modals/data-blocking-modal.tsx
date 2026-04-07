@@ -127,7 +127,7 @@ export function DataBlockingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-sm rounded-md">
+      <DialogContent className="max-w-sm rounded-md" data-testid="data-blocking-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-status-warning">
             <AlertTriangle className="w-5 h-5" />

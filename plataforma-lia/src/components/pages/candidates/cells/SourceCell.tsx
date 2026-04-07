@@ -9,12 +9,12 @@ export function renderSourceCell(candidate: Candidate): React.ReactNode {
   const isLocal = sourceInfo.isLocal
 
   return (
-    <div className="relative group flex items-center justify-center cursor-help">
+    <div data-testid="source-cell" className="relative group flex items-center justify-center cursor-help">
       {isLocal ? (
         <div
           className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-stone-400/20"
         >
-          <Home className="w-3.5 h-3.5" style={{color: "var(--lia-text-secondary)"}} />
+          <Home className="w-3.5 h-3.5" />
         </div>
       ) : (
         <div className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-lia-bg-tertiary dark:bg-lia-bg-elevated">
@@ -26,7 +26,7 @@ export function renderSourceCell(candidate: Candidate): React.ReactNode {
         <div className="px-3 py-2 rounded-md text-xs min-w-[180px] text-white bg-lia-btn-primary-bg">
           <div className="font-semibold mb-1 flex items-center gap-1.5">
             {isLocal ? (
-              <Home className="w-3.5 h-3.5" style={{color: "var(--wedo-orange)"}} />
+              <Home className="w-3.5 h-3.5" />
             ) : (
               <Globe className="w-3.5 h-3.5 text-lia-text-disabled" />
             )}

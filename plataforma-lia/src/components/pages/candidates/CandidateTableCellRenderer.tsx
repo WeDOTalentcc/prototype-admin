@@ -426,7 +426,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return (
           <Badge
             className="text-xs"
-            style={{backgroundColor: "var(--lia-border-subtle)", color: "var(--lia-text-secondary)"}}
+           
           >
             {workModel === "remoto"
               ? "🏠 Remoto"

@@ -22,7 +22,7 @@ export function ContactPresenceSection({
   updateLiaInstruction,
 }: ContactPresenceSectionProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="contact-presence-section">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
         Contato e Presença Online
       </h3>

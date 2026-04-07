@@ -267,7 +267,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+                      <span className="text-xs font-bold text-lia-text-primary">LIA</span>
                     </div>
                     <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">

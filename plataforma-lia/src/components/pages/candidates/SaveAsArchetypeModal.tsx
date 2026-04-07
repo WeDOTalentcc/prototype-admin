@@ -107,7 +107,7 @@ export function SaveAsArchetypeModal({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent data-testid="save-as-archetype-modal" className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-sm font-semibold">
             <Bookmark className="w-5 h-5 text-lia-text-secondary" />

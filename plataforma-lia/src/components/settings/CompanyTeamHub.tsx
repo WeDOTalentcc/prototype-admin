@@ -43,12 +43,12 @@ export function CompanyTeamHub({
   const renderCompanyData = () => {
     return (
       <CompanyDataSection
-        companyData={companyState.companyData as any}
-        setCompanyData={companyActions.setCompanyData as any}
+        companyData={companyState.companyData}
+        setCompanyData={companyActions.setCompanyData}
         isEditingCompanyData={companyState.isEditingCompanyData}
         setIsEditingCompanyData={companyActions.setIsEditingCompanyData}
-        companyDataBackup={companyState.companyDataBackup as any}
-        setCompanyDataBackup={companyActions.setCompanyDataBackup as any}
+        companyDataBackup={companyState.companyDataBackup}
+        setCompanyDataBackup={companyActions.setCompanyDataBackup}
         saveCompanyData={companyActions.saveCompanyData}
         saving={companyState.saving}
         loading={companyState.loading}
@@ -66,7 +66,7 @@ export function CompanyTeamHub({
         setExpandedCategories={companyActions.setExpandedCategories}
         addTechToCategory={companyActions.addTechToCategory}
         removeTechFromCategory={companyActions.removeTechFromCategory}
-        TECH_STACK_CATEGORIES={TECH_STACK_CATEGORIES as any}
+        TECH_STACK_CATEGORIES={TECH_STACK_CATEGORIES as unknown as readonly string[]}
       />
     );
   };
@@ -143,7 +143,7 @@ export function CompanyTeamHub({
     />
   );
 
-  const renderUsers = () => <UserManagement onUserUpdate={onUserUpdate as any} />;
+  const renderUsers = () => <UserManagement onUserUpdate={onUserUpdate} />;
 
   const renderContent = () => {
     switch (activeTab) {

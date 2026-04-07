@@ -391,7 +391,7 @@ export default function WelcomePage() {
                   width={300}
                   height={100}
                   priority
-                  style={{width: 'auto', height: 'auto'}}
+                  className="w-auto h-auto"
                 />
               </div>
             </div>
@@ -406,7 +406,7 @@ export default function WelcomePage() {
                   width={180}
                   height={60}
                   priority
-                  style={{width: 'auto', height: 'auto'}}
+                  className="w-auto h-auto"
                 />
               </div>
 

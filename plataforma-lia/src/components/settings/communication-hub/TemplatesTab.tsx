@@ -160,7 +160,7 @@ export function TemplatesTab({
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[calc(100vh-280px)] min-h-content-lg">
-          <div className="space-y-3 overflow-y-auto pr-2 pb-8" style={{maxHeight: 'calc(100vh - 280px)'}}>
+          <div className="space-y-3 overflow-y-auto pr-2 pb-8 max-h-[calc(100vh-280px)]">
             {filteredTemplates.length === 0 ? (
               <Card className="border border-dashed border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <CardContent className="p-4 text-center">
@@ -244,7 +244,7 @@ export function TemplatesTab({
             )}
           </div>
 
-          <div className="space-y-3 lg:sticky lg:top-0 overflow-y-auto pb-20" style={{maxHeight: 'calc(100vh - 220px)'}}>
+          <div className="space-y-3 lg:sticky lg:top-0 overflow-y-auto pb-20 max-h-[calc(100vh-220px)]">
             {selectedTemplate ? (
               <>
                 <div className="flex items-center justify-between">
@@ -404,7 +404,7 @@ export function TemplatesTab({
                           </Button>
                         </div>
                       </CardHeader>
-                      <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
+                      <CardContent className="p-4 space-y-4 overflow-y-auto">
                         <div>
                           <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                             Alterações Realizadas

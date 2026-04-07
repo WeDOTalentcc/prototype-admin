@@ -148,17 +148,14 @@ export function KanbanColumnConfigPanel({
                       className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none border ${col.visible ? 'bg-lia-btn-primary-bg/5 border-lia-btn-primary-bg/20' : 'bg-lia-bg-secondary border-lia-border-subtle'}`}
                     >
                       <div
-                        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
-                        style={{backgroundColor: col.visible ? 'var(--lia-text-primary)' : 'transparent',
-                          border: col.visible ? 'none' : '2px solid var(--lia-border-default)'}}
+                        className={`w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none ${col.visible ? 'bg-lia-text-primary border-none' : 'border-2 border-lia-border-default bg-transparent'}`}
                       >
                         {col.visible && (
                           <CheckCircle className="w-3 h-3 text-white" strokeWidth={3} />
                         )}
                       </div>
                       <span
-                        className={`text-xs flex-1 ${col.visible ? 'font-medium' : 'font-normal'}`}
-                        style={{color: col.visible ? 'var(--lia-text-primary)' : 'var(--lia-text-secondary)'}}
+                        className={`text-xs flex-1 ${col.visible ? 'font-medium text-lia-text-primary' : 'font-normal text-lia-text-secondary'}`}
                       >
                         {col.label}
                       </span>

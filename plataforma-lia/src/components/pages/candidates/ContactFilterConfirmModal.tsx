@@ -29,7 +29,7 @@ export function ContactFilterConfirmModal({
 }: ContactFilterConfirmModalProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md border border-lia-border-subtle dark:border-lia-border-subtle">
+      <AlertDialogContent data-testid="contact-filter-modal" className="max-w-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-status-success/15">
@@ -70,10 +70,11 @@ export function ContactFilterConfirmModal({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>
+          <AlertDialogCancel data-testid="contact-filter-cancel-btn" onClick={onCancel}>
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
+            data-testid="contact-filter-confirm-btn"
             onClick={onConfirm}
             className="text-white gap-2 bg-wedo-green"
           >

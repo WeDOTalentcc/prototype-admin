@@ -41,8 +41,8 @@ function mapApiVacancyToDisplay(vacancy: JobVacancy): VacancyDisplay {
     department: vacancy.department,
     location: vacancy.location,
     status: vacancy.status,
-    priority: (vacancy as any).priority as string | undefined,
-    candidates_count: (vacancy as any).candidates_count as number | undefined,
+    priority: vacancy.priority as string | undefined,
+    candidates_count: (vacancy as unknown as Record<string, unknown>).candidates_count as number | undefined,
     recruiter_name: vacancy.recruiter,
     recruiter_email: vacancy.recruiter_email
   }
@@ -225,6 +225,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
     
     return (
       <div
+        data-testid={`vacancy-card-${vacancy.id}`}
         role="option"
         aria-selected={selectedVacancyId === vacancy.id}
         tabIndex={0}

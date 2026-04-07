@@ -122,7 +122,7 @@ export function LIAFeedbackWidget({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={feedbackState === "agree" ? "default" as any : "outline"}
+                  variant={feedbackState === "agree" ? "primary" : "outline"}
                   className={cn(
  "flex-1 gap-1",
                     feedbackState === "agree" && "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
@@ -135,7 +135,7 @@ export function LIAFeedbackWidget({
                 </Button>
                 <Button
                   size="sm"
-                  variant={feedbackState === "disagree" ? "default" as any : "outline"}
+                  variant={feedbackState === "disagree" ? "primary" : "outline"}
                   className={cn(
  "flex-1 gap-1",
                     feedbackState === "disagree" && "bg-lia-border-medium hover:bg-lia-bg-inverse"

@@ -128,8 +128,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   </h3>
                   <div className="flex items-center gap-2">
                     <span
-                      className="w-2 h-2 rounded-full"
-                      style={{backgroundColor: agent.status === 'online' ? 'var(--lia-btn-primary-bg)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)'}}
+                      className={`w-2 h-2 rounded-full ${agent.status === 'online' ? 'bg-lia-btn-primary-bg' : agent.status === 'idle' ? 'bg-status-warning' : 'bg-status-error'}`}
                     />
                     <span className="text-xs text-lia-text-tertiary">
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
@@ -150,8 +149,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               </div>
               <div className="text-center">
                 <div
-                  className="text-xl font-bold"
-                  style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}
+                  className={`text-xl font-bold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                 >
                   {agent.progress}%
                 </div>
@@ -180,8 +178,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <Minus className="w-3 h-3 text-lia-text-secondary" />
                   )}
                   <span
-                    className={`text-xs ${agent.delta === 0 ? 'text-lia-text-disabled' : ''}`}
-                    style={{color: agent.delta > 0 ? 'var(--wedo-green-bright)' : agent.delta < 0 ? 'var(--status-error)' : undefined}}
+                    className={`text-xs ${agent.delta > 0 ? 'text-wedo-green-bright' : agent.delta < 0 ? 'text-status-error' : 'text-lia-text-disabled'}`}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>
@@ -202,10 +199,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab !== tab.id ? 'text-lia-text-tertiary' : ''}`}
-                  style={{color: activeTab === tab.id ? 'var(--lia-btn-primary-bg)' : undefined,
-                    backgroundColor: activeTab === tab.id ? 'var(--lia-bg-tertiary)' : 'transparent',
-                    borderBottom: activeTab === tab.id ? '2px solid var(--lia-border-default)' : '2px solid transparent'}}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab === tab.id ? 'text-lia-btn-primary-bg bg-lia-bg-tertiary border-b-2 border-lia-border-default' : 'text-lia-text-tertiary border-b-2 border-transparent'}`}
                 >
                   <tab.icon className="w-3.5 h-3.5" />
                   {tab.label}

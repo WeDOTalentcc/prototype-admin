@@ -78,7 +78,7 @@ export function EditJobModalRequirements({
 }: EditJobModalRequirementsProps) {
   return (
     <>
-      <section>
+      <section data-testid="edit-job-requirements-section">
         <div className="flex items-center gap-2 mb-4">
           <DollarSign className="w-4 h-4 text-lia-text-secondary" />
           <h3 className="text-base-ui font-semibold text-lia-text-primary">Remuneração</h3>

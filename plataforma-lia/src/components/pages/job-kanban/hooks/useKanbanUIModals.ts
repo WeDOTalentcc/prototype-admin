@@ -24,7 +24,7 @@ export function useKanbanUIModals({ job }: {
   const [editingQuestion, setEditingQuestion] = useState<number | null>(null)
   const [showTestLibrary, setShowTestLibrary] = useState(false)
   const [showTestHistory, setShowTestHistory] = useState(false)
-  const [selectedTestForHistory, setSelectedTestForHistory] = useState<Record<string, unknown> | null>(null)
+  const [selectedTestForHistory, setSelectedTestForHistory] = useState<string | null>(null)
   const [showConceptualPrompt, setShowConceptualPrompt] = useState(false)
   const [isEditModeTriagem, setIsEditModeTriagem] = useState(false)
   const [showConceptualPromptTriagem, setShowConceptualPromptTriagem] = useState(false)

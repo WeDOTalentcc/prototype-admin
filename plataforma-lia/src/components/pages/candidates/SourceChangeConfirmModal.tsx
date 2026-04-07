@@ -21,7 +21,7 @@ export function SourceChangeConfirmModal({
 }: SourceChangeConfirmModalProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-[320px] w-[85vw] p-4 border border-lia-border-subtle dark:border-lia-border-subtle" style={{borderRadius: '10px'}}>
+      <AlertDialogContent data-testid="source-change-confirm-modal" className="sm:max-w-[320px] w-[85vw] p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan/15' : 'bg-status-warning/15'}`}>

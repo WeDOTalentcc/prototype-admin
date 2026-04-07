@@ -79,4 +79,8 @@ export interface JobsModalsSectionProps {
   onSetReactivateScreeningDialog: (show: boolean) => void
   onSetReactivateScreeningJobs: (jobs: Job[]) => void
   onSetReactivateEndDate: (date: string) => void
+  jobs?: Job[]
+  onPublish?: (jobIds: string[], channels: string[], options?: Record<string, unknown>) => Promise<void>
+  onUnpublish?: (jobIds: string[], options?: Record<string, unknown>) => Promise<void>
+  onOpenCommunicationModal?: (jobIds: string[], templateCategory?: string) => void
 }

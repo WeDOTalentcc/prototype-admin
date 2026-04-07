@@ -8,6 +8,34 @@ import type { F11ReportData } from "./useTriagemDetailsState"
 import { dreyfusLabel, sevConfig } from "./useTriagemDetailsState"
 import { DreyfusRow } from "./dreyfus-row"
 
+interface TechnicalAnalysis {
+  pontos_fortes?: string[]
+  gaps?: Array<string | { texto?: string; severidade?: string }>
+  evidencias?: string[]
+}
+
+interface Recommendation {
+  decisao?: string
+  justificativa?: string
+  proximos_passos?: string[]
+}
+
+interface BehavioralTraitValue {
+  score?: number
+  descricao?: string
+  is_critical?: boolean
+  expected_pct?: number
+  dreyfus_esperado?: number
+}
+
+function asTechnicalAnalysis(v: Record<string, unknown>): TechnicalAnalysis {
+  return v as TechnicalAnalysis
+}
+
+function asRecommendation(v: Record<string, unknown>): Recommendation {
+  return v as Recommendation
+}
+
 interface TriagemParecerTabProps {
   scores: WSIResultDetails["scores"]
   sessionInfo: WSIResultDetails["session"]
@@ -44,7 +72,7 @@ export function TriagemParecerTab({
             <h3 className="text-sm font-semibold text-status-warning">Pontos de Atenção</h3>
             <span className="ml-auto text-micro bg-status-warning/10 text-status-warning px-2 py-0.5 rounded-full font-medium border border-status-warning/30">Revisão humana recomendada</span>
           </div>
-          <ul className="space-y-1.5">{(f11Report?.attention_flags || (report as any)?.flags || ["Score WSI dentro da zona de revisão — decisão requer análise do recrutador responsável."]).map((a: string, i: number) => (<li key={`flag-${i}`} className="flex items-start gap-2 text-xs text-status-warning/90"><AlertTriangle className="w-3.5 h-3.5 text-status-warning mt-0.5 shrink-0" /> {a}</li>))}</ul>
+          <ul className="space-y-1.5">{((f11Report?.attention_flags as string[] | undefined) || (report as unknown as { flags?: string[] })?.flags || ["Score WSI dentro da zona de revisão — decisão requer análise do recrutador responsável."]).map((a: string, i: number) => (<li key={`flag-${i}`} className="flex items-start gap-2 text-xs text-status-warning/90"><AlertTriangle className="w-3.5 h-3.5 text-status-warning mt-0.5 shrink-0" /> {a}</li>))}</ul>
         </div>
       )}
       {report && (
@@ -62,46 +90,53 @@ export function TriagemParecerTab({
                 <Target className="w-4 h-4 text-lia-text-secondary" />
                 Análise Técnica
               </h3>
-              {(report.technical_analysis as any).pontos_fortes && (
-                <div className="mb-2">
-                  <p className="text-micro font-medium text-status-success mb-1 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
-                  {(report.technical_analysis as any).pontos_fortes.map((p: string, i: number) => (
-                    <div key={`pf-${i}`} className="flex items-start gap-1.5 mb-1">
-                      <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-status-success" />
-                      <p className="text-xs text-lia-text-secondary">{p}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(report.technical_analysis as any).gaps && (report.technical_analysis as any).gaps.length > 0 && (
-                <div className="mb-2">
-                  <p className="text-micro font-medium text-lia-text-secondary mb-1 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-status-warning" /> Gaps Identificados:</p>
-                  <ul className="space-y-2">
-                    {(report.technical_analysis as any).gaps.map((g: unknown, i: number) => {
-                      const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : (g as { texto?: string; severidade?: string })
-                      const sc = sevConfig[(gs.severidade as keyof typeof sevConfig) || 'baixa']
-                      return (
-                        <li key={`gap-${i}`} className={`flex items-start gap-2.5 text-xs text-lia-text-secondary rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sc.dot}`} />
-                          <span className="flex-1">{gs.texto || String(gs)}</span>
-                          <span className={`text-micro font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              )}
-              {(report.technical_analysis as any).evidencias && (
-                <div>
-                  <p className="text-micro font-medium text-lia-text-secondary mb-1">Evidências:</p>
-                  {(report.technical_analysis as any).evidencias.map((e: string, i: number) => (
-                    <div key={`ev-${i}`} className="flex items-start gap-1.5 mb-1">
-                      <Zap className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
-                      <p className="text-xs text-lia-text-secondary">{e}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const ta = asTechnicalAnalysis(report.technical_analysis)
+                return (
+                  <>
+                    {ta.pontos_fortes && (
+                      <div className="mb-2">
+                        <p className="text-micro font-medium text-status-success mb-1 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Pontos Fortes:</p>
+                        {ta.pontos_fortes.map((p: string, i: number) => (
+                          <div key={`pf-${i}`} className="flex items-start gap-1.5 mb-1">
+                            <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-status-success" />
+                            <p className="text-xs text-lia-text-secondary">{p}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {ta.gaps && ta.gaps.length > 0 && (
+                      <div className="mb-2">
+                        <p className="text-micro font-medium text-lia-text-secondary mb-1 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-status-warning" /> Gaps Identificados:</p>
+                        <ul className="space-y-2">
+                          {ta.gaps.map((g, i: number) => {
+                            const gs = typeof g === 'string' ? { texto: g, severidade: 'baixa' } : g
+                            const sc = sevConfig[(gs.severidade as keyof typeof sevConfig) || 'baixa']
+                            return (
+                              <li key={`gap-${i}`} className={`flex items-start gap-2.5 text-xs text-lia-text-secondary rounded-lg border px-3 py-2 ${sc.bg} ${sc.border}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${sc.dot}`} />
+                                <span className="flex-1">{gs.texto || String(gs)}</span>
+                                <span className={`text-micro font-bold tracking-wider shrink-0 ${sc.color}`}>{sc.label}</span>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                    {ta.evidencias && (
+                      <div>
+                        <p className="text-micro font-medium text-lia-text-secondary mb-1">Evidências:</p>
+                        {ta.evidencias.map((e: string, i: number) => (
+                          <div key={`ev-${i}`} className="flex items-start gap-1.5 mb-1">
+                            <Zap className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                            <p className="text-xs text-lia-text-secondary">{e}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           )}
 
@@ -130,16 +165,19 @@ export function TriagemParecerTab({
                     Análise Comportamental
                   </h3>
                   <div className="space-y-2">
-                    {entries.map(([key, val]: [string, any]) => (
+                    {entries.map(([key, val]) => {
+                      const traitVal = val as BehavioralTraitValue
+                      return (
                       <div key={key}>
                         <div className="flex items-center justify-between mb-0.5">
                           <span className="text-xs text-lia-text-primary capitalize">{key}</span>
-                          <span className="text-xs font-bold">{val.score?.toFixed(1)}/5.0</span>
+                          <span className="text-xs font-bold">{traitVal.score?.toFixed(1)}/5.0</span>
                         </div>
-                        <Progress value={((val.score || 0) / 5) * 100} className="h-1.5 mb-1" />
-                        <p className="text-micro text-lia-text-secondary">{val.descricao}</p>
+                        <Progress value={((traitVal.score || 0) / 5) * 100} className="h-1.5 mb-1" />
+                        <p className="text-micro text-lia-text-secondary">{traitVal.descricao}</p>
                       </div>
-                    ))}
+                    )})}
+
                   </div>
                 </div>
               )
@@ -161,20 +199,21 @@ export function TriagemParecerTab({
                   <span className="flex items-center gap-1"><span className="w-3 h-1.5 bg-lia-interactive-active rounded-sm inline-block border border-lia-border-default" /> Esperado</span>
                 </div>
                 <div className="space-y-5">
-                  {entries.map(([key, val]: [string, any]) => {
+                  {entries.map(([key, val]) => {
+                    const traitVal = val as BehavioralTraitValue
                     const traitName = BIG_FIVE_MAP[key] || key
                     const hint = BIG_FIVE_HINT[key] || ""
-                    const candidato = Math.round((val.score || 0) / 5 * 100)
-                    const vagaEsperado = val.expected_pct ?? 70
-                    const dreyfusEsperado = val.dreyfus_esperado ?? 4
-                    const dreyfusDemonstrado = Math.round((val.score || 0) * 5 / 5)
+                    const candidato = Math.round((traitVal.score || 0) / 5 * 100)
+                    const vagaEsperado = traitVal.expected_pct ?? 70
+                    const dreyfusEsperado = traitVal.dreyfus_esperado ?? 4
+                    const dreyfusDemonstrado = Math.round((traitVal.score || 0) * 5 / 5)
                     const status = candidato < vagaEsperado - 20 ? "gap" : candidato > vagaEsperado + 10 ? "acima" : "ok"
                     const showHint = bigFiveHint === key
                     return (
                       <div key={key} className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-medium text-lia-text-primary">{traitName}</span>
-                          {val.is_critical && (
+                          {traitVal.is_critical && (
                             <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-wedo-purple bg-wedo-purple/10 border-wedo-purple/30" aria-live="polite" aria-atomic="true">Crítica para esta vaga</span>
                           )}
                           {status === "gap"   && <span className="text-micro font-bold text-status-warning bg-status-warning/10 px-1.5 py-0.5 rounded-full border border-status-warning/30">⚠️ Diferença</span>}
@@ -215,21 +254,28 @@ export function TriagemParecerTab({
                 <Award className="w-4 h-4 text-lia-text-secondary" />
                 Recomendação
               </h3>
-              <div className="p-2.5 rounded-lg mb-2" style={{backgroundColor: decisionDisplay.bg}}>
-                <p className="text-xs font-semibold" style={{color: decisionDisplay.color}}>{(report.recommendation as any).decisao}</p>
-                <p className="text-xs mt-1 text-lia-text-secondary">{(report.recommendation as any).justificativa}</p>
-              </div>
-              {(report.recommendation as any).proximos_passos && (
-                <div>
-                  <p className="text-micro font-medium text-lia-text-secondary mb-1">Próximos Passos:</p>
-                  {(report.recommendation as any).proximos_passos.map((step: string, i: number) => (
-                    <div key={`step-${i}`} className="flex items-center gap-1.5 mb-1">
-                      <span className="w-4 h-4 rounded-full bg-lia-interactive-active flex items-center justify-center text-micro font-bold text-lia-text-secondary">{i + 1}</span>
-                      <p className="text-xs text-lia-text-secondary">{step}</p>
+              {(() => {
+                const rec = asRecommendation(report.recommendation)
+                return (
+                  <>
+                    <div className="p-2.5 rounded-lg mb-2" style={{backgroundColor: decisionDisplay.bg}}>
+                      <p className="text-xs font-semibold" style={{color: decisionDisplay.color}}>{rec.decisao}</p>
+                      <p className="text-xs mt-1 text-lia-text-secondary">{rec.justificativa}</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                    {rec.proximos_passos && (
+                      <div>
+                        <p className="text-micro font-medium text-lia-text-secondary mb-1">Próximos Passos:</p>
+                        {rec.proximos_passos.map((step: string, i: number) => (
+                          <div key={`step-${i}`} className="flex items-center gap-1.5 mb-1">
+                            <span className="w-4 h-4 rounded-full bg-lia-interactive-active flex items-center justify-center text-micro font-bold text-lia-text-secondary">{i + 1}</span>
+                            <p className="text-xs text-lia-text-secondary">{step}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           )}
         </>

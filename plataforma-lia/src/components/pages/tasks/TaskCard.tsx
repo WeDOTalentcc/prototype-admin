@@ -29,11 +29,11 @@ interface TaskCardProps {
 
 export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject }: TaskCardProps) {
   return (
-    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <div data-testid={`task-card-${task.id}`} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 flex-1">
           <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
-            {getTaskTypeIcon(task.type as any) /* TODO: fix type */}
+            {getTaskTypeIcon(task.type as 'feedback' | 'entrevista' | 'sourcing')}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
@@ -44,9 +44,9 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 {task.title}
               </h4>
               <Badge
-                className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as any) ?? ""}`} /* TODO: fix type */
+                className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as 'high' | 'medium' | 'low') ?? ""}`}
               >
-                {getPriorityLabel(task.priority as any) /* TODO: fix type */}
+                {getPriorityLabel(task.priority as 'high' | 'medium' | 'low')}
               </Badge>
             </div>
             <p className="text-xs font-open-sans text-lia-text-primary mb-1 line-clamp-1">
@@ -76,7 +76,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 size="sm"
                 onClick={() => onConfirm(task)}
                 className="h-5 px-2 text-xs gap-1 border-0"
-                style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
+               
               >
                 <MessageSquare className="w-2.5 h-2.5" />
                 Avaliar
@@ -93,7 +93,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 size="sm"
                 onClick={() => onConfirm(task)}
                 className="h-5 px-2 text-xs gap-1 border-0"
-                style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
+               
               >
                 <Play className="w-2.5 h-2.5" />
                 Iniciar
@@ -110,7 +110,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 size="sm"
                 onClick={() => onConfirm(task)}
                 className="h-5 px-2 text-xs gap-1 border-0"
-                style={{backgroundColor: 'var(--wedo-green-light, #f0fdf4)', color: 'var(--lia-text-primary)'}}
+               
               >
                 <Search className="w-2.5 h-2.5" />
                 Buscar
@@ -123,6 +123,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
           )}
           <div className="flex items-center gap-1">
             <Button
+              data-testid="task-confirm-btn"
               size="sm"
               variant="ghost"
               onClick={() => onConfirm(task)}
@@ -132,6 +133,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
               Confirmar
             </Button>
             <Button
+              data-testid="task-reject-btn"
               size="sm"
               variant="ghost"
               onClick={() => onReject(task)}

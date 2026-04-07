@@ -93,6 +93,13 @@ export interface KanbanCandidate {
   hired_job_title?: string
   is_blacklisted?: boolean
   blacklist_reason?: string
+  candidateCode?: string
+  liaScore?: number | null
+  skillsMatch?: number
+  technicalTestScore?: number | null
+  englishTestScore?: number | null
+  bigFiveScores?: Record<string, number>
+  position?: string
 }
 
 export interface CandidatesDataMap {

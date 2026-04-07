@@ -95,7 +95,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
               <div
                 key={`cv-${file.name || index}`}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
-                style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
+               
               >
                 <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
                 <span className="max-w-[150px] truncate">{file.name}</span>
@@ -108,7 +108,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
               <button
                 onClick={() => cvFileInputRef.current?.click()}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
-                style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
+               
               >
                 <Upload className="w-3 h-3" />
                 + CV
@@ -119,7 +119,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
           <button
             onClick={() => cvFileInputRef.current?.click()}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
-            style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
+           
           >
             <Upload className="w-3.5 h-3.5" />
             Arraste CVs aqui ou clique para upload (máx. 2)
@@ -150,7 +150,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
 
       {/* Combined Suggestions Box */}
       {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-        <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
+        <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -201,9 +201,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
           }
         }}
         disabled={similarUrls.filter(u => u.trim()).length === 0 && similarCvFiles.length === 0}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--lia-btn-primary-bg)" : "var(--lia-border-subtle)",
-          color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--white)" : "var(--lia-text-tertiary)"}}
+        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${(similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? 'bg-lia-btn-primary-bg text-white' : 'bg-lia-border-subtle text-lia-text-tertiary'}`}
       >
         <Search className="w-4 h-4" />
         {hasMultipleSources() ? "Buscar com perfil combinado" : "Buscar candidatos similares"}

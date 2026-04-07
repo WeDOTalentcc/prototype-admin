@@ -162,7 +162,7 @@ export function CandidatePreviewActionBar({
               className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.linkedin || c.linkedin_url) ? 'hover:bg-wedo-cyan/10' : 'opacity-30 cursor-default'}`}
               onClick={(e) => !(c.linkedin || c.linkedin_url) && e.preventDefault()}
             >
-              <Linkedin className="w-3.5 h-3.5" style={{color: (c.linkedin || c.linkedin_url) ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} />
+              <Linkedin className={`w-3.5 h-3.5 ${(c.linkedin || c.linkedin_url) ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
             </a>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>

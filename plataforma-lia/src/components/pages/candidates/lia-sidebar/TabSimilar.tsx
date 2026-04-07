@@ -96,7 +96,7 @@ export const TabSimilar = React.memo(function TabSimilar({
   }
 
   return (
-    <div className="space-y-4 overflow-y-auto flex-1 p-4">
+    <div data-testid="tab-similar" className="space-y-4 overflow-y-auto flex-1 p-4">
       <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
         Encontre candidatos similares a um perfil espec\u00edfico
       </p>

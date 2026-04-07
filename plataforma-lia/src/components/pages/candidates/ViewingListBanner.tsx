@@ -26,7 +26,7 @@ export function ViewingListBanner({
   if (!viewingList) return null
 
   return (
-    <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border-l-4" style={{borderLeftColor: viewingList.color || 'var(--lia-text-secondary)'}}>
+    <Card data-testid="viewing-list-banner" className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border-l-4" style={{borderLeftColor: viewingList.color || 'var(--lia-text-secondary)'}}>
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div

@@ -90,10 +90,9 @@ export function AlertsTab({
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-2">
                   <div
-                    className="w-7 h-7 rounded-md flex items-center justify-center"
-                    style={{backgroundColor: alert.enabled ? 'var(--lia-bg-secondary)' : undefined, color: alert.enabled ? 'var(--lia-text-secondary)' : undefined}}
+                    className={`w-7 h-7 rounded-md flex items-center justify-center ${alert.enabled ? 'bg-lia-bg-secondary text-lia-text-secondary' : ''}`}
                   >
-                    <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--lia-text-secondary)' : undefined}} />
+                    <Bell className={`w-3.5 h-3.5 ${alert.enabled ? 'text-lia-text-secondary' : ''}`} />
                   </div>
                   <div>
                     <p className={`text-xs font-medium ${alert.enabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
@@ -116,8 +115,7 @@ export function AlertsTab({
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
-                    className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
-                    style={{backgroundColor: alert.enabled ? 'var(--lia-text-secondary)' : 'var(--lia-border-subtle)'}}
+                    className={`relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 ${alert.enabled ? 'bg-lia-text-secondary' : 'bg-lia-border-subtle'}`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${alert.enabled ? 'left-4' : 'left-0.5'}`} />
                   </button>
@@ -147,14 +145,10 @@ export function AlertsTab({
                 key={key}
                 onClick={() => setBriefingFrequency(key)}
                 disabled={!isEditingAlerts}
-                className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
-                style={{
-                  borderColor: briefingFrequency === key ? 'var(--lia-text-secondary)' : 'var(--lia-border-subtle)',
-                  backgroundColor: briefingFrequency === key ? 'var(--lia-bg-secondary)' : undefined
-                }}
+                className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${briefingFrequency === key ? 'border-lia-text-secondary bg-lia-bg-secondary' : 'border-lia-border-subtle'}`}
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <Icon className="w-3.5 h-3.5" style={{color: briefingFrequency === key ? 'var(--lia-text-secondary)' : undefined}} />
+                  <Icon className={`w-3.5 h-3.5 ${briefingFrequency === key ? 'text-lia-text-secondary' : ''}`} />
                   <span className="text-xs font-medium">{label}</span>
                 </div>
                 <p className="text-xs text-lia-text-secondary">{desc}</p>
@@ -195,10 +189,9 @@ export function AlertsTab({
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-2">
                 <div
-                  className="w-7 h-7 rounded-md flex items-center justify-center"
-                  style={{backgroundColor: weeklyDigestEnabled ? 'var(--lia-bg-secondary)' : undefined, color: weeklyDigestEnabled ? 'var(--lia-text-secondary)' : undefined}}
+                  className={`w-7 h-7 rounded-md flex items-center justify-center ${weeklyDigestEnabled ? 'bg-lia-bg-secondary text-lia-text-secondary' : ''}`}
                 >
-                  <BarChart3 className="w-3.5 h-3.5" style={{color: weeklyDigestEnabled ? 'var(--lia-text-secondary)' : undefined}} />
+                  <BarChart3 className={`w-3.5 h-3.5 ${weeklyDigestEnabled ? 'text-lia-text-secondary' : ''}`} />
                 </div>
                 <div>
                   <p className={`text-xs font-medium ${weeklyDigestEnabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
@@ -215,8 +208,7 @@ export function AlertsTab({
                 role="switch"
                 aria-checked={weeklyDigestEnabled}
                 aria-label="Ativar ou desativar resumo semanal de insights"
-                className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5"
-                style={{backgroundColor: weeklyDigestEnabled ? 'var(--lia-text-primary)' : 'var(--lia-border-subtle)'}}
+                className={`relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5 ${weeklyDigestEnabled ? 'bg-lia-text-primary' : 'bg-lia-border-subtle'}`}
               >
                 {savingWeeklyDigest ? (
                   <Loader2 className="w-3 h-3 absolute top-1 left-3 animate-spin" />

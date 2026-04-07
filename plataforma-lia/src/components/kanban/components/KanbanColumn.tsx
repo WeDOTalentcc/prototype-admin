@@ -146,6 +146,7 @@ const KanbanColumn = memo(function KanbanColumn({
 
   return (
     <div
+      data-testid={`kanban-column-${stage.id}`}
       className={`flex flex-col flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
         isDropTarget ? 'ring-2 ring-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-secondary' : ''
       } h-[calc(100vh-16rem)]`}
@@ -170,6 +171,7 @@ const KanbanColumn = memo(function KanbanColumn({
           </div>
           {sortedCandidates.length > 0 && (
             <Checkbox
+              data-testid={`kanban-column-select-all-${stage.id}`}
               checked={allSelected}
               onCheckedChange={handleSelectAllChange}
               className="w-3.5 h-3.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-interactive-active dark:data-[state=checked]:border-lia-border-subtle"

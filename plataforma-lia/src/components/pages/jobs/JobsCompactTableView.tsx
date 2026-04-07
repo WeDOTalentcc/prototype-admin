@@ -208,7 +208,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   return (
     <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-md">
       <table className="w-full table-fixed">
-        <thead className="sticky top-0 z-10 bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 var(--lia-border-subtle)' }}>
+        <thead className="sticky top-0 z-10 bg-lia-bg-primary">
           <tr className="">
             {jobsColumnOrder.filter((columnId) => {
               if (columnId === 'checkbox' || columnId === 'acoes') return true
@@ -223,6 +223,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 return (
                   <th key={columnId} className="py-3 px-3 text-center w-12">
                     <input
+                      data-testid="jobs-select-all"
                       type="checkbox"
                       checked={selectedJobsForBatch.size === filteredJobs.length && filteredJobs.length > 0}
                       ref={(input) => {
@@ -312,6 +313,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 {statusJobs.map((job) => (
                   <React.Fragment key={job.id}>
                     <tr
+                      data-testid={`job-row-${job.id}`}
                       className="border-b border-lia-border-subtle hover:bg-lia-interactive-hover text-xs cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onJobPreview(job)}
                     >
@@ -677,6 +679,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="flex items-center gap-1">
                                 <Button
+                                  data-testid={`job-toggle-urgent-${job.id}`}
                                   variant="ghost"
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
@@ -697,6 +700,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }`} />
                                 </Button>
                                 <Button
+                                  data-testid={`job-toggle-pin-${job.id}`}
                                   variant="ghost"
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
@@ -717,6 +721,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }`} />
                                 </Button>
                                 <Button
+                                  data-testid={`job-toggle-favorite-${job.id}`}
                                   variant="ghost"
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
@@ -737,6 +742,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }`} />
                                 </Button>
                                 <Button
+                                  data-testid={`job-share-link-${job.id}`}
                                   variant="ghost"
                                   size="sm"
                                   className="h-7 w-7 p-0 hover:bg-lia-interactive-hover"
@@ -763,6 +769,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <Share2 className="w-3.5 h-3.5 text-lia-text-primary" />
                                 </Button>
                                 <Button
+                                  data-testid={`job-open-kanban-${job.id}`}
                                   variant="ghost"
                                   size="sm"
                                   className="h-7 w-7 p-0 hover:bg-lia-interactive-hover"

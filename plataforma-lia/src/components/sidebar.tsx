@@ -335,8 +335,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               alt="WeDo Talent"
               width={120}
               height={40}
-              className="dark:invert"
-              style={{width: 'auto', height: 'auto'}}
+              className="dark:invert w-auto h-auto"
               priority
             />
           ) : (
@@ -345,8 +344,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               alt="we"
               width={40}
               height={40}
-              className="dark:invert"
-              style={{width: 'auto', height: 'auto'}}
+              className="dark:invert w-auto h-auto"
               priority
             />
           )}

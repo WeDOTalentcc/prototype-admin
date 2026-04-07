@@ -153,7 +153,7 @@ const CandidateCard = ({
             <Button
               key={action.id}
               size="sm"
-              variant={isDestructive ? "outline" : "default" as any}
+              variant={isDestructive ? "outline" : "primary"}
               className={`h-8 text-xs ${
  isDestructive 
                   ? "border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 

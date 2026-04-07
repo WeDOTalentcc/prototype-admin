@@ -78,7 +78,7 @@ export function CandidatesTableArea({
   onLoadMore,
 }: CandidatesTableAreaProps) {
   return (
-    <div className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
+    <div data-testid="candidates-table-area" className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
       isLiaSuperChat
         ? 'w-14 flex-shrink-0'
         : 'flex-1 min-w-0 h-full'

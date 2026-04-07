@@ -478,7 +478,7 @@ export function SavedSearchesTab({
                     return (
                       <Button
                         key={mode}
-                        variant={newSearchMode === mode ? 'default' as any : 'outline'}
+                        variant={newSearchMode === mode ? 'primary' : 'outline'}
                         size="sm"
                         className={`h-7 text-xs ${newSearchMode === mode ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text' : ''}`}
                         onClick={() => setNewSearchMode(mode)}
@@ -501,7 +501,7 @@ export function SavedSearchesTab({
                     return (
                       <Button
                         key={source}
-                        variant={newSearchSource === source ? 'default' as any : 'outline'}
+                        variant={newSearchSource === source ? 'primary' : 'outline'}
                         size="sm"
                         className={`h-7 text-xs ${newSearchSource === source ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text' : ''}`}
                         onClick={() => setNewSearchSource(source)}

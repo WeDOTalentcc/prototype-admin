@@ -43,19 +43,19 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
           <div className="flex items-center gap-1.5">
             <Badge
               className="border-0 text-xs font-medium"
-              style={{backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)'}}
+             
             >
               {activeAlerts.filter(a => a.severity === 'critical' || a.severity === 'high').length} Alto/Crítico
             </Badge>
             <Badge
               className="border-0 text-xs font-medium"
-              style={{backgroundColor: 'var(--wedo-amber-light, #fefce8)', color: 'var(--lia-text-primary)'}}
+             
             >
               {activeAlerts.filter(a => a.severity === 'medium').length} Médio
             </Badge>
             <Badge
               className="border-0 text-xs font-medium"
-              style={{backgroundColor: 'var(--lia-info-light, #eff6ff)', color: 'var(--lia-text-primary)'}}
+             
             >
               {activeAlerts.filter(a => a.severity === 'low').length} Baixo
             </Badge>

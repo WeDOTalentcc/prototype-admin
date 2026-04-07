@@ -33,7 +33,7 @@ export function GlobalExpansionConfirmModal({
 }: GlobalExpansionConfirmModalProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent data-testid="global-expansion-confirm-modal" className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-wedo-cyan/15">

@@ -193,7 +193,7 @@ export function JobPublishModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
+      <DialogContent data-testid="job-publish-modal" className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">

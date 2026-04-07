@@ -92,7 +92,7 @@ export function InputStep({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <div className="space-y-4">
+    <div data-testid="new-candidate-input-step" className="space-y-4">
       <div className="flex border-b border-lia-border-subtle">
         <button
           onClick={() => { setActiveTab('cv'); setError(null) }}

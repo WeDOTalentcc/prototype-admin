@@ -65,7 +65,7 @@ export function CancelOptionsStep({
   onNotifyApplicantsChange,
 }: CancelOptionsStepProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="cancel-options-step" className="space-y-4">
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Vagas Selecionadas</h4>
         <ScrollArea className="max-h-[100px]">

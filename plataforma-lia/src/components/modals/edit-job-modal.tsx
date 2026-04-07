@@ -129,7 +129,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
   if (!isOpen || !job) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" data-testid="edit-job-modal">
       <div 
         className="absolute inset-0 bg-lia-overlay/70 backdrop-blur-[2px]"
         onClick={onClose}

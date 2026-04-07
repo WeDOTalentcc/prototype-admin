@@ -63,7 +63,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
         >
           <Badge
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
-            style={{ backgroundColor: "var(--lia-bg-tertiary)", border: "none" }}
+           
           >
             1 CRÉDITO/CAND.
           </Badge>
@@ -92,7 +92,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
         >
           <Badge
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
-            style={{ backgroundColor: "var(--lia-bg-tertiary)", border: "none" }}
+           
           >
             1 CRÉDITO/CAND.
           </Badge>

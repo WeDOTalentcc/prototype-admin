@@ -129,7 +129,7 @@ export function JobSummaryCard({
   return (
     <Card
       className="w-full max-w-md border-l-4 overflow-hidden bg-lia-bg-secondary"
-      style={{borderLeftColor: 'var(--lia-border-default)'}}
+     
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
@@ -263,8 +263,7 @@ export function JobSummaryCard({
             {onPublish && data.status === "rascunho" && (
               <Button
                 size="sm"
-                style={{backgroundColor: 'var(--lia-btn-primary-bg)',
-                  color: 'var(--lia-btn-primary-text)'}}
+                className="bg-lia-btn-primary-bg text-lia-btn-primary-text"
                 onClick={onPublish}
               >
                 Publicar

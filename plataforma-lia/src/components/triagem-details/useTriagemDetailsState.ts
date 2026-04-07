@@ -196,7 +196,7 @@ export function useTriagemDetailsState(
     }
   }
 
-  const decision = (details?.scores as any)?.decision || (details as any)?.decision
+  const decision = details?.scores?.decision || (details as WSIResultDetails & { decision?: string })?.decision
   const decisionNormalized = (decision ?? '').toUpperCase()
   const isPendingDecision = !decision || decisionNormalized === 'AGUARDANDO' || decisionNormalized === 'EM_AVALIACAO'
   const canTriggerFeedback = !!details && !!details.scores

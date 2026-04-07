@@ -51,7 +51,7 @@ const handleDelete = async () => {
 
   return (
     <AlertDialog open={!!archetypeToDelete} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent>
+      <AlertDialogContent data-testid="delete-archetype-modal">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-base">
             <AlertCircle className="w-5 h-5 text-status-error" />
@@ -62,10 +62,11 @@ const handleDelete = async () => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>
+          <AlertDialogCancel data-testid="delete-archetype-cancel-btn" onClick={onClose}>
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
+            data-testid="delete-archetype-confirm-btn"
             onClick={handleDelete}
             className="bg-status-error hover:bg-status-error"
             disabled={isDeletingArchetype}

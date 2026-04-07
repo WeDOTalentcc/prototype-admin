@@ -12,7 +12,7 @@ interface CandidateOpinionsTabProps {
   setOpinionsSubTab: (tab: string) => void
   opinionsHistory: Record<string, any>[]
   isLoadingHistory: boolean
-  savedAnalyses: unknown
+  savedAnalyses: { total_analyses: number; analyses: Record<string, unknown>[] } | null | undefined
   isLoadingAnalyses: boolean
   expandedOpinionId: unknown
   setExpandedOpinionId: (id: unknown) => void
@@ -74,9 +74,9 @@ opinionsSubTab === 'analises'
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Análises
-          {(savedAnalyses as any) && (savedAnalyses as any).total_analyses > 0 && (
-            <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-purple)'}}>
-              {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}
+          {savedAnalyses && savedAnalyses.total_analyses > 0 && (
+            <Badge className="text-micro px-1.5 py-0 h-4 ml-1">
+              {savedAnalyses.total_analyses}
             </Badge>
           )}
         </button>
@@ -171,7 +171,7 @@ opinionsSubTab === 'analises'
           )}
 
           {/* Empty State */}
-          {!isLoadingAnalyses && (!savedAnalyses || (savedAnalyses as unknown as {total_analyses: number}).total_analyses === 0) && (
+          {!isLoadingAnalyses && (!savedAnalyses || savedAnalyses.total_analyses === 0) && (
             <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-wedo-purple/10 flex items-center justify-center mx-auto mb-3">
                 <Brain className="w-6 h-6 text-wedo-purple" />
@@ -184,9 +184,9 @@ opinionsSubTab === 'analises'
           )}
 
           {/* Analyses List with Expandable Cards */}
-          {!isLoadingAnalyses && savedAnalyses && (savedAnalyses as unknown as {total_analyses: number}).total_analyses > 0 && (
+          {!isLoadingAnalyses && savedAnalyses && savedAnalyses.total_analyses > 0 && (
             <div className="space-y-3">
-              {(savedAnalyses as unknown as {analyses: Record<string, any>[]}).analyses.map((analysis: Record<string, any>) => {
+              {savedAnalyses.analyses.map((analysis: Record<string, any>) => {
                 const analysisLabels: Record<string, string> = {
                   'bullet_points': 'Pontos-chave',
                   'short_paragraph': 'Resumo',
@@ -213,7 +213,7 @@ opinionsSubTab === 'analises'
                             <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
                             <Badge
                               className="text-micro px-1.5 py-0 h-4"
-                              style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-purple)'}}
+                             
                             >
                               {(analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as React.ReactNode)}
                             </Badge>

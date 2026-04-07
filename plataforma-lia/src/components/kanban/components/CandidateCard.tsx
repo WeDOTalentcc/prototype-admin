@@ -153,6 +153,7 @@ const CandidateCard = memo(function CandidateCard({
   return (
     <div
       draggable
+      data-testid={`candidate-card-${candidate.id}`}
       onDragStart={handleDragStartInternal}
       onDragEnd={onDragEnd}
       className={`bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border relative overflow-hidden ${
@@ -196,6 +197,7 @@ const CandidateCard = memo(function CandidateCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
+                data-testid={`candidate-actions-menu-${candidate.id}`}
                 className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
@@ -205,58 +207,58 @@ const CandidateCard = memo(function CandidateCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
               <DropdownMenuItem 
+                data-testid={`candidate-action-email-${candidate.id}`}
                 onClick={handleQuickAction('email')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Enviar Email
               </DropdownMenuItem>
               <DropdownMenuItem 
+                data-testid={`candidate-action-whatsapp-${candidate.id}`}
                 onClick={handleQuickAction('whatsapp')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Enviar WhatsApp
               </DropdownMenuItem>
               <DropdownMenuItem 
+                data-testid={`candidate-action-schedule-${candidate.id}`}
                 onClick={handleQuickAction('schedule_interview')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Agendar Entrevista
               </DropdownMenuItem>
               <DropdownMenuItem 
+                data-testid={`candidate-action-wsi-${candidate.id}`}
                 onClick={handleQuickAction('wsi_screening')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Triagem WSI
               </DropdownMenuItem>
               <DropdownMenuItem 
+                data-testid={`candidate-action-feedback-${candidate.id}`}
                 onClick={handleQuickAction('feedback')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Enviar Feedback
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
+                data-testid={`candidate-action-favorite-${candidate.id}`}
                 onClick={handleQuickAction('toggle_favorite')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'text-lia-text-secondary'}`} />
                 {isFavorite ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
               </DropdownMenuItem>
               <DropdownMenuItem 
+                data-testid={`candidate-action-hide-${candidate.id}`}
                 onClick={handleQuickAction('hide')} 
                 className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
-               
               >
                 <EyeOff className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Ocultar Candidato
@@ -265,6 +267,7 @@ const CandidateCard = memo(function CandidateCard({
           </DropdownMenu>
 
           <button
+            data-testid={`candidate-view-details-${candidate.id}`}
             className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
@@ -312,7 +315,7 @@ const CandidateCard = memo(function CandidateCard({
               formattedValue={value ? formatScorePercent(value, 0) : undefined}
               label={label}
               alwaysClickable={alwaysClickable}
-              onClick={() => onQuickAction?.('open_score_modal', candidate, id as any)}
+              onClick={() => onQuickAction?.('open_score_modal', candidate, { scoreId: id })}
             />
           ))}
         </div>

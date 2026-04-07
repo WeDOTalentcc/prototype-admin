@@ -137,7 +137,7 @@ export function ScreeningMediaModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col" data-testid="screening-media-modal">
         <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             {type === 'audio' ? (

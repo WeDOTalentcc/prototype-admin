@@ -89,7 +89,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
           {showVacancyResults && jdVacancyResults.length > 0 && (
             <div 
               className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border overflow-hidden"
-              style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+             
             >
               {jdVacancyResults.map((vacancy) => (
                 <button
@@ -103,9 +103,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                         <p className="text-base-ui font-medium text-lia-text-primary truncate">{vacancy.title}</p>
                         <Badge 
                           variant="outline" 
-                          className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
-                          style={{borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--lia-text-tertiary)',
-                            color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--lia-text-secondary)'}}
+                          className={`text-micro px-1.5 py-0 h-4 flex-shrink-0 ${vacancy.status === 'Ativa' ? 'border-status-success text-status-success' : 'border-lia-text-tertiary text-lia-text-secondary'}`}
                         >
                           {vacancy.status}
                         </Badge>
@@ -132,7 +130,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
           {showVacancyResults && jdVacancySearch.length >= 2 && jdVacancyResults.length === 0 && !isSearchingVacancies && (
             <div 
               className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
-              style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+             
             >
               <p className="text-base-ui text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
             </div>
@@ -184,7 +182,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
         }}
         placeholder={getPlaceholder()}
         className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
-        style={{color: "var(--lia-btn-primary-bg)"}}
+       
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "var(--lia-border-default)"
           e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -373,10 +371,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
           value={jdSearchPrompt}
           onChange={(e) => setJdSearchPrompt(e.target.value)}
           placeholder="O prompt será gerado a partir da descrição da vaga..."
-          className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 min-h-[60px]"
-          style={{border: "1px solid var(--lia-border-default)",
-            backgroundColor: "var(--lia-bg-secondary)",
-            color: 'var(--lia-text-primary)'}}
+          className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 min-h-[60px] border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
           rows={2}
         />
       </div>

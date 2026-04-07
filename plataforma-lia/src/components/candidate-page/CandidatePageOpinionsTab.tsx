@@ -13,6 +13,11 @@ import {
   CheckCircle, AlertCircle, TrendingUp, BarChart3, Briefcase, Trash2,
 } from "lucide-react"
 
+interface SavedAnalysesData {
+  total_analyses: number
+  analyses: Record<string, unknown>[]
+}
+
 interface CandidatePageOpinionsTabProps {
   opinionsSubTab: "pareceres" | "analises"
   setOpinionsSubTab: (v: "pareceres" | "analises") => void
@@ -20,7 +25,7 @@ interface CandidatePageOpinionsTabProps {
   isLoadingHistory: boolean
   expandedOpinionId: string | null
   setExpandedOpinionId: (id: string | null) => void
-  savedAnalyses: unknown
+  savedAnalyses: SavedAnalysesData | null | undefined
   isLoadingAnalyses: boolean
   expandedAnalysisId: string | null
   setExpandedAnalysisId: (id: string | null) => void
@@ -128,9 +133,9 @@ export function CandidatePageOpinionsTab({
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Análises
-            {(savedAnalyses as any) && (savedAnalyses as unknown as { total_analyses: number }).total_analyses > 0 && (
+            {savedAnalyses && savedAnalyses.total_analyses > 0 && (
               <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-purple/15 text-wedo-purple">
-                {(savedAnalyses as unknown as { total_analyses: number }).total_analyses}
+                {savedAnalyses.total_analyses}
               </Badge>
             )}
           </button>
@@ -222,7 +227,7 @@ export function CandidatePageOpinionsTab({
                                   {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/5` : `Score: ${Math.round(displayScore as number)}/100`}
                                 </span>
                               )}
-                              {(opinion.archetype as any) && (
+                              {!!opinion.archetype && (
                                 <>
                                   <span className="lia-text-muted">•</span>
                                   <span className={textStyles.caption}>{opinion.archetype as string}</span>
@@ -291,7 +296,7 @@ export function CandidatePageOpinionsTab({
                               </div>
                             </div>
                           )}
-                          {(opinion.strengths as any) && (opinion.strengths as string[]).length > 0 && (
+                          {Array.isArray(opinion.strengths) && (opinion.strengths as string[]).length > 0 && (
                             <div>
                               <h5 className={`${textStyles.label} text-status-success mb-1 flex items-center gap-1`}>
                                 <CheckCircle className="w-3 h-3" />
@@ -307,7 +312,7 @@ export function CandidatePageOpinionsTab({
                               </ul>
                             </div>
                           )}
-                          {(opinion.concerns as any) && (opinion.concerns as string[]).length > 0 && (
+                          {Array.isArray(opinion.concerns) && (opinion.concerns as string[]).length > 0 && (
                             <div>
                               <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                                 <AlertCircle className="w-3 h-3" />
@@ -381,9 +386,9 @@ export function CandidatePageOpinionsTab({
               </Card>
             )}
 
-            {(!isLoadingAnalyses && savedAnalyses as any) && (savedAnalyses as unknown as { total_analyses: number }).total_analyses > 0 && (
+            {!isLoadingAnalyses && savedAnalyses && savedAnalyses.total_analyses > 0 && (
               <div className="space-y-3">
-                {(savedAnalyses as unknown as { analyses: Record<string, unknown>[] }).analyses.map((analysis: Record<string, unknown>) => {
+                {savedAnalyses.analyses.map((analysis: Record<string, unknown>) => {
                   const analysisLabels: Record<string, string> = {
                     bullet_points: "Pontos-chave",
                     short_paragraph: "Resumo",

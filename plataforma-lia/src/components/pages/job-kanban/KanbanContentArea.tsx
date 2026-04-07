@@ -76,7 +76,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
   } = state
 
   return (
-    <div className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
+    <div data-testid="kanban-content-area" className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
       {viewMode === "table" && (
         <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary px-4 py-2">
           <div className="w-full">
@@ -213,8 +213,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
         {showSuperChat && (
           <>
           <div 
-            className="flex-1 transition-colors motion-reduce:transition-none duration-300 pl-4 py-4 pr-0 min-w-0"
-            style={{maxWidth: 'calc(100% - 48px)'}}
+            className="flex-1 transition-colors motion-reduce:transition-none duration-300 pl-4 py-4 pr-0 min-w-0 max-w-[calc(100%-48px)]"
           >
             <div className="h-full flex flex-col">
               <ExpandedChatModal
@@ -274,8 +273,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
               >
                 <Users className="w-4 h-4 text-lia-text-secondary" />
                 <span 
-                  className="text-micro font-medium text-lia-text-secondary tracking-wide"
-                  style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
+                  className="text-micro font-medium text-lia-text-secondary tracking-wide [writing-mode:vertical-rl] [text-orientation:mixed]"
                  aria-live="polite" aria-atomic="true">
                   Candidatos ({Object.values(candidatesData).flat().length})
                 </span>

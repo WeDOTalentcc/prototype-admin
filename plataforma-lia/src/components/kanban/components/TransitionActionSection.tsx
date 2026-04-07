@@ -54,7 +54,7 @@ export function BatchRejectionSection({
   if (!isRejectedBatch || currentSubStatusOptions.length === 0) return null
 
   return (
-    <div className="space-y-2">
+    <div data-testid="transition-action-section" className="space-y-2">
       <button
         type="button"
         className="w-full flex items-center justify-between py-1.5 group"

@@ -108,7 +108,7 @@ export function JobEditTab({
       )}
 
       <div className="flex gap-6">
-        <div className="flex-shrink-0" style={{ width: "220px" }}>
+        <div className="flex-shrink-0 w-[220px]">
           <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-md overflow-hidden">
             <nav className="p-3 h-full overflow-y-auto">
               <div className="mb-2">

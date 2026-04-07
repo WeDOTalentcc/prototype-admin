@@ -169,13 +169,13 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        <span className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>Operadores:</span>
+        <span className="text-xs">Operadores:</span>
         {['AND', 'OR', 'NOT', '( )', '" "'].map((op) => (
           <button
             key={op}
             onClick={() => setBooleanSearchValue(prev => prev + ' ' + op + ' ')}
             className="lia-pill font-mono"
-            style={{padding: '2px 8px'}}
+           
           >
             {op}
           </button>

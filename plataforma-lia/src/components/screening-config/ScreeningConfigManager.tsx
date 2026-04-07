@@ -86,7 +86,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
   return (
     <div className={_hideOwnSidebar ? "" : "flex gap-6"}>
       {!_hideOwnSidebar && (
-      <div className="flex-shrink-0" style={{width: '220px'}}>
+      <div className="flex-shrink-0">
         <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-md overflow-hidden">
           <nav className="space-y-1 p-3 h-full overflow-y-auto">
             {SCREENING_SECTIONS.map((section) => {
@@ -262,8 +262,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 bg-lia-border-default"
                       >
                         <span
-                          className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200"
-                          style={{transform: 'translateX(2px)'}}
+                          className="inline-block h-3.5 w-3.5 transform translate-x-[2px] rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200"
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (

@@ -22,7 +22,7 @@ export function EditJobModalPrivacy({
   updateField,
 }: EditJobModalPrivacyProps) {
   return (
-    <section>
+    <section data-testid="edit-job-privacy-section">
       <div className="flex items-center gap-2 mb-4">
         <Shield className="w-4 h-4 text-lia-text-secondary" />
         <h3 className="text-base-ui font-semibold text-lia-text-primary">Configuração de Confidencialidade para LIA</h3>

@@ -48,6 +48,7 @@ function getPriorityBadgeColor(priority: KPIAlert['priority']) {
 export function KPIAlertListItem({ alert, onMarkAsRead, onArchive, onSendNotification, onShowDetails }: KPIAlertListItemProps) {
   return (
     <div
+      data-testid={`kpi-alert-list-item-${alert.id}`}
       className={`p-4 border rounded-md transition-colors motion-reduce:transition-none ${
         alert.isRead ? 'bg-lia-bg-secondary' : 'bg-lia-bg-primary border-l-4'
       } ${

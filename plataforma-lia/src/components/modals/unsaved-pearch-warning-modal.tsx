@@ -55,7 +55,7 @@ export function UnsavedPearchWarningModal({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <AlertDialogContent className="max-w-md rounded-md">
+      <AlertDialogContent className="max-w-md rounded-md" data-testid="unsaved-search-warning-modal">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2.5 rounded-md bg-status-warning/15 text-status-warning">

@@ -221,7 +221,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
           className={`${isEmptyChat ? 'flex-shrink' : 'flex-1'} min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-lia-border-default dark:scrollbar-thumb-lia-border-medium scrollbar-track-transparent hover:scrollbar-thumb-lia-border-medium dark:hover:scrollbar-thumb-lia-border-medium relative transition-colors motion-reduce:transition-none duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
-          style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
+         
           onScroll={checkNewMessageIndicator}
         >
           {/* Empty state - messages area is empty, content moved to input card */}

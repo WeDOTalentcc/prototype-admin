@@ -228,7 +228,7 @@ export function AlertSettingsModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" data-testid="alert-settings-modal">
       <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl h-[90vh] flex flex-col dark:border-lia-border-subtle">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">

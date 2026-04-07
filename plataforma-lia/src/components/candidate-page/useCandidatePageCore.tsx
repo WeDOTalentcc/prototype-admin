@@ -35,7 +35,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [expandedOpinionId, setExpandedOpinionId] = useState<string | null>(null)
-  const [savedAnalyses, setSavedAnalyses] = useState<Record<string, unknown> | null>(null)
+  const [savedAnalyses, setSavedAnalyses] = useState<{ total_analyses: number; analyses: Record<string, unknown>[] } | null>(null)
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false)
   const [expandedAnalysisId, setExpandedAnalysisId] = useState<string | null>(null)
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null)
@@ -357,12 +357,12 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
         method: 'DELETE'
       })
       if (response.ok) {
-        setSavedAnalyses((prev: Record<string, unknown> | null) => {
+        setSavedAnalyses((prev) => {
           if (!prev) return prev
           return {
             ...prev,
-            analyses: (prev.analyses as Record<string, unknown>[]).filter((a: Record<string, unknown>) => a.id !== analysisToDelete.id),
-            total_analyses: (prev.total_analyses as number) - 1
+            analyses: prev.analyses.filter((a: Record<string, unknown>) => a.id !== analysisToDelete.id),
+            total_analyses: prev.total_analyses - 1
           }
         })
         toast.success('Análise removida com sucesso')

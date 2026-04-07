@@ -72,18 +72,17 @@ export default function LoginPage() {
       <CloudsBackground />
 
       <div className="hidden lg:flex lg:w-1/2 relative flex-col z-10">
-        <div className="absolute top-10 left-[38px]" style={{ width: "230px" }}>
+        <div className="absolute top-10 left-[38px] w-[230px]">
           <Image
             src="/logos/wedo-logo-transparent.png"
             alt="WeDo Talent"
             width={230}
             height={73}
-            style={{ width: "230px", height: "auto", maxWidth: "230px" }}
+            className="w-[230px] h-auto max-w-[230px]"
             priority
           />
           <span
-            className="block text-right text-gray-950 dark:text-lia-text-primary font-semibold uppercase tracking-[0.18em] text-[18px]"
-            style={{ marginTop: "-5px", paddingRight: "6px" }}
+            className="block text-right text-gray-950 dark:text-lia-text-primary font-semibold uppercase tracking-[0.18em] text-[18px] -mt-[5px] pr-[6px]"
           >
             talent
           </span>
@@ -149,7 +148,7 @@ export default function LoginPage() {
               alt="WeDo Talent"
               width={120}
               height={40}
-              style={{ width: "auto", height: "auto" }}
+              className="w-auto h-auto"
               priority
             />
           </div>

@@ -270,11 +270,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 <div className="space-y-6">
                   <div className="text-center py-6">
                     <div 
-                      className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{backgroundColor: (selectedCandidateForModal.technicalTestScore as number) >= 80 ? 'var(--status-success)' :
-                                         (selectedCandidateForModal.technicalTestScore as number) >= 60 ? 'var(--status-warning)' :
-                                         (selectedCandidateForModal.technicalTestScore as number) >= 40 ? 'var(--lia-border-medium)' :
-                                         'var(--lia-border-medium)'}}
+                      className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${(selectedCandidateForModal.technicalTestScore as number) >= 80 ? 'bg-status-success' : (selectedCandidateForModal.technicalTestScore as number) >= 60 ? 'bg-status-warning' : 'bg-lia-border-medium'}`}
                     >
                       <span className="text-3xl font-bold text-lia-text-primary">
                         {formatScorePercent(selectedCandidateForModal.technicalTestScore as number | null | undefined, 0)}
@@ -297,11 +293,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                 <div className="space-y-6">
                   <div className="text-center py-6">
                     <div 
-                      className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                      style={{backgroundColor: (selectedCandidateForModal.englishTestScore as number) >= 80 ? 'var(--status-success)' :
-                                         (selectedCandidateForModal.englishTestScore as number) >= 60 ? 'var(--lia-border-default)' :
-                                         (selectedCandidateForModal.englishTestScore as number) >= 40 ? 'var(--lia-border-medium)' :
-                                         'var(--lia-border-medium)'}}
+                      className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${(selectedCandidateForModal.englishTestScore as number) >= 80 ? 'bg-status-success' : (selectedCandidateForModal.englishTestScore as number) >= 60 ? 'bg-lia-border-default' : 'bg-lia-border-medium'}`}
                     >
                       <span className="text-3xl font-bold text-lia-text-primary">
                         {formatScorePercent(selectedCandidateForModal.englishTestScore as number | null | undefined, 0)}

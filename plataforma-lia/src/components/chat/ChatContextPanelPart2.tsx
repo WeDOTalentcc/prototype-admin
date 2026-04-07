@@ -90,7 +90,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                           <p className="text-sm text-lia-text-secondary">{interview.date} • {interview.time}</p>
                           <p className="text-xs text-lia-text-secondary">{interview.interviewer}</p>
                         </div>
-                        <Badge variant="outline" style={{backgroundColor: interview.status === 'Confirmed' ? 'var(--green-50, #f0fdf4)' : 'var(--yellow-50, #fefce8)', borderColor: 'var(--lia-border-subtle)'}}>{interview.status}</Badge>
+                        <Badge variant="outline" className={`border-lia-border-subtle ${interview.status === 'Confirmed' ? 'bg-green-50' : 'bg-yellow-50'}`}>{interview.status}</Badge>
                       </div>
                     ))}
                   </div>

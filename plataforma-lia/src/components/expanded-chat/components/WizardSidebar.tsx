@@ -81,6 +81,7 @@ export function WizardSidebar({
                   return (
                     <button
                       key={stageId}
+                      data-testid={`wizard-stage-btn-${stageId}`}
                       onClick={() => handleStageClick(stageId, stageIndex)}
                       disabled={!isClickable}
                       className={cn(

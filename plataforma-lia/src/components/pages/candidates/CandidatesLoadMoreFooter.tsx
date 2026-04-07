@@ -22,8 +22,9 @@ export function CandidatesLoadMoreFooter({
     <>
       {showSearchResults && displayedResultsCount < sortedCandidatesLength && (
         <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle py-3 px-4">
-          <div className="flex flex-col items-center gap-1.5">
+          <div data-testid="load-more-container" className="flex flex-col items-center gap-1.5">
             <Button
+              data-testid="load-more-btn"
               variant="outline"
               className="w-full max-w-md h-10 gap-2 text-sm font-medium"
               onClick={onLoadMore}

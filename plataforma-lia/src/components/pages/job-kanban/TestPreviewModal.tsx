@@ -102,7 +102,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                         <span className="font-medium">Tempo limite: 3:00</span>
                       </div>
                       <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 max-w-sidebar-content">
-                        <div className="bg-lia-bg-inverse dark:bg-lia-text-secondary h-1.5 rounded-full animate-pulse motion-reduce:animate-none" style={{width: '75%'}}></div>
+                        <div className="bg-lia-bg-inverse dark:bg-lia-text-secondary h-1.5 rounded-full animate-pulse motion-reduce:animate-none"></div>
                       </div>
                     </div>
                   </div>

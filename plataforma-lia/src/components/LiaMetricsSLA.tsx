@@ -226,8 +226,7 @@ export function LiaMetricsSLA({
                     style={{width: `${((avgTimeTotal + 7) / 15) * 100}%`}}
                   />
                   <div
-                    className="absolute h-full border-r-2 border-status-error/30"
-                    style={{left: '100%'}}
+                    className="absolute h-full border-r-2 border-status-error/30 left-full"
                   />
                 </div>
               </div>

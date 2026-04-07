@@ -272,7 +272,7 @@ export function EmailTemplatesManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-testid="email-templates-manager" className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-sans font-semibold text-lia-text-primary">Templates de Email</h2>

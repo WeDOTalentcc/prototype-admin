@@ -126,7 +126,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
 
     if ('days' in preset) {
       start = new Date(today)
-      start.setDate(start.getDate() - (preset as any).days)
+      start.setDate(start.getDate() - (preset as { days: number }).days)
     } else if (preset.type === 'this_month') {
       start = new Date(today.getFullYear(), today.getMonth(), 1)
       end = new Date(today.getFullYear(), today.getMonth() + 1, 0)

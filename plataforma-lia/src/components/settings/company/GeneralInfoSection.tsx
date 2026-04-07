@@ -17,7 +17,7 @@ const selectClass = (disabled: boolean) =>
 
 interface GeneralInfoSectionProps {
   companyData: Record<string, any>
-  setCompanyData: (fn: (prev: Record<string, any>) => Record<string, any>) => void
+  setCompanyData: React.Dispatch<React.SetStateAction<Record<string, any>>>
   isEditing: boolean
   updateLiaToggle: (key: string, value: boolean) => void
   updateLiaInstruction: (key: string, value: string) => void

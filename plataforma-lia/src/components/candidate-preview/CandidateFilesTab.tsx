@@ -489,7 +489,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
                       3:45
                     </span>
-                    <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--lia-text-primary)', color: 'var(--white)'}}>
+                    <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5">
                       Prescreening
                     </Badge>
                   </div>
@@ -659,7 +659,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         2.8 MB • MP3 • 4:32
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5" style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-purple)'}}>
+                      <Badge className="text-xs px-1 py-0 h-3.5">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
                       </Badge>

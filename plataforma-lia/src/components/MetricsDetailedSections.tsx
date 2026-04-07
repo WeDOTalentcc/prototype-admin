@@ -264,7 +264,7 @@ export function MetricsDetailedSections({
                 </div>
                 <div className="relative h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                   <div className="absolute h-full bg-lia-border-medium rounded-full transition-[width,height] duration-500" style={{width: `${((avgTimeTotal + 7) / 15) * 100}%`}} />
-                  <div className="absolute h-full border-r-2 border-status-error/30" style={{left: '100%'}} />
+                  <div className="absolute left-full h-full border-r-2 border-status-error/30" />
                 </div>
               </div>
             </div>

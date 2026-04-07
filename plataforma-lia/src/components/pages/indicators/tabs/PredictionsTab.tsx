@@ -33,7 +33,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
   const successRate = insights?.summary?.success_rate ? Math.round(insights.summary.success_rate * 100) : 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="predictions-tab">
       {/* KPIs Preditivos — dados reais do backend ML */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-status-success/30">

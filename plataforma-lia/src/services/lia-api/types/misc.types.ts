@@ -50,9 +50,17 @@ export interface DocumentAnalysisResponse {
   formatting_quality: number
 }
 
+export interface ResumeContactInfo {
+  email?: string
+  phone?: string
+  location?: string
+  linkedin?: string
+  [key: string]: string | undefined
+}
+
 export interface ResumeAnalysisResponse {
   candidate_name: string
-  contact_info: Record<string, unknown>
+  contact_info: ResumeContactInfo
   layout_score: number
   improvement_suggestions: string[]
 }

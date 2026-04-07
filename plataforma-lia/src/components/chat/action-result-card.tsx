@@ -15,6 +15,9 @@ interface ActionResultData {
   scheduled_at?: string
   simulated?: boolean
   action?: string
+  job_title?: string
+  new_job_id?: string | number
+  completeness?: number
   [key: string]: unknown
 }
 
@@ -126,16 +129,16 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
 
         {(actionType === "pause_job" || actionType === "close_job" || actionType === "reopen_job") && (
           <div className="flex items-center gap-2">
-            {(result as any).job_title && (
+            {result.job_title && (
               <>
                 <span className="text-lia-text-secondary">Vaga:</span>
-                <span className="text-lia-text-disabled font-medium">{String((result as any).job_title)}</span>
+                <span className="text-lia-text-disabled font-medium">{String(result.job_title)}</span>
               </>
             )}
           </div>
         )}
 
-        {(actionType === "duplicate_job" && result.new_job_id as any) && (
+        {(actionType === "duplicate_job" && result.new_job_id) && (
           <div className="flex items-center gap-2">
             <span className="text-lia-text-secondary">Nova vaga ID:</span>
             <span className={`px-1.5 py-0.5 rounded-md ${badgeColor}`}>#{String(result.new_job_id)}</span>

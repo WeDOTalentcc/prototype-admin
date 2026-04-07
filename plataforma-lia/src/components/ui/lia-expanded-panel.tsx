@@ -55,14 +55,13 @@ export function LiaExpandedPanel({
       style={{width: width ? `${width}px` : undefined}}
     >
       <Card 
-        className="flex flex-col overflow-hidden bg-lia-bg-primary" 
-        style={{border: '1px solid var(--lia-border-subtle)',
-          height}}
+        className="flex flex-col overflow-hidden bg-lia-bg-primary border border-lia-border-subtle" 
+        style={{height}}
       >
         {/* Header Padronizado */}
         <div 
           className="flex-shrink-0 px-4 py-3" 
-          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+         
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -145,7 +144,7 @@ export function LiaExpandedPanel({
         {quickActions && (
           <div 
             className="flex-shrink-0 px-4 py-3" 
-            style={{borderBottom: '1px solid var(--lia-border-subtle)'}}
+           
           >
             {quickActions}
           </div>
@@ -155,7 +154,7 @@ export function LiaExpandedPanel({
         {tabs && (
           <div 
             className="flex-shrink-0 px-4 pt-2" 
-            style={{borderBottom: '1px solid var(--lia-border-subtle)'}}
+           
           >
             {tabs}
           </div>
@@ -164,7 +163,7 @@ export function LiaExpandedPanel({
         {/* Main Content - Scrollable */}
         <div 
           className="flex-1 overflow-y-auto"
-          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+         
         >
           {children}
         </div>
@@ -173,7 +172,7 @@ export function LiaExpandedPanel({
         {footer && (
           <div 
             className="flex-shrink-0 p-4" 
-            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+           
           >
             {footer}
           </div>
@@ -213,9 +212,8 @@ export function LiaTabButton({
       <button
         onClick={onClick}
         className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] ${
- active ? 'text-white' : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
+ active ? 'bg-lia-text-secondary text-white' : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
         }`}
-        style={{...(active ? { backgroundColor: 'var(--lia-text-secondary)' } : {})}}
       >
         <div className="flex items-center gap-1.5">
           {icon}
@@ -324,9 +322,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
-          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
-          style={{border: '1px solid var(--lia-border-subtle)',
-            backgroundColor: 'var(--lia-bg-secondary)'}}
+          className="w-full h-32 p-4 text-sm rounded-md border border-lia-border-subtle bg-lia-bg-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">

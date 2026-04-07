@@ -39,7 +39,7 @@ export function ConfirmationStep({
   customReason,
 }: ConfirmationStepProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="confirmation-step" className="space-y-4">
       <div className="flex items-center gap-2 p-2.5 rounded-md bg-status-success/10 border border-status-success/30">
         <CheckCircle className="w-4 h-4 text-status-success" />
         <span className="text-xs text-status-success font-medium">

@@ -12,6 +12,8 @@ import {
   type WizardStage,
   INITIAL_GENERAL_MESSAGE,
 } from '..'
+import type { WizardMode } from '../types'
+import type { DetectedCriteria } from '../ExpandedChatContext'
 import { useChatSync, useToolCalling, useFieldHighlight } from '.'
 import { useConversationMemory } from './useConversationMemory'
 import { useLearning } from './useLearning'
@@ -26,31 +28,37 @@ import { useConversationMemoryInit } from './useConversationMemoryInit'
 import { useCompanyId } from '@/hooks/useCompanyId'
 import type { Message, ExpandedChatModalProps } from '../types'
 
+interface AuthUser {
+  email?: string
+  id?: string
+  name?: string
+}
+
 interface UseExpandedChatCoreHooksParams {
-  user: any
+  user: AuthUser | null
   isJobCreationMode: boolean
   isOpen: boolean
   mode: string
   messages: Message[]
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
-  currentStage: string
-  setCurrentStage: React.Dispatch<React.SetStateAction<any>>
-  detectedCriteria: any
-  setDetectedCriteria: React.Dispatch<React.SetStateAction<any>>
+  currentStage: WizardStage
+  setCurrentStage: React.Dispatch<React.SetStateAction<WizardStage>>
+  detectedCriteria: DetectedCriteria
+  setDetectedCriteria: React.Dispatch<React.SetStateAction<DetectedCriteria>>
   basicInfoFields: BasicInfoFields
   setBasicInfoFields: React.Dispatch<React.SetStateAction<BasicInfoFields>>
   setFieldOrigins: React.Dispatch<React.SetStateAction<Record<string, { source: FieldOrigin; confidence: number }>>>
   conversationId: string | null
   setConversationId: React.Dispatch<React.SetStateAction<string | null>>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
-  wizardMode: string
-  setWizardMode: (mode: any) => void
+  wizardMode: WizardMode
+  setWizardMode: React.Dispatch<React.SetStateAction<WizardMode>>
   setTechnicalSkills: (skills: TechnicalSkill[]) => void
   setBehavioralCompetencies: (competencies: BehavioralCompetency[]) => void
-  setSalaryInfo: (info: any) => void
+  setSalaryInfo: (info: SalaryInfo) => void
   setWsiQuestions: (questions: WSIQuestion[]) => void
   setGeneratedJobDescription: React.Dispatch<React.SetStateAction<string>>
-  setWizardFastTrackSourceJobId: (id: any) => void
+  setWizardFastTrackSourceJobId: (id: string | null) => void
   wizardDraftId: string
   fastTrackMessageSent: boolean
   setFastTrackMessageSent: (v: boolean) => void
@@ -117,24 +125,24 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
     onCriteriaDetected: (criteria, origins) => {
       if (criteria.job_title) {
         const jobTitle = criteria.job_title
-        setDetectedCriteria((prev: any) => ({ ...prev, cargo: jobTitle }))
+        setDetectedCriteria((prev) => ({ ...prev, cargo: jobTitle }))
         setBasicInfoFields(prev => ({ ...prev, cargo: jobTitle }))
         fastTrack.searchWithDebounce(jobTitle, criteria.department)
       }
       if (criteria.seniority) {
         const seniority = criteria.seniority
-        setDetectedCriteria((prev: any) => ({ ...prev, senioridadeIdiomas: seniority }))
+        setDetectedCriteria((prev) => ({ ...prev, senioridadeIdiomas: seniority }))
       }
       if (criteria.technical_skills) {
         const skills = criteria.technical_skills
-        setDetectedCriteria((prev: any) => ({ ...prev, competenciasTecnicas: skills }))
+        setDetectedCriteria((prev) => ({ ...prev, competenciasTecnicas: skills }))
       }
       if (criteria.behavioral_skills) {
         const behaviors = criteria.behavioral_skills
-        setDetectedCriteria((prev: any) => ({ ...prev, competenciasComportamentais: behaviors }))
+        setDetectedCriteria((prev) => ({ ...prev, competenciasComportamentais: behaviors }))
       }
       if (criteria.salary_min || criteria.salary_max) {
-        setDetectedCriteria((prev: any) => ({
+        setDetectedCriteria((prev) => ({
           ...prev,
           salario: `${CURRENCY_SYMBOL} ${criteria.salary_min?.toLocaleString() || '?'} - ${CURRENCY_SYMBOL} ${criteria.salary_max?.toLocaleString() || '?'}`
         }))
@@ -157,7 +165,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
     onError: (_error) => {}
   })
 
-  const { handleProactiveAccept, handleProactiveReject } = useProactiveHandlers({ user, setMessages })
+  const { handleProactiveAccept, handleProactiveReject } = useProactiveHandlers({ user: user as Record<string, unknown> | null, setMessages })
   const { handleGroupedPanelChange } = useGroupedPanelChangeHandler({ setMessages })
 
   const {
@@ -192,7 +200,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
       }
     },
     onWizardRestore: (snapshot: WizardSnapshot) => {
-      if (snapshot.stage) setCurrentStage(snapshot.stage as any)
+      if (snapshot.stage) setCurrentStage(snapshot.stage as WizardStage)
       if (snapshot.basicInfoFields) setBasicInfoFields(snapshot.basicInfoFields as unknown as BasicInfoFields)
       if (snapshot.technicalSkills && Array.isArray(snapshot.technicalSkills)) setTechnicalSkills(snapshot.technicalSkills as TechnicalSkill[])
       if (snapshot.behavioralCompetencies && Array.isArray(snapshot.behavioralCompetencies)) setBehavioralCompetencies(snapshot.behavioralCompetencies as BehavioralCompetency[])
@@ -207,7 +215,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
         if (user?.email) {
           (async () => {
             try {
-              await conversationMemory.initConversation(user.email, 'general')
+              await conversationMemory.initConversation(user.email ?? '', 'general')
               if (conversationMemory.messages.length > 0) {
                 const restoredMessages: Message[] = conversationMemory.messages.map(m => ({
                   id: m.id || `restored-${Date.now()}-${Math.random()}`,
@@ -248,7 +256,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
   }, [wizardMode, syncContext])
 
   useAnalyticsSession({ analytics, isOpen, mode })
-  useConversationMemoryInit({ conversationMemory, isOpen, mode, user, wizardDraftId } as any)
+  useConversationMemoryInit({ conversationMemory: conversationMemory as unknown as Parameters<typeof useConversationMemoryInit>[0]['conversationMemory'], isOpen, mode, user, wizardDraftId })
 
   const { fetchWizardSuggestions } = learning
   useEffect(() => {

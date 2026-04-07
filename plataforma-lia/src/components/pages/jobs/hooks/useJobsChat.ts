@@ -383,9 +383,9 @@ export function useJobsChat({
         action: action || 'general_query',
         conversation_id: jobsConversationId,
         company_id: resolvedCompanyId ?? '',
-      } as any)
+      })
 
-      if ((response as any).conversation_id) setJobsConversationId((response as any).conversation_id)
+      if (response.conversation_id) setJobsConversationId(response.conversation_id)
 
       setLiaMessages(prev => [...prev, {
         id: `response-${Date.now()}`,

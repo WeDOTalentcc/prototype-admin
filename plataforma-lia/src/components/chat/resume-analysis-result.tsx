@@ -49,11 +49,11 @@ export function ResumeAnalysisResult({
               <p className="font-medium text-lia-text-primary">{result.candidate_name || 'Nome não identificado'}</p>
 
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary mt-0.5">
-                {(result.contact_info?.email as any) && (
+                {result.contact_info?.email && (
 
                   <span className="flex items-center gap-1">
                     <Mail className="h-3 w-3" />
-                    {(result.contact_info.email as React.ReactNode)}
+                    {result.contact_info.email}
                   </span>
                 )}
               </div>
@@ -94,22 +94,22 @@ export function ResumeAnalysisResult({
               </CardTitle>
 
               <div className="flex flex-wrap items-center gap-3 text-sm text-lia-text-secondary mt-1">
-                {(result.contact_info?.email as any) && (
+                {result.contact_info?.email && (
                   <span className="flex items-center gap-1">
                     <Mail className="h-3.5 w-3.5" />
-                    {(result.contact_info.email as React.ReactNode)}
+                    {result.contact_info.email}
                   </span>
                 )}
-                {(result.contact_info?.phone as any) && (
+                {result.contact_info?.phone && (
                   <span className="flex items-center gap-1">
                     <Phone className="h-3.5 w-3.5" />
-                    {(result.contact_info.phone as React.ReactNode)}
+                    {result.contact_info.phone}
                   </span>
                 )}
-                {(result.contact_info?.location as any) && (
+                {result.contact_info?.location && (
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
-                    {(result.contact_info.location as React.ReactNode)}
+                    {result.contact_info.location}
                   </span>
                 )}
               </div>
@@ -182,10 +182,10 @@ export function ResumeAnalysisResult({
           </div>
         )}
 
-        {(result.contact_info?.linkedin as any) && (
+        {result.contact_info?.linkedin && (
           <div className="pt-4 border-t">
             <a 
-              href={(result.contact_info as Record<string, unknown>).linkedin as string}
+              href={result.contact_info.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-lia-text-secondary hover:text-lia-text-primary"

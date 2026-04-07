@@ -79,7 +79,7 @@ export function ColumnConfigSidebar({
   }, {} as Record<string, typeof tableColumns>)
 
   return (
-    <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
+    <div data-testid="column-config-sidebar" className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
       <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-6rem)] overflow-hidden">
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
@@ -153,13 +153,7 @@ export function ColumnConfigSidebar({
                     {categoryLabels[category] || category}
                   </h4>
                   <span
-                    className="text-xs px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor:
-                        visibleCount > 0 ? "var(--lia-bg-tertiary)" : "var(--lia-bg-tertiary)",
-                      color:
-                        visibleCount > 0 ? "var(--lia-text-secondary)" : "var(--lia-text-tertiary)",
-                    }}
+                    className="text-xs px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {visibleCount}/{columns.length}
                   </span>
@@ -175,39 +169,17 @@ export function ColumnConfigSidebar({
                           )
                         )
                       }}
-                      className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
-                      style={{
-                        backgroundColor: col.visible
-                          ? "var(--lia-bg-secondary)"
-                          : "var(--lia-bg-secondary)",
-                        border: col.visible
-                          ? "1px solid var(--lia-border-default)"
-                          : "1px solid var(--lia-border-subtle)",
-                      }}
+                      className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary bg-lia-bg-secondary ${col.visible ? "border border-lia-border-default" : "border border-lia-border-subtle"}`}
                     >
                       <div
-                        className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
-                        style={{
-                          backgroundColor: col.visible
-                            ? "var(--lia-text-secondary)"
-                            : "transparent",
-                          border: col.visible
-                            ? "none"
-                            : "2px solid var(--lia-border-default)",
-                        }}
+                        className={`w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none ${col.visible ? "bg-lia-text-secondary border-0" : "bg-transparent border-2 border-lia-border-default"}`}
                       >
                         {col.visible && (
                           <Check className="w-3 h-3 text-white" strokeWidth={3} />
                         )}
                       </div>
                       <span
-                        className="text-xs flex-1 flex items-center gap-1.5"
-                        style={{
-                          color: col.visible
-                            ? "var(--lia-text-primary)"
-                            : "var(--lia-text-secondary)",
-                          fontWeight: col.visible ? 500 : 400,
-                        }}
+                        className={`text-xs flex-1 flex items-center gap-1.5 ${col.visible ? "text-lia-text-primary font-medium" : "text-lia-text-secondary font-normal"}`}
                       >
                         {col.isGlobalSearch && (
                           <Globe className="w-3 h-3 text-lia-text-secondary" />

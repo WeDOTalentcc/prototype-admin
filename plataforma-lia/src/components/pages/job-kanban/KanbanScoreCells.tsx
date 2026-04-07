@@ -53,7 +53,7 @@ export function renderScoreCell(
           }}
           title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
         >
-          <Gauge className="w-3.5 h-3.5" style={{color: hasNotaGeral ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
+          <Gauge className={`w-3.5 h-3.5 ${hasNotaGeral ? 'text-lia-btn-primary-bg' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
             {hasNotaGeral ? ranking : '—'}
           </span>
@@ -97,7 +97,7 @@ export function renderScoreCell(
           }}
           title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
         >
-          <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
+          <Target className={`w-3.5 h-3.5 ${hasFitScore ? 'text-lia-btn-primary-bg' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
             {hasFitScore ? formatScorePercent(fitValue as number, 0) : '—'}
           </span>
@@ -119,7 +119,7 @@ export function renderScoreCell(
           }}
           title={hasTechnical ? 'Clique para ver detalhes' : 'Não realizado'}
         >
-          <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
+          <Code className={`w-3.5 h-3.5 ${hasTechnical ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           {hasTechnical && (
             <span className="text-xs font-semibold text-lia-text-primary">
               {formatScorePercent(candidate.technicalTestScore as number, 0)}
@@ -143,7 +143,7 @@ export function renderScoreCell(
           }}
           title={hasEnglish ? 'Clique para ver detalhes' : 'Não realizado'}
         >
-          <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
+          <Globe className={`w-3.5 h-3.5 ${hasEnglish ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           {hasEnglish && (
             <span className="text-xs font-semibold text-lia-text-primary">
               {formatScorePercent(candidate.englishTestScore as number, 0)}
@@ -170,7 +170,7 @@ export function renderScoreCell(
           }}
           title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
         >
-          <Fingerprint className="w-3.5 h-3.5" style={{color: hasBigFive ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
+          <Fingerprint className={`w-3.5 h-3.5 ${hasBigFive ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
             {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
           </span>

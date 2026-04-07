@@ -49,7 +49,7 @@ export function EAPExpandedSection(props: EAPExpandedSectionProps) {
   } = props
 
   return (
-    <div className="lia-prompt-expanded space-y-4" style={{backgroundColor: 'var(--lia-bg-tertiary)'}}>
+    <div className="lia-prompt-expanded space-y-4">
 
       {(contextPill || quickActions.length > 0) && (
         <div className="p-4 pb-0 border-b border-b-lia-border-subtle">

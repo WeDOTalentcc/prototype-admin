@@ -27,7 +27,7 @@ export function renderMatchScoreCell(candidate: Candidate, searchQuery: string):
   const strokeDashoffset = circumference - (matchScore / 100) * circumference
 
   return (
-    <div className="flex items-center justify-center">
+    <div data-testid="match-score-cell" className="flex items-center justify-center">
       <div className="relative" style={{width: ringSize, height: ringSize}}>
         {/* Background ring */}
         <svg className="absolute" width={ringSize} height={ringSize}>

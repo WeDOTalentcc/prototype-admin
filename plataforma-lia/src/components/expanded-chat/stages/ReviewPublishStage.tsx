@@ -87,9 +87,9 @@ export function ReviewPublishStage({
   return (
     <>
       {/* Review Summary */}
-      <div className="space-y-2.5">
+      <div data-testid="review-publish-stage" className="space-y-2.5">
         {/* Job Title Card */}
-        <div className="p-3 bg-lia-bg-tertiary rounded-md">
+        <div data-testid="job-title-card" className="p-3 bg-lia-bg-tertiary rounded-md">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-base font-semibold text-lia-text-primary">

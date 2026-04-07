@@ -136,8 +136,7 @@ export function GoalsAlertsSection({
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
-                    className="relative w-10 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
-                    style={{backgroundColor: alert.enabled ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}}
+                    className={`relative w-10 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 ${alert.enabled ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-subtle'}`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-primary rounded-full transition-transform motion-reduce:transition-none ${
                       alert.enabled ? 'left-5' : 'left-0.5'

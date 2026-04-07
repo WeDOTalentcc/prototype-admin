@@ -46,7 +46,7 @@ export function CommunicationStep({
   onNotificationMessageChange,
 }: CommunicationStepProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="communication-step" className="space-y-4">
       <div className="flex items-center gap-2 p-2.5 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle">
         <Mail className="w-4 h-4 text-lia-text-secondary" />
         <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
@@ -63,7 +63,7 @@ export function CommunicationStep({
             <Button
               key={channel}
               type="button"
-              variant={notificationChannel === channel ? 'default' as any : 'outline'}
+              variant={notificationChannel === channel ? 'primary' : 'outline'}
               size="sm"
               onClick={() => onNotificationChannelChange(channel)}
               className={cn(

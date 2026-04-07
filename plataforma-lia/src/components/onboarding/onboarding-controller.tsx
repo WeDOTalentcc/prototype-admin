@@ -388,7 +388,7 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
             className="inline-flex items-center justify-center w-32 h-32 bg-lia-bg-primary rounded-full mb-8 animate-in zoom-in-50 duration-500"
           >
             <div
-              style={{animation: "check-pulse 2s ease-in-out infinite"}}
+             
             >
               <CheckCircle className="w-16 h-16 text-[var(--wedo-green-pastel)]" />
             </div>

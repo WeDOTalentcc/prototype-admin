@@ -21,7 +21,7 @@ export const TabFiltros = React.memo(function TabFiltros({
   )
 
   return (
-    <div className="space-y-4 overflow-y-auto flex-1 p-4">
+    <div data-testid="tab-filtros" className="space-y-4 overflow-y-auto flex-1 p-4">
       <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
@@ -50,8 +50,7 @@ export const TabFiltros = React.memo(function TabFiltros({
         </div>
       )}
       <Button
-        className="w-full h-12 !text-sm font-semibold"
-        style={{backgroundColor: showTableFiltersPanel ? 'var(--lia-text-primary)' : 'var(--lia-text-secondary)', color: 'var(--lia-bg-secondary)'}}
+        className={`w-full h-12 !text-sm font-semibold text-lia-bg-secondary ${showTableFiltersPanel ? 'bg-lia-text-primary' : 'bg-lia-text-secondary'}`}
         onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
       >
         <Filter className="w-4 h-4 mr-2" />

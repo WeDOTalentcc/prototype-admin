@@ -12,29 +12,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Switch } from "@/components/ui/switch"
-
-interface CreditEstimate {
-  total_estimated: number
-  breakdown: {
-    base: number
-    emails: number
-    phone_numbers: number
-  }
-}
-
-interface PearchSearchOptions {
-  searchType: string
-  limit: number
-  requireEmails: boolean
-  requirePhoneNumbers: boolean
-}
+import type { ModalPearchSearchOptions, ModalCreditEstimate } from "./CandidatesPageModals.types"
 
 interface CreditConfirmationModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  creditEstimate: CreditEstimate | null
-  pearchSearchOptions: PearchSearchOptions
-  onSearchOptionsChange: (options: PearchSearchOptions) => void
+  creditEstimate: ModalCreditEstimate | null
+  pearchSearchOptions: ModalPearchSearchOptions
+  onSearchOptionsChange: (options: ModalPearchSearchOptions) => void
   onCancel: () => void
   onConfirm: () => void
 }
@@ -50,7 +35,7 @@ export function CreditConfirmationModal({
 }: CreditConfirmationModalProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent data-testid="credit-confirmation-modal" className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-wedo-cyan/15">
@@ -67,11 +52,11 @@ export function CreditConfirmationModal({
               <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Tipo de busca:</span>
-                  <span className="font-medium capitalize">{pearchSearchOptions.searchType}</span>
+                  <span className="font-medium capitalize">{pearchSearchOptions.searchType ?? 'standard'}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Limite de resultados:</span>
-                  <span className="font-medium">{pearchSearchOptions.limit}</span>
+                  <span className="font-medium">{pearchSearchOptions.limit ?? 20}</span>
                 </div>
 
                 {/* Filtros de Otimização de Créditos */}
@@ -108,18 +93,18 @@ export function CreditConfirmationModal({
 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-lia-text-primary">Custo base:</span>
-                  <span className="font-medium">{creditEstimate.breakdown.base} créditos</span>
+                  <span className="font-medium">{creditEstimate.base_cost} créditos</span>
                 </div>
-                {creditEstimate.breakdown.emails > 0 && (
+                {creditEstimate.email_cost > 0 && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-lia-text-primary">E-mails (+):</span>
-                    <span className="font-medium">{creditEstimate.breakdown.emails} créditos</span>
+                    <span className="font-medium">{creditEstimate.email_cost} créditos</span>
                   </div>
                 )}
-                {creditEstimate.breakdown.phone_numbers > 0 && (
+                {creditEstimate.phone_cost > 0 && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-lia-text-primary">Telefones (+):</span>
-                    <span className="font-medium">{creditEstimate.breakdown.phone_numbers} créditos</span>
+                    <span className="font-medium">{creditEstimate.phone_cost} créditos</span>
                   </div>
                 )}
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">

@@ -1,44 +1,14 @@
-export interface CompanyData {
-  logo?: string
-  name?: string
-  tradeName?: string
-  cnpj?: string
-  industry?: string
-  website?: string
-  linkedin_url?: string
-  email?: string
-  phone?: string
-  address?: string
-  mission?: string
-  vision?: string
-  values?: string[]
-  coreCompetencies?: string[]
-  employee_count?: string
-  company_size?: string
-  founded_year?: string
-  work_model?: string
-  employment_types?: string[]
-  seniority_levels?: string[]
-  dei_initiatives?: string
-  sustainability?: string
-  social_impact?: string
-  openness_score?: number
-  conscientiousness_score?: number
-  extraversion_score?: number
-  agreeableness_score?: number
-  stability_score?: number
-  lia_field_toggles?: Record<string, boolean>
-  lia_instructions?: Record<string, string>
-  [key: string]: unknown
-}
+import type React from "react"
+export type { CompanyData } from "./companyTeamHub.types"
+import type { CompanyData } from "./companyTeamHub.types"
 
 export interface CompanyDataSectionProps {
   companyData: CompanyData
-  setCompanyData: (fn: (prev: CompanyData) => CompanyData) => void
+  setCompanyData: React.Dispatch<React.SetStateAction<CompanyData>>
   isEditingCompanyData: boolean
   setIsEditingCompanyData: (value: boolean) => void
-  companyDataBackup: CompanyData
-  setCompanyDataBackup: (data: CompanyData) => void
+  companyDataBackup: CompanyData | null
+  setCompanyDataBackup: (data: CompanyData | null) => void
   saveCompanyData: () => Promise<void>
   saving: boolean
   loading: boolean

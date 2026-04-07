@@ -35,8 +35,8 @@ export function RubricOverviewSection({
   mockWhyCandidate,
 }: RubricOverviewSectionProps) {
   return (
-    <div className="space-y-3">
-      <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)', borderRadius: '8px'}}>
+    <div className="space-y-3" data-testid="rubric-overview-section">
+      <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-semibold text-lia-text-primary">Score de Aderência</span>
           <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export function RubricOverviewSection({
         <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-t-lia-border-subtle">
           <div className="text-center">
             <div className="text-micro mb-1 text-lia-text-secondary">Essenciais</div>
-            <div className="text-base-ui font-semibold" style={{color: essentialMet === essentialReqsLength ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}>
+            <div className={`text-base-ui font-semibold ${essentialMet === essentialReqsLength ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}>
               {essentialMet}/{essentialReqsLength}
             </div>
           </div>
@@ -91,7 +91,7 @@ export function RubricOverviewSection({
         </div>
       </div>
 
-      <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)', borderRadius: '8px'}}>
+      <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
           <Brain className="w-4 h-4 text-wedo-cyan" />
           Parecer da LIA
@@ -202,7 +202,7 @@ export function RubricOverviewSection({
         )}
       </div>
 
-      <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)', borderRadius: '8px'}}>
+      <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
           <Lightbulb className="w-4 h-4 text-lia-text-secondary" />
           Por que este candidato?

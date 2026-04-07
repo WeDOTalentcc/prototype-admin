@@ -25,7 +25,7 @@ const JobsHeader = memo(function JobsHeader({
   onCreateJob,
 }: JobsHeaderProps) {
   return (
-    <div className="space-y-4 border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4">
+    <div className="space-y-4 border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4" data-testid="jobs-header">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">

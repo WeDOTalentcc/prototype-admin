@@ -72,7 +72,7 @@ export function ColumnConfigPanel({
   }
 
   return (
-    <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
+    <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300" data-testid="column-config-panel">
       <Card className="h-full flex flex-col overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">

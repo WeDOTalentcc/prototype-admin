@@ -214,3 +214,14 @@
   animation: none !important;
   transition: none !important;
 }
+
+/* ===== UTILITY ANIMATION CLASSES (replaces inline style={{animation: ...}}) ===== */
+.animate-slide-in-up { animation: slideInUp 0.3s ease-out; }
+.animate-slide-in-up-slow { animation: slideInUp 0.4s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-fade-in-fast { animation: fadeIn 0.25s ease-in-out; }
+.animate-fade-in-up { animation: fadeInUp 0.2s ease-out; }
+.animate-scale-in-delayed { animation: scaleInDelayed 0.2s ease-out; }
+.animate-check-pulse { animation: check-pulse 2s ease-in-out infinite; }
+.animate-none-no-transition { animation: none; transition-duration: 0ms; }

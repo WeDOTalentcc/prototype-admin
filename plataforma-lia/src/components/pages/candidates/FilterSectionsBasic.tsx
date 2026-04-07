@@ -25,7 +25,7 @@ export function FilterSectionsBasic({
   onToggleFilter,
 }: FilterSectionsBasicProps) {
   return (
-    <>
+    <div data-testid="filter-sections-basic">
       <div className="mb-5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-lia-text-primary mb-3 flex items-center gap-1.5">
           <ArrowUpDown className="w-3 h-3" />
@@ -244,6 +244,6 @@ export function FilterSectionsBasic({
           })}
         </div>
       </div>
-    </>
+    </div>
   )
 }

@@ -237,9 +237,8 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-lia-border-subtle hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover",
                 (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-lia-btn-primary-bg/20",
-                (activeFiltersCount > 0 || filledCount > 0) ? "text-lia-text-primary" : "text-lia-text-secondary"
+                (activeFiltersCount > 0 || filledCount > 0) ? "text-lia-text-primary bg-lia-interactive-active" : "text-lia-text-secondary bg-transparent"
               )}
-              style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "var(--lia-interactive-active)" : "transparent"}}
             >
               <Filter className="w-3.5 h-3.5" />
               Filtros
@@ -356,7 +355,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] p-4 rounded-md border" 
-          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+         
         >
           <AlertDialogTitle className="sr-only">
             {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}
@@ -364,8 +363,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{backgroundColor: pendingSourceChange === 'hybrid' ? 'var(--wedo-cyan-bg-15)' : 'var(--status-warning-bg-15)'}}
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${pendingSourceChange === 'hybrid' ? 'bg-wedo-cyan-bg-15' : 'bg-status-warning-bg-15'}`}
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <Zap className="w-4 h-4 text-lia-text-secondary" />

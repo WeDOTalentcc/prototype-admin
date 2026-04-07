@@ -96,6 +96,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      data-testid="technical-test-modal"
     >
       <div
         className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-lia-border-subtle bg-lia-bg-secondary rounded-md"
@@ -203,8 +204,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   Comparação com outros candidatos:
                 </span>
                 <span 
-                  className="text-xs font-semibold ml-auto"
-                  style={{color: (testData.score ?? 0) >= (testData.averageScore ?? 0) ? 'var(--status-success)' : 'var(--status-error)'}}
+                  className={`text-xs font-semibold ml-auto ${(testData.score ?? 0) >= (testData.averageScore ?? 0) ? 'text-status-success' : 'text-status-error'}`}
                 >
                   {getComparisonLabel(testData.score ?? 0, testData.averageScore ?? 0)}
                 </span>
@@ -252,8 +252,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                           Média dos candidatos: {category.avgScore}
                         </span>
                         <span 
-                          className="text-micro"
-                          style={{color: category.score >= category.avgScore ? 'var(--status-success)' : 'var(--status-error)'}}
+                          className={`text-micro ${category.score >= category.avgScore ? 'text-status-success' : 'text-status-error'}`}
                         >
                           {category.score >= category.avgScore ? '+' : ''}{category.score - category.avgScore}
                         </span>

@@ -130,6 +130,7 @@ export function LIASearchSidebarChat({
   return (
     <div
       ref={chatScrollRef}
+      data-testid="lia-search-sidebar-chat"
       className="flex-1 overflow-y-auto space-y-3 min-h-0"
     >
       {/* Resultado da Busca (como resposta da LIA) - PRIMEIRO cronologicamente */}
@@ -225,7 +226,7 @@ export function LIASearchSidebarChat({
                       </Button>
                       <Button
                         size="sm"
-                        className="!text-xs !px-3 !py-1.5 bg-lia-btn-primary-bg" style={{color: 'var(--lia-bg-secondary)'}}
+                        className="!text-xs !px-3 !py-1.5 bg-lia-btn-primary-bg"
                         onClick={() => setShowGlobalExpansionConfirm(true)}
                       >
                         <Globe className="w-3 h-3 mr-1" />

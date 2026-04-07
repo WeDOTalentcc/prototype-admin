@@ -38,7 +38,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
-  const [savedAnalyses, setSavedAnalyses] = useState<Record<string, unknown> | null>(null)
+  const [savedAnalyses, setSavedAnalyses] = useState<{ total_analyses: number; analyses: Record<string, unknown>[] } | null>(null)
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false)
   const [opinionsSubTab, setOpinionsSubTab] = useState<'pareceres' | 'analises'>('pareceres')
   const [expandedAnalysisId, setExpandedAnalysisId] = useState<string | null>(null)
@@ -492,20 +492,17 @@ const candidateId = candidate?.id as string | undefined
         throw new Error('Failed to delete analysis')
       }
 
-      setSavedAnalyses((prev: Record<string, unknown> | null) => {
+      setSavedAnalyses((prev) => {
         if (!prev) return null
-        const updated = { ...prev }
         const analysisType = analysis.analysis_type as string
-        if (analysisType && analysisType in updated) {
-          delete updated[analysisType]
+        const filtered = prev.analyses.filter(
+          (a: Record<string, unknown>) => a.analysis_type !== analysisType
+        )
+        return {
+          ...prev,
+          analyses: filtered,
+          total_analyses: filtered.length,
         }
-        const analyses = updated.analyses
-        if (Array.isArray(analyses)) {
-          updated.analyses = analyses.filter(
-            (a: Record<string, unknown>) => a.analysis_type !== analysisType
-          )
-        }
-        return updated
       })
       setAnalysisToDelete(null)
       setExpandedAnalysisId(null)

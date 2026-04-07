@@ -80,7 +80,7 @@ export function CandidateCompareModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" data-testid="candidate-compare-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold">
             <Users className="h-4 w-4" />

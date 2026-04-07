@@ -378,8 +378,7 @@ export function MessageComposer({
               <Button
                 onClick={handleAdjustWithLIA}
                 disabled={isGenerating || (!aiPrompt.trim() && !message.trim())}
-                className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px]"
-                style={{backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--lia-text-secondary)', color: 'white'}}
+                className={`gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] text-white ${isGenerating ? 'bg-wedo-cyan' : 'bg-lia-text-secondary'}`}
               >
                 {isGenerating ? (
                   <>
@@ -400,7 +399,7 @@ export function MessageComposer({
                 <div className="flex gap-1">
                   <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
                 </div>
-                <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
+                <span className="text-xs">
                   A LIA está analisando e ajustando a mensagem...
                 </span>
               </div>
@@ -432,7 +431,7 @@ export function MessageComposer({
                 </Button>
               </div>
             </div>
-            <CardContent className="p-4 space-y-4 overflow-y-auto" style={{maxHeight: 'calc(90vh - 180px)'}}>
+            <CardContent className="p-4 space-y-4 overflow-y-auto">
               <div>
                 <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
                   Alterações Realizadas

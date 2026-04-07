@@ -106,7 +106,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             />
             <div className="absolute right-2 flex items-center gap-1">
               {activeFiltersCount > 0 && (
-                <div style={{animation: 'scaleInDelayed 0.2s ease-out'}}>
+                <div>
                   <Badge variant="secondary" className="text-xs">
                     {activeFiltersCount}
                   </Badge>
@@ -131,7 +131,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         {searchFocused && suggestions.length > 0 && (
           <div
             className="absolute top-full left-0 right-0 mt-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-10"
-            style={{animation: 'fadeInUp 0.2s ease-out'}}
+           
           >
             <div className="p-2">
               <p className="text-xs text-lia-text-secondary mb-2">Sugestões:</p>
@@ -203,7 +203,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {showAdvanced && (
         <div
           className="overflow-hidden"
-          style={{animation: 'slideInUp 0.3s ease-out'}}
+         
         >
           <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-4">
             {/* Categorias */}
@@ -288,7 +288,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {activeFiltersCount > 0 && (
         <div
           className="flex flex-wrap items-center gap-2"
-          style={{animation: 'fadeIn 0.3s ease-out'}}
+         
         >
           <span className="text-xs text-lia-text-secondary">Filtros ativos:</span>
           {filters.categories.map((category) => (

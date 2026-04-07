@@ -57,7 +57,7 @@ function DemoCard({
   items: DemographicDistribution[]
 }) {
   return (
-    <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+    <div data-testid="insights-pipeline-section" className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
         <Icon className="w-3.5 h-3.5 text-lia-text-tertiary" />
         {title}

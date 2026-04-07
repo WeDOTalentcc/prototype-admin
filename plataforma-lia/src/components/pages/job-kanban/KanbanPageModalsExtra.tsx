@@ -46,17 +46,17 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       <GeneralScoreModal
         isOpen={showGeneralScoreModal}
         onClose={() => setShowGeneralScoreModal(false)}
-        candidate={scoreModalCandidate as any}
+        candidate={scoreModalCandidate ?? {}}
       />
       <TechnicalTestModal
         isOpen={showTechnicalTestModal}
         onClose={() => setShowTechnicalTestModal(false)}
-        candidate={scoreModalCandidate as any}
+        candidate={scoreModalCandidate ?? {}}
       />
       <EnglishTestModal
         isOpen={showEnglishTestModal}
         onClose={() => setShowEnglishTestModal(false)}
-        candidate={scoreModalCandidate as any}
+        candidate={scoreModalCandidate ?? {}}
       />
 
       <CandidateCompareModal
@@ -144,7 +144,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
               email: c.email as string | undefined,
               avatar: (c.avatar as string | undefined) || (c.avatar_url as string | undefined),
               currentStage: c.stage as string | undefined
-            })) as any}
+            }))}
           stages={dynamicStages.map(s => ({
             name: s.name,
             displayName: s.displayName,

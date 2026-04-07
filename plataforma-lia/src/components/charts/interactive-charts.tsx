@@ -356,7 +356,7 @@ export function InteractiveChart({
                 {(['monthly', 'quarterly', 'yearly'] as const).map((p) => (
                   <Button
                     key={p}
-                    variant={(period === p ? "default" : "ghost") as any}
+                    variant={period === p ? "primary" : "ghost"}
                     size="sm"
                     onClick={() => onPeriodChange?.(p)}
                     className="text-xs"
@@ -478,7 +478,7 @@ export function RecruiterPerformanceChart() {
         {metrics.map(metric => (
           <Button
             key={metric.key}
-            variant={(selectedMetric === metric.key ? "default" : "outline") as any}
+            variant={selectedMetric === metric.key ? "primary" : "outline"}
             size="sm"
             onClick={() => setSelectedMetric(metric.key)}
             className="gap-2"
@@ -528,7 +528,7 @@ export function WorkModelDistributionChart() {
       {/* View Toggle */}
       <div className="flex gap-2">
         <Button
-          variant={(viewType === 'distribution' ? "default" : "outline") as any}
+          variant={viewType === 'distribution' ? "primary" : "outline"}
           size="sm"
           onClick={() => setViewType('distribution')}
           className="gap-2"
@@ -537,7 +537,7 @@ export function WorkModelDistributionChart() {
           Distribuição
         </Button>
         <Button
-          variant={(viewType === 'trends' ? "default" : "outline") as any}
+          variant={viewType === 'trends' ? "primary" : "outline"}
           size="sm"
           onClick={() => setViewType('trends')}
           className="gap-2"
@@ -598,7 +598,7 @@ export function PredictiveAnalyticsChart() {
           {[80, 85, 90, 95].map(level => (
             <Button
               key={level}
-              variant={(confidenceLevel === level ? "default" : "outline") as any}
+              variant={confidenceLevel === level ? "primary" : "outline"}
               size="sm"
               onClick={() => setConfidenceLevel(level)}
             >

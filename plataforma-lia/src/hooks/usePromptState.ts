@@ -2,14 +2,27 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useCreditEstimator } from "@/hooks/useCreditEstimator"
-import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
-import { extractCriteriaFromText, getTagColors, mapEntitiesToCriteria, extractTagsFromArchetypeCriteria, extractKeywordsFromFileAnalysis, buildSearchSpecFromParsed, generateArchetypeNameFromEntities, hasParsedEntitiesData } from "./promptStateCriteriaUtils"
+import {
+  extractCriteriaFromText,
+  getTagColors,
+  mapEntitiesToCriteria,
+  extractKeywordsFromFileAnalysis,
+  buildSearchSpecFromParsed,
+  generateArchetypeNameFromEntities,
+  hasParsedEntitiesData
+} from "./promptStateCriteriaUtils"
 import { toast } from "sonner"
+import {
+  usePromptSearchState,
+  usePromptAutocompleteState,
+  usePromptSimilarProfileState,
+  usePromptArchetypeState,
+} from "./prompt"
 
 export interface SearchAnalysis {
   completeness_score: number
@@ -120,160 +133,55 @@ export interface UsePromptStateParams {
 }
 
 export function usePromptState({ forceExpanded = false, onCommand }: UsePromptStateParams) {
-  const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
-const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
+  const searchState = usePromptSearchState(forceExpanded)
 
-  const [isExpanded, setIsExpanded] = useState(forceExpanded)
-  const [showPremiumAutocomplete, setShowPremiumAutocomplete] = useState(false)
-  const [inputValue, setInputValue] = useState("")
-  const [isListening, setIsListening] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [lastCommand, setLastCommand] = useState<string>("")
-  const [commandHistory, setCommandHistory] = useState<string[]>([])
-  const [showHistory, setShowHistory] = useState(false)
-  const [showBooleanMode, setShowBooleanMode] = useState(false)
-  const [naturalSearchValue, setNaturalSearchValue] = useState("")
-  const [booleanSearchValue, setBooleanSearchValue] = useState("")
-
-  const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>('natural')
-  const [jobDescriptionText, setJobDescriptionText] = useState("")
-  const [selectedArquetipo, setSelectedArquetipo] = useState<string | null>(null)
-  const [similarProfileUrl, setSimilarProfileUrl] = useState("")
-
-  const [searchSource, setSearchSource] = useState<SearchSource>('local')
-  const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
-  const [pendingSourceChange, setPendingSourceChange] = useState<'hybrid' | 'global' | null>(null)
-  const [pearchSearchType, setPearchSearchType] = useState<'fast' | 'pro'>('fast')
-  const [candidateLimit, setCandidateLimit] = useState(15)
-
-  const [requireEmails, setRequireEmails] = useState(false)
-  const [requirePhoneNumbers, setRequirePhoneNumbers] = useState(false)
-
-  useEffect(() => {
-    if (!showGlobalSearchOptions && (searchSource === 'hybrid' || searchSource === 'global')) {
-      setSearchSource('local')
-    }
-  }, [showGlobalSearchOptions, searchSource])
-
-  const handleSourceChange = (newSource: 'local' | 'hybrid' | 'global') => {
-    if (newSource === 'local') {
-      setSearchSource('local')
-    } else {
-      setPendingSourceChange(newSource)
-      setShowSourceChangeModal(true)
-    }
-  }
-
-  const confirmSourceChange = () => {
-    if (pendingSourceChange) {
-      setSearchSource(pendingSourceChange)
-      setPendingSourceChange(null)
-      setShowSourceChangeModal(false)
-    }
-  }
-
-  const [promptEnhancement, setPromptEnhancement] = useState<{
-    enhanced_query: string
-    explanation: string
-    confidence: number
-    suggestions?: Array<{ label: string; value: string; category: string }>
-  } | null>(null)
-  const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
-  const [promptEnhancementDismissed, setPromptEnhancementDismissed] = useState(false)
-  const dismissedQueryRef = useRef<string>("")
-  const enhanceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const [filterLocation, setFilterLocation] = useState("")
-  const [filterExperience, setFilterExperience] = useState("any")
-  const [filterSeniority, setFilterSeniority] = useState("any")
-  const [filterWorkModel, setFilterWorkModel] = useState("any")
-
-  const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] = useState(false)
-  const [advancedFilters, setAdvancedFilters] = useState<SearchFilters>({
-    ppiOptions: {},
-    general: {},
-    job: {},
-    company: {},
-    skills: {},
-    education: {},
-    languages: {}
-  })
-
-  const [isParsingEntities, setIsParsingEntities] = useState(false)
-  const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
-
-  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<AutocompleteSuggestion[]>([])
-  const [showAutocomplete, setShowAutocomplete] = useState(false)
-  const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(0)
-  const autocompleteCache = useRef<Map<string, AutocompleteSuggestion[]>>(new Map())
-  const [autocompleteEnabled, setAutocompleteEnabled] = useState(true)
+  const {
+    naturalSearchValue, setNaturalSearchValue,
+    activeSearchTab,
+    searchSource, pearchSearchType, candidateLimit,
+    advancedFilters,
+    handleSourceChange, confirmSourceChange,
+  } = searchState
 
   const [parsedEntities, setParsedEntities] = useState<BackendEntities>({})
-
-  const [similarUrls, setSimilarUrls] = useState<string[]>([""])
-  const [similarCvFiles, setSimilarCvFiles] = useState<File[]>([])
-  const [isAnalyzingProfiles, setIsAnalyzingProfiles] = useState(false)
-  const [combinedSuggestions, setCombinedSuggestions] = useState<string[]>([])
-  const [showCombinedSuggestions, setShowCombinedSuggestions] = useState(false)
-  const cvFileInputRef = useRef<HTMLInputElement>(null)
-  const MAX_SIMILAR_URLS = 2
-  const MAX_CV_FILES = 2
-
-  const [similarProfiles, setSimilarProfiles] = useState<SimilarProfile[]>([])
-  const [combinedProfileKeywords, setCombinedProfileKeywords] = useState<string[]>([])
-
-  const [archetypes, setArchetypes] = useState<ArchetypeData[]>([])
-  const [closedJobsForArchetype, setClosedJobsForArchetype] = useState<Record<string, unknown>[]>([])
-  const [archetypeSearchFilter, setArchetypeSearchFilter] = useState("")
-  const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
-  const [newArchetypeDescription, setNewArchetypeDescription] = useState("")
-  const [selectedJobForArchetype, setSelectedJobForArchetype] = useState<string | null>(null)
-
-  const [editingArchetype, setEditingArchetype] = useState<ArchetypeData | null>(null)
-  const [editArchetypeName, setEditArchetypeName] = useState("")
-  const [editArchetypeQuery, setEditArchetypeQuery] = useState("")
-  const [editArchetypeDescription, setEditArchetypeDescription] = useState("")
-  const [editArchetypeEmoji, setEditArchetypeEmoji] = useState("")
-  const [editArchetypeTags, setEditArchetypeTags] = useState<string[]>([])
-  const [newTagInput, setNewTagInput] = useState("")
-  const [isSavingArchetype, setIsSavingArchetype] = useState(false)
-  const [isDeletingArchetype, setIsDeletingArchetype] = useState<string | null>(null)
-  const [showDeleteArchetypeDialog, setShowDeleteArchetypeDialog] = useState(false)
-  const [archetypeToDelete, setArchetypeToDelete] = useState<{ id: string; name: string } | null>(null)
-
-  const [showSaveArchetypeModal, setShowSaveArchetypeModal] = useState(false)
-  const [isCreatingFromSearch, setIsCreatingFromSearch] = useState(false)
-
+  const [isParsingEntities, setIsParsingEntities] = useState(false)
+  const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
   const [extractedCriteria, setExtractedCriteria] = useState<SearchCriterion[]>([])
 
-  const creditEstimator = useCreditEstimator()
+  const autocompleteState = usePromptAutocompleteState({ naturalSearchValue, activeSearchTab })
 
-  useEffect(() => {
-    if (searchSource !== 'local') {
-      creditEstimator.fetchBalance().catch(() => { /* TODO: integrar com Sentry */ })
-    }
-  }, [searchSource])
+  const {
+    fetchAutocomplete,
+    fetchPromptEnhancement,
+    handleAcceptEnhancement: _handleAcceptEnhancement,
+    handleDismissEnhancement,
+    handleAutocompleteKeyDown: _handleAutocompleteKeyDown,
+  } = autocompleteState
 
-  useEffect(() => {
-    const loadArchetypesAndJobs = async () => {
-      try {
-        const [archetypesRes, jobsRes] = await Promise.all([
-          fetch('/api/backend-proxy/search/archetypes/'),
-          fetch('/api/backend-proxy/search/archetypes/suggestions/closed-jobs/?limit=5')
-        ])
-        if (archetypesRes.ok) {
-          const data = await archetypesRes.json()
-          setArchetypes(data.archetypes || data || [])
-        }
-        if (jobsRes.ok) {
-          const data = await jobsRes.json()
-          setClosedJobsForArchetype(data.jobs || data || [])
-        }
-      } catch (error) {
-      }
-    }
-    loadArchetypesAndJobs()
-  }, [])
+  const hasParsedEntities = useCallback(
+    () => hasParsedEntitiesData(parsedEntities),
+    [parsedEntities]
+  )
+
+  const buildSearchSpec = useCallback(
+    () => buildSearchSpecFromParsed(parsedEntities, advancedFilters) as Record<string, unknown>,
+    [parsedEntities, advancedFilters]
+  )
+
+  const generateArchetypeName = useCallback(
+    () => generateArchetypeNameFromEntities(parsedEntities) ?? '',
+    [parsedEntities]
+  )
+
+  const archetypeState = usePromptArchetypeState({
+    naturalSearchValue,
+    parsedEntities,
+    hasParsedEntities,
+    buildSearchSpec,
+    generateArchetypeName,
+  })
+
+  const similarProfileState = usePromptSimilarProfileState()
 
   const parseEntitiesFromQuery = useCallback(async (query: string) => {
     if (!query.trim() || query.length < 5) {
@@ -333,42 +241,9 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
     }
   }, [])
 
-  const fetchPromptEnhancement = useCallback(async (query: string) => {
-    if (!query || query.length < 10 || promptEnhancementDismissed) {
-      setPromptEnhancement(null)
-      return
-    }
-    setIsEnhancingPrompt(true)
-    try {
-      const response = await fetch('/api/backend-proxy/enhance-prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
-      })
-      if (response.ok) {
-        const data = await response.json()
-        if (data.enhanced_query && data.enhanced_query !== query) {
-          setPromptEnhancement(data)
-        }
-      }
-    } catch (error) {
-    } finally {
-      setIsEnhancingPrompt(false)
-    }
-  }, [promptEnhancementDismissed])
-
   const handleAcceptEnhancement = useCallback(() => {
-    if (promptEnhancement) {
-      setNaturalSearchValue(promptEnhancement.enhanced_query)
-      setPromptEnhancement(null)
-    }
-  }, [promptEnhancement])
-
-  const handleDismissEnhancement = useCallback(() => {
-    dismissedQueryRef.current = naturalSearchValue
-    setPromptEnhancementDismissed(true)
-    setPromptEnhancement(null)
-  }, [naturalSearchValue])
+    _handleAcceptEnhancement(setNaturalSearchValue)
+  }, [_handleAcceptEnhancement, setNaturalSearchValue])
 
   const handleFileAnalyzed = useCallback((file: File, analysis: FileAnalysisResult) => {
     if (analysis.success) {
@@ -384,7 +259,7 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
     } else {
       toast.error("Erro na análise", { description: analysis.error || "Não foi possível analisar o arquivo" })
     }
-  }, [toast, parseEntitiesFromQuery])
+  }, [parseEntitiesFromQuery, setNaturalSearchValue])
 
   const handleAudioTranscription = useCallback((text: string) => {
     if (text && text.trim()) {
@@ -393,409 +268,20 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
         parseEntitiesFromQuery(newValue)
         return newValue
       })
-      setShowPremiumAutocomplete(true)
+      searchState.setShowPremiumAutocomplete(true)
       toast.info("Transcrição concluída", { description: "Texto adicionado à busca" })
     }
-  }, [toast, parseEntitiesFromQuery])
+  }, [parseEntitiesFromQuery, setNaturalSearchValue, searchState])
 
   const handlePremiumAutocompleteSelect = useCallback((suggestion: string) => {
     setNaturalSearchValue(suggestion)
-    setShowPremiumAutocomplete(false)
+    searchState.setShowPremiumAutocomplete(false)
     parseEntitiesFromQuery(suggestion)
-  }, [parseEntitiesFromQuery])
-
-  useEffect(() => {
-    if (activeSearchTab !== 'natural' || !naturalSearchValue || naturalSearchValue.length < 10) {
-      setPromptEnhancement(null)
-      return
-    }
-    if (promptEnhancementDismissed && dismissedQueryRef.current) {
-      const dismissedPrefix = dismissedQueryRef.current.toLowerCase().slice(0, 15)
-      const currentPrefix = naturalSearchValue.toLowerCase().slice(0, 15)
-      if (dismissedPrefix !== currentPrefix) {
-        setPromptEnhancementDismissed(false)
-        dismissedQueryRef.current = ""
-      }
-    }
-    if (enhanceTimeoutRef.current) {
-      clearTimeout(enhanceTimeoutRef.current)
-    }
-    enhanceTimeoutRef.current = setTimeout(() => {
-      if (!promptEnhancementDismissed) {
-        fetchPromptEnhancement(naturalSearchValue)
-      }
-    }, 1500)
-    return () => {
-      if (enhanceTimeoutRef.current) {
-        clearTimeout(enhanceTimeoutRef.current)
-      }
-    }
-  }, [naturalSearchValue, activeSearchTab, promptEnhancementDismissed, fetchPromptEnhancement])
-
-  const fetchAutocomplete = useCallback(async (query: string) => {
-    if (!query.trim() || query.length < 2) {
-      setAutocompleteSuggestions([])
-      setShowAutocomplete(false)
-      return
-    }
-    const cacheKey = query.toLowerCase().trim()
-    if (autocompleteCache.current.has(cacheKey)) {
-      setAutocompleteSuggestions(autocompleteCache.current.get(cacheKey) || [])
-      setShowAutocomplete(true)
-      return
-    }
-    try {
-      const res = await fetch(`/api/backend-proxy/search-assistant/autocomplete/?query=${encodeURIComponent(query)}`)
-      if (res.ok) {
-        const data = await res.json()
-        const items = data.items || []
-        const suggestions: AutocompleteSuggestion[] = items.map((item: Record<string, unknown>) => ({
-          text: item.text,
-          category: item.category,
-          icon: item.icon,
-          description: item.description,
-          insert_text: item.insert_text || item.text
-        }))
-        autocompleteCache.current.set(cacheKey, suggestions)
-        setAutocompleteSuggestions(suggestions)
-        setShowAutocomplete(suggestions.length > 0)
-      }
-    } catch (error) {
-    }
-  }, [])
-
-  const analyzeCombinedProfiles = useCallback(async () => {
-    if (similarProfiles.length === 0) return
-    setIsAnalyzingProfiles(true)
-    try {
-      const formData = new FormData()
-      similarProfiles.forEach(profile => {
-        if (profile.type === 'linkedin') {
-          formData.append('urls', profile.url)
-        }
-      })
-      const res = await fetch('/api/backend-proxy/search/similar/combine-profiles', {
-        method: 'POST',
-        body: formData
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setCombinedProfileKeywords(data.keywords || [])
-      }
-    } catch (error) {
-    } finally {
-      setIsAnalyzingProfiles(false)
-    }
-  }, [similarProfiles])
-
-  const createArchetypeFromJob = useCallback(async (jobId: string) => {
-    setIsCreatingArchetype(true)
-    try {
-      const res = await fetch(`/api/backend-proxy/search/archetypes/from-job/${jobId}/`, { method: 'POST' })
-      if (res.ok) {
-        const data = await res.json()
-        setArchetypes(prev => [...prev, data])
-        setSelectedJobForArchetype(null)
-      }
-    } catch (error) {
-    } finally {
-      setIsCreatingArchetype(false)
-    }
-  }, [])
-
-  const hasParsedEntities = useCallback(
-    () => hasParsedEntitiesData(parsedEntities),
-    [parsedEntities]
-  )
-
-  const buildSearchSpec = useCallback(
-    () => buildSearchSpecFromParsed(parsedEntities, advancedFilters),
-    [parsedEntities, advancedFilters]
-  )
-
-  const generateArchetypeName = useCallback(
-    () => generateArchetypeNameFromEntities(parsedEntities),
-    [parsedEntities]
-  )
-
-  const createArchetypeFromActiveSearch = useCallback(async () => {
-    if (!hasParsedEntities()) {
-      toast.error("Busca incompleta", { description: "Faça uma busca com critérios definidos antes de salvar como arquétipo." })
-      return
-    }
-    setIsCreatingFromSearch(true)
-    try {
-      const searchSpec = buildSearchSpec()
-      const generatedName = generateArchetypeName()
-      const payload = { search_spec: searchSpec, name: generatedName, description: naturalSearchValue || "Arquétipo criado a partir de busca", emoji: "🎯" }
-      const res = await fetch('/api/backend-proxy/search/archetypes/from-search', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const newArchetype = data.archetype || data
-        setArchetypes(prev => [...prev, newArchetype])
-        toast.success("Arquétipo salvo!", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado a partir da sua busca.` })
-      } else {
-        const error = await res.json()
-        toast.error("Erro ao salvar arquétipo", { description: error.detail || error.error || "Não foi possível salvar o arquétipo." })
-      }
-    } catch (error) {
-      toast.error("Erro ao salvar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
-    } finally {
-      setIsCreatingFromSearch(false)
-    }
-  }, [hasParsedEntities, buildSearchSpec, generateArchetypeName, naturalSearchValue, toast])
-
-  const createArchetypeFromDescription = useCallback(async (description: string) => {
-    if (!description.trim()) return
-    setIsCreatingArchetype(true)
-    try {
-      const generatedName = generateArchetypeName()
-      const url = hasParsedEntities()
-        ? '/api/backend-proxy/search/archetypes/from-search'
-        : '/api/backend-proxy/search/archetypes/from-description/'
-      const payload = hasParsedEntities()
-        ? { search_spec: buildSearchSpec(), name: generatedName, description, emoji: "🎯" }
-        : { description, name: generatedName, emoji: "🎯" }
-      const res = await fetch(url, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const newArchetype = data.archetype || data
-        setArchetypes(prev => [...prev, newArchetype])
-        setNewArchetypeDescription("")
-        toast.success("Arquétipo criado", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
-      } else {
-        const error = await res.json()
-        toast.error("Erro ao criar arquétipo", { description: error.detail || error.error || "Não foi possível criar o arquétipo." })
-      }
-    } catch (error) {
-      toast.error("Erro ao criar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
-    } finally {
-      setIsCreatingArchetype(false)
-    }
-  }, [generateArchetypeName, hasParsedEntities, buildSearchSpec, toast])
-
-  const openEditArchetype = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const archExt = arch as ArchetypeData & { query?: string; emoji?: string }
-    setEditingArchetype(arch)
-    setEditArchetypeName(arch.name || "")
-    setEditArchetypeQuery(String(archExt.query || arch.criteria?.query || ""))
-    setEditArchetypeDescription(arch.description || "")
-    setEditArchetypeEmoji(String(archExt.emoji || arch.criteria?.emoji || "🎯"))
-    setEditArchetypeTags(extractTagsFromArchetypeCriteria(arch.criteria || {}))
-    setNewTagInput("")
-  }, [])
-
-  const closeEditArchetype = useCallback(() => {
-    setEditingArchetype(null); setEditArchetypeName(""); setEditArchetypeQuery("")
-    setEditArchetypeDescription(""); setEditArchetypeEmoji(""); setEditArchetypeTags([]); setNewTagInput("")
-  }, [])
-
-  const saveArchetype = useCallback(async () => {
-    if (!editingArchetype || !editArchetypeName.trim() || !editArchetypeQuery.trim()) return
-    setIsSavingArchetype(true)
-    try {
-      const res = await fetch(`/api/backend-proxy/search/archetypes/${editingArchetype.id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editArchetypeName.trim(), query: editArchetypeQuery.trim(),
-          description: editArchetypeDescription.trim() || null, emoji: editArchetypeEmoji || "🎯",
-          tags: editArchetypeTags.length > 0 ? editArchetypeTags : null
-        })
-      })
-      if (res.ok) {
-        const updated = await res.json()
-        setArchetypes(prev => prev.map(a => a.id === editingArchetype.id ? { ...a, ...updated } : a))
-        closeEditArchetype()
-        toast.success("Arquétipo atualizado", { description: `"${editArchetypeName}" foi salvo com sucesso.` })
-      } else {
-        const error = await res.json()
-        toast.error("Erro ao atualizar arquétipo", { description: error.detail || error.error || "Não foi possível salvar as alterações." })
-      }
-    } catch (error) {
-      toast.error("Erro ao atualizar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
-    } finally {
-      setIsSavingArchetype(false)
-    }
-  }, [editingArchetype, editArchetypeName, editArchetypeQuery, editArchetypeDescription, editArchetypeEmoji, editArchetypeTags, closeEditArchetype, toast])
-
-  const openDeleteArchetypeDialog = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setArchetypeToDelete({ id: arch.id, name: arch.name })
-    setShowDeleteArchetypeDialog(true)
-  }, [])
-
-  const confirmDeleteArchetype = useCallback(async () => {
-    if (!archetypeToDelete) return
-    const archId = archetypeToDelete.id
-    const archName = archetypeToDelete.name
-    setIsDeletingArchetype(archId)
-    setShowDeleteArchetypeDialog(false)
-    try {
-      const res = await fetch(`/api/backend-proxy/search/archetypes/${archId}/`, { method: 'DELETE' })
-      if (res.ok) {
-        setArchetypes(prev => prev.filter(a => a.id !== archId))
-        toast.success("Arquétipo excluído", { description: `"${archName}" foi removido com sucesso.` })
-      } else {
-        const error = await res.json()
-        toast.error("Erro ao excluir arquétipo", { description: error.detail || error.error || "Não foi possível excluir o arquétipo." })
-      }
-    } catch (error) {
-      toast.error("Erro ao excluir arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
-    } finally {
-      setIsDeletingArchetype(null)
-      setArchetypeToDelete(null)
-    }
-  }, [archetypeToDelete, toast])
-
-  const addSimilarProfile = useCallback((url: string, type: 'linkedin' | 'cv' = 'linkedin', filename?: string) => {
-    if (similarProfiles.length >= 3 || similarProfiles.some(p => p.url === url)) return
-    setSimilarProfiles(prev => [...prev, { url, type, filename }])
-  }, [similarProfiles])
-
-  const removeSimilarProfile = useCallback((url: string) => { setSimilarProfiles(prev => prev.filter(p => p.url !== url)) }, [])
-
-  const addSimilarUrl = useCallback(() => { if (similarUrls.length < MAX_SIMILAR_URLS) setSimilarUrls(prev => [...prev, ""]) }, [similarUrls.length])
-
-  const removeSimilarUrl = useCallback((index: number) => { setSimilarUrls(prev => prev.filter((_, i) => i !== index)); setCombinedSuggestions([]); setShowCombinedSuggestions(false) }, [])
-
-  const updateSimilarUrl = useCallback((index: number, value: string) => {
-    setSimilarUrls(prev => {
-      const newUrls = [...prev]
-      newUrls[index] = value
-      return newUrls
-    })
-  }, [])
-
-  const handleCvUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-    const newFiles = Array.from(files).slice(0, MAX_CV_FILES - similarCvFiles.length)
-    setSimilarCvFiles(prev => [...prev, ...newFiles].slice(0, MAX_CV_FILES))
-  }, [similarCvFiles.length])
-
-  const removeCvFile = useCallback((index: number) => { setSimilarCvFiles(prev => prev.filter((_, i) => i !== index)); setCombinedSuggestions([]); setShowCombinedSuggestions(false) }, [])
-
-  const removeSuggestion = useCallback((keyword: string) => { setCombinedSuggestions(prev => prev.filter(k => k !== keyword)) }, [])
-
-  const hasMultipleSources = useCallback(() => {
-    const validUrls = similarUrls.filter(url => url.trim().length > 0)
-    return validUrls.length + similarCvFiles.length >= 1
-  }, [similarUrls, similarCvFiles])
-
-  const analyzeProfiles = useCallback(async () => {
-    const validUrls = similarUrls.filter(url => url.trim().length > 0)
-    if (validUrls.length === 0 && similarCvFiles.length === 0) return
-    setIsAnalyzingProfiles(true)
-    try {
-      const formData = new FormData()
-      validUrls.forEach(url => formData.append('urls', url))
-      similarCvFiles.forEach(file => formData.append('cvs', file))
-      const response = await fetch('/api/backend-proxy/search/similar/combine-profiles', {
-        method: "POST", body: formData
-      })
-      if (response.ok) {
-        const data = await response.json()
-        const keywords = data.keywords || []
-        setCombinedSuggestions(keywords)
-        setShowCombinedSuggestions(true)
-        if (data.title) {
-          setCombinedProfileKeywords(prev => {
-            const combined = [...keywords]
-            if (data.title && !combined.includes(data.title)) combined.push(data.title)
-            if (data.location && !combined.includes(data.location)) combined.push(data.location)
-            return combined
-          })
-        }
-        if (keywords.length > 0) {
-          const searchQuery = keywords.slice(0, 6).join(', ')
-          setNaturalSearchValue(searchQuery)
-        }
-      }
-    } catch (error) {
-    } finally {
-      setIsAnalyzingProfiles(false)
-    }
-  }, [similarUrls, similarCvFiles])
+  }, [parseEntitiesFromQuery, setNaturalSearchValue, searchState])
 
   const handleAutocompleteKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!showAutocomplete || autocompleteSuggestions.length === 0) return
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelectedAutocompleteIndex(prev => prev < autocompleteSuggestions.length - 1 ? prev + 1 : 0)
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelectedAutocompleteIndex(prev => prev > 0 ? prev - 1 : autocompleteSuggestions.length - 1)
-    } else if (e.key === 'Tab' || e.key === 'Enter') {
-      if (autocompleteSuggestions[selectedAutocompleteIndex]) {
-        e.preventDefault()
-        const selected = autocompleteSuggestions[selectedAutocompleteIndex]
-        const insertValue = selected.insert_text || selected.text
-        setNaturalSearchValue(prev => {
-          const words = prev.split(' ')
-          words.pop()
-          return [...words, insertValue].join(' ') + ' '
-        })
-        setShowAutocomplete(false)
-      }
-    } else if (e.key === 'Escape') {
-      setShowAutocomplete(false)
-    }
-  }, [showAutocomplete, autocompleteSuggestions, selectedAutocompleteIndex])
-
-  const filteredArchetypes = useMemo(() => {
-    if (!archetypeSearchFilter.trim()) return archetypes
-    const filter = archetypeSearchFilter.toLowerCase()
-    return archetypes.filter(a =>
-      (a.name || '').toLowerCase().includes(filter) ||
-      (a.department || '').toLowerCase().includes(filter) ||
-      (a.hired_candidate?.name || '').toLowerCase().includes(filter)
-    )
-  }, [archetypes, archetypeSearchFilter])
-
-  const creditEstimate = useMemo(() => {
-    if (searchSource === 'local') {
-      return { total: 0, perCandidate: 0, isLocal: true, canAfford: true } as const
-    }
-    const estimate = creditEstimator.calculateLocal({
-      searchType: pearchSearchType, limit: candidateLimit, highFreshness: false,
-      requireEmails: false, showEmails: false, requirePhoneNumbers: false,
-      showPhoneNumbers: false, requirePhonesOrEmails: false
-    })
-    const availableCredits = creditEstimator.balance?.available_credits ?? Infinity
-    const canAfford = availableCredits >= estimate.total_estimated
-    return {
-      total: estimate.total_estimated, perCandidate: estimate.cost_per_candidate,
-      isLocal: false, breakdown: estimate.breakdown, canAfford,
-      availableCredits: creditEstimator.balance?.available_credits,
-      isLoading: creditEstimator.isLoading
-    }
-  }, [searchSource, pearchSearchType, candidateLimit, creditEstimator])
-
-  const searchTags: SearchTag[] = useMemo(() => [
-    { key: "location" as keyof BackendEntities, label: "Localização", icon: MapPin, filled: !!parsedEntities.location, value: parsedEntities.location },
-    { key: "job_title" as keyof BackendEntities, label: "Cargo", icon: Briefcase, filled: !!parsedEntities.job_title, value: parsedEntities.job_title },
-    { key: "years_experience" as keyof BackendEntities, label: "Experiência", icon: Clock, filled: !!parsedEntities.years_experience, value: parsedEntities.years_experience },
-    { key: "industry" as keyof BackendEntities, label: "Setor", icon: Building2, filled: !!parsedEntities.industry, value: parsedEntities.industry },
-    { key: "skills" as keyof BackendEntities, label: "Habilidades", icon: Code, filled: !!(parsedEntities.skills && parsedEntities.skills.length > 0), value: parsedEntities.skills?.join(", ") }
-  ], [parsedEntities])
-
-  const filledTagsCount = useMemo(() => searchTags.filter(t => t.filled).length, [searchTags])
-
-  const removeCriterion = (id: string) => {
-    setExtractedCriteria(prev => prev.filter(c => c.id !== id))
-  }
-
-  const toggleCriterion = (id: string) => {
-    setExtractedCriteria(prev => prev.map(c =>
-      c.id === id ? { ...c, active: !c.active } : c
-    ))
-  }
+    _handleAutocompleteKeyDown(e, setNaturalSearchValue)
+  }, [_handleAutocompleteKeyDown, setNaturalSearchValue])
 
   const extractionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastQueryRef = useRef<string>('')
@@ -859,128 +345,88 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
       (parsedEntities && Object.values(parsedEntities).some(v => v && (Array.isArray(v) ? v.length > 0 : true)))
   }, [naturalSearchValue, parsedEntities])
 
-  const handleArchetypeSaved = (newArchetype: ArchetypeData) => {
-    setArchetypes(prev => [...prev, newArchetype])
-    toast.success("Arquétipo salvo", { description: `"${newArchetype.name}" foi adicionado aos seus arquétipos.` })
+  const creditEstimator = useCreditEstimator()
+
+  useEffect(() => {
+    if (searchSource !== 'local') {
+      creditEstimator.fetchBalance().catch(() => { })
+    }
+  }, [searchSource])
+
+  const searchTags: SearchTag[] = useMemo(() => [
+    { key: "location" as keyof BackendEntities, label: "Localização", icon: MapPin, filled: !!parsedEntities.location, value: parsedEntities.location },
+    { key: "job_title" as keyof BackendEntities, label: "Cargo", icon: Briefcase, filled: !!parsedEntities.job_title, value: parsedEntities.job_title },
+    { key: "years_experience" as keyof BackendEntities, label: "Experiência", icon: Clock, filled: !!parsedEntities.years_experience, value: parsedEntities.years_experience },
+    { key: "industry" as keyof BackendEntities, label: "Setor", icon: Building2, filled: !!parsedEntities.industry, value: parsedEntities.industry },
+    { key: "skills" as keyof BackendEntities, label: "Habilidades", icon: Code, filled: !!(parsedEntities.skills && parsedEntities.skills.length > 0), value: parsedEntities.skills?.join(", ") }
+  ], [parsedEntities])
+
+  const filledTagsCount = useMemo(() => searchTags.filter(t => t.filled).length, [searchTags])
+
+  const removeCriterion = (id: string) => {
+    setExtractedCriteria(prev => prev.filter(c => c.id !== id))
   }
+
+  const toggleCriterion = (id: string) => {
+    setExtractedCriteria(prev => prev.map(c =>
+      c.id === id ? { ...c, active: !c.active } : c
+    ))
+  }
+
+  const creditEstimate = useMemo(() => {
+    if (searchSource === 'local') {
+      return { total: 0, perCandidate: 0, isLocal: true, canAfford: true } as const
+    }
+    const estimate = creditEstimator.calculateLocal({
+      searchType: pearchSearchType, limit: candidateLimit, highFreshness: false,
+      requireEmails: false, showEmails: false, requirePhoneNumbers: false,
+      showPhoneNumbers: false, requirePhonesOrEmails: false
+    })
+    const availableCredits = creditEstimator.balance?.available_credits ?? Infinity
+    const canAfford = availableCredits >= estimate.total_estimated
+    return {
+      total: estimate.total_estimated, perCandidate: estimate.cost_per_candidate,
+      isLocal: false, breakdown: estimate.breakdown, canAfford,
+      availableCredits: creditEstimator.balance?.available_credits,
+      isLoading: creditEstimator.isLoading
+    }
+  }, [searchSource, pearchSearchType, candidateLimit, creditEstimator])
 
   return {
     toast,
-    showGlobalSearchOptions,
-    isExpanded, setIsExpanded,
-    showPremiumAutocomplete, setShowPremiumAutocomplete,
-    inputValue, setInputValue,
-    isListening, setIsListening,
-    isProcessing, setIsProcessing,
-    lastCommand, setLastCommand,
-    commandHistory, setCommandHistory,
-    showHistory, setShowHistory,
-    showBooleanMode, setShowBooleanMode,
-    naturalSearchValue, setNaturalSearchValue,
-    booleanSearchValue, setBooleanSearchValue,
-    activeSearchTab, setActiveSearchTab,
-    jobDescriptionText, setJobDescriptionText,
-    selectedArquetipo, setSelectedArquetipo,
-    similarProfileUrl, setSimilarProfileUrl,
-    searchSource, setSearchSource,
-    showSourceChangeModal, setShowSourceChangeModal,
-    pendingSourceChange, setPendingSourceChange,
-    pearchSearchType, setPearchSearchType,
-    candidateLimit, setCandidateLimit,
-    requireEmails, setRequireEmails,
-    requirePhoneNumbers, setRequirePhoneNumbers,
+    ...searchState,
     handleSourceChange,
     confirmSourceChange,
-    promptEnhancement, setPromptEnhancement,
-    isEnhancingPrompt,
-    promptEnhancementDismissed,
+    ...autocompleteState,
     handleAcceptEnhancement,
     handleDismissEnhancement,
-    filterLocation, setFilterLocation,
-    filterExperience, setFilterExperience,
-    filterSeniority, setFilterSeniority,
-    filterWorkModel, setFilterWorkModel,
-    showAdvancedFiltersModal, setShowAdvancedFiltersModal,
-    advancedFilters, setAdvancedFilters,
+    handleAutocompleteKeyDown,
+    ...similarProfileState,
+    ...archetypeState,
     isParsingEntities,
     searchAnalysis,
-    autocompleteSuggestions, setAutocompleteSuggestions,
-    showAutocomplete, setShowAutocomplete,
-    selectedAutocompleteIndex, setSelectedAutocompleteIndex,
-    autocompleteEnabled, setAutocompleteEnabled,
     parsedEntities,
-    similarUrls, setSimilarUrls,
-    similarCvFiles, setSimilarCvFiles,
-    isAnalyzingProfiles,
-    combinedSuggestions,
-    showCombinedSuggestions,
-    cvFileInputRef,
-    MAX_SIMILAR_URLS,
-    MAX_CV_FILES,
-    similarProfiles,
-    combinedProfileKeywords,
-    archetypes, setArchetypes,
-    closedJobsForArchetype,
-    archetypeSearchFilter, setArchetypeSearchFilter,
-    isCreatingArchetype,
-    newArchetypeDescription, setNewArchetypeDescription,
-    selectedJobForArchetype, setSelectedJobForArchetype,
-    editingArchetype,
-    editArchetypeName, setEditArchetypeName,
-    editArchetypeQuery, setEditArchetypeQuery,
-    editArchetypeDescription, setEditArchetypeDescription,
-    editArchetypeEmoji, setEditArchetypeEmoji,
-    editArchetypeTags, setEditArchetypeTags,
-    newTagInput, setNewTagInput,
-    isSavingArchetype,
-    isDeletingArchetype,
-    showDeleteArchetypeDialog, setShowDeleteArchetypeDialog,
-    archetypeToDelete,
-    showSaveArchetypeModal, setShowSaveArchetypeModal,
-    isCreatingFromSearch,
     extractedCriteria, setExtractedCriteria,
     creditEstimate,
     searchTags,
     filledTagsCount,
     getTagColors,
-    filteredArchetypes,
     parseEntitiesFromQuery,
     fetchAutocomplete,
     fetchPromptEnhancement,
     handleFileAnalyzed,
     handleAudioTranscription,
     handlePremiumAutocompleteSelect,
-    handleAutocompleteKeyDown,
-    analyzeCombinedProfiles,
-    createArchetypeFromJob,
-    hasParsedEntities,
     buildSearchSpec,
+    hasParsedEntities,
     generateArchetypeName,
-    createArchetypeFromActiveSearch,
-    createArchetypeFromDescription,
-    openEditArchetype,
-    closeEditArchetype,
-    saveArchetype,
-    openDeleteArchetypeDialog,
-    confirmDeleteArchetype,
-    addSimilarProfile,
-    removeSimilarProfile,
-    addSimilarUrl,
-    removeSimilarUrl,
-    updateSimilarUrl,
-    handleCvUpload,
-    removeCvFile,
-    removeSuggestion,
-    hasMultipleSources,
-    analyzeProfiles,
-    removeCriterion,
-    toggleCriterion,
+    canSaveAsArchetype,
     extractCriteriaFromQuery,
     extractionTimeoutRef,
     buildSearchQueryFromCriteria,
     executeSearchWithCriteria,
     buildSearchSpecFromEntities,
-    canSaveAsArchetype,
-    handleArchetypeSaved,
+    removeCriterion,
+    toggleCriterion,
   }
 }

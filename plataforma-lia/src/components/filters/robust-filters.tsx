@@ -127,7 +127,7 @@ export function RobustFilters({
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div data-testid="robust-filters" className={cn("space-y-4", className)}>
       {/* Search Bar */}
       <div className="relative">
         <div className="relative rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
@@ -203,7 +203,7 @@ export function RobustFilters({
       {showAdvanced && (
         <div
           className="overflow-hidden"
-          style={{animation: 'slideInUp 0.3s ease-out'}}
+         
         >
           <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-6">
 
@@ -384,7 +384,7 @@ export function RobustFilters({
       {activeFiltersCount > 0 && (
         <div
           className="flex flex-wrap items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md"
-          style={{animation: 'fadeIn 0.3s ease-out'}}
+         
         >
           <span className="text-sm font-medium text-lia-text-primary">
             Filtros aplicados ({activeFiltersCount}):

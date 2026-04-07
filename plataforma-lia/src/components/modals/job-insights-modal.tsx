@@ -65,6 +65,7 @@ export function JobInsightsModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
+        data-testid="job-insights-modal"
         className="max-w-4xl max-h-[85vh] bg-lia-bg-primary border border-lia-border-subtle flex flex-col"
         aria-describedby="insights-modal-description"
       >

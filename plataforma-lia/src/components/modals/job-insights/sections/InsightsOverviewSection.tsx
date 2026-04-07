@@ -108,7 +108,7 @@ interface InsightsOverviewSectionProps {
 
 function DemographicBar({ name: label, count, percentage }: DemographicDistribution) {
   return (
-    <div className="flex items-center justify-between">
+    <div data-testid="insights-overview-section" className="flex items-center justify-between">
       <span className="text-xs text-lia-text-secondary">{label}</span>
       <div className="flex items-center gap-2">
         <div className="w-16 h-2 bg-lia-interactive-active rounded-full overflow-hidden">

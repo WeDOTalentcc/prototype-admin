@@ -37,7 +37,7 @@ export function RubricEvaluationModal({
   if (!isOpen || !evaluation) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay" data-testid="rubric-evaluation-modal">
       <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle border border-lia-border-subtle bg-[var(--lia-bg-secondary)]">
         <div className="flex items-center justify-between px-4 py-3 border-b border-b-lia-border-subtle">
           <div className="flex items-center gap-3">

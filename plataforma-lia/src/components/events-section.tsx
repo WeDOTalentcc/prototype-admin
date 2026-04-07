@@ -354,7 +354,7 @@ export function EventsSection() {
           {selectedEvent && isExpanded && (
             <div
               className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-4 overflow-hidden"
-              style={{animation: 'slideInUp 0.3s ease-out'}}
+             
             >
                 {(() => {
                   const event = [...morningEvents, ...afternoonEvents].find(e => e.id === selectedEvent)

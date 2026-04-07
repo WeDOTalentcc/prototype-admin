@@ -65,7 +65,7 @@ export function RecruitersTab({
   setActiveTab,
 }: RecruitersTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="recruiters-tab">
       <RecruiterFilters
         departments={departments}
         selectedPeriod={selectedPeriod}

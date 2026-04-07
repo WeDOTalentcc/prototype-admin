@@ -139,7 +139,7 @@ export default function AjudaPage() {
 
               <div className="border-t pt-4">
                 <h4 className="font-semibold text-lia-text-primary mb-2 flex items-center gap-2">
-                  <Users className="w-4 h-4" style={{color: '#E57373'}} />
+                  <Users className="w-4 h-4" />
                   Soft Skills (Competências Comportamentais)
                 </h4>
                 <p className="text-lia-text-secondary mb-2">

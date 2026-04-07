@@ -18,7 +18,7 @@ const textStyles = {
 
 export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="job-preview-lia-metrics" className="space-y-4">
       <div className="bg-lia-bg-secondary rounded-md p-3">
         <div className="flex items-start gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan mt-0.5" />

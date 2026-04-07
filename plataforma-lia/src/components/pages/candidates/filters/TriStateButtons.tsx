@@ -14,15 +14,13 @@ export function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
     { value: false, label: "Não" },
   ]
   return (
-    <div className="flex gap-1.5">
+    <div data-testid="tri-state-buttons" className="flex gap-1.5">
       {options.map((opt) => (
         <button
           key={String(opt.value)}
+          data-testid={`tri-state-${String(opt.value)}`}
           onClick={() => onChange(opt.value)}
-          className="flex-1 px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
-          style={{backgroundColor: value === opt.value ? "var(--lia-btn-primary-bg)" : "var(--lia-bg-secondary)",
-            color: value === opt.value ? "white" : "var(--lia-text-secondary)",
-            border: value === opt.value ? "none" : "1px solid var(--lia-border-subtle)"}}
+          className={`flex-1 px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none ${value === opt.value ? 'bg-lia-btn-primary-bg text-white border-none' : 'bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle'}`}
         >
           {opt.label}
         </button>

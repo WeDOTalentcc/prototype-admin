@@ -61,7 +61,7 @@ export function CandidatePreviewSidePanel({
   if (!showCandidatePreview || !previewCandidate) return null
 
   return (
-    <div className="flex-shrink-0 relative" style={{ width: `${previewWidth}px` }}>
+    <div data-testid="candidate-preview-side-panel" className="flex-shrink-0 relative" style={{ width: `${previewWidth}px` }}>
       <div
         className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-lia-border-medium dark:hover:bg-lia-bg-secondary0 transition-colors motion-reduce:transition-none z-10 group"
         onMouseDown={onPreviewResize}

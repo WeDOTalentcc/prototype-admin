@@ -188,6 +188,7 @@ export interface OrchestratedJobsManagementResponse {
   needs_confirmation?: boolean
   needs_params?: boolean
   pending_action_id?: string
+  conversation_id?: string
 }
 
 export interface OrchestratedJobChatResponse {

@@ -160,7 +160,7 @@ function formatMessageWithVariables(message: string): React.ReactNode[] {
   return parts.map((part, index) => {
     if (part.match(/^\{[^}]+\}$/)) {
       return (
-        <span key={`var-${index}`} style={{fontWeight: 500}}>
+        <span key={`var-${index}`}>
           {part}
         </span>
       )

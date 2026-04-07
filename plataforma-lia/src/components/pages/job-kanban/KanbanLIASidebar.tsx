@@ -25,11 +25,21 @@ import {
   Star,
 } from "lucide-react"
 
+interface LIAMessageMetadata {
+  action_executed?: boolean
+  action_result?: unknown
+  action_type?: string
+  is_fallback?: boolean
+  ui_action?: string
+  ui_action_params?: Record<string, unknown>
+  [key: string]: unknown
+}
+
 interface LIAMessage {
   id: string
   type: "user" | "assistant"
   content: string
-  metadata?: Record<string, unknown>
+  metadata?: LIAMessageMetadata
 }
 
 interface LIASuggestion {
@@ -207,7 +217,7 @@ export function KanbanLIASidebar({
                             e.stopPropagation()
                             const candidate = Object.values(candidatesData).flat().find((c) => (c as { id?: string }).id === suggestion.candidate_id)
                             if (candidate) {
-                              setSelectedCandidate(candidate as any)
+                              setSelectedCandidate(candidate as Record<string, unknown>)
                               setShowCandidatePage(true)
                             }
                           }}
@@ -273,17 +283,17 @@ export function KanbanLIASidebar({
                             return line ? <p key={i}>{line}</p> : null
                           })}
                         </div>
-                        {(msg as any).metadata?.action_executed && (msg as any).metadata?.action_result && (
+                        {!!(msg.metadata?.action_executed && msg.metadata?.action_result) && (
                           <ActionResultCard
-                            actionType={((msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_type || 'move_candidate') as any}
-                            result={((msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_result) as any}
+                            actionType={(msg.metadata?.action_type || 'move_candidate') as string}
+                            result={msg.metadata?.action_result as Record<string, unknown>}
                           />
                         )}
-                        {(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.is_fallback && (
+                        {msg.metadata?.is_fallback && (
                           <button
                             onClick={() => handleLiaUiAction(
-                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.ui_action as string,
-                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.ui_action_params || {}
+                              msg.metadata?.ui_action as string,
+                              msg.metadata?.ui_action_params || {}
                             )}
                             className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none"
                             

@@ -219,7 +219,7 @@ export function EnrichedJDStage({
   }
 
   return (
-    <div className="space-y-4">
+    <div data-testid="enriched-jd-stage" className="space-y-4">
       <div className="flex items-center justify-between p-3 bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-bg-tertiary to-green-500/10 rounded-md border border-lia-border-default">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center">

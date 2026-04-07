@@ -175,7 +175,7 @@ export function SCMSectionPerguntasEdit({
                   { num: 4, label: 'Resultado' },
                 ].map((step, idx, arr) => (
                   <React.Fragment key={step.num}>
-                    <div className="flex flex-col items-center" style={{minWidth: '56px'}}>
+                    <div className="flex flex-col items-center">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] duration-500 ${
                         (wsiGenerationStep > step.num || (wsiGenerationStep === step.num && wsiGenerationCompleted))
                           ? 'text-white bg-wedo-cyan'
@@ -196,7 +196,7 @@ export function SCMSectionPerguntasEdit({
                       </span>
                     </div>
                     {idx < arr.length - 1 && (
-                      <div className="flex-1 flex items-center" style={{marginTop: '11px'}}>
+                      <div className="flex-1 flex items-center">
                         <div className={`w-full h-0.5 rounded-full transition-[width,height] duration-700 ${wsiGenerationStep > step.num ? 'bg-wedo-cyan' : 'bg-lia-interactive-active'}`} />
                       </div>
                     )}

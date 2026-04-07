@@ -231,8 +231,7 @@ export function AddColumnPopover({
         <button
           disabled={columnName.length < 2 || isAddingColumn}
           onClick={handleAddCustom}
-          className="w-full py-2.5 rounded-md text-sm font-medium text-white transition-opacity motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{backgroundColor: columnName.length >= 2 && !isAddingColumn ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-tertiary)'}}
+          className={`w-full py-2.5 rounded-md text-sm font-medium text-white transition-opacity motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed ${columnName.length >= 2 && !isAddingColumn ? 'bg-lia-btn-primary-bg' : 'bg-lia-text-tertiary'}`}
         >
           {isAddingColumn ? 'Adicionando...' : 'Adicionar Coluna'}
         </button>

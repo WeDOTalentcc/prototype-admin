@@ -67,7 +67,7 @@ export function SearchCalibrationStage({
   const { basicInfoFields } = useExpandedChatContext()
 
   return (
-    <>
+    <div data-testid="search-calibration-stage">
       {/* Phase 1: Search (no candidates yet) */}
       {searchPhase !== 'local-complete' && calibrationCandidates.length === 0 && (
         <div className="space-y-2.5">
@@ -457,7 +457,7 @@ export function SearchCalibrationStage({
           </button>
         </div>
       )}
-    </>
+    </div>
   )
 }
 

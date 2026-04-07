@@ -136,19 +136,14 @@ export function LiaQueriesGuide({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[340px] p-0 border-0" 
+        className="w-[340px] p-0 border border-lia-border-subtle bg-lia-bg-secondary rounded-lg" 
         align="start" 
         sideOffset={6}
-        style={{backgroundColor: 'var(--lia-bg-secondary)',
-          borderRadius: '8px',
-          border: '1px solid var(--lia-border-subtle)'}}
       >
         {/* Header com busca */}
-        <div className="px-3 py-2.5 border-b" style={{borderColor: 'var(--lia-border-subtle)'}}>
+        <div className="px-3 py-2.5 border-b">
           <div 
-            className="flex items-center gap-2 px-2.5 py-2 rounded-md"
-            style={{backgroundColor: 'var(--lia-bg-tertiary)',
-              border: '1px solid var(--lia-border-subtle)'}}
+            className="flex items-center gap-2 px-2.5 py-2 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle"
           >
             <Search className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
             <input
@@ -157,7 +152,7 @@ export function LiaQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-xs outline-none placeholder:lia-text-secondary"
-              style={{color: 'var(--lia-text-primary)'}}
+             
               autoFocus
             />
             {searchTerm && (
@@ -173,7 +168,7 @@ export function LiaQueriesGuide({
         </div>
 
         {/* Filtros de categoria */}
-        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{borderColor: 'var(--lia-border-subtle)'}}>
+        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto">
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
@@ -211,16 +206,14 @@ export function LiaQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2"
-                style={{backgroundColor: 'var(--lia-bg-secondary)',
-                  border: '1px solid var(--lia-bg-tertiary)'}}
+                className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2 bg-lia-bg-secondary border border-lia-bg-tertiary hover:border-lia-border-subtle"
               >
                 <div className="p-1.5 rounded-md flex-shrink-0 bg-lia-btn-primary-bg/[0.08]">
                   <query.icon className="w-3 h-3 text-lia-text-secondary" />
                 </div>
                 <span
                   className="text-xs leading-snug"
-                  style={{color: 'var(--lia-text-secondary)'}}
+                 
                 >
                   {query.question}
                 </span>
@@ -231,13 +224,13 @@ export function LiaQueriesGuide({
               <div className="py-8 text-center">
                 <div 
                   className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
-                  style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+                 
                 >
                   <Search className="w-3.5 h-3.5 text-lia-text-tertiary" />
                 </div>
                 <p
                   className="text-xs"
-                  style={{color: 'var(--lia-text-tertiary)'}}
+                 
                 >
                   Nenhuma consulta encontrada
                 </p>
@@ -248,13 +241,11 @@ export function LiaQueriesGuide({
 
         {/* Footer */}
         <div 
-          className="px-3 py-2 border-t rounded-b-md"
-          style={{borderColor: 'var(--lia-border-subtle)',
-            backgroundColor: 'var(--lia-bg-secondary)'}}
+          className="px-3 py-2 border-t border-lia-border-subtle rounded-b-md bg-lia-bg-secondary"
         >
           <p
             className="text-micro text-center"
-            style={{color: 'var(--lia-text-tertiary)'}}
+           
           >
             Clique para inserir no prompt
           </p>

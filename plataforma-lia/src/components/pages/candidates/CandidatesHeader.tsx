@@ -23,19 +23,19 @@ const CandidatesHeader = memo(function CandidatesHeader({
   showFilters,
 }: CandidatesHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4 bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <div data-testid="candidates-header" className="flex items-center justify-between border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4 bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-lia-text-secondary" />
           <h1 className="text-lg font-semibold text-lia-text-primary">Funil de Talentos</h1>
         </div>
         
-        <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
+        <Badge data-testid="candidates-total-count" variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
           {totalCount.toLocaleString()} candidatos
         </Badge>
         
         {selectedCount > 0 && (
-          <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+          <Badge data-testid="candidates-selected-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
             {selectedCount} selecionados
           </Badge>
         )}
@@ -43,6 +43,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
       
       <div className="flex items-center gap-2">
         <Button
+          data-testid="toggle-filters-btn"
           variant="ghost"
           size="sm"
           onClick={onToggleFilters}
@@ -53,6 +54,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
         </Button>
         
         <Button
+          data-testid="add-candidate-btn"
           onClick={onAddCandidate}
           size="sm"
           className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white"

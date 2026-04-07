@@ -246,6 +246,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
+        data-testid="shared-search-details-modal"
         className="max-w-3xl bg-lia-bg-overlay border-lia-border-default text-white p-0 gap-0 max-h-[90vh] flex flex-col"
        
       >

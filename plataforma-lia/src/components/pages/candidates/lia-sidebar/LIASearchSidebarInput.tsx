@@ -124,7 +124,7 @@ export function LIASearchSidebarInput({
         </div>
       )}
       {/* Input Inline Padronizado - Design Specs v3.1 */}
-      <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-primary border border-lia-border-subtle">
+      <div data-testid="lia-sidebar-input-area" className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-primary border border-lia-border-subtle">
         <input
           type="text"
           placeholder={isCreatingArchetype
@@ -146,6 +146,7 @@ export function LIASearchSidebarInput({
           className="p-1.5"
         />
         <button
+          data-testid="lia-sidebar-send-btn"
           type="button"
           onClick={handleSend}
           disabled={!liaPromptValue.trim() || searchResults.isLoading}

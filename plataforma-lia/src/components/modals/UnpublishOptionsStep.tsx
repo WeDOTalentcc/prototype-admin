@@ -60,7 +60,7 @@ export function UnpublishOptionsStep({
   candidatesInProposal,
 }: UnpublishOptionsStepProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="unpublish-options-step">
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           Vagas Selecionadas

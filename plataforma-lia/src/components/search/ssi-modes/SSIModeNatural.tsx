@@ -287,7 +287,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
       {/* Fallback Suggestion Card - shown BELOW the textarea container when enhanced query doesn't start with user text */}
       {ghostTextInfo.showFallbackCard && ghostTextInfo.fullEnhancement && !showAutocomplete && (
         <div
-          className="rounded-md border px-3 py-2 flex items-center gap-2 bg-lia-interactive-active/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
+          className="rounded-md border px-3 py-2 flex items-center gap-2 bg-lia-interactive-active/20"
         >
           <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-primary" />
           <div className="flex-1 min-w-0">
@@ -502,8 +502,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                       {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                     </span>
                   </div>
-                  <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'var(--status-success-bg)' : 'var(--status-error-bg)',
-                    color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
+                  <span className={`text-micro px-2 py-0.5 rounded-full ${autocompleteEnabled ? 'bg-status-success-bg text-status-success' : 'bg-status-error-bg text-status-error'}`}>
                     {autocompleteEnabled ? 'ON' : 'OFF'}
                   </span>
                 </div>

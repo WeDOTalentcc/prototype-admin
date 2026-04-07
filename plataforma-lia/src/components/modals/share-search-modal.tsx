@@ -293,7 +293,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
         className={`max-w-4xl h-[80vh] flex flex-col p-0 gap-0 ${cardStyles.default}`} 
-       
+        data-testid="share-search-modal"
       >
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-lia-border-subtle flex-shrink-0">
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>

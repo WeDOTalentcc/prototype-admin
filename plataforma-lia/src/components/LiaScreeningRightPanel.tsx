@@ -188,7 +188,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                   <label className="text-xs font-medium text-lia-text-secondary">Benefícios:</label>
 
                   <div className="flex flex-wrap gap-1">
-                    {((jobData?.benefits as any[]) || ['Benefícios competitivos']).map((benefit: string) => (
+                    {((jobData?.benefits as string[]) || ['Benefícios competitivos']).map((benefit: string) => (
                       <Badge key={benefit} variant="secondary" className="text-xs">{benefit}</Badge>
                     ))}
                   </div>

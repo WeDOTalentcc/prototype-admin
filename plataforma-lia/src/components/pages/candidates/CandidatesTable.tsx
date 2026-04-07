@@ -213,6 +213,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
 
   return (
     <UnifiedCandidateTable
+      data-testid="candidates-table"
       candidates={tableCandidates}
       columns={columns}
       selectedIds={selectedIds}

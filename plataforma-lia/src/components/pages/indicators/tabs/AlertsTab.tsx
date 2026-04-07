@@ -8,7 +8,7 @@ interface AlertsTabProps {
 
 export function AlertsTab({ recruiters, onAlertAction }: AlertsTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="alerts-tab">
       <KPIAlertSystem
         recruiterData={recruiters as unknown as Record<string, unknown>[]}
         onAlertAction={onAlertAction}

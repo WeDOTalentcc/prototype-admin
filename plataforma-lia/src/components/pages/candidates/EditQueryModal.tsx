@@ -11,10 +11,7 @@ const SmartSearchInput = dynamic(
   { ssr: false }
 )
 
-interface PearchSearchOptions {
-  requireEmails: boolean
-  requirePhoneNumbers: boolean
-}
+import type { ModalPearchSearchOptions } from "./CandidatesPageModals.types"
 
 interface EditQueryModalProps {
   isOpen: boolean
@@ -23,8 +20,8 @@ interface EditQueryModalProps {
   activeFiltersCount: number
   searchSource: string
   onSearchSourceChange: (source: string) => void
-  pearchSearchOptions: PearchSearchOptions
-  onPearchOptionsChange: (options: PearchSearchOptions) => void
+  pearchSearchOptions: ModalPearchSearchOptions
+  onPearchOptionsChange: (options: ModalPearchSearchOptions) => void
   onOpenFilters: () => void
   onSubmitNatural: (query: string, entities: unknown, mode: string, metadata: unknown) => Promise<void>
   onSubmitAI: (query: string) => Promise<void>
@@ -64,6 +61,7 @@ export function EditQueryModal({
 
   return (
     <div
+      data-testid="edit-query-modal"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >

@@ -116,7 +116,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Score: ${Math.round(displayScore)}/100`}
                 </span>
               )}
-              {(opinion.archetype as any) && (
+              {!!opinion.archetype && (
                 <>
                   <span className="lia-text-muted">•</span>
                   <span className={textStyles.caption}>{String(opinion.archetype)}</span>
@@ -127,7 +127,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {(opinion.created_at as any) && (
+          {!!opinion.created_at && (
             <span className="text-micro text-lia-text-disabled">{formatOpinionDate(String(opinion.created_at))}</span>
           )}
           <Tooltip>
@@ -158,7 +158,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
 
       {isExpanded && (
         <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle space-y-3">
-          {(opinion.summary as any) && (
+          {!!opinion.summary && (
             <div className="pt-3">
               <p className="text-xs text-lia-text-primary leading-relaxed">
                 {String(opinion.summary)}
@@ -166,7 +166,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           )}
 
-          {(opinion.score_breakdown && Object.keys(opinion.score_breakdown as Record<string, unknown>).length > 0 as any) && (
+          {(!!opinion.score_breakdown && Object.keys(opinion.score_breakdown as Record<string, unknown>).length > 0) && (
             <div>
               <h5 className={`${textStyles.label} mb-1.5 flex items-center gap-1`}>
                 <BarChart3 className="w-3 h-3" />
@@ -265,7 +265,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           )}
 
-          {(opinion.next_steps as any) && (
+          {!!opinion.next_steps && (
             <div>
               <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
                 <TrendingUp className="w-3 h-3" />
@@ -275,7 +275,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           )}
 
-          {(opinion.recruiter_notes as any) && (
+          {!!opinion.recruiter_notes && (
             <div className="bg-status-warning/10 rounded-md p-2 border border-status-warning/30">
               <h5 className={`${textStyles.label} text-status-warning mb-1 flex items-center gap-1`}>
                 <Edit className="w-3 h-3" />
@@ -285,13 +285,13 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           )}
 
-          {(opinion.recruiter_override as any) && (
+          {!!opinion.recruiter_override && (
             <div className="bg-wedo-purple/10 rounded-md p-2 border border-wedo-purple/30">
               <div className="flex items-center gap-2 mb-1">
                 <h5 className={`${textStyles.label} text-wedo-purple`}>Override do Recrutador</h5>
                 {getRecommendationBadge(opinion.recruiter_override as string)}
               </div>
-              {(opinion.recruiter_override_reason as any) && (
+              {!!opinion.recruiter_override_reason && (
                 <p className={`${textStyles.caption} text-wedo-purple`}>{String(opinion.recruiter_override_reason)}</p>
               )}
             </div>

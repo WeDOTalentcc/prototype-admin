@@ -248,11 +248,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <div className="flex items-center gap-3">
                     <Badge
                       variant="outline"
-                      className="text-xs"
-                      style={{borderColor: alert.severity === 'high' ? 'var(--status-error)' :
-                                    alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--lia-text-secondary)',
-                        color: alert.severity === 'high' ? 'var(--status-error)' :
-                               alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--lia-text-secondary)'}}
+                      className={`text-xs ${alert.severity === 'high' ? 'border-status-error text-status-error' : alert.severity === 'medium' ? 'border-status-warning text-status-warning' : 'border-lia-text-secondary text-lia-text-secondary'}`}
                     >
                       {alert.severity}
                     </Badge>
@@ -336,8 +332,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       Progresso
                     </span>
                     <span 
-                      className="text-lg font-bold"
-                      style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}
+                      className={`text-lg font-bold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                     >
                       {agent.progress}%
                     </span>
@@ -359,7 +354,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <div 
                     className="mt-2 p-2 rounded-md flex items-center gap-2 bg-status-error/10"
                   >
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{color: 'var(--status-error)'}} />
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                     <span className="text-xs line-clamp-1 text-lia-text-tertiary">
                       Requer atenção
                     </span>
@@ -388,18 +383,16 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`text-xs ${filterPeriod === 'today' ? '' : 'text-lia-text-tertiary'}`}
+                  className={`text-xs ${filterPeriod === 'today' ? 'bg-lia-interactive-active' : 'text-lia-text-tertiary'}`}
                   onClick={() => setFilterPeriod('today')}
-                  style={{backgroundColor: filterPeriod === 'today' ? 'var(--lia-interactive-active)' : 'transparent'}}
                 >
                   Hoje
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`text-xs ${filterPeriod === 'week' ? '' : 'text-lia-text-tertiary'}`}
+                  className={`text-xs ${filterPeriod === 'week' ? 'bg-lia-interactive-active' : 'text-lia-text-tertiary'}`}
                   onClick={() => setFilterPeriod('week')}
-                  style={{backgroundColor: filterPeriod === 'week' ? 'var(--lia-interactive-active)' : 'transparent'}}
                 >
                   Semana
                 </Button>
@@ -416,9 +409,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <button
                     key={agent.id}
                     onClick={() => toggleAgentFilter(agent.id)}
-                    className={`px-2 py-1 rounded-full text-xs transition-[width,height] ${selectedAgentFilter.includes(agent.id) ? '' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-tertiary'}`}
-                    style={{backgroundColor: selectedAgentFilter.includes(agent.id) ? 'var(--wedo-cyan-bg-15)' : undefined,
-                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--lia-btn-primary-bg)' : 'transparent'}`}}
+                    className={`px-2 py-1 rounded-full text-xs transition-[width,height] ${selectedAgentFilter.includes(agent.id) ? 'bg-wedo-cyan-bg-15 border border-lia-btn-primary-bg' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-tertiary border border-transparent'}`}
                   >
                     {agent.icon} {agent.name.split(' ')[0]}
                   </button>
@@ -474,7 +465,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <div 
                     key={activity.id}
                     className="flex items-start gap-3 p-4 transition-colors motion-reduce:transition-none hover:bg-opacity-50"
-                    style={{backgroundColor: 'transparent'}}
+                   
                   >
                     <div className="flex-shrink-0 mt-0.5">
                       <span className="text-lg">{activity.agent_icon}</span>
@@ -488,7 +479,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                           {formatTimeAgo(activity.started_at)}
                         </span>
                         {activity.sla_breach && (
-                          <Badge variant="outline" className="text-xs px-1 py-0" style={{borderColor: 'var(--status-error)', color: 'var(--status-error)'}}>
+                          <Badge variant="outline" className="text-xs px-1 py-0">
                             SLA
                           </Badge>
                         )}
@@ -505,10 +496,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         <CheckCircle className="w-4 h-4 text-wedo-green-bright" />
                       )}
                       {activity.status === 'in_progress' && (
-                        <Clock className="w-4 h-4" style={{color: 'var(--status-warning)'}} />
+                        <Clock className="w-4 h-4" />
                       )}
                       {activity.status === 'error' && (
-                        <XCircle className="w-4 h-4" style={{color: 'var(--status-error)'}} />
+                        <XCircle className="w-4 h-4" />
                       )}
                       {activity.status === 'pending' && (
                         <Clock className="w-4 h-4 text-lia-text-secondary" />

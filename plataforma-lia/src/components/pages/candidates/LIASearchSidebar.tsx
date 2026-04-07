@@ -90,6 +90,7 @@ export function LIASearchSidebar({
 
   return (
     <div
+      data-testid="lia-search-sidebar"
       className={`transition-colors motion-reduce:transition-none duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
       style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`, maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >

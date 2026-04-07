@@ -172,7 +172,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
   }
 
   return (
-    <div className="flex-1 flex items-center gap-3 -mt-1 bg-lia-bg-primary rounded-md px-3 py-2">
+    <div data-testid="search-results-header" className="flex-1 flex items-center gap-3 -mt-1 bg-lia-bg-primary rounded-md px-3 py-2">
       {/* Botão Voltar - apenas ícone em azul negrito */}
       <TooltipProvider>
         <Tooltip>
@@ -184,7 +184,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
               <ArrowLeft className="w-5 h-5 text-lia-text-secondary" strokeWidth={2.5} />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="left" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
+          <TooltipContent side="left" className="!animate-none">
             <p className="text-xs font-bold">Voltar para Busca Inteligente</p>
           </TooltipContent>
         </Tooltip>
@@ -212,7 +212,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
                     <Edit className="w-3 h-3 text-lia-text-secondary" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
+                <TooltipContent side="bottom" className="!animate-none">
                   <p className="text-xs font-bold">Editar query de busca</p>
                 </TooltipContent>
               </Tooltip>

@@ -5,13 +5,21 @@ import { getPercentageScoreVar, getEnglishLevel } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
+type TestStatus = 'pending' | 'in_progress' | 'completed'
+
+interface EnglishTestData {
+  status?: TestStatus
+  score?: number
+  level?: string
+  completedAt?: string
+  skills?: Record<string, number>
+}
+
 interface EnglishTestModalProps {
   isOpen: boolean
   onClose: () => void
   candidate: Record<string, unknown>
 }
-
-type TestStatus = 'pending' | 'in_progress' | 'completed'
 
 const STATUS_CONFIG = {
   pending: {
@@ -56,7 +64,7 @@ const LEVEL_CONFIG: Record<string, { label: string; description: string; color: 
 export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModalProps) {
   if (!isOpen) return null
 
-  const testData = candidate?.englishTest ?? {
+  const testData: EnglishTestData = (candidate?.englishTest as EnglishTestData) ?? {
     status: 'completed',
     score: 75,
     level: 'B2',
@@ -69,10 +77,10 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
     }
   }
 
-  const status: TestStatus = (testData as any).status ?? 'pending'
+  const status: TestStatus = testData.status ?? 'pending'
   const statusConfig = STATUS_CONFIG[status]
   const StatusIcon = statusConfig.icon
-  const levelInfo = LEVEL_CONFIG[(testData as any).level as string] ?? LEVEL_CONFIG['B1']
+  const levelInfo = LEVEL_CONFIG[testData.level ?? 'B1'] ?? LEVEL_CONFIG['B1']
 
   const getScoreColor = getPercentageScoreVar
 
@@ -82,6 +90,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      data-testid="english-test-modal"
     >
       <div 
         className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-md"
@@ -136,11 +145,11 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 {statusConfig.label}
               </span>
             </div>
-            {(testData as any).completedAt && status === 'completed' && (
+            {(testData).completedAt && status === 'completed' && (
               <span 
                 className="text-micro text-lia-text-tertiary"
               >
-                Concluído em {new Date((testData as any).completedAt).toLocaleDateString('pt-BR')}
+                Concluído em {new Date((testData).completedAt).toLocaleDateString('pt-BR')}
               </span>
             )}
           </div>
@@ -162,9 +171,9 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    style={{color: getScoreColor((testData as any).score)}}
+                    style={{color: getScoreColor((testData).score ?? 0)}}
                   >
-                    {((testData as any).score as React.ReactNode)}
+                    {((testData).score as React.ReactNode)}
                   </span>
                   <span 
                     className="text-sm ml-1 text-lia-text-disabled"
@@ -190,7 +199,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                     className="text-lg font-bold"
                     style={{color: levelInfo.color}}
                   >
-                    {((testData as any).level as React.ReactNode)}
+                    {((testData).level as React.ReactNode)}
                   </span>
                   <p 
                     className="text-micro mt-0.5 text-lia-text-secondary"
@@ -212,7 +221,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 <div className="space-y-2.5">
                   {SKILL_CONFIG.map((skill) => {
                     const Icon = skill.icon
-                    const score = (testData as any).skills?.[skill.id] ?? 0
+                    const score = (testData).skills?.[skill.id] ?? 0
                     const skillLevel = getSkillLevel(score)
 
                     return (

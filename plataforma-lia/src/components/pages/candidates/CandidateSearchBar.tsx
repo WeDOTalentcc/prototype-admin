@@ -74,7 +74,7 @@ export function CandidateSearchBar({
   onRequirePhoneNumbersChange,
 }: CandidateSearchBarProps) {
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center py-8">
+    <div data-testid="candidate-search-bar" className="min-h-[60vh] flex flex-col items-center justify-center py-8">
       <div className="w-full max-w-3xl mx-auto flex flex-col">
         <LiaPromptHeader
           title={isSearchActive ? 'LIA está buscando...' : 'Vamos buscar de forma inteligente?'}

@@ -49,7 +49,7 @@ export function ActivateOptionsStep({
   onNotifyApplicantsChange,
 }: ActivateOptionsStepProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="activate-options-step" className="space-y-4">
       <div className="p-2.5 rounded-md border bg-lia-bg-secondary border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" />

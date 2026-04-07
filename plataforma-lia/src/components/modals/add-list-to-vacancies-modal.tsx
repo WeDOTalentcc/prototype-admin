@@ -148,7 +148,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg border-lia-border-subtle rounded-md">
+      <DialogContent className="max-w-lg border-lia-border-subtle rounded-md" data-testid="add-list-to-vacancies-modal">
         <DialogHeader>
           <DialogTitle className="font-['Open_Sans',sans-serif] text-lg flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-lia-text-secondary" />

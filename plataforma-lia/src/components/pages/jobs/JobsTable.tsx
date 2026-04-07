@@ -78,7 +78,7 @@ export function JobsTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" data-testid="jobs-table">
       <table className="w-full">
         <thead className="bg-lia-bg-secondary dark:bg-lia-bg-primary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <tr>

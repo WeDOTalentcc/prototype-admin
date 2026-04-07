@@ -282,8 +282,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                   </span>
                 </div>
                 <div 
-                  className="text-lg font-semibold"
-                  style={{color: fitScore >= 70 ? 'var(--status-success)' : fitScore >= 50 ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}
+                  className={`text-lg font-semibold ${fitScore >= 70 ? 'text-status-success' : fitScore >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                 >
                   {fitScore}%
                 </div>
@@ -351,7 +350,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
                     <polygon
                       points={traits.map((trait, index) => {
-                        const score = (scores as any)[trait]
+                        const score = scores[trait]
                         const angle = (index * 2 * Math.PI) / traits.length - Math.PI / 2
                         const distance = score
                         const x = 100 + distance * Math.cos(angle)
@@ -365,7 +364,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     />
 
                     {traits.map((trait, index) => {
-                      const score = (scores as any)[trait]
+                      const score = scores[trait]
                       const angle = (index * 2 * Math.PI) / traits.length - Math.PI / 2
                       const distance = score
                       const x = 100 + distance * Math.cos(angle)
@@ -427,7 +426,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 Scores por Traço
               </h3>
               {traits.map((trait) => {
-                const score = (scores as any)[trait]
+                const score = scores[trait]
                 const info = traitDescriptions[trait as keyof typeof traitDescriptions]
                 const level = getScoreLevel(score)
 
@@ -472,7 +471,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 Análise Detalhada
               </h3>
               {traits.map((trait) => {
-                const score = (scores as any)[trait]
+                const score = scores[trait]
                 const info = traitDescriptions[trait as keyof typeof traitDescriptions]
                 const level = getScoreLevel(score)
                 const details = info[level]

@@ -140,6 +140,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
+        data-testid="send-email-modal"
         className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
        
       >

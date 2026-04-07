@@ -151,31 +151,19 @@ export function CalibrationFeedbackPanel({
           </p>
           <div className="flex flex-wrap gap-3 mt-4">
             <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{backgroundColor: 'var(--lia-btn-primary-bg)'}}
-              />
+              <div className="w-3 h-3 rounded-full bg-lia-btn-primary-bg" />
               <span className="text-xs text-lia-text-secondary">{stats.approved} aprovados</span>
             </div>
             <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{backgroundColor: 'var(--lia-border-default)'}}
-              />
+              <div className="w-3 h-3 rounded-full bg-lia-border-default" />
               <span className="text-xs text-lia-text-secondary">{stats.maybe} talvez</span>
             </div>
             <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{backgroundColor: 'var(--lia-text-tertiary)'}}
-              />
+              <div className="w-3 h-3 rounded-full bg-lia-text-tertiary" />
               <span className="text-xs text-lia-text-secondary">{stats.rejected} reprovados</span>
             </div>
             <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{backgroundColor: 'var(--lia-border-subtle)'}}
-              />
+              <div className="w-3 h-3 rounded-full bg-lia-border-subtle" />
               <span className="text-xs text-lia-text-secondary">{stats.pending} pendentes</span>
             </div>
           </div>

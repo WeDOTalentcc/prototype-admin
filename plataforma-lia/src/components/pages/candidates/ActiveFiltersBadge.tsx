@@ -25,12 +25,13 @@ export function ActiveFiltersBadge({
   if (!hasActiveFilters) return null
 
   return (
-    <div className="mb-1.5 flex items-center gap-2">
-      <Badge className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+    <div data-testid="active-filters-badge" className="mb-1.5 flex items-center gap-2">
+      <Badge data-testid="active-filters-indicator" className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
         filtros ativos
       </Badge>
       {selectedCandidatesForBatch.size > 0 && (
         <Button
+          data-testid="clear-selection-btn"
           variant="ghost"
           size="sm"
           onClick={deselectAllCandidates}

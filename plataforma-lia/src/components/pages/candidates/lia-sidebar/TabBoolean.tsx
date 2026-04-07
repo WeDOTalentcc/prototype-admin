@@ -7,7 +7,7 @@ export const TabBoolean = React.memo(function TabBoolean() {
   const [booleanSearchValue, setBooleanSearchValue] = useState("")
 
   return (
-    <div className="space-y-4 overflow-y-auto flex-1 p-4">
+    <div data-testid="tab-boolean" className="space-y-4 overflow-y-auto flex-1 p-4">
       <p className="text-xs text-lia-text-tertiary">
         Use operadores booleanos para buscas avan\u00e7adas
       </p>

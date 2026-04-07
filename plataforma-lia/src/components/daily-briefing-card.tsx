@@ -353,61 +353,60 @@ export function DailyBriefingCard({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Card Urgentes */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--lia-bg-secondary)' : 'var(--lia-bg-secondary)',
-                borderColor: 'var(--lia-border-subtle)'}}
+              data-testid="briefing-urgent-count"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Urgentes</span>
               </div>
-              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <p className="text-lg font-bold text-wedo-cyan-dark">
                 {briefing.summary.urgent_count}
               </p>
             </div>
             
             {/* Card Tarefas Hoje */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
+              data-testid="briefing-tasks-today"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Target className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Tarefas Hoje</span>
               </div>
-              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <p className="text-lg font-bold text-wedo-cyan-dark">
                 {briefing.summary.tasks_today}
               </p>
             </div>
             
             {/* Card Entrevistas */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
+              data-testid="briefing-interviews-today"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Entrevistas</span>
               </div>
-              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <p className="text-lg font-bold text-wedo-cyan-dark">
                 {briefing.summary.interviews_today}
               </p>
             </div>
             
             {/* Card Alertas */}
             <div 
-              className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
+              data-testid="briefing-alerts-active"
+              className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Alertas</span>
               </div>
-              <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <p className="text-lg font-bold text-wedo-cyan-dark">
                 {briefing.summary.alerts_active}
               </p>
             </div>
@@ -415,7 +414,7 @@ export function DailyBriefingCard({
 
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
                 <Zap className="w-4 h-4 text-lia-text-secondary" />
                 Ações Urgentes
               </h4>
@@ -423,12 +422,11 @@ export function DailyBriefingCard({
                 {briefing.urgent_actions.slice(0, 3).map((action) => (
                   <div
                     key={action.id}
-                    className="flex items-center justify-between p-2 rounded-md border"
-                    style={{backgroundColor: 'var(--lia-bg-secondary)',
-                      borderColor: 'var(--lia-border-subtle)'}}
+                    data-testid={`urgent-action-${action.id}`}
+                    className="flex items-center justify-between p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate" style={{color: 'var(--wedo-cyan-dark)'}}>
+                      <p className="text-xs font-medium truncate text-wedo-cyan-dark">
                         {action.title}
                       </p>
                       <p className="text-xs truncate text-lia-text-secondary">
@@ -452,7 +450,7 @@ export function DailyBriefingCard({
 
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
                 <Calendar className="w-4 h-4 text-lia-text-secondary" />
                 Agenda do Dia
               </h4>
@@ -460,18 +458,15 @@ export function DailyBriefingCard({
                 {briefing.schedule.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
-                    style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
+                    data-testid={`schedule-item-${item.id}`}
+                    className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
                     onClick={() => handleActionClick('view_interview', item as unknown as Record<string, unknown>)}
                   >
-                    <div 
-                      className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-                      style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
-                    >
+                    <div className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 bg-lia-bg-tertiary">
                       <Clock className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium" style={{color: 'var(--wedo-cyan-dark)'}}>
+                      <p className="text-xs font-medium text-wedo-cyan-dark">
                         {item.time}
                       </p>
                       <p className="text-xs truncate text-lia-text-secondary">
@@ -491,7 +486,7 @@ export function DailyBriefingCard({
 
           {briefing.insights.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Insights LIA
               </h4>
@@ -527,8 +522,8 @@ export function DailyBriefingCard({
           )}
 
           {briefing.recruiter_benchmark?.benchmark_available && (
-            <div className="p-3 rounded-md border" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
-              <h4 className="text-xs font-medium flex items-center gap-2 mb-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+            <div className="p-3 rounded-md border bg-lia-bg-secondary">
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-dark">
                 <TrendingUp className="w-4 h-4 text-wedo-cyan" />
                 Benchmark do Recrutador
               </h4>
@@ -565,8 +560,8 @@ export function DailyBriefingCard({
           )}
 
           {briefing.pipeline_prediction?.available && (briefing.pipeline_prediction.at_risk_count ?? 0) > 0 && (
-            <div className="p-3 rounded-md border" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
-              <h4 className="text-xs font-medium flex items-center gap-2 mb-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+            <div className="p-3 rounded-md border bg-lia-bg-secondary">
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-dark">
                 <Target className="w-4 h-4 text-wedo-cyan" />
                 Predição de Pipeline
               </h4>
@@ -598,15 +593,12 @@ export function DailyBriefingCard({
 
           {/* Card Pipeline - Paleta Monocromática */}
           <div 
-            className="p-3 rounded-md border"
-            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+            data-testid="briefing-pipeline-card"
+            className="p-3 rounded-md border bg-lia-bg-secondary"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div 
-                  className="w-8 h-8 rounded-md flex items-center justify-center"
-                  style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
-                >
+                <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
                   <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <div>

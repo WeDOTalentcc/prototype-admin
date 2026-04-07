@@ -161,7 +161,7 @@ export function CompanyDataSection({
 
       <GeneralInfoSection
         companyData={companyData}
-        setCompanyData={setCompanyData}
+        setCompanyData={setCompanyData as React.Dispatch<React.SetStateAction<Record<string, any>>>}
         isEditing={isEditingCompanyData}
         updateLiaToggle={updateLiaToggle}
         updateLiaInstruction={updateLiaInstruction}

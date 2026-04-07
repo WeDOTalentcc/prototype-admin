@@ -125,6 +125,8 @@ export interface Message {
   detectedFieldsData?: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }>
   detectedFields?: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }>
   parecerData?: ParecerLIAData
+  executionPlan?: import('@/components/chat/plan-progress-card').ExecutionPlanData
+  execution_plan?: import('@/components/chat/plan-progress-card').ExecutionPlanData
 }
 
 // Fast Track wizard mode types

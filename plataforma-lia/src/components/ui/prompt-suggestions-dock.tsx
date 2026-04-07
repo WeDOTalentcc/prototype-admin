@@ -213,7 +213,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           </div>
           <span 
             className="text-xs font-medium"
-            style={{color: 'var(--lia-text-secondary)'}}
+           
           >
             Sugestões
           </span>
@@ -229,11 +229,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
         >
           {/* Header - Draggable */}
           <div
-            className="px-4 py-3 flex items-center justify-between border-b rounded-t-md"
+            className={`px-4 py-3 flex items-center justify-between border-b border-lia-border-subtle rounded-t-md bg-lia-bg-secondary ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             onMouseDown={handleMouseDown}
-            style={{backgroundColor: 'var(--lia-bg-secondary)',
-              borderColor: 'var(--lia-border-subtle)',
-              cursor: isDragging ? 'grabbing' : 'grab'}}
           >
             <div className="flex items-center gap-2">
               <Move className="w-3 h-3 text-lia-text-tertiary" />
@@ -242,7 +239,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               </div>
               <h3
                 className="text-sm font-semibold"
-                style={{color: 'var(--lia-text-primary)'}}
+               
               >
                 Tarefas Sugeridas
               </h3>
@@ -269,9 +266,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     onSelect(suggestion.command)
                     setIsExpanded(false)
                   }}
-                  className="w-full p-2.5 rounded-md transition-colors motion-reduce:transition-none text-left group"
-                  style={{backgroundColor: 'var(--white)',
-                    border: `1px solid ${colors.bg}`}}
+                  className="w-full p-2.5 rounded-md transition-colors motion-reduce:transition-none text-left group bg-white"
+                  style={{border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = colors.hoverBg
                     e.currentTarget.style.borderColor = colors.border
@@ -291,7 +287,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     <div className="flex-1 min-w-0">
                       <h4 
                         className="font-medium text-xs leading-tight"
-                        style={{color: 'var(--lia-text-primary)'}}
+                       
                       >
                         {suggestion.title}
                       </h4>

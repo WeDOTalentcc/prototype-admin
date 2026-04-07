@@ -22,7 +22,7 @@ const textStyles = {
 
 export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetrics }: JobPreviewAnalyticsProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="job-preview-analytics" className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-lia-bg-secondary rounded-md p-3">
           <div className="flex items-center justify-between mb-1">

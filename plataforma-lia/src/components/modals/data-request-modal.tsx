@@ -142,7 +142,7 @@ export function DataRequestModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md" data-testid="data-request-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             <Send className="w-4 h-4 text-lia-text-secondary" />

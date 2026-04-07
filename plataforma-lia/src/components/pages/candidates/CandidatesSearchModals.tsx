@@ -120,9 +120,9 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
       <CreditConfirmationModal
         open={p.showCreditConfirmation}
         onOpenChange={p.setShowCreditConfirmation}
-        creditEstimate={p.creditEstimate as any}
-        pearchSearchOptions={p.pearchSearchOptions as any}
-        onSearchOptionsChange={p.setPearchSearchOptions as any}
+        creditEstimate={p.creditEstimate}
+        pearchSearchOptions={p.pearchSearchOptions}
+        onSearchOptionsChange={p.setPearchSearchOptions}
         onCancel={() => { p.setShowCreditConfirmation(false); p.setPendingSearchRequest(null) }}
         onConfirm={p.handleConfirmPearchSearch}
       />
@@ -249,8 +249,8 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
         activeFiltersCount={p.getActiveSearchFiltersCount()}
         searchSource={p.searchSource}
         onSearchSourceChange={p.setSearchSource}
-        pearchSearchOptions={p.pearchSearchOptions as any}
-        onPearchOptionsChange={p.setPearchSearchOptions as any}
+        pearchSearchOptions={p.pearchSearchOptions}
+        onPearchOptionsChange={p.setPearchSearchOptions}
         onOpenFilters={() => p.setShowAdvancedSearch(true)}
         onSubmitNatural={async (query, entities, mode, metadata) => {
           p.setSearchTerm(query)
@@ -270,8 +270,8 @@ export function CandidatesSearchModals(props: CandidatesSearchModalsProps) {
       />
 
       <PreviewSuggestionModal
-        previewSuggestion={p.previewSuggestion as any}
-        previewingUserArchetype={p.previewingUserArchetype as any}
+        previewSuggestion={p.previewSuggestion}
+        previewingUserArchetype={p.previewingUserArchetype}
         onClose={() => { p.setPreviewSuggestion(null); p.setPreviewingUserArchetype(null) }}
         buildFiltersFromTags={p.buildFiltersFromTags}
         onUpdateArchetype={(id, updates) => {

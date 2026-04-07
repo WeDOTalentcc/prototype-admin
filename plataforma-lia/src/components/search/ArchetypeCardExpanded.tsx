@@ -8,6 +8,16 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { ArchetypeVacancy } from "./smart-search-input"
 
+interface ArchetypeFilters {
+  skills?: string[]
+  languages?: string[]
+  experience_years_min?: number
+  location?: string
+  work_model?: string
+  employment_type?: string
+  [key: string]: unknown
+}
+
 export interface ArchetypeCardExpandedProps {
   arch: ArchetypeVacancy
   isExpanded: boolean
@@ -125,11 +135,11 @@ export function ArchetypeCardExpanded({
             </div>
           )}
 
-          {(arch.filters as any)?.skills && (arch.filters as any).skills.length > 0 && (
+          {((arch.filters as ArchetypeFilters))?.skills && (((arch.filters as ArchetypeFilters))?.skills?.length ?? 0) > 0 && (
             <div className="space-y-1">
               <span className="text-micro font-medium text-lia-text-tertiary">Skills</span>
               <div className="flex flex-wrap gap-1">
-                {(arch.filters as any).skills.map((skill: string) => (
+                {((arch.filters as ArchetypeFilters))?.skills?.map((skill: string) => (
                   <span
                     key={skill}
                     className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary"
@@ -162,27 +172,27 @@ export function ArchetypeCardExpanded({
               <div className="flex items-center gap-1">
                 <span className="text-lia-text-tertiary">Experiência:</span>
                 <span className="font-medium text-lia-text-primary">
-                  {(arch.filters as any).experience_years_min}+ anos
+                  {((arch.filters as ArchetypeFilters)).experience_years_min}+ anos
                 </span>
               </div>
             )}
             {!!(arch.filters?.location) && (
               <div className="flex items-center gap-1">
                 <span className="text-lia-text-tertiary">Localização:</span>
-                <span className="font-medium text-lia-text-primary">{(arch.filters as any).location}</span>
+                <span className="font-medium text-lia-text-primary">{((arch.filters as ArchetypeFilters)).location}</span>
               </div>
             )}
             {!!(arch.filters?.work_model) && (
               <div className="flex items-center gap-1">
                 <span className="text-lia-text-tertiary">Modelo:</span>
                 <span className="font-medium text-lia-text-primary">
-                  {(arch.filters as any).work_model === "remote"
+                  {((arch.filters as ArchetypeFilters)).work_model === "remote"
                     ? "Remoto"
-                    : (arch.filters as any).work_model === "hybrid"
+                    : ((arch.filters as ArchetypeFilters)).work_model === "hybrid"
                     ? "Híbrido"
-                    : (arch.filters as any).work_model === "onsite"
+                    : ((arch.filters as ArchetypeFilters)).work_model === "onsite"
                     ? "Presencial"
-                    : (arch.filters as any).work_model}
+                    : ((arch.filters as ArchetypeFilters)).work_model}
                 </span>
               </div>
             )}
@@ -190,27 +200,27 @@ export function ArchetypeCardExpanded({
               <div className="flex items-center gap-1">
                 <span className="text-lia-text-tertiary">Contrato:</span>
                 <span className="font-medium text-lia-text-primary">
-                  {(arch.filters as any).employment_type === "clt"
+                  {((arch.filters as ArchetypeFilters)).employment_type === "clt"
                     ? "CLT"
-                    : (arch.filters as any).employment_type === "pj"
+                    : ((arch.filters as ArchetypeFilters)).employment_type === "pj"
                     ? "PJ"
-                    : (arch.filters as any).employment_type === "intern"
+                    : ((arch.filters as ArchetypeFilters)).employment_type === "intern"
                     ? "Estágio"
-                    : (arch.filters as any).employment_type === "temporary"
+                    : ((arch.filters as ArchetypeFilters)).employment_type === "temporary"
                     ? "Temporário"
-                    : (arch.filters as any).employment_type === "freelancer"
+                    : ((arch.filters as ArchetypeFilters)).employment_type === "freelancer"
                     ? "Freelancer"
-                    : (arch.filters as any).employment_type}
+                    : ((arch.filters as ArchetypeFilters)).employment_type}
                 </span>
               </div>
             )}
           </div>
 
-          {(arch.filters as any)?.languages && (arch.filters as any).languages.length > 0 && (
+          {((arch.filters as ArchetypeFilters))?.languages && (((arch.filters as ArchetypeFilters))?.languages?.length ?? 0) > 0 && (
             <div className="space-y-1">
               <span className="text-micro font-medium text-lia-text-tertiary">Idiomas</span>
               <div className="flex flex-wrap gap-1">
-                {(arch.filters as any).languages.map((lang: string) => (
+                {((arch.filters as ArchetypeFilters))?.languages?.map((lang: string) => (
                   <span
                     key={lang}
                     className="px-1.5 py-0.5 rounded-full text-micro bg-lia-bg-tertiary"

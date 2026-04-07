@@ -87,6 +87,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
+        data-testid="universal-transition-modal"
         className={cn(
           "max-h-[85vh] overflow-hidden p-0 rounded-md",
           showChatPanel
@@ -110,7 +111,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 {policyWarnings.map((w, i) => (
                   <p key={i} className="mt-1 text-status-warning dark:text-status-warning">{w}</p>
                 ))}
-                {(policyMetadata.requires_manager_approval as any) && (
+                {!!policyMetadata.requires_manager_approval && (
                   <p className="mt-1 text-status-warning dark:text-status-warning">
                     Aprovação do gestor será necessária antes de prosseguir.
                   </p>

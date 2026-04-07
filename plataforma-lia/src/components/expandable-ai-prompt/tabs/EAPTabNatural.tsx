@@ -232,7 +232,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
       {/* Prompt Enhancement Card */}
       {promptEnhancement && !showAutocomplete && (
         <div
-          className="mt-2 p-3 rounded-md border transition-colors motion-reduce:transition-none bg-lia-interactive-active/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
+          className="mt-2 p-3 rounded-md border transition-colors motion-reduce:transition-none bg-lia-interactive-active/20"
         >
           <div className="flex items-start gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
@@ -272,9 +272,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
       {searchSource === 'local' && (
         <div className="flex items-center gap-1.5 mt-2 mb-1">
           <div
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-            style={{backgroundColor: 'var(--wedo-cyan-bg-08)',
-              border: '1px solid var(--wedo-cyan-bg-20)'}}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--wedo-cyan-bg-08)] border border-[var(--wedo-cyan-bg-20)]"
           >
             <Home className="w-3 h-3" />
             <span>Base Local</span>
@@ -308,11 +306,11 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   : 'hover:bg-lia-bg-secondary'
               }`}
             >
-              <span style={{color: 'var(--lia-btn-primary-bg)'}}>{suggestion.text}</span>
+              <span>{suggestion.text}</span>
               <span className="text-micro text-lia-text-secondary">{suggestion.category}</span>
             </button>
           ))}
-          <div className="px-3 py-1.5 text-micro flex items-center justify-between text-lia-text-secondary" style={{borderTop: '1px solid var(--overlay-05)'}}>
+          <div className="px-3 py-1.5 text-micro flex items-center justify-between text-lia-text-secondary">
             <span>Use ↑↓ para navegar, Tab para selecionar</span>
             <span>Esc para fechar</span>
           </div>
@@ -380,12 +378,11 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className="font-semibold text-xs" style={{color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
+                    <span className={`font-semibold text-xs ${autocompleteEnabled ? 'text-status-success' : 'text-status-error'}`}>
                       {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                     </span>
                   </div>
-                  <span className="text-micro px-2 py-0.5 rounded-full" style={{backgroundColor: autocompleteEnabled ? 'var(--status-success-bg)' : 'var(--status-error-bg)',
-                    color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
+                  <span className={`text-micro px-2 py-0.5 rounded-full ${autocompleteEnabled ? 'bg-status-success-bg text-status-success' : 'bg-status-error-bg text-status-error'}`}>
                     {autocompleteEnabled ? 'ON' : 'OFF'}
                   </span>
                 </div>
@@ -426,7 +423,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setShowSaveArchetypeModal(true)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90 bg-lia-interactive-active/30" style={{ border: '1px solid var(--wedo-cyan-border)' }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90 bg-lia-interactive-active/30"
                 >
                   <Target className="w-3 h-3" />
                   <span className="font-medium">Salvar Arquétipo</span>
@@ -451,25 +448,15 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   Qualidade da busca
                 </span>
                 <span
-                  className="text-xs font-bold"
-                  style={{color: searchAnalysis.completeness_score >= 60
-                      ? 'var(--status-success)'
-                      : searchAnalysis.completeness_score >= 40
-                        ? 'var(--status-warning)'
-                        : 'var(--status-error)'}}
+                  className={`text-xs font-bold ${searchAnalysis.completeness_score >= 60 ? 'text-status-success' : searchAnalysis.completeness_score >= 40 ? 'text-status-warning' : 'text-status-error'}`}
                 >
                   {searchAnalysis.completeness_score}%
                 </span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                 <div
-                  className="h-full rounded-full transition-[width,height] duration-500"
-                  style={{width: `${searchAnalysis.completeness_score}%`,
-                    backgroundColor: searchAnalysis.completeness_score >= 60
-                      ? 'var(--status-success)'
-                      : searchAnalysis.completeness_score >= 40
-                        ? 'var(--status-warning)'
-                        : 'var(--status-error)'}}
+                  className={`h-full rounded-full transition-[width,height] duration-500 ${searchAnalysis.completeness_score >= 60 ? 'bg-status-success' : searchAnalysis.completeness_score >= 40 ? 'bg-status-warning' : 'bg-status-error'}`}
+                  style={{width: `${searchAnalysis.completeness_score}%`}}
                 />
               </div>
             </div>
@@ -489,10 +476,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
                 <div
                   key={`alert-${index}`}
-                  className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-lia-text-tertiary"
-                  style={{backgroundColor: alert.severity === 'warning'
-                      ? 'var(--status-warning-bg-08)'
-                      : 'var(--wedo-cyan-bg-08)'}}
+                  className={`flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-lia-text-tertiary ${alert.severity === 'warning' ? 'bg-status-warning-bg-08' : 'bg-wedo-cyan-bg-08'}`}
                 >
                   {alert.severity === 'warning' ? (
                     <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />

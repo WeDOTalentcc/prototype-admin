@@ -56,8 +56,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
     const score = candidate.matchPercentage || candidate.score || 85
     const skills = candidate.skills || []
     const experience = candidate.experience || ''
-    const seniority = candidate.seniority || (candidate as any).level || 'Pleno'
-    const role = candidate.role || (candidate as any).position || ''
+    const seniority = candidate.seniority || (candidate as Candidate & { level?: string }).level || 'Pleno'
+    const role = candidate.role || (candidate as Candidate & { position?: string }).position || ''
 
     return {
       // Resumo executivo da LIA

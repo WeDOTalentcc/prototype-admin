@@ -51,6 +51,7 @@ export function WSIQualityBar({
   return (
     <TooltipProvider>
       <div
+        data-testid="wsi-quality-bar"
         className={cn(
  'px-3 py-2 rounded-md border transition-colors duration-300',
           colors.bgLight,

@@ -24,7 +24,7 @@ export function CompleteStep({ successMessage, notificationReport }: CompleteSte
   const failedDetails = notificationReport?.details?.filter(d => !d.success && (d.error || d.success === false)) || []
 
   return (
-    <div className="py-8 text-center space-y-4">
+    <div data-testid="complete-step" className="py-8 text-center space-y-4">
       <div className="w-16 h-16 rounded-full bg-status-success/15 flex items-center justify-center mx-auto">
         <CheckCircle className="w-8 h-8 text-status-success" />
       </div>

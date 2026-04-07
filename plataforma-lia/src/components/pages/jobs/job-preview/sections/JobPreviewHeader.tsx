@@ -20,7 +20,7 @@ interface JobPreviewHeaderProps {
 
 export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreviewHeaderProps) {
   return (
-    <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border-b border-lia-border-subtle">
+    <div data-testid="job-preview-header" className="bg-lia-bg-primary dark:bg-lia-bg-primary border-b border-lia-border-subtle">
       <div className="px-3 pt-3 pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">

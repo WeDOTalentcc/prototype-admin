@@ -175,7 +175,7 @@ export function RubricEvaluationCard({
   const scoreBadge = getScoreBadge(score)
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-3 ${className}`} data-testid="rubric-evaluation-card">
       <div className="flex items-center justify-between border-b border-lia-border-subtle/50 pb-2">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4" style={{color: ACCENT_COLOR}} />

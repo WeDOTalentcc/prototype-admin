@@ -369,7 +369,7 @@ export function CandidateSearchResultsView({
   const chatScrollRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div className="flex flex-col h-[calc(100vh-9rem)] gap-2">
+    <div data-testid="candidate-search-results-view" className="flex flex-col h-[calc(100vh-9rem)] gap-2">
       {/* Toolbar unificado: Brain + Busca realizada + Editar Filtros + Selecionar Todos/Filtros/Colunas */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 flex-1">

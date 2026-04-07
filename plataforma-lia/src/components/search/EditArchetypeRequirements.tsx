@@ -89,12 +89,12 @@ export function EditArchetypeRequirements({
             onClick={() => onIsIndustryDropdownOpenChange(!isIndustryDropdownOpen)}
             className="w-full rounded-md px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
           >
-            <span style={{color: editArchetypeIndustry ? "var(--lia-btn-primary-bg)" : "var(--lia-text-tertiary)"}}>
+            <span className={editArchetypeIndustry ? "text-lia-btn-primary-bg" : "text-lia-text-tertiary"}>
               {editArchetypeIndustry
                 ? (INDUSTRIES.find((i) => i.key === editArchetypeIndustry)?.labelPt || editArchetypeIndustry)
                 : "Selecionar..."}
             </span>
-            <ChevronDown className="w-3 h-3" style={{color: "var(--lia-text-tertiary)"}} />
+            <ChevronDown className="w-3 h-3" />
           </button>
           {isIndustryDropdownOpen && (
             <div className="absolute z-10 mt-1 w-full bg-lia-bg-primary rounded-md border border-lia-border-subtle max-h-chart-sm overflow-hidden">
@@ -113,7 +113,7 @@ export function EditArchetypeRequirements({
                   type="button"
                   onClick={() => { onEditArchetypeIndustryChange(""); onIsIndustryDropdownOpenChange(false); onIndustrySearchQueryChange("") }}
                   className="w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary"
-                  style={{color: "var(--lia-text-tertiary)"}}
+                 
                 >
                   - Nenhum -
                 </button>

@@ -100,7 +100,7 @@ function InlineFieldEditor({
           autoFocus
           disabled={isSaving}
           className="text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
-          style={{fontFamily: '"Inter", sans-serif'}}
+         
         >
           <option value="">Selecionar...</option>
           {config.options.map(opt => (
@@ -137,7 +137,7 @@ function InlineFieldEditor({
         max={config?.max}
         placeholder={config?.placeholder || ''}
         className="w-24 text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
-        style={{fontFamily: '"Inter", sans-serif'}}
+       
       />
       {config?.suffix && (
         <span className="text-micro text-lia-text-secondary">{config.suffix}</span>
@@ -223,11 +223,11 @@ export function HiringPoliciesHub() {
       <div className="flex gap-4 flex-1 min-h-0">
         <div
           className="w-[60%] flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md overflow-hidden"
-          style={{border: '1px solid var(--lia-border-subtle)'}}
+         
         >
           <div
             className="flex-shrink-0 px-4 py-3"
-            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+           
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -270,7 +270,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+           
           >
             {messages.map((msg, idx) => (
               <LiaChatMessage
@@ -286,7 +286,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-shrink-0 p-4"
-            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+           
           >
             <LiaChatInput
               value={inputValue}
@@ -311,7 +311,7 @@ export function HiringPoliciesHub() {
               <Card
                 key={block.key}
                 className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-md"
-                style={{border: '1px solid var(--lia-border-subtle)'}}
+               
               >
                 <button
                   onClick={() => toggleBlock(block.key)}
@@ -343,8 +343,8 @@ export function HiringPoliciesHub() {
                   </div>
                 </button>
 
-                {(isExpanded && blockData as any) && (
-                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--lia-border-subtle)'}}>
+                {(isExpanded && !!blockData) && (
+                  <CardContent className="px-4 py-3">
                     <div className="space-y-1">
                       {block.fields.map((field) => {
                         const value = blockData?.[field]
@@ -396,7 +396,7 @@ export function HiringPoliciesHub() {
                 )}
 
                 {isExpanded && !blockData && (
-                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--lia-border-subtle)'}}>
+                  <CardContent className="px-4 py-3">
                     <p className={textStyles.description}>Nenhum dado configurado ainda.</p>
                   </CardContent>
                 )}

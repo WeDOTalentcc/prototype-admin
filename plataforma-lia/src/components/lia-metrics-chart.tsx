@@ -75,7 +75,7 @@ export function LiaMetricsChart({ data, title, color = "var(--lia-text-secondary
               textAnchor="end"
               alignmentBaseline="middle"
               className="text-lia-text-secondary"
-              style={{fontSize: '10px'}}
+             
             >
               {value}%
             </text>
@@ -96,7 +96,7 @@ export function LiaMetricsChart({ data, title, color = "var(--lia-text-secondary
               x={width - padding.right + 5}
               y={yScale(targetValue)}
               className="text-status-error dark:text-status-error"
-              style={{fontSize: '9px'}}
+             
               alignmentBaseline="middle"
             >
               Meta: {targetValue}%
@@ -146,7 +146,7 @@ export function LiaMetricsChart({ data, title, color = "var(--lia-text-secondary
                 y={height - padding.bottom + 15}
                 textAnchor="middle"
                 className="text-lia-text-secondary"
-                style={{fontSize: '9px'}}
+               
               >
                 {point.date}
               </text>
@@ -170,7 +170,7 @@ export function LiaMetricsChart({ data, title, color = "var(--lia-text-secondary
             y={yScale(data[data.length - 1].value) - 12}
             textAnchor="middle"
             className="text-white"
-            style={{fontSize: '10px', fontWeight: 'bold'}}
+           
           >
             {data[data.length - 1].value}%
           </text>

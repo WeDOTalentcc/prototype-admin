@@ -103,7 +103,7 @@ export function PauseOptionsStep({
   onNotifyApplicantsChange,
 }: PauseOptionsStepProps) {
   return (
-    <div className="space-y-4">
+    <div data-testid="pause-options-step" className="space-y-4">
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Vagas Selecionadas</h4>
         <ScrollArea className="max-h-[100px]">

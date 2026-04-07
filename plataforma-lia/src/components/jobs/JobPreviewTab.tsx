@@ -45,7 +45,11 @@ interface JobPreviewTabProps {
     screeningConfig?: {
       status?: { enabled?: boolean }
       channels?: { whatsapp?: { enabled?: boolean }; chat_web?: { enabled?: boolean }; phone?: { enabled?: boolean } }
-      scheduling?: { enabled?: boolean }
+      scheduling?: { enabled?: boolean; minScore?: number; calendar?: string; hours?: string; duration?: string }
+      minApprovalScore?: number
+      timeout?: string
+      retries?: string
+      fallback?: string
     }
     funnel?: {total: number; screening: number; interview: number; final: number; hired: number}
     nps?: number
@@ -97,7 +101,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
     return benefits.map((b: string | { name?: string; category?: string; value_type?: string }) => {
       if (typeof b === 'string') return toCompanyBenefit(b)
       if (b.category && b.value_type) return b as CompanyBenefit
-      return toCompanyBenefit(b as any)
+      return toCompanyBenefit(String(b.name || ''))
     })
   }, [benefits])
 
@@ -375,19 +379,19 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="text-micro text-lia-text-secondary">Score Minimo</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).minScore || 'Recomendado'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.scheduling?.minScore || 'Recomendado'}</p>
           </div>
           <div>
             <span className="text-micro text-lia-text-secondary">Calendario</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).calendar || 'Outlook'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.scheduling?.calendar || 'Outlook'}</p>
           </div>
           <div>
             <span className="text-micro text-lia-text-secondary">Horarios</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).hours || '9h-18h'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.scheduling?.hours || '9h-18h'}</p>
           </div>
           <div>
             <span className="text-micro text-lia-text-secondary">Duracao</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).duration || '45min'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.scheduling?.duration || '45min'}</p>
           </div>
         </div>
       </div>
@@ -413,19 +417,19 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="text-micro text-lia-text-secondary">Score Minimo Aprovacao</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.minApprovalScore || 'Recomendado'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.minApprovalScore || 'Recomendado'}</p>
           </div>
           <div>
             <span className="text-micro text-lia-text-secondary">Timeout Resposta</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.timeout || '24h'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.timeout || '24h'}</p>
           </div>
           <div>
             <span className="text-micro text-lia-text-secondary">Re-tentativas</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.retries || '2x'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.retries || '2x'}</p>
           </div>
           <div>
             <span className="text-micro text-lia-text-secondary">Fallback</span>
-            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.fallback || 'Revisao Manual'}</p>
+            <p className="text-micro font-medium text-lia-text-primary">{screeningConfig?.fallback || 'Revisao Manual'}</p>
           </div>
         </div>
       </div>

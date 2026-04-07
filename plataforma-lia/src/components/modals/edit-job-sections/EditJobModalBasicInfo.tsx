@@ -45,7 +45,7 @@ export function EditJobModalBasicInfo({
 }: EditJobModalBasicInfoProps) {
   return (
     <>
-      <section>
+      <section data-testid="edit-job-basic-info-section">
         <div className="flex items-center gap-2 mb-3">
           <Briefcase className="w-4 h-4 text-lia-text-secondary" />
           <h3 className="text-base-ui font-semibold text-lia-text-primary">Informações Básicas</h3>

@@ -68,7 +68,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
     return Math.round((totalWeightedScore / totalWeight) * 100)
   }
 
-  const finalScore = ((candidate as any)?.score ?? calculateWeightedScore()) as number
+  const finalScore = (candidate?.score ?? calculateWeightedScore()) as number
 
   const getScoreColor = getPercentageScoreVar
 
@@ -78,6 +78,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
 
   return (
     <div
+      data-testid="general-score-modal"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >

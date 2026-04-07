@@ -24,7 +24,7 @@ interface CandidateFunnelPanelProps {
 
 export function CandidateFunnelPanel({ jobs }: CandidateFunnelPanelProps) {
   return (
-    <div className="border border-lia-border-subtle rounded-md overflow-hidden">
+    <div data-testid="candidate-funnel-panel" className="border border-lia-border-subtle rounded-md overflow-hidden">
       <div className="bg-lia-bg-secondary border-b border-lia-border-subtle px-4 py-2.5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
@@ -59,7 +59,7 @@ export function CandidateFunnelPanel({ jobs }: CandidateFunnelPanelProps) {
                   <div className="flex-1 h-4 bg-lia-bg-tertiary rounded-md overflow-hidden">
                     <div
                       className={`h-full ${jobColor.bar} transition-[width,height] duration-300`}
-                      style={{ width: "100%" }}
+                     
                     />
                   </div>
                   <span className={`text-xs font-semibold w-20 text-right ${jobColor.text}`}>

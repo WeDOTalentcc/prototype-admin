@@ -117,7 +117,7 @@ export function KanbanBoard({
   }
 
   return (
-    <div className={`flex gap-2 overflow-x-auto pb-2 ${className}`}>
+    <div data-testid="kanban-board" className={`flex gap-2 overflow-x-auto pb-2 ${className}`}>
       {activeStages.map(renderColumn)}
       
       {finalStages.length > 0 && (

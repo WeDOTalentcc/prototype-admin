@@ -796,7 +796,7 @@ export default function SharedSearchPage() {
                             <div className="flex flex-wrap gap-2">
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'approved')}
-                                variant={pending?.rating === 'approved' ? 'default' as any : 'outline'}
+                                variant={pending?.rating === 'approved' ? 'primary' : 'outline'}
                                 size="sm"
                                 className={
                                   pending?.rating === 'approved'
@@ -809,7 +809,7 @@ export default function SharedSearchPage() {
                               </Button>
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'maybe')}
-                                variant={pending?.rating === 'maybe' ? 'default' as any : 'outline'}
+                                variant={pending?.rating === 'maybe' ? 'primary' : 'outline'}
                                 size="sm"
                                 className={
                                   pending?.rating === 'maybe'
@@ -822,7 +822,7 @@ export default function SharedSearchPage() {
                               </Button>
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'rejected')}
-                                variant={pending?.rating === 'rejected' ? 'default' as any : 'outline'}
+                                variant={pending?.rating === 'rejected' ? 'primary' : 'outline'}
                                 size="sm"
                                 className={
                                   pending?.rating === 'rejected'

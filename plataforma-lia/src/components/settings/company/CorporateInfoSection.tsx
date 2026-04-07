@@ -38,7 +38,7 @@ export function CorporateInfoSection({
               value={companyData.employee_count || ''}
               onChange={(e) => setCompanyData((prev) => ({
                 ...prev,
-                employee_count: e.target.value ? String(parseInt(e.target.value)) : undefined,
+                employee_count: e.target.value ? parseInt(e.target.value) : undefined,
               }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
@@ -86,7 +86,7 @@ export function CorporateInfoSection({
               value={companyData.founded_year || ''}
               onChange={(e) => setCompanyData((prev) => ({
                 ...prev,
-                founded_year: e.target.value ? String(parseInt(e.target.value)) : undefined,
+                founded_year: e.target.value ? parseInt(e.target.value) : undefined,
               }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}

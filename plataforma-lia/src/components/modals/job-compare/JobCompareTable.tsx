@@ -29,7 +29,7 @@ export function JobCompareTable({
   getScoreColor,
 }: JobCompareTableProps) {
   return (
-    <div className="overflow-x-auto">
+    <div data-testid="job-compare-table" className="overflow-x-auto">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="bg-lia-bg-secondary">

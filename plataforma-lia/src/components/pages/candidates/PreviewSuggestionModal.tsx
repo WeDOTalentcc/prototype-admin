@@ -14,31 +14,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-interface AISuggestion {
-  name: string
-  description: string
-  query: string
-  filters: {
-    job_title?: string
-    seniority?: string
-    skills?: string[]
-    location?: string
-  }
-}
-
-interface Archetype {
-  id: string
-  name: string
-  description: string
-  emoji: string
-  query: string
-  filters: Record<string, unknown>
-  tags?: string[]
-  industry?: string
-  createdAt: Date
-  isDefault?: boolean
-  usage_count?: number
-}
+import type { ModalAISuggestion, ModalArchetype } from "./CandidatesPageModals.types"
+import type { Archetype } from "./hooks/useCandidatesArchetypes"
 
 interface ArchetypeUpdate {
   name: string
@@ -49,12 +26,12 @@ interface ArchetypeUpdate {
 }
 
 interface PreviewSuggestionModalProps {
-  previewSuggestion: AISuggestion | null
-  previewingUserArchetype: Archetype | null
+  previewSuggestion: ModalAISuggestion | null
+  previewingUserArchetype: ModalArchetype | null
   onClose: () => void
   buildFiltersFromTags: (tags: string[]) => Record<string, string[]>
   onUpdateArchetype: (id: string, updates: ArchetypeUpdate) => void
-  onSaveArchetype: (newArchetype: Archetype) => void
+  onSaveArchetype: (newArchetype: ModalArchetype) => void
   onExecuteSearch: (query: string, filters: Record<string, string[]>, mode: string, metadata: { mode: string }, reset: boolean) => Promise<void>
   onSetLiaPromptValue: (value: string) => void
   onSetActiveSearchTab: (tab: string) => void
@@ -86,7 +63,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
     <Dialog open={!!previewSuggestion} onOpenChange={(open) => {
       if (!open) onClose()
     }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" data-testid="preview-suggestion-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             <Brain className="w-5 h-5 text-wedo-cyan" />
@@ -107,7 +84,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                 <Badge
                   key={`tag-${index}`}
                   className="!text-xs !px-2 !py-1 flex items-center gap-1.5"
-                  style={{backgroundColor: 'var(--wedo-cyan-bg-15)', border: '1px solid var(--wedo-cyan-border)'}}
+                 
                 >
                   {tag}
                   <button

@@ -82,7 +82,7 @@ export function ActivityTimeline({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="activity-timeline">
       {filteredActivities.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 px-4">
           <div className="w-16 h-16 bg-lia-bg-tertiary rounded-full flex items-center justify-center mb-4">

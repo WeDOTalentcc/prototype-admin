@@ -137,7 +137,7 @@ export function SalaryStage({
   }, [salaryInfo.benefits])
 
   return (
-    <div className="space-y-3">
+    <div data-testid="salary-stage" className="space-y-3">
       {!isFieldRequired && (
         <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-status-success/30/30">
           <div className="flex items-center gap-2">

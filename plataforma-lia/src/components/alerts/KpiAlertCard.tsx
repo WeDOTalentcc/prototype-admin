@@ -56,6 +56,7 @@ export function KpiAlertCard({
 }: KpiAlertCardProps) {
   return (
     <div
+      data-testid={`kpi-alert-card-${alert.id}`}
       className={`p-4 border rounded-md transition-colors motion-reduce:transition-none ${
         alert.isRead ? 'bg-lia-bg-secondary' : 'bg-lia-bg-primary border-l-4'
       } ${

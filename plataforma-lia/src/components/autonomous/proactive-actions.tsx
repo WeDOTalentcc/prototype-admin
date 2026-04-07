@@ -163,8 +163,7 @@ export function ProactiveActions({
                 <p className="text-micro text-lia-text-tertiary truncate">
                   {typeof action.suggested_action === 'string' 
                     ? action.suggested_action 
-
-                    : (action.suggested_action as any)?.label || (action.suggested_action as any)?.action || 'Ver detalhes'}
+                    : (action.suggested_action as Record<string, string>)?.label || (action.suggested_action as Record<string, string>)?.action || 'Ver detalhes'}
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -260,7 +259,7 @@ export function ProactiveActions({
                       <span className="text-xs text-lia-text-secondary font-medium">
                         {typeof action.suggested_action === 'string' 
                           ? action.suggested_action 
-                          : (action.suggested_action as any)?.label || (action.suggested_action as any)?.action || 'Ver detalhes'}
+                          : (action.suggested_action as Record<string, string>)?.label || (action.suggested_action as Record<string, string>)?.action || 'Ver detalhes'}
                       </span>
                     </div>
 

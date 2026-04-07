@@ -223,9 +223,7 @@ export function LanguagesPanel({
                 <Badge
                   key={lang.id}
                   variant="outline"
-                  className="text-xs dark:border-lia-border-default text-lia-text-secondary"
-                  style={{borderColor: lang.required ? 'var(--lia-border-default)' : 'var(--lia-border-subtle)',
-                    backgroundColor: lang.required ? 'var(--lia-bg-secondary)' : 'transparent'}}
+                  className={`text-xs dark:border-lia-border-default text-lia-text-secondary ${lang.required ? 'border-lia-border-default bg-lia-bg-secondary' : 'border-lia-border-subtle bg-transparent'}`}
                 >
                   {getFlag(lang.code)} {lang.name} ({lang.level.charAt(0)})
                 </Badge>
@@ -366,8 +364,7 @@ function LanguageAutocomplete({
             <button
               key={lang.code}
               type="button"
-              className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse text-lia-text-primary"
-              style={{backgroundColor: index === selectedIndex ? 'var(--lia-interactive-hover)' : 'transparent'}}
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse text-lia-text-primary ${index === selectedIndex ? 'bg-lia-interactive-hover' : 'bg-transparent'}`}
               onClick={() => handleAdd(lang)}
               onMouseEnter={() => setSelectedIndex(index)}
             >

@@ -234,9 +234,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
           <button
             key={op}
             onClick={() => onChange(value + (value ? " " : "") + op + " ")}
-            className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
-            style={{backgroundColor: 'var(--lia-bg-tertiary)',
-              color: 'var(--lia-text-secondary)'}}
+            className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none bg-lia-bg-tertiary text-lia-text-secondary"
           >
             {op}
           </button>

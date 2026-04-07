@@ -172,21 +172,21 @@ export function EAPModals({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold" style={{color: "var(--lia-btn-primary-bg)"}}>
+              <h3 className="text-lg font-semibold">
                 Editar Arquétipo
               </h3>
               <button
                 onClick={closeEditArchetype}
                 className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
               >
-                <X className="w-4 h-4" style={{color: "var(--lia-text-tertiary)"}} />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="flex gap-2">
                 <div className="w-16">
-                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Emoji</label>
+                  <label className="text-xs font-medium mb-1 block">Emoji</label>
                   <input
                     type="text"
                     value={editArchetypeEmoji}
@@ -196,7 +196,7 @@ export function EAPModals({
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Nome</label>
+                  <label className="text-xs font-medium mb-1 block">Nome</label>
                   <input
                     type="text"
                     value={editArchetypeName}
@@ -208,7 +208,7 @@ export function EAPModals({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Query de Busca</label>
+                <label className="text-xs font-medium mb-1 block">Query de Busca</label>
                 <textarea
                   value={editArchetypeQuery}
                   onChange={(e) => setEditArchetypeQuery(e.target.value)}
@@ -219,7 +219,7 @@ export function EAPModals({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Descrição (opcional)</label>
+                <label className="text-xs font-medium mb-1 block">Descrição (opcional)</label>
                 <textarea
                   value={editArchetypeDescription}
                   onChange={(e) => setEditArchetypeDescription(e.target.value)}
@@ -230,7 +230,7 @@ export function EAPModals({
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Tags</label>
+                <label className="text-xs font-medium mb-1 block">Tags</label>
                 {editArchetypeTags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {editArchetypeTags.map((tag, index) => (
@@ -280,7 +280,7 @@ export function EAPModals({
                 onClick={closeEditArchetype}
                 variant="outline"
                 className="flex-1"
-                style={{color: "var(--lia-text-tertiary)"}}
+               
               >
                 Cancelar
               </Button>
@@ -314,7 +314,7 @@ export function EAPModals({
       <AlertDialog open={showDeleteArchetypeDialog} onOpenChange={setShowDeleteArchetypeDialog}>
         <AlertDialogContent
           className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-md border"
-          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+         
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
@@ -343,7 +343,7 @@ export function EAPModals({
             <AlertDialogAction
               onClick={confirmDeleteArchetype}
               className="flex-1 h-9 text-sm px-3 rounded-md text-white flex items-center justify-center gap-1.5"
-              style={{backgroundColor: 'var(--status-error)'}}
+             
             >
               <Trash2 className="w-3.5 h-3.5" />
               Excluir
@@ -356,7 +356,7 @@ export function EAPModals({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent
           className="sm:max-w-sidebar-content w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border"
-          style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
+         
         >
           <div className="space-y-2 text-xs leading-snug">
             <div className="flex items-center gap-1.5">

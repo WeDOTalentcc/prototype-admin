@@ -134,7 +134,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`max-w-md ${cardStyles.default}`}>
+      <DialogContent data-testid="add-to-list-modal" className={`max-w-md ${cardStyles.default}`}>
         <DialogHeader>
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
             <List className="w-5 h-5 text-lia-text-secondary" />

@@ -79,9 +79,8 @@ export function ChatInputBar({
         className={cn(
           "flex-1 bg-transparent text-base-ui font-['Open_Sans',sans-serif]",
           "text-lia-text-primary placeholder:text-lia-text-disabled",
-          "focus:outline-none leading-relaxed min-w-0 resize-none"
+          "focus:outline-none leading-relaxed min-w-0 resize-none max-h-[120px]"
         )}
-        style={{maxHeight: "120px"}}
       />
 
       {showMic && (

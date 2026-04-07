@@ -90,6 +90,7 @@ useEffect(() => {
 
   return (
     <button
+      data-testid="override-approve-btn"
       onClick={handleClick}
       disabled={isLoading || disabled}
       className={

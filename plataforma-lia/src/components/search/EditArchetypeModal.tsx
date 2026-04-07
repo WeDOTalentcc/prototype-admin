@@ -120,7 +120,7 @@ export function EditArchetypeModal({
             <Target className="w-5 h-5 text-lia-text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold" style={{color: "var(--lia-btn-primary-bg)"}}>
+            <h3 className="text-sm font-semibold">
               {editingArchetype?.id ? "Editar Arquétipo" : "Criar Arquétipo"}
             </h3>
             <p className="text-xs truncate" aria-live="polite" aria-atomic="true">
@@ -208,8 +208,7 @@ export function EditArchetypeModal({
             <button
               onClick={onSave}
               disabled={isSavingArchetype || !editArchetypeName || !editArchetypeQuery}
-              className="px-4 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors motion-reduce:transition-none disabled:opacity-50"
-              style={{backgroundColor: editArchetypeName && editArchetypeQuery ? "var(--lia-text-primary)" : "var(--lia-border-subtle)", color: editArchetypeName && editArchetypeQuery ? "white" : "var(--lia-text-tertiary)"}}
+              className={`px-4 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeName && editArchetypeQuery ? 'bg-lia-text-primary text-white' : 'bg-lia-border-subtle text-lia-text-tertiary'}`}
             >
               {isSavingArchetype ? (
                 <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />{editingArchetype?.id ? "Salvando..." : "Criando..."}</>

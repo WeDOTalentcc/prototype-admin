@@ -413,11 +413,11 @@ export function ChatMessageList({
                   <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
                 )}
               </div>
-              {(message as any).executionPlan && (
-                <PlanProgressCard plan={(message as any).executionPlan as ExecutionPlanData} />
+              {message.executionPlan && (
+                <PlanProgressCard plan={message.executionPlan} />
               )}
-              {(message as any).execution_plan && (
-                <PlanProgressCard plan={(message as any).execution_plan as ExecutionPlanData} />
+              {message.execution_plan && (
+                <PlanProgressCard plan={message.execution_plan} />
               )}
               {message.detectedFieldsData && message.detectedFieldsData.length > 0 && (
                 <DetectedFieldsCard

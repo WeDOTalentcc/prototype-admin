@@ -226,13 +226,13 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   <p className="text-micro text-lia-text-secondary mb-1">Distribuição de Perguntas</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 rounded-full bg-lia-interactive-active overflow-hidden">
-                      <div className="h-full bg-lia-btn-primary-bg" style={{width: '70%'}}></div>
+                      <div className="h-full bg-lia-btn-primary-bg"></div>
                     </div>
                     <span className="text-micro text-lia-text-primary">70% técnicas</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex-1 h-2 rounded-full bg-lia-interactive-active overflow-hidden">
-                      <div className="h-full bg-wedo-purple" style={{width: '30%'}}></div>
+                      <div className="h-full bg-wedo-purple"></div>
                     </div>
                     <span className="text-micro text-lia-text-primary">30% comportamentais</span>
                   </div>

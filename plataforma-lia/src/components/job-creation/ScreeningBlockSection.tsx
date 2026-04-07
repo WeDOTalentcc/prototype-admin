@@ -154,8 +154,7 @@ export function ScreeningBlockSection({
           {block.editable && questions.length > 0 && (
             <Badge
               variant="outline"
-              className="text-micro px-1.5 py-0"
-              style={{backgroundColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--lia-bg-tertiary)', color: selectedInBlock > 0 ? 'var(--status-success)' : 'var(--lia-text-secondary)', borderColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--lia-border-default)'}}
+              className={`text-micro px-1.5 py-0 ${selectedInBlock > 0 ? 'bg-wedo-green-pastel text-status-success border-wedo-green-pastel' : 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default'}`}
             >
               {selectedInBlock} {selectedInBlock === 1 ? 'Info.' : 'Infos.'}
             </Badge>

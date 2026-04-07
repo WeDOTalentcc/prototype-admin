@@ -155,19 +155,23 @@ export function ProactiveActionsBell({
 
   const renderActionCard = (action: ProactiveAction) => {
     const isProcessing = processingId === action.id
-    const candidate = action.candidate || (action.suggested_action as unknown as Record<string, unknown>)?.candidate
+    const suggestedCandidate = typeof action.suggested_action === 'object' && action.suggested_action !== null
+      ? (action.suggested_action as Record<string, unknown>).candidate as ProactiveAction['candidate'] | undefined
+      : undefined
+    const candidate = action.candidate || suggestedCandidate
 
     return (
       <div
         key={action.id}
+        data-testid={`proactive-action-card-${action.id}`}
         className="p-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-start gap-2">
           {candidate ? (
             <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarImage src={(candidate as any).avatar_url} alt={(candidate as any).name} />
+              <AvatarImage src={candidate?.avatar_url} alt={candidate?.name} />
               <AvatarFallback className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary">
-                {(((candidate as any).name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??') as React.ReactNode)}
+                {(candidate?.name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??')}
               </AvatarFallback>
             </Avatar>
           ) : (
@@ -183,14 +187,14 @@ export function ProactiveActionsBell({
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
                 <p className="text-xs font-medium text-lia-text-primary line-clamp-1">
-                  {((candidate as any)?.name || action.title)}
+                  {candidate?.name || action.title}
                 </p>
-                {(candidate as any)?.score && (
+                {candidate?.score && (
                   <span className={cn(
  "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
-                    getScoreColor((candidate as unknown as Record<string, unknown>).score as number)
+                    getScoreColor(candidate.score)
                   )}>
-                    {(Math.round((candidate as any).score) as React.ReactNode)}
+                    {Math.round(candidate.score)}
                   </span>
                 )}
               </div>
@@ -198,9 +202,9 @@ export function ProactiveActionsBell({
                 {formatTimeAgo(action.created_at)}
               </span>
             </div>
-            {(candidate as any) && (
+            {candidate && (
               <p className="text-micro font-medium text-lia-text-secondary line-clamp-1 mt-0.5">
-                {(action.title as React.ReactNode)}
+                {action.title}
               </p>
             )}
             <p className="text-micro text-lia-text-tertiary line-clamp-2 mt-0.5">
@@ -213,7 +217,7 @@ export function ProactiveActionsBell({
                 {typeof action.suggested_action === 'string' 
                   ? action.suggested_action 
 
-                  : (action.suggested_action as any)?.label || (action.suggested_action as any)?.action || 'Ver detalhes'}
+                  : (action.suggested_action as Record<string, unknown>)?.label as string || (action.suggested_action as Record<string, unknown>)?.action as string || 'Ver detalhes'}
               </span>
             </div>
             <div className="flex items-center gap-1 mt-2">
@@ -264,6 +268,7 @@ export function ProactiveActionsBell({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          data-testid="proactive-actions-bell-btn"
           variant="ghost"
           size="sm"
           className={cn(
@@ -277,7 +282,7 @@ export function ProactiveActionsBell({
             hasUrgent ? "text-lia-text-secondary" : "text-lia-text-tertiary"
           )} />
           {pendingCount > 0 && (
-            <span className={cn(
+            <span data-testid="proactive-actions-count" className={cn(
  "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
               hasUrgent ? "bg-status-error" : "bg-lia-btn-primary-bg"
             )}>

@@ -31,7 +31,7 @@ export function NewCandidateUnifiedModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-lia-bg-primary border-lia-border-subtle">
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-lia-bg-primary border-lia-border-subtle" data-testid="new-candidate-unified-modal">
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="text-base font-semibold text-lia-text-primary font-sans">
             Novo Candidato

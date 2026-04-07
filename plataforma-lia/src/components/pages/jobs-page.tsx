@@ -14,13 +14,13 @@ import { JobsOverviewPanel } from "./JobsOverviewPanel"
 import { JobsListContent } from "./JobsListContent"
 import type { Job } from "@/components/jobs"
 
-const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null }) as any
+const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false, loading: () => <JobsLoadingModal /> })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
   onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void
-  pendingChatOpen?: { chatId: string; chatTitle: string } | null
+  pendingChatOpen?: { mode: 'general' | 'job-creation' } | null
   onChatOpened?: () => void
   pendingJobOpen?: { jobId: string; jobTitle: string } | null
   onJobOpened?: () => void
@@ -28,7 +28,7 @@ interface JobsPageProps {
 
 export function JobsPage(props: JobsPageProps) {
   const { onAddRecentItem } = props
-  const state = useJobsPageCore(props as any)
+  const state = useJobsPageCore(props)
 
   const { statusOrder, groupedJobs } = useMemo(() => {
     const order = [
@@ -52,7 +52,7 @@ export function JobsPage(props: JobsPageProps) {
         </div>
       )
     }
-    return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob as any} onBack={state.handleBackToJobs} />
+    return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob as unknown as Record<string, unknown>} onBack={state.handleBackToJobs} />
   }
 
   const {
@@ -242,7 +242,7 @@ export function JobsPage(props: JobsPageProps) {
           screeningConfig={screeningConfig}
           updateScreeningConfig={updateScreeningConfig}
           showReactivateScreeningDialog={showReactivateScreeningDialog}
-          reactivateScreeningJobs={reactivateScreeningJobs as any}
+          reactivateScreeningJobs={reactivateScreeningJobs as unknown as Job[]}
           reactivateEndDate={reactivateEndDate}
           showWSITutorialModal={showWSITutorialModal}
           onCloseWSITutorialModal={() => setShowWSITutorialModal(false)}
@@ -259,7 +259,7 @@ export function JobsPage(props: JobsPageProps) {
           onSetPendingNavigateJobId={setPendingNavigateJobId}
           onNavigateToCreatedJob={navigateToCreatedJob}
           onSetReactivateScreeningDialog={setShowReactivateScreeningDialog}
-          onSetReactivateScreeningJobs={setReactivateScreeningJobs as any}
+          onSetReactivateScreeningJobs={setReactivateScreeningJobs as unknown as (jobs: Job[]) => void}
           onSetReactivateEndDate={setReactivateEndDate}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
             id: String(job.id),
@@ -268,7 +268,7 @@ export function JobsPage(props: JobsPageProps) {
             status: job.status,
             is_published: job.status === "Ativa",
             published_channels: []
-          })) as any}
+          })) as unknown as Job[]}
           onPublish={async (jobIds, channels, options) => {
             try {
               const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
@@ -276,10 +276,10 @@ export function JobsPage(props: JobsPageProps) {
                 if (!job.backendId) continue
                 await liaApi.updateJobVacancy(job.backendId, { status: "Ativa", published_website: channels.includes("portal") })
                 if (channels.includes("linkedin")) {
-                  try { const r = await liaApi.publishToLinkedIn(job.backendId); if ((r as any).mock) toast.info("Publicação simulada no LinkedIn") } catch {}
+                  try { const r = await liaApi.publishToLinkedIn(job.backendId); if ((r as Record<string, unknown>)?.mock) toast.info("Publicação simulada no LinkedIn") } catch {}
                 }
                 if (channels.includes("indeed")) {
-                  try { const r = await liaApi.publishToIndeed(job.backendId); if ((r as any).note) toast.info("Publicação simulada no Indeed") } catch {}
+                  try { const r = await liaApi.publishToIndeed(job.backendId); if ((r as Record<string, unknown>)?.note) toast.info("Publicação simulada no Indeed") } catch {}
                 }
               }
               toast.success("Vagas publicadas com sucesso")

@@ -160,7 +160,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border-lia-border-subtle rounded-md">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border-lia-border-subtle rounded-md" data-testid="add-candidate-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="w-5 h-5 text-lia-text-secondary" />

@@ -223,7 +223,7 @@ export default function CandidateProfilePage() {
                           className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.portfolio_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.portfolio_url && e.preventDefault()}
                         >
-                          <Globe className="w-5 h-5" style={{ color: candidate.portfolio_url ? "var(--lia-btn-primary-bg)" : "var(--lia-text-tertiary)" }} />
+                          <Globe className={`w-5 h-5 ${candidate.portfolio_url ? "text-lia-btn-primary-bg" : "text-lia-text-tertiary"}`} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>Portfolio</TooltipContent>

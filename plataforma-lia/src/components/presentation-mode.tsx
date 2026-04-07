@@ -406,7 +406,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
           {slides.map((slide, index) => (
             <Button
               key={slide.id}
-              variant={currentSlide === index ? "default" as any : "ghost"}
+              variant={currentSlide === index ? "primary" : "ghost"}
               size="sm"
               onClick={() => goToSlide(index)}
               className="gap-2"

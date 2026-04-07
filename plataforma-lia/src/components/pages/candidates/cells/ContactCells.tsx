@@ -23,6 +23,7 @@ export function renderEmailCell(
   if (canRevealEmail) {
     return (
       <button
+        data-testid={`reveal-email-btn-${candidate.id}`}
         onClick={(e) => {
           e.stopPropagation()
           onRevealContact(candidate, "email")
@@ -66,6 +67,7 @@ export function renderPhoneCell(
         : "Clique para revelar telefone (14 créditos)"
     return (
       <button
+        data-testid={`reveal-phone-btn-${candidate.id}`}
         onClick={(e) => {
           e.stopPropagation()
           onRevealContact(candidate, "phone")

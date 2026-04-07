@@ -31,9 +31,9 @@ export function SearchControlsBar({
   tableColumns,
 }: SearchControlsBarProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div data-testid="search-controls-bar" className="flex items-center gap-3">
       {selectedCandidatesForBatch.size > 0 && (
-        <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium">
+        <Badge data-testid="batch-selection-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium">
           🎯 {selectedCandidatesForBatch.size}
         </Badge>
       )}
@@ -51,6 +51,7 @@ export function SearchControlsBar({
 
       {selectedCandidatesForBatch.size === 0 && sortedCandidatesLength > 0 && (
         <button
+          data-testid="select-all-candidates-btn"
           onClick={selectAllCandidates}
           className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
         >
@@ -60,6 +61,7 @@ export function SearchControlsBar({
       )}
 
       <button
+        data-testid="table-filters-toggle-btn"
         onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
         className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
           showTableFiltersPanel
@@ -77,6 +79,7 @@ export function SearchControlsBar({
       </button>
 
       <button
+        data-testid="column-config-toggle-btn"
         onClick={onToggleColumnConfig}
         title="Configurar colunas da tabela"
         className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${

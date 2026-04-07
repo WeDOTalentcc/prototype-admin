@@ -52,7 +52,7 @@ export function CommunicationPreviewPanel({
   safeCandidate,
 }: CommunicationPreviewPanelProps) {
   return (
-    <div className="w-1/2 bg-lia-bg-secondary overflow-y-auto">
+    <div className="w-1/2 bg-lia-bg-secondary overflow-y-auto" data-testid="communication-preview-panel">
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <h4 className={`${textStyles.label} flex items-center gap-2`}>

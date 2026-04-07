@@ -250,7 +250,7 @@ export function CandidateActivitiesTab({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" data-testid="candidate-activities-tab">
       {/* Filters bar - extracted to ActivityFilters */}
       <ActivityFilters
         totalCount={filteredActivities.length}

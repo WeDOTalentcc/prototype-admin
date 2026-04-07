@@ -30,7 +30,7 @@ export function ActivityFilters({
   onShowLiaModal,
 }: ActivityFiltersProps) {
   return (
-    <div className="p-3 border-b border-lia-border-subtle bg-lia-bg-primary">
+    <div className="p-3 border-b border-lia-border-subtle bg-lia-bg-primary" data-testid="activity-filters">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
@@ -101,9 +101,7 @@ export function ActivityFilters({
         </button>
         <button
           onClick={() => onActivityFilterChange('lia')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
-          style={{backgroundColor: activityFilter === 'lia' ? 'var(--lia-text-primary)' : 'var(--wedo-cyan-bg-15)',
-            color: activityFilter === 'lia' ? 'white' : 'var(--lia-text-secondary)'}}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'bg-lia-text-primary text-white font-semibold' : 'bg-wedo-cyan-bg-15 text-lia-text-secondary hover:opacity-80'}`}
         >
           🤖 LIA
         </button>

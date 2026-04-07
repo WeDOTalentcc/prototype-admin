@@ -210,7 +210,7 @@ export function EmailTemplateFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-md">
+      <DialogContent data-testid="email-template-form-modal" className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-lia-text-primary" />

@@ -334,7 +334,7 @@ export function UnifiedCandidateTable({
       style={enableVirtualScroll ? { maxHeight: "600px" } : undefined}
     >
         <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
-          <thead className="sticky top-0 z-10 bg-lia-bg-primary dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
+          <thead className="sticky top-0 z-10 bg-lia-bg-primary dark:bg-lia-bg-primary">
             <tr>
               {showCheckboxes && (
                 <th className="py-3 px-3 w-[50px] text-center">
@@ -401,7 +401,7 @@ export function UnifiedCandidateTable({
                             ? 'bg-lia-border-medium w-1' 
                             : 'bg-transparent hover:bg-lia-border-default group-hover:bg-lia-interactive-active'
                         }`}
-                        style={{zIndex: 20}}
+                       
                         onMouseDown={(e) => {
                           e.stopPropagation()
                           const thElement = e.currentTarget.parentElement

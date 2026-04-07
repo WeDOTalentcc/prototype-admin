@@ -93,7 +93,7 @@ export const TabJobDescription = React.memo(function TabJobDescription({
   }
 
   return (
-    <div className="space-y-4 overflow-y-auto flex-1 p-4">
+    <div data-testid="tab-job-description" className="space-y-4 overflow-y-auto flex-1 p-4">
       <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
         Cole sua descri\u00e7\u00e3o de vaga e a IA extra\u00edr\u00e1 os crit\u00e9rios automaticamente
       </p>
@@ -131,8 +131,7 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         </div>
       )}
       <button
-        className="w-full h-11 text-sm font-semibold flex items-center justify-center gap-2 rounded-md disabled:opacity-50"
-        style={{backgroundColor: isSearchingJD ? 'var(--lia-text-tertiary)' : 'var(--lia-btn-primary-bg)', color: 'var(--lia-bg-secondary)'}}
+        className={`w-full h-11 text-sm font-semibold flex items-center justify-center gap-2 rounded-md disabled:opacity-50 text-lia-bg-secondary ${isSearchingJD ? 'bg-lia-text-tertiary' : 'bg-lia-btn-primary-bg'}`}
         onClick={handleSearch}
         disabled={!jobDescriptionText.trim() || jobDescriptionText.length < 50 || isSearchingJD}
       >

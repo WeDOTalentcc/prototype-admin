@@ -72,6 +72,8 @@ export interface ChatMessage {
       educational_message?: string
     }
     layer?: number
+    executionPlan?: Record<string, unknown>
+    execution_plan?: Record<string, unknown>
   }
 }
 

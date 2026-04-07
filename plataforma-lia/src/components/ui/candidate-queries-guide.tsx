@@ -134,28 +134,22 @@ export function CandidateQueriesGuide({
           className={cn(
  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-[width,height] font-medium",
             "hover:border-lia-text-primary hover:bg-lia-bg-secondary",
-            isOpen && "border-lia-text-primary bg-lia-bg-secondary",
+            isOpen ? "border-lia-text-primary bg-lia-bg-secondary" : "border-lia-border-subtle",
             className
           )}
-          style={{borderColor: isOpen ? 'var(--lia-text-primary)' : 'var(--lia-border-subtle)'}}
         >
           <Lightbulb className="w-3.5 h-3.5" />
           <span>Mais ideias</span>
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[420px] p-0 border-0" 
+        className="w-[420px] p-0 border border-lia-border-subtle bg-lia-bg-secondary rounded-lg" 
         align="start" 
         sideOffset={8}
-        style={{backgroundColor: 'var(--lia-bg-secondary)',
-          borderRadius: '8px',
-          border: '1px solid var(--lia-border-subtle)'}}
       >
-        <div className="px-5 py-4 border-b" style={{borderColor: 'var(--lia-border-subtle)'}}>
+        <div className="px-5 py-4 border-b">
           <div 
-            className="flex items-center gap-3 px-4 py-3 rounded-md"
-            style={{backgroundColor: 'var(--lia-bg-tertiary)',
-              border: '1px solid var(--lia-border-subtle)'}}
+            className="flex items-center gap-3 px-4 py-3 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle"
           >
             <Search className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
             <input
@@ -164,7 +158,7 @@ export function CandidateQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none placeholder:lia-text-secondary"
-              style={{color: 'var(--lia-text-primary)'}}
+             
               autoFocus
             />
             {searchTerm && (
@@ -179,7 +173,7 @@ export function CandidateQueriesGuide({
           </div>
         </div>
 
-        <div className="px-5 py-3 border-b flex gap-2 overflow-x-auto" style={{borderColor: 'var(--lia-border-subtle)'}}>
+        <div className="px-5 py-3 border-b flex gap-2 overflow-x-auto">
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
@@ -216,16 +210,14 @@ export function CandidateQueriesGuide({
               <button
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
-                className="w-full px-4 py-3 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-start gap-3"
-                style={{backgroundColor: 'var(--lia-bg-secondary)',
-                  border: '1px solid var(--lia-bg-tertiary)'}}
+                className="w-full px-4 py-3 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-start gap-3 bg-lia-bg-secondary border border-lia-bg-tertiary hover:border-lia-border-subtle"
               >
                 <div className="p-2 rounded-md flex-shrink-0 bg-lia-btn-primary-bg/[0.08]">
                   <query.icon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <span
                   className="text-sm leading-relaxed pt-1"
-                  style={{color: 'var(--lia-text-secondary)'}}
+                 
                 >
                   {query.question}
                 </span>
@@ -236,13 +228,13 @@ export function CandidateQueriesGuide({
               <div className="py-12 text-center">
                 <div 
                   className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+                 
                 >
                   <Search className="w-5 h-5 text-lia-text-tertiary" />
                 </div>
                 <p
                   className="text-sm"
-                  style={{color: 'var(--lia-text-tertiary)'}}
+                 
                 >
                   Nenhuma consulta encontrada
                 </p>
@@ -252,13 +244,11 @@ export function CandidateQueriesGuide({
         </ScrollArea>
 
         <div 
-          className="px-5 py-3 border-t rounded-b-md"
-          style={{borderColor: 'var(--lia-border-subtle)',
-            backgroundColor: 'var(--lia-bg-secondary)'}}
+          className="px-5 py-3 border-t border-lia-border-subtle rounded-b-md bg-lia-bg-secondary"
         >
           <p
             className="text-xs text-center"
-            style={{color: 'var(--lia-text-tertiary)'}}
+           
           >
             Clique para inserir no prompt
           </p>

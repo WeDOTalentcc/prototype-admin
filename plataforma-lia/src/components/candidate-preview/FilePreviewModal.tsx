@@ -150,7 +150,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
         </div>
 
         {/* Conteúdo do Preview com Transcrição para Vídeos */}
-        <div className="p-4 overflow-auto" style={{maxHeight: 'calc(90vh - 100px)'}}>
+        <div className="p-4 overflow-auto">
           {previewType === 'pdf' && (
             <div className="bg-lia-bg-tertiary rounded-md p-6 min-h-[600px] flex items-center justify-center">
               <div className="text-center">
@@ -294,7 +294,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   {/* Indicador do tipo de vídeo */}
                   <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-md">
                     <div className="flex items-center gap-2">
-                      <Badge className="text-xs px-1.5 py-0.5" style={{backgroundColor: 'var(--lia-text-primary)', color: 'var(--white)'}}>
+                      <Badge className="text-xs px-1.5 py-0.5">
                         {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
                       </Badge>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '3:45'}</span>

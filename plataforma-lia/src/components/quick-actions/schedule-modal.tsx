@@ -11,6 +11,22 @@ import {
 import { liaApi } from "@/services/lia-api"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
 
+interface LiaRecommendationAttentionPoints {
+  strengths: string[]
+  concerns: string[]
+  risksToMitigate?: string[]
+}
+
+interface LiaRecommendations {
+  recommendedType: string
+  recommendedDuration: string
+  recommendedPlatform: string
+  suggestedTimes: Array<{ time: string; reason?: string }>
+  attentionPoints: LiaRecommendationAttentionPoints
+  interviewFocus: Record<string, { weight?: number; approach?: string }>
+  [key: string]: unknown
+}
+
 interface Candidate {
   id: string; name: string; role: string; email: string; phone: string
   location: string; avatar?: string; score: number; status: string
@@ -19,6 +35,7 @@ interface Candidate {
   availability: string; expectedSalary: string; preferredLocation: string
   linkedin?: string; portfolio?: string; skills: string[]
   lastActivity: string; source: string
+  level?: string; position?: string
 }
 
 interface ScheduleModalProps {
@@ -40,7 +57,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
   // LIA states
   const [showLiaInsights, setShowLiaInsights] = useState(false)
-  const [liaRecommendations, setLiaRecommendations] = useState<Record<string, unknown> | null>(null)
+  const [liaRecommendations, setLiaRecommendations] = useState<LiaRecommendations | null>(null)
   const [isLiaAnalyzing, setIsLiaAnalyzing] = useState(false)
   const [liaFocus, setLiaFocus] = useState<'technical' | 'behavioral' | 'cultural' | 'comprehensive'>('comprehensive')
 
@@ -100,10 +117,10 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
   }
 
   const analyzeCandidateForInterview = (candidate: Candidate, focus: string) => {
-    const seniorityLevel = candidate.seniority || (candidate as any).level || 'Pleno'
+    const seniorityLevel = candidate.seniority || candidate.level || 'Pleno'
     const skills = candidate.skills || []
     const experience = candidate.experience || ''
-    const role = candidate.role || (candidate as any).position || ''
+    const role = candidate.role || candidate.position || ''
     const score = candidate.matchPercentage || candidate.score || 85
 
     return {
@@ -219,16 +236,16 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
     switch (type) {
       case 'duration':
-        setDuration((liaRecommendations as Record<string, unknown>).recommendedDuration as string)
+        setDuration(liaRecommendations.recommendedDuration)
         break
       case 'platform':
-        setPlatform((liaRecommendations as Record<string, unknown>).recommendedPlatform as string)
+        setPlatform(liaRecommendations.recommendedPlatform)
         break
       case 'type':
-        setScheduleType((liaRecommendations as Record<string, unknown>).recommendedType as 'video' | 'phone' | 'presential')
+        setScheduleType(liaRecommendations.recommendedType as 'video' | 'phone' | 'presential')
         break
       case 'notes': {
-        const focusAreas = Object.entries((liaRecommendations as Record<string, unknown>).interviewFocus as Record<string, unknown>)
+        const focusAreas = Object.entries(liaRecommendations.interviewFocus)
           .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
           .slice(0, 2)
           .map(([key, value]) => `${key}: ${(value as { approach?: string }).approach ?? ''}`)
@@ -436,7 +453,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     <div>
                       <h5 className="text-xs font-medium text-lia-text-primary mb-2">Horários Recomendados:</h5>
                       <div className="space-y-2">
-                        {(liaRecommendations as any).suggestedTimes.map((timeRec: { time: string; reason?: string }, idx: number) => (
+                        {liaRecommendations.suggestedTimes.map((timeRec, idx: number) => (
                           <div key={idx} className="flex items-center justify-between p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                             <div>
                               <span className="font-medium text-lia-text-primary text-xs">{timeRec.time}</span>
@@ -457,7 +474,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     <div>
                       <h5 className="text-xs font-medium text-lia-text-primary mb-2">Foco da Entrevista:</h5>
                       <div className="grid grid-cols-2 gap-2">
-                        {Object.entries((liaRecommendations as Record<string, unknown>).interviewFocus as Record<string, unknown>)
+                        {Object.entries(liaRecommendations.interviewFocus)
                           .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
                           .slice(0, 4)
                           .map(([key, value]: [string, unknown]) => {
@@ -488,16 +505,16 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                         <div>
                           <span className="text-micro font-medium text-lia-text-primary">Pontos Fortes:</span>
                           <ul className="text-micro text-lia-text-secondary ml-2">
-                            {(liaRecommendations as any).attentionPoints.strengths.slice(0, 2).map((strength: string, idx: number) => (
+                            {liaRecommendations.attentionPoints.strengths.slice(0, 2).map((strength: string, idx: number) => (
                               <li key={idx}>• {strength}</li>
                             ))}
                           </ul>
                         </div>
-                        {(liaRecommendations as any).attentionPoints.concerns.length > 0 && (
+                        {liaRecommendations.attentionPoints.concerns.length > 0 && (
                           <div>
                             <span className="text-micro font-medium text-status-warning">Pontos de Atenção:</span>
                             <ul className="text-micro text-status-warning ml-2">
-                              {(liaRecommendations as any).attentionPoints.concerns.slice(0, 2).map((concern: string, idx: number) => (
+                              {liaRecommendations.attentionPoints.concerns.slice(0, 2).map((concern: string, idx: number) => (
                                 <li key={idx}>• {concern}</li>
                               ))}
                             </ul>

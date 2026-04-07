@@ -72,7 +72,7 @@ export function QuestionDiffView({
               </div>
 
               {diff.before && (
-                <div className="px-3 py-2 border-b border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
+                <div className="px-3 py-2 border-b border-lia-border-subtle">
                   <div className="flex items-start gap-2">
                     <span className="text-micro font-medium text-lia-text-secondary mt-0.5 shrink-0">ANTES</span>
                     <p className="text-xs text-lia-text-secondary line-through leading-relaxed">

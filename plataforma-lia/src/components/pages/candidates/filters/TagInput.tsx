@@ -14,8 +14,9 @@ export interface TagInputProps {
 
 export function TagInput({ placeholder, tags, onAdd, onRemove }: TagInputProps) {
   return (
-    <div className="space-y-2">
+    <div data-testid="tag-input-container" className="space-y-2">
       <Input
+        data-testid="tag-input-field"
         placeholder={placeholder}
         className="h-8 text-xs"
         onKeyDown={(e) => {
@@ -27,11 +28,11 @@ export function TagInput({ placeholder, tags, onAdd, onRemove }: TagInputProps) 
         }}
       />
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
+        <div data-testid="tag-list" className="flex flex-wrap gap-1">
           {tags.map((tag) => (
             <Badge key={tag} variant="secondary" className="text-micro px-2 py-0.5 flex items-center gap-1">
               {tag}
-              <button onClick={() => onRemove(tag)}>
+              <button data-testid={`remove-tag-${tag}`} onClick={() => onRemove(tag)}>
                 <X className="w-2.5 h-2.5" />
               </button>
             </Badge>

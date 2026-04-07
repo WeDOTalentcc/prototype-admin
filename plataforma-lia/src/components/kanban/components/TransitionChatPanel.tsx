@@ -376,11 +376,11 @@ export function TransitionChatPanel({
                         </div>
                       )}
 
-                      {(meta as any)?.executionPlan && (
-                        <PlanProgressCard plan={(meta as any).executionPlan as ExecutionPlanData} />
+                      {meta?.executionPlan && (
+                        <PlanProgressCard plan={meta.executionPlan as unknown as ExecutionPlanData} />
                       )}
-                      {(meta as any)?.execution_plan && (
-                        <PlanProgressCard plan={(meta as any).execution_plan as ExecutionPlanData} />
+                      {meta?.execution_plan && (
+                        <PlanProgressCard plan={meta.execution_plan as unknown as ExecutionPlanData} />
                       )}
                       {hasTasks && <TasksChecklist tasks={meta!.tasks!} />}
                       {isOutOfScope && <OutOfScopeIndicator />}

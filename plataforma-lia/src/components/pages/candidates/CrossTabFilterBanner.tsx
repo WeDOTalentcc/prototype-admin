@@ -15,11 +15,11 @@ export function CrossTabFilterBanner({
   crossTabFilter,
   clearCrossTabFilter,
 }: CrossTabFilterBannerProps) {
-  const cf = crossTabFilter as any // TODO: fix type
+  const cf = crossTabFilter as { type?: string; company?: string; companies?: string[]; filter?: string }
   if (!showCrossTabBanner || !crossTabFilter) return null
 
   return (
-    <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+    <Card data-testid="cross-tab-filter-banner" className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-lia-btn-primary-bg dark:bg-lia-bg-tertiary rounded-md flex items-center justify-center">
@@ -35,10 +35,10 @@ export function CrossTabFilterBanner({
             </h3>
             <p className="text-sm text-lia-text-primary mb-3" aria-live="polite" aria-atomic="true">
               {cf.type === 'company' && cf.company && (
-                <span>Mostrando candidatos da empresa &ldquo;{cf.company as string}&rdquo; mapeada</span>
+                <span>Mostrando candidatos da empresa &ldquo;{cf.company}&rdquo; mapeada</span>
               )}
               {cf.type === 'company' && cf.companies && (
-                <span>Mostrando candidatos das empresas: {(cf.companies as string[]).join(', ')}</span>
+                <span>Mostrando candidatos das empresas: {cf.companies.join(', ')}</span>
               )}
               {cf.filter === 'discontented_talents' && (
                 <span>Talentos com indicações de descontentamento detectadas pela LIA</span>
@@ -46,6 +46,7 @@ export function CrossTabFilterBanner({
             </p>
             <div className="flex gap-2">
               <Button
+                data-testid="clear-cross-tab-filter-btn"
                 variant="outline"
                 size="sm"
                 onClick={clearCrossTabFilter}

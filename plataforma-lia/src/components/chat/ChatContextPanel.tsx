@@ -44,7 +44,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
 
         <CardContent
           className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-lia-border-default  scrollbar-track-transparent hover:scrollbar-thumb-lia-border-medium dark:hover:scrollbar-thumb-lia-border-medium"
-          style={{scrollBehavior: 'smooth'}}
+         
         >
           <ChatContextPanelPart1 contextData={contextData} />
           <ChatContextPanelPart2 contextData={contextData} />

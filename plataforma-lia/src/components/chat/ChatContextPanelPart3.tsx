@@ -162,8 +162,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                         <div className="grid grid-cols-3 gap-2">
                           {slots.map((slot, i: number) => (
                             <button key={`slot-${i}-${slot.time}`} disabled={!slot.available}
-                              className={`p-2 rounded-md text-xs transition-transform motion-reduce:transition-none ${slot.available ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'}`}
-                              style={{backgroundColor: slot.available ? 'var(--green-50, #f0fdf4)' : 'var(--lia-bg-tertiary)', color: 'inherit', border: `1px solid ${slot.available ? 'var(--lia-border-subtle)' : 'var(--lia-bg-tertiary)'}`}}>
+                              className={`p-2 rounded-md text-xs transition-transform motion-reduce:transition-none ${slot.available ? 'hover:scale-105 bg-green-50 border border-lia-border-subtle' : 'opacity-50 cursor-not-allowed bg-lia-bg-tertiary border border-lia-bg-tertiary'}`}>
                               {slot.time}
                               <div className="text-xs text-lia-text-tertiary">{slot.duration}</div>
                             </button>

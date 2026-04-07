@@ -57,7 +57,7 @@ export function InsufficientDataModal({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <AlertDialogContent className="max-w-md rounded-md">
+      <AlertDialogContent className="max-w-md rounded-md" data-testid="insufficient-data-modal">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className={`p-2.5 rounded-md ${hasEnoughData ? 'bg-status-warning/15 text-status-warning' : 'bg-status-error/15 text-status-error'}`}>

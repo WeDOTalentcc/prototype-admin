@@ -152,7 +152,7 @@ function AceitarConviteContent() {
                   alt="WEDOTALENT"
                   width={120}
                   height={40}
-                  style={{width: 'auto', height: 'auto'}}
+                  className="w-auto h-auto"
                   priority
                 />
               </div>
@@ -192,7 +192,7 @@ function AceitarConviteContent() {
                   alt="WEDOTALENT"
                   width={120}
                   height={40}
-                  style={{width: 'auto', height: 'auto'}}
+                  className="w-auto h-auto"
                   priority
                 />
               </div>
@@ -232,7 +232,7 @@ function AceitarConviteContent() {
                   alt="WEDOTALENT"
                   width={120}
                   height={40}
-                  style={{width: 'auto', height: 'auto'}}
+                  className="w-auto h-auto"
                   priority
                 />
               </div>
@@ -272,7 +272,7 @@ function AceitarConviteContent() {
                 alt="WeDo Talent"
                 width={120}
                 height={40}
-                style={{width: 'auto', height: 'auto'}}
+                className="w-auto h-auto"
                 priority
               />
             </div>

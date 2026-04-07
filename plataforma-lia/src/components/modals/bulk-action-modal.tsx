@@ -278,7 +278,7 @@ export function BulkActionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-md" data-testid="bulk-action-modal">
         <DialogHeader className="border-b border-lia-border-subtle pb-3">
           <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             {config.icon}

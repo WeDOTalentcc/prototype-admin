@@ -58,7 +58,7 @@ export function CandidateSummaryCard({
   return (
     <Card
       className="w-full max-w-md border-l-4 overflow-hidden bg-lia-bg-secondary"
-      style={{borderLeftColor: 'var(--lia-border-default)'}}
+     
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-4">

@@ -157,7 +157,7 @@ export function EditArchetypeSkillsSection({
                 }}
               >
                 <Code className="w-3 h-3 text-lia-text-tertiary" />
-                <span style={{color: "var(--lia-btn-primary-bg)"}}>{suggestion.term}</span>
+                <span>{suggestion.term}</span>
                 {suggestion.is_synonym && (
                   <span className="text-micro px-1 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">sinônimo</span>
                 )}

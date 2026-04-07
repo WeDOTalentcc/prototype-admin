@@ -242,7 +242,7 @@ export function JobInfoGeralSection({
           <CardContent className="p-4">
             <div>
               <label className={labelClass}>Descrição da Vaga<ScreeningBadge /></label>
-              <textarea className={`${inputClass(!isEditing)} resize-vertical`} rows={16} value={(jobEditForm.description as string) || ""} onChange={(e) => updateField("description", e.target.value)} disabled={!isEditing} placeholder="Descrição detalhada da vaga..." style={{ minHeight: "280px" }} />
+              <textarea className={`${inputClass(!isEditing)} resize-vertical`} rows={16} value={(jobEditForm.description as string) || ""} onChange={(e) => updateField("description", e.target.value)} disabled={!isEditing} placeholder="Descrição detalhada da vaga..." />
             </div>
           </CardContent>
         </Card>

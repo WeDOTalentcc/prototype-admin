@@ -190,7 +190,7 @@ export default function PrivacidadePage() {
 
         <div className="flex gap-2 mb-6 justify-center">
           <Button
-            variant={(activeTab === 'request' ? 'default' : 'outline') as any}
+            variant={activeTab === "request" ? "primary" : "outline"}
             onClick={() => setActiveTab('request')}
             className={activeTab === 'request' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' : ''}
           >
@@ -198,7 +198,7 @@ export default function PrivacidadePage() {
             Nova Solicitação
           </Button>
           <Button
-            variant={(activeTab === 'track' ? 'default' : 'outline') as any}
+            variant={activeTab === "track" ? "primary" : "outline"}
             onClick={() => setActiveTab('track')}
             className={activeTab === 'track' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' : ''}
           >
@@ -455,7 +455,7 @@ export default function PrivacidadePage() {
                       <CardDescription>Código: {trackingResult.id}</CardDescription>
                     </div>
                     {(() => {
-                      const status = getStatusDisplay(trackingResult.status as any)
+                      const status = getStatusDisplay(trackingResult.status ?? '')
                       const Icon = status.icon
                       const colorClasses: Record<string, string> = {
                         'amber': 'bg-status-warning/15 text-status-warning',

@@ -17,11 +17,12 @@ interface CandidateTabsProps {
 
 const CandidateTabs = memo(function CandidateTabs({ tabs, activeTab, onTabChange }: CandidateTabsProps) {
   return (
-    <div className="mb-0">
-      <nav className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
+    <div data-testid="candidate-tabs" className="mb-0">
+      <nav data-testid="candidate-tabs-nav" className="flex items-center gap-1 nav-tabs" aria-label="Tabs" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            data-testid={`candidate-tab-${tab.id}`}
             onClick={() => onTabChange(tab.id)}
             role="tab"
             aria-selected={activeTab === tab.id}

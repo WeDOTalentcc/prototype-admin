@@ -51,7 +51,7 @@ export function InputEvaluationStage({
   onFastTrackDismiss,
 }: InputEvaluationStageProps) {
   return (
-    <>
+    <div data-testid="input-evaluation-stage">
       {/* Banner when using company config */}
       {configLoaded && hasConfigData && (
         <div className="mb-3 px-3 py-2 bg-lia-bg-tertiary border border-lia-border-default rounded-md flex items-center gap-2">
@@ -160,6 +160,6 @@ export function InputEvaluationStage({
           />
         </div>
       )}
-    </>
+    </div>
   )
 }

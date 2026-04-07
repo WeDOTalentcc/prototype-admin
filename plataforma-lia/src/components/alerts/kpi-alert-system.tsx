@@ -41,7 +41,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
   } = useKpiAlerts(recruiterData, onAlertAction)
 
   return (
-    <div className="space-y-6">
+    <div data-testid="kpi-alert-system" className="space-y-6">
       <Card className="border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium">
         <CardHeader>
           <div className="flex items-center justify-between">

@@ -49,7 +49,7 @@ export function RubricDetailsSection({
 }: RubricDetailsSectionProps) {
   return (
     <div className="space-y-3">
-      <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)', borderRadius: '8px'}}>
+      <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
           <FileText className="w-4 h-4 text-lia-text-secondary" />
           Matriz de Avaliação por Requisito
@@ -109,7 +109,7 @@ export function RubricDetailsSection({
         </div>
       </div>
 
-      <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)', borderRadius: '8px'}}>
+      <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <h3 className="text-xs font-semibold flex items-center gap-2 mb-2 text-lia-text-primary">
           <Shield className="w-4 h-4 text-lia-text-secondary" />
           Verificação de Red Flags
@@ -133,7 +133,7 @@ export function RubricDetailsSection({
         </div>
       </div>
 
-      <div className="p-3 border border-lia-border-subtle" style={{backgroundColor: 'var(--lia-bg-secondary)', borderRadius: '8px'}}>
+      <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <button
           onClick={() => setShowAudit(!showAudit)}
           className="w-full flex items-center justify-between text-xs font-semibold text-lia-text-primary"
@@ -158,13 +158,13 @@ export function RubricDetailsSection({
               </div>
               <div className="p-2 rounded-md bg-lia-bg-secondary">
                 <div className="text-micro text-lia-text-secondary">Red Flags</div>
-                <div className="text-sm font-bold" style={{color: mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'var(--status-warning)' : 'var(--lia-text-secondary)'}}>
+                <div className={`text-sm font-bold ${mockRedFlags.filter(f => f.status !== 'ok').length > 0 ? 'text-status-warning' : 'text-lia-text-secondary'}`}>
                   {mockRedFlags.filter(f => f.status !== 'ok').length}
                 </div>
               </div>
               <div className="p-2 rounded-md bg-lia-bg-secondary">
                 <div className="text-micro text-lia-text-secondary">Taxa Essenciais</div>
-                <div className="text-sm font-bold" style={{color: essentialMet === essentialReqsLength ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}>
+                <div className={`text-sm font-bold ${essentialMet === essentialReqsLength ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}>
                   {essentialReqsLength > 0 ? Math.round((essentialMet / essentialReqsLength) * 100) : 100}%
                 </div>
               </div>

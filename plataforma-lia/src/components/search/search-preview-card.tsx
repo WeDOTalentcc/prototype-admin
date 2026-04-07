@@ -39,15 +39,11 @@ export function SearchPreviewCard({
 
   return (
     <Card 
-      className="border overflow-hidden"
-      style={{backgroundColor: 'var(--white)',
-        borderColor: 'var(--lia-border-subtle)'}}
+      className="border overflow-hidden bg-white border-lia-border-subtle"
     >
       <CardContent className="p-0">
         <div 
-          className="px-4 py-3 border-b flex items-center gap-2"
-          style={{backgroundColor: 'var(--lia-bg-secondary)',
-            borderColor: 'var(--lia-border-subtle)'}}
+          className="px-4 py-3 border-b flex items-center gap-2 bg-lia-bg-secondary border-lia-border-subtle"
         >
           <Search className="w-4 h-4 text-lia-text-primary" />
           <span 
@@ -77,16 +73,14 @@ export function SearchPreviewCard({
               }}
               disabled={!hasLocalResults && !data.isSearchingLocal}
               className={cn(
-                "flex items-start gap-3 p-3 rounded-md border text-left transition-colors",
+                "flex items-start gap-3 p-3 rounded-md border text-left transition-colors bg-lia-bg-secondary",
+                selectedOption === "local" ? "border-lia-border-default" : "border-lia-border-subtle",
                 selectedOption === "local" && "ring-2",
                 !hasLocalResults && !data.isSearchingLocal && "opacity-50 cursor-not-allowed"
               )}
-              style={{backgroundColor: selectedOption === "local" ? "var(--lia-bg-secondary)" : 'var(--lia-bg-secondary)',
-                borderColor: selectedOption === "local" ? "var(--lia-border-default)" : 'var(--lia-border-subtle)'}}
             >
               <div 
-                className="p-2 rounded-md shrink-0"
-                style={{backgroundColor: "var(--wedo-green-light, #f0fdf4)"}}
+                className="p-2 rounded-md shrink-0 bg-[var(--wedo-green-light,#f0fdf4)]"
               >
                 <Database className="w-4 h-4 text-lia-text-primary" />
               </div>
@@ -101,10 +95,8 @@ export function SearchPreviewCard({
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
                   ) : (
                     <span 
-                      className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{backgroundColor: hasLocalResults ? "var(--status-success-bg)" : "var(--status-error-bg)",
-                        color: hasLocalResults ? "var(--status-success)" : "var(--status-error)"}}
-                     aria-live="polite" aria-atomic="true">
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${hasLocalResults ? 'bg-status-success-bg text-status-success' : 'bg-status-error-bg text-status-error'}`}
+                      aria-live="polite" aria-atomic="true">
                       {data.localCount} encontrados
                     </span>
                   )}
@@ -123,16 +115,15 @@ export function SearchPreviewCard({
               }}
               disabled={!hasPearchResults && !data.isEstimatingPearch}
               className={cn(
-                "flex items-start gap-3 p-3 rounded-md border text-left transition-colors",
+                "flex items-start gap-3 p-3 rounded-md border text-left transition-colors bg-lia-bg-secondary",
+                selectedOption === "hybrid" ? "border-lia-border-default" : "border-lia-border-subtle",
                 selectedOption === "hybrid" && "ring-2",
                 !hasPearchResults && !data.isEstimatingPearch && "opacity-50 cursor-not-allowed"
               )}
-              style={{backgroundColor: selectedOption === "hybrid" ? "var(--lia-bg-secondary)" : 'var(--lia-bg-secondary)',
-                borderColor: selectedOption === "hybrid" ? "var(--lia-border-default)" : 'var(--lia-border-subtle)'}}
             >
               <div 
                 className="p-2 rounded-md shrink-0"
-                style={{backgroundColor: 'var(--lia-bg-secondary)'}}
+               
               >
                 <Globe className="w-4 h-4 text-lia-text-primary" />
               </div>
@@ -160,8 +151,7 @@ export function SearchPreviewCard({
                 </p>
                 {hasPearchResults && (
                   <div 
-                    className="flex items-center gap-1 mt-2 text-xs"
-                    style={{color: canAffordPearch ? "var(--lia-btn-primary-bg)" : "var(--status-error)"}}
+                    className={`flex items-center gap-1 mt-2 text-xs ${canAffordPearch ? 'text-lia-btn-primary-bg' : 'text-status-error'}`}
                   >
                     <Zap className="w-3 h-3" />
                     <span>
@@ -176,9 +166,7 @@ export function SearchPreviewCard({
 
           {selectedOption === "hybrid" && (
             <div 
-              className="p-3 rounded-md text-sm"
-              style={{backgroundColor: "var(--wedo-green-light, #f0fdf4)",
-                color: 'var(--lia-text-primary)'}}
+              className="p-3 rounded-md text-sm bg-[var(--wedo-green-light,#f0fdf4)] text-lia-text-primary"
             >
               <div className="flex items-center justify-between mb-2">
                 <span>Custo estimado:</span>
@@ -198,9 +186,7 @@ export function SearchPreviewCard({
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="flex-1"
-              style={{color: 'var(--lia-text-secondary)',
-                borderColor: 'var(--lia-border-subtle)'}}
+              className="flex-1 text-lia-text-secondary border-lia-border-subtle"
             >
               <X className="w-4 h-4 mr-1" />
               Cancelar
@@ -229,9 +215,7 @@ export function SearchPreviewCard({
               <Button
                 size="sm"
                 disabled
-                className="flex-1"
-                style={{backgroundColor: 'var(--lia-bg-tertiary)',
-                  color: 'var(--lia-text-secondary)'}}
+                className="flex-1 bg-lia-bg-tertiary text-lia-text-secondary"
               >
                 Selecione uma opção
               </Button>

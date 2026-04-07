@@ -451,8 +451,9 @@ export function useCriteriaDetection(): UseCriteriaDetectionReturn {
         } else if (fullMatch.includes('básico') || fullMatch.includes('basico')) {
           level = 'Básico'
         }
-        if (!(newCriteria.idiomas as any[]).some((i: any) => i.name === name)) {
-          (newCriteria as any).idiomas = [...(newCriteria.idiomas as any[]), { name, level }]
+        const currentIdiomas = (newCriteria.idiomas as unknown as { name: string; level: string }[] | undefined) ?? []
+        if (!currentIdiomas.some((i) => i.name === name)) {
+          newCriteria.idiomas = [...currentIdiomas, { name, level }] as unknown as string[]
         }
       }
     }

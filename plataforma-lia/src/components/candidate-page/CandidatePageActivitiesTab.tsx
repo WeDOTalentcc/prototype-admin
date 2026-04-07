@@ -332,9 +332,7 @@ export function CandidatePageActivitiesTab({
                                 <div className="flex items-center gap-2">
                                   {activity.score && (
                                     <Badge
-                                      className="text-xs"
-                                      style={{backgroundColor: 'var(--lia-bg-tertiary)',
-                                        color: activity.score >= 80 ? 'var(--status-success)' : 'var(--status-warning)'}}
+                                      className={`text-xs bg-lia-bg-tertiary ${activity.score >= 80 ? 'text-status-success' : 'text-status-warning'}`}
                                     >
                                       {activity.score}%
                                     </Badge>

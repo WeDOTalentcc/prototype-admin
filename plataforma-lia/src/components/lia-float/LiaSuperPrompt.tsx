@@ -209,45 +209,34 @@ export function LiaSuperPrompt() {
 
           {/* OPT-027: CSS scale/fade replacing framer-motion spring */}
           <div
-            className="relative flex flex-col overflow-hidden rounded-xl border shadow-2xl bg-lia-bg-primary animate-in fade-in zoom-in-90 slide-in-from-bottom-4 duration-300"
-            style={{width: "95vw",
-              height: "95vh",
-              maxWidth: "1400px",
-              maxHeight: "900px",
-              borderColor: "var(--lia-border-subtle)"}}
+            className="relative flex flex-col overflow-hidden rounded-xl border border-lia-border-subtle shadow-2xl bg-lia-bg-primary animate-in fade-in zoom-in-90 slide-in-from-bottom-4 duration-300 w-[95vw] h-[95vh] max-w-[1400px] max-h-[900px]"
           >
             {/* Header */}
             <div
               className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle flex-shrink-0"
-              style={{backgroundColor: "var(--lia-bg-secondary)"}}
+             
             >
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Brain className="w-5 h-5 text-wedo-cyan" strokeWidth={2.5} />
                   <span
-                    className="text-lg font-bold"
-                    style={{color: "var(--lia-text-primary)", fontFamily: '"Inter", sans-serif'}}
+                    className="text-lg font-bold text-lia-text-primary"
                   >
                     LIA
                   </span>
                 </div>
 
-                <div className="flex rounded-lg overflow-hidden border" style={{borderColor: "var(--lia-border-subtle)"}}>
+                <div className="flex rounded-lg overflow-hidden border">
                   <button
                     onClick={() => setActiveTab("conversa")}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none"
-                    style={{backgroundColor: activeTab === "conversa" ? "var(--lia-bg-secondary)" : "transparent",
-                      color: activeTab === "conversa" ? "var(--wedo-cyan)" : "var(--lia-text-tertiary)",
-                      borderRight: "1px solid var(--lia-border-subtle)"}}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none border-r border-lia-border-subtle ${activeTab === "conversa" ? "bg-lia-bg-secondary text-wedo-cyan" : "bg-transparent text-lia-text-tertiary"}`}
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     Conversa
                   </button>
                   <button
                     onClick={() => setActiveTab("controle")}
-                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none"
-                    style={{backgroundColor: activeTab === "controle" ? "var(--lia-bg-secondary)" : "transparent",
-                      color: activeTab === "controle" ? "var(--wedo-cyan)" : "var(--lia-text-tertiary)"}}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none ${activeTab === "controle" ? "bg-lia-bg-secondary text-wedo-cyan" : "bg-transparent text-lia-text-tertiary"}`}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     Centro de Controle
@@ -349,13 +338,13 @@ export function LiaSuperPrompt() {
                             <LIAIcon size="xl" className="mb-4 mx-auto" />
                             <h2
                               className="text-3xl font-semibold mb-3"
-                              style={{color: "var(--lia-text-primary)"}}
+                             
                             >
                               Oi, eu sou a <span className="text-lia-text-secondary">LIA</span>.
                             </h2>
                             <p
                               className="text-base mb-2"
-                              style={{color: "var(--lia-text-tertiary)"}}
+                             
                             >
                               Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                             </p>
@@ -398,13 +387,13 @@ export function LiaSuperPrompt() {
                                     <div className="flex-1 min-w-0">
                                       <h3
                                         className="font-medium text-xs leading-tight mb-0.5"
-                                        style={{color: "var(--lia-text-primary)"}}
+                                       
                                       >
                                         {suggestion.title}
                                       </h3>
                                       <p
                                         className="text-xs leading-snug line-clamp-2"
-                                        style={{color: "var(--lia-text-secondary)"}}
+                                       
                                       >
                                         {suggestion.description}
                                       </p>
@@ -459,7 +448,7 @@ export function LiaSuperPrompt() {
                   )}
 
                   {/* Input */}
-                  <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
+                  <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0">
                     <div className="max-w-3xl mx-auto">
                       <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
                         {!contextDismissed && contextPage && contextPage !== "Chat LIA" && (
@@ -475,7 +464,7 @@ export function LiaSuperPrompt() {
                           onKeyDown={handleKeyPress}
                           placeholder="Envie mensagem para a LIA..."
                           className="flex-1 resize-none text-base-ui focus:outline-none bg-transparent min-w-0"
-                          style={{color: "var(--lia-text-primary)"}}
+                         
                           rows={1}
                         />
                         <AudioRecordButton
@@ -531,7 +520,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
           <div className="flex flex-col items-end gap-1">
             <div
               className="rounded-[14px] rounded-br-[4px] px-4 py-3"
-              style={{backgroundColor: "var(--lia-bg-secondary)"}}
+             
             >
               <div
                 className="text-base-ui leading-relaxed text-lia-text-secondary"
@@ -539,7 +528,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
               />
             </div>
-            <span className="text-xs text-lia-text-secondary px-1" style={{fontFamily: '"Inter", sans-serif'}}>
+            <span className="text-xs text-lia-text-secondary px-1">
               {message.timestamp}
             </span>
           </div>
@@ -560,8 +549,8 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
-          <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-          <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>
+          <span className="text-xs font-bold text-lia-text-primary">LIA</span>
+          <span className="text-xs text-lia-text-secondary">
             {message.timestamp}
           </span>
         </div>
@@ -594,7 +583,7 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
   return (
     <div className="flex-1 flex flex-col gap-1">
       <div className="flex items-center gap-1.5 px-1">
-        <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+        <span className="text-xs font-bold text-lia-text-primary">LIA</span>
       </div>
       <div className="rounded-[14px] rounded-bl-[4px] px-4 py-3 bg-lia-bg-primary border border-lia-border-subtle">
         <div

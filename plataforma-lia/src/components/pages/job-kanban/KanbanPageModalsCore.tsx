@@ -78,7 +78,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
       <TestHistoryModal
         open={showTestHistory}
         onClose={() => setShowTestHistory(false)}
-        testName={selectedTestForHistory as any}
+        testName={selectedTestForHistory}
       />
 
       <LIAQuestionsPanel open={showLiaSuggestions} onClose={() => setShowLiaSuggestions(false)} />

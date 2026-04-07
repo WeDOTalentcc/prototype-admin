@@ -42,6 +42,38 @@ export interface CandidateTableRowProps {
   viewedCandidateIds?: Set<string>
 }
 
+function getScoreBgClass(score: number): string {
+  if (score >= 80) return 'bg-[color:var(--status-success)]'
+  if (score >= 60) return 'bg-[color:var(--status-warning)]'
+  if (score >= 40) return 'bg-[color:var(--lia-text-tertiary)]'
+  return 'bg-[color:var(--lia-text-secondary)]'
+}
+
+function getStageBgClass(stage: string): string {
+  switch (stage) {
+    case 'Funil': return 'bg-[color:var(--lia-border-subtle)]'
+    case 'Triagem': return 'bg-[color:var(--lia-border-default)]'
+    case 'Entrevista': return 'bg-[color:var(--lia-text-tertiary)]'
+    case 'Final': return 'bg-[color:var(--lia-text-secondary)]'
+    case 'Aprovados': return 'bg-[color:var(--status-success)]'
+    default: return 'bg-[color:var(--lia-border-subtle)]'
+  }
+}
+
+function getBigFiveBgClass(value: number, index: number): string {
+  if (value >= 70) {
+    if (index === 0) return 'bg-[color:var(--status-success)]'
+    if (index === 1) return 'bg-[color:var(--lia-text-tertiary)]'
+    return 'bg-[color:var(--lia-border-default)]'
+  }
+  if (value >= 40) {
+    if (index === 0) return 'bg-[color:var(--lia-text-secondary)]'
+    if (index === 1) return 'bg-[color:var(--lia-border-default)]'
+    return 'bg-[color:var(--lia-text-secondary)]'
+  }
+  return 'bg-[color:var(--lia-text-secondary)]'
+}
+
 const CandidateTableRowComponent = memo(function CandidateTableRow({ 
   candidate, 
   onCandidateClick, 
@@ -59,8 +91,17 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
   const alerts = getAlerts(candidate)
   const urgency = getUrgency(ranking)
 
+  const liaScore = candidate.liaScore ?? candidate.score
+  const skillsMatch = candidate.skillsMatch ?? candidate.fitScore ?? 0
+  const technicalTestScore = candidate.technicalTestScore
+  const englishTestScore = candidate.englishTestScore
+  const candidateCode = candidate.candidateCode ?? candidate.id?.substring(0, 6).toUpperCase()
+  const bigFiveData = candidate.bigFive ?? null
+  const hasBigFive = !!(candidate.bigFive || candidate.bigFiveScores)
+
   return (
     <tr
+      data-testid={`candidate-row-${candidate.id}`}
       className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover cursor-pointer transition-colors motion-reduce:transition-none ${
         isSelected ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary/10' : ''
       }`}
@@ -70,6 +111,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
     >
       <td className="px-4 py-2" onClick={(e) => e.stopPropagation()}>
         <div
+          data-testid={`candidate-select-${candidate.id}`}
           onClick={() => onToggleSelect && onToggleSelect(candidate.id)}
           className="cursor-pointer"
         >
@@ -87,27 +129,17 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="text-xs font-mono text-lia-text-secondary">
-          {(candidate as any).candidateCode || (candidate as any).id?.substring(0, 6).toUpperCase()}
+          {candidateCode}
         </div>
       </td>
 
       <td className="px-3 py-2">
         <div className="flex items-center gap-1 justify-center">
           <BrainCircuit className={`w-3 h-3 ${
-            urgency.level === 'excellent' ? 'text-lia-text-primary' :
-            urgency.level === 'great' ? 'text-lia-text-primary' :
-            urgency.level === 'good' ? 'text-lia-text-primary' :
-            urgency.level === 'average' ? 'text-lia-text-secondary' :
-            urgency.level === 'below' ? 'text-lia-text-primary' :
-            'text-lia-text-secondary'
+            urgency.level === 'average' ? 'text-lia-text-secondary' : 'text-lia-text-primary'
           }`} />
           <span className={`text-sm font-semibold ${
-            urgency.level === 'excellent' ? 'text-lia-text-primary' :
-            urgency.level === 'great' ? 'text-lia-text-primary' :
-            urgency.level === 'good' ? 'text-lia-text-primary' :
-            urgency.level === 'average' ? 'text-lia-text-secondary' :
-            urgency.level === 'below' ? 'text-lia-text-primary' :
-            'text-lia-text-secondary'
+            urgency.level === 'average' ? 'text-lia-text-secondary' : 'text-lia-text-primary'
           }`}>
             {ranking}
           </span>
@@ -116,15 +148,14 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-2 py-2">
         <div className="flex items-center gap-1 justify-center">
-          {((candidate as any).liaScore !== null && (candidate as any).liaScore !== undefined) || ((candidate as any).score !== null && (candidate as any).score !== undefined) ? (
+          {(liaScore !== null && liaScore !== undefined) ? (
             <>
               <BrainCircuit className="w-3 h-3 text-lia-text-primary" />
               <Badge 
                 variant="secondary" 
-                className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary"
-                style={{backgroundColor: 'var(--lia-border-default)'} as React.CSSProperties}
+                className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary bg-[color:var(--lia-border-default)]"
               >
-                {formatScorePercent((candidate as any).liaScore ?? (candidate as any).score, 0)}
+                {formatScorePercent(liaScore, 0)}
               </Badge>
             </>
           ) : (
@@ -138,30 +169,25 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <Target className="w-3 h-3 text-lia-text-primary" />
           <Badge 
             variant="secondary" 
-            className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary"
-            style={{backgroundColor: 'var(--lia-text-tertiary)'}}
+            className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary bg-[color:var(--lia-text-tertiary)]"
           >
-            {formatScorePercent((candidate as any).skillsMatch || (candidate as any).fitScore || 0, 0)}
+            {formatScorePercent(skillsMatch, 0)}
           </Badge>
         </div>
       </td>
 
       <td className="px-2 py-2">
-        {(candidate as any).technicalTestScore !== null && (candidate as any).technicalTestScore !== undefined ? (
+        {(technicalTestScore !== null && technicalTestScore !== undefined) ? (
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
-              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary"
-              style={{backgroundColor: (candidate as any).technicalTestScore >= 80 ? 'var(--status-success)' :
-                                 (candidate as any).technicalTestScore >= 60 ? 'var(--status-warning)' :
-                                 (candidate as any).technicalTestScore >= 40 ? 'var(--lia-text-tertiary)' :
-                                 'var(--lia-text-secondary)'}}
+              className={`text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary ${getScoreBgClass(technicalTestScore)}`}
               onClick={(e) => {
                 e.stopPropagation()
               }}
               title="Clique para ver detalhes"
             >
-              {formatScorePercent((candidate as any).technicalTestScore, 0)}
+              {formatScorePercent(technicalTestScore, 0)}
             </Badge>
             <Eye className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
@@ -171,21 +197,17 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       </td>
 
       <td className="px-2 py-2">
-        {(candidate as any).englishTestScore !== null && (candidate as any).englishTestScore !== undefined ? (
+        {(englishTestScore !== null && englishTestScore !== undefined) ? (
           <div className="flex items-center gap-1 justify-center group">
             <Badge
               variant="secondary"
-              className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary"
-              style={{backgroundColor: (candidate as any).englishTestScore >= 80 ? 'var(--status-success)' :
-                                 (candidate as any).englishTestScore >= 60 ? 'var(--status-warning)' :
-                                 (candidate as any).englishTestScore >= 40 ? 'var(--lia-text-tertiary)' :
-                                 'var(--lia-text-secondary)'}}
+              className={`text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary ${getScoreBgClass(englishTestScore)}`}
               onClick={(e) => {
                 e.stopPropagation()
               }}
               title="Clique para ver detalhes"
             >
-              {formatScorePercent((candidate as any).englishTestScore, 0)}
+              {formatScorePercent(englishTestScore, 0)}
             </Badge>
             <Eye className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
@@ -195,8 +217,9 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       </td>
 
       <td className="px-3 py-2">
-        {(candidate as any).bigFive || (candidate as any).bigFiveScores ? (
+        {hasBigFive ? (
           <div 
+            data-testid={`candidate-bigfive-${candidate.id}`}
             className="flex gap-1 justify-center cursor-pointer group"
             onClick={(e) => {
               e.stopPropagation()
@@ -206,17 +229,14 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             }}
             title="Clique para ver relatório completo"
           >
-            {Object.entries(candidate.bigFive || {}).slice(0, 3).map(([key, value], index) => (
+            {Object.entries(bigFiveData || {}).slice(0, 3).map(([key, value], index) => (
               <div
                 key={key}
                 className="flex flex-col items-center"
                 title={`${key}: ${value}%`}
               >
                 <div 
-                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity motion-reduce:transition-none group-hover:opacity-80 text-lia-text-primary"
-                  style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--lia-text-tertiary)' : 'var(--lia-border-default)') :
-                                     value >= 40 ? (index === 0 ? 'var(--lia-text-secondary)' : index === 1 ? 'var(--lia-border-default)' : 'var(--lia-text-secondary)') :
-                                     'var(--lia-text-secondary)'}}
+                  className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity motion-reduce:transition-none group-hover:opacity-80 text-lia-text-primary ${getBigFiveBgClass(value, index)}`}
                 >
                   {value}
                 </div>
@@ -234,6 +254,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <Popover>
             <PopoverTrigger asChild>
               <button 
+                data-testid={`candidate-alerts-${candidate.id}`}
                 className="relative flex items-center justify-center w-8 h-8 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none group"
                 aria-label={`${alerts.length} alerta${alerts.length > 1 ? 's' : ''} da LIA`}
               >
@@ -287,7 +308,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="text-xs text-lia-text-primary">
-          {candidate.role || (candidate as any).position || 'UX Designer'}
+          {candidate.role || candidate.position || 'UX Designer'}
         </div>
       </td>
 
@@ -299,15 +320,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-2 py-2">
         <Badge
-          className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary"
-          style={{backgroundColor: 
-              candidate.stage === 'Funil' ? 'var(--lia-border-subtle)' :
-              candidate.stage === 'Triagem' ? 'var(--lia-border-default)' :
-              candidate.stage === 'Entrevista' ? 'var(--lia-text-tertiary)' :
-              candidate.stage === 'Final' ? 'var(--lia-text-secondary)' :
-              candidate.stage === 'Aprovados' ? 'var(--status-success)' :
-              candidate.stage === 'Reprovados' ? 'var(--lia-border-subtle)' :
-              'var(--lia-border-subtle)'}}
+          className={`text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary ${getStageBgClass(candidate.stage || '')}`}
         >
           {candidate.stage}
         </Badge>
@@ -319,7 +332,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             {candidate.status || 'Novo'}
           </div>
           <CandidateBadges
-            subStatus={(candidate as unknown as Record<string, unknown>).subStatus as string || candidate.status}
+            subStatus={candidate.subStatus || candidate.status}
             actionBehavior={candidate.actionBehavior}
             stageId={candidate.stageId}
             needsAction={candidate.needsAction}
@@ -332,7 +345,13 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
       <td className="px-4 py-2">
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Fixar">
+          <Button
+            data-testid={`candidate-pin-${candidate.id}`}
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            title="Fixar"
+          >
             <Pin className="w-3 h-3" />
           </Button>
         </div>

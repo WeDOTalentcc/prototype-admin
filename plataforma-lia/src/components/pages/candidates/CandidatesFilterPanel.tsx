@@ -22,7 +22,7 @@ export function CandidatesFilterPanel({
   onClose,
 }: CandidatesFilterPanelProps) {
   return (
-    <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
+    <div data-testid="candidates-filter-panel" className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
       <div className="bg-lia-bg-primary rounded-md h-[calc(100vh-9rem)] overflow-hidden">
         <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
           <div>

@@ -20,7 +20,7 @@ export function CompactLIAPrompt({
   const { open } = useLiaFloat()
 
   return (
-    <div className="flex items-center gap-2">
+    <div data-testid="compact-lia-prompt" className="flex items-center gap-2">
       <LIAToolbarBrainButton
         isOpen={false}
         onClick={open}

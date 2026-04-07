@@ -87,7 +87,7 @@ export function InterviewConfirmationCard({
   return (
     <Card
       className="w-full max-w-md border-l-4 overflow-hidden bg-lia-bg-secondary"
-      style={{borderLeftColor: 'var(--lia-border-default)'}}
+     
     >
       <div
         className="px-4 py-2 flex items-center gap-2 bg-lia-text-primary"

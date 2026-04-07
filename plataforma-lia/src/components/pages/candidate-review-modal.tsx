@@ -183,7 +183,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     }
                   }}
                   className="w-full justify-center text-sm font-semibold bg-lia-bg-primary text-status-success"
-                  style={{border: '2px solid var(--status-success)'}}
+                 
                 >
                   Approve
                   <span className="ml-2 text-xs opacity-70 bg-status-success/10 px-1.5 py-0.5 rounded-md">A</span>
@@ -197,7 +197,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     }
                   }}
                   className="w-full justify-center text-sm font-semibold bg-lia-bg-primary text-status-error"
-                  style={{border: '2px solid var(--status-error)'}}
+                 
                 >
                   Reject
                   <span className="ml-2 text-xs opacity-70 bg-status-error/10 px-1.5 py-0.5 rounded-md">R</span>

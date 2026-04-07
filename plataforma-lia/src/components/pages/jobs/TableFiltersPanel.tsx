@@ -70,7 +70,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
   const activeCount = getActiveFiltersCount()
 
   return (
-    <div className="w-80 flex-shrink-0 transition-colors motion-reduce:transition-none duration-300">
+    <div className="w-80 flex-shrink-0 transition-colors motion-reduce:transition-none duration-300" data-testid="table-filters-panel">
       <Card className="h-full max-h-[calc(100vh-180px)] flex flex-col overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-b-lia-border-subtle bg-lia-bg-secondary">
