@@ -1,15 +1,16 @@
 """
-ScreeningQuestion Repository (API layer) — data access for company screening questions.
+CompanyScreeningQuestion Repository — data access layer for company default screening questions.
 Extracted from app/api/v1/screening_questions.py as part of Phase 2 refactor.
-Note: a recruitment-domain repo already exists at
-      app/domains/recruitment/repositories/screening_question_repository.py
-      This repo handles the /api/v1/screening_questions endpoint pattern.
 """
 import logging
+import uuid as uuid_lib
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.screening_question import CompanyScreeningQuestion
 
 logger = logging.getLogger(__name__)
 
@@ -18,69 +19,93 @@ class CompanyScreeningQuestionRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def _get_model(self):
-        from app.models.screening_question import ScreeningQuestion
-        return ScreeningQuestion
-
     async def list_for_company(
         self,
         company_id: str,
         *,
-        question_type: str | None = None,
+        category: str | None = None,
         is_active: bool | None = None,
-        limit: int = 100,
-        offset: int = 0,
-    ) -> tuple[list, int]:
-        M = await self._get_model()
-        q = select(M).where(M.company_id == company_id)
-        if question_type:
-            q = q.where(M.question_type == question_type)
+    ) -> list[CompanyScreeningQuestion]:
+        stmt = select(CompanyScreeningQuestion).where(
+            CompanyScreeningQuestion.company_id == company_id
+        )
         if is_active is not None:
-            q = q.where(M.is_active == is_active)
-        q = q.order_by(M.order, M.created_at).limit(limit).offset(offset)
-        result = await self.db.execute(q)
-        items = list(result.scalars().all())
+            stmt = stmt.where(CompanyScreeningQuestion.is_active == is_active)
+        if category:
+            stmt = stmt.where(CompanyScreeningQuestion.category == category)
+        stmt = stmt.order_by(
+            CompanyScreeningQuestion.order, CompanyScreeningQuestion.created_at
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
 
-        cq = select(func.count(M.id)).where(M.company_id == company_id)
-        if question_type:
-            cq = cq.where(M.question_type == question_type)
-        if is_active is not None:
-            cq = cq.where(M.is_active == is_active)
-        total = (await self.db.execute(cq)).scalar() or 0
-        return items, total
+    async def get_max_order(self, company_id: str) -> int:
+        stmt = select(func.max(CompanyScreeningQuestion.order)).where(
+            CompanyScreeningQuestion.company_id == company_id
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar() or 0
 
-    async def get_by_id(self, question_id: UUID) -> object | None:
-        M = await self._get_model()
-        result = await self.db.execute(select(M).where(M.id == question_id))
+    async def get_by_id(
+        self, question_id: UUID, company_id: str
+    ) -> CompanyScreeningQuestion | None:
+        stmt = select(CompanyScreeningQuestion).where(
+            CompanyScreeningQuestion.id == question_id,
+            CompanyScreeningQuestion.company_id == company_id,
+        )
+        result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create(self, company_id: str, data: dict) -> object:
-        M = await self._get_model()
-        q = M(company_id=company_id, **data)
+    async def create(self, company_id: str, data: dict) -> CompanyScreeningQuestion:
+        q = CompanyScreeningQuestion(
+            id=uuid_lib.uuid4(),
+            company_id=company_id,
+            **data,
+        )
         self.db.add(q)
         await self.db.flush()
         await self.db.refresh(q)
         return q
 
-    async def update(self, question, data: dict) -> object:
+    async def update(
+        self, question: CompanyScreeningQuestion, data: dict
+    ) -> CompanyScreeningQuestion:
         for key, value in data.items():
             setattr(question, key, value)
+        question.updated_at = datetime.utcnow()
         await self.db.flush()
         await self.db.refresh(question)
         return question
 
-    async def delete(self, question) -> None:
+    async def delete(self, question: CompanyScreeningQuestion) -> None:
         await self.db.delete(question)
-        await self.db.flush()
 
-    async def bulk_create(self, company_id: str, questions_data: list[dict]) -> list:
-        M = await self._get_model()
+    async def count_for_company(self, company_id: str) -> int:
+        stmt = select(func.count(CompanyScreeningQuestion.id)).where(
+            CompanyScreeningQuestion.company_id == company_id
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar() or 0
+
+    async def reorder(self, company_id: str, question_ids: list[str]) -> None:
+        for idx, q_id in enumerate(question_ids, start=1):
+            stmt = update(CompanyScreeningQuestion).where(
+                CompanyScreeningQuestion.id == UUID(q_id),
+                CompanyScreeningQuestion.company_id == company_id,
+            ).values(order=idx, updated_at=datetime.utcnow())
+            await self.db.execute(stmt)
+
+    async def bulk_create(
+        self, company_id: str, questions_data: list[dict]
+    ) -> list[CompanyScreeningQuestion]:
         created = []
         for qdata in questions_data:
-            q = M(company_id=company_id, **qdata)
+            q = CompanyScreeningQuestion(
+                id=uuid_lib.uuid4(),
+                company_id=company_id,
+                **qdata,
+            )
             self.db.add(q)
             created.append(q)
         await self.db.flush()
-        for q in created:
-            await self.db.refresh(q)
         return created

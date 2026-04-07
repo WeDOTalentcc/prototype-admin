@@ -19,6 +19,7 @@ from app.auth.dependencies import (
 )
 from app.auth.models import User
 from app.core.database import get_db
+from app.domains.recruitment.repositories.company_screening_question_repository import CompanyScreeningQuestionRepository
 from app.models.screening_question import (
     DEFAULT_SCREENING_QUESTIONS,
     QUESTION_CATEGORIES,
@@ -28,6 +29,10 @@ from app.models.screening_question import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def get_screening_question_repo(db: AsyncSession = Depends(get_db)) -> CompanyScreeningQuestionRepository:
+    return CompanyScreeningQuestionRepository(db)
 
 
 class ScreeningQuestionCreate(BaseModel):
@@ -106,20 +111,8 @@ async def list_company_screening_questions(
     try:
         company_id = get_user_company_id(current_user)
         
-        stmt = select(CompanyScreeningQuestion).where(
-            CompanyScreeningQuestion.company_id == company_id
-        )
-        
-        if is_active is not None:
-            stmt = stmt.where(CompanyScreeningQuestion.is_active == is_active)
-        
-        if category:
-            stmt = stmt.where(CompanyScreeningQuestion.category == category)
-        
-        stmt = stmt.order_by(CompanyScreeningQuestion.order, CompanyScreeningQuestion.created_at)
-        
-        result = await db.execute(stmt)
-        questions = result.scalars().all()
+        repo = CompanyScreeningQuestionRepository(db)
+        questions = await repo.list_for_company(company_id, category=category, is_active=is_active)
         
         items = [
             ScreeningQuestionResponse(
@@ -162,31 +155,22 @@ async def create_screening_question(
     try:
         company_id = get_user_company_id(current_user)
         
-        max_order_stmt = select(func.max(CompanyScreeningQuestion.order)).where(
-            CompanyScreeningQuestion.company_id == company_id
-        )
-        max_order_result = await db.execute(max_order_stmt)
-        max_order = max_order_result.scalar() or 0
+        repo = CompanyScreeningQuestionRepository(db)
+        max_order = await repo.get_max_order(company_id)
         
-        question = CompanyScreeningQuestion(
-            id=uuid_lib.uuid4(),
-            company_id=company_id,
-            question_text=request.question_text,
-            question_type=request.question_type,
-            options=request.options,
-            is_required=request.is_required,
-            is_eliminatory=request.is_eliminatory,
-            expected_answer=request.expected_answer,
-            category=request.category,
-            order=request.order if request.order is not None else max_order + 1,
-            is_active=True,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
-        )
-        
-        db.add(question)
-        await db.flush()
-        await db.refresh(question)
+        question = await repo.create(company_id, {
+            "question_text": request.question_text,
+            "question_type": request.question_type,
+            "options": request.options,
+            "is_required": request.is_required,
+            "is_eliminatory": request.is_eliminatory,
+            "expected_answer": request.expected_answer,
+            "category": request.category,
+            "order": request.order if request.order is not None else max_order + 1,
+            "is_active": True,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+        })
         
         logger.info(f"Created screening question: {question.id} for company: {company_id}")
         
@@ -225,24 +209,14 @@ async def update_screening_question(
     try:
         company_id = get_user_company_id(current_user)
         
-        stmt = select(CompanyScreeningQuestion).where(
-            CompanyScreeningQuestion.id == UUID(question_id),
-            CompanyScreeningQuestion.company_id == company_id
-        )
-        result = await db.execute(stmt)
-        question = result.scalar_one_or_none()
+        repo = CompanyScreeningQuestionRepository(db)
+        question = await repo.get_by_id(UUID(question_id), company_id)
         
         if not question:
             raise HTTPException(status_code=404, detail="Screening question not found")
         
         update_data = request.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(question, field, value)
-        
-        question.updated_at = datetime.utcnow()
-        
-        await db.flush()
-        await db.refresh(question)
+        question = await repo.update(question, update_data)
         
         logger.info(f"Updated screening question: {question.id}")
         
@@ -282,17 +256,13 @@ async def delete_screening_question(
     try:
         company_id = get_user_company_id(current_user)
         
-        stmt = select(CompanyScreeningQuestion).where(
-            CompanyScreeningQuestion.id == UUID(question_id),
-            CompanyScreeningQuestion.company_id == company_id
-        )
-        result = await db.execute(stmt)
-        question = result.scalar_one_or_none()
+        repo = CompanyScreeningQuestionRepository(db)
+        question = await repo.get_by_id(UUID(question_id), company_id)
         
         if not question:
             raise HTTPException(status_code=404, detail="Screening question not found")
         
-        await db.delete(question)
+        await repo.delete(question)
         
         logger.info(f"Deleted screening question: {question_id}")
         
@@ -318,12 +288,8 @@ async def reorder_screening_questions(
     try:
         company_id = get_user_company_id(current_user)
         
-        for idx, q_id in enumerate(request.question_ids, start=1):
-            stmt = update(CompanyScreeningQuestion).where(
-                CompanyScreeningQuestion.id == UUID(q_id),
-                CompanyScreeningQuestion.company_id == company_id
-            ).values(order=idx, updated_at=datetime.utcnow())
-            await db.execute(stmt)
+        repo = CompanyScreeningQuestionRepository(db)
+        await repo.reorder(company_id, request.question_ids)
         
         
         logger.info(f"Reordered {len(request.question_ids)} screening questions for company: {company_id}")
@@ -348,11 +314,8 @@ async def seed_default_questions(
     try:
         company_id = get_user_company_id(current_user)
         
-        count_stmt = select(func.count(CompanyScreeningQuestion.id)).where(
-            CompanyScreeningQuestion.company_id == company_id
-        )
-        count_result = await db.execute(count_stmt)
-        existing_count = count_result.scalar() or 0
+        repo = CompanyScreeningQuestionRepository(db)
+        existing_count = await repo.count_for_company(company_id)
         
         if existing_count > 0:
             return {
@@ -361,25 +324,24 @@ async def seed_default_questions(
                 "created_count": 0
             }
         
-        created_count = 0
-        for q_data in DEFAULT_SCREENING_QUESTIONS:
-            question = CompanyScreeningQuestion(
-                id=uuid_lib.uuid4(),
-                company_id=company_id,
-                question_text=q_data["question_text"],
-                question_type=q_data["question_type"],
-                options=q_data["options"],
-                is_required=q_data["is_required"],
-                is_eliminatory=q_data["is_eliminatory"],
-                expected_answer=q_data["expected_answer"],
-                category=q_data["category"],
-                order=q_data["order"],
-                is_active=True,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
-            )
-            db.add(question)
-            created_count += 1
+        questions_to_create = [
+            {
+                "question_text": q_data["question_text"],
+                "question_type": q_data["question_type"],
+                "options": q_data["options"],
+                "is_required": q_data["is_required"],
+                "is_eliminatory": q_data["is_eliminatory"],
+                "expected_answer": q_data["expected_answer"],
+                "category": q_data["category"],
+                "order": q_data["order"],
+                "is_active": True,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+            }
+            for q_data in DEFAULT_SCREENING_QUESTIONS
+        ]
+        created = await repo.bulk_create(company_id, questions_to_create)
+        created_count = len(created)
         
         
         logger.info(f"Seeded {created_count} default screening questions for company: {company_id}")

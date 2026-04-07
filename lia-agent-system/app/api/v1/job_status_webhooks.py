@@ -24,6 +24,10 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = logging.getLogger(__name__)
 
 
+def get_webhook_repo(db: AsyncSession = Depends(get_db)) -> WebhookRepository:
+    return WebhookRepository(db)
+
+
 class WebhookRegisterRequest(BaseModel):
     """Request to register a new webhook."""
     name: str = Field(..., min_length=1, max_length=255)
@@ -146,23 +150,20 @@ async def register_webhook(
         
         secret_key = WebhookRegistration.generate_secret_key()
         
-        webhook = WebhookRegistration(
-            company_id=company_id,
-            name=request.name,
-            description=request.description,
-            url=request.url,
-            event_types=request.event_types,
-            secret_key=secret_key,
-            headers=request.headers or {},
-            retry_count=request.retry_count,
-            timeout_seconds=request.timeout_seconds,
-            created_by=str(current_user.id),
-            is_active=True
-        )
-        
-        db.add(webhook)
-        await db.flush()
-        await db.refresh(webhook)
+        repo = WebhookRepository(db)
+        webhook = await repo.create({
+            "company_id": company_id,
+            "name": request.name,
+            "description": request.description,
+            "url": request.url,
+            "event_types": request.event_types,
+            "secret_key": secret_key,
+            "headers": request.headers or {},
+            "retry_count": request.retry_count,
+            "timeout_seconds": request.timeout_seconds,
+            "created_by": str(current_user.id),
+            "is_active": True,
+        })
         
         logger.info(f"Webhook registered: {request.name} for company {company_id}")
         
@@ -195,24 +196,13 @@ async def list_webhooks(
     try:
         company_id = get_user_company_id(current_user)
         
-        conditions = [WebhookRegistration.company_id == company_id]
-        
-        if is_active is not None:
-            conditions.append(WebhookRegistration.is_active == is_active)
-        
-        count_result = await db.execute(
-            select(func.count(WebhookRegistration.id)).where(and_(*conditions))
+        repo = WebhookRepository(db)
+        webhooks, total = await repo.list_for_company(
+            company_id,
+            is_active=is_active,
+            limit=limit,
+            offset=offset,
         )
-        total = count_result.scalar() or 0
-        
-        result = await db.execute(
-            select(WebhookRegistration)
-            .where(and_(*conditions))
-            .order_by(desc(WebhookRegistration.created_at))
-            .limit(limit)
-            .offset(offset)
-        )
-        webhooks = list(result.scalars())
         
         webhook_responses = []
         for w in webhooks:
@@ -260,15 +250,8 @@ async def get_webhook(
     try:
         company_id = get_user_company_id(current_user)
         
-        result = await db.execute(
-            select(WebhookRegistration).where(
-                and_(
-                    WebhookRegistration.id == webhook_id,
-                    WebhookRegistration.company_id == company_id
-                )
-            )
-        )
-        webhook = result.scalar_one_or_none()
+        repo = WebhookRepository(db)
+        webhook = await repo.get_by_id(webhook_id, company_id)
         
         if not webhook:
             raise HTTPException(status_code=404, detail="Webhook not found")
@@ -314,15 +297,8 @@ async def update_webhook(
     try:
         company_id = get_user_company_id(current_user)
         
-        result = await db.execute(
-            select(WebhookRegistration).where(
-                and_(
-                    WebhookRegistration.id == webhook_id,
-                    WebhookRegistration.company_id == company_id
-                )
-            )
-        )
-        webhook = result.scalar_one_or_none()
+        repo = WebhookRepository(db)
+        webhook = await repo.get_by_id(webhook_id, company_id)
         
         if not webhook:
             raise HTTPException(status_code=404, detail="Webhook not found")
@@ -337,13 +313,8 @@ async def update_webhook(
                     )
         
         update_fields = request.model_dump(exclude_unset=True)
-        for field, value in update_fields.items():
-            if hasattr(webhook, field):
-                setattr(webhook, field, value)
-        
-        webhook.updated_at = datetime.utcnow()
-        await db.flush()
-        await db.refresh(webhook)
+        update_fields["updated_at"] = datetime.utcnow()
+        webhook = await repo.update(webhook, update_fields)
         
         logger.info(f"Webhook updated: {webhook_id}")
         
@@ -387,20 +358,13 @@ async def delete_webhook(
     try:
         company_id = get_user_company_id(current_user)
         
-        result = await db.execute(
-            select(WebhookRegistration).where(
-                and_(
-                    WebhookRegistration.id == webhook_id,
-                    WebhookRegistration.company_id == company_id
-                )
-            )
-        )
-        webhook = result.scalar_one_or_none()
+        repo = WebhookRepository(db)
+        webhook = await repo.get_by_id(webhook_id, company_id)
         
         if not webhook:
             raise HTTPException(status_code=404, detail="Webhook not found")
         
-        await db.delete(webhook)
+        await repo.delete(webhook)
         
         logger.info(f"Webhook deleted: {webhook_id}")
         
@@ -473,37 +437,13 @@ async def get_webhook_logs(
     try:
         company_id = get_user_company_id(current_user)
         
-        webhook_result = await db.execute(
-            select(WebhookRegistration).where(
-                and_(
-                    WebhookRegistration.id == webhook_id,
-                    WebhookRegistration.company_id == company_id
-                )
-            )
-        )
-        webhook = webhook_result.scalar_one_or_none()
+        repo = WebhookRepository(db)
+        webhook = await repo.get_by_id(webhook_id, company_id)
         
         if not webhook:
             raise HTTPException(status_code=404, detail="Webhook not found")
         
-        conditions = [WebhookDeliveryLog.webhook_id == webhook_id]
-        
-        if status:
-            conditions.append(WebhookDeliveryLog.status == status)
-        
-        count_result = await db.execute(
-            select(func.count(WebhookDeliveryLog.id)).where(and_(*conditions))
-        )
-        total = count_result.scalar() or 0
-        
-        result = await db.execute(
-            select(WebhookDeliveryLog)
-            .where(and_(*conditions))
-            .order_by(desc(WebhookDeliveryLog.triggered_at))
-            .limit(limit)
-            .offset(offset)
-        )
-        logs = list(result.scalars())
+        logs, total = await repo.list_delivery_logs(webhook_id, limit=limit, offset=offset)
         
         log_responses = []
         for log in logs:

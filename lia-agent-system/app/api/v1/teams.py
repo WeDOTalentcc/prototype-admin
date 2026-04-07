@@ -32,6 +32,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/teams", tags=["teams"])
 
 
+def get_teams_repo(db: AsyncSession = Depends(get_db)) -> TeamsRepository:
+    return TeamsRepository(db)
+
+
 class TeamsCardAction(StrEnum):
     """Supported Adaptive Card actions from Teams."""
     APPROVE = "approve"
@@ -158,55 +162,32 @@ async def _log_teams_action_audit(
 ) -> str:
     """
     Log Teams action for audit trail to database.
-    
-    Persists audit logs to PostgreSQL database for compliance and auditing.
-    If database is not available, logs warning and returns a placeholder ID.
-    
-    Args:
-        action: The action type (approve, reject, schedule, etc.)
-        result: The result (success, failed, auth_failed, etc.)
-        actor_id: ID of the user who performed the action
-        actor_name: Name of the user who performed the action
-        candidate_id: ID of the candidate affected
-        vacancy_id: ID of the vacancy/job
-        company_id: ID of the company
-        details: Additional details about the action
-        db: Database session
-    
-    Returns:
-        The audit log ID
+    Delegates to TeamsRepository.create_audit_log when a db session is available.
     """
-    audit_id = str(uuid.uuid4())
-    
+    if db is None:
+        logger.warning("[TEAMS AUDIT] No database session provided, skipping database persistence")
+        return str(uuid.uuid4())
     try:
-        if db is None:
-            logger.warning("[TEAMS AUDIT] No database session provided, skipping database persistence")
-        else:
-            # Create database audit log entry
-            audit_entry = TeamsActionAuditLog(
-                id=audit_id,
-                action=action,
-                actor_id=actor_id,
-                actor_name=actor_name,
-                candidate_id=candidate_id,
-                vacancy_id=vacancy_id,
-                company_id=company_id,
-                result=result,
-                details=details or {}
-            )
-            
-            db.add(audit_entry)
-            
-            logger.info(
-                f"[TEAMS AUDIT] Action={action} Result={result} "
-                f"Actor={actor_name or actor_id} Candidate={candidate_id} "
-                f"Vacancy={vacancy_id} AuditID={audit_id} [PERSISTED]"
-            )
+        repo = TeamsRepository(db)
+        audit_id = await repo.create_audit_log(
+            action=action,
+            result=result,
+            actor_id=actor_id,
+            actor_name=actor_name,
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            company_id=company_id,
+            details=details,
+        )
+        logger.info(
+            f"[TEAMS AUDIT] Action={action} Result={result} "
+            f"Actor={actor_name or actor_id} Candidate={candidate_id} "
+            f"Vacancy={vacancy_id} AuditID={audit_id} [PERSISTED]"
+        )
+        return audit_id
     except Exception as e:
         logger.error(f"[TEAMS AUDIT] Error persisting audit log to database: {e}", exc_info=True)
-        logger.info(f"[TEAMS AUDIT] Audit log created with ID={audit_id} but persistence failed")
-    
-    return audit_id
+        return str(uuid.uuid4())
 
 
 async def _start_whatsapp_screening(
@@ -551,40 +532,9 @@ async def get_teams_audit_logs(
     Returns paginated audit logs ordered by most recent first.
     """
     try:
-        # Build query
-        query = select(TeamsActionAuditLog)
-        
-        # Apply filters
-        filters = []
-        if action:
-            filters.append(TeamsActionAuditLog.action == action)
-        if candidate_id:
-            filters.append(TeamsActionAuditLog.candidate_id == candidate_id)
-        
-        if filters:
-            for filter_clause in filters:
-                query = query.where(filter_clause)
-        
-        # Order by most recent first, limit results
-        query = query.order_by(TeamsActionAuditLog.created_at.desc()).limit(limit)
-        
-        result = await db.execute(query)
-        logs = result.scalars().all()
-        
-        # Count total matching (without limit)
-        count_query = select(TeamsActionAuditLog)
-        filters = []
-        if action:
-            filters.append(TeamsActionAuditLog.action == action)
-        if candidate_id:
-            filters.append(TeamsActionAuditLog.candidate_id == candidate_id)
-        
-        if filters:
-            for filter_clause in filters:
-                count_query = count_query.where(filter_clause)
-        
-        count_result = await db.execute(count_query)
-        total_count = len(count_result.scalars().all())
+        repo = TeamsRepository(db)
+        logs = await repo.list_audit_logs(action=action, candidate_id=candidate_id, limit=limit)
+        total_count = await repo.count_audit_logs(action=action, candidate_id=candidate_id)
         
         return {
             "count": len(logs),
@@ -761,35 +711,19 @@ async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSessi
     try:
         conversation_id = activity.get("conversation", {}).get("id")
         from_user = activity.get("from", {})
-
-        # Check if conversation already exists
-        result = await db.execute(
-            select(TeamsConversation).where(
-                TeamsConversation.conversation_id == conversation_id
-            )
-        )
-        existing = result.scalar_one_or_none()
-
         last_msg_at = _parse_teams_timestamp(activity.get("timestamp"))
-
-        if not existing:
-            teams_conv = TeamsConversation(
-                conversation_id=conversation_id,
-                service_url=activity.get("serviceUrl", ""),
-                tenant_id=activity.get("conversation", {}).get("tenantId"),
-                channel_id=activity.get("channelId"),
-                user_id=from_user.get("id", ""),
-                user_name=from_user.get("name"),
-                user_aad_object_id=from_user.get("aadObjectId"),
-                conversation_reference=activity,
-                last_message_at=last_msg_at,
-            )
-            db.add(teams_conv)
-            logger.info(f"Stored new Teams conversation: {conversation_id}")
-        else:
-            existing.last_message_at = last_msg_at
-            existing.conversation_reference = activity
-
+        repo = TeamsRepository(db)
+        await repo.upsert_conversation(
+            conversation_id=conversation_id,
+            service_url=activity.get("serviceUrl", ""),
+            tenant_id=activity.get("conversation", {}).get("tenantId"),
+            channel_id=activity.get("channelId"),
+            user_id=from_user.get("id", ""),
+            user_name=from_user.get("name"),
+            user_aad_object_id=from_user.get("aadObjectId"),
+            conversation_reference=activity,
+            last_message_at=last_msg_at,
+        )
     except Exception as e:
         logger.error(f"Error storing conversation reference: {e}", exc_info=True)
 
@@ -798,28 +732,10 @@ async def _log_teams_message(activity: dict[str, Any], db: AsyncSession):
     """Log Teams message to database."""
     try:
         conversation_id = activity.get("conversation", {}).get("id")
-        
-        # Get teams_conversation_id
-        result = await db.execute(
-            select(TeamsConversation).where(
-                TeamsConversation.conversation_id == conversation_id
-            )
-        )
-        teams_conv = result.scalar_one_or_none()
-        
+        repo = TeamsRepository(db)
+        teams_conv = await repo.get_conversation_for_message(conversation_id)
         if teams_conv:
-            message = TeamsMessage(
-                teams_conversation_id=teams_conv.id,
-                activity_id=activity.get("id"),
-                message_type=activity.get("type", "message"),
-                text=activity.get("text"),
-                from_id=activity.get("from", {}).get("id", ""),
-                from_name=activity.get("from", {}).get("name"),
-                direction="incoming",
-                activity_data=activity
-            )
-            db.add(message)
-            
+            await repo.log_message_from_activity(activity, teams_conv)
     except Exception as e:
         logger.error(f"Error logging Teams message: {e}", exc_info=True)
 
@@ -843,13 +759,8 @@ async def send_proactive_notification(
         user_id = notification_data.get("user_id")
         
         # Get conversation reference
-        result = await db.execute(
-            select(TeamsConversation).where(
-                TeamsConversation.user_id == user_id,
-                TeamsConversation.is_active
-            )
-        )
-        teams_conv = result.scalar_one_or_none()
+        repo = TeamsRepository(db)
+        teams_conv = await repo.get_conversation_by_user_id(user_id)
         
         if not teams_conv:
             raise HTTPException(status_code=404, detail="Teams conversation not found")
@@ -1439,6 +1350,7 @@ async def teams_tab_auth(
             raise HTTPException(status_code=401, detail="Could not retrieve user profile from Azure AD")
 
         # Look up WeDOTalent user by AAD object ID first, then email
+        # TODO(phase2): complex transaction — User model lookups with SSO backfill, left as direct DB
         user: User | None = None
         stmt = select(User).where(User.azure_ad_object_id == aad_object_id).limit(1)
         result = await db.execute(stmt)
@@ -1531,12 +1443,8 @@ async def teams_tab_events(
         return {"status": "no_teams_identity", "event_type": payload.event_type}
 
     # Find TeamsConversation by user_aad_object_id
-    stmt = select(TeamsConversation).where(
-        TeamsConversation.user_aad_object_id == teams_user_id,
-        TeamsConversation.is_active,
-    ).limit(1)
-    result = await db.execute(stmt)
-    conv = result.scalar_one_or_none()
+    repo = TeamsRepository(db)
+    conv = await repo.get_conversation_by_aad_object_id(teams_user_id)
 
     if not conv:
         logger.warning(f"[TeamsTabEvents] No active TeamsConversation for AAD user '{teams_user_id}'")
