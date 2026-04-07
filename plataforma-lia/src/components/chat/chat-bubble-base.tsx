@@ -72,10 +72,9 @@ export const ChatBubbleBase = React.memo(function ChatBubbleBase({
 
         <div
           className={cn(
-            "px-3.5 py-2.5",
             isLia
-              ? "bg-lia-bg-secondary border border-lia-border-subtle rounded-xl rounded-bl-[4px]"
-              : "bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl rounded-br-[4px]",
+              ? "py-0.5"
+              : "px-3.5 py-2.5 bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl rounded-br-[4px]",
             bubbleClassName
           )}
         >
