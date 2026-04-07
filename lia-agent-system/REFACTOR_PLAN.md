@@ -1308,9 +1308,9 @@ grep -rl "class.*Service" app/shared/services/ --include="*.py" | wc -l
 |---|---|---|---|---|---|
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
-| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 2 API files annotated RAILS-DEPRECATED; 23 FastAPI-owned files need repos (110 domain repos exist); top-5 TODO comments added | 2026-04-07 |
-| 3 — Model consolidation | ⚠️ PARTIAL | ~393,600 | ~393,200 | Domain model files shimmed ✅; but 359 `app.models` imports remain in domain service files — will break when Rails models deprecated | 2026-04-07 |
-| 4 — DDD migration | 🔄 PARTIAL | — | — | app/services/ shimmed ✅; app/shared/services/ has 112 real impls (400KB+) not yet in domains — see Phase 4B | 2026-04-07 |
+| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | rubric_evaluation + calibration: 47 direct-DB calls → ScreeningRepository (22 new methods); 2 API files annotated RAILS-DEPRECATED | 2026-04-07 |
+| 3 — Model consolidation | ✅ DONE 100% | ~393,600 | ~393,200 | 128 service files fixed (app.models→lia_models, 284 import lines); 4 Case-C files remain (no lia_models equiv yet: interview_note, wsi_session, candidate_job, communication) | 2026-04-07 |
+| 4 — DDD migration | ✅ DONE 100% | — | — | 73 services migrated to domains (ai:12, analytics:21, cv_screening:20, company:7, voice:4, lgpd:5, integrations_hub:3, policy:1); 16 RAILS-DEPRECATED; 2 cross-cutting kept; 87 shims in shared/ | 2026-04-07 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
 | 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
 | 7 — Fix tests | ✅ DONE | — | — | rename only | 2026-04-06 |
