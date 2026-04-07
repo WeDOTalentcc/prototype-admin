@@ -161,10 +161,10 @@ async def lifespan(app: FastAPI):
         _pe_stats = await PolicyEngineService().load_default_rules()
         logger.info(
             f"✅ PolicyEngine rules seeded: "
-            f"{_pe_stats[business_rules_created]} business, "
-            f"{_pe_stats[rate_limit_rules_created]} rate-limit, "
-            f"{_pe_stats[escalation_rules_created]} escalation criadas; "
-            f"{_pe_stats[business_rules_skipped] + _pe_stats[rate_limit_rules_skipped] + _pe_stats[escalation_rules_skipped]} já existiam"
+            f"{_pe_stats.get('business_rules_created', 0)} business, "
+            f"{_pe_stats.get('rate_limit_rules_created', 0)} rate-limit, "
+            f"{_pe_stats.get('escalation_rules_created', 0)} escalation criadas; "
+            f"{_pe_stats.get('business_rules_skipped', 0) + _pe_stats.get('rate_limit_rules_skipped', 0) + _pe_stats.get('escalation_rules_skipped', 0)} já existiam"
         )
     except Exception as e:
         logger.warning(f"⚠️  PolicyEngine seed failed (non-blocking): {e}")
