@@ -56,6 +56,7 @@ from ._shared import (
     get_rubric_evaluation_service,
     rubric_evaluation_service,
 )
+from app.domains.credits.services.credit_service import CreditService, get_credit_service
 
 router = APIRouter()
 

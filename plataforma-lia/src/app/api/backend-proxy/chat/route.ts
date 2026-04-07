@@ -5,8 +5,6 @@ import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { proxyFetchWithRetry } from '@/lib/api/proxy-fetch-with-retry'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
-
 const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
@@ -17,9 +15,7 @@ export async function POST(request: NextRequest) {
 
     const body = bodyResult.data
     
-    const backendUrl = `${BACKEND_URL}/api/v1/chat`
-    
-    const response = await proxyFetchWithRetry(request, backendUrl, {
+    const response = await proxyFetchWithRetry(request, '/api/v1/chat', {
       method: 'POST',
       body: JSON.stringify(body),
     })
@@ -51,17 +47,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversation_id')
     
-    let backendUrl = `${BACKEND_URL}/api/v1/chat/conversations`
+    let backendPath = '/api/v1/chat/conversations'
     if (conversationId) {
-      backendUrl = `${BACKEND_URL}/api/v1/chat/conversations/${conversationId}`
+      backendPath = `/api/v1/chat/conversations/${conversationId}`
     } else {
       const queryString = searchParams.toString()
       if (queryString) {
-        backendUrl = `${backendUrl}?${queryString}`
+        backendPath = `${backendPath}?${queryString}`
       }
     }
     
-    const response = await proxyFetchWithRetry(request, backendUrl, {
+    const response = await proxyFetchWithRetry(request, backendPath, {
       method: 'GET',
     })
 

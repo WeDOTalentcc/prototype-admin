@@ -24,7 +24,7 @@ export function LIAToolbarBrainButton({
       title="Conversar com LIA"
       className={cn(
         "relative flex items-center justify-center w-9 h-9 rounded-lg",
-        "transition-all duration-200 motion-reduce:transition-none",
+        "transition-colors duration-200 motion-reduce:transition-none",
         "hover:bg-lia-bg-tertiary",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/30",
         isOpen && "bg-lia-bg-tertiary",

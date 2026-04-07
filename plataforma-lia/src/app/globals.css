@@ -50,13 +50,6 @@
 
     /* WeDoTalent - Paleta Apoio (cores suaves para UI) */
     /* deprecated - zero uso em .tsx/.ts - remover no Sprint 10 */
-  /* deprecated OPT-006 --wedo-apoio-cream: #F5EFE7; (Bege/creme claro) */
-  /* deprecated OPT-006 --wedo-apoio-peach-light: #FADCD2; (Rosa pêssego claro) */
-  /* deprecated OPT-006 --wedo-apoio-salmon: #FFB5A7; (Rosa salmão) */
-  /* deprecated OPT-006 --wedo-apoio-blue: #8FA4C4; (Azul médio) */
-  /* deprecated OPT-006 --wedo-apoio-mint: #A8D5BA; (Verde menta/turquesa) */
-  /* deprecated OPT-006 --wedo-apoio-coral: #F08080; (Coral/vermelho suave) */
-  /* deprecated OPT-006 --wedo-apoio-gold: #F4D06F; (Amarelo dourado) */
 
     /* WeDoTalent - Paleta Primária (cores vibrantes) */
     --wedo-primary-coral: #E87575;      /* Coral suave - atualizado 2026-03-29, era #E16162 */

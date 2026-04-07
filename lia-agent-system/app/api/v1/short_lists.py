@@ -62,6 +62,11 @@ class ShortListCandidateResponse(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+def _is_shortlist(record) -> bool:
+    # Returns True if the record is a short list (description starts with shortlist: prefix).
+    return bool(record.description and record.description.startswith(_SHORTLIST_PREFIX))
+
+
 def _encode_meta(job_id: str, description: str | None = None) -> str:
     """Encoda job_id no campo description com prefixo shortlist:."""
     base = f"{_SHORTLIST_PREFIX}{job_id}"

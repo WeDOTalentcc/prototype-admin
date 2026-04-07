@@ -25,7 +25,6 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (23 ocorrências)
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
   vagas: { icon: 'var(--lia-text-secondary)', bg: 'var(--lia-bg-secondary)', border: 'var(--lia-border-subtle)', hoverBg: 'var(--lia-bg-tertiary)' },
   candidatos: { icon: 'var(--status-success)', bg: 'var(--lia-bg-secondary)', border: 'var(--status-success)', hoverBg: 'var(--lia-bg-tertiary)' },

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server";
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
 
 const _bodySchema = z.record(z.string(), z.unknown())
 

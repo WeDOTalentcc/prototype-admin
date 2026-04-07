@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { cookies } from 'next/headers'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
 const DEV_FALLBACK_COMPANY = 'dev_company'
 

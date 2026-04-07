@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
       syncHeaders['X-Internal-Auth'] = INTERNAL_API_SECRET
     }
 
-    const syncResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8000'}/api/v1/auth/workos/sync-user`, {
+    const syncResponse = await fetch(`${process.env.BACKEND_URL || 'http://127.0.0.1:8001'}/api/v1/auth/workos/sync-user`, {
       method: 'POST',
       headers: syncHeaders,
       body: JSON.stringify({

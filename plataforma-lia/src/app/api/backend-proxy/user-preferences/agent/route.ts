@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 // GET  /api/backend-proxy/user-preferences/agent  → GET  /api/v1/user-preferences/agent
 // POST /api/backend-proxy/user-preferences/agent  → POST /api/v1/user-preferences/agent

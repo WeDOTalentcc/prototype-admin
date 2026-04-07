@@ -103,7 +103,6 @@ interface DailyBriefingCardProps {
   onBriefingLoaded?: (briefing: BriefingData) => void
 }
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (18 ocorrências)
 const API_BASE = '/api/backend-proxy'
 
 

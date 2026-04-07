@@ -7,7 +7,6 @@ import { SSIModeJobDescription } from "./ssi-modes/SSIModeJobDescription"
 import { SSIModeBoolean } from "./ssi-modes/SSIModeBoolean"
 import type { useSmartSearchCore } from "./hooks/useSmartSearchCore"
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (16 ocorrências)
 
 type SSIModeContentProps = ReturnType<typeof useSmartSearchCore>
 

@@ -74,7 +74,7 @@ async function verifyJwt(token: string): Promise<Record<string, unknown> | null>
     }
   }
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:8000'
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
   try {
     const response = await fetch(`${backendUrl}/api/v1/auth/me`, {
       method: 'GET',

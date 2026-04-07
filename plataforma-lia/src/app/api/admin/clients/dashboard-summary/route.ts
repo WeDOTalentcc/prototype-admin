@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams

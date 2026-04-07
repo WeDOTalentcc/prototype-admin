@@ -10,7 +10,7 @@ import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000"
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
 const _bodySchema = z.record(z.string(), z.unknown())
 

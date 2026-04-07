@@ -18,6 +18,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.shared.messaging.platform_events import PlatformEvent, register_event_handler
+from app.domains.analytics.services.activity_service import get_activity_service, ActivityService
+from app.domains.recruiter_assistant.services.pipeline_stage_service import get_pipeline_stage_service, PipelineStageService
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +39,7 @@ async def _create_activity(
     priority: str = "normal",
 ) -> None:
     try:
-        from app.services.activity_service import ActivityService
-
-        svc = ActivityService()
+        svc = get_activity_service()
         await svc.create_activity(
             activity_type=activity_type,
             title=title,
@@ -92,11 +92,7 @@ async def handle_job_published(event: PlatformEvent) -> None:
 
     db = await _get_db()
     try:
-        from app.domains.recruiter_assistant.services.pipeline_stage_service import (
-            PipelineStageService,
-        )
-
-        svc = PipelineStageService()
+        svc = get_pipeline_stage_service()
         await svc.initialize_company_stages(company_id, db=db)
         logger.info(
             "[EventHandler] Pipeline stages ensured for company=%s job_id=%s",
@@ -401,11 +397,7 @@ async def handle_company_configured(event: PlatformEvent) -> None:
 
     db = await _get_db()
     try:
-        from app.domains.recruiter_assistant.services.pipeline_stage_service import (
-            PipelineStageService,
-        )
-
-        svc = PipelineStageService()
+        svc = get_pipeline_stage_service()
         created_stages = await svc.initialize_company_stages(company_id, db=db)
         stages_count = len(created_stages) if created_stages else 0
         logger.info(
@@ -645,11 +637,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
 
             if vc:
                 try:
-                    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
-                        PipelineStageService,
-                    )
-
-                    svc = PipelineStageService()
+                    svc = get_pipeline_stage_service()
                     await svc.transition_candidate(
                         vacancy_candidate_id=str(vc.id),
                         to_stage="interview_hr",
@@ -678,11 +666,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
 
             if vc and auto_advance:
                 try:
-                    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
-                        PipelineStageService,
-                    )
-
-                    svc = PipelineStageService()
+                    svc = get_pipeline_stage_service()
                     await svc.transition_candidate(
                         vacancy_candidate_id=str(vc.id),
                         to_stage="rejected",

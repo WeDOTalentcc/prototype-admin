@@ -39,7 +39,6 @@ type EAPTabContentProps = Pick<
   'addSimilarUrl'
 >
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (21 ocorrências)
 export function EAPTabContent(props: EAPTabContentProps) {
   const { activeSearchTab } = props
 

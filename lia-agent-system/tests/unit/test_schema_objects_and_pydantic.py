@@ -636,7 +636,7 @@ async def test_lgpd_run_cleanup_dry_run_returns_summary(lgpd_module):
     mock_result.all.return_value = []
     mock_session.execute.return_value = mock_result
 
-    with patch("app.services.lgpd_cleanup_service.AsyncSessionLocal", return_value=mock_session):
+    with patch("app.domains.lgpd.services.lgpd_cleanup_service.AsyncSessionLocal", return_value=mock_session):
         summary = await lgpd_module.run_cleanup(dry_run=True)
 
     assert "dry_run" in summary
@@ -656,7 +656,7 @@ async def test_lgpd_run_cleanup_summary_keys(lgpd_module):
     mock_result.all.return_value = []
     mock_session.execute.return_value = mock_result
 
-    with patch("app.services.lgpd_cleanup_service.AsyncSessionLocal", return_value=mock_session):
+    with patch("app.domains.lgpd.services.lgpd_cleanup_service.AsyncSessionLocal", return_value=mock_session):
         summary = await lgpd_module.run_cleanup(dry_run=True)
 
     expected_keys = {"dry_run", "ran_at", "candidates_deleted", "vacancy_candidates_deleted", "errors"}
@@ -680,7 +680,7 @@ async def test_lgpd_run_cleanup_no_deletions_when_dry_run(lgpd_module):
     mock_result.all.return_value = [mock_row, mock_row]
     mock_session.execute.return_value = mock_result
 
-    with patch("app.services.lgpd_cleanup_service.AsyncSessionLocal", return_value=mock_session):
+    with patch("app.domains.lgpd.services.lgpd_cleanup_service.AsyncSessionLocal", return_value=mock_session):
         summary = await lgpd_module.run_cleanup(dry_run=True)
 
     # In dry_run mode: candidates_deleted counts them but no actual delete

@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
 
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
+    const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
     switch (event.event) {
       case 'dsync.user.created': {

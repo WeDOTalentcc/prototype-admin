@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { validateParams } from '@/lib/api/validate'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const routeParamsSchema = z.object({
   invoice_id: z.string().min(1, 'invoice_id is required'),

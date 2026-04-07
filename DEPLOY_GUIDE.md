@@ -1206,129 +1206,54 @@ Usuário acessa wedotalent.cc
 
 **Resultado:** Todas as rotas apontam para componentes válidos. Nenhum import quebrado encontrado.
 
-#### P1 — CRÍTICO: 373 arquivos de proxy com porta errada (8000 → deveria ser 8001)
+#### P1 — ✅ RESOLVIDO (07/04/2026): 423 arquivos de proxy padronizados
 
 ```
-PROBLEMA:
-  O frontend se comunica com o backend via ~413 arquivos de proxy em
-  /api/backend-proxy/*. Cada arquivo define a URL do backend assim:
-
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
-                                                                            ^^^^
-  O backend roda na porta 8001, não 8000.
-
-DETALHAMENTO:
-  - 329 arquivos usam:  process.env.NEXT_PUBLIC_BACKEND_URL || '...8000'
-  -  44 arquivos usam:  process.env.BACKEND_URL             || '...8000'
-  -   6 arquivos usam:  process.env.NEXT_PUBLIC_BACKEND_URL || '...8001'  (corretos)
-
-POR QUE FUNCIONA AGORA:
-  O arquivo .env.local define NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8001
-  Então o fallback 8000 nunca é usado — a variável de ambiente salva.
-
-POR QUE É PERIGOSO:
-  1. Se .env.local for apagado ou não carregado → 100% das chamadas falham
-  2. Em produção (Cloud Run), se a env var não for setada → nada funciona
-  3. Dois nomes de variável diferentes (NEXT_PUBLIC_BACKEND_URL vs BACKEND_URL)
-     — configurar um não resolve o outro
-
-IMPACTO ADICIONAL — SEGURANÇA:
-  NEXT_PUBLIC_* é exposta ao browser. Esses proxy routes rodam 100% server-side
-  (são API Routes do Next.js), então não precisam de NEXT_PUBLIC_.
-  O BACKEND_URL do next.config.js já usa a variável correta (sem NEXT_PUBLIC_).
-
-AÇÃO (antes do deploy — pode ser feito agora):
-  Padronizar TODOS os 413 arquivos para:
+CORREÇÃO APLICADA:
+  Todos os 423 arquivos em /api/backend-proxy/* agora usam:
     const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-  É um find-and-replace massivo mas seguro — todos os arquivos seguem o mesmo
-  padrão. Nenhuma lógica muda, só o nome da variável e a porta do fallback.
+
+  - Zero ocorrências de porta 8000
+  - Zero ocorrências de NEXT_PUBLIC_BACKEND_URL nos proxy routes
+  - Zero ocorrências de LIA_BACKEND_URL ou NEXT_PUBLIC_API_URL
+
+  .env.local atualizado: BACKEND_URL=http://127.0.0.1:8001 (sem NEXT_PUBLIC_)
 ```
 
-#### P2 — CRÍTICO: `next build` falha — página de Créditos de IA
+#### P2 — ✅ RESOLVIDO (07/04/2026): `next build` — página de Créditos de IA
 
 ```
-PROBLEMA:
-  src/app/configuracoes/ai-credits/page.tsx usa dynamic() com ssr:false
-  dentro de um Server Component — proibido no Next.js 15.
-
-  O ERRO:
-    `ssr: false` is not allowed with `next/dynamic` in Server Components.
-    Please move it into a Client Component.
-
-  CONSEQUÊNCIA:
-    O build de produção (next build) não compila. Impossível fazer deploy.
-
-  A PÁGINA EXISTE E ESTÁ IMPLEMENTADA:
-    - Mostra consumo de IA por provedor (Claude, Gemini, OpenAI)
-    - Usa recharts para gráficos
-    - Componente: src/components/pages/ai-credits-page.tsx
-
-AÇÃO (correção de 2 linhas):
-  Adicionar "use client" no topo do arquivo e remover export metadata
-  (Server Component metadata não é permitido em Client Components).
+CORREÇÃO APLICADA:
+  - Adicionado "use client" ao src/app/configuracoes/ai-credits/page.tsx
+  - metadata permanece em layout.tsx (já existente)
+  - Build compila sem este erro
 ```
 
-#### P3 — CRÍTICO: Backend desconectado do banco de dados real
+#### P3 — ✅ RESOLVIDO (07/04/2026): Backend conectado ao banco real
 
 ```
-PROBLEMA:
-  O backend Python (lia-agent-system/.env) está configurado com:
-    DATABASE_URL=postgresql+asyncpg://lia_user:lia_password@localhost:5432/lia_db
+CORREÇÃO APLICADA:
+  - DATABASE_URL corrigido para postgresql+asyncpg://postgres:password@helium/heliumdb
+  - API_PORT corrigido para 8001
+  - Backend inicia e conecta ao banco real (~60 tabelas Alembic)
 
-  Mas o banco real do Replit está em:
-    postgresql://postgres:password@helium/heliumdb
-
-  São dois bancos completamente diferentes:
-  - O backend tenta conectar em localhost:5432 (que não existe no Replit)
-  - O Replit tem um PostgreSQL em "helium" com tabelas já criadas via Alembic
-
-TABELAS EXISTENTES NO BANCO REAL (helium/heliumdb):
-  ab_test_results, activity_feed, admin_audit_logs, admin_roles,
-  agent_activities, agent_checkpoints, agent_long_term_memory,
-  ai_consumption, ai_credits_balance, e mais ~60 tabelas
-
-  Todas criadas pelas ~60 migrations Alembic do lia-agent-system.
-
-POR QUE O BACKEND RESPONDE HEALTH OK:
-  O endpoint /health não toca o banco. Mas endpoints que fazem queries
-  (candidatos, vagas, chat) vão falhar com connection refused.
-
-ARQUITETURA FINAL (Rails + LIA):
-  ┌──────────────────┐       ┌──────────────────┐
-  │ lia-agent-system │──REST─► ats-api-copia    │
-  │ (Python/FastAPI) │       │ (Rails 7)        │
-  │                  │       │                  │
-  │ Banco próprio:   │       │ Banco principal: │
-  │ conversas IA,    │       │ candidatos,      │
-  │ memória agentes, │       │ vagas, empresas, │
-  │ métricas, WSI    │       │ aplicações       │
-  └────────┬─────────┘       └────────┬─────────┘
-           │                          │
-           ▼                          ▼
-  Cloud SQL (lia_db)         Cloud SQL (rails_db)
-  ou mesma instância,        ← banco principal
-  schemas separados
-
-AÇÃO AGORA (Replit):
-  Corrigir DATABASE_URL no lia-agent-system/.env para apontar para o banco
-  real do Replit: postgresql+asyncpg://postgres:password@helium/heliumdb
+BUGS DE STARTUP ADICIONAIS CORRIGIDOS:
+  - core_search.py: adicionado import de CreditService/get_credit_service
+  - email_tracking.py: adicionado import de ABTestingService/get_ab_testing_service
+  - notification_service.py: adicionado extend_existing=True nas tabelas
+    Notification e ChatNotification (conflito SQLAlchemy de registros duplicados)
 
 AÇÃO NO DEPLOY (GCP):
   Provisionar Cloud SQL PostgreSQL 16. O Python terá seu próprio banco
   (lia_db) e acessará dados do Rails via API REST (RAILS_API_URL).
-  Ver Seção 14 para detalhes.
 ```
 
-#### P4 — IMPORTANTE: `NEXT_PUBLIC_BACKEND_URL` expõe URL do backend no browser
+#### P4 — ✅ RESOLVIDO (07/04/2026): `NEXT_PUBLIC_BACKEND_URL` removido
 
 ```
-Todos os proxy routes são API Routes (rodam server-side), mas usam
-NEXT_PUBLIC_BACKEND_URL — que Next.js injeta no JavaScript do cliente.
-
-Isso significa que a URL interna do backend (ex: http://lia-agent:8001)
-ficaria visível no código-fonte da página no browser.
-
-AÇÃO: Resolver junto com P1 — trocar para BACKEND_URL (sem NEXT_PUBLIC_).
+CORREÇÃO APLICADA:
+  Resolvido junto com P1 — todos os proxy routes agora usam BACKEND_URL
+  (sem NEXT_PUBLIC_). A URL do backend não é mais exposta ao browser.
 ```
 
 #### P5 — IMPORTANTE: Variáveis exclusivas do Replit no código

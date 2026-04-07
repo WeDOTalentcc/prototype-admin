@@ -4,7 +4,7 @@ import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 import { validateBody } from '@/lib/api/validate'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const digestPreferencesSchema = z.object({
   weekly_report_enabled: z.boolean().optional(),

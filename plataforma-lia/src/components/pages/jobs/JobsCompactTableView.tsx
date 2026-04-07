@@ -50,7 +50,6 @@ interface JobsCompactTableViewProps {
   onColumnResize: (column: string, e: React.MouseEvent) => void
 }
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (20 ocorrências)
 const jobsColumnConfig: Record<string, { label: string; sortable: boolean; align: 'left' | 'center' | 'right' }> = {
   checkbox: { label: '', sortable: false, align: 'center' },
   id: { label: 'ID', sortable: true, align: 'left' },

@@ -4,7 +4,7 @@ import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 import { validateParams } from '@/lib/api/validate'
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const routeParamsSchema = z.object({
   listId: z.string().min(1, 'listId is required'),

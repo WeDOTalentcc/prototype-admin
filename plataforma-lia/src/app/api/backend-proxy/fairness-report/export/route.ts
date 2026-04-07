@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:8001";
   const params = searchParams.toString();
 
   try {

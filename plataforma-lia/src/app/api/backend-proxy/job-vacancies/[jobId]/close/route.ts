@@ -4,7 +4,7 @@ import { validateBody, validateParams } from '@/lib/api/validate'
 import { jobStatusSchema } from '@/lib/schemas'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const jobIdSchema = z.object({ jobId: z.string().min(1) })
 

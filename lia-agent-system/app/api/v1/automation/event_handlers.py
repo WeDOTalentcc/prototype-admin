@@ -27,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service as get_activity_service_canonical
 from app.shared.compliance.audit_service import AuditService, get_audit_service
+from app.domains.recruiter_assistant.services.pipeline_stage_service import get_pipeline_stage_service, PipelineStageService
 
 from ._shared import (
     WSI_PASS_THRESHOLD,
@@ -2041,6 +2042,7 @@ async def handle_candidate_hired(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
+    pipeline_service: PipelineStageService = Depends(get_pipeline_stage_service),
 ):
     """
     Handle when a candidate is hired.
@@ -2095,9 +2097,6 @@ async def handle_candidate_hired(
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to send welcome email: {e}")
         
         try:
-            from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
-            pipeline_service = PipelineStageService()
-            
             from sqlalchemy import and_, select
 
             from app.models.candidate import VacancyCandidate
@@ -2243,6 +2242,7 @@ async def handle_candidate_rejected(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
+    pipeline_service: PipelineStageService = Depends(get_pipeline_stage_service),
 ):
     """
     Handle when a candidate is rejected.
@@ -2345,9 +2345,6 @@ async def handle_candidate_rejected(
                 logger.error(f"❌ [CANDIDATE_REJECTED] Failed to add to talent pool: {e}")
         
         try:
-            from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
-            pipeline_service = PipelineStageService()
-            
             from sqlalchemy import and_, select
 
             from app.models.candidate import VacancyCandidate

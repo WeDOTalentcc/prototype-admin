@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { validateParams } from '@/lib/api/validate'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
 
 const routeParamsSchema = z.object({
   token: z.string().min(1, 'token is required'),

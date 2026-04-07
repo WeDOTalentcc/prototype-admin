@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from 'zod'
 import { validateQuery } from '@/lib/api/validate'
 
-const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
 const applySectorQuerySchema = z.object({
   companyId: z.string().min(1, 'companyId is required'),

@@ -1,6 +1,5 @@
 import type { AlertConfig, EmailTemplate } from './CommunicationHub.types'
 
-// [OPT-043] TODO: revisar inline styles dinâmicos (17 ocorrências)
 export const TEMPLATE_GROUPS: Record<string, { label: string; icon: string; situations: string[] }> = {
   'primeiro_contato': { label: 'Primeiro Contato', icon: '👋', situations: ['contato_inicial', 'follow_up', 'initial_contact', 'contato_rapido'] },
   'triagem': { label: 'Triagem', icon: '📋', situations: ['triagem', 'screening_reminder', 'screening_passed', 'screening_failed', 'screening_completed', 'lembrete'] },

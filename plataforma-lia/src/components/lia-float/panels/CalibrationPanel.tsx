@@ -83,7 +83,7 @@ function EditableField({
       </div>
       <button
         onClick={() => setIsEditing(true)}
-        className="p-1 rounded-md text-lia-text-disabled opacity-0 group-hover:opacity-100 hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-all"
+        className="p-1 rounded-md text-lia-text-disabled opacity-0 group-hover:opacity-100 hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
         title={`Editar ${label}`}
       >
         <Pencil className="w-3 h-3" />

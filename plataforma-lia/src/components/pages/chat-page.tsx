@@ -566,7 +566,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                 {/* Input com botões */}
                 <div className="w-full relative group">
                   <div className="absolute -inset-0.5 bg-wedo-cyan/[0.15] rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-                  <div className="relative bg-white border border-lia-border-subtle rounded-2xl shadow-sm transition-all duration-200 focus-within:border-wedo-cyan/40 focus-within:ring-2 focus-within:ring-wedo-cyan/[0.12] focus-within:shadow-md flex flex-col">
+                  <div className="relative bg-white border border-lia-border-subtle rounded-2xl shadow-sm transition-colors duration-200 focus-within:border-wedo-cyan/40 focus-within:ring-2 focus-within:ring-wedo-cyan/[0.12] focus-within:shadow-md flex flex-col">
                     <textarea
                       ref={inputRef}
                       value={input}

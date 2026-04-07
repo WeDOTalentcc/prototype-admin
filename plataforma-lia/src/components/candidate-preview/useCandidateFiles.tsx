@@ -43,7 +43,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
   const [showPreview, setShowPreview] = useState(false)
   const [previewType, setPreviewType] = useState<'pdf' | 'image' | 'video' | 'audio' | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
 
   const fetchCandidateFiles = useCallback(async () => {
     if (!candidate?.id) return

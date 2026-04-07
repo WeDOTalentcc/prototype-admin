@@ -62,7 +62,7 @@ const candidateId = params.id as string
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
   const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
   
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
 
   useEffect(() => {
     async function loadCandidate() {

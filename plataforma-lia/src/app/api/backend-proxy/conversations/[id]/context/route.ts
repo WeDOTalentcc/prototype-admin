@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { proxyFetchWithRetry } from '@/lib/api/proxy-fetch-with-retry'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,7 +14,7 @@ export async function GET(
     
     const response = await proxyFetchWithRetry(
       request,
-      `${BACKEND_URL}/api/v1/conversations/${id}/context${queryParams ? `?${queryParams}` : ''}`,
+      `/api/v1/conversations/${id}/context${queryParams ? `?${queryParams}` : ''}`,
       {
         method: 'GET',
       }

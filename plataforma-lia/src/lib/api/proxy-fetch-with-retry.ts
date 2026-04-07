@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { getAuthHeaders } from './auth-headers'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 async function tryRefreshToken(): Promise<string | null> {
   try {

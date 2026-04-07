@@ -4,7 +4,7 @@ import { validateParams, validateBody } from '@/lib/api/validate'
 import { getWorkOSSession } from '@/lib/workos-session'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const routeParamsSchema = z.object({
   id: z.string().min(1, 'id is required'),

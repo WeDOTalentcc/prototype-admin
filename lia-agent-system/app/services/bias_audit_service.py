@@ -5,4 +5,6 @@ from app.shared.services.bias_audit_service import (  # noqa: F401
     FOUR_FIFTHS_THRESHOLD,
     _age_group,
     _adverse_impact_ratio,
+    _chi_square_test,
+    _audit_dimension,
 )
