@@ -1,10 +1,11 @@
+import uuid as uuid_lib
 from datetime import datetime
 from typing import (
     Any,  # noqa: F401
     )
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from app.auth.models import UserRole
 from app.middleware.trial_enforcement import require_active_subscription_or_demo  # noqa: F401
@@ -24,6 +25,111 @@ router = APIRouter()
 
 
 # ─── Finalize (conversational flow) ───────────────────────────────────────────
+
+# ─── Response schemas for CRUD endpoints ─────────────────────────────────────
+
+class JobVacancyDetailResponse(BaseModel):
+    """Response for GET /job-vacancies/{id} — explicit typed contract."""
+    id: str
+    title: str | None = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    seniority_level: str | None = None
+    status: str | None = None
+    is_confidential: bool | None = None
+    salary_range: dict | None = None
+    technical_requirements: list[str] | None = None
+    languages: list[str] | None = None
+    behavioral_competencies: list[str] | None = None
+    interview_stages: list[dict] | None = None
+    screening_questions: list[dict] | None = None
+    disabled_eligibility_question_ids: list[str] = []
+    timeline: dict | None = None
+    governance_rules: dict | None = None
+    whatsapp_template_type: str | None = None
+    screening_config: dict | None = None
+    screening_status: str | None = None
+    enriched_jd: dict | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class JobVacancyListItemResponse(BaseModel):
+    """Single item in list response for GET /job-vacancies."""
+    id: str
+    title: str | None = None
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    employment_type: str | None = None
+    seniority_level: str | None = None
+    description: str | None = None
+    requirements: list[str] = []
+    technical_requirements: list[str] = []
+    languages: list[str] = []
+    behavioral_competencies: list[str] = []
+    salary_range: dict | None = None
+    benefits: list[str] = []
+    manager: str | None = None
+    status: str | None = None
+    visibility: str | None = None
+    is_confidential: bool | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class JobVacancyListResponse(BaseModel):
+    """Response for GET /job-vacancies."""
+    total: int
+    skip: int
+    limit: int
+    items: list[JobVacancyListItemResponse]
+
+
+class JobVacancyDeleteResponse(BaseModel):
+    """Response for DELETE /job-vacancies/{id}."""
+    success: bool
+    message: str
+    id: str
+
+
+class JobVacancyStatusUpdateResponse(BaseModel):
+    """Response for PATCH /job-vacancies/{id}/status."""
+    success: bool
+    id: str
+    old_status: str
+    new_status: str
+
+
+class DuplicateJobResponse(BaseModel):
+    """Response for POST /job-vacancies/{id}/duplicate."""
+    model_config = ConfigDict(extra='allow')
+    success: bool
+    total_jobs_created: int | None = None
+
+
+class CloneFromTemplateResponse(BaseModel):
+    """Response for POST /job-vacancies/{id}/clone-from-template."""
+    model_config = ConfigDict(extra='allow')
+    success: bool
+    created_job: dict | None = None
+
+
+class CloneSummaryResponse(BaseModel):
+    """Response for GET /job-vacancies/{id}/clone-summary."""
+    model_config = ConfigDict(extra='allow')
+    id: str | None = None
+    title: str | None = None
+
+
+class FindJobResponse(BaseModel):
+    """Response for POST /job-vacancies/find-by-identifier."""
+    model_config = ConfigDict(extra='allow')
+    id: str | None = None
+    title: str | None = None
+
+
 
 @router.post("/job-vacancies/finalize", response_model=FinalizeJobVacancyResponse)
 async def finalize_job_vacancy(
@@ -73,6 +179,8 @@ async def finalize_job_vacancy(
             message=f"Vaga \{job_title}\ criada com sucesso!"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error finalizing job vacancy: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -130,6 +238,8 @@ async def search_job_vacancies(
             has_more=(offset + len(items)) < total_count
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error searching job vacancies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -201,6 +311,8 @@ async def get_archetypes(
 
         return ArchetypesResponse(vacancies=archetypes, total=len(archetypes))
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching archetypes: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -212,7 +324,7 @@ class FindJobRequest(BaseModel):
     identifier: str = Field(..., description="Job ID, job_id code, or title to search for")
 
 
-@router.post("/job-vacancies/find-by-identifier", response_model=None)
+@router.post("/job-vacancies/find-by-identifier", response_model=FindJobResponse)
 async def find_job_by_identifier(
     request: FindJobRequest,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
@@ -246,7 +358,7 @@ async def find_job_by_identifier(
 
 # ─── GET one ──────────────────────────────────────────────────────────────────
 
-@router.get("/job-vacancies/{job_vacancy_id}", response_model=None)
+@router.get("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDetailResponse)
 async def get_job_vacancy(
     job_vacancy_id: UUID,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
@@ -318,7 +430,7 @@ async def get_job_vacancy(
 
 # ─── GET list ────────────────────────────────────────────────────────────────
 
-@router.get("/job-vacancies", response_model=None)
+@router.get("/job-vacancies", response_model=JobVacancyListResponse)
 async def list_job_vacancies(
     status: str | None = None,
     visibility: str | None = None,
@@ -432,6 +544,8 @@ async def list_job_vacancies(
             ]
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing job vacancies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -524,6 +638,8 @@ async def create_job_vacancy(
             conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating job vacancy: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -619,7 +735,7 @@ async def update_job_vacancy(
 
 # ─── DELETE (soft) ───────────────────────────────────────────────────────────
 
-@router.delete("/job-vacancies/{job_vacancy_id}", response_model=None)
+@router.delete("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDeleteResponse)
 async def delete_job_vacancy(
     job_vacancy_id: UUID,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
@@ -666,7 +782,7 @@ async def delete_job_vacancy(
 
 # ─── PATCH status ─────────────────────────────────────────────────────────────
 
-@router.patch("/job-vacancies/{job_vacancy_id}/status", response_model=None)
+@router.patch("/job-vacancies/{job_vacancy_id}/status", response_model=JobVacancyStatusUpdateResponse)
 async def update_job_vacancy_status(
     job_vacancy_id: UUID,
     status: str,
@@ -749,7 +865,7 @@ class CloneFromTemplateRequest(BaseModel):
     overrides: dict[str, Any] | None = Field(default=None)
 
 
-@router.post("/job-vacancies/{job_id}/duplicate", response_model=None)
+@router.post("/job-vacancies/{job_id}/duplicate", response_model=DuplicateJobResponse)
 async def duplicate_job(
     job_id: UUID,
     request: DuplicateJobRequest,
@@ -790,7 +906,7 @@ async def duplicate_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/job-vacancies/{job_id}/clone-from-template", response_model=None)
+@router.post("/job-vacancies/{job_id}/clone-from-template", response_model=CloneFromTemplateResponse)
 async def clone_from_template(
     job_id: UUID,
     request: CloneFromTemplateRequest,
@@ -828,7 +944,7 @@ async def clone_from_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/job-vacancies/{job_id}/clone-summary", response_model=None)
+@router.get("/job-vacancies/{job_id}/clone-summary", response_model=CloneSummaryResponse)
 async def get_clone_summary(
     job_id: UUID,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo)

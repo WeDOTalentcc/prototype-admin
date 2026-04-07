@@ -27,14 +27,23 @@ from app.shared.compliance.audit_service import AuditService, get_audit_service
 from ._shared import (
     WSI_PASS_THRESHOLD,
     ATSSyncRequest,
+    ATSSyncResponse,
     CandidateHiredPayload,
+    CandidateHiredResponse,
     CandidateInactiveRequest,
+    CandidateInactiveResponse,
     CandidateNoShowRequest,
+    CandidateNoShowResponse,
     CandidateRejectedPayload,
+    CandidateRejectedResponse,
     InterviewCompletedRequest,
+    InterviewCompletedResponse,
     InterviewScheduledRequest,
+    InterviewScheduledResponse,
     OfferSentPayload,
+    OfferSentResponse,
     ScreeningCompletedRequest,
+    ScreeningCompletedResponse,
     CommunicationService,
     get_communication_service,
     get_activity_service,
@@ -52,413 +61,319 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/handle-trigger/screening-completed", response_model=None)
-async def handle_screening_completed(
-    request: ScreeningCompletedRequest,
-    db: AsyncSession = Depends(get_db),
-    audit_svc: AuditService = Depends(get_audit_service),
-    activity_svc: ActivityService = Depends(get_activity_service_canonical),
-    comm_svc: CommunicationService = Depends(get_communication_service),
-):
-    """
-    Handle the screening_completed trigger for conversational screening (voice/chat/WhatsApp).
-    
-    This endpoint is called when a candidate completes a conversational screening session.
-    It calculates the full WSI (WeDoTalent Skill Index) score based on the conversation
-    data and determines pass/fail recommendation.
-    
-    Key differences from CV screening:
-    - CV screening (screen-candidate endpoint): Uses rubric evaluation on CV only
-    - Conversational screening (this endpoint): Uses full WSI methodology with 
-      Bloom's Taxonomy, Dreyfus Model, CBI, and Big Five frameworks
-    
-    Methodology:
-    - Analyzes transcript/responses using WSI frameworks
-    - Calculates technical and behavioral WSI scores
-    - Determines pass/fail based on threshold (WSI >= 3.75 = 75% = passed, per canonical WSI_CUTOFFS)
-    - Dispatches appropriate communication to candidate
-    - Creates notification for recruiter
-    - Logs audit entry
-    
-    Args:
-        request: ScreeningCompletedRequest with screening details
-        db: Database session
-    
-    Returns:
-        Complete screening result with:
-        - wsi_score: Overall WSI score (0-5 scale)
-        - recommendation: "passed" or "failed"
-        - suggested_next_stage: Next pipeline stage (if passed)
-        - communication_sent: Whether candidate was notified
-        - notification_created: Whether recruiter was notified
-        - detailed_analysis: Breakdown of scores by competency
-    """
-    try:
-        logger.info(
-            f"🎯 [SCREENING_COMPLETED] Processing conversational screening: "
-            f"candidate={request.candidate_id}, vacancy={request.vacancy_id}, "
-            f"type={request.screening_type}"
-        )
-        
-        # Step 0: Multi-tenancy validation
-        is_valid, error_message = await validate_multi_tenancy(
-            db=db,
-            candidate_id=request.candidate_id,
-            vacancy_id=request.vacancy_id,
-            company_id=request.company_id
-        )
-        if not is_valid:
-            logger.warning(f"🚫 [SCREENING_COMPLETED] Multi-tenancy validation failed: {error_message}")
-            raise HTTPException(status_code=403, detail=error_message)
-        
-        # Step 1: Validate required data
-        if not request.candidate_id or not request.vacancy_id:
-            raise HTTPException(
-                status_code=400,
-                detail="candidate_id e vacancy_id são obrigatórios"
-            )
-        
-        # Check if we have screening data (transcript or responses)
-        if not request.transcript and not request.responses:
-            logger.warning(
-                f"⚠️ [SCREENING_COMPLETED] No transcript or responses provided for "
-                f"candidate {request.candidate_id}"
-            )
-            raise HTTPException(
-                status_code=400,
-                detail="É necessário fornecer 'transcript' ou 'responses' para calcular o WSI"
-            )
-        
-        # Step 2: Get candidate and vacancy info for context
-        from sqlalchemy import select
+async def _fetch_candidate_and_vacancy(db, candidate_id: str, vacancy_id: str):
+    """Fetch candidate and vacancy from DB, raise 404 if not found."""
+    from sqlalchemy import select
+    from app.models.candidate import Candidate
+    from app.models.job_vacancy import JobVacancy
 
-        from app.models.candidate import Candidate
-        from app.models.job_vacancy import JobVacancy
-        
-        candidate_result = await db.execute(
-            select(Candidate).where(Candidate.id == request.candidate_id)
+    candidate_result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+    candidate = candidate_result.scalar_one_or_none()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidato não encontrado")
+
+    vacancy_result = await db.execute(select(JobVacancy).where(JobVacancy.id == vacancy_id))
+    vacancy = vacancy_result.scalar_one_or_none()
+    if not vacancy:
+        raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    return candidate, vacancy
+
+
+def _build_screening_response_analyses(responses: list) -> list:
+    """Build ResponseAnalysis objects from structured response list."""
+    from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
+    result = []
+    for resp in responses:
+        result.append(ResponseAnalysis(
+            question_id=resp.get("question_id", str(uuid.uuid4())),
+            competency=resp.get("competency", "general"),
+            response_text=resp.get("response", ""),
+            evidences=resp.get("evidences", []),
+            red_flags=resp.get("red_flags", []),
+            final_score=resp.get("score", 3.0),
+            justification=resp.get("justification", "Análise automática")
+        ))
+    return result
+
+
+def _normalize_weights(weights: dict, response_analyses: list) -> dict:
+    """Compute and normalize competency weights.
+
+    Returns an empty dict when response_analyses is empty (no division-by-zero).
+    """
+    if not response_analyses:
+        return {}
+    if not weights:
+        equal_weight = 1.0 / len(response_analyses)
+        weights = {a.competency: equal_weight for a in response_analyses}
+    total = sum(weights.values())
+    if total > 0:
+        weights = {k: v / total for k, v in weights.items()}
+    return weights
+
+
+def _determine_screening_decision(overall_wsi: float):
+    """Determine screening decision and next stage from WSI score."""
+    passed = overall_wsi >= WSI_PASS_THRESHOLD
+    recommendation = "passed" if passed else "failed"
+    if overall_wsi >= WSI_PASS_THRESHOLD:
+        decision, suggested_next_stage = "aprovado", "Entrevista Técnica"
+    elif overall_wsi >= 3.0:
+        decision, suggested_next_stage = "aguardando", "Entrevista Técnica"
+    else:
+        decision, suggested_next_stage = "nao_aprovado", None
+    return passed, recommendation, decision, suggested_next_stage
+
+
+async def _send_screening_communication(
+    comm_svc, db, request, passed: bool, overall_wsi: float,
+    candidate, vacancy, candidate_feedback
+) -> bool:
+    """Send screening result communication to candidate. Returns True if sent."""
+    candidate_email = getattr(candidate, 'email', None)
+    candidate_name = getattr(candidate, 'name', 'Candidato')
+    candidate_phone = getattr(candidate, 'phone', None)
+    company_name = getattr(vacancy, 'company_name', None) or request.company_id
+    all_strengths = (
+        candidate_feedback.technical_strengths + candidate_feedback.behavioral_strengths
+    )
+    try:
+        comm_result = await comm_svc.send_screening_result(
+            db=db, candidate_id=request.candidate_id, vacancy_id=request.vacancy_id,
+            company_id=request.company_id, passed=passed, wsi_score=overall_wsi,
+            strengths=all_strengths, development_areas=candidate_feedback.development_opportunities,
+            candidate_name=candidate_name, candidate_email=candidate_email,
+            candidate_phone=candidate_phone, job_title=vacancy.title, company_name=company_name
         )
-        candidate = candidate_result.scalar_one_or_none()
-        if not candidate:
-            raise HTTPException(status_code=404, detail="Candidato não encontrado")
-        
-        vacancy_result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == request.vacancy_id)
+        return comm_result.get("success", False)
+    except Exception as e:
+        logger.error(f"❌ [SCREENING_COMPLETED] Failed to send communication: {e}")
+        return False
+
+
+async def _create_screening_recruiter_notification(
+    activity_svc, request, overall_wsi: float, wsi_result,
+    recommendation: str, passed: bool, suggested_next_stage, candidate_name: str, vacancy
+) -> bool:
+    """Create recruiter notification for screening completion. Returns True if created."""
+    try:
+        await activity_svc.create_activity(
+            activity_type="screening_wsi_completed",
+            title=f"Triagem WSI Concluída - {candidate_name}",
+            description=(
+                f"Candidato {candidate_name} completou triagem por {request.screening_type}. "
+                f"WSI: {overall_wsi:.2f}/5.0 ({wsi_result.classification}). "
+                f"Recomendação: {recommendation.upper()}"
+            ),
+            actor_id="system", actor_name="LIA Automation", actor_type="system",
+            target_id=request.candidate_id, target_type="candidate",
+            extra_data={
+                "vacancy_id": request.vacancy_id, "vacancy_title": vacancy.title,
+                "company_id": request.company_id, "screening_type": request.screening_type,
+                "wsi_score": overall_wsi, "wsi_classification": wsi_result.classification,
+                "recommendation": recommendation, "passed": passed,
+                "suggested_next_stage": suggested_next_stage
+            },
+            category="screening"
         )
-        vacancy = vacancy_result.scalar_one_or_none()
-        if not vacancy:
-            raise HTTPException(status_code=404, detail="Vaga não encontrada")
-        
-        # Step 3: Prepare responses for WSI analysis
-        wsi_service = get_wsi_service()
-        
-        # If we have structured responses, use them; otherwise parse transcript
-        if request.responses:
-            response_analyses = []
-            for resp in request.responses:
-                # Create minimal ResponseAnalysis structure
-                from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
-                analysis = ResponseAnalysis(
-                    question_id=resp.get("question_id", str(uuid.uuid4())),
-                    competency=resp.get("competency", "general"),
-                    response_text=resp.get("response", ""),
-                    evidences=resp.get("evidences", []),
-                    red_flags=resp.get("red_flags", []),
-                    final_score=resp.get("score", 3.0),
-                    justification=resp.get("justification", "Análise automática")
-                )
-                response_analyses.append(analysis)
-        else:
-            # Parse transcript and generate analysis using LLM
-            response_analyses = await _analyze_transcript_for_wsi(
-                transcript=request.transcript,
-                vacancy_title=vacancy.title,
-                wsi_service=wsi_service
-            )
-        
-        # Step 4: Calculate competency weights (use provided or default)
-        if request.competency_weights:
-            weights = request.competency_weights
-        else:
-            # Default weights based on extracted competencies
-            weights = {}
-            for analysis in response_analyses:
-                if analysis.competency not in weights:
-                    weights[analysis.competency] = 1.0 / len(response_analyses)
-        
-        # Normalize weights to sum to 1.0
-        total_weight = sum(weights.values())
-        if total_weight > 0:
-            weights = {k: v / total_weight for k, v in weights.items()}
-        
-        # Step 5: Calculate WSI score
-        wsi_result = wsi_service.calculate_wsi(
-            candidate_id=request.candidate_id,
-            job_vacancy_id=request.vacancy_id,
-            responses=response_analyses,
-            weights=weights
-        )
-        
-        overall_wsi = wsi_result.overall_wsi
-        
-        # Step 6: Determine pass/fail based on threshold
-        passed = overall_wsi >= WSI_PASS_THRESHOLD
-        recommendation = "passed" if passed else "failed"
-        
-        # Determine appropriate decision per canonical WSI_CUTOFFS (Spec §10.3)
-        # approved_auto ≥ 3.75/5 (= 7.5/10), review_min ≥ 3.0/5 (= 6.0/10)
-        if overall_wsi >= WSI_PASS_THRESHOLD:
-            decision = "aprovado"
-            suggested_next_stage = "Entrevista Técnica"
-        elif overall_wsi >= 3.0:
-            decision = "aguardando"
-            suggested_next_stage = "Entrevista Técnica"
-        else:
-            decision = "nao_aprovado"
-            suggested_next_stage = None
-        
-        logger.info(
-            f"📊 [SCREENING_COMPLETED] WSI calculated: "
-            f"overall={overall_wsi:.2f}, technical={wsi_result.technical_wsi:.2f}, "
-            f"behavioral={wsi_result.behavioral_wsi:.2f}, "
-            f"classification={wsi_result.classification}, recommendation={recommendation}"
-        )
-        
-        # Step 7: Generate candidate feedback
-        candidate_feedback = await wsi_service.generate_candidate_feedback(
-            wsi_result=wsi_result,
-            responses=response_analyses,
-            decision=decision
-        )
-        
-        # Step 8: Dispatch communication to candidate via communication_service
-        communication_sent = False
-        
-        activity_service = get_activity_service()
-        
-        # Get candidate contact info
-        candidate_email = getattr(candidate, 'email', None)
-        candidate_name = getattr(candidate, 'name', 'Candidato')
-        candidate_phone = getattr(candidate, 'phone', None)
-        company_name = getattr(vacancy, 'company_name', None) or request.company_id
-        
-        # Combine technical and behavioral strengths for communication
-        all_strengths = (
-            candidate_feedback.technical_strengths + 
-            candidate_feedback.behavioral_strengths
-        )
-        
-        try:
-            # Use centralized communication_service for screening results
-            # This ensures approval policy is respected and communication is logged
-            comm_result = await comm_svc.send_screening_result(
-                db=db,
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                company_id=request.company_id,
-                passed=passed,
-                wsi_score=overall_wsi,
-                strengths=all_strengths,
-                development_areas=candidate_feedback.development_opportunities,
-                candidate_name=candidate_name,
-                candidate_email=candidate_email,
-                candidate_phone=candidate_phone,
-                job_title=vacancy.title,
-                company_name=company_name
-            )
-            
-            communication_sent = comm_result.get("success", False)
-            
-            logger.info(
-                f"📧 [SCREENING_COMPLETED] Communication dispatched via communication_service: "
-                f"candidate={request.candidate_id}, passed={passed}, channels={list(comm_result.get('channels', {}).keys())}"
-            )
-        except Exception as e:
-            logger.error(f"❌ [SCREENING_COMPLETED] Failed to send communication: {e}")
-            {"error": str(e), "success": False}
-        
-        # Step 9: Create recruiter notification
-        notification_created = False
-        
-        try:
-            await activity_svc.create_activity(
-                activity_type="screening_wsi_completed",
-                title=f"Triagem WSI Concluída - {candidate_name}",
-                description=(
-                    f"Candidato {candidate_name} completou triagem por {request.screening_type}. "
-                    f"WSI: {overall_wsi:.2f}/5.0 ({wsi_result.classification}). "
-                    f"Recomendação: {recommendation.upper()}"
-                ),
-                actor_id="system",
-                actor_name="LIA Automation",
-                actor_type="system",
-                target_id=request.candidate_id,
-                target_type="candidate",
-                extra_data={
-                    "vacancy_id": request.vacancy_id,
-                    "vacancy_title": vacancy.title,
-                    "company_id": request.company_id,
-                    "screening_type": request.screening_type,
-                    "wsi_score": overall_wsi,
-                    "wsi_classification": wsi_result.classification,
-                    "recommendation": recommendation,
-                    "passed": passed,
-                    "suggested_next_stage": suggested_next_stage
-                },
-                category="screening"
-            )
-            notification_created = True
-            logger.info("🔔 [SCREENING_COMPLETED] Recruiter notification created")
-        except Exception as e:
-            logger.error(f"❌ [SCREENING_COMPLETED] Failed to create notification: {e}")
-        
-        # Step 10: Log audit entry (both execution log and centralized audit)
-        try:
-            from app.models.automation import AutomationExecutionLog
-            
-            execution_time = int((request.metadata or {}).get("duration_seconds", 0) * 1000)
-            
-            # Create execution log for automation tracking
-            automation_log = AutomationExecutionLog(
-                company_id=request.company_id,
-                trigger_event="screening_completed",
-                trigger_data={
-                    "candidate_id": request.candidate_id,
-                    "vacancy_id": request.vacancy_id,
-                    "screening_type": request.screening_type,
-                    "has_transcript": bool(request.transcript),
-                    "responses_count": len(request.responses) if request.responses else 0
-                },
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                action_executed="wsi_calculation",
-                action_result={
-                    "wsi_score": overall_wsi,
-                    "technical_wsi": wsi_result.technical_wsi,
-                    "behavioral_wsi": wsi_result.behavioral_wsi,
-                    "classification": wsi_result.classification,
-                    "recommendation": recommendation,
-                    "passed": passed
-                },
-                status="success",
-                execution_time_ms=str(execution_time)
-            )
-            db.add(automation_log)
-            logger.info("📝 [SCREENING_COMPLETED] Automation execution log created")
-            
-            # Create centralized audit log for AI governance and explainability
-            wsi_dimensions = list(weights.keys()) if weights else ["technical", "behavioral"]
-            reasoning_list = [
-                f"WSI Score: {overall_wsi:.2f}/5.0 ({wsi_result.classification})",
-                f"Technical WSI: {wsi_result.technical_wsi:.2f}",
-                f"Behavioral WSI: {wsi_result.behavioral_wsi:.2f}",
-                f"Threshold: {WSI_PASS_THRESHOLD}",
-                f"Screening Type: {request.screening_type}"
-            ]
-            if passed:
-                reasoning_list.append(f"Candidate passed screening - recommended for: {suggested_next_stage}")
-            else:
-                reasoning_list.append("Candidate did not meet minimum WSI threshold")
-            
-            await audit_svc.log_decision(
-                company_id=request.company_id,
-                agent_name="wsi_evaluator",
-                decision_type="screening_evaluation",
-                action="evaluate_screening",
-                decision=recommendation,
-                score=overall_wsi,
-                confidence=0.85,
-                reasoning=reasoning_list,
-                criteria_used=wsi_dimensions,
-                candidate_id=request.candidate_id,
-                job_vacancy_id=request.vacancy_id,
-                human_review_required=not passed
-            )
-            logger.info("📝 [SCREENING_COMPLETED] Centralized audit log created via audit_service")
-        except Exception as e:
-            logger.error(f"❌ [SCREENING_COMPLETED] Failed to create audit log: {e}")
-        
-        # Step 11: Build response
-        response_data = {
-            "success": True,
-            "trigger": "screening_completed",
-            "wsi_score": round(overall_wsi, 2),
-            "wsi_details": {
-                "technical_wsi": round(wsi_result.technical_wsi, 2),
-                "behavioral_wsi": round(wsi_result.behavioral_wsi, 2),
+        return True
+    except Exception as e:
+        logger.error(f"❌ [SCREENING_COMPLETED] Failed to create notification: {e}")
+        return False
+
+
+def _add_screening_execution_log(db, request, overall_wsi: float, wsi_result, recommendation: str, passed: bool) -> None:
+    """Persist AutomationExecutionLog for screening WSI calculation."""
+    try:
+        from app.models.automation import AutomationExecutionLog
+        execution_time = int((request.metadata or {}).get("duration_seconds", 0) * 1000)
+        db.add(AutomationExecutionLog(
+            company_id=request.company_id, trigger_event="screening_completed",
+            trigger_data={
+                "candidate_id": request.candidate_id, "vacancy_id": request.vacancy_id,
+                "screening_type": request.screening_type, "has_transcript": bool(request.transcript),
+                "responses_count": len(request.responses) if request.responses else 0
+            },
+            candidate_id=request.candidate_id, vacancy_id=request.vacancy_id,
+            action_executed="wsi_calculation",
+            action_result={
+                "wsi_score": overall_wsi, "technical_wsi": wsi_result.technical_wsi,
+                "behavioral_wsi": wsi_result.behavioral_wsi,
                 "classification": wsi_result.classification,
-                "percentile": wsi_result.percentile
+                "recommendation": recommendation, "passed": passed
             },
-            "recommendation": recommendation,
-            "passed": passed,
-            "communication_sent": communication_sent,
-            "notification_created": notification_created,
-            "suggested_next_stage": suggested_next_stage,
-            "confidence": 0.85,  # Base confidence, could be computed from response quality
-            "candidate_feedback": {
-                "decision": candidate_feedback.decision,
-                "main_message": candidate_feedback.main_message,
-                "technical_strengths": candidate_feedback.technical_strengths,
-                "development_opportunities": candidate_feedback.development_opportunities,
-                "next_steps": candidate_feedback.next_steps
-            },
-            "metadata": {
-                "screening_type": request.screening_type,
-                "responses_analyzed": len(response_analyses),
-                "processed_at": datetime.utcnow().isoformat()
-            }
-        }
-        
-        logger.info(
-            f"✅ [SCREENING_COMPLETED] Processing complete: "
-            f"candidate={request.candidate_id}, wsi={overall_wsi:.2f}, "
-            f"recommendation={recommendation}"
+            status="success", execution_time_ms=str(execution_time)
+        ))
+    except Exception as e:
+        logger.error(f"❌ [SCREENING_COMPLETED] Failed to create execution log: {e}")
+
+
+async def _record_screening_decision(audit_svc, request, overall_wsi: float, wsi_result, recommendation: str, passed: bool, suggested_next_stage, weights: dict) -> None:
+    """Call audit_svc.log_decision for screening WSI evaluation."""
+    try:
+        wsi_dimensions = list(weights.keys()) if weights else ["technical", "behavioral"]
+        reasoning_list = [
+            f"WSI Score: {overall_wsi:.2f}/5.0 ({wsi_result.classification})",
+            f"Technical WSI: {wsi_result.technical_wsi:.2f}",
+            f"Behavioral WSI: {wsi_result.behavioral_wsi:.2f}",
+            f"Threshold: {WSI_PASS_THRESHOLD}",
+            f"Screening Type: {request.screening_type}",
+            f"Candidate passed screening - recommended for: {suggested_next_stage}" if passed else "Candidate did not meet minimum WSI threshold",
+        ]
+        await audit_svc.log_decision(
+            company_id=request.company_id, agent_name="wsi_evaluator",
+            decision_type="screening_evaluation", action="evaluate_screening",
+            decision=recommendation, score=overall_wsi, confidence=0.85,
+            reasoning=reasoning_list, criteria_used=wsi_dimensions,
+            candidate_id=request.candidate_id, job_vacancy_id=request.vacancy_id,
+            human_review_required=not passed
         )
-        
-        return response_data
-        
+    except Exception as e:
+        logger.error(f"❌ [SCREENING_COMPLETED] Failed to create audit log: {e}")
+
+
+async def _log_screening_audit(db, audit_svc, request, overall_wsi: float, wsi_result, recommendation: str, passed: bool, suggested_next_stage, weights: dict) -> None:
+    """Log automation execution log and centralized audit for screening."""
+    _add_screening_execution_log(db, request, overall_wsi, wsi_result, recommendation, passed)
+    await _record_screening_decision(audit_svc, request, overall_wsi, wsi_result, recommendation, passed, suggested_next_stage, weights)
+
+
+def _validate_screening_request(request) -> None:
+    """Raise HTTPException if screening request payload is invalid."""
+    if not request.candidate_id or not request.vacancy_id:
+        raise HTTPException(status_code=400, detail="candidate_id e vacancy_id são obrigatórios")
+    if not request.transcript and not request.responses:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário fornecer 'transcript' ou 'responses' para calcular o WSI"
+        )
+
+
+async def _calculate_wsi(request, vacancy, wsi_service) -> tuple:
+    """Calculate WSI score and classification. Returns (wsi_result, response_analyses, weights)."""
+    if request.responses:
+        response_analyses = _build_screening_response_analyses(request.responses)
+    else:
+        response_analyses = await _analyze_transcript_for_wsi(
+            transcript=request.transcript, vacancy_title=vacancy.title, wsi_service=wsi_service
+        )
+    weights = _normalize_weights(request.competency_weights or {}, response_analyses)
+    wsi_result = wsi_service.calculate_wsi(
+        candidate_id=request.candidate_id, job_vacancy_id=request.vacancy_id,
+        responses=response_analyses, weights=weights
+    )
+    return wsi_result, response_analyses, weights
+
+
+def _build_screening_response(request, wsi_result, response_analyses, overall_wsi: float, recommendation: str, passed: bool, communication_sent: bool, notification_created: bool, suggested_next_stage: str, candidate_feedback) -> dict:
+    """Build the final response dict for screening_completed trigger."""
+    return {
+        "success": True,
+        "trigger": "screening_completed",
+        "wsi_score": round(overall_wsi, 2),
+        "wsi_details": {
+            "technical_wsi": round(wsi_result.technical_wsi, 2),
+            "behavioral_wsi": round(wsi_result.behavioral_wsi, 2),
+            "classification": wsi_result.classification,
+            "percentile": wsi_result.percentile
+        },
+        "recommendation": recommendation,
+        "passed": passed,
+        "communication_sent": communication_sent,
+        "notification_created": notification_created,
+        "suggested_next_stage": suggested_next_stage,
+        "confidence": 0.85,
+        "candidate_feedback": {
+            "decision": candidate_feedback.decision,
+            "main_message": candidate_feedback.main_message,
+            "technical_strengths": candidate_feedback.technical_strengths,
+            "development_opportunities": candidate_feedback.development_opportunities,
+            "next_steps": candidate_feedback.next_steps
+        },
+        "metadata": {
+            "screening_type": request.screening_type,
+            "responses_analyzed": len(response_analyses),
+            "processed_at": datetime.utcnow().isoformat()
+        }
+    }
+
+
+async def _score_and_decide(request, vacancy, wsi_service):
+    """Run WSI calculation and decide outcome. Returns (wsi_result, analyses, weights, overall_wsi, passed, recommendation, decision, suggested_next_stage)."""
+    wsi_result, response_analyses, weights = await _calculate_wsi(request, vacancy, wsi_service)
+    overall_wsi = wsi_result.overall_wsi
+    passed, recommendation, decision, suggested_next_stage = _determine_screening_decision(overall_wsi)
+    logger.info(
+        f"📊 [SCREENING_COMPLETED] WSI={overall_wsi:.2f}, "
+        f"classification={wsi_result.classification}, recommendation={recommendation}"
+    )
+    return wsi_result, response_analyses, weights, overall_wsi, passed, recommendation, decision, suggested_next_stage
+
+
+async def _process_screening_completed(request, db, audit_svc, activity_svc, comm_svc) -> dict:
+    """Orchestrate screening_completed trigger: validate, score, notify, audit, respond."""
+    logger.info(
+        f"🎯 [SCREENING_COMPLETED] Processing: candidate={request.candidate_id}, "
+        f"vacancy={request.vacancy_id}, type={request.screening_type}"
+    )
+
+    is_valid, error_message = await validate_multi_tenancy(
+        db=db, candidate_id=request.candidate_id,
+        vacancy_id=request.vacancy_id, company_id=request.company_id
+    )
+    if not is_valid:
+        raise HTTPException(status_code=403, detail=error_message)
+
+    _validate_screening_request(request)
+
+    candidate, vacancy = await _fetch_candidate_and_vacancy(db, request.candidate_id, request.vacancy_id)
+    wsi_service = get_wsi_service()
+    wsi_result, response_analyses, weights, overall_wsi, passed, recommendation, decision, suggested_next_stage = \
+        await _score_and_decide(request, vacancy, wsi_service)
+
+    candidate_feedback = await wsi_service.generate_candidate_feedback(
+        wsi_result=wsi_result, responses=response_analyses, decision=decision
+    )
+    communication_sent = await _send_screening_communication(
+        comm_svc, db, request, passed, overall_wsi, candidate, vacancy, candidate_feedback
+    )
+    notification_created = await _create_screening_recruiter_notification(
+        activity_svc, request, overall_wsi, wsi_result,
+        recommendation, passed, suggested_next_stage, getattr(candidate, 'name', 'Candidato'), vacancy
+    )
+    await _log_screening_audit(
+        db, audit_svc, request, overall_wsi, wsi_result, recommendation, passed, suggested_next_stage, weights
+    )
+
+    logger.info(f"✅ [SCREENING_COMPLETED] Done: wsi={overall_wsi:.2f}, recommendation={recommendation}")
+
+    return _build_screening_response(
+        request, wsi_result, response_analyses, overall_wsi, recommendation,
+        passed, communication_sent, notification_created, suggested_next_stage, candidate_feedback
+    )
+
+
+@router.post("/handle-trigger/screening-completed", response_model=ScreeningCompletedResponse)
+async def handle_screening_completed(request: ScreeningCompletedRequest, db: AsyncSession = Depends(get_db), audit_svc: AuditService = Depends(get_audit_service), activity_svc: ActivityService = Depends(get_activity_service_canonical), comm_svc: CommunicationService = Depends(get_communication_service)):
+    """Handle screening_completed trigger: WSI calculation and candidate notification."""
+    try:
+        return await _process_screening_completed(request, db, audit_svc, activity_svc, comm_svc)
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"❌ [SCREENING_COMPLETED] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar triagem: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao processar triagem: {str(e)}")
 
 
-async def _analyze_transcript_for_wsi(
-    transcript: str,
-    vacancy_title: str,
-    wsi_service
-) -> list:
-    """
-    Analyze a conversation transcript and extract structured response analyses.
-    
-    Uses LLM to parse the transcript and identify:
-    - Questions asked and competencies evaluated
-    - Candidate responses and their quality
-    - Evidence of skills and red flags
-    
-    Args:
-        transcript: Full conversation transcript
-        vacancy_title: Title of the job vacancy for context
-        wsi_service: WSI service instance
-        
-    Returns:
-        List of ResponseAnalysis objects
-    """
-    import json
-
-    from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
-    from app.services.llm import llm_service
-    
-    prompt = f"""Analise esta transcrição de triagem e extraia as respostas do candidato para avaliação WSI.
+def _build_wsi_prompt(transcript: str, vacancy_title: str) -> str:
+    """Build the LLM prompt for WSI transcript analysis."""
+    return f"""Analise esta transcrição de triagem e extraia as respostas do candidato para avaliação WSI.
 
 Vaga: {vacancy_title}
 
 Transcrição:
-{transcript[:8000]}  # Limit to avoid token limits
+{transcript[:8000]}
 
 Extraia cada pergunta/resposta relevante e avalie:
 1. Competência avaliada
@@ -482,337 +397,286 @@ Responda em JSON:
   ]
 }}"""
 
+
+def _parse_wsi_llm_response(content: str, transcript: str, ResponseAnalysis) -> list:
+    """Parse LLM JSON output into ResponseAnalysis objects; falls back on error."""
+    import json
     try:
-        content = await llm_service.safe_invoke(prompt, provider="claude")
-        
-        # Parse JSON
         if "```json" in content:
             start = content.find("```json") + 7
-            end = content.find("```", start)
-            content = content[start:end].strip()
+            content = content[content.find("```json") + 7:content.find("```", start)].strip()
         elif "```" in content:
             start = content.find("```") + 3
-            end = content.find("```", start)
-            content = content[start:end].strip()
-        
-        data = json.loads(content)
-        
-        analyses = []
-        for resp in data.get("responses", []):
-            analysis = ResponseAnalysis(
-                question_id=resp.get("question_id", str(uuid.uuid4())),
-                competency=resp.get("competency", "general"),
-                response_text=resp.get("response_text", ""),
-                evidences=resp.get("evidences", []),
-                red_flags=resp.get("red_flags", []),
-                final_score=float(resp.get("score", 3.0)),
-                justification=resp.get("justification", "Análise automática")
-            )
-            analyses.append(analysis)
-        
-        return analyses
-        
-    except Exception as e:
-        logger.error(f"Failed to analyze transcript: {e}")
-        # Return a minimal analysis with average score
+            content = content[start:content.find("```", start)].strip()
         return [
             ResponseAnalysis(
-                question_id=str(uuid.uuid4()),
-                competency="general",
-                response_text=transcript[:500] if transcript else "",
-                evidences=[],
-                red_flags=["Falha na análise automática"],
-                final_score=3.0,
-                justification="Análise automática não completada - score padrão aplicado"
+                question_id=r.get("question_id", str(uuid.uuid4())),
+                competency=r.get("competency", "general"),
+                response_text=r.get("response_text", ""),
+                evidences=r.get("evidences", []),
+                red_flags=r.get("red_flags", []),
+                final_score=float(r.get("score", 3.0)),
+                justification=r.get("justification", "Análise automática"),
             )
+            for r in json.loads(content).get("responses", [])
         ]
+    except Exception:
+        return [ResponseAnalysis(
+            question_id=str(uuid.uuid4()), competency="general",
+            response_text=transcript[:500] if transcript else "",
+            evidences=[], red_flags=["Falha na análise automática"],
+            final_score=3.0, justification="Análise automática não completada - score padrão aplicado",
+        )]
 
 
-@router.post("/handle-trigger/interview-scheduled", response_model=None)
-async def handle_interview_scheduled(
-    request: InterviewScheduledRequest,
-    db: AsyncSession = Depends(get_db),
-    activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
-    """
-    Handle interview_scheduled trigger.
-    
-    Sends invites to candidate and creates calendar event when an interview is scheduled.
-    
-    This endpoint performs:
-    1. Send email invitation to the candidate
-    2. Send WhatsApp confirmation to the candidate (if phone provided)
-    3. Create calendar event (Microsoft Graph integration)
-    4. Notify the recruiter
-    5. Log audit entry
-    
-    Args:
-        request: InterviewScheduledRequest with interview details
-        db: Database session
-    
-    Returns:
-        Result with status of each action (email_sent, whatsapp_sent, 
-        calendar_event_created, notification_created)
-    """
+async def _analyze_transcript_for_wsi(transcript: str, vacancy_title: str, wsi_service) -> list:
+    """Analyze a conversation transcript and extract structured ResponseAnalysis objects via LLM."""
+    from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
+    from app.services.llm import llm_service
     try:
-        logger.info(
-            f"📅 [INTERVIEW_SCHEDULED] Processing trigger for "
-            f"candidate={request.candidate_id}, vacancy={request.vacancy_id}, "
-            f"datetime={request.interview_datetime.isoformat()}"
+        content = await llm_service.safe_invoke(_build_wsi_prompt(transcript, vacancy_title), provider="claude")
+        return _parse_wsi_llm_response(content, transcript, ResponseAnalysis)
+    except Exception as e:
+        logger.error(f"Failed to analyze transcript: {e}")
+        return [ResponseAnalysis(
+            question_id=str(uuid.uuid4()), competency="general",
+            response_text=transcript[:500] if transcript else "",
+            evidences=[], red_flags=["Falha na análise automática"],
+            final_score=3.0, justification="Análise automática não completada - score padrão aplicado",
+        )]
+
+
+async def _create_interview_record(db, request, candidate_name: str, candidate_email, interviewer_name: str, interview_link: str, job_title: str):
+    """Create interview record in DB. Returns interview_id or None on failure."""
+    try:
+        scheduling_service = get_scheduling_service()
+        interview = await scheduling_service.create_interview(
+            db=db, candidate_id=request.candidate_id, candidate_name=candidate_name,
+            candidate_email=candidate_email or "", interviewer_name=interviewer_name,
+            interviewer_email=request.interviewer_email or "",
+            start_time=request.interview_datetime, duration_minutes=request.duration_minutes,
+            interview_type=request.interview_type,
+            interview_mode="video" if interview_link else "in_person",
+            job_title=job_title, job_vacancy_id=request.vacancy_id,
+            location=interview_link or None, notes=request.notes, created_by="automation_trigger"
         )
-        
-        # Step 0: Multi-tenancy validation
-        is_valid, error_message = await validate_multi_tenancy(
-            db=db,
-            candidate_id=request.candidate_id,
-            vacancy_id=request.vacancy_id,
-            company_id=request.company_id
+        return str(interview.id)
+    except Exception as e:
+        logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create interview record: {e}")
+        return None
+
+
+async def _send_interview_email(request, candidate_name: str, candidate_email: str, job_title: str, interviewer_name: str, interview_link: str) -> bool:
+    """Send email invitation to candidate. Returns True if sent."""
+    if not candidate_email:
+        return False
+    try:
+        from app.templates.communication_templates import EmailTemplates
+        email_service = get_email_service()
+        email_content = EmailTemplates.interview_scheduled(
+            candidate_name=candidate_name, job_title=job_title,
+            interview_date=request.interview_datetime,
+            interview_link=interview_link or "A confirmar", interviewer_name=interviewer_name
         )
-        if not is_valid:
-            logger.warning(f"🚫 [INTERVIEW_SCHEDULED] Multi-tenancy validation failed: {error_message}")
-            raise HTTPException(status_code=403, detail=error_message)
-        
-        # Result tracking
-        email_sent = False
-        whatsapp_sent = False
-        calendar_event_created = False
-        notification_created = False
-        interview_id = None
-        calendar_event_id = None
-        
-        # Get candidate and job info (use provided or defaults)
-        candidate_name = request.candidate_name or "Candidato"
-        candidate_email = request.candidate_email
-        candidate_phone = request.candidate_phone
-        job_title = request.job_title or "Vaga"
-        interviewer_name = request.interviewer_name or "Equipe"
-        interview_link = request.interview_link or ""
-        
-        # Step 1: Create interview record in database using SchedulingService
-        try:
-            scheduling_service = get_scheduling_service()
-            interview = await scheduling_service.create_interview(
-                db=db,
-                candidate_id=request.candidate_id,
-                candidate_name=candidate_name,
-                candidate_email=candidate_email or "",
-                interviewer_name=interviewer_name,
-                interviewer_email=request.interviewer_email or "",
-                start_time=request.interview_datetime,
-                duration_minutes=request.duration_minutes,
-                interview_type=request.interview_type,
-                interview_mode="video" if interview_link else "in_person",
-                job_title=job_title,
-                job_vacancy_id=request.vacancy_id,
-                location=interview_link or None,
-                notes=request.notes,
-                created_by="automation_trigger"
-            )
-            interview_id = str(interview.id)
-            logger.info(f"📅 [INTERVIEW_SCHEDULED] Interview record created: {interview_id}")
-        except Exception as e:
-            logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create interview record: {e}")
-        
-        # Step 2: Send email invitation to candidate
-        if candidate_email:
-            try:
-                from app.templates.communication_templates import EmailTemplates
-                email_service = get_email_service()
-                
-                email_content = EmailTemplates.interview_scheduled(
-                    candidate_name=candidate_name,
-                    job_title=job_title,
-                    interview_date=request.interview_datetime,
-                    interview_link=interview_link or "A confirmar",
-                    interviewer_name=interviewer_name
-                )
-                
-                send_result = await email_service.send_email(
-                    to_email=candidate_email,
-                    subject=email_content["subject"],
-                    body_html=email_content["body"].replace("\n", "<br>"),
-                    body_text=email_content["body"],
-                    company_id=request.company_id
-                )
-                
-                email_sent = send_result.get("success", False)
-                logger.info(f"📧 [INTERVIEW_SCHEDULED] Email sent (ok={email_sent})")
-            except Exception as e:
-                logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send email: {e}")
-        else:
-            logger.warning("⚠️ [INTERVIEW_SCHEDULED] No candidate email provided, skipping email")
-        
-        # Step 3: Send WhatsApp confirmation to candidate
-        if candidate_phone:
-            try:
-                from app.templates.communication_templates import WhatsAppTemplates
-                whatsapp_service = get_whatsapp_service()
-                
-                whatsapp_message = WhatsAppTemplates.interview_scheduled(
-                    candidate_name=candidate_name,
-                    interview_date=request.interview_datetime,
-                    interview_link=interview_link or "A confirmar"
-                )
-                
-                send_result = await whatsapp_service.send_message(
-                    to_phone=candidate_phone,
-                    message=whatsapp_message,
-                    metadata={
-                        "candidate_id": request.candidate_id,
-                        "vacancy_id": request.vacancy_id,
-                        "company_id": request.company_id,
-                        "interview_id": interview_id,
-                        "type": "interview_scheduled"
-                    }
-                )
-                
-                whatsapp_sent = send_result.success
-                logger.info(f"💬 [INTERVIEW_SCHEDULED] WhatsApp sent to {candidate_phone}: {whatsapp_sent}")
-            except Exception as e:
-                logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send WhatsApp: {e}")
-        else:
-            logger.info("ℹ️ [INTERVIEW_SCHEDULED] No candidate phone provided, skipping WhatsApp")
-        
-        # Step 4: Create calendar event (Microsoft Graph integration)
-        if request.organizer_email and request.interviewer_email:
-            try:
-                calendar_service = get_calendar_service()
-                
-                interviewer_emails = [request.interviewer_email] if request.interviewer_email else []
-                
-                event = await calendar_service.schedule_interview(
-                    organizer_email=request.organizer_email,
-                    candidate_name=candidate_name,
-                    candidate_email=candidate_email or "",
-                    interviewer_emails=interviewer_emails,
-                    position=job_title,
-                    start_time=request.interview_datetime,
-                    duration_minutes=request.duration_minutes,
-                    location=interview_link if not interview_link else None,
-                    as_teams_meeting=bool(interview_link),
-                    notes=request.notes
-                )
-                
-                calendar_event_created = True
-                calendar_event_id = event.get("id")
-                logger.info(f"📆 [INTERVIEW_SCHEDULED] Calendar event created: {calendar_event_id}")
-            except Exception as e:
-                logger.warning(f"⚠️ [INTERVIEW_SCHEDULED] Calendar creation skipped or failed: {e}")
-                logger.info("ℹ️ Calendar sync requires Microsoft Graph API configuration")
-        else:
-            logger.info(
-                "ℹ️ [INTERVIEW_SCHEDULED] Calendar creation skipped - "
-                "organizer_email or interviewer_email not provided"
-            )
-        
-        # Step 5: Create recruiter notification
-        try:
-            activity_service = get_activity_service()
-            
-            await activity_svc.create_activity(
-                activity_type="interview_scheduled",
-                title=f"Entrevista Agendada - {candidate_name}",
-                description=(
-                    f"Entrevista agendada para {candidate_name} na posição de {job_title}. "
-                    f"Data: {request.interview_datetime.strftime('%d/%m/%Y às %H:%M')}. "
-                    f"Tipo: {request.interview_type}."
-                ),
-                actor_id="system",
-                actor_name="LIA Automation",
-                actor_type="system",
-                target_id=request.candidate_id,
-                target_type="candidate",
-                extra_data={
-                    "vacancy_id": request.vacancy_id,
-                    "company_id": request.company_id,
-                    "interview_id": interview_id,
-                    "interview_datetime": request.interview_datetime.isoformat(),
-                    "interview_type": request.interview_type,
-                    "duration_minutes": request.duration_minutes,
-                    "interviewer_name": interviewer_name,
-                    "interview_link": interview_link,
-                    "email_sent": email_sent,
-                    "whatsapp_sent": whatsapp_sent,
-                    "calendar_event_id": calendar_event_id
-                },
-                category="scheduling"
-            )
-            notification_created = True
-            logger.info("🔔 [INTERVIEW_SCHEDULED] Recruiter notification created")
-        except Exception as e:
-            logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create notification: {e}")
-        
-        # Step 6: Log audit entry
-        try:
-            from app.models.automation import AutomationExecutionLog
-            
-            audit_log = AutomationExecutionLog(
-                company_id=request.company_id,
-                trigger_event="interview_scheduled",
-                trigger_data={
-                    "candidate_id": request.candidate_id,
-                    "vacancy_id": request.vacancy_id,
-                    "interview_datetime": request.interview_datetime.isoformat(),
-                    "interview_type": request.interview_type,
-                    "duration_minutes": request.duration_minutes
-                },
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                action_executed="send_interview_invites",
-                action_result={
-                    "email_sent": email_sent,
-                    "whatsapp_sent": whatsapp_sent,
-                    "calendar_event_created": calendar_event_created,
-                    "notification_created": notification_created,
-                    "interview_id": interview_id,
-                    "calendar_event_id": calendar_event_id
-                },
-                status="success" if (email_sent or whatsapp_sent) else "partial",
-                execution_time_ms="0"
-            )
-            db.add(audit_log)
-            logger.info("📝 [INTERVIEW_SCHEDULED] Audit log created")
-        except Exception as e:
-            logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create audit log: {e}")
-        
-        # Step 7: Build response
-        response_data = {
-            "success": True,
-            "trigger": "interview_scheduled",
-            "email_sent": email_sent,
-            "whatsapp_sent": whatsapp_sent,
-            "calendar_event_created": calendar_event_created,
-            "notification_created": notification_created,
-            "interview_id": interview_id,
-            "calendar_event_id": calendar_event_id,
-            "metadata": {
-                "candidate_id": request.candidate_id,
-                "vacancy_id": request.vacancy_id,
-                "interview_datetime": request.interview_datetime.isoformat(),
-                "interview_type": request.interview_type,
-                "processed_at": datetime.utcnow().isoformat()
+        send_result = await email_service.send_email(
+            to_email=candidate_email, subject=email_content["subject"],
+            body_html=email_content["body"].replace("\n", "<br>"),
+            body_text=email_content["body"], company_id=request.company_id
+        )
+        return send_result.get("success", False)
+    except Exception as e:
+        logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send email: {e}")
+        return False
+
+
+async def _send_interview_whatsapp(request, candidate_name: str, candidate_phone, interview_link: str, interview_id) -> bool:
+    """Send WhatsApp confirmation to candidate. Returns True if sent."""
+    if not candidate_phone:
+        return False
+    try:
+        from app.templates.communication_templates import WhatsAppTemplates
+        whatsapp_service = get_whatsapp_service()
+        msg = WhatsAppTemplates.interview_scheduled(
+            candidate_name=candidate_name, interview_date=request.interview_datetime,
+            interview_link=interview_link or "A confirmar"
+        )
+        result = await whatsapp_service.send_message(
+            to_phone=candidate_phone, message=msg,
+            metadata={
+                "candidate_id": request.candidate_id, "vacancy_id": request.vacancy_id,
+                "company_id": request.company_id, "interview_id": interview_id,
+                "type": "interview_scheduled"
             }
-        }
-        
-        logger.info(
-            f"✅ [INTERVIEW_SCHEDULED] Processing complete: "
-            f"email={email_sent}, whatsapp={whatsapp_sent}, "
-            f"calendar={calendar_event_created}, notification={notification_created}"
         )
-        
-        return response_data
-        
+        return result.success
+    except Exception as e:
+        logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to send WhatsApp: {e}")
+        return False
+
+
+async def _create_interview_calendar_event(request, candidate_name: str, candidate_email, job_title: str, interview_link: str) -> tuple:
+    """Create calendar event via Microsoft Graph. Returns (created, event_id)."""
+    if not request.organizer_email or not request.interviewer_email:
+        return False, None
+    try:
+        cal_svc = get_calendar_service()
+        event = await cal_svc.schedule_interview(
+            organizer_email=request.organizer_email, candidate_name=candidate_name,
+            candidate_email=candidate_email or "",
+            interviewer_emails=[request.interviewer_email],
+            position=job_title, start_time=request.interview_datetime,
+            duration_minutes=request.duration_minutes,
+            location=interview_link if not interview_link else None,
+            as_teams_meeting=bool(interview_link), notes=request.notes
+        )
+        return True, event.get("id")
+    except Exception as e:
+        logger.warning(f"⚠️ [INTERVIEW_SCHEDULED] Calendar creation skipped: {e}")
+        return False, None
+
+
+async def _log_interview_scheduled_audit(db, request, email_sent: bool, whatsapp_sent: bool, calendar_event_created: bool, notification_created: bool, interview_id, calendar_event_id) -> None:
+    """Log automation execution log for interview_scheduled trigger."""
+    try:
+        from app.models.automation import AutomationExecutionLog
+        db.add(AutomationExecutionLog(
+            company_id=request.company_id, trigger_event="interview_scheduled",
+            trigger_data={
+                "candidate_id": request.candidate_id, "vacancy_id": request.vacancy_id,
+                "interview_datetime": request.interview_datetime.isoformat(),
+                "interview_type": request.interview_type, "duration_minutes": request.duration_minutes
+            },
+            candidate_id=request.candidate_id, vacancy_id=request.vacancy_id,
+            action_executed="send_interview_invites",
+            action_result={
+                "email_sent": email_sent, "whatsapp_sent": whatsapp_sent,
+                "calendar_event_created": calendar_event_created,
+                "notification_created": notification_created,
+                "interview_id": interview_id, "calendar_event_id": calendar_event_id
+            },
+            status="success" if (email_sent or whatsapp_sent) else "partial",
+            execution_time_ms="0"
+        ))
+    except Exception as e:
+        logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create audit log: {e}")
+
+
+async def _notify_interview_scheduled(activity_svc, request, candidate_name: str, job_title: str, interviewer_name: str, interview_link: str, interview_id, email_sent: bool, whatsapp_sent: bool, calendar_event_id) -> bool:
+    """Create recruiter notification for interview scheduled. Returns True if created."""
+    try:
+        await activity_svc.create_activity(
+            activity_type="interview_scheduled",
+            title=f"Entrevista Agendada - {candidate_name}",
+            description=(
+                f"Entrevista agendada para {candidate_name} na posição de {job_title}. "
+                f"Data: {request.interview_datetime.strftime('%d/%m/%Y às %H:%M')}. "
+                f"Tipo: {request.interview_type}."
+            ),
+            actor_id="system", actor_name="LIA Automation", actor_type="system",
+            target_id=request.candidate_id, target_type="candidate",
+            extra_data={
+                "vacancy_id": request.vacancy_id, "company_id": request.company_id,
+                "interview_id": interview_id, "interview_datetime": request.interview_datetime.isoformat(),
+                "interview_type": request.interview_type, "duration_minutes": request.duration_minutes,
+                "interviewer_name": interviewer_name, "interview_link": interview_link,
+                "email_sent": email_sent, "whatsapp_sent": whatsapp_sent, "calendar_event_id": calendar_event_id
+            },
+            category="scheduling"
+        )
+        return True
+    except Exception as e:
+        logger.error(f"❌ [INTERVIEW_SCHEDULED] Failed to create notification: {e}")
+        return False
+
+
+def _build_interview_scheduled_response(request, email_sent: bool, whatsapp_sent: bool, calendar_event_created: bool, notification_created: bool, interview_id, calendar_event_id) -> dict:
+    """Build the response dict for interview_scheduled trigger."""
+    return {
+        "success": True, "trigger": "interview_scheduled",
+        "email_sent": email_sent, "whatsapp_sent": whatsapp_sent,
+        "calendar_event_created": calendar_event_created, "notification_created": notification_created,
+        "interview_id": interview_id, "calendar_event_id": calendar_event_id,
+        "metadata": {
+            "candidate_id": request.candidate_id, "vacancy_id": request.vacancy_id,
+            "interview_datetime": request.interview_datetime.isoformat(),
+            "interview_type": request.interview_type,
+            "processed_at": datetime.utcnow().isoformat()
+        }
+    }
+
+
+async def _send_all_interview_communications(request, db, activity_svc, candidate_name: str, candidate_email, job_title: str, interviewer_name: str, interview_link: str) -> tuple:
+    """Send all communications for interview_scheduled. Returns (interview_id, email_sent, whatsapp_sent, calendar_event_created, calendar_event_id, notification_created)."""
+    interview_id = await _create_interview_record(
+        db, request, candidate_name, candidate_email, interviewer_name, interview_link, job_title
+    )
+    email_sent = await _send_interview_email(
+        request, candidate_name, candidate_email, job_title, interviewer_name, interview_link
+    )
+    whatsapp_sent = await _send_interview_whatsapp(
+        request, candidate_name, request.candidate_phone, interview_link, interview_id
+    )
+    calendar_event_created, calendar_event_id = await _create_interview_calendar_event(
+        request, candidate_name, candidate_email, job_title, interview_link
+    )
+    notification_created = await _notify_interview_scheduled(
+        activity_svc, request, candidate_name, job_title, interviewer_name,
+        interview_link, interview_id, email_sent, whatsapp_sent, calendar_event_id
+    )
+    return interview_id, email_sent, whatsapp_sent, calendar_event_created, calendar_event_id, notification_created
+
+
+async def _process_interview_scheduled(request, db, activity_svc) -> dict:
+    """Orchestrate interview_scheduled trigger: validate, communicate, audit, respond."""
+    logger.info(
+        f"📅 [INTERVIEW_SCHEDULED] Processing: candidate={request.candidate_id}, "
+        f"vacancy={request.vacancy_id}, datetime={request.interview_datetime.isoformat()}"
+    )
+
+    is_valid, error_message = await validate_multi_tenancy(
+        db=db, candidate_id=request.candidate_id,
+        vacancy_id=request.vacancy_id, company_id=request.company_id
+    )
+    if not is_valid:
+        raise HTTPException(status_code=403, detail=error_message)
+
+    candidate_name = request.candidate_name or "Candidato"
+    job_title = request.job_title or "Vaga"
+    interviewer_name = request.interviewer_name or "Equipe"
+    interview_link = request.interview_link or ""
+
+    interview_id, email_sent, whatsapp_sent, calendar_event_created, calendar_event_id, notification_created = \
+        await _send_all_interview_communications(
+            request, db, activity_svc, candidate_name, request.candidate_email,
+            job_title, interviewer_name, interview_link
+        )
+
+    await _log_interview_scheduled_audit(
+        db, request, email_sent, whatsapp_sent,
+        calendar_event_created, notification_created, interview_id, calendar_event_id
+    )
+
+    logger.info(f"✅ [INTERVIEW_SCHEDULED] Done: email={email_sent}, whatsapp={whatsapp_sent}, calendar={calendar_event_created}")
+
+    return _build_interview_scheduled_response(
+        request, email_sent, whatsapp_sent, calendar_event_created,
+        notification_created, interview_id, calendar_event_id
+    )
+
+
+@router.post("/handle-trigger/interview-scheduled", response_model=InterviewScheduledResponse)
+async def handle_interview_scheduled(request: InterviewScheduledRequest, db: AsyncSession = Depends(get_db), activity_svc: ActivityService = Depends(get_activity_service_canonical)):
+    """Handle interview_scheduled trigger: send invites and create calendar event."""
+    try:
+        return await _process_interview_scheduled(request, db, activity_svc)
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"❌ [INTERVIEW_SCHEDULED] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar agendamento de entrevista: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao processar agendamento de entrevista: {str(e)}")
 
 
-@router.post("/handle-trigger/interview-completed", response_model=None)
+@router.post("/handle-trigger/interview-completed", response_model=InterviewCompletedResponse)
 async def handle_interview_completed(
     request: InterviewCompletedRequest,
     db: AsyncSession = Depends(get_db),
@@ -1130,7 +994,7 @@ Responda em JSON:
         )
 
 
-@router.post("/handle-trigger/candidate-inactive", response_model=None)
+@router.post("/handle-trigger/candidate-inactive", response_model=CandidateInactiveResponse)
 async def handle_candidate_inactive(
     request: CandidateInactiveRequest,
     db: AsyncSession = Depends(get_db),
@@ -1442,7 +1306,7 @@ async def handle_candidate_inactive(
         )
 
 
-@router.post("/handle-trigger/candidate-no-show", response_model=None)
+@router.post("/handle-trigger/candidate-no-show", response_model=CandidateNoShowResponse)
 async def handle_candidate_no_show(
     request: CandidateNoShowRequest,
     db: AsyncSession = Depends(get_db),
@@ -1806,274 +1670,198 @@ async def handle_candidate_no_show(
         )
 
 
-@router.post("/handle-trigger/ats-sync", response_model=None)
-async def handle_ats_sync(
-    request: ATSSyncRequest,
-    db: AsyncSession = Depends(get_db),
-    audit_svc: AuditService = Depends(get_audit_service),
-    activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
-    """
-    Handle stage change ATS synchronization trigger.
-    
-    Syncs candidate stage changes with external ATS platforms (Gupy, Pandapé, Merge).
-    This trigger is called when a candidate's pipeline stage changes in LIA.
-    
-    Supports:
-    - Outbound sync (LIA → ATS): Push stage updates to external ATS
-    - Inbound sync (ATS → LIA): Pull stage updates from external ATS
-    
-    The sync process:
-    1. Validates multi-tenancy (candidate/vacancy belong to company)
-    2. Maps LIA stage to ATS-specific stage identifier
-    3. Calls ATS API to update candidate status
-    4. Handles errors gracefully with retry logic
-    5. Logs sync result in audit trail
-    6. Creates notification if sync fails
-    
-    Args:
-        request: ATSSyncRequest with sync details
-        db: Database session
-    
-    Returns:
-        Sync result with status, ATS response, and any errors
-    """
+async def _execute_outbound_ats_sync(ats_sync_service, request, ats_stage: str) -> tuple:
+    """Execute outbound ATS sync (LIA -> ATS). Returns (sync_status, ats_response, error)."""
+    from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
+    sync_data = {
+        "status": ats_stage, "previous_status": request.previous_stage,
+        "candidate_name": request.candidate_name, "candidate_email": request.candidate_email,
+        "job_title": request.job_title,
+    }
     try:
-        logger.info(
-            f"🔄 [ATS_SYNC] Starting sync: platform={request.ats_platform}, "
-            f"candidate={request.candidate_id}, vacancy={request.vacancy_id}, "
-            f"stage={request.previous_stage} → {request.new_stage}, "
-            f"direction={request.sync_direction}"
+        result = await ats_sync_service.trigger_sync(
+            trigger=ATSSyncTrigger.STATUS_CHANGE, source_agent="automation",
+            ats_type=request.ats_platform,
+            candidate_id=request.ats_candidate_id or request.candidate_id,
+            job_id=request.ats_vacancy_id or request.vacancy_id, data=sync_data
         )
-        
-        is_valid, error_msg = await validate_multi_tenancy(
-            db, request.candidate_id, request.vacancy_id, request.company_id
+        if result.get("success"):
+            return "completed", result, None
+        return "failed", result, result.get("message", "Sync failed without error message")
+    except Exception as e:
+        logger.error(f"❌ [ATS_SYNC] Exception during outbound sync: {e}")
+        return "failed", None, str(e)
+
+
+async def _execute_inbound_ats_sync(ats_sync_service, request) -> tuple:
+    """Execute inbound ATS sync (ATS -> LIA). Returns (sync_status, ats_response, error)."""
+    try:
+        result = await ats_sync_service.pull_candidate(
+            ats_type=request.ats_platform,
+            ats_candidate_id=request.ats_candidate_id or request.candidate_id,
+            source_agent="automation"
         )
-        if not is_valid:
-            logger.warning(f"⚠️ [ATS_SYNC] Multi-tenancy validation failed: {error_msg}")
-            raise HTTPException(status_code=403, detail=error_msg)
-        
-        ats_stage, is_mapped = map_lia_stage_to_ats(request.new_stage, request.ats_platform, request.company_id)
-        
-        if not is_mapped:
-            await notify_unmapped_stage(
-                company_id=request.company_id,
-                lia_stage=request.new_stage,
-                ats_platform=request.ats_platform,
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id
-            )
-        
-        logger.info(f"📋 [ATS_SYNC] Mapped stage: {request.new_stage} → {ats_stage} (explicit_mapping={is_mapped})")
-        
-        sync_status = "pending"
-        ats_response = None
-        error = None
-        notification_created = False
-        
-        ats_sync_service = get_ats_sync_service()
-        
-        if request.sync_direction == "outbound":
-            from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
-            
-            sync_data = {
-                "status": ats_stage,
-                "previous_status": request.previous_stage,
-                "candidate_name": request.candidate_name,
-                "candidate_email": request.candidate_email,
-                "job_title": request.job_title,
-            }
-            
-            try:
-                sync_result = await ats_sync_service.trigger_sync(
-                    trigger=ATSSyncTrigger.STATUS_CHANGE,
-                    source_agent="automation",
-                    ats_type=request.ats_platform,
-                    candidate_id=request.ats_candidate_id or request.candidate_id,
-                    job_id=request.ats_vacancy_id or request.vacancy_id,
-                    data=sync_data
-                )
-                
-                if sync_result.get("success"):
-                    sync_status = "completed"
-                    ats_response = sync_result
-                    logger.info(
-                        f"✅ [ATS_SYNC] Sync completed successfully: "
-                        f"fields_synced={sync_result.get('fields_synced', [])}"
-                    )
-                else:
-                    sync_status = "failed"
-                    error = sync_result.get("message", "Sync failed without error message")
-                    ats_response = sync_result
-                    logger.warning(f"⚠️ [ATS_SYNC] Sync failed: {error}")
-                    
-            except Exception as sync_error:
-                sync_status = "failed"
-                error = str(sync_error)
-                logger.error(f"❌ [ATS_SYNC] Exception during sync: {sync_error}")
-        
-        elif request.sync_direction == "inbound":
-            try:
-                pull_result = await ats_sync_service.pull_candidate(
-                    ats_type=request.ats_platform,
-                    ats_candidate_id=request.ats_candidate_id or request.candidate_id,
-                    source_agent="automation"
-                )
-                
-                if pull_result.get("success"):
-                    sync_status = "completed"
-                    ats_response = pull_result
-                    logger.info("✅ [ATS_SYNC] Inbound sync completed successfully")
-                else:
-                    sync_status = "failed"
-                    error = pull_result.get("message", "Pull failed")
-                    ats_response = pull_result
-                    
-            except Exception as pull_error:
-                sync_status = "failed"
-                error = str(pull_error)
-                logger.error(f"❌ [ATS_SYNC] Exception during inbound sync: {pull_error}")
-        
-        if sync_status == "failed":
-            try:
-                await activity_svc.create_activity(
-                    activity_type="ats_sync_failed",
-                    title=f"Falha na Sincronização com {request.ats_platform.upper()}",
-                    description=(
-                        f"Não foi possível sincronizar a mudança de etapa do candidato "
-                        f"{request.candidate_name or request.candidate_id} de "
-                        f"'{request.previous_stage or 'N/A'}' para '{request.new_stage}'. "
-                        f"Erro: {error}"
-                    ),
-                    actor_id="system",
-                    actor_name="LIA Automation",
-                    actor_type="system",
-                    target_id=request.candidate_id,
-                    target_type="candidate",
-                    extra_data={
-                        "vacancy_id": request.vacancy_id,
-                        "company_id": request.company_id,
-                        "ats_platform": request.ats_platform,
-                        "ats_candidate_id": request.ats_candidate_id,
-                        "new_stage": request.new_stage,
-                        "previous_stage": request.previous_stage,
-                        "error": error
-                    },
-                    category="ats_sync"
-                )
-                notification_created = True
-                logger.info("🔔 [ATS_SYNC] Failure notification created")
-            except Exception as notif_error:
-                logger.error(f"❌ [ATS_SYNC] Failed to create notification: {notif_error}")
-        
-        # Legacy audit log for backwards compatibility
-        try:
-            from app.models.automation import AutomationExecutionLog
-            
-            audit_log = AutomationExecutionLog(
-                company_id=request.company_id,
-                trigger_event="ats_sync",
-                trigger_data={
-                    "candidate_id": request.candidate_id,
-                    "vacancy_id": request.vacancy_id,
-                    "ats_platform": request.ats_platform,
-                    "ats_candidate_id": request.ats_candidate_id,
-                    "ats_vacancy_id": request.ats_vacancy_id,
-                    "new_stage": request.new_stage,
-                    "previous_stage": request.previous_stage,
-                    "sync_direction": request.sync_direction,
-                    "ats_stage_mapped": ats_stage,
-                    "is_stage_mapped": is_mapped
-                },
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                action_executed=f"ats_sync_{request.sync_direction}_{request.ats_platform}",
-                action_result={
-                    "sync_status": sync_status,
-                    "ats_response": ats_response,
-                    "error": error,
-                    "notification_created": notification_created
-                },
-                status="success" if sync_status == "completed" else "failed",
-                execution_time_ms="0"
-            )
-            db.add(audit_log)
-            logger.info("📝 [ATS_SYNC] Legacy audit log created")
-        except Exception as audit_error:
-            logger.error(f"❌ [ATS_SYNC] Failed to create legacy audit log: {audit_error}")
-        
-        # Centralized audit logging via audit_service
-        try:
-            reasoning_items = [
-                f"ATS platform: {request.ats_platform}",
-                f"Sync direction: {request.sync_direction}",
-                f"Stage transition: {request.previous_stage or 'N/A'} → {request.new_stage}",
-                f"Mapped ATS stage: {ats_stage} (explicit_mapping={is_mapped})",
-                f"Sync status: {sync_status}"
-            ]
-            if error:
-                reasoning_items.append(f"Error: {error}")
-            
-            await audit_svc.log_decision(
-                company_id=request.company_id,
-                agent_name="ats_integrator",
-                decision_type="ats_sync",
-                action=f"sync_{request.sync_direction}",
-                decision=sync_status,
-                score=None,
-                confidence=1.0 if sync_status == "completed" else 0.0,
-                reasoning=reasoning_items,
-                criteria_used=["ats_platform", "sync_direction", "stage_mapping"],
-                candidate_id=request.candidate_id,
-                job_vacancy_id=request.vacancy_id,
-                human_review_required=(sync_status == "failed")
-            )
-            logger.info("📝 [ATS_SYNC] Centralized audit log created via audit_service")
-        except Exception as audit_error:
-            logger.error(f"❌ [ATS_SYNC] Failed to create centralized audit log: {audit_error}")
-        
-        response_data = {
-            "success": sync_status == "completed",
-            "trigger": "ats_sync",
-            "ats_platform": request.ats_platform,
-            "sync_status": sync_status,
-            "sync_direction": request.sync_direction,
-            "stage_mapping": {
-                "lia_stage": request.new_stage,
-                "ats_stage": ats_stage
+        if result.get("success"):
+            return "completed", result, None
+        return "failed", result, result.get("message", "Pull failed")
+    except Exception as e:
+        logger.error(f"❌ [ATS_SYNC] Exception during inbound sync: {e}")
+        return "failed", None, str(e)
+
+
+async def _notify_ats_sync_failure(activity_svc, request, error: str) -> bool:
+    """Notify recruiter of ATS sync failure. Returns True if notification created."""
+    try:
+        candidate_name = request.candidate_name or request.candidate_id
+        await activity_svc.create_activity(
+            activity_type="ats_sync_failed",
+            title=f"Falha na Sincronização com {request.ats_platform.upper()}",
+            description=(
+                f"Não foi possível sincronizar a mudança de etapa do candidato "
+                f"{candidate_name} de '{request.previous_stage or 'N/A'}' para '{request.new_stage}'. "
+                f"Erro: {error}"
+            ),
+            actor_id="system", actor_name="LIA Automation", actor_type="system",
+            target_id=request.candidate_id, target_type="candidate",
+            extra_data={
+                "vacancy_id": request.vacancy_id, "company_id": request.company_id,
+                "ats_platform": request.ats_platform, "ats_candidate_id": request.ats_candidate_id,
+                "new_stage": request.new_stage, "previous_stage": request.previous_stage, "error": error
             },
-            "ats_response": ats_response,
-            "error": error,
-            "metadata": {
-                "candidate_id": request.candidate_id,
-                "vacancy_id": request.vacancy_id,
-                "ats_candidate_id": request.ats_candidate_id,
-                "ats_vacancy_id": request.ats_vacancy_id,
-                "processed_at": datetime.utcnow().isoformat()
-            }
-        }
-        
-        logger.info(
-            f"{'✅' if sync_status == 'completed' else '⚠️'} [ATS_SYNC] Processing complete: "
-            f"status={sync_status}, platform={request.ats_platform}, "
-            f"direction={request.sync_direction}"
+            category="ats_sync"
         )
-        
-        return response_data
-        
+        return True
+    except Exception as e:
+        logger.error(f"❌ [ATS_SYNC] Failed to create failure notification: {e}")
+        return False
+
+
+async def _log_ats_sync_audit(db, audit_svc, request, ats_stage: str, is_mapped: bool, sync_status: str, ats_response, error, notification_created: bool) -> None:
+    """Log automation execution log and centralized audit for ATS sync."""
+    try:
+        from app.models.automation import AutomationExecutionLog
+        db.add(AutomationExecutionLog(
+            company_id=request.company_id, trigger_event="ats_sync",
+            trigger_data={
+                "candidate_id": request.candidate_id, "vacancy_id": request.vacancy_id,
+                "ats_platform": request.ats_platform, "ats_candidate_id": request.ats_candidate_id,
+                "ats_vacancy_id": request.ats_vacancy_id, "new_stage": request.new_stage,
+                "previous_stage": request.previous_stage, "sync_direction": request.sync_direction,
+                "ats_stage_mapped": ats_stage, "is_stage_mapped": is_mapped
+            },
+            candidate_id=request.candidate_id, vacancy_id=request.vacancy_id,
+            action_executed=f"ats_sync_{request.sync_direction}_{request.ats_platform}",
+            action_result={
+                "sync_status": sync_status, "ats_response": ats_response,
+                "error": error, "notification_created": notification_created
+            },
+            status="success" if sync_status == "completed" else "failed",
+            execution_time_ms="0"
+        ))
+    except Exception as e:
+        logger.error(f"❌ [ATS_SYNC] Failed to create execution log: {e}")
+
+    try:
+        reasoning_items = [
+            f"ATS platform: {request.ats_platform}", f"Sync direction: {request.sync_direction}",
+            f"Stage transition: {request.previous_stage or 'N/A'} → {request.new_stage}",
+            f"Mapped ATS stage: {ats_stage} (explicit_mapping={is_mapped})",
+            f"Sync status: {sync_status}"
+        ]
+        if error:
+            reasoning_items.append(f"Error: {error}")
+        await audit_svc.log_decision(
+            company_id=request.company_id, agent_name="ats_integrator",
+            decision_type="ats_sync", action=f"sync_{request.sync_direction}",
+            decision=sync_status, score=None,
+            confidence=1.0 if sync_status == "completed" else 0.0,
+            reasoning=reasoning_items, criteria_used=["ats_platform", "sync_direction", "stage_mapping"],
+            candidate_id=request.candidate_id, job_vacancy_id=request.vacancy_id,
+            human_review_required=(sync_status == "failed")
+        )
+    except Exception as e:
+        logger.error(f"❌ [ATS_SYNC] Failed to create centralized audit log: {e}")
+
+
+def _build_ats_sync_response(request, ats_stage: str, sync_status: str, ats_response, error) -> dict:
+    """Build the response dict for ats_sync trigger."""
+    return {
+        "success": sync_status == "completed",
+        "trigger": "ats_sync",
+        "ats_platform": request.ats_platform,
+        "sync_status": sync_status,
+        "sync_direction": request.sync_direction,
+        "stage_mapping": {"lia_stage": request.new_stage, "ats_stage": ats_stage},
+        "ats_response": ats_response,
+        "error": error,
+        "metadata": {
+            "candidate_id": request.candidate_id, "vacancy_id": request.vacancy_id,
+            "ats_candidate_id": request.ats_candidate_id,
+            "ats_vacancy_id": request.ats_vacancy_id,
+            "processed_at": datetime.utcnow().isoformat()
+        }
+    }
+
+
+async def _run_ats_sync_direction(ats_sync_service, request, ats_stage: str) -> tuple:
+    """Dispatch sync by direction. Returns (sync_status, ats_response, error)."""
+    if request.sync_direction == "outbound":
+        return await _execute_outbound_ats_sync(ats_sync_service, request, ats_stage)
+    if request.sync_direction == "inbound":
+        return await _execute_inbound_ats_sync(ats_sync_service, request)
+    return "pending", None, None
+
+
+async def _process_ats_sync(request, db, audit_svc, activity_svc) -> dict:
+    """Orchestrate ats_sync trigger: validate, map stage, sync, notify on failure, audit."""
+    logger.info(
+        f"🔄 [ATS_SYNC] Starting: platform={request.ats_platform}, "
+        f"candidate={request.candidate_id}, stage={request.previous_stage} → {request.new_stage}"
+    )
+
+    is_valid, error_msg = await validate_multi_tenancy(
+        db, request.candidate_id, request.vacancy_id, request.company_id
+    )
+    if not is_valid:
+        raise HTTPException(status_code=403, detail=error_msg)
+
+    ats_stage, is_mapped = map_lia_stage_to_ats(request.new_stage, request.ats_platform, request.company_id)
+    if not is_mapped:
+        await notify_unmapped_stage(
+            company_id=request.company_id, lia_stage=request.new_stage,
+            ats_platform=request.ats_platform, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id
+        )
+
+    sync_status, ats_response, error = await _run_ats_sync_direction(
+        get_ats_sync_service(), request, ats_stage
+    )
+
+    notification_created = False
+    if sync_status == "failed":
+        notification_created = await _notify_ats_sync_failure(activity_svc, request, error or "Unknown error")
+
+    await _log_ats_sync_audit(db, audit_svc, request, ats_stage, is_mapped, sync_status, ats_response, error, notification_created)
+
+    logger.info(f"{'✅' if sync_status == 'completed' else '⚠️'} [ATS_SYNC] Done: status={sync_status}")
+    return _build_ats_sync_response(request, ats_stage, sync_status, ats_response, error)
+
+
+@router.post("/handle-trigger/ats-sync", response_model=ATSSyncResponse)
+async def handle_ats_sync(request: ATSSyncRequest, db: AsyncSession = Depends(get_db), audit_svc: AuditService = Depends(get_audit_service), activity_svc: ActivityService = Depends(get_activity_service_canonical)):
+    """Handle ats_sync trigger: sync candidate stage with external ATS platform."""
+    try:
+        return await _process_ats_sync(request, db, audit_svc, activity_svc)
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"❌ [ATS_SYNC] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao sincronizar com ATS: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao sincronizar com ATS: {str(e)}")
 
 
 # ============== OFFER_SENT TRIGGER ==============
 
-@router.post("/handle-trigger/offer-sent", response_model=None)
+@router.post("/handle-trigger/offer-sent", response_model=OfferSentResponse)
 async def handle_offer_sent(
     request: OfferSentPayload,
     db: AsyncSession = Depends(get_db),
@@ -2239,7 +2027,7 @@ async def handle_offer_sent(
 
 # ============== CANDIDATE_HIRED TRIGGER ==============
 
-@router.post("/handle-trigger/candidate-hired", response_model=None)
+@router.post("/handle-trigger/candidate-hired", response_model=CandidateHiredResponse)
 async def handle_candidate_hired(
     request: CandidateHiredPayload,
     db: AsyncSession = Depends(get_db),
@@ -2439,7 +2227,7 @@ async def handle_candidate_hired(
 
 # ============== CANDIDATE_REJECTED TRIGGER ==============
 
-@router.post("/handle-trigger/candidate-rejected", response_model=None)
+@router.post("/handle-trigger/candidate-rejected", response_model=CandidateRejectedResponse)
 async def handle_candidate_rejected(
     request: CandidateRejectedPayload,
     db: AsyncSession = Depends(get_db),

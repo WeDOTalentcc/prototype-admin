@@ -1,6 +1,7 @@
 """
 API endpoints for affirmative action management.
 """
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -11,6 +12,43 @@ from app.core.database import get_db
 from app.services.affirmative_service import AffirmativeService
 
 router = APIRouter(prefix="/affirmative", tags=["affirmative"])
+
+
+# ---------------------------------------------------------------------------
+# Response schemas
+# ---------------------------------------------------------------------------
+
+class CriteriaResponse(BaseModel):
+    criteria: list[dict[str, Any]]
+
+
+class EligibilityResponse(BaseModel):
+    status: str
+    message: str
+
+
+class PendingDocumentsResponse(BaseModel):
+    documents: list[dict[str, Any]]
+    count: int
+
+
+class DocumentRequestResponse(BaseModel):
+    document_id: str
+    deadline: str
+
+
+class DocumentVerifyLiaResponse(BaseModel):
+    status: str
+    verified: bool
+
+
+class DocumentVerifyRecruiterResponse(BaseModel):
+    status: str
+    approved: bool
+
+
+class ExpiredDocumentsResponse(BaseModel):
+    expired_count: int
 
 
 class EligibilityCheckRequest(BaseModel):
@@ -31,14 +69,14 @@ class DocumentVerificationRequest(BaseModel):
     notes: str | None = None
 
 
-@router.get("/criteria", response_model=None)
+@router.get("/criteria", response_model=CriteriaResponse)
 async def get_affirmative_criteria():
     """Get all available affirmative action criteria."""
     from app.services.affirmative_service import AFFIRMATIVE_CRITERIA
     return {"criteria": AFFIRMATIVE_CRITERIA}
 
 
-@router.post("/check-eligibility", response_model=None)
+@router.post("/check-eligibility", response_model=EligibilityResponse)
 async def check_eligibility(
     request: EligibilityCheckRequest,
     db: AsyncSession = Depends(get_db)
@@ -48,7 +86,7 @@ async def check_eligibility(
     return {"status": "pending", "message": "Eligibility check requires candidate and vacancy data"}
 
 
-@router.get("/pending-documents/{company_id}", response_model=None)
+@router.get("/pending-documents/{company_id}", response_model=PendingDocumentsResponse)
 async def get_pending_documents(
     company_id: str,
     vacancy_id: str | None = None,
@@ -61,7 +99,7 @@ async def get_pending_documents(
     return {"documents": documents, "count": len(documents)}
 
 
-@router.post("/documents/request", response_model=None)
+@router.post("/documents/request", response_model=DocumentRequestResponse)
 async def request_document(
     candidate_id: str,
     vacancy_id: str,
@@ -80,7 +118,7 @@ async def request_document(
     return {"document_id": str(document.id), "deadline": document.upload_deadline.isoformat()}
 
 
-@router.post("/documents/verify-lia", response_model=None)
+@router.post("/documents/verify-lia", response_model=DocumentVerifyLiaResponse)
 async def verify_document_lia(
     document_id: str,
     verification_result: dict,
@@ -92,7 +130,7 @@ async def verify_document_lia(
     return {"status": document.status, "verified": document.verified_by_lia}
 
 
-@router.post("/documents/verify-recruiter", response_model=None)
+@router.post("/documents/verify-recruiter", response_model=DocumentVerifyRecruiterResponse)
 async def verify_document_recruiter(
     request: DocumentVerificationRequest,
     recruiter_email: str,
@@ -109,7 +147,7 @@ async def verify_document_recruiter(
     return {"status": document.status, "approved": request.approved}
 
 
-@router.post("/check-expired/{company_id}", response_model=None)
+@router.post("/check-expired/{company_id}", response_model=ExpiredDocumentsResponse)
 async def check_expired_documents(
     company_id: str,
     db: AsyncSession = Depends(get_db)

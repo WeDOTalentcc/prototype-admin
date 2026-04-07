@@ -13,8 +13,10 @@ Includes:
 """
 import logging
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -40,7 +42,51 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/triggers", response_model=None)
+
+# ---------------------------------------------------------------------------
+# Response schemas
+# ---------------------------------------------------------------------------
+
+class TriggersListResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class TriggerUpdateResponse(BaseModel):
+    success: bool
+    message: str
+
+
+class TriggerCheckResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class AutomationStatusResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class StageSuggestionsResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class ExecuteActionResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class ScreenCandidateResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class TriggerEventResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+@router.get("/triggers", response_model=TriggersListResponse)
 async def get_automation_triggers():
     """
     Get all automation trigger configurations.
@@ -59,7 +105,7 @@ async def get_automation_triggers():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/triggers/{trigger_id}", response_model=None)
+@router.post("/triggers/{trigger_id}", response_model=TriggerUpdateResponse)
 async def update_trigger(
     trigger_id: str,
     request: UpdateTriggerRequest
@@ -83,7 +129,7 @@ async def update_trigger(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/check", response_model=None)
+@router.post("/check", response_model=TriggerCheckResponse)
 async def check_and_execute_triggers(
     db: AsyncSession = Depends(get_db)
 ):
@@ -102,7 +148,7 @@ async def check_and_execute_triggers(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/status", response_model=None)
+@router.get("/status", response_model=AutomationStatusResponse)
 async def get_automation_status():
     """
     Get automation engine status.
@@ -125,7 +171,7 @@ async def get_automation_status():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stage-suggestions", response_model=None)
+@router.get("/stage-suggestions", response_model=StageSuggestionsResponse)
 async def get_stage_suggestions(
     auto_svc: AutomationService = Depends(get_automation_service),
     from_stage: str | None = Query(None, description="Previous stage name"),
@@ -191,7 +237,7 @@ async def get_stage_suggestions(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/execute-action", response_model=None)
+@router.post("/execute-action", response_model=ExecuteActionResponse)
 async def execute_action(
     request: ExecuteActionRequest,
     db: AsyncSession = Depends(get_db),
@@ -411,7 +457,7 @@ async def execute_action(
         )
 
 
-@router.post("/screen-candidate", response_model=None)
+@router.post("/screen-candidate", response_model=ScreenCandidateResponse)
 async def screen_candidate(
     request: ScreenCandidateRequest,
     db: AsyncSession = Depends(get_db)
@@ -485,7 +531,7 @@ async def screen_candidate(
         )
 
 
-@router.post("/trigger-event", response_model=None)
+@router.post("/trigger-event", response_model=TriggerEventResponse)
 async def trigger_automation_event(
     request: TriggerEventRequest,
     db: AsyncSession = Depends(get_db),

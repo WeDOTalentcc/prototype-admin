@@ -12,7 +12,7 @@ import logging
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service  # noqa: F401
@@ -683,6 +683,216 @@ class CandidateRejectedPayload(BaseModel):
 class RejectSuggestionRequest(BaseModel):
     """Request model for rejecting an AI suggestion."""
     reason: str | None = Field(None, description="Reason for rejecting the suggestion")
+
+
+class TriggerMetadata(BaseModel):
+    """Common metadata returned by all trigger handlers."""
+    candidate_id: str
+    vacancy_id: str
+    processed_at: str
+
+
+class ScreeningWsiDetails(BaseModel):
+    technical_wsi: float
+    behavioral_wsi: float
+    classification: str
+    percentile: float | None = None
+
+
+class ScreeningCandidateFeedback(BaseModel):
+    decision: str
+    main_message: str
+    technical_strengths: list[str] | None = []
+    development_opportunities: list[str] | None = []
+    next_steps: list[str] | None = []
+
+
+class ResponseMetadata(BaseModel):
+    """Typed metadata envelope shared by all event-handler responses.
+
+    Core fields are explicitly typed; handler-specific supplementary fields
+    (e.g. screening_type, rejection_stage) are preserved via extra='allow'
+    so the model is a concrete schema rather than an opaque dict while still
+    accommodating per-trigger contextual data.
+    """
+    model_config = ConfigDict(extra='allow')
+
+    trigger_id: str | None = None
+    processed_at: str | None = None
+    pipeline_version: str | None = None
+    company_id: str | None = None
+    candidate_id: str | None = None
+    vacancy_id: str | None = None
+    duration_ms: int | None = None
+
+
+class ATSResponseData(BaseModel):
+    """Typed wrapper for ATS platform response data in ATSSyncResponse.
+
+    Replaces the opaque `dict | None` field with a structured model so that
+    API consumers receive a documented contract rather than an arbitrary blob.
+    """
+    external_id: str | None = None
+    ats_status: str | None = None
+    ats_stage: str | None = None
+    synced_at: str | None = None
+    error_code: str | None = None
+    raw_message: str | None = None
+
+
+class ScreeningCompletedResponse(BaseModel):
+    """Response for POST /handle-trigger/screening-completed."""
+    success: bool
+    trigger: str
+    wsi_score: float
+    wsi_details: ScreeningWsiDetails
+    recommendation: str
+    passed: bool
+    communication_sent: bool
+    notification_created: bool
+    suggested_next_stage: str | None = None
+    confidence: float
+    candidate_feedback: ScreeningCandidateFeedback
+    metadata: ResponseMetadata
+
+
+class InterviewScheduledResponse(BaseModel):
+    """Response for POST /handle-trigger/interview-scheduled."""
+    success: bool
+    trigger: str
+    email_sent: bool
+    whatsapp_sent: bool
+    calendar_event_created: bool
+    notification_created: bool
+    interview_id: str | None = None
+    calendar_event_id: str | None = None
+    metadata: ResponseMetadata
+
+
+class ParecerDetails(BaseModel):
+    id: str | None = None
+    summary: str | None = None
+    strengths: list[str] | None = []
+    development_areas: list[str] | None = []
+    recommendation: str | None = None
+    average_rating: float | None = None
+
+
+class InterviewCompletedResponse(BaseModel):
+    """Response for POST /handle-trigger/interview-completed."""
+    success: bool
+    trigger: str
+    parecer: ParecerDetails
+    suggested_next_stage: str | None = None
+    confidence: float
+    notification_created: bool
+    metadata: ResponseMetadata
+
+
+class CommunicationFailure(BaseModel):
+    """Typed record for a single communication channel failure."""
+    channel: str
+    error: str
+
+
+class CandidateInactiveResponse(BaseModel):
+    """Response for POST /handle-trigger/candidate-inactive."""
+    success: bool
+    partial_success: bool | None = None
+    trigger: str
+    days_inactive: int | None = None
+    follow_up_sent: bool
+    follow_up_type: str | None = None
+    email_sent: bool
+    whatsapp_sent: bool
+    notification_created: bool
+    communication_failures: list[CommunicationFailure] | None = None
+    metadata: ResponseMetadata
+
+
+class NoShowDetails(BaseModel):
+    email_sent: bool
+    whatsapp_sent: bool
+    recommendation: str | None = None
+    confidence_score: float | None = None
+
+
+class CandidateNoShowResponse(BaseModel):
+    """Response for POST /handle-trigger/candidate-no-show."""
+    success: bool
+    trigger: str
+    no_show_count: int | None = None
+    action_taken: str | None = None
+    communication_sent: bool
+    suggestion_created: bool
+    notification_created: bool
+    details: NoShowDetails
+    metadata: ResponseMetadata
+
+
+class ATSStageMappingDetails(BaseModel):
+    lia_stage: str
+    ats_stage: str
+
+
+class ATSSyncResponse(BaseModel):
+    """Response for POST /handle-trigger/ats-sync."""
+    success: bool
+    trigger: str
+    ats_platform: str
+    sync_status: str
+    sync_direction: str
+    stage_mapping: ATSStageMappingDetails
+    ats_response: ATSResponseData | None = None
+    error: str | None = None
+    metadata: ResponseMetadata
+
+
+class OfferSentDetails(BaseModel):
+    email_sent: bool
+    notification_created: bool
+    ats_synced: bool
+
+
+class OfferSentResponse(BaseModel):
+    """Response for POST /handle-trigger/offer-sent."""
+    success: bool
+    trigger: str
+    actions: list[str] | None = []
+    details: OfferSentDetails
+    metadata: ResponseMetadata
+
+
+class CandidateHiredDetails(BaseModel):
+    email_sent: bool
+    stage_updated: bool
+    notification_created: bool
+    ats_synced: bool
+
+
+class CandidateHiredResponse(BaseModel):
+    """Response for POST /handle-trigger/candidate-hired."""
+    success: bool
+    trigger: str
+    actions: list[str] | None = []
+    details: CandidateHiredDetails
+    metadata: ResponseMetadata
+
+
+class CandidateRejectedDetails(BaseModel):
+    email_sent: bool
+    stage_updated: bool
+    added_to_talent_pool: bool
+    ats_synced: bool
+
+
+class CandidateRejectedResponse(BaseModel):
+    """Response for POST /handle-trigger/candidate-rejected."""
+    success: bool
+    trigger: str
+    actions: list[str] | None = []
+    details: CandidateRejectedDetails
+    metadata: ResponseMetadata
 
 
 

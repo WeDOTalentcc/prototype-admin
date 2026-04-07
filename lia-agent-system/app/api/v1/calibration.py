@@ -19,6 +19,62 @@ from app.services.calibration_service import CalibrationService
 router = APIRouter(prefix="/calibration", tags=["Calibration"])
 
 
+# ---------------------------------------------------------------------------
+# Response schemas
+# ---------------------------------------------------------------------------
+
+class FeedbackResponse(BaseModel):
+    success: bool
+    message: str
+    data: dict[str, Any]
+
+
+class DivergencesResponse(BaseModel):
+    success: bool
+    data: list[dict[str, Any]]
+    count: int
+
+
+class CalibrationStatsResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
+class SuggestionsListResponse(BaseModel):
+    success: bool
+    data: list[dict[str, Any]]
+    count: int
+
+
+class GenerateSuggestionsResponse(BaseModel):
+    success: bool
+    message: str
+    data: list[dict[str, Any]]
+
+
+class SuggestionActionResponse(BaseModel):
+    success: bool
+    message: str
+    data: dict[str, Any]
+
+
+class EventsResponse(BaseModel):
+    success: bool
+    data: list[dict[str, Any]]
+    count: int
+
+
+class WeightsResponse(BaseModel):
+    success: bool
+    data: list[dict[str, Any]]
+    count: int
+
+
+class DashboardResponse(BaseModel):
+    success: bool
+    data: dict[str, Any]
+
+
 class ExplicitFeedbackRequest(BaseModel):
     candidate_id: str
     job_id: str | None = None
@@ -157,7 +213,7 @@ async def start_calibration_session(
         )
 
 
-@router.post("/feedback/explicit", response_model=None)
+@router.post("/feedback/explicit", response_model=FeedbackResponse)
 async def record_explicit_feedback(
     request: ExplicitFeedbackRequest,
     user_id: str = "system",
@@ -184,7 +240,7 @@ async def record_explicit_feedback(
     }
 
 
-@router.post("/feedback/implicit", response_model=None)
+@router.post("/feedback/implicit", response_model=FeedbackResponse)
 async def record_implicit_feedback(
     request: ImplicitFeedbackRequest,
     user_id: str = "system",
@@ -212,7 +268,7 @@ async def record_implicit_feedback(
     }
 
 
-@router.post("/feedback/post-hire", response_model=None)
+@router.post("/feedback/post-hire", response_model=FeedbackResponse)
 async def record_post_hire_feedback(
     request: PostHireFeedbackRequest,
     user_id: str = "system",
@@ -238,7 +294,7 @@ async def record_post_hire_feedback(
     }
 
 
-@router.get("/divergences", response_model=None)
+@router.get("/divergences", response_model=DivergencesResponse)
 async def get_divergences(
     days: int = 30,
     min_delta: float = 5.0,
@@ -261,7 +317,7 @@ async def get_divergences(
     }
 
 
-@router.get("/stats", response_model=None)
+@router.get("/stats", response_model=CalibrationStatsResponse)
 async def get_calibration_stats(
     days: int = 30,
     db: AsyncSession = Depends(get_db)
@@ -277,7 +333,7 @@ async def get_calibration_stats(
     }
 
 
-@router.get("/suggestions", response_model=None)
+@router.get("/suggestions", response_model=SuggestionsListResponse)
 async def get_pending_suggestions(
     db: AsyncSession = Depends(get_db)
 ):
@@ -293,7 +349,7 @@ async def get_pending_suggestions(
     }
 
 
-@router.post("/suggestions/generate", response_model=None)
+@router.post("/suggestions/generate", response_model=GenerateSuggestionsResponse)
 async def generate_suggestions(
     db: AsyncSession = Depends(get_db)
 ):
@@ -309,7 +365,7 @@ async def generate_suggestions(
     }
 
 
-@router.post("/suggestions/{suggestion_id}/approve", response_model=None)
+@router.post("/suggestions/{suggestion_id}/approve", response_model=SuggestionActionResponse)
 async def approve_suggestion(
     suggestion_id: str,
     user_id: str = "system",
@@ -330,7 +386,7 @@ async def approve_suggestion(
     }
 
 
-@router.post("/suggestions/{suggestion_id}/reject", response_model=None)
+@router.post("/suggestions/{suggestion_id}/reject", response_model=SuggestionActionResponse)
 async def reject_suggestion(
     suggestion_id: str,
     request: SuggestionActionRequest,
@@ -356,7 +412,7 @@ async def reject_suggestion(
     }
 
 
-@router.get("/events", response_model=None)
+@router.get("/events", response_model=EventsResponse)
 async def get_recent_events(
     limit: int = 50,
     feedback_types: str | None = None,
@@ -379,7 +435,7 @@ async def get_recent_events(
     }
 
 
-@router.get("/weights", response_model=None)
+@router.get("/weights", response_model=WeightsResponse)
 async def get_weights(
     job_id: str | None = None,
     db: AsyncSession = Depends(get_db)
@@ -396,7 +452,7 @@ async def get_weights(
     }
 
 
-@router.get("/dashboard", response_model=None)
+@router.get("/dashboard", response_model=DashboardResponse)
 async def get_calibration_dashboard(
     days: int = 30,
     db: AsyncSession = Depends(get_db)
