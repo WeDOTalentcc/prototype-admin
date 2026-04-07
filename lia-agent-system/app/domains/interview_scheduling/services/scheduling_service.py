@@ -19,7 +19,7 @@ from icalendar import Calendar, Event, vText
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview import Interview
+from lia_models.interview import Interview
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 _microsoft_graph_service = None
@@ -133,7 +133,7 @@ class SchedulingService:
         
         if company_id:
             try:
-                from app.models.company import CompanyProfile
+                from lia_models.company import CompanyProfile
                 result = await db.execute(
                     select(CompanyProfile).where(
                         CompanyProfile.id == company_id

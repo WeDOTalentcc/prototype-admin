@@ -30,8 +30,8 @@ from app.domains.cv_screening.services.pre_qualification_service import (
     PreQualificationResult,
     pre_qualification_service,
 )
-from app.models.job_vacancy import JobVacancy
-from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation, WhatsAppMessage
+from lia_models.job_vacancy import JobVacancy
+from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation, WhatsAppMessage
 
 logger = logging.getLogger(__name__)
 
@@ -591,7 +591,7 @@ class ConversationManager:
             if not job:
                 return False
             
-            from app.models.company import CompanyProfile
+            from lia_models.company import CompanyProfile
             
             company_result = await self.db.execute(
                 select(CompanyProfile).where(
@@ -622,7 +622,7 @@ class ConversationManager:
             
             from sqlalchemy import and_, func, not_
 
-            from app.models.candidate import VacancyCandidate
+            from lia_models.candidate import VacancyCandidate
             
             excluded = ('rejected', 'declined', 'withdrawn')
             organic_count_result = await self.db.execute(
@@ -662,7 +662,7 @@ class ConversationManager:
         
         try:
             from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
-            from app.models.rubric import JobRequirement
+            from lia_models.rubric import JobRequirement
             
             result = await self.db.execute(
                 select(JobRequirement).where(JobRequirement.job_vacancy_id == job.id)
@@ -1376,7 +1376,7 @@ class ConversationManager:
                 StageAutomationEngine,
                 TriggerType,
             )
-            from app.models.candidate import Candidate, VacancyCandidate
+            from lia_models.candidate import Candidate, VacancyCandidate
             from app.models.candidate_job import CandidateJob
             
             cv_data = conversation.cv_parsed_data or {}

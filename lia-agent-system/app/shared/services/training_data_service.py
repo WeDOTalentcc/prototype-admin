@@ -16,7 +16,7 @@ from uuid import UUID
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback import InteractionFeedback
+from lia_models.feedback import InteractionFeedback
 
 logger = logging.getLogger(__name__)
 

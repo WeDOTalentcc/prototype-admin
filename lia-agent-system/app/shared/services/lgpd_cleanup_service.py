@@ -28,8 +28,8 @@ from sqlalchemy import and_, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.ai_consumption import AiConsumption
-from app.models.candidate import Candidate, VacancyCandidate
+from lia_models.ai_consumption import AiConsumption
+from lia_models.candidate import Candidate, VacancyCandidate
 
 logger = logging.getLogger(__name__)
 

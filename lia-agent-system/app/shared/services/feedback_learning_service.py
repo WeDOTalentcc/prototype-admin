@@ -23,7 +23,7 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import JobOutcome, JobOutcomeType, SuggestionFeedback, WizardFeedback
+from lia_models.feedback_learning import JobOutcome, JobOutcomeType, SuggestionFeedback, WizardFeedback
 
 logger = logging.getLogger(__name__)
 

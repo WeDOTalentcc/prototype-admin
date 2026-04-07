@@ -95,7 +95,7 @@ class WeeklyDigestService:
             from app.domains.analytics.services.predictive_analytics_service import (
                 PredictiveAnalyticsService,
             )
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
 
             svc = PredictiveAnalyticsService()
 

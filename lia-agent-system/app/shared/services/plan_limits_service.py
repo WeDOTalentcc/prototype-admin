@@ -15,6 +15,10 @@ Usage:
         _: None = Depends(check_active_jobs_limit),
     ):
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 from __future__ import annotations
 
 import logging
@@ -27,8 +31,8 @@ from app.auth.dependencies import get_current_active_user, get_current_user_or_d
 from app.auth.models import User
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.billing import Subscription, SubscriptionStatus
-from app.models.job_vacancy import JobVacancy
+from lia_models.billing import Subscription, SubscriptionStatus
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

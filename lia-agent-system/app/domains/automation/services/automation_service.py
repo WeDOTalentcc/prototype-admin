@@ -18,8 +18,8 @@ from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.automation import ActionType, AutomationExecutionLog, CommunicationAutomation
-from app.models.task import Task, TaskPriority, TaskType
+from lia_models.automation import ActionType, AutomationExecutionLog, CommunicationAutomation
+from lia_models.task import Task, TaskPriority, TaskType
 from app.services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class AutomationService:
             return True
         
         try:
-            from app.models.candidate import Candidate
+            from lia_models.candidate import Candidate
             result = await db.execute(
                 select(Candidate).where(Candidate.id == candidate_id)
             )
@@ -87,7 +87,7 @@ class AutomationService:
             return True
         
         try:
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
             result = await db.execute(
                 select(JobVacancy).where(JobVacancy.id == vacancy_id)
             )

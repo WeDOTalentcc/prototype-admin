@@ -17,14 +17,14 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company_learning import (
+from lia_models.company_learning import (
     AgentFeedback,
     CompanyPattern,
     CompanyResponsibility,
     CompanySkill,
     LearningSource,
 )
-from app.models.feedback_learning import JobOutcome
+from lia_models.feedback_learning import JobOutcome
 
 logger = logging.getLogger(__name__)
 

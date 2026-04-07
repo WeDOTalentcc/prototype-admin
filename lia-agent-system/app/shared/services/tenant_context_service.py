@@ -37,8 +37,8 @@ class TenantContextService:
     async def get_context(self, company_id: str, db: AsyncSession) -> TenantContext:
         """Retorna contexto do tenant. Fail-safe: retorna defaults se falhar."""
         try:
-            from app.models.company import Company
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.company import Company
+            from lia_models.job_vacancy import JobVacancy
 
             result = await db.execute(
                 select(Company).where(Company.id == company_id)

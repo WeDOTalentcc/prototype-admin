@@ -13,12 +13,12 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company_learning import (
+from lia_models.company_learning import (
     CompanyPattern,
     CompanyResponsibility,
     CompanySkill,
 )
-from app.models.feedback_learning import JobOutcome
+from lia_models.feedback_learning import JobOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class LearningAnalyticsService:
         created_by: str | None = None,
     ) -> dict[str, Any]:
         try:
-            from app.models.company_learning import StageFeedback
+            from lia_models.company_learning import StageFeedback
             from app.services.learning_confirmation_service import (
                 learning_confirmation_service,
             )
@@ -102,7 +102,7 @@ class LearningAnalyticsService:
         stage_number: int | None = None,
     ) -> dict[str, Any]:
         try:
-            from app.models.company_learning import StageFeedback
+            from lia_models.company_learning import StageFeedback
 
             base_query = select(StageFeedback).where(
                 StageFeedback.company_id == company_id

@@ -9,7 +9,7 @@ from typing import Any
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_vacancy_audit import AuditAction, JobVacancyAuditLog
+from lia_models.job_vacancy_audit import AuditAction, JobVacancyAuditLog
 
 logger = logging.getLogger(__name__)
 

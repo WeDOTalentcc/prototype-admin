@@ -10,7 +10,7 @@ from lia_models.job_vacancy import JobVacancy
 from sqlalchemy import and_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.triagem import TriagemMessage, TriagemSession
+from lia_models.triagem import TriagemMessage, TriagemSession
 
 logger = logging.getLogger(__name__)
 
@@ -1199,8 +1199,8 @@ class TriagemSessionService:
 
             from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
             from app.domains.cv_screening.services.wsi_feedback_generator import get_feedback_generator
-            from app.models.candidate import Candidate
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.candidate import Candidate
+            from lia_models.job_vacancy import JobVacancy
 
             comm_dispatcher = CommunicationDispatcher()
             response_scores = response_scores or []

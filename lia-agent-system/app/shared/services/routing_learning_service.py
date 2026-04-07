@@ -33,7 +33,7 @@ class RoutingLearningService:
         if not USE_ADAPTIVE_ROUTING:
             return False
         try:
-            from app.models.routing_feedback import RoutingFeedback
+            from lia_models.routing_feedback import RoutingFeedback
             feedback = RoutingFeedback(
                 company_id=company_id,
                 session_id=session_id,
@@ -70,7 +70,7 @@ class RoutingLearningService:
         try:
             from sqlalchemy import case, func, select
 
-            from app.models.routing_feedback import RoutingFeedback
+            from lia_models.routing_feedback import RoutingFeedback
             cutoff = datetime.utcnow() - timedelta(days=_LOOKBACK_DAYS)
 
             result = await db.execute(

@@ -14,7 +14,7 @@ from typing import Any
 from sqlalchemy import func, or_, select
 
 from app.core.database import AsyncSessionLocal
-from app.models.company import CompanyProfile, Department, DepartmentMember
+from lia_models.company import CompanyProfile, Department, DepartmentMember
 
 logger = logging.getLogger(__name__)
 

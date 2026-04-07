@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
+from lia_models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 
 logger = logging.getLogger(__name__)
 

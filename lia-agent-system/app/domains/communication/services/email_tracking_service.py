@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 _TRACKING_BASE_URL = os.getenv("API_BASE_URL", "https://api.wedotalent.com")
 
-from app.models.email_tracking import EmailTrackingEvent
+from lia_models.email_tracking import EmailTrackingEvent
 
 logger = logging.getLogger(__name__)
 
@@ -229,7 +229,7 @@ class EmailTrackingService:
         company_id = ""
 
         try:
-            from app.models.message_queue import MessageQueue
+            from lia_models.message_queue import MessageQueue
             stmt = select(MessageQueue.id, MessageQueue.company_id).where(
                 MessageQueue.extra_data["sg_message_id"].astext == sg_message_id,
             ).limit(1)
@@ -272,7 +272,7 @@ class EmailTrackingService:
             try:
                 from sqlalchemy import update as sql_update
 
-                from app.models.message_queue import MessageQueue
+                from lia_models.message_queue import MessageQueue
                 await db.execute(
                     sql_update(MessageQueue)
                     .where(MessageQueue.id == notification_id)
@@ -295,7 +295,7 @@ class EmailTrackingService:
             Tuple of (company_id, template_id). Empty strings if not found.
         """
         try:
-            from app.models.message_queue import MessageQueue
+            from lia_models.message_queue import MessageQueue
             stmt = select(
                 MessageQueue.company_id,
                 MessageQueue.extra_data,

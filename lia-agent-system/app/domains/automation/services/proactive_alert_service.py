@@ -21,9 +21,9 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.candidate import Candidate
-from app.models.interview import Interview
-from app.models.task import Task, TaskStatus
+from lia_models.candidate import Candidate
+from lia_models.interview import Interview
+from lia_models.task import Task, TaskStatus
 from app.services.notification_service import (
     NotificationChannel,
     NotificationService,

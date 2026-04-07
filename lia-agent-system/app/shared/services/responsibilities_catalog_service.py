@@ -21,7 +21,7 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company_learning import CompanyResponsibility
+from lia_models.company_learning import CompanyResponsibility
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ across the platform:
 import logging
 from typing import Any
 
-from app.models.recruitment_stages import DEFAULT_RECRUITMENT_STAGES
+from lia_models.recruitment_stages import DEFAULT_RECRUITMENT_STAGES
 
 logger = logging.getLogger(__name__)
 

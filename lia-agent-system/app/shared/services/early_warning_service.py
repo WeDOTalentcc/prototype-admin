@@ -15,6 +15,10 @@ Sem migration — usa dados existentes:
   candidates (name)
   users (id, email — para recruiter_email → recruiter_id)
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import logging
 from typing import Any
 

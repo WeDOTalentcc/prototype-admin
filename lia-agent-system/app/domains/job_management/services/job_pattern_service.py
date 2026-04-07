@@ -18,8 +18,8 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.feedback_learning import JobOutcome
-from app.models.job_pattern import JobPattern, SalaryBenchmark
+from lia_models.feedback_learning import JobOutcome
+from lia_models.job_pattern import JobPattern, SalaryBenchmark
 
 logger = logging.getLogger(__name__)
 

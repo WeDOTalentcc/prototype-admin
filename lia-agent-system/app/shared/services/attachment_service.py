@@ -11,7 +11,7 @@ from typing import Any
 from sqlalchemy import and_, desc, func, select
 
 from app.core.database import AsyncSessionLocal
-from app.models.candidate_attachment import CandidateAttachment
+from lia_models.candidate_attachment import CandidateAttachment
 
 logger = logging.getLogger(__name__)
 

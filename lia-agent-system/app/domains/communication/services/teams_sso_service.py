@@ -134,7 +134,7 @@ class TeamsSSOService:
 
         try:
             from app.models import User
-            from app.models.teams import TeamsConversation
+            from lia_models.teams import TeamsConversation
 
             # Find conversation record
             stmt = select(TeamsConversation).where(
@@ -188,7 +188,7 @@ class TeamsSSOService:
     ) -> bool:
         """Store the AAD ↔ WeDOTalent mapping for future requests."""
         try:
-            from app.models.teams import TeamsConversation
+            from lia_models.teams import TeamsConversation
             stmt = (
                 update(TeamsConversation)
                 .where(TeamsConversation.user_id == teams_user_id)

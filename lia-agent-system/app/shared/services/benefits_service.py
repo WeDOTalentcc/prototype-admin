@@ -21,7 +21,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.company import Benefit
+from lia_models.company import Benefit
 
 logger = logging.getLogger(__name__)
 

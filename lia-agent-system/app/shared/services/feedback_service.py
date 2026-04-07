@@ -16,7 +16,7 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.feedback import InteractionFeedback, LearningPattern
+from lia_models.feedback import InteractionFeedback, LearningPattern
 
 logger = logging.getLogger(__name__)
 

@@ -18,7 +18,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.feedback_learning import JobOutcome
+from lia_models.feedback_learning import JobOutcome
 
 logger = logging.getLogger(__name__)
 

@@ -57,7 +57,7 @@ async def _db_save_pending(
     """Persiste uma nova solicitação de aprovação no banco (best-effort)."""
     try:
         from app.core.database import AsyncSessionLocal
-        from app.models.hitl import HITLPendingAction
+        from lia_models.hitl import HITLPendingAction
         async with AsyncSessionLocal() as db:
             record = HITLPendingAction(
                 pending_id=pending_id,
@@ -97,7 +97,7 @@ async def _db_resolve(
         from sqlalchemy import select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.hitl import HITLAuditTrail, HITLPendingAction
+        from lia_models.hitl import HITLAuditTrail, HITLPendingAction
         now = datetime.now(UTC)
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -138,7 +138,7 @@ async def _db_get_pending(thread_id: str) -> dict | None:
         from sqlalchemy import select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.hitl import HITLPendingAction
+        from lia_models.hitl import HITLPendingAction
         now = datetime.now(UTC)
         async with AsyncSessionLocal() as db:
             result = await db.execute(

@@ -21,8 +21,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import derive_company_from_context
 from app.core.database import AsyncSessionLocal
 from app.domains.ats_integration.services.ats_sync_service import ats_sync_service
-from app.models.candidate import VacancyCandidate
-from app.models.recruitment_stages import (
+from lia_models.candidate import VacancyCandidate
+from lia_models.recruitment_stages import (
     DEFAULT_RECRUITMENT_STAGES,
     DEFAULT_SUB_STATUSES,
     ATSStageMapping,
@@ -805,7 +805,7 @@ class PipelineStageService:
                     "stage": new_stage,
                 }
             
-            from app.models.data_request import TriggerType
+            from lia_models.data_request import TriggerType
             
             trigger_type_str = trigger_config.get("trigger_type", "stage_entry")
             try:

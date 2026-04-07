@@ -20,7 +20,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.job_management.services.job_template_service import validate_wsi_quality
-from app.models.job_template import JobTemplate
+from lia_models.job_template import JobTemplate
 
 logger = logging.getLogger(__name__)
 

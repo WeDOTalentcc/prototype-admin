@@ -16,6 +16,10 @@ Sem migration — usa dados existentes:
   communication_logs (sent_at — último contato)
   job_vacancies (title, status, deadline, created_by, recruiter_email, company_id)
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import asyncio
 import logging
 from typing import Any

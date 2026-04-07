@@ -12,9 +12,9 @@ from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy import and_, select
 
 from app.core.database import async_session_factory
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.interview import Interview
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.interview import Interview
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -878,7 +878,7 @@ Equipe de Recrutamento
             from sqlalchemy import update
 
             from app.core.database import async_session_factory
-            from app.models.billing import Subscription, SubscriptionStatus
+            from lia_models.billing import Subscription, SubscriptionStatus
 
             async with async_session_factory() as db:
                 now = _dt.utcnow()

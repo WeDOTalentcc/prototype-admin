@@ -569,7 +569,7 @@ class StageTransitionAutomationService:
         try:
             client = get_anthropic_client()
             
-            from app.models.recruitment_stages import DEFAULT_SUB_STATUSES
+            from lia_models.recruitment_stages import DEFAULT_SUB_STATUSES
             
             stage_subs = DEFAULT_SUB_STATUSES.get(to_stage, [])
             valid_options = [s['name'] for s in stage_subs]

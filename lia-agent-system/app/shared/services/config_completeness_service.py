@@ -458,7 +458,7 @@ class ConfigCompletenessService:
         Returns:
             Dict with suggestions for each missing field
         """
-        from app.models.company import Department
+        from lia_models.company import Department
         
         suggestions = {}
         context = context or {}

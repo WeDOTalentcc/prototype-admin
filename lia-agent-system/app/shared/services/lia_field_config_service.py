@@ -20,9 +20,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import CompanyProfile
-from app.models.job_vacancy import JobVacancy
-from app.models.lia_field_toggles import (
+from lia_models.company import CompanyProfile
+from lia_models.job_vacancy import JobVacancy
+from lia_models.lia_field_toggles import (
     DEFAULT_FIELD_TOGGLES,
     FIELD_FALLBACK_CONFIG,
     LiaFieldToggle,
@@ -665,7 +665,7 @@ class LiaFieldConfigService:
         """
         from datetime import datetime
 
-        from app.models.recruiter_profile import (
+        from lia_models.recruiter_profile import (
             DEFAULT_IMPACT_DESCRIPTION,
             FIELD_IMPACT_DESCRIPTIONS,
         )
@@ -726,7 +726,7 @@ class LiaFieldConfigService:
         company_id: str
     ) -> dict[str, "RecruiterFieldPreference"]:
         """Load recruiter field preferences from database."""
-        from app.models.recruiter_profile import RecruiterFieldPreference
+        from lia_models.recruiter_profile import RecruiterFieldPreference
         
         result = await self.db.execute(
             select(RecruiterFieldPreference).where(
@@ -758,7 +758,7 @@ class LiaFieldConfigService:
         """
         from datetime import datetime, timedelta
 
-        from app.models.recruiter_profile import RecruiterFieldPreference
+        from lia_models.recruiter_profile import RecruiterFieldPreference
         
         result = await self.db.execute(
             select(RecruiterFieldPreference).where(

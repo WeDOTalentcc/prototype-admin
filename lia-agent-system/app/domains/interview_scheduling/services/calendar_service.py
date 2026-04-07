@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 async def _get_company_calendar_credentials(company_id: str, db: AsyncSession):
     """Load company calendar credentials from DB. Returns None if not found."""
     try:
-        from app.models.company_calendar_credentials import CompanyCalendarCredentials
+        from lia_models.company_calendar_credentials import CompanyCalendarCredentials
         result = await db.execute(
             select(CompanyCalendarCredentials).where(
                 CompanyCalendarCredentials.company_id == company_id,

@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.rubric import JobRequirement
+from lia_models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 
 logger = logging.getLogger(__name__)

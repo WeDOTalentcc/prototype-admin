@@ -10,6 +10,10 @@ Sem migration — usa dados existentes:
   communication_logs (sent_at — último contato)
   users (id, email — para recruiter linkage)
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import logging
 from typing import Any
 

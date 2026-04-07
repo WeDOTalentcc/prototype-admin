@@ -15,9 +15,9 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import CompanyProfile, Department
-from app.models.company_benefit import CompanyBenefit
-from app.models.job_vacancy import JobVacancy
+from lia_models.company import CompanyProfile, Department
+from lia_models.company_benefit import CompanyBenefit
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

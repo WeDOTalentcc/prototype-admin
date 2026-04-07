@@ -15,6 +15,10 @@ Flow:
      → Service creates Interview via SchedulingService
      → Updates SelfSchedulingLink status to "used"
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 from __future__ import annotations
 
 import logging
@@ -26,7 +30,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.self_scheduling import SelfSchedulingLink
+from lia_models.self_scheduling import SelfSchedulingLink
 
 logger = logging.getLogger(__name__)
 

@@ -113,7 +113,7 @@ class EmbeddingCacheService:
         try:
             from sqlalchemy import select
 
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
 
             stmt = (
                 select(JobVacancy)

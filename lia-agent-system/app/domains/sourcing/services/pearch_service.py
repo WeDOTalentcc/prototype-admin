@@ -13,8 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.constants.industries import expand_industries_for_search
-from app.models.candidate import Candidate
-from app.models.pearch import (
+from lia_models.candidate import Candidate
+from lia_models.pearch import (
     CandidateEducation,
     CandidateExperience,
     CandidateInsights,
@@ -660,8 +660,8 @@ class PearchService:
         Returns:
             Tuple de (lista de perfis, total encontrado)
         """
-        from app.models.candidate import CandidateEducation as CandidateEducationDB
-        from app.models.candidate import CandidateExperience, ExternalCandidateProfile
+        from lia_models.candidate import CandidateEducation as CandidateEducationDB
+        from lia_models.candidate import CandidateExperience, ExternalCandidateProfile
         
         logger.info(f"Searching local database: '{query}' (limit={limit}, industries={industries}, include_discovered={include_discovered})")
         

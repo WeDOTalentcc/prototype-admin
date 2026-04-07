@@ -20,9 +20,9 @@ from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
-from app.models.recruitment_stages import CandidateStageHistory
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
+from lia_models.recruitment_stages import CandidateStageHistory
 
 logger = logging.getLogger(__name__)
 

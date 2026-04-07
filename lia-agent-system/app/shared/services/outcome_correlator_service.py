@@ -19,8 +19,8 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import JobOutcome, JobOutcomeType
-from app.models.intelligence_layer import OutcomeCorrelation
+from lia_models.feedback_learning import JobOutcome, JobOutcomeType
+from lia_models.intelligence_layer import OutcomeCorrelation
 
 logger = logging.getLogger(__name__)
 

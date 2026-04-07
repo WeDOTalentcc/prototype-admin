@@ -28,7 +28,7 @@ from app.domains.communication.services.email_providers import (
 from app.domains.communication.services.email_providers import (
     ResendProvider as _DomainResendProvider,
 )
-from app.models.email_template import EmailLog, EmailTemplate
+from lia_models.email_template import EmailLog, EmailTemplate
 
 logger = logging.getLogger(__name__)
 

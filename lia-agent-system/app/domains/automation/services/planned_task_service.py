@@ -16,7 +16,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.planned_task import ExecutionPlan, PlannedTask, PlannedTaskPriority, PlannedTaskStatus
+from lia_models.planned_task import ExecutionPlan, PlannedTask, PlannedTaskPriority, PlannedTaskStatus
 
 logger = logging.getLogger(__name__)
 

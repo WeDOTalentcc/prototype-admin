@@ -24,9 +24,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
-from app.models.rubric import JobRequirement
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
+from lia_models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.services.activity_service import activity_service
 

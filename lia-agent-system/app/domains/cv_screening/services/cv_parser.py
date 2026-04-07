@@ -13,7 +13,7 @@ from pypdf import PdfReader
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate
+from lia_models.candidate import Candidate
 from app.schemas.cv_parser import DuplicateCheck, Education, Experience, ParsedCV
 from app.services.llm import LLMService
 

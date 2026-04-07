@@ -12,14 +12,14 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.billing import (
+from lia_models.billing import (
     Invoice,
     InvoiceStatus,
     PaymentMethod,
     Subscription,
     SubscriptionStatus,
 )
-from app.models.client_account import ClientAccount
+from lia_models.client_account import ClientAccount
 from app.services.billing_providers.base import (
     BillingProviderBase,
     CustomerData,

@@ -14,8 +14,8 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company_learning import CompanyPattern, CompanySkill, LearningSource
-from app.models.feedback_learning import JobOutcome
+from lia_models.company_learning import CompanyPattern, CompanySkill, LearningSource
+from lia_models.feedback_learning import JobOutcome
 from app.services.learning_confirmation_service import (
     _calculate_confidence,
     learning_confirmation_service,
@@ -57,7 +57,7 @@ class LearningOutcomeService:
     ) -> dict[str, Any]:
         """Record a job outcome and trigger learning pattern updates."""
         try:
-            from app.models.feedback_learning import JobOutcomeType
+            from lia_models.feedback_learning import JobOutcomeType
 
             outcome_enum = JobOutcomeType(outcome)
 
@@ -228,7 +228,7 @@ class LearningOutcomeService:
         seniority: str | None = None,
     ) -> dict[str, Any]:
         try:
-            from app.models.feedback_learning import JobOutcomeType
+            from lia_models.feedback_learning import JobOutcomeType
 
             base_query = select(JobOutcome).where(
                 JobOutcome.company_id == company_id

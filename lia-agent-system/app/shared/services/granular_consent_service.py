@@ -125,7 +125,7 @@ class GranularConsentService:
         Constrói um status para cada finalidade suportada, mesmo que o registro
         não exista no banco (nesse caso: given=False, revoked=False, absent=True).
         """
-        from app.models.communication_settings import LGPDConsent
+        from lia_models.communication_settings import LGPDConsent
 
         # Busca todos os registros do candidato de uma vez
         result = await self.db.execute(
@@ -194,7 +194,7 @@ class GranularConsentService:
         Returns:
             Lista de GranularConsentStatus atualizados.
         """
-        from app.models.communication_settings import LGPDConsent
+        from lia_models.communication_settings import LGPDConsent
 
         now = datetime.utcnow()
         updated: list[GranularConsentStatus] = []
@@ -264,7 +264,7 @@ class GranularConsentService:
         Retorna True se consent_given=True e não revogado. Fail-open: True em caso de erro.
         """
         try:
-            from app.models.communication_settings import LGPDConsent
+            from lia_models.communication_settings import LGPDConsent
             ctype = self._consent_type_for(purpose)
             result = await self.db.execute(
                 select(LGPDConsent).where(

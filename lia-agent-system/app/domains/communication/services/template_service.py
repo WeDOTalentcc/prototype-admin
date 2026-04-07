@@ -68,7 +68,7 @@ async def resolve_db_template(
     Returns:
         (template_orm_object | None, ab_variant_prompt | None)
     """
-    from app.models.email_template import EmailTemplate
+    from lia_models.email_template import EmailTemplate
 
     situation = MESSAGE_TYPE_TO_SITUATION.get(message_type)
     if not situation:

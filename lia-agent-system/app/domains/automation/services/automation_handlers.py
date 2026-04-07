@@ -21,8 +21,8 @@ async def validate_multi_tenancy(
     Validate that candidate and vacancy belong to the specified company.
     Returns (is_valid, error_message).
     """
-    from app.models.candidate import VacancyCandidate
-    from app.models.job_vacancy import JobVacancy
+    from lia_models.candidate import VacancyCandidate
+    from lia_models.job_vacancy import JobVacancy
     
     vacancy_result = await db.execute(
         select(JobVacancy).where(
@@ -109,7 +109,7 @@ async def handle_screening_completed(
             f"Resultado: {status_label}."
         )
 
-        from app.models.candidate import Candidate
+        from lia_models.candidate import Candidate
         candidate_result = await db.execute(
             select(Candidate).where(Candidate.id == candidate_id)
         )
@@ -593,8 +593,8 @@ async def handle_stage_changed(
             from datetime import datetime, timedelta
 
             from app.domains.interview_scheduling.services.scheduling_service import SchedulingService
-            from app.models.candidate import Candidate
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.candidate import Candidate
+            from lia_models.job_vacancy import JobVacancy
 
             scheduling_service = SchedulingService()
 
@@ -649,7 +649,7 @@ async def handle_stage_changed(
     elif stage_lower in rejected_stages:
         try:
             from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-            from app.models.candidate import Candidate
+            from lia_models.candidate import Candidate
 
             comm_dispatcher = CommunicationDispatcher()
             rejection_reason = kwargs.get("rejection_reason", "Perfil não aderente aos requisitos da vaga")
@@ -972,8 +972,8 @@ async def process_screening_queue(
     """
     from sqlalchemy import and_
 
-    from app.models.candidate import Candidate, VacancyCandidate
-    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
+    from lia_models.candidate import Candidate, VacancyCandidate
+    from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation
 
     queued_result = await db.execute(
         select(VacancyCandidate)
@@ -1024,7 +1024,7 @@ async def process_screening_queue(
             invite_channel = "email"
             invite_sent = False
 
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
             job_result = await db.execute(
                 select(JobVacancy).where(JobVacancy.id == vc.vacancy_id)
             )
@@ -1122,8 +1122,8 @@ async def handle_recruiter_override_approve(
     """
     from sqlalchemy import and_
 
-    from app.models.candidate import Candidate, VacancyCandidate
-    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
+    from lia_models.candidate import Candidate, VacancyCandidate
+    from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation
 
     logger.info(
         f"[OVERRIDE] Recruiter override approve for candidate {candidate_id} "
@@ -1198,7 +1198,7 @@ async def handle_recruiter_override_approve(
         invite_channel = "whatsapp"
         try:
             from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
 
             provider = await WhatsAppProviderFactory.get_provider(company_id, db)
 
@@ -1222,7 +1222,7 @@ async def handle_recruiter_override_approve(
     if not invite_sent and candidate and candidate.email:
         invite_channel = "email"
         try:
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.job_vacancy import JobVacancy
             from app.services.candidate_feedback_service import candidate_feedback_service
 
             job_result = await db.execute(

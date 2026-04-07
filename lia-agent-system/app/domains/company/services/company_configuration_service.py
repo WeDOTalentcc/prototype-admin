@@ -25,10 +25,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.database import AsyncSessionLocal
-from app.models.communication_settings import CommunicationSettings
-from app.models.company import Benefit, CompanyProfile
-from app.models.pipeline_template import PipelineTemplate
-from app.models.screening_question import CompanyScreeningQuestion
+from lia_models.communication_settings import CommunicationSettings
+from lia_models.company import Benefit, CompanyProfile
+from lia_models.pipeline_template import PipelineTemplate
+from lia_models.screening_question import CompanyScreeningQuestion
 
 logger = logging.getLogger(__name__)
 
@@ -580,8 +580,8 @@ class CompanyConfigurationService:
         Returns:
             Dictionary with catalog status and counts
         """
-        from app.models.company import Department, DepartmentMember
-        from app.models.company_learning import CompanySkill
+        from lia_models.company import Department, DepartmentMember
+        from lia_models.company_learning import CompanySkill
         from app.services.skills_catalog_service import skills_catalog_service
         
         config = await self.get_configuration(company_id, db)

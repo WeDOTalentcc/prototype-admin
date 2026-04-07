@@ -15,8 +15,8 @@ import logging
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate
-from app.models.communication_settings import LGPDConsent
+from lia_models.candidate import Candidate
+from lia_models.communication_settings import LGPDConsent
 
 logger = logging.getLogger(__name__)
 

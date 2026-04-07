@@ -19,9 +19,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.cv_screening.services.score_normalization_service import score_normalization_service
 from app.domains.cv_screening.services.seniority_utils import normalize_seniority
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
-from app.models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
+from lia_models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
 from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)

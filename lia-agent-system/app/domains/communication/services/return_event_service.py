@@ -12,8 +12,8 @@ from sqlalchemy import select
 from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.activity_feed import ActivityFeed
-from app.models.candidate import Candidate, VacancyCandidate
+from lia_models.activity_feed import ActivityFeed
+from lia_models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import notification_service
 
 logger = logging.getLogger(__name__)

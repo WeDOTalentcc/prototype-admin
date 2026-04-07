@@ -16,6 +16,10 @@ Referências:
 - EU AI Act Art. 10 (dados de treino e auditoria)
 - SOX / ISO 27001: evidência de fairness com dados reais
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 from __future__ import annotations
 
 import json
@@ -34,9 +38,9 @@ except ImportError:
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.bias_audit_snapshot import BiasAuditSnapshot
-from app.models.candidate import Candidate
-from app.models.rubric import RubricEvaluation
+from lia_models.bias_audit_snapshot import BiasAuditSnapshot
+from lia_models.candidate import Candidate
+from lia_models.rubric import RubricEvaluation
 
 logger = logging.getLogger(__name__)
 

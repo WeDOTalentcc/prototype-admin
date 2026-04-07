@@ -20,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.agent_checkpoint import AgentCheckpoint
+from lia_models.agent_checkpoint import AgentCheckpoint
 
 logger = logging.getLogger(__name__)
 

@@ -40,8 +40,8 @@ class CandidateContextAggregator:
         }
         
         try:
-            from app.models.candidate import Candidate, VacancyCandidate
-            from app.models.job_vacancy import JobVacancy
+            from lia_models.candidate import Candidate, VacancyCandidate
+            from lia_models.job_vacancy import JobVacancy
             
             vc_result = await self.db.execute(
                 select(VacancyCandidate).where(VacancyCandidate.id == vacancy_candidate_id)

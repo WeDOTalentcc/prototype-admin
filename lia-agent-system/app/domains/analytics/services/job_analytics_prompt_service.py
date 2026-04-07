@@ -21,8 +21,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.base_agent import AgentType
 from app.core.database import AsyncSessionLocal
-from app.models.candidate import VacancyCandidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

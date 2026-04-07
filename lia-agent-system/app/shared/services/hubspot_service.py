@@ -18,7 +18,7 @@ from hubspot.crm.deals.exceptions import ApiException as DealApiException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.client_account import ClientAccount
+from lia_models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
 

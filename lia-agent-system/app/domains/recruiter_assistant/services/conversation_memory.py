@@ -17,7 +17,7 @@ from sqlalchemy import and_, delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.conversation import Conversation, ConversationSummary, Message
+from lia_models.conversation import Conversation, ConversationSummary, Message
 
 logger = logging.getLogger(__name__)
 

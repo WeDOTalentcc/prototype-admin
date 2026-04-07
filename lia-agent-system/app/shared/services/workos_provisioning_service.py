@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from workos import WorkOSClient
 
 from app.auth.workos_models import CompanyWorkOSConfig
-from app.models.client_account import ClientAccount
+from lia_models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
 

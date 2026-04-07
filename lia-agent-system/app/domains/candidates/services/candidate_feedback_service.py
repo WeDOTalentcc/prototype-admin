@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.domains.communication.services.email_service import email_service
-from app.models.candidate_feedback import CandidateFeedback, FeedbackType
+from lia_models.candidate_feedback import CandidateFeedback, FeedbackType
 from app.services.notification_service import (
     NotificationType,
     notification_service,

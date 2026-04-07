@@ -173,7 +173,7 @@ class StageAutomationEngine:
         trigger_type: TriggerType
     ) -> dict[str, Any]:
         """Get company-specific automation rules for a trigger type."""
-        from app.models.automation import CommunicationAutomation
+        from lia_models.automation import CommunicationAutomation
         
         trigger_type_mapping = {
             TriggerType.SCREENING_COMPLETED: "screening_completed",
@@ -345,7 +345,7 @@ class StageAutomationEngine:
         rules: dict[str, Any]
     ) -> dict[str, Any]:
         """Create an AI suggestion for recruiter approval."""
-        from app.models.automation import AISuggestion
+        from lia_models.automation import AISuggestion
         
         suggested_action = self._get_suggested_action(event.trigger_type)
         

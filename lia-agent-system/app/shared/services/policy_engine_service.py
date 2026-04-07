@@ -19,7 +19,7 @@ from sqlalchemy import and_, delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.policy import (
+from lia_models.policy import (
     DEFAULT_BUSINESS_RULES,
     DEFAULT_ESCALATION_RULES,
     DEFAULT_RATE_LIMIT_RULES,
@@ -943,7 +943,7 @@ class PolicyEngineService:
 
         from sqlalchemy import select
 
-        from app.models.company_hiring_policy import CompanyHiringPolicy
+        from lia_models.company_hiring_policy import CompanyHiringPolicy
         from app.orchestrator.policy_engine import PolicyEngine
 
         engine = PolicyEngine()

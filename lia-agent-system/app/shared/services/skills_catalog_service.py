@@ -22,8 +22,8 @@ from typing import Any
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company_learning import CompanySkill
-from app.models.skills_catalog import (
+from lia_models.company_learning import CompanySkill
+from lia_models.skills_catalog import (
     BehavioralCompetencyCatalog,
     CompanySkillsCatalog,
     SkillSuggestionPattern,

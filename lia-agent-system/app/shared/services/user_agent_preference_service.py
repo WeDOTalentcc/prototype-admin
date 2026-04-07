@@ -19,7 +19,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user_agent_preference import UserAgentPreference
+from lia_models.user_agent_preference import UserAgentPreference
 
 logger = logging.getLogger(__name__)
 

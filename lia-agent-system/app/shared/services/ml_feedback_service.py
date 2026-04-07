@@ -146,7 +146,7 @@ class MLFeedbackService:
         Retorna JobScoringWeights com weights em [0.7, 1.3].
         """
         try:
-            from app.models.calibration import CalibrationEvent  # type: ignore
+            from lia_models.calibration import CalibrationEvent  # type: ignore
             cutoff = datetime.utcnow() - timedelta(days=lookback_days)
 
             # CalibrationEvent não tem company_id — filtra apenas por job_id

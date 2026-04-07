@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 try:
-    from app.models.event_store import DomainEvent as _DomainEvent  # type: ignore
+    from lia_models.event_store import DomainEvent as _DomainEvent  # type: ignore
 except Exception:
     _DomainEvent = None  # type: ignore
 

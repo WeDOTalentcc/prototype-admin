@@ -18,9 +18,9 @@ from sqlalchemy import and_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.candidate import Candidate
-from app.models.interview import Interview
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate
+from lia_models.interview import Interview
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

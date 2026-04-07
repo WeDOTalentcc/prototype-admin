@@ -16,7 +16,7 @@ from sqlalchemy import and_, select, update
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph, job_wizard_graph
 from app.domains.recruiter_assistant.services.memory_service import MemoryService, memory_service
-from app.models.graph_session import GraphSession
+from lia_models.graph_session import GraphSession
 
 logger = logging.getLogger(__name__)
 

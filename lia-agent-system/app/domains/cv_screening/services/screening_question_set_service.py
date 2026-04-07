@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.screening_question_set import ScreeningQuestionSet
+from lia_models.screening_question_set import ScreeningQuestionSet
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 logger = logging.getLogger(__name__)

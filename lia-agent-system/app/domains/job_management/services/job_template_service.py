@@ -19,7 +19,7 @@ from app.data.templates import (
     get_all_system_templates,
     get_template_categories,
 )
-from app.models.job_template import JobTemplate, TemplateUsageLog
+from lia_models.job_template import JobTemplate, TemplateUsageLog
 
 WSI_QUALITY_GATES = {
     "min_technical_skills": 9,

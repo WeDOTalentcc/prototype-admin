@@ -56,7 +56,7 @@ class CompanyRouteService:
         Returns:
             Dict with keys: success, message, company_id, company_name
         """
-        from app.models.company import CompanyCultureProfile, CompanyProfile
+        from lia_models.company import CompanyCultureProfile, CompanyProfile
 
         profile = None
 
@@ -256,7 +256,7 @@ class CompanyRouteService:
         Returns:
             Dict with keys: success, evp_analysis (or error)
         """
-        from app.models.company import CompanyProfile
+        from lia_models.company import CompanyProfile
         from app.services.llm import llm_service
 
         result = await db.execute(
@@ -390,7 +390,7 @@ REGRAS:
             Dict with profile data plus departments, benefits, culture_values lists,
             or None if not found.
         """
-        from app.models.company import Benefit, CompanyProfile, CultureValue, Department
+        from lia_models.company import Benefit, CompanyProfile, CultureValue, Department
 
         result = await db.execute(
             select(CompanyProfile).where(CompanyProfile.id == profile_id)
@@ -455,7 +455,7 @@ REGRAS:
         Returns:
             List of department dicts with headcount field added.
         """
-        from app.models.company import Department, DepartmentMember
+        from lia_models.company import Department, DepartmentMember
 
         query = select(Department)
         if company_id:
@@ -504,7 +504,7 @@ REGRAS:
         Returns:
             Dict with department data including id.
         """
-        from app.models.company import CompanyProfile, Department
+        from lia_models.company import CompanyProfile, Department
 
         resolved_company_id = None
         if company_id:
@@ -556,7 +556,7 @@ REGRAS:
         Returns:
             Updated department dict or None if not found.
         """
-        from app.models.company import Department
+        from lia_models.company import Department
 
         result = await db.execute(
             select(Department).where(Department.id == department_id)
@@ -590,7 +590,7 @@ REGRAS:
         Returns:
             Dict with success/message or None if not found.
         """
-        from app.models.company import Department
+        from lia_models.company import Department
 
         result = await db.execute(
             select(Department).where(Department.id == department_id)
@@ -619,7 +619,7 @@ REGRAS:
             Dict with keys: success, fields_updated, apify_data, inferred_data, errors
         """
         from app.domains.sourcing.services.apify_service import apify_service
-        from app.models.company import CompanyCultureProfile, CompanyProfile
+        from lia_models.company import CompanyCultureProfile, CompanyProfile
         from app.services.llm import llm_service
 
         errors: list[str] = []
@@ -819,7 +819,7 @@ REGRAS:
         """
         import uuid as uuid_mod
 
-        from app.models.company import Benefit
+        from lia_models.company import Benefit
 
         query = select(Benefit)
         if company_id:

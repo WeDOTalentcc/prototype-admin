@@ -21,14 +21,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
-from app.models.candidate import Candidate
-from app.models.data_request import (
+from lia_models.candidate import Candidate
+from lia_models.data_request import (
     DataFieldType,
     DataRequest,
     DataRequestConfig,
     DataRequestStatus,
 )
-from app.models.data_request import (
+from lia_models.data_request import (
     DataRequestResponse as DataRequestResponseModel,
 )
 

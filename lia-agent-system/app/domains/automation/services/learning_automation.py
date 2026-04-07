@@ -105,7 +105,7 @@ class LearningAutomationService:
         }
 
         try:
-            from app.models.company_learning import CompanySkill
+            from lia_models.company_learning import CompanySkill
 
             async with async_session_factory() as db:
                 stmt = (

@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient
-from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
+from lia_models.candidate import Candidate, CandidateEducation, CandidateExperience
 
 logger = logging.getLogger(__name__)
 

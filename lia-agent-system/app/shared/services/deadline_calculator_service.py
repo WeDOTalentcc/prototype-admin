@@ -16,7 +16,7 @@ from typing import Any
 from sqlalchemy import select
 
 from app.core.database import AsyncSessionLocal
-from app.models.pipeline_template import PipelineTemplate
+from lia_models.pipeline_template import PipelineTemplate
 
 logger = logging.getLogger(__name__)
 

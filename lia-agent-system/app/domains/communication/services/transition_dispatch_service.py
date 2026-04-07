@@ -14,8 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.communication.models.communication_matrix import CommunicationMatrixEntry
 from app.domains.communication.models.email_template import EmailLog, EmailTemplate
 from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
 from app.services.candidate_channel_selector import CandidateChannelSelector
 
 logger = logging.getLogger(__name__)

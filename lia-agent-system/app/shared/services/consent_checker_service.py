@@ -16,7 +16,7 @@ from datetime import datetime
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.communication_settings import LGPDConsent
+from lia_models.communication_settings import LGPDConsent
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ class ConsentCheckerService:
     ) -> None:
         """Registra evento de auditoria LGPD (best-effort, não falha se der erro)."""
         try:
-            from app.models.observability import ConsentEvent
+            from lia_models.observability import ConsentEvent
             audit = ConsentEvent(
                 candidate_id=candidate_id,
                 company_id=company_id,

@@ -130,7 +130,7 @@ class WhatsAppProviderFactory:
     ) -> ProviderType | None:
         """Query company settings for WhatsApp provider preference."""
         try:
-            from app.models.company import Company
+            from lia_models.company import Company
             
             result = await db.execute(
                 select(Company).where(Company.id == company_id)

@@ -20,7 +20,7 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.imported_job_description import (
+from lia_models.imported_job_description import (
     ClientSkillCatalog,
     ImportBatch,
     ImportedJobDescription,

@@ -13,7 +13,7 @@ from xml.dom import minidom
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

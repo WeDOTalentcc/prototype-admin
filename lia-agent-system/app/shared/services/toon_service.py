@@ -12,6 +12,10 @@ LGPD: anonymize=True masks all PII. name_display becomes "Candidato X".
 Fairness: no avatar_url exposed, age only shown when company allows it.
 Multi-tenant: all DB queries are scoped by company_id.
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 from __future__ import annotations
 
 import json
@@ -212,8 +216,8 @@ class TOONService:
         Raises:
             ValueError: When the candidate is not found or does not belong to company_id.
         """
-        from app.models.candidate import Candidate  # lazy import to avoid circular deps
-        from app.models.job_vacancy import JobVacancy  # lazy import
+        from lia_models.candidate import Candidate  # lazy import to avoid circular deps
+        from lia_models.job_vacancy import JobVacancy  # lazy import
 
         # --- Fetch candidate ---
         # Note: Candidate model is global (no company_id column).

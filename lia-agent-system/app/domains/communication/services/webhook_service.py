@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
-from app.models.webhook import WEBHOOK_EVENTS, Webhook, WebhookLog, WebhookStatus
+from lia_models.webhook import WEBHOOK_EVENTS, Webhook, WebhookLog, WebhookStatus
 
 logger = logging.getLogger(__name__)
 

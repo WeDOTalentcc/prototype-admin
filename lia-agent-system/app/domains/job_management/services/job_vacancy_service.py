@@ -453,7 +453,7 @@ class JobVacancyService:
         import uuid
         from datetime import datetime
 
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
 
         if not state.interview_stages:
             state = await JobVacancyService._populate_default_interview_stages(state, company_id, db)
@@ -660,7 +660,7 @@ class JobVacancyService:
         """
         import uuid
 
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
         
         title = draft.get("title") or draft.get("job_title") or "Vaga sem título"
         

@@ -21,8 +21,8 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import WizardFeedback
-from app.models.recruiter_profile import (
+from lia_models.feedback_learning import WizardFeedback
+from lia_models.recruiter_profile import (
     PersonalizationSettings,
     ProfileCalculationLog,
     RecruiterFieldPreference,

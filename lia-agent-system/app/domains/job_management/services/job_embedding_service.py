@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import and_, func, or_, select, text
 
 from app.core.database import AsyncSessionLocal
-from app.models.job_pattern import EMBEDDING_DIMENSION, JobEmbedding
+from lia_models.job_pattern import EMBEDDING_DIMENSION, JobEmbedding
 from app.shared.intelligence.embedding_service import EmbeddingService
 
 logger = logging.getLogger(__name__)
@@ -619,7 +619,7 @@ class JobEmbeddingService:
         - Description and responsibilities
         - WSI/screening questions
         """
-        from app.models.job_vacancy import JobVacancy
+        from lia_models.job_vacancy import JobVacancy
         
         try:
             async with AsyncSessionLocal() as session:

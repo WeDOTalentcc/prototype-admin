@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.job_vacancy import JobVacancy
+from lia_models.job_vacancy import JobVacancy
 from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)

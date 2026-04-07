@@ -4,13 +4,17 @@ Explainability Service for AI Governance.
 This service generates human-readable explanations of AI decisions,
 enabling transparency for candidates and compliance with AI governance requirements.
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import logging
 from typing import Any
 
 from sqlalchemy import and_, select
 
 from app.core.database import AsyncSessionLocal
-from app.models.audit_log import AuditLog
+from lia_models.audit_log import AuditLog
 from app.services.audit_service import PROTECTED_CRITERIA
 
 logger = logging.getLogger(__name__)

@@ -18,7 +18,7 @@ from app.core.template_channels import (
     CHANNEL_TEAMS,
     CHANNEL_WHATSAPP,
 )
-from app.models.email_template import EmailTemplate
+from lia_models.email_template import EmailTemplate
 
 logger = logging.getLogger(__name__)
 

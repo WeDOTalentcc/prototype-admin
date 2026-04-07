@@ -9,6 +9,10 @@ O sampling é determinístico por decision_id (via hash MD5):
 - Não depende de estado externo ou banco de dados
 - 5% = 1 em cada 20 decisões é marcada para revisão
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import hashlib
 import logging
 

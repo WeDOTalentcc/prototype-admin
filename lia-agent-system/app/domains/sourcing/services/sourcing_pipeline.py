@@ -17,11 +17,11 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.sourcing.services.pearch_service import pearch_service
-from app.models.alert import Alert, AlertSeverity, AlertStatus, AlertType
-from app.models.candidate import Candidate
-from app.models.interview import Interview
-from app.models.job_vacancy import JobVacancy
-from app.models.task import Task, TaskPriority, TaskStatus, TaskType
+from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
+from lia_models.candidate import Candidate
+from lia_models.interview import Interview
+from lia_models.job_vacancy import JobVacancy
+from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
 

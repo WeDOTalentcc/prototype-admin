@@ -18,8 +18,8 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.audit_log import AuditLog, DecisionType
-from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
+from lia_models.audit_log import AuditLog, DecisionType
+from lia_models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 
 logger = logging.getLogger(__name__)
 

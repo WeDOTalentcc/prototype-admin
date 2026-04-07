@@ -21,10 +21,10 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.company import Benefit, Department
-from app.models.company_learning import CompanyResponsibility, CompanySkill
-from app.models.imported_job_description import ClientSkillCatalog, ImportedJobDescription
-from app.models.job_pattern import JobPattern
+from lia_models.company import Benefit, Department
+from lia_models.company_learning import CompanyResponsibility, CompanySkill
+from lia_models.imported_job_description import ClientSkillCatalog, ImportedJobDescription
+from lia_models.job_pattern import JobPattern
 
 logger = logging.getLogger(__name__)
 

@@ -2,6 +2,10 @@
 Seed Service - Populates database with demo/test data.
 All seed data is clearly marked with '[DEMO]' prefix for easy identification.
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import logging
 import random
 import uuid
@@ -11,8 +15,8 @@ from typing import Any
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate, CandidateEducation, CandidateExperience, VacancyCandidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.candidate import Candidate, CandidateEducation, CandidateExperience, VacancyCandidate
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 

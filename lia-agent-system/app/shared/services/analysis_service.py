@@ -5,6 +5,10 @@ Uses Replit AI Integrations for Anthropic access.
 Enhanced with BARS rubric evaluation and WSI inferential trait extraction
 for unified profile analysis (Task #35).
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import json
 import logging
 import os
@@ -364,8 +368,8 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
 
             from app.core.database import AsyncSessionLocal
             from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
-            from app.models.job_vacancy import JobVacancy
-            from app.models.rubric import JobRequirement
+            from lia_models.job_vacancy import JobVacancy
+            from lia_models.rubric import JobRequirement
             from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 
             async with AsyncSessionLocal() as db:
@@ -596,7 +600,7 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
         from sqlalchemy import select
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate, VacancyCandidate
+        from lia_models.candidate import Candidate, VacancyCandidate
 
         enriched_payload = {
             "overall_score": analysis.get("overall_assessment", {}).get("score"),

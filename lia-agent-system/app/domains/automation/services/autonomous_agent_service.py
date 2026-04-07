@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import and_, or_, select, text, update
 
 from app.core.database import AsyncSessionLocal
-from app.models.background_jobs import (
+from lia_models.background_jobs import (
     ActionStatus,
     BackgroundJob,
     JobStatus,

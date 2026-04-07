@@ -18,8 +18,8 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import VacancyCandidate
-from app.models.feedback_learning import JobOutcome, JobOutcomeType
+from lia_models.candidate import VacancyCandidate
+from lia_models.feedback_learning import JobOutcome, JobOutcomeType
 
 logger = logging.getLogger(__name__)
 

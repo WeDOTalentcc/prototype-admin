@@ -18,8 +18,8 @@ from typing import Any
 from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.feedback_learning import JobOutcome, JobOutcomeType, WizardFeedback
-from app.models.intelligence_layer import (
+from lia_models.feedback_learning import JobOutcome, JobOutcomeType, WizardFeedback
+from lia_models.intelligence_layer import (
     CorrectionPattern,
     PatternCache,
     SuccessProfile,

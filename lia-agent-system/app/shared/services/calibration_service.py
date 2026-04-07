@@ -16,7 +16,7 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import desc
 
-from app.models.calibration import (
+from lia_models.calibration import (
     CalibrationEvent,
     CalibrationSuggestion,
     CalibrationWeight,

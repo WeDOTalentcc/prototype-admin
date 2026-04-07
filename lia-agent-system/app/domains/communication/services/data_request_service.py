@@ -15,8 +15,8 @@ from uuid import UUID
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.candidate import Candidate
-from app.models.data_request import (
+from lia_models.candidate import Candidate
+from lia_models.data_request import (
     DEFAULT_DATA_FIELDS,
     DataFieldType,
     DataRequest,
@@ -675,7 +675,7 @@ class DataRequestService:
                 "fields": template.fields or [],
             }
         
-        from app.models.data_request import DEFAULT_STAGE_FIELD_MAPPINGS
+        from lia_models.data_request import DEFAULT_STAGE_FIELD_MAPPINGS
         
         if stage in DEFAULT_STAGE_FIELD_MAPPINGS:
             default_field_names = DEFAULT_STAGE_FIELD_MAPPINGS[stage]

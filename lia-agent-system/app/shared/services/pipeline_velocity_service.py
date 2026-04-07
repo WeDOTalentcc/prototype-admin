@@ -15,6 +15,10 @@ Benchmark thresholds per stage (business days — conservative for Brazilian mar
   proposal / offer     : 3 days
   (any other stage)    : 5 days
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 from __future__ import annotations
 
 import logging

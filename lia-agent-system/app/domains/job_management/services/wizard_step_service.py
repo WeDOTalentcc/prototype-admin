@@ -15,7 +15,7 @@ from sqlalchemy import and_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
-from app.models.job_draft import ChangeType, JobDraft, JobDraftStatus
+from lia_models.job_draft import ChangeType, JobDraft, JobDraftStatus
 from app.services.confidence_policy_service import ConfidencePolicyService
 from app.services.config_completeness_service import ConfigCompletenessService
 from app.services.context_aggregator_service import context_aggregator
@@ -48,8 +48,8 @@ class WizardStepService:
         """Process one wizard step and return a WizardStepResponse."""
         # Import response model here to avoid circular imports at module load time
         from app.api.v1.lia_assistant import WizardStepResponse
-        from app.models.company import CompanyProfile, Department
-        from app.models.company_benefit import CompanyBenefit
+        from lia_models.company import CompanyProfile, Department
+        from lia_models.company_benefit import CompanyBenefit
 
         WIZARD_STAGES = [
             {"stage": 1, "name": "description", "panel": "Descrição da Vaga"},

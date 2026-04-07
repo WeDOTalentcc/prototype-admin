@@ -1,15 +1,19 @@
 """
 Affirmative Action Service for managing diversity criteria in job vacancies.
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.models.affirmative_audit import AffirmativeAuditLog, CandidateAffirmativeDocument
-from app.models.candidate import Candidate
-from app.models.job_vacancy import JobVacancy
+from lia_models.affirmative_audit import AffirmativeAuditLog, CandidateAffirmativeDocument
+from lia_models.candidate import Candidate
+from lia_models.job_vacancy import JobVacancy
 
 AFFIRMATIVE_CRITERIA = {
     "gender": {

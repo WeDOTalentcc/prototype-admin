@@ -8,6 +8,10 @@ This service generates personalized daily briefings including:
 - AI-powered insights
 - Anomaly detection
 """
+
+# RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
+# Will be deleted after ats-api-rails handoff is complete.
+# Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import logging
 from datetime import datetime, time, timedelta
 from typing import Any
@@ -16,11 +20,11 @@ from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.alert import Alert, AlertSeverity, AlertStatus
-from app.models.candidate import Candidate
-from app.models.interview import Interview
-from app.models.job_vacancy import JobVacancy
-from app.models.task import Task, TaskPriority, TaskStatus, TaskType
+from lia_models.alert import Alert, AlertSeverity, AlertStatus
+from lia_models.candidate import Candidate
+from lia_models.interview import Interview
+from lia_models.job_vacancy import JobVacancy
+from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.services.recruiter_metrics_service import recruiter_metrics_service
 
 logger = logging.getLogger(__name__)

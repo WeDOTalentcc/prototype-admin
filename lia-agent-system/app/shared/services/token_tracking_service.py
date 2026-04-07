@@ -17,7 +17,7 @@ from sqlalchemy import Float, and_, cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.ai_consumption import AI_LOG_RETENTION_DAYS, AiConsumption, AiCreditsBalance
+from lia_models.ai_consumption import AI_LOG_RETENTION_DAYS, AiConsumption, AiCreditsBalance
 
 logger = logging.getLogger(__name__)
 
@@ -663,7 +663,7 @@ class TokenTrackingService:
                 notification_svc = NotificationService()
 
                 # Buscar admin da empresa
-                from app.models.company import Company
+                from lia_models.company import Company
                 company_query = select(Company).where(Company.id == UUID(company_id))
                 company_result = await self.db.execute(company_query)
                 company = company_result.scalar_one_or_none()
