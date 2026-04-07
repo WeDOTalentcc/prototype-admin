@@ -6,17 +6,22 @@ roles, seniority levels, and competencies.
 """
 from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
-from app.services.organization_catalog_service import organization_catalog_service
+from app.shared.services.organization_catalog_service import (
+    OrganizationCatalogService,
+    get_organization_catalog_service,
+)
 
 router = APIRouter(prefix="/catalog", tags=["organization-catalog"])
 
 
 @router.get("/areas", response_model=None)
-async def get_areas() -> dict[str, Any]:
+async def get_areas(
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get all organizational areas/departments."""
-    areas = organization_catalog_service.get_all_areas()
+    areas = catalog_svc.get_all_areas()
     return {
         "total": len(areas),
         "areas": areas
@@ -24,18 +29,24 @@ async def get_areas() -> dict[str, Any]:
 
 
 @router.get("/areas/{area_id}", response_model=None)
-async def get_area(area_id: str) -> dict[str, Any]:
+async def get_area(
+    area_id: str,
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get a specific area by ID."""
-    area = organization_catalog_service.get_area_by_id(area_id)
+    area = catalog_svc.get_area_by_id(area_id)
     if not area:
         return {"error": "Area not found", "area_id": area_id}
     return area
 
 
 @router.get("/areas/detect", response_model=None)
-async def detect_area(text: str = Query(..., description="Text to analyze for area detection")) -> dict[str, Any]:
+async def detect_area(
+    text: str = Query(..., description="Text to analyze for area detection"),
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Detect the most likely area from a text."""
-    area = organization_catalog_service.detect_area_from_text(text)
+    area = catalog_svc.detect_area_from_text(text)
     return {
         "input_text": text,
         "detected_area": area
@@ -43,9 +54,11 @@ async def detect_area(text: str = Query(..., description="Text to analyze for ar
 
 
 @router.get("/seniority-levels", response_model=None)
-async def get_seniority_levels() -> dict[str, Any]:
+async def get_seniority_levels(
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get all seniority levels."""
-    levels = organization_catalog_service.get_all_seniority_levels()
+    levels = catalog_svc.get_all_seniority_levels()
     return {
         "total": len(levels),
         "levels": levels
@@ -53,13 +66,16 @@ async def get_seniority_levels() -> dict[str, Any]:
 
 
 @router.get("/roles", response_model=None)
-async def get_roles(area_id: str | None = Query(None, description="Filter by area ID")) -> dict[str, Any]:
+async def get_roles(
+    area_id: str | None = Query(None, description="Filter by area ID"),
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get all roles, optionally filtered by area."""
     if area_id:
-        roles = organization_catalog_service.get_roles_by_area(area_id)
+        roles = catalog_svc.get_roles_by_area(area_id)
     else:
-        roles = organization_catalog_service.get_all_roles()
-    
+        roles = catalog_svc.get_all_roles()
+
     return {
         "total": len(roles),
         "area_id": area_id,
@@ -68,10 +84,13 @@ async def get_roles(area_id: str | None = Query(None, description="Filter by are
 
 
 @router.get("/roles/{area_id}", response_model=None)
-async def get_roles_by_area(area_id: str) -> dict[str, Any]:
+async def get_roles_by_area(
+    area_id: str,
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get all roles for a specific area."""
-    roles = organization_catalog_service.get_roles_by_area(area_id)
-    area = organization_catalog_service.get_area_by_id(area_id)
+    roles = catalog_svc.get_roles_by_area(area_id)
+    area = catalog_svc.get_area_by_id(area_id)
     return {
         "area": area,
         "total": len(roles),
@@ -80,9 +99,12 @@ async def get_roles_by_area(area_id: str) -> dict[str, Any]:
 
 
 @router.get("/roles/search/{role_name}", response_model=None)
-async def search_role(role_name: str) -> dict[str, Any]:
+async def search_role(
+    role_name: str,
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Search for a role by name."""
-    role = organization_catalog_service.get_role_by_name(role_name)
+    role = catalog_svc.get_role_by_name(role_name)
     return {
         "query": role_name,
         "role": role
@@ -91,14 +113,15 @@ async def search_role(role_name: str) -> dict[str, Any]:
 
 @router.get("/skills/technical", response_model=None)
 async def get_technical_skills(
-    area_id: str | None = Query(None, description="Filter by area ID")
+    area_id: str | None = Query(None, description="Filter by area ID"),
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Get all technical skills, optionally filtered by area."""
     if area_id:
-        skills = organization_catalog_service.get_technical_skills_by_area(area_id)
+        skills = catalog_svc.get_technical_skills_by_area(area_id)
     else:
-        skills = organization_catalog_service.get_all_technical_skills()
-    
+        skills = catalog_svc.get_all_technical_skills()
+
     return {
         "total": len(skills),
         "area_id": area_id,
@@ -107,10 +130,13 @@ async def get_technical_skills(
 
 
 @router.get("/skills/technical/{area_id}", response_model=None)
-async def get_technical_skills_by_area(area_id: str) -> dict[str, Any]:
+async def get_technical_skills_by_area(
+    area_id: str,
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get all technical skills for a specific area."""
-    skills = organization_catalog_service.get_technical_skills_by_area(area_id)
-    area = organization_catalog_service.get_area_by_id(area_id)
+    skills = catalog_svc.get_technical_skills_by_area(area_id)
+    area = catalog_svc.get_area_by_id(area_id)
     return {
         "area": area,
         "total": len(skills),
@@ -120,14 +146,15 @@ async def get_technical_skills_by_area(area_id: str) -> dict[str, Any]:
 
 @router.get("/skills/behavioral", response_model=None)
 async def get_behavioral_skills(
-    category: str | None = Query(None, description="Filter by category")
+    category: str | None = Query(None, description="Filter by category"),
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Get all behavioral competencies, optionally filtered by category."""
     if category:
-        skills = organization_catalog_service.get_behavioral_skills_by_category(category)
+        skills = catalog_svc.get_behavioral_skills_by_category(category)
     else:
-        skills = organization_catalog_service.get_all_behavioral_skills()
-    
+        skills = catalog_svc.get_all_behavioral_skills()
+
     return {
         "total": len(skills),
         "category": category,
@@ -137,10 +164,11 @@ async def get_behavioral_skills(
 
 @router.get("/skills/search", response_model=None)
 async def search_skills(
-    q: str = Query(..., min_length=2, description="Search query")
+    q: str = Query(..., min_length=2, description="Search query"),
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Search for skills by name or keyword."""
-    results = organization_catalog_service.search_skills(q)
+    results = catalog_svc.search_skills(q)
     return {
         "query": q,
         "technical_matches": len(results["technical"]),
@@ -152,10 +180,11 @@ async def search_skills(
 @router.get("/suggest-skills", response_model=None)
 async def suggest_skills(
     role_name: str = Query(..., description="Role name"),
-    seniority: str | None = Query(None, description="Seniority level ID")
+    seniority: str | None = Query(None, description="Seniority level ID"),
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Suggest skills for a role and seniority level."""
-    suggestions = organization_catalog_service.suggest_skills_for_role(role_name, seniority)
+    suggestions = catalog_svc.suggest_skills_for_role(role_name, seniority)
     return {
         "role_name": role_name,
         "seniority": seniority,
@@ -166,6 +195,8 @@ async def suggest_skills(
 
 
 @router.get("/summary", response_model=None)
-async def get_catalog_summary() -> dict[str, Any]:
+async def get_catalog_summary(
+    catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
+) -> dict[str, Any]:
     """Get a complete summary of the catalog for review."""
-    return organization_catalog_service.get_catalog_summary()
+    return catalog_svc.get_catalog_summary()

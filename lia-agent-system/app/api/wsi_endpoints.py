@@ -20,6 +20,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.cv_screening.services.screening_question_set_service import (
+    ScreeningQuestionSetService,
+    get_screening_question_set_service,
+)
 from app.domains.cv_screening.services.seniority_context_calibrator import (
     WSI_CONTEXTUAL_CALIBRATION_ENABLED,
     CalibrationContext,
@@ -244,7 +248,8 @@ def _convert_snapshot_to_wsi_questions(snapshot: list) -> list:
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
 async def generate_questions(
     request: GenerateQuestionsRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
 ):
     """
     Generate WSI questions for screening session.
@@ -254,8 +259,7 @@ async def generate_questions(
     Saves questions to database with session_id.
     """
     try:
-        from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
-        active_qs = await screening_question_set_service.get_active_version(db, request.job_vacancy_id)
+        active_qs = await sqs_svc.get_active_version(db, request.job_vacancy_id)
         
         if active_qs and active_qs.questions_snapshot:
             questions = _convert_snapshot_to_wsi_questions(active_qs.questions_snapshot)

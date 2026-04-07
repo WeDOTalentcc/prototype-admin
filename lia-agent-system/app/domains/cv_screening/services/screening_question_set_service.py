@@ -370,3 +370,8 @@ class ScreeningQuestionSetService:
 
 
 screening_question_set_service = ScreeningQuestionSetService()
+
+
+# FastAPI dependency injection factory
+def get_screening_question_set_service() -> "ScreeningQuestionSetService":
+    return screening_question_set_service

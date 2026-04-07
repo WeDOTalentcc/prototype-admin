@@ -2370,3 +2370,8 @@ class OrganizationCatalogService:
 
 
 organization_catalog_service = OrganizationCatalogService()
+
+
+# FastAPI dependency injection factory
+def get_organization_catalog_service() -> "OrganizationCatalogService":
+    return organization_catalog_service

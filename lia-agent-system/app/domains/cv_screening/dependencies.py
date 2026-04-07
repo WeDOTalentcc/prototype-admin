@@ -6,3 +6,14 @@ from app.domains.cv_screening.repositories.screening_repository import Screening
 
 def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRepository:
     return ScreeningRepository(db)
+
+from app.domains.cv_screening.services.screening_question_set_service import (
+    ScreeningQuestionSetService,
+    get_screening_question_set_service,
+)
+
+__all__ = [
+    "get_screening_repo",
+    "ScreeningQuestionSetService",
+    "get_screening_question_set_service",
+]

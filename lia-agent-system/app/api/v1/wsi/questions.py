@@ -19,7 +19,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
+from app.domains.cv_screening.services.screening_question_set_service import (
+    ScreeningQuestionSetService,
+    get_screening_question_set_service,
+)
 
 from ._shared import (
     BLOOM_LEVELS,
@@ -55,7 +58,8 @@ _FRAMEWORK_CATEGORY_MAP = {
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
 async def generate_questions(
     request: GenerateQuestionsRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
 ):
     """
     Generate WSI screening questions using the canonical F6 pipeline
@@ -105,7 +109,7 @@ async def generate_questions(
         ))
 
     try:
-        active_qs = await screening_question_set_service.get_active_version(db, request.job_vacancy_id or "")
+        active_qs = await sqs_svc.get_active_version(db, request.job_vacancy_id or "")
         qs_version = active_qs.version if active_qs else None
         qs_id = str(active_qs.id) if active_qs else None
 
@@ -229,7 +233,11 @@ Retorne APENAS JSON válido:
 
 
 @router.post("/questions/save", response_model=None)
-async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depends(get_db)):
+async def save_questions(
+    request: SaveQuestionsRequest,
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+):
     """Save screening questions for a job vacancy."""
     try:
         for q in request.questions:
@@ -257,7 +265,7 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
                 "source": request.source
             })
         try:
-            await screening_question_set_service.save_question_set(
+            await sqs_svc.save_question_set(
                 db=db,
                 job_vacancy_id=request.job_id,
                 questions=request.questions,
@@ -310,7 +318,7 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
                     "source": request.source
                 })
             try:
-                await screening_question_set_service.save_question_set(
+                await sqs_svc.save_question_set(
                     db=db,
                     job_vacancy_id=request.job_id,
                     questions=request.questions,
@@ -328,9 +336,13 @@ async def save_questions(request: SaveQuestionsRequest, db: AsyncSession = Depen
 
 
 @router.get("/question-sets/{job_id}/active", response_model=None)
-async def get_active_question_set(job_id: str, db: AsyncSession = Depends(get_db)):
+async def get_active_question_set(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+):
     try:
-        qs = await screening_question_set_service.get_active_version(db, job_id)
+        qs = await sqs_svc.get_active_version(db, job_id)
         if not qs:
             return {"success": False, "error": "No active question set found", "version": None}
         return {
@@ -349,9 +361,13 @@ async def get_active_question_set(job_id: str, db: AsyncSession = Depends(get_db
 
 
 @router.get("/question-sets/{job_id}/versions", response_model=None)
-async def list_question_set_versions(job_id: str, db: AsyncSession = Depends(get_db)):
+async def list_question_set_versions(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+):
     try:
-        versions = await screening_question_set_service.list_versions(db, job_id)
+        versions = await sqs_svc.list_versions(db, job_id)
         return {"success": True, "versions": versions, "total": len(versions)}
     except Exception as e:
         logger.error(f"Failed to list question set versions: {e}")
@@ -359,9 +375,14 @@ async def list_question_set_versions(job_id: str, db: AsyncSession = Depends(get
 
 
 @router.get("/question-sets/{job_id}/version/{version}", response_model=None)
-async def get_question_set_by_version(job_id: str, version: int, db: AsyncSession = Depends(get_db)):
+async def get_question_set_by_version(
+    job_id: str,
+    version: int,
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+):
     try:
-        qs = await screening_question_set_service.get_by_version(db, job_id, version)
+        qs = await sqs_svc.get_by_version(db, job_id, version)
         if not qs:
             return {"success": False, "error": f"Version {version} not found"}
         return {
@@ -381,9 +402,13 @@ async def get_question_set_by_version(job_id: str, version: int, db: AsyncSessio
 
 
 @router.get("/question-sets/{job_id}/consistency", response_model=None)
-async def check_question_set_consistency(job_id: str, db: AsyncSession = Depends(get_db)):
+async def check_question_set_consistency(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
+):
     try:
-        result = await screening_question_set_service.check_version_consistency(db, job_id)
+        result = await sqs_svc.check_version_consistency(db, job_id)
         return {"success": True, **result}
     except Exception as e:
         logger.error(f"Failed to check consistency: {e}")
