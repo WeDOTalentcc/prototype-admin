@@ -15,6 +15,7 @@ Sub-modules:
 from fastapi import APIRouter
 
 from .analytics import router as _analytics_router, get_job_report  # noqa: F401
+from .analytics import get_user_company_id  # noqa: F401
 from .crud import router as _crud_router
 from .export import router as _export_router
 from .lifecycle import router as _lifecycle_router
