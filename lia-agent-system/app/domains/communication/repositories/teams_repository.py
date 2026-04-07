@@ -213,3 +213,48 @@ class TeamsRepository:
             q = q.where(TeamsConversation.vacancy_id == vacancy_id)
         result = await self.db.execute(q)
         return result.scalar_one_or_none()
+
+    # ── SSO / Tab auth (teams.py Phase 2) ───────────────────────────────
+
+    async def get_user_by_aad_object_id(self, aad_object_id: str):
+        """Look up a User by azure_ad_object_id. Returns User or None."""
+        from sqlalchemy import select as _select
+        from app.auth.models import User
+        result = await self.db.execute(
+            _select(User).where(User.azure_ad_object_id == aad_object_id).limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_user_by_email_hash_or_raw(self, email: str):
+        """Look up a User by email (hash or raw). Returns User or None."""
+        from sqlalchemy import or_, select as _select
+        from app.auth.models import User
+        try:
+            from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+            result = await self.db.execute(
+                _select(User).where(
+                    or_(
+                        User.email_hash == _sha256_hash(email),
+                        User._email_raw == email,
+                    )
+                ).limit(1)
+            )
+        except ImportError:
+            result = await self.db.execute(
+                _select(User).where(User._email_raw == email).limit(1)
+            )
+        return result.scalar_one_or_none()
+
+    async def backfill_aad_object_id(self, user, aad_object_id: str) -> None:
+        """Set azure_ad_object_id on an existing User record."""
+        user.azure_ad_object_id = aad_object_id
+        self.db.add(user)
+
+    async def get_user_by_platform_id(self, platform_user_id: str):
+        """Look up a User by platform UUID (for tab events)."""
+        from sqlalchemy import select as _select
+        from app.auth.models import User
+        result = await self.db.execute(
+            _select(User).where(User.id == platform_user_id).limit(1)
+        )
+        return result.scalar_one_or_none()

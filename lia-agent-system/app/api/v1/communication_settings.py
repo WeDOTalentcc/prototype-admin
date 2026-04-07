@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
+from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 
 logger = logging.getLogger(__name__)
 
@@ -92,13 +93,9 @@ async def get_communication_settings(
     Company ID can be provided via X-Company-ID header or company_id query param.
     """
     try:
-        result = await db.execute(
-            select(CommunicationSettings).where(
-                CommunicationSettings.company_id == company_id
-            )
-        )
-        settings = result.scalar_one_or_none()
-        
+        repo = CommunicationSettingsRepository(db)
+        settings = await repo.get_by_company_id(company_id)
+
         if settings:
             logger.info(f"Retrieved communication settings for company {company_id}")
             return CommunicationSettingsResponse(
@@ -154,31 +151,10 @@ async def update_communication_settings(
     Company ID can be provided via X-Company-ID header or company_id query param.
     """
     try:
-        result = await db.execute(
-            select(CommunicationSettings).where(
-                CommunicationSettings.company_id == company_id
-            )
-        )
-        settings = result.scalar_one_or_none()
-        
-        if settings:
-            update_data = data.model_dump(exclude_unset=True)
-            for field, value in update_data.items():
-                setattr(settings, field, value)
-            settings.updated_at = datetime.utcnow()
-            logger.info(f"Updated communication settings for company {company_id}")
-        else:
-            settings_data = {**DEFAULT_COMMUNICATION_SETTINGS}
-            update_data = data.model_dump(exclude_unset=True)
-            settings_data.update(update_data)
-            settings_data["company_id"] = company_id
-            
-            settings = CommunicationSettings(**settings_data)
-            db.add(settings)
-            logger.info(f"Created communication settings for company {company_id}")
-        
-        await db.flush()
-        await db.refresh(settings)
+        repo = CommunicationSettingsRepository(db)
+        update_data = data.model_dump(exclude_unset=True)
+        settings = await repo.upsert(company_id, update_data)
+        logger.info(f"Upserted communication settings for company {company_id}")
         
         return CommunicationSettingsResponse(
             id=str(settings.id),

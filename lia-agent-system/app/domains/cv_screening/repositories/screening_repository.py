@@ -235,3 +235,26 @@ class ScreeningRepository:
 
     async def create_vacancy_candidate(self, vc) -> None:
         self.db.add(vc)
+
+    # ------------------------------------------------------------------
+    # CV Parser — candidate creation (cv_parser.py Phase 2)
+    # ------------------------------------------------------------------
+
+    async def add_candidate_with_experiences_and_education(
+        self,
+        candidate,
+        experiences: list,
+        educations: list,
+    ):
+        """
+        Persist a new Candidate plus its CandidateExperience and CandidateEducation
+        records in a single unit of work.  Caller is responsible for commit/rollback.
+        """
+        self.db.add(candidate)
+        for exp in experiences:
+            self.db.add(exp)
+        for edu in educations:
+            self.db.add(edu)
+        await self.db.flush()
+        await self.db.refresh(candidate)
+        return candidate

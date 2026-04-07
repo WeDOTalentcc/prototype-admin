@@ -13,6 +13,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.communication.repositories.optout_repository import OptoutRepository
 
 
 # TODO(phase2): extract to repository — communication opt-out
@@ -190,16 +191,8 @@ async def unsubscribe_page(token: str, request: Request, db: AsyncSession = Depe
         logger.warning("Invalid company_id in unsubscribe token")
         return HTMLResponse(content=ERROR_HTML, status_code=400)
 
-    existing_query = select(ConsentEvent).where(
-        and_(
-            ConsentEvent.company_id == company_uuid,
-            ConsentEvent.subject_email == email,
-            ConsentEvent.event_type == 'revoked',
-            ConsentEvent.channel == 'communication_email'
-        )
-    ).limit(1)
-    result = await db.execute(existing_query)
-    existing = result.scalar_one_or_none()
+    repo = OptoutRepository(db)
+    existing = await repo.get_existing_optout(company_uuid, email)
 
     if existing:
         return HTMLResponse(content=ALREADY_OPTED_OUT_HTML.format(email=safe_email))
@@ -223,56 +216,25 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
         logger.warning("Invalid company_id in unsubscribe token on POST")
         return HTMLResponse(content=ERROR_HTML, status_code=400)
 
-    existing_query = select(ConsentEvent).where(
-        and_(
-            ConsentEvent.company_id == company_uuid,
-            ConsentEvent.subject_email == email,
-            ConsentEvent.event_type == 'revoked',
-            ConsentEvent.channel == 'communication_email'
-        )
-    ).limit(1)
-    result = await db.execute(existing_query)
-    existing = result.scalar_one_or_none()
+    repo = OptoutRepository(db)
+    existing = await repo.get_existing_optout(company_uuid, email)
 
     if existing:
         return HTMLResponse(content=ALREADY_OPTED_OUT_HTML.format(email=safe_email))
 
     try:
-        now = datetime.utcnow()
-        proof_data = f"{email}|{company_id}|revoked|communication_email|{now.isoformat()}"
-        proof_hash = hashlib.sha256(proof_data.encode()).hexdigest()
-
-        from lia_models.observability import ConsentVersion
-        cv_query = select(ConsentVersion.id).where(
-            and_(
-                ConsentVersion.company_id == company_uuid,
-                ConsentVersion.consent_type == "communication_email",
-                ConsentVersion.is_current,
-            )
-        ).limit(1)
-        cv_result = await db.execute(cv_query)
-        consent_version_row = cv_result.scalar_one_or_none()
-        if not consent_version_row:
+        consent_version_id = await repo.get_active_consent_version_id(company_uuid)
+        if not consent_version_id:
             logger.warning(f"No active consent version for company {company_id}, type communication_email")
             return HTMLResponse(content=ERROR_HTML, status_code=400)
 
-        consent_event = ConsentEvent(
-            id=uuid.uuid4(),
+        await repo.create_optout_event(
             company_id=company_uuid,
-            consent_version_id=consent_version_row,
-            subject_email=email,
-            subject_identifier=email,
-            event_type='revoked',
-            consent_given=False,
+            consent_version_id=consent_version_id,
+            email=email,
             ip_address=request.client.host if request.client else None,
-            user_agent=request.headers.get('user-agent', '')[:500],
-            device_info={},
-            channel='communication_email',
-            proof_hash=proof_hash,
-            expires_at=None
+            user_agent=request.headers.get('user-agent', ''),
         )
-
-        db.add(consent_event)
 
         logger.info(f"LGPD opt-out processed for company_id={company_id}")
         return HTMLResponse(content=CONFIRM_HTML.format(email=safe_email))

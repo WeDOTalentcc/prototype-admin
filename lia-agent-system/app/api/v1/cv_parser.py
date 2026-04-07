@@ -14,6 +14,7 @@ from app.auth.dependencies import get_service_or_user
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
 from app.schemas.cv_parser import (
     CVConfirmRequest,
@@ -430,10 +431,8 @@ async def confirm_cv_and_create_candidate(
             updated_at=datetime.utcnow()
         )
         
-        db.add(candidate)
-        
-        for idx, exp in enumerate(parsed_cv.experiences):
-            experience = CandidateExperience(
+        experiences = [
+            CandidateExperience(
                 id=uuid.uuid4(),
                 candidate_id=candidate_id,
                 company_name=exp.company,
@@ -445,12 +444,12 @@ async def confirm_cv_and_create_candidate(
                 location=exp.location,
                 sequence_order=idx,
                 created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                updated_at=datetime.utcnow(),
             )
-            db.add(experience)
-        
-        for idx, edu in enumerate(parsed_cv.education):
-            education_record = CandidateEducation(
+            for idx, exp in enumerate(parsed_cv.experiences)
+        ]
+        educations = [
+            CandidateEducation(
                 id=uuid.uuid4(),
                 candidate_id=candidate_id,
                 institution=edu.institution,
@@ -462,12 +461,15 @@ async def confirm_cv_and_create_candidate(
                 description=edu.description if hasattr(edu, 'description') else None,
                 sequence_order=idx,
                 created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                updated_at=datetime.utcnow(),
             )
-            db.add(education_record)
-        
-        await db.flush()
-        await db.refresh(candidate)
+            for idx, edu in enumerate(parsed_cv.education)
+        ]
+
+        repo = ScreeningRepository(db)
+        candidate = await repo.add_candidate_with_experiences_and_education(
+            candidate, experiences, educations
+        )
         
         logger.info(f"Candidate created from CV: {candidate.id} - {candidate.name} (with {len(parsed_cv.experiences)} experiences)")
         

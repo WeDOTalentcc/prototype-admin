@@ -17,12 +17,11 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
-from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
+from app.domains.company.repositories.company_retention_repository import CompanyRetentionRepository
 
 router = APIRouter()
 
@@ -74,40 +73,13 @@ async def update_retention_policy(
 
     company_id = current_user.company_id
 
-    # Buscar política existente ou criar nova
-    result = await db.execute(
-        select(CompanyRetentionPolicy).where(
-            CompanyRetentionPolicy.company_id == company_id
-        )
+    repo = CompanyRetentionRepository(db)
+    policy = await repo.upsert(
+        company_id=company_id,
+        retention_months=body.retention_months,
+        auto_anonymize=body.auto_anonymize,
+        activated_by=str(current_user.id),
     )
-    policy = result.scalar_one_or_none()
-
-    now = datetime.now(UTC)
-
-    if policy is None:
-        policy = CompanyRetentionPolicy(
-            id=str(uuid4()),
-            company_id=company_id,
-            retention_months=body.retention_months,
-            auto_anonymize=body.auto_anonymize,
-            activated_at=now if body.auto_anonymize else None,
-            activated_by=str(current_user.id) if body.auto_anonymize else None,
-        )
-        db.add(policy)
-    else:
-        # Registrar ativação pela primeira vez
-        if body.auto_anonymize and not policy.auto_anonymize:
-            policy.activated_at = now
-            policy.activated_by = str(current_user.id)
-        elif not body.auto_anonymize and policy.auto_anonymize:
-            # Desativação — não apaga histórico de quando foi ativado
-            pass
-
-        policy.retention_months = body.retention_months
-        policy.auto_anonymize = body.auto_anonymize
-
-    await db.flush()
-    await db.refresh(policy)
 
     return RetentionPolicyResponse(
         company_id=policy.company_id,
@@ -132,12 +104,8 @@ async def get_retention_policy(
     db: AsyncSession = Depends(get_db),
 ):
     """Retorna a política de retenção atual da empresa."""
-    result = await db.execute(
-        select(CompanyRetentionPolicy).where(
-            CompanyRetentionPolicy.company_id == current_user.company_id
-        )
-    )
-    policy = result.scalar_one_or_none()
+    repo = CompanyRetentionRepository(db)
+    policy = await repo.get_by_company_id(current_user.company_id)
 
     if policy is None:
         # Retornar defaults (política não configurada = off)
