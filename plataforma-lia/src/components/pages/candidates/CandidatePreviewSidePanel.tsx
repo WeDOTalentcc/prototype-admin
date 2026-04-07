@@ -86,7 +86,7 @@ export function CandidatePreviewSidePanel({
           }}
           onOpenFullPage={onCandidatePageOpen as any}
           onScheduleInterview={(candidate: unknown) => {
-            setSelectedCandidateForAction(candidate as Record<string, unknown>)
+            setSelectedCandidateForAction(candidate as unknown as Candidate)
             setShowScheduleModal(true)
           }}
           onAddToVacancy={(candidate: unknown) => {

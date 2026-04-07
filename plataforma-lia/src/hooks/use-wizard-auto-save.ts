@@ -135,7 +135,7 @@ export function useWizardAutoSave(
         lastSavedAt: new Date().toISOString(),
         jobDraftId: jobDraftId || data.jobDraftId
       }
-      wizardStore.setDraft(dataWithTimestamp)
+      wizardStore.setDraft(dataWithTimestamp as Parameters<typeof wizardStore.setDraft>[0])
     } catch {
     }
   }, [jobDraftId, wizardStore])

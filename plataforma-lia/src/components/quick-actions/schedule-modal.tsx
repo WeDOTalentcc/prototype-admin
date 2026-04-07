@@ -225,7 +225,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
         setPlatform((liaRecommendations as Record<string, unknown>).recommendedPlatform as string)
         break
       case 'type':
-        setScheduleType((liaRecommendations as Record<string, unknown>).recommendedType as string)
+        setScheduleType((liaRecommendations as Record<string, unknown>).recommendedType as 'video' | 'phone' | 'presential')
         break
       case 'notes': {
         const focusAreas = Object.entries((liaRecommendations as Record<string, unknown>).interviewFocus as Record<string, unknown>)

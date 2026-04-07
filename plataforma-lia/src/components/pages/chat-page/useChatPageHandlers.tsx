@@ -133,7 +133,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       const workflowData = response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
       const searchResults = (workflowData as Record<string, unknown> | undefined)?.search_results as Record<string, unknown> | undefined
       
-      const localCount = searchResults?.local_count || searchResults?.local_candidates?.length || 0
+      const localCount = searchResults?.local_count || (searchResults?.local_candidates as unknown[] | undefined)?.length || 0
       const globalCandidates = (searchResults?.global_candidates as unknown[]) || []
       
       // Update preview with real counts

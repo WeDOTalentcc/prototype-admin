@@ -134,11 +134,11 @@ export function useJobUnpublish({
 
               if (Array.isArray(candidatesData)) {
                 allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
-                  id: c.id || c.candidate_id,
-                  name: c.name || c.full_name || 'Candidato',
-                  email: c.email,
-                  phone: c.phone || c.whatsapp,
-                  stage: c.stage || c.pipeline_stage || c.current_stage || 'Triagem',
+                  id: (c.id || c.candidate_id) as string,
+                  name: (c.name || c.full_name || 'Candidato') as string,
+                  email: c.email as string | undefined,
+                  phone: (c.phone || c.whatsapp) as string | undefined,
+                  stage: (c.stage || c.pipeline_stage || c.current_stage || 'Triagem') as string,
                   jobId: job.id
                 })))
               }

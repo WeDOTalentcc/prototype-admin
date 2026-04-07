@@ -77,7 +77,7 @@ function mapRawPipelineStage(s: RawPipelineStage, idx: number): RecruitmentStage
     action_behavior: s.action_behavior,
     default_channel: s.default_channel || 'email',
     stage_category: s.stage_category,
-    sub_statuses: s.sub_statuses || [],
+    sub_statuses: (s.sub_statuses || []) as SubStatus[],
   }
 }
 

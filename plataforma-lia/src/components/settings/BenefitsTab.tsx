@@ -202,6 +202,8 @@ export function BenefitsTab() {
 
   const normalizeBenefit = (benefit: Record<string, unknown>): Benefit => ({
     ...benefit,
+    name: String(benefit.name || ""),
+    category: String(benefit.category || "other"),
     description: String(benefit.description || ""),
     value_type: String(benefit.value_type || "informative"),
     seniority_levels: Array.isArray(benefit.seniority_levels) 

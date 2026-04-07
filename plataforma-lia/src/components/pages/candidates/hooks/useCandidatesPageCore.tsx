@@ -46,7 +46,7 @@ const SmartSearchInput = dynamic(
   () =>
     import("@/components/search/smart-search-input")
       .then(m => ({ default: m.SmartSearchInput }))
-      .catch(() => ({ default: (() => null) as React.ComponentType<Record<string, unknown>> })),
+      .catch(() => ({ default: (() => null) as unknown as React.ComponentType<SmartSearchInputProps> })),
   {
     ssr: false,
     loading: () => (

@@ -226,7 +226,7 @@ export function JobsListContent(props: JobsListContentProps) {
           onSendMessage={sendLiaInlineMessage} onSetShowExpandedLIA={setShowExpandedLIA}
           onSetUserCollapsedLIA={setUserCollapsedLIA} onSetIsChatFullscreen={setIsChatFullscreen}
           onSetIsResizingLIA={setIsResizingLIA} onSetLiaWidth={setLiaWidth}
-          onSetLiaInlineMessages={setLiaInlineMessages} liaInlineMessagesEndRef={liaInlineMessagesEndRef}
+          onSetLiaInlineMessages={setLiaInlineMessages} liaInlineMessagesEndRef={liaInlineMessagesEndRef as React.RefObject<HTMLDivElement>}
           onAddRecentItem={onAddRecentItem}
         />
 

@@ -81,7 +81,7 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
           <div className="mt-3">
             <Button
               size="sm"
-              variant={isConnected ? "outline" : isComingSoon ? "ghost" : "default"}
+              variant={isConnected ? "outline" : isComingSoon ? "ghost" : "primary"}
               className="h-7 rounded-md text-[11px] gap-1.5 px-3"
               onClick={(e) => {
                 e.stopPropagation()

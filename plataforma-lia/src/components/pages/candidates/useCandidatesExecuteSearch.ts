@@ -421,7 +421,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
             name: c.name || 'Sem nome',
             email: c.email || '',
             phone: c.phone || '',
-            mobile_phone: c.mobile_phone,
+            mobile_phone: c.mobile_phone ?? undefined,
             current_title: c.current_title || '',
             current_company: c.current_company || '',
             current_salary: c.current_salary,

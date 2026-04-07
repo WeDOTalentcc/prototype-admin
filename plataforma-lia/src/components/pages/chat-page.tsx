@@ -683,12 +683,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
           setSelectedCandidateForDetail(null)
         }}
         onAddToJob={handleAddCandidateToJob}
-        onScheduleInterview={(candidateId: string) => {
-          if (selectedCandidateForDetail) {
-            handleSendMessage(`Agendar entrevista com ${selectedCandidateForDetail.name}`)
-            setIsCandidateDetailOpen(false)
-          }
-        }}
+
         onFavorite={(candidateId) => {
           handleSendMessage(`Adicionar candidato ${selectedCandidateForDetail?.name || candidateId} aos favoritos`)
         }}
@@ -698,23 +693,10 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
       {/* Credit Confirmation Dialog */}
       <CreditConfirmationDialog
         open={isCreditDialogOpen}
-        onClose={() => {
-          setIsCreditDialogOpen(false)
-        }}
+        onOpenChange={setIsCreditDialogOpen}
         onConfirm={handleConfirmPearchSearch}
-        query={pendingPearchSearch?.query || ""}
-        pearchType="pro"
-        limit={10}
-        costPerCandidate={5}
-        totalEstimated={50}
-        breakdown={{
-          base: 5,
-          insights: 0,
-          emails: 2,
-          phones: 14,
-          freshness: 0
-        }}
-        creditsRemaining={availableCredits}
+        candidateLimit={10}
+        searchType="sourcing"
       />
 
       {/* Advanced Filters Modal */}

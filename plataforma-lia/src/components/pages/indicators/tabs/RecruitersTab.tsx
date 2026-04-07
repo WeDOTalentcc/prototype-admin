@@ -160,7 +160,7 @@ export function RecruitersTab({
               {VIEW_MODES.map((mode) => (
                 <Button
                   key={mode.id}
-                  variant={viewMode === mode.id ? "default" : "outline"}
+                  variant={viewMode === mode.id ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setViewMode(mode.id)}
                   className="gap-2"

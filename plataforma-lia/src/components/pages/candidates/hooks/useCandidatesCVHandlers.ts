@@ -64,7 +64,7 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
       // Add LIA message with results (only show local results - user can opt-in to global)
       const liaMessage = {
         id: `lia-cv-${Date.now()}`,
-        type: 'lia',
+        type: 'lia' as const,
         content: `📄 Analisei o CV **${file.name}** e encontrei:\n\n` +
           `**Perfil extraído:**\n` +
           `• Título: ${data.extracted_title || 'Não identificado'}\n` +

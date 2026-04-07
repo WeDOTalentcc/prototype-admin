@@ -188,3 +188,15 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
     </div>
   )
 }
+
+
+interface CollectionModelContentProps {
+  config: Record<string, unknown>
+  isEditing: boolean
+  updateGeneralConfig: (key: string, value: unknown) => void
+  updateCollectionMessages?: (key: string, value: unknown) => void
+}
+
+export function CollectionModelContent({ config, isEditing, updateGeneralConfig }: CollectionModelContentProps) {
+  return null
+}
