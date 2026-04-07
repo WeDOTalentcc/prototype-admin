@@ -454,3 +454,8 @@ class AuditService:
 
 
 audit_service = AuditService()
+
+# FastAPI dependency injection factory
+def get_audit_service() -> "AuditService":
+    return audit_service
+

@@ -997,3 +997,8 @@ class ActivityService:
 
 
 activity_service = ActivityService()
+
+# FastAPI dependency injection factory
+def get_activity_service() -> "ActivityService":
+    return activity_service
+
