@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.recruiter_assistant.services.pipeline_service import pipeline_service
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -47,7 +47,8 @@ async def get_stale_candidates(
 @router.post("/action", response_model=None)
 async def execute_pipeline_action(
     request: PipelineActionRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Execute a pipeline action on a candidate.
@@ -67,7 +68,7 @@ async def execute_pipeline_action(
 
         try:
             _is_gate_action = request.action_id in ("advance_stage", "reject_candidate", "send_offer", "confirm_hire")
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=None,
                 agent_name="pipeline_module",
                 decision_type="move_stage",

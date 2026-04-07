@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 
 logger = logging.getLogger(__name__)
@@ -91,6 +91,7 @@ def _fg_check_output(full_description: str, company_id: str):
 async def generate_jd(
     request: GenerateJDRequest,
     current_user: User = Depends(get_current_user_or_demo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     _fg_check_input(request, request.company_id)
 
@@ -139,7 +140,7 @@ async def generate_jd(
             }
 
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="jd_generator",
                 decision_type="generate_jd",
@@ -205,7 +206,7 @@ async def generate_jd(
                 }
 
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=request.company_id,
                     agent_name="jd_generator",
                     decision_type="generate_jd",

@@ -20,7 +20,7 @@ from pydantic import BaseModel, EmailStr
 from app.domains.interview_scheduling.dependencies import get_scheduling_repo
 from app.domains.interview_scheduling.repositories.scheduling_repository import SchedulingRepository
 from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -127,7 +127,8 @@ def interview_to_response(interview) -> InterviewResponse:
 @router.post("/interviews", response_model=InterviewResponse)
 async def create_interview(
     request: CreateInterviewRequest,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
+    repo: SchedulingRepository = Depends(get_scheduling_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Create a new interview appointment.
@@ -158,7 +159,7 @@ async def create_interview(
         )
 
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=None,
                 agent_name="scheduling_module",
                 decision_type="schedule_interview",

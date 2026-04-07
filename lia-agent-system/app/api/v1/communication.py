@@ -15,7 +15,7 @@ from app.domains.communication.dependencies import get_communication_repo
 from app.domains.communication.repositories.communication_repository import CommunicationRepository
 from app.domains.communication.services.communication_dispatcher import communication_dispatcher
 from app.domains.communication.services.communication_history_service import communication_history_service
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -148,7 +148,7 @@ async def send_email(
         _masked_recipient = (request.to_email or "")[:3] + "***" if request.to_email else "unknown"
         if result.get("success"):
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=company_id,
                     agent_name="communication_module",
                     decision_type="send_message",
@@ -170,7 +170,7 @@ async def send_email(
                 logger.warning(f"Audit log failed for send_email: {audit_err}")
         else:
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=company_id,
                     agent_name="communication_module",
                     decision_type="send_message",
@@ -263,7 +263,7 @@ async def send_whatsapp(
         _masked_phone = (request.to_phone or "")[:4] + "***" if request.to_phone else "unknown"
         if result.get("success"):
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=company_id,
                     agent_name="communication_module",
                     decision_type="send_message",
@@ -285,7 +285,7 @@ async def send_whatsapp(
                 logger.warning(f"Audit log failed for send_whatsapp: {audit_err}")
         else:
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=company_id,
                     agent_name="communication_module",
                     decision_type="send_message",
@@ -468,7 +468,7 @@ async def send_screening_invite(
         _masked_invite_recipient = (request.candidate_name or "")[:3] + "***" if request.candidate_name else "unknown"
         if result.get("success"):
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=company_id,
                     agent_name="communication_module",
                     decision_type="send_message",
@@ -491,7 +491,7 @@ async def send_screening_invite(
                 logger.warning(f"Audit log failed for send_screening_invite: {audit_err}")
         else:
             try:
-                await audit_service.log_decision(
+                await audit_svc.log_decision(
                     company_id=company_id,
                     agent_name="communication_module",
                     decision_type="send_message",

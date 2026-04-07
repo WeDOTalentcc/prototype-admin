@@ -11,10 +11,10 @@ CBI + Bloom + Dreyfus + BigFive). This module handles:
 """
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, validator
 
-from app.shared.compliance.audit_service import audit_service
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
@@ -169,7 +169,10 @@ def validate_question_coverage(
 
 
 @router.post("/generate-questions", response_model=QuestionsResponse)
-async def generate_wsi_questions(request: GenerateQuestionsRequest):
+async def generate_wsi_questions(
+    request: GenerateQuestionsRequest,
+    audit_svc: AuditService = Depends(get_audit_service),
+):
     """
     Generate WSI questions based on job competencies using Gemini LLM.
     Falls back to template-based generation if LLM is unavailable.
@@ -237,7 +240,7 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
             block_distribution[bid] = block_distribution.get(bid, 0) + 1
 
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id or None,
                 agent_name="wsi_service",
                 decision_type="generate_wsi_questions",
