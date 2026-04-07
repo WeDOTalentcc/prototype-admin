@@ -58,6 +58,10 @@ class MessagingSettings(BaseSettings):
     # Celery uses REDIS_URL as broker by default; these allow override
     CELERY_BROKER_URL: Optional[str] = None   # Falls back to REDIS_URL if not set
     CELERY_RESULT_BACKEND: Optional[str] = None  # Falls back to REDIS_URL if not set
+    # Broker abstraction layer — see app/shared/messaging/broker_interface.py
+    # Valores: "redis" (padrão), "rabbitmq" (on-prem), "pubsub" (stub GCP)
+    # Para migração GCP: setar BROKER_BACKEND=pubsub e implementar PubSubBroker real
+    BROKER_BACKEND: str = "redis"
 
 
 # ---------------------------------------------------------------------------

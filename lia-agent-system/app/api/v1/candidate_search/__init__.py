@@ -28,4 +28,17 @@ router.include_router(archetypes_router)
 router.include_router(misc_search_router)
 router.include_router(calibration_router)
 
+from ._shared import (  # noqa: F401
+    SearchRequestDTO,
+    ExperienceDTO,
+    ImportCandidateExperienceDTO,
+    ImportCandidateDTO,
+    ImportCandidatesRequest,
+    ImportCandidatesResponse,
+    IdMapping,
+    EducationDTO,
+    LanguageDTO,
+    _normalize_priority,
+)
+
 __all__ = ['router']

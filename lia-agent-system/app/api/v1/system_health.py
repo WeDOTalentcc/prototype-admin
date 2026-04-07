@@ -124,6 +124,25 @@ def _check_dlq() -> dict:
         return {"status": "unavailable", "error": str(exc)[:200]}
 
 
+async def _check_broker() -> dict:
+    """Check broker health via BrokerInterface factory.
+
+    Usa o backend configurado em BROKER_BACKEND (redis | rabbitmq | pubsub).
+    Permite monitorar broker sem hardcode do tipo de backend.
+    """
+    try:
+        from app.shared.messaging.broker_interface import get_default_broker
+        broker = get_default_broker()
+        result = await broker.health_check()
+        return result
+    except Exception as exc:
+        return {
+            "status": "unhealthy",
+            "backend": os.getenv("BROKER_BACKEND", "redis"),
+            "error": str(exc)[:200],
+        }
+
+
 @router.get("/health", response_model=None)
 async def system_health(db: AsyncSession = Depends(get_db)):
     """
@@ -200,6 +219,9 @@ async def system_health(db: AsyncSession = Depends(get_db)):
 
     # --- DLQ ---
     components["dlq"] = _check_dlq()
+
+    # --- Broker (abstraction layer via BROKER_BACKEND) ---
+    components["broker"] = await _check_broker()
 
     # --- External services configuration ---
     components["external_services"] = {

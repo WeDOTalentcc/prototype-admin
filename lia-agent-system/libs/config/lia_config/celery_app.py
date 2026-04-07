@@ -9,14 +9,99 @@ Filas com prioridade (escada de custo André):
   evaluation_normal (priority=5) — avaliações WSI, scoring
   vagas_normal      (priority=5) — operações de vaga (criação, atualização)
   onboarding_low    (priority=3) — comunicações, reports, onboarding
+
+Broker abstraction via BROKER_BACKEND:
+  Trocar de Redis para outro broker é mudança de UMA variável de config:
+
+    BROKER_BACKEND=redis     → Celery usa Redis (REDIS_URL) — padrão/produção on-prem
+    BROKER_BACKEND=rabbitmq  → Celery usa RabbitMQ (RABBITMQ_URL) — on-prem alternativo
+    BROKER_BACKEND=pubsub    → Celery usa GCP (CELERY_BROKER_URL must be set) — migração GCP
+
+  Override manual (sobrepõe BROKER_BACKEND):
+    CELERY_BROKER_URL    — URL explícita para o broker do Celery (qualquer transporte)
+    CELERY_RESULT_BACKEND — URL explícita para o result backend
+
+  Mapeamento BROKER_BACKEND → Celery URL:
+    redis    → settings.REDIS_URL  (redis://)
+    rabbitmq → settings.RABBITMQ_URL  (amqp://)
+    pubsub   → CELERY_BROKER_URL obrigatório (gcpubsub:// ou similar)
+
+  Migração GCP step-by-step: docs/infra/gcp-migration-guide.md
 """
 import asyncio
+import logging
+import os
 import traceback as _traceback
 
 from celery import Celery, Task, signals
 from celery.schedules import crontab
 from kombu import Queue, Exchange
 from lia_config.config import settings
+
+_celery_log = logging.getLogger(__name__)
+
+
+def _get_celery_broker_url() -> str:
+    """Retorna broker URL para o Celery a partir de BROKER_BACKEND.
+
+    BROKER_BACKEND é a variável única de controle — trocar o broker é
+    mudar apenas ela. O mapping para URL compatível com Celery é feito aqui:
+
+      redis    → REDIS_URL (redis://)
+      rabbitmq → RABBITMQ_URL (amqp://)
+      pubsub   → CELERY_BROKER_URL (gcpubsub:// ou similar — obrigatório)
+
+    Override explícito sempre tem precedência:
+      CELERY_BROKER_URL → qualquer URL válida para Celery (sobrepõe BROKER_BACKEND)
+    """
+    # Override explícito — qualquer URL direta (máxima precedência)
+    explicit = os.getenv("CELERY_BROKER_URL") or getattr(settings, "CELERY_BROKER_URL", None)
+    if explicit:
+        return explicit
+
+    # Derivar URL a partir de BROKER_BACKEND (variável única de controle).
+    # Lê diretamente do env var para que mudanças de runtime sejam refletidas.
+    # settings.BROKER_BACKEND é usado como fallback (lido em startup).
+    backend = os.getenv("BROKER_BACKEND") or getattr(settings, "BROKER_BACKEND", "redis")
+    backend = backend.lower().strip()
+
+    if backend == "redis":
+        return settings.REDIS_URL
+    elif backend == "rabbitmq":
+        return settings.RABBITMQ_URL
+    elif backend == "pubsub":
+        # GCP Pub/Sub: requer CELERY_BROKER_URL explícito com transport adequado
+        # (ex: gcpubsub://projects/meu-projeto/topics/celery via celery-gcp-backend)
+        _celery_log.error(
+            "[celery_app] BROKER_BACKEND=pubsub requer CELERY_BROKER_URL explícito "
+            "(ex: gcpubsub://projects/<project>/topics/celery). "
+            "Usando REDIS_URL como fallback temporário. "
+            "Ver: docs/infra/gcp-migration-guide.md"
+        )
+        return settings.REDIS_URL  # Fallback seguro — não quebra o worker
+    else:
+        _celery_log.warning(
+            "[celery_app] BROKER_BACKEND='%s' desconhecido. Usando redis (REDIS_URL).", backend
+        )
+        return settings.REDIS_URL
+
+
+def _get_celery_result_backend() -> str:
+    """Retorna result backend URL para o Celery.
+
+    Prioridade:
+    1. CELERY_RESULT_BACKEND env var (override explícito)
+    2. settings.CELERY_RESULT_BACKEND (via config)
+    3. Derivado de BROKER_BACKEND (redis → REDIS_URL, rabbitmq → REDIS_URL)
+    4. settings.REDIS_URL (fallback final)
+
+    Nota: RabbitMQ não é adequado como result backend — Redis é usado mesmo
+    quando BROKER_BACKEND=rabbitmq, pois o result backend precisa de storage.
+    """
+    explicit = os.getenv("CELERY_RESULT_BACKEND") or getattr(settings, "CELERY_RESULT_BACKEND", None)
+    if explicit:
+        return explicit
+    return settings.REDIS_URL
 
 
 class LIATask(Task):
@@ -93,8 +178,8 @@ _default_exchange = Exchange("lia_tasks", type="direct")
 
 celery_app = Celery(
     "lia_tasks",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
+    broker=_get_celery_broker_url(),
+    backend=_get_celery_result_backend(),
     include=["app.jobs.celery_tasks"],
     task_cls=LIATask,
 )
