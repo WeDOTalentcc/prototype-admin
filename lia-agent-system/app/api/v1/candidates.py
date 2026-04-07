@@ -1808,6 +1808,10 @@ async def screening_decision(
         if request.decision == "rejected" and vacancy_candidate and request.job_id:
             try:
                 from app.domains.automation.services.stage_automation_engine import (
+
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
                     AutomationEvent,
                     StageAutomationEngine,
                     TriggerType,

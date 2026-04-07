@@ -36,6 +36,10 @@ from app.models.data_request import (
 )
 from app.models.job_vacancy import JobVacancy
 
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/portal/data-request", tags=["Candidate Portal"])

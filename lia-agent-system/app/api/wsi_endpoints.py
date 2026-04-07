@@ -43,6 +43,7 @@ from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.domains.cv_screening.services.wsi_voice_orchestrator import (
     wsi_voice_orchestrator,
 )
+from app.domains.voice.repositories.wsi_repository import WsiRepository
 
 logger = logging.getLogger(__name__)
 
@@ -264,6 +265,7 @@ async def generate_questions(
     Saves questions to database with session_id.
     """
     try:
+        repo = WsiRepository(db)
         active_qs = await sqs_svc.get_active_version(db, request.job_vacancy_id)
         
         if active_qs and active_qs.questions_snapshot:
@@ -288,41 +290,31 @@ async def generate_questions(
             qs_id = None
             logger.info(f"No versioned question set found, generated {len(questions)} questions dynamically")
 
-        await db.execute(text("""
-            INSERT INTO wsi_sessions (id, candidate_id, job_vacancy_id, screening_type, mode, status, question_set_version, question_set_id)
-            VALUES (:session_id, :candidate_id, :job_vacancy_id, :screening_type, :mode, :status, :question_set_version, :question_set_id)
-            ON CONFLICT (id) DO NOTHING
-        """), {
-            "session_id": request.session_id,
-            "candidate_id": request.candidate_id,
-            "job_vacancy_id": request.job_vacancy_id,
-            "screening_type": "chat",
-            "mode": request.mode,
-            "status": "in_progress",
-            "question_set_version": qs_version,
-            "question_set_id": qs_id,
-        })
+        await repo.upsert_session(
+            session_id=request.session_id,
+            candidate_id=request.candidate_id,
+            job_vacancy_id=request.job_vacancy_id,
+            screening_type="chat",
+            mode=request.mode,
+            status="in_progress",
+            question_set_version=qs_version,
+            question_set_id=qs_id,
+        )
         
         for idx, question in enumerate(questions):
-            await db.execute(text("""
-                INSERT INTO wsi_questions (
-                    id, session_id, competency, framework, question_type,
-                    question_text, weight, expected_signals, scoring_criteria, sequence_order
-                )
-                VALUES (:id, :session_id, :competency, :framework, :question_type,
-                        :question_text, :weight, :expected_signals::jsonb, :scoring_criteria::jsonb, :sequence_order)
-            """), {
-                "id": question.id,
-                "session_id": request.session_id,
-                "competency": question.competency,
-                "framework": question.framework,
-                "question_type": question.question_type,
-                "question_text": question.question_text,
-                "weight": question.weight,
-                "expected_signals": json.dumps(question.expected_signals),
-                "scoring_criteria": json.dumps({**question.scoring_criteria, "is_critical": getattr(question, "is_critical", False)}),
-                "sequence_order": idx + 1
-            })
+            await repo.insert_question(
+                question_id=question.id,
+                session_id=request.session_id,
+                competency=question.competency,
+                framework=question.framework,
+                question_type=question.question_type,
+                question_text=question.question_text,
+                weight=question.weight,
+                expected_signals=question.expected_signals,
+                scoring_criteria=question.scoring_criteria,
+                sequence_order=idx + 1,
+                is_critical=getattr(question, "is_critical", False),
+            )
         
         
         return GenerateQuestionsResponse(
@@ -348,6 +340,7 @@ async def analyze_response(
     Saves response analysis to database.
     """
     try:
+        repo = WsiRepository(db)
         analysis = ResponseAnalysis(
             question_id=request.question_id,
             competency=request.competency,
@@ -363,36 +356,25 @@ async def analyze_response(
         )
         
         analysis_id = str(uuid.uuid4())
-        await db.execute(text("""
-            INSERT INTO wsi_response_analyses (
-                id, session_id, question_id, candidate_id, job_vacancy_id,
-                competency, response_text, response_audio_url,
-                autodeclaration_score, context_score, bloom_level, dreyfus_level,
-                evidences, red_flags, consistency_penalty, final_score, justification
-            )
-            VALUES (:id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
-                    :competency, :response_text, :response_audio_url,
-                    :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
-                    :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification)
-        """), {
-            "id": analysis_id,
-            "session_id": request.session_id,
-            "question_id": request.question_id,
-            "candidate_id": request.candidate_id,
-            "job_vacancy_id": request.job_vacancy_id,
-            "competency": analysis.competency,
-            "response_text": analysis.response_text,
-            "response_audio_url": request.response_audio_url,
-            "autodeclaration_score": analysis.autodeclaration_score,
-            "context_score": analysis.context_score,
-            "bloom_level": analysis.bloom_level,
-            "dreyfus_level": analysis.dreyfus_level,
-            "evidences": json.dumps(analysis.evidences),
-            "red_flags": json.dumps(analysis.red_flags),
-            "consistency_penalty": analysis.consistency_penalty,
-            "final_score": analysis.final_score,
-            "justification": analysis.justification
-        })
+        await repo.insert_response_analysis(
+            analysis_id=analysis_id,
+            session_id=request.session_id,
+            question_id=request.question_id,
+            candidate_id=request.candidate_id,
+            job_vacancy_id=request.job_vacancy_id,
+            competency=analysis.competency,
+            response_text=analysis.response_text,
+            response_audio_url=request.response_audio_url,
+            autodeclaration_score=analysis.autodeclaration_score,
+            context_score=analysis.context_score,
+            bloom_level=analysis.bloom_level,
+            dreyfus_level=analysis.dreyfus_level,
+            evidences=analysis.evidences,
+            red_flags=analysis.red_flags,
+            consistency_penalty=analysis.consistency_penalty,
+            final_score=analysis.final_score,
+            justification=analysis.justification,
+        )
         
         
         return AnalyzeResponseResponse(
@@ -426,12 +408,8 @@ async def calculate_wsi(
     Saves WSI result to database.
     """
     try:
-        result = await db.execute(text("""
-            SELECT competency, final_score FROM wsi_response_analyses
-            WHERE session_id = :session_id
-        """), {"session_id": request.session_id})
-        
-        rows = result.fetchall()
+        repo = WsiRepository(db)
+        rows = await repo.get_response_scores_for_session(request.session_id)
         
         responses = [
             ResponseAnalysis(
@@ -458,30 +436,18 @@ async def calculate_wsi(
         )
         
         result_id = str(uuid.uuid4())
-        await db.execute(text("""
-            INSERT INTO wsi_results (
-                id, session_id, candidate_id, job_vacancy_id,
-                technical_wsi, behavioral_wsi, overall_wsi, classification, percentile
-            )
-            VALUES (:id, :session_id, :candidate_id, :job_vacancy_id,
-                    :technical_wsi, :behavioral_wsi, :overall_wsi, :classification, :percentile)
-        """), {
-            "id": result_id,
-            "session_id": request.session_id,
-            "candidate_id": wsi_result.candidate_id,
-            "job_vacancy_id": wsi_result.job_vacancy_id,
-            "technical_wsi": wsi_result.technical_wsi,
-            "behavioral_wsi": wsi_result.behavioral_wsi,
-            "overall_wsi": wsi_result.overall_wsi,
-            "classification": wsi_result.classification,
-            "percentile": wsi_result.percentile
-        })
-        
-        await db.execute(text("""
-            UPDATE wsi_sessions
-            SET status = 'completed', completed_at = CURRENT_TIMESTAMP
-            WHERE id = :session_id
-        """), {"session_id": request.session_id})
+        await repo.insert_result(
+            result_id=result_id,
+            session_id=request.session_id,
+            candidate_id=wsi_result.candidate_id,
+            job_vacancy_id=wsi_result.job_vacancy_id,
+            technical_wsi=wsi_result.technical_wsi,
+            behavioral_wsi=wsi_result.behavioral_wsi,
+            overall_wsi=wsi_result.overall_wsi,
+            classification=wsi_result.classification,
+            percentile=wsi_result.percentile,
+        )
+        await repo.complete_session(request.session_id)
         
         
         return CalculateWSIResponse(
@@ -506,32 +472,12 @@ async def get_session(
 ):
     """Get WSI session details with questions and responses."""
     try:
-        result = await db.execute(text("""
-            SELECT id, candidate_id, job_vacancy_id, screening_type, mode, status, started_at, completed_at
-            FROM wsi_sessions
-            WHERE id = :session_id
-        """), {"session_id": session_id})
-        
-        session = result.fetchone()
+        repo = WsiRepository(db)
+        session = await repo.get_session(session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
-        
-        questions_result = await db.execute(text("""
-            SELECT id, competency, framework, question_type, question_text, weight, sequence_order
-            FROM wsi_questions
-            WHERE session_id = :session_id
-            ORDER BY sequence_order
-        """), {"session_id": session_id})
-        
-        questions = questions_result.fetchall()
-        
-        responses_result = await db.execute(text("""
-            SELECT question_id, competency, final_score, justification
-            FROM wsi_response_analyses
-            WHERE session_id = :session_id
-        """), {"session_id": session_id})
-        
-        responses = responses_result.fetchall()
+        questions = await repo.get_questions_for_session(session_id)
+        responses = await repo.get_responses_for_session_summary(session_id)
         
         return {
             "session": {
@@ -581,17 +527,8 @@ async def get_candidate_results(
 ):
     """Get WSI results for a candidate."""
     try:
-        result = await db.execute(text("""
-            SELECT r.id, r.job_vacancy_id, r.overall_wsi, r.technical_wsi, r.behavioral_wsi,
-                   r.classification, r.percentile, r.created_at, s.screening_type
-            FROM wsi_results r
-            JOIN wsi_sessions s ON r.session_id = s.id
-            WHERE r.candidate_id = :candidate_id
-            ORDER BY r.created_at DESC
-            LIMIT :limit
-        """), {"candidate_id": candidate_id, "limit": limit})
-        
-        results = result.fetchall()
+        repo = WsiRepository(db)
+        results = await repo.get_results_for_candidate(candidate_id, limit=limit)
         
         return {
             "candidate_id": candidate_id,
@@ -623,16 +560,8 @@ async def get_result_details(
 ):
     """Get complete WSI result details including transcript, report, feedback, and response analyses."""
     try:
-        result = await db.execute(text("""
-            SELECT r.id, r.session_id, r.candidate_id, r.job_vacancy_id,
-                   r.technical_wsi, r.behavioral_wsi, r.overall_wsi,
-                   r.classification, r.percentile, r.created_at,
-                   s.screening_type, s.mode, s.started_at, s.completed_at
-            FROM wsi_results r
-            JOIN wsi_sessions s ON r.session_id = s.id
-            WHERE r.id = :result_id
-        """), {"result_id": result_id})
-        row = result.fetchone()
+        repo = WsiRepository(db)
+        row = await repo.get_result_with_session(result_id)
         if not row:
             raise HTTPException(status_code=404, detail="WSI result not found")
 
@@ -640,33 +569,9 @@ async def get_result_details(
         candidate_id = str(row[2])
         job_vacancy_id = str(row[3])
 
-        responses_result = await db.execute(text("""
-            SELECT ra.competency, ra.response_text, ra.autodeclaration_score, ra.context_score,
-                   ra.bloom_level, ra.dreyfus_level, ra.evidences, ra.red_flags,
-                   ra.consistency_penalty, ra.final_score, ra.justification, ra.created_at,
-                   q.question_text, q.framework, q.question_type, q.weight, q.expected_signals,
-                   q.sequence_order
-            FROM wsi_response_analyses ra
-            JOIN wsi_questions q ON ra.question_id = q.id
-            WHERE ra.session_id = :session_id
-            ORDER BY q.sequence_order
-        """), {"session_id": session_id})
-        responses = responses_result.fetchall()
-
-        report_result = await db.execute(text("""
-            SELECT executive_summary, technical_analysis, behavioral_analysis,
-                   cultural_fit, recommendation
-            FROM wsi_reports WHERE wsi_result_id = :result_id
-        """), {"result_id": result_id})
-        report_row = report_result.fetchone()
-
-        feedback_result = await db.execute(text("""
-            SELECT decision, main_message, technical_strengths, development_opportunities,
-                   behavioral_strengths, next_steps, personalized_tip, development_plan,
-                   recommended_resources
-            FROM wsi_feedbacks WHERE wsi_result_id = :result_id
-        """), {"result_id": result_id})
-        feedback_row = feedback_result.fetchone()
+        responses = await repo.get_responses_for_session(session_id)
+        report_row = await repo.get_report_for_result(result_id)
+        feedback_row = await repo.get_feedback_for_result(result_id)
 
         duration_minutes = None
         if row[12] and row[13]:
@@ -751,34 +656,14 @@ async def get_vacancy_ranking(
 ):
     """Get ranked candidates for a job vacancy based on WSI scores."""
     try:
-        result = await db.execute(text("""
-            SELECT r.id as result_id, r.candidate_id, r.overall_wsi, r.technical_wsi, r.behavioral_wsi,
-                   r.classification, r.percentile, r.created_at, s.screening_type,
-                   c.name as candidate_name, c.current_title,
-                   RANK() OVER (ORDER BY r.overall_wsi DESC) as rank_position,
-                   COUNT(*) OVER () as total_candidates
-            FROM wsi_results r
-            JOIN wsi_sessions s ON r.session_id = s.id
-            JOIN candidates c ON r.candidate_id = c.id
-            WHERE r.job_vacancy_id = :job_vacancy_id
-              AND s.status = 'completed'
-            ORDER BY r.overall_wsi DESC
-        """), {"job_vacancy_id": job_vacancy_id})
-        rows = result.fetchall()
+        repo = WsiRepository(db)
+        rows = await repo.get_vacancy_ranking(job_vacancy_id)
 
         if not rows:
             return {"job_vacancy_id": job_vacancy_id, "total_screened": 0, "ranking": []}
 
         total = int(rows[0][12]) if rows else 0
-        avg_result = await db.execute(text("""
-            SELECT ROUND(AVG(r.overall_wsi)::numeric, 2),
-                   ROUND(AVG(r.technical_wsi)::numeric, 2),
-                   ROUND(AVG(r.behavioral_wsi)::numeric, 2)
-            FROM wsi_results r
-            JOIN wsi_sessions s ON r.session_id = s.id
-            WHERE r.job_vacancy_id = :job_vacancy_id AND s.status = 'completed'
-        """), {"job_vacancy_id": job_vacancy_id})
-        avg_row = avg_result.fetchone()
+        avg_row = await repo.get_vacancy_averages(job_vacancy_id)
 
         return {
             "job_vacancy_id": job_vacancy_id,
@@ -820,20 +705,8 @@ async def get_candidate_ranking_in_vacancy(
 ):
     """Get a specific candidate's rank position within a job vacancy."""
     try:
-        result = await db.execute(text("""
-            WITH ranked AS (
-                SELECT r.candidate_id,
-                       r.overall_wsi,
-                       RANK() OVER (ORDER BY r.overall_wsi DESC) as rank_position,
-                       COUNT(*) OVER () as total_candidates
-                FROM wsi_results r
-                JOIN wsi_sessions s ON r.session_id = s.id
-                WHERE r.job_vacancy_id = :job_vacancy_id AND s.status = 'completed'
-            )
-            SELECT rank_position, total_candidates, overall_wsi
-            FROM ranked WHERE candidate_id = :candidate_id
-        """), {"candidate_id": candidate_id, "job_vacancy_id": job_vacancy_id})
-        row = result.fetchone()
+        repo = WsiRepository(db)
+        row = await repo.get_candidate_rank_in_vacancy(candidate_id, job_vacancy_id)
 
         if not row:
             return {"candidate_id": candidate_id, "job_vacancy_id": job_vacancy_id, "ranked": False}
@@ -1329,13 +1202,8 @@ async def trigger_post_screening_feedback(
     """Trigger automated feedback to candidate after WSI screening completion."""
     try:
         from app.services.candidate_feedback_service import candidate_feedback_service
-
-        result = await db.execute(text("""
-            SELECT candidate_id, job_vacancy_id, overall_wsi, classification
-            FROM wsi_results
-            WHERE id = :result_id
-        """), {"result_id": result_id})
-        wsi_row = result.fetchone()
+        repo = WsiRepository(db)
+        wsi_row = await repo.get_result_summary(result_id)
         if not wsi_row:
             raise HTTPException(status_code=404, detail="WSI result not found")
 
@@ -1358,10 +1226,7 @@ async def trigger_post_screening_feedback(
 
         development_areas: list[str] = []
         try:
-            report_result = await db.execute(text("""
-                SELECT content FROM wsi_reports WHERE wsi_result_id = :result_id LIMIT 1
-            """), {"result_id": result_id})
-            report_row = report_result.fetchone()
+            report_row = await repo.get_report_content(result_id)
             if report_row and report_row[0]:
                 content = report_row[0] if isinstance(report_row[0], dict) else json.loads(report_row[0])
                 development_areas = content.get("development_areas", [])
@@ -1375,10 +1240,7 @@ async def trigger_post_screening_feedback(
         candidate_email = None
         candidate_phone = None
         try:
-            cand_result = await db.execute(text("""
-                SELECT name, email, phone FROM candidates WHERE id = :candidate_id LIMIT 1
-            """), {"candidate_id": candidate_id})
-            cand_row = cand_result.fetchone()
+            cand_row = await repo.get_candidate_contact(candidate_id)
             if cand_row:
                 candidate_name = cand_row[0]
                 candidate_email = cand_row[1]
@@ -1389,10 +1251,7 @@ async def trigger_post_screening_feedback(
         vacancy_title = None
         company_name = None
         try:
-            vac_result = await db.execute(text("""
-                SELECT title, company_name FROM job_vacancies WHERE id = :job_vacancy_id LIMIT 1
-            """), {"job_vacancy_id": job_vacancy_id})
-            vac_row = vac_result.fetchone()
+            vac_row = await repo.get_vacancy_title(job_vacancy_id)
             if vac_row:
                 vacancy_title = vac_row[0]
                 company_name = vac_row[1]
@@ -1433,10 +1292,8 @@ async def get_feedback_status(
 ):
     """Check feedback status for a WSI result."""
     try:
-        result = await db.execute(text("""
-            SELECT candidate_id, job_vacancy_id FROM wsi_results WHERE id = :result_id
-        """), {"result_id": result_id})
-        wsi_row = result.fetchone()
+        repo = WsiRepository(db)
+        wsi_row = await repo.get_result_candidate_vacancy(result_id)
         if not wsi_row:
             raise HTTPException(status_code=404, detail="WSI result not found")
 
@@ -1445,12 +1302,7 @@ async def get_feedback_status(
 
         feedback_content = None
         try:
-            fb_result = await db.execute(text("""
-                SELECT id, decision, main_message, technical_strengths, development_opportunities,
-                       behavioral_strengths, next_steps, personalized_tip
-                FROM wsi_feedbacks WHERE wsi_result_id = :result_id LIMIT 1
-            """), {"result_id": result_id})
-            fb_row = fb_result.fetchone()
+            fb_row = await repo.get_wsi_feedback_detail(result_id)
             if fb_row:
                 feedback_content = {
                     "feedback_id": str(fb_row[0]),
@@ -1468,6 +1320,8 @@ async def get_feedback_status(
         from sqlalchemy import and_, select
 
         from app.models.candidate_feedback import CandidateFeedback
+        # TODO(phase2-repo-extraction): CandidateFeedback is a Rails-owned model;
+        # this query should move to a CandidateFeedbackRepository or Rails adapter.
         sent_result = await db.execute(
             select(CandidateFeedback).where(
                 and_(
@@ -1507,16 +1361,8 @@ async def get_candidates_wsi_scores(
 ):
     """Returns WSI scores for all candidates in a vacancy, converted to 0-100 scale."""
     try:
-        result = await db.execute(text("""
-            SELECT DISTINCT ON (candidate_id)
-                candidate_id, overall_wsi, technical_wsi, behavioral_wsi,
-                classification, percentile
-            FROM wsi_results
-            WHERE job_vacancy_id = :job_vacancy_id
-            ORDER BY candidate_id, created_at DESC
-        """), {"job_vacancy_id": job_vacancy_id})
-
-        rows = result.fetchall()
+        repo = WsiRepository(db)
+        rows = await repo.get_latest_scores_per_candidate(job_vacancy_id)
 
         candidates: dict[str, Any] = {}
         for row in rows:

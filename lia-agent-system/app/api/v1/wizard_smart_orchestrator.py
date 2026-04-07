@@ -631,6 +631,10 @@ async def react_orchestrate(
         from lia_agents_core.agent_interface import AgentInput
 
         from app.domains.job_management.agents.wizard_react_agent import (
+
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
             WizardReActAgent,
         )
 

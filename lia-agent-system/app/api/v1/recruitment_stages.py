@@ -2416,6 +2416,10 @@ async def infer_stage_behavior(
             result = await infer_behavior_llm(request.stage_name, request.description)
         else:
             from app.domains.communication.services.infer_behavior_service import infer_behavior_auto
+
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
             result = await infer_behavior_auto(request.stage_name, request.description)
 
         return result

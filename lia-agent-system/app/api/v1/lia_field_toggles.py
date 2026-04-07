@@ -619,6 +619,10 @@ async def suggest_field_value(
     Called when recruiter chooses "Preencher Agora" action.
     """
     from app.services.lia_field_config_service import LiaFieldConfigService
+
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
     
     job_ctx = None
     if request and request.job_context:

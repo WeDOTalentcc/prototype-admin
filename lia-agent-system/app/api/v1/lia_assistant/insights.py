@@ -357,6 +357,10 @@ async def process_expanded_prompt(
         # --- Phase 3: Full orchestrator with 14-pattern multi-step detection ---
         try:
             from app.api.orchestrator_routes import get_orchestrator
+
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
             orchestrator = get_orchestrator()
 
             orch_context = {

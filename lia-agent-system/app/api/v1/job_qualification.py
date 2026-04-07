@@ -15,6 +15,10 @@ from app.core.database import get_db
 from app.domains.job_management.services.job_qualification_service import job_qualification_service
 from app.models.job_vacancy import JobVacancy
 
+# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
+# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
+# See: app/domains/integrations_hub/services/rails_adapter.py
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/jobs/qualification", tags=["job-qualification"])
