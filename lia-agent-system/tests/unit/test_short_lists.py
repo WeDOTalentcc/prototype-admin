@@ -151,7 +151,7 @@ class TestShortListsRouter:
 
     def test_router_registered_in_main(self):
         import pathlib
-        content = pathlib.Path("app/main.py").read_text()
+        content = pathlib.Path("app/api/routes.py").read_text()
         assert "short_lists" in content
         assert "short-lists" in content
 

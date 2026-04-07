@@ -159,7 +159,7 @@ async def run_cleanup(dry_run: bool = True) -> dict:
         # 1. Candidates past their scheduled deletion date
         try:
             candidate_result = await db.execute(
-                select(Candidate.id, Candidate.company_id, Candidate.scheduled_deletion_at)
+                select(Candidate.id, Candidate.scheduled_deletion_at)
                 .where(
                     and_(
                         Candidate.scheduled_deletion_at.isnot(None),
@@ -175,7 +175,6 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                     " (dry-run)" if dry_run else "",
                     extra={
                         "candidate_id": str(row.id),
-                        "company_id": str(row.company_id),
                         "scheduled_deletion_at": row.scheduled_deletion_at.isoformat(),
                     },
                 )
