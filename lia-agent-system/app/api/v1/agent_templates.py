@@ -26,6 +26,11 @@ from libs.models.lia_models.agent_template import AgentTemplate, AgentTemplateSt
 
 router = APIRouter()
 
+
+def _get_agent_template_repo(db):
+    from app.domains.ai.repositories.agent_template_repository import AgentTemplateRepository
+    return AgentTemplateRepository(db)
+
 ALLOWED_DOMAINS = [
     "sourcing", "pipeline", "wsi", "lia_assistant", "job_wizard",
     "candidate_search", "automation", "analytics", "compliance",
@@ -92,6 +97,7 @@ async def list_templates(
     """
     from sqlalchemy import or_
 
+    # TODO(phase2): complex multi-tenant query with public/private logic — left as direct DB
     query = select(AgentTemplate).where(
         or_(
             # Templates públicos WeDO
@@ -117,20 +123,18 @@ async def create_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Cria novo template de agente para a empresa. Status inicial: draft."""
-    template = AgentTemplate(
-        id=str(uuid4()),
-        company_id=current_user.company_id,  # sempre escopado ao tenant
-        name=body.name,
-        domain=body.domain,
-        system_prompt_yaml=body.system_prompt_yaml,
-        version=1,
-        status=AgentTemplateStatus.DRAFT,
-        base_template_id=body.base_template_id,
-        created_by=str(current_user.id),
-    )
-    db.add(template)
-    await db.flush()
-    await db.refresh(template)
+    repo = _get_agent_template_repo(db)
+    template = await repo.create({
+        "id": str(uuid4()),
+        "company_id": current_user.company_id,
+        "name": body.name,
+        "domain": body.domain,
+        "system_prompt_yaml": body.system_prompt_yaml,
+        "version": 1,
+        "status": AgentTemplateStatus.DRAFT,
+        "base_template_id": body.base_template_id,
+        "created_by": str(current_user.id),
+    })
     return template
 
 
@@ -141,12 +145,8 @@ async def get_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Retorna um template pelo ID (próprio da empresa ou público WeDO)."""
-    result = await db.execute(
-        select(AgentTemplate).where(
-            AgentTemplate.id == template_id,
-        )
-    )
-    template = result.scalar_one_or_none()
+    repo = _get_agent_template_repo(db)
+    template = await repo.get_by_id(template_id)
 
     if not template:
         raise HTTPException(status_code=404, detail="Template não encontrado.")
@@ -169,10 +169,8 @@ async def update_template(
     Edita um template draft. Se estiver publicado, cria nova versão (imutabilidade).
     Templates públicos WeDO não podem ser editados diretamente — clonar primeiro.
     """
-    result = await db.execute(
-        select(AgentTemplate).where(AgentTemplate.id == template_id)
-    )
-    template = result.scalar_one_or_none()
+    repo = _get_agent_template_repo(db)
+    template = await repo.get_by_id(template_id)
 
     if not template:
         raise HTTPException(status_code=404, detail="Template não encontrado.")
@@ -186,33 +184,30 @@ async def update_template(
 
     if template.status == AgentTemplateStatus.PUBLISHED:
         # Template publicado é imutável — criar nova versão como draft
-        new_version = AgentTemplate(
-            id=str(uuid4()),
-            company_id=current_user.company_id,
-            name=body.name,
-            domain=body.domain,
-            system_prompt_yaml=body.system_prompt_yaml,
-            version=template.version + 1,
-            status=AgentTemplateStatus.DRAFT,
-            base_template_id=template.base_template_id or template.id,
-            created_by=str(current_user.id),
-        )
+        new_version = await repo.create({
+            "id": str(uuid4()),
+            "company_id": current_user.company_id,
+            "name": body.name,
+            "domain": body.domain,
+            "system_prompt_yaml": body.system_prompt_yaml,
+            "version": template.version + 1,
+            "status": AgentTemplateStatus.DRAFT,
+            "base_template_id": template.base_template_id or template.id,
+            "created_by": str(current_user.id),
+        })
         # Arquivar a versão anterior publicada
-        template.status = AgentTemplateStatus.ARCHIVED
-        template.archived_at = datetime.now(UTC)
-
-        db.add(new_version)
-        await db.flush()
-        await db.refresh(new_version)
+        await repo.update(template, {
+            "status": AgentTemplateStatus.ARCHIVED,
+            "archived_at": datetime.now(UTC),
+        })
         return new_version
     else:
         # Draft pode ser editado in-place
-        template.name = body.name
-        template.domain = body.domain
-        template.system_prompt_yaml = body.system_prompt_yaml
-        await db.flush()
-        await db.refresh(template)
-        return template
+        return await repo.update(template, {
+            "name": body.name,
+            "domain": body.domain,
+            "system_prompt_yaml": body.system_prompt_yaml,
+        })
 
 
 @router.post("/agent-templates/{template_id}/publish", response_model=AgentTemplateResponse)
@@ -226,10 +221,8 @@ async def publish_template(
     imediatamente (próxima requisição ao domínio usará este template).
     Templates publicados são imutáveis — editar cria nova versão.
     """
-    result = await db.execute(
-        select(AgentTemplate).where(AgentTemplate.id == template_id)
-    )
-    template = result.scalar_one_or_none()
+    repo = _get_agent_template_repo(db)
+    template = await repo.get_by_id(template_id)
 
     if not template:
         raise HTTPException(status_code=404, detail="Template não encontrado.")
@@ -243,11 +236,10 @@ async def publish_template(
             detail=f"Apenas templates em 'draft' podem ser publicados. Status atual: {template.status}",
         )
 
-    template.status = AgentTemplateStatus.PUBLISHED
-    template.published_at = datetime.now(UTC)
-    await db.flush()
-    await db.refresh(template)
-    return template
+    return await repo.update(template, {
+        "status": AgentTemplateStatus.PUBLISHED,
+        "published_at": datetime.now(UTC),
+    })
 
 
 @router.delete("/agent-templates/{template_id}", status_code=204, response_model=None)
@@ -257,10 +249,8 @@ async def archive_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Arquiva um template (soft delete — dados preservados para auditoria)."""
-    result = await db.execute(
-        select(AgentTemplate).where(AgentTemplate.id == template_id)
-    )
-    template = result.scalar_one_or_none()
+    repo = _get_agent_template_repo(db)
+    template = await repo.get_by_id(template_id)
 
     if not template:
         raise HTTPException(status_code=404, detail="Template não encontrado.")
@@ -268,5 +258,7 @@ async def archive_template(
     if template.company_id != current_user.company_id:
         raise HTTPException(status_code=403, detail="Acesso negado.")
 
-    template.status = AgentTemplateStatus.ARCHIVED
-    template.archived_at = datetime.now(UTC)
+    await repo.update(template, {
+        "status": AgentTemplateStatus.ARCHIVED,
+        "archived_at": datetime.now(UTC),
+    })

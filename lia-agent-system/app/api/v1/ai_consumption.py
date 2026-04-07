@@ -43,6 +43,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ai-consumption", tags=["ai-consumption"])
 
 
+def get_ai_consumption_repo(db: AsyncSession = Depends(get_db)) -> AiConsumptionRepository:
+    return AiConsumptionRepository(db)
+
+
 @router.get("/summary", response_model=UsageSummaryResponse, summary="Get usage summary")
 async def get_summary(
     company_id: str = Depends(get_verified_company_id),
@@ -86,6 +90,7 @@ async def get_client_usage(
             AiConsumption.created_at <= datetime.combine(balance.period_end, datetime.max.time())
         ]
         
+        # TODO(phase2): complex transaction with balance model — AiConsumption stats query left as direct DB
         stats_query = select(
             func.sum(AiConsumption.total_tokens).label('total_tokens'),
             func.sum(AiConsumption.input_tokens).label('input_tokens'),
@@ -145,16 +150,16 @@ async def get_usage_history(
         if model:
             conditions.append(AiConsumption.model == model)
         
-        query = select(AiConsumption).where(and_(*conditions))
-        query = query.order_by(desc(AiConsumption.created_at))
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        records = result.scalars().all()
-        
-        count_query = select(func.count(AiConsumption.id)).where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
+        repo = AiConsumptionRepository(db)
+        records, total = await repo.list_history(
+            company_id,
+            start_date=start_date,
+            end_date=end_date,
+            agent_type=agent_type,
+            model=model,
+            limit=limit,
+            offset=offset,
+        )
         
         return UsageHistoryResponse(
             records=[AiConsumptionResponse(**r.to_dict()) for r in records],
@@ -186,15 +191,8 @@ async def get_usage_by_agent(
         if end_date:
             conditions.append(AiConsumption.created_at <= end_date)
         
-        query = select(
-            AiConsumption.agent_type,
-            func.sum(AiConsumption.total_tokens).label('total_tokens'),
-            func.count(AiConsumption.id).label('total_ops'),
-            func.sum(AiConsumption.cost_cents).label('total_cost')
-        ).where(and_(*conditions)).group_by(AiConsumption.agent_type)
-        
-        result = await db.execute(query)
-        rows = result.all()
+        repo = AiConsumptionRepository(db)
+        rows = await repo.get_usage_by_agent(company_id, start_date=start_date, end_date=end_date)
         
         grand_total_tokens = sum(row.total_tokens or 0 for row in rows)
         grand_total_ops = sum(row.total_ops or 0 for row in rows)
@@ -232,17 +230,8 @@ async def _get_daily_usage_data(days: int, company_id: str, db: AsyncSession) ->
         AiConsumption.created_at >= start_date
     ]
     
-    query = select(
-        cast(AiConsumption.created_at, Date).label('date'),
-        func.sum(AiConsumption.total_tokens).label('total_tokens'),
-        func.count(AiConsumption.id).label('total_ops'),
-        func.sum(AiConsumption.cost_cents).label('total_cost')
-    ).where(and_(*conditions)).group_by(
-        cast(AiConsumption.created_at, Date)
-    ).order_by(cast(AiConsumption.created_at, Date))
-    
-    result = await db.execute(query)
-    rows = result.all()
+    repo = AiConsumptionRepository(db)
+    rows = await repo.get_usage_by_day(company_id, days=days)
     
     data = []
     total_tokens = 0
@@ -301,6 +290,7 @@ async def get_balance(
         company_uuid = UUID(company_id)
         balance = await get_or_create_balance(db, company_uuid)
         
+        # TODO(phase2): complex transaction with balance model — usage sum query left as direct DB
         usage_query = select(
             func.sum(AiConsumption.total_tokens).label('total')
         ).where(and_(
@@ -334,24 +324,21 @@ async def record_consumption(
         if total_tokens is None:
             total_tokens = record.input_tokens + record.output_tokens
         
-        consumption = AiConsumption(
-            company_id=company_uuid,
-            user_id=UUID(record.user_id) if record.user_id else None,
-            agent_type=record.agent_type,
-            operation=record.operation,
-            model=record.model,
-            input_tokens=record.input_tokens,
-            output_tokens=record.output_tokens,
-            total_tokens=total_tokens,
-            cost_cents=record.cost_cents or 0,
-            candidate_id=UUID(record.candidate_id) if record.candidate_id else None,
-            vacancy_id=UUID(record.vacancy_id) if record.vacancy_id else None,
-            extra_data=record.metadata or {}
-        )
-        
-        db.add(consumption)
-        await db.flush()
-        await db.refresh(consumption)
+        repo = AiConsumptionRepository(db)
+        consumption = await repo.create({
+            "company_id": company_uuid,
+            "user_id": UUID(record.user_id) if record.user_id else None,
+            "agent_type": record.agent_type,
+            "operation": record.operation,
+            "model": record.model,
+            "input_tokens": record.input_tokens,
+            "output_tokens": record.output_tokens,
+            "total_tokens": total_tokens,
+            "cost_cents": record.cost_cents or 0,
+            "candidate_id": UUID(record.candidate_id) if record.candidate_id else None,
+            "vacancy_id": UUID(record.vacancy_id) if record.vacancy_id else None,
+            "extra_data": record.metadata or {},
+        })
         
         balance = await get_or_create_balance(db, company_uuid)
         balance.current_usage = (balance.current_usage or 0) + total_tokens
@@ -391,6 +378,7 @@ async def update_limits(
         if request.reset_usage:
             balance.current_usage = 0
         
+        # TODO(phase2): balance model update — left as direct DB (balance is separate model)
         await db.flush()
         await db.refresh(balance)
         

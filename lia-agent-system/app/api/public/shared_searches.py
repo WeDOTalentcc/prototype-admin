@@ -22,6 +22,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.shared_searches.repositories.shared_search_repository import SharedSearchRepository
 from app.middleware.rate_limiter import rate_limiter as _otp_rate_limiter
 from app.models.shared_search import (
     FeedbackDecision,
@@ -46,6 +47,10 @@ from app.services.notification_service import NotificationType, notification_ser
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/public/shared", tags=["Public Shared Searches"])
+
+
+def get_shared_search_repo(db: AsyncSession = Depends(get_db)) -> SharedSearchRepository:
+    return SharedSearchRepository(db)
 
 OTP_EXPIRY_MINUTES = 10
 SESSION_EXPIRY_HOURS = 24
@@ -109,18 +114,13 @@ async def get_shared_search_by_token(
     db: AsyncSession
 ) -> tuple[SharedSearch, SharedSearchAccess]:
     """Get shared search and access record by access token."""
-    result = await db.execute(
-        select(SharedSearchAccess).where(SharedSearchAccess.access_token == token)
-    )
-    access = result.scalar_one_or_none()
+    repo = SharedSearchRepository(db)
+    access = await repo.get_access_by_token(token)
     
     if not access:
         raise HTTPException(status_code=404, detail="Link de compartilhamento não encontrado")
     
-    search_result = await db.execute(
-        select(SharedSearch).where(SharedSearch.id == access.shared_search_id)
-    )
-    search = search_result.scalar_one_or_none()
+    search = await repo.get_shared_search_by_id(access.shared_search_id)
     
     if not search:
         raise HTTPException(status_code=404, detail="Busca compartilhada não encontrada")
@@ -215,15 +215,10 @@ async def get_public_shared_search(
     if is_authenticated:
         candidates = build_candidate_snapshots(all_candidates)
         
-        feedback_result = await db.execute(
-            select(SharedSearchFeedback).where(
-                and_(
-                    SharedSearchFeedback.shared_search_id == search.id,
-                    SharedSearchFeedback.reviewer_email == session.get("email")
-                )
-            )
+        repo = SharedSearchRepository(db)
+        feedbacks = await repo.get_feedbacks_by_search_and_reviewer(
+            search.id, session.get("email")
         )
-        feedbacks = feedback_result.scalars().all()
         feedback_map = {str(f.candidate_id): f for f in feedbacks}
         
         for candidate in candidates:
@@ -291,15 +286,8 @@ async def request_otp(
     search, access = await get_shared_search_by_token(token, db)
     
     if access.email.lower() != request_data.email.lower():
-        result = await db.execute(
-            select(SharedSearchAccess).where(
-                and_(
-                    SharedSearchAccess.shared_search_id == search.id,
-                    SharedSearchAccess.email == request_data.email
-                )
-            )
-        )
-        access = result.scalar_one_or_none()
+        repo = SharedSearchRepository(db)
+        access = await repo.get_access_by_email(search.id, request_data.email)
         
         if not access:
             raise HTTPException(
@@ -355,15 +343,8 @@ async def verify_otp(
     search, access = await get_shared_search_by_token(token, db)
     
     if access.email.lower() != request_data.email.lower():
-        result = await db.execute(
-            select(SharedSearchAccess).where(
-                and_(
-                    SharedSearchAccess.shared_search_id == search.id,
-                    SharedSearchAccess.email == request_data.email
-                )
-            )
-        )
-        access = result.scalar_one_or_none()
+        repo = SharedSearchRepository(db)
+        access = await repo.get_access_by_email(search.id, request_data.email)
         
         if not access:
             raise HTTPException(
@@ -453,16 +434,10 @@ async def submit_feedback(
     if str(request_data.candidate_id) not in candidate_ids:
         raise HTTPException(status_code=404, detail="Candidato não encontrado nesta busca")
     
-    result = await db.execute(
-        select(SharedSearchFeedback).where(
-            and_(
-                SharedSearchFeedback.shared_search_id == search.id,
-                SharedSearchFeedback.candidate_id == request_data.candidate_id,
-                SharedSearchFeedback.reviewer_email == reviewer_email
-            )
-        )
+    repo = SharedSearchRepository(db)
+    existing = await repo.get_feedback_by_candidate_and_reviewer(
+        search.id, request_data.candidate_id, reviewer_email
     )
-    existing = result.scalar_one_or_none()
     
     now = datetime.utcnow()
     
@@ -472,9 +447,11 @@ async def submit_feedback(
         existing.comment = request_data.comment
         existing.updated_at = now
         feedback = existing
+        await db.flush()
+        await db.refresh(feedback)
     else:
         import uuid
-        feedback = SharedSearchFeedback(
+        feedback = await repo.create_feedback(SharedSearchFeedback(
             id=uuid.uuid4(),
             shared_search_id=search.id,
             candidate_id=request_data.candidate_id,
@@ -483,12 +460,8 @@ async def submit_feedback(
             rating=request_data.rating,
             comment=request_data.comment,
             created_at=now,
-            updated_at=now
-        )
-        db.add(feedback)
-    
-    await db.flush()
-    await db.refresh(feedback)
+            updated_at=now,
+        ))
 
     _reviewer_hash = hashlib.sha256(reviewer_email.lower().encode()).hexdigest()[:8] if reviewer_email else "unknown"
     logger.info(f"Feedback submitted by email_hash={_reviewer_hash} for candidate={request_data.candidate_id} on shared_search={search.id}")
@@ -543,15 +516,8 @@ async def get_my_feedbacks(
     
     reviewer_email = session.get("email")
     
-    result = await db.execute(
-        select(SharedSearchFeedback).where(
-            and_(
-                SharedSearchFeedback.shared_search_id == search.id,
-                SharedSearchFeedback.reviewer_email == reviewer_email
-            )
-        ).order_by(SharedSearchFeedback.created_at.desc())
-    )
-    feedbacks = result.scalars().all()
+    repo = SharedSearchRepository(db)
+    feedbacks = await repo.get_feedbacks_by_reviewer(search.id, reviewer_email)
     
     return [
         FeedbackResponse(

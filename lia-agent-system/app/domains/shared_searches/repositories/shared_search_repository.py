@@ -241,6 +241,80 @@ class SharedSearchRepository:
         default_company = result.scalar_one_or_none()
         return default_company.id if default_company else None
 
+
+    # ── SharedSearchAccess by token ─────────────────────────────────────────
+
+    async def get_access_by_token(self, access_token: str) -> SharedSearchAccess | None:
+        result = await self.db.execute(
+            select(SharedSearchAccess).where(
+                SharedSearchAccess.access_token == access_token
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_shared_search_by_id(self, search_id) -> SharedSearch | None:
+        result = await self.db.execute(
+            select(SharedSearch).where(SharedSearch.id == search_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_feedback_by_candidate_and_reviewer(
+        self,
+        search_id: UUID,
+        candidate_id: UUID,
+        reviewer_email: str,
+    ) -> SharedSearchFeedback | None:
+        result = await self.db.execute(
+            select(SharedSearchFeedback).where(
+                and_(
+                    SharedSearchFeedback.shared_search_id == search_id,
+                    SharedSearchFeedback.candidate_id == candidate_id,
+                    SharedSearchFeedback.reviewer_email == reviewer_email,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_feedbacks_by_reviewer(
+        self,
+        search_id: UUID,
+        reviewer_email: str,
+    ) -> list[SharedSearchFeedback]:
+        result = await self.db.execute(
+            select(SharedSearchFeedback).where(
+                and_(
+                    SharedSearchFeedback.shared_search_id == search_id,
+                    SharedSearchFeedback.reviewer_email == reviewer_email,
+                )
+            ).order_by(SharedSearchFeedback.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    async def get_feedbacks_by_search_and_reviewer(
+        self,
+        search_id: UUID,
+        reviewer_email: str,
+    ) -> list[SharedSearchFeedback]:
+        return await self.get_feedbacks_by_reviewer(search_id, reviewer_email)
+
+    async def create_feedback(self, feedback: SharedSearchFeedback) -> SharedSearchFeedback:
+        self.db.add(feedback)
+        await self.db.flush()
+        await self.db.refresh(feedback)
+        return feedback
+
+    async def mark_access_otp_used(self, access: SharedSearchAccess) -> None:
+        access.otp_hash = None
+        access.otp_expires_at = None
+
+    async def record_access_view(self, access: SharedSearchAccess) -> None:
+        from datetime import datetime as _dt
+        now = _dt.utcnow()
+        if not access.first_accessed_at:
+            access.first_accessed_at = now
+        access.last_accessed_at = now
+        access.total_views = (access.total_views or 0) + 1
+
     # ── commit / rollback helpers ───────────────────────────────────────────
 
     async def commit(self) -> None:
