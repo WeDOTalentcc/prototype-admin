@@ -982,3 +982,7 @@ class JobInsightsService:
 
 
 job_insights_service = JobInsightsService()
+
+
+def get_job_insights_service() -> "JobInsightsService":
+    return job_insights_service

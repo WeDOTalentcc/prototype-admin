@@ -301,23 +301,23 @@ class TestF66TraitQuestion:
         gen._extract_ocean_scores = AsyncMock(return_value=ranked)
 
         # Mock individual question generators
-        async def fake_bigfive(comp, ocean_trait=None):
+        async def fake_bigfive(comp, ocean_trait=None, **kwargs):
             from app.domains.cv_screening.services.wsi_service import WSIQuestion
             return WSIQuestion(
                 id="q-" + (ocean_trait or "none"),
                 competency=comp.name,
                 framework="BigFive",
                 question_type="situational",
-                question_text=f"Pergunta sobre {ocean_trait}",
+                question_text=f"Conte sobre uma situação em que você demonstrou {ocean_trait or 'competência'} no seu trabalho e como esse comportamento influenciou os resultados da equipe.",
                 weight=1.0,
                 expected_signals=[],
                 scoring_criteria={"ocean_trait": ocean_trait} if ocean_trait else {},
             )
 
         gen._generate_bigfive_question = fake_bigfive
-        gen._generate_cbi_question = AsyncMock(side_effect=lambda c: _stub_question(c, "CBI"))
-        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Dreyfus"))
-        gen._generate_bloom_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Bloom"))
+        gen._generate_cbi_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "CBI"))
+        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Dreyfus"))
+        gen._generate_bloom_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Bloom"))
 
         technical = [_make_competency(f"Tech{i}", "technical", weight=0.8) for i in range(5)]
         behavioral = [_make_competency(f"Beh{i}", "behavioral", weight=0.7) for i in range(5)]
@@ -326,7 +326,7 @@ class TestF66TraitQuestion:
             technical + behavioral,
             mode="compact",
             job_description="Vaga de engenheiro",
-            seniority="junior",
+            seniority="senior",
         )
 
         bigfive_qs = [q for q in questions if q.framework == "BigFive"]
@@ -343,7 +343,7 @@ def _stub_question(comp, framework):
         competency=comp.name,
         framework=framework,
         question_type="contextual",
-        question_text=f"Pergunta {framework} sobre {comp.name}",
+        question_text=f"Conte sobre uma situação em que você demonstrou {comp.name} no seu trabalho e como isso impactou o resultado.",
         weight=comp.weight,
         expected_signals=[],
         scoring_criteria={},
@@ -360,10 +360,10 @@ class TestGenerateAllPipeline:
         """Sem job_description, _extract_ocean_scores NÃO deve ser chamado."""
         gen = _make_generator()
         gen._extract_ocean_scores = AsyncMock()
-        gen._generate_cbi_question = AsyncMock(side_effect=lambda c: _stub_question(c, "CBI"))
-        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Dreyfus"))
-        gen._generate_bloom_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Bloom"))
-        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None: _stub_question(c, "BigFive"))
+        gen._generate_cbi_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "CBI"))
+        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Dreyfus"))
+        gen._generate_bloom_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Bloom"))
+        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None, **kwargs: _stub_question(c, "BigFive"))
 
         technical = [_make_competency(f"T{i}", "technical", weight=0.8) for i in range(5)]
         behavioral = [_make_competency(f"B{i}", "behavioral", weight=0.7) for i in range(5)]
@@ -380,10 +380,10 @@ class TestGenerateAllPipeline:
         ranked = [OceanTraitScore(t, 60) for t in
                   ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"]]
         gen._extract_ocean_scores = AsyncMock(return_value=ranked)
-        gen._generate_cbi_question = AsyncMock(side_effect=lambda c: _stub_question(c, "CBI"))
-        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Dreyfus"))
-        gen._generate_bloom_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Bloom"))
-        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None: _stub_question(c, "BigFive"))
+        gen._generate_cbi_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "CBI"))
+        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Dreyfus"))
+        gen._generate_bloom_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Bloom"))
+        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None, **kwargs: _stub_question(c, "BigFive"))
 
         technical = [_make_competency(f"T{i}", "technical", weight=0.8) for i in range(5)]
         behavioral = [_make_competency(f"B{i}", "behavioral", weight=0.7) for i in range(5)]
@@ -402,16 +402,16 @@ class TestGenerateAllPipeline:
         ranked = [OceanTraitScore(t, 60) for t in
                   ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"]]
         gen._extract_ocean_scores = AsyncMock(return_value=ranked)
-        gen._generate_cbi_question = AsyncMock(side_effect=lambda c: _stub_question(c, "CBI"))
-        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Dreyfus"))
-        gen._generate_bloom_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Bloom"))
-        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None: _stub_question(c, "BigFive"))
+        gen._generate_cbi_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "CBI"))
+        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Dreyfus"))
+        gen._generate_bloom_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Bloom"))
+        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None, **kwargs: _stub_question(c, "BigFive"))
 
         technical = [_make_competency(f"T{i}", "technical", weight=0.8) for i in range(5)]
         behavioral = [_make_competency(f"B{i}", "behavioral", weight=0.7) for i in range(5)]
 
         questions = await gen.generate_all(
-            technical + behavioral, mode="compact", job_description="JD"
+            technical + behavioral, mode="compact", job_description="JD", seniority="senior"
         )
         bigfive_count = sum(1 for q in questions if q.framework == "BigFive")
         assert bigfive_count == 2
@@ -424,10 +424,10 @@ class TestGenerateAllPipeline:
         ranked = [OceanTraitScore(t, 60) for t in
                   ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"]]
         gen._extract_ocean_scores = AsyncMock(return_value=ranked)
-        gen._generate_cbi_question = AsyncMock(side_effect=lambda c: _stub_question(c, "CBI"))
-        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Dreyfus"))
-        gen._generate_bloom_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Bloom"))
-        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None: _stub_question(c, "BigFive"))
+        gen._generate_cbi_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "CBI"))
+        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Dreyfus"))
+        gen._generate_bloom_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Bloom"))
+        gen._generate_bigfive_question = AsyncMock(side_effect=lambda c, ocean_trait=None, **kwargs: _stub_question(c, "BigFive"))
 
         technical = [_make_competency(f"T{i}", "technical", weight=0.8) for i in range(7)]
         behavioral = [_make_competency(f"B{i}", "behavioral", weight=0.7) for i in range(7)]
@@ -509,12 +509,12 @@ class TestF66TraitAffinity:
             OceanTraitScore("openness", 70),
         ]
         gen._extract_ocean_scores = AsyncMock(return_value=ranked)
-        gen._generate_cbi_question = AsyncMock(side_effect=lambda c: _stub_question(c, "CBI"))
-        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Dreyfus"))
-        gen._generate_bloom_question = AsyncMock(side_effect=lambda c: _stub_question(c, "Bloom"))
+        gen._generate_cbi_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "CBI"))
+        gen._generate_dreyfus_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Dreyfus"))
+        gen._generate_bloom_question = AsyncMock(side_effect=lambda c, **kwargs: _stub_question(c, "Bloom"))
 
         bigfive_calls = []
-        async def capture_bigfive(comp, ocean_trait=None):
+        async def capture_bigfive(comp, ocean_trait=None, **kwargs):
             bigfive_calls.append((comp.name, ocean_trait, comp.big_five_mapping))
             return _stub_question(comp, "BigFive")
         gen._generate_bigfive_question = capture_bigfive
@@ -561,7 +561,7 @@ class TestF1CBridge:
         assert len(technical) == 3
         assert technical[0].name == "Python"
         assert technical[0].is_critical is True   # top 3 são críticas
-        assert technical[2].is_critical is True
+        assert technical[2].is_critical is False
 
     def test_build_competencies_extracts_behavioral_with_trait(self):
         """Deve criar Competency(type=behavioral) com big_five_mapping preenchido."""

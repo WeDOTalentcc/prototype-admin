@@ -127,7 +127,7 @@ class PersonalizedFeedbackRequest(BaseModel):
     include_resources: bool = True
 
     recruiter_notes: str | None = None
-    company_id: str
+    company_id: str | None = None
     requested_by: str | None = None
     auto_send: bool = False
     # Gap #11/#12: Caminho de decisão + gates ativados para template determinístico

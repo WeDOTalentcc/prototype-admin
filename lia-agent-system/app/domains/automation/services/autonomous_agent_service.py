@@ -840,3 +840,7 @@ class AutonomousAgentService:
 
 
 autonomous_agent_service = AutonomousAgentService()
+
+
+def get_autonomous_agent_service() -> "AutonomousAgentService":
+    return autonomous_agent_service

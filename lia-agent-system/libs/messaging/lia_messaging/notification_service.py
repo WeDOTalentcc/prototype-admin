@@ -1300,3 +1300,7 @@ async def notify_recruiter_screening_completed(
 
 
 notification_service = NotificationService()
+
+
+def get_notification_service() -> "NotificationService":
+    return notification_service

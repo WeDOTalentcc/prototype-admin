@@ -959,3 +959,7 @@ Gere a análise comparativa em JSON.""")
 
 
 candidate_comparison_service = CandidateComparisonService()
+
+
+def get_candidate_comparison_service() -> "CandidateComparisonService":
+    return candidate_comparison_service

@@ -299,3 +299,7 @@ class MLFeedbackService:
 
 
 ml_feedback_service = MLFeedbackService()
+
+
+def get_ml_feedback_service() -> "MLFeedbackService":
+    return ml_feedback_service

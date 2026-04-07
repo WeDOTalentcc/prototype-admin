@@ -583,3 +583,10 @@ class JDImportService:
             "skills_in_catalog": skill_count.scalar() or 0,
             "recent_imports": [b.to_dict() for b in recent_batches],
         }
+
+
+jd_import_service = JDImportService()
+
+
+def get_jd_import_service() -> "JDImportService":
+    return jd_import_service

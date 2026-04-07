@@ -67,7 +67,8 @@ class TeamsOrchestratorBridge:
         Process a text message from Teams through the LIA orchestrator.
         Returns orchestrator result dict.
         """
-        from app.api.orchestrator_routes import get_orchestrator
+        # Import from shared registry -- avoids circular import (domain->api)
+        from app.orchestrator.registry import get_orchestrator_instance
 
         text = (activity.get("text") or "").strip()
         if not text:
@@ -85,7 +86,9 @@ class TeamsOrchestratorBridge:
         orch_conversation_id = f"teams_{conversation_id}"
 
         try:
-            orchestrator = get_orchestrator()
+            orchestrator = get_orchestrator_instance()
+            if orchestrator is None:
+                return {"message": "Orchestrator not initialized", "success": False}
             result = await orchestrator.process_request(
                 user_id=teams_user_id,
                 message=text,

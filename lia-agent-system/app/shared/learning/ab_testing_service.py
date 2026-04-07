@@ -304,3 +304,10 @@ class ABTestingService:
         except Exception as e:
             logger.error(f"Error creating test: {e}")
             return {"error": str(e), "test_name": test_name}
+
+
+ab_testing_service = ABTestingService()
+
+
+def get_ab_testing_service() -> "ABTestingService":
+    return ab_testing_service

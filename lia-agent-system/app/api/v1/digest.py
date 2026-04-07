@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User, UserRole
 from app.core.database import get_db
+from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService, get_weekly_digest_service
 from app.domains.auth.repositories.user_repository import UserRepository
 
 logger = logging.getLogger(__name__)
@@ -34,10 +35,13 @@ async def preview_weekly_digest(
     recruiter_id: str | None = None,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
+    svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 ):
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
-
-    svc = WeeklyDigestService()
+    from app.domains.analytics.services.digest_formatter import (
+        BellDigestFormatter,
+        ChatDigestFormatter,
+        TeamsDigestFormatter,
+    )
 
     if recruiter_id and recruiter_id != str(current_user.id):
         if current_user.role != UserRole.admin:
@@ -57,12 +61,6 @@ async def preview_weekly_digest(
 
     digest = await svc.generate_digest(uid, name, db)
 
-    from app.domains.analytics.services.digest_formatter import (
-        BellDigestFormatter,
-        ChatDigestFormatter,
-        TeamsDigestFormatter,
-    )
-
     return {
         "digest": digest,
         "formatted": {
@@ -78,13 +76,10 @@ async def send_weekly_digest(
     recruiter_id: str,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
+    svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 ):
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
-
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
-
-    svc = WeeklyDigestService()
 
     name = "Recrutador"
     user_repo = UserRepository(db)
@@ -102,13 +97,11 @@ async def send_weekly_digest(
 async def send_weekly_digest_to_all(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
+    svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 ):
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Apenas administradores podem disparar digest para todos")
 
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
-
-    svc = WeeklyDigestService()
     result = await svc.send_to_all_recruiters(db)
     return result
 
@@ -167,6 +160,7 @@ async def update_weekly_digest_preference(
 async def send_daily_digest_to_all(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
+    svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 ):
     """
     Trigger the daily morning digest for all active recruiters.
@@ -177,9 +171,6 @@ async def send_daily_digest_to_all(
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Apenas administradores podem disparar o digest diário para todos")
 
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
-
-    svc = WeeklyDigestService()
     result = await svc.send_to_all_recruiters(db)
     return result
 
@@ -189,14 +180,12 @@ async def send_daily_digest_to_user(
     recruiter_id: str,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
+    svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 ):
     """Send daily digest to a specific recruiter (admin or self)."""
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
-    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
-
-    svc = WeeklyDigestService()
     user_repo = UserRepository(db)
     user = await user_repo.get_by_id(recruiter_id)
     if not user:

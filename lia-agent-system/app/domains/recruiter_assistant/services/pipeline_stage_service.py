@@ -866,3 +866,7 @@ class PipelineStageService:
 
 
 pipeline_stage_service = PipelineStageService()
+
+
+def get_pipeline_stage_service() -> "PipelineStageService":
+    return pipeline_stage_service

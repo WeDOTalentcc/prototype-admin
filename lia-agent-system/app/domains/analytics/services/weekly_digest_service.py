@@ -395,3 +395,10 @@ class WeeklyDigestService:
         except Exception as exc:
             logger.error("[WeeklyDigest] send_to_all_recruiters failed: %s", exc)
             return {"sent": 0, "skipped": 0, "errors": 1, "error": str(exc)}
+
+
+weekly_digest_service = WeeklyDigestService()
+
+
+def get_weekly_digest_service() -> "WeeklyDigestService":
+    return weekly_digest_service

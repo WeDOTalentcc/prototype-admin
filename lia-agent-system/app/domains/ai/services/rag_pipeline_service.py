@@ -622,3 +622,10 @@ class RAGPipelineService:
         except Exception as exc:
             logger.warning("[RAGPipeline] _semantic_search falhou: %s", exc)
             return []
+
+
+rag_pipeline_service = RAGPipelineService()
+
+
+def get_rag_pipeline_service() -> "RAGPipelineService":
+    return rag_pipeline_service

@@ -476,3 +476,7 @@ class TeamsService:
 
 
 teams_service = TeamsService()
+
+
+def get_teams_service() -> "TeamsService":
+    return teams_service

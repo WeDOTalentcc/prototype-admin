@@ -1090,3 +1090,7 @@ class PolicyApprovalRequired(Exception):
 
 
 policy_engine = PolicyEngineService()
+
+
+def get_policy_engine_service() -> "PolicyEngineService":
+    return policy_engine

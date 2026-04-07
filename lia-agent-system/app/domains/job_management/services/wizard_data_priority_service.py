@@ -560,3 +560,10 @@ class WizardDataPriorityService:
             )
         
         return coverage
+
+
+wizard_data_priority_service = WizardDataPriorityService()
+
+
+def get_wizard_data_priority_service() -> "WizardDataPriorityService":
+    return wizard_data_priority_service

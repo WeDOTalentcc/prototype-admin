@@ -516,12 +516,11 @@ async def get_candidate(
 async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: str):
     """Background task to enrich candidate from LinkedIn."""
     from app.core.database import AsyncSessionLocal
-    from app.services.candidate_enrichment_service import CandidateEnrichmentService
+    from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
 
     try:
         async with AsyncSessionLocal() as db:
-            enrichment_service = CandidateEnrichmentService()
-            result = await enrichment_service.enrich_candidate(
+            result = await candidate_enrichment_service.enrich_candidate(
                 db=db,
                 candidate_id=candidate_id,
                 linkedin_url=linkedin_url,

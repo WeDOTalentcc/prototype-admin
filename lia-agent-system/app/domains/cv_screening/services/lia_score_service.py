@@ -1340,3 +1340,7 @@ class LIAScoreService:
 
 
 lia_score_service = LIAScoreService()
+
+
+def get_lia_score_service() -> "LIAScoreService":
+    return lia_score_service

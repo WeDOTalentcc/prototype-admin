@@ -153,8 +153,8 @@ def test_learning_loop_has_trace_span():
 
 def test_traces_router_registered():
     import inspect
-    import app.main as main_module
-    src = inspect.getsource(main_module)
+    import app.api.routes as routes_module  # routers registered in routes.py, not main.py (Phase 4B)
+    src = inspect.getsource(routes_module)
     assert "traces_router" in src
 
 
@@ -319,8 +319,8 @@ async def test_invalidate_removes_cache():
 
 def test_recruiter_behavior_router_registered():
     import inspect
-    import app.main as main_module
-    src = inspect.getsource(main_module)
+    import app.api.routes as routes_module  # routers registered in routes.py, not main.py (Phase 4B)
+    src = inspect.getsource(routes_module)
     assert "recruiter_behavior_router" in src
 
 

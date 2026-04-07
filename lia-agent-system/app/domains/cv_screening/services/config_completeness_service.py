@@ -554,3 +554,7 @@ class ConfigCompletenessService:
 
 
 config_completeness_service = ConfigCompletenessService()
+
+
+def get_config_completeness_service() -> "ConfigCompletenessService":
+    return config_completeness_service

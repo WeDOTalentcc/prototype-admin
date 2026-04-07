@@ -89,6 +89,8 @@ class WizardIntentResponse(BaseModel):
 
 
 # Global orchestrator instance (initialized on startup)
+# Also registered in app.orchestrator.registry for use outside the API layer
+from app.orchestrator.registry import get_orchestrator_instance, set_orchestrator_instance
 orchestrator: Orchestrator | None = None
 
 
@@ -111,6 +113,7 @@ def initialize_orchestrator(llm_service: LLMService, db_service=None):
     """Initialize global orchestrator instance."""
     global orchestrator
     orchestrator = Orchestrator(llm_service, db_service)
+    set_orchestrator_instance(orchestrator)  # register in shared registry
     logger.info("✅ Orchestrator API initialized")
 
 

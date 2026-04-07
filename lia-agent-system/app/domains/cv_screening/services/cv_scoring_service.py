@@ -409,3 +409,7 @@ class CVScoringService:
 
 
 cv_scoring_service = CVScoringService()
+
+
+def get_cv_scoring_service() -> "CVScoringService":
+    return cv_scoring_service

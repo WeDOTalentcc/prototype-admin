@@ -487,3 +487,7 @@ class CalendarService:
 
 # Global calendar service instance
 calendar_service = CalendarService()
+
+
+def get_calendar_service() -> "CalendarService":
+    return calendar_service

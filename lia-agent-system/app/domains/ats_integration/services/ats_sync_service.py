@@ -931,3 +931,7 @@ class ATSSyncService:
 
 
 ats_sync_service = ATSSyncService()
+
+
+def get_ats_sync_service() -> "ATSSyncService":
+    return ats_sync_service

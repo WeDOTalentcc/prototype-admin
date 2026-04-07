@@ -1086,3 +1086,7 @@ class SchedulingService:
 
 
 scheduling_service = SchedulingService()
+
+
+def get_scheduling_service() -> "SchedulingService":
+    return scheduling_service

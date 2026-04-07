@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.ml_feedback_service import FeedbackSignal, MLFeedbackService
+from app.domains.analytics.services.ml_feedback_service import get_ml_feedback_service
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,7 @@ async def record_feedback_signal(
     payload: FeedbackSignalRequest,
     company_id: str = Depends(_require_company_id),
     db: AsyncSession = Depends(get_db),
+    service: MLFeedbackService = Depends(get_ml_feedback_service),
 ) -> dict:
     """
     Registra sinal de feedback de recrutador (D6 — ML Adaptativo).
@@ -69,7 +71,6 @@ async def record_feedback_signal(
     Usado após decisão de contratação/rejeição para alimentar o loop adaptativo
     de calibração de scores LIA.
     """
-    service = MLFeedbackService()
     signal = FeedbackSignal(
         candidate_id=payload.candidate_id,
         job_id=payload.job_id,
@@ -88,6 +89,7 @@ async def get_adaptive_weights(
     job_id: str = Query(..., description="ID da vaga"),
     company_id: str = Depends(_require_company_id),
     db: AsyncSession = Depends(get_db),
+    service: MLFeedbackService = Depends(get_ml_feedback_service),
 ) -> dict:
     """
     Retorna pesos adaptativos calculados pelo feedback loop para uma vaga.
@@ -96,7 +98,6 @@ async def get_adaptive_weights(
     4 semanas. Pesos em [0.7, 1.3] — acima de 1.0 = dimensão mais importante
     que o baseline, abaixo = menos importante conforme feedback.
     """
-    service = MLFeedbackService()
     try:
         weights = await service.get_weights_for_job(db, job_id, company_id)
         return weights.to_dict()

@@ -628,3 +628,7 @@ class CandidateEnrichmentService:
 
 
 candidate_enrichment_service = CandidateEnrichmentService()
+
+
+def get_candidate_enrichment_service() -> "CandidateEnrichmentService":
+    return candidate_enrichment_service

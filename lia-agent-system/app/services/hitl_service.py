@@ -282,7 +282,7 @@ class HITLService:
 
         # WS notification (best-effort)
         try:
-            from app.api.v1.ws_manager import ws_manager
+            from app.shared.websocket.ws_manager import ws_manager
             await ws_manager.send_to_session(ws_session_id, {
                 "type": "approval_required",
                 "thread_id": thread_id,

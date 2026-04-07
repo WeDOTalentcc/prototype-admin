@@ -47,7 +47,7 @@ class WizardStepService:
     ) -> Any:
         """Process one wizard step and return a WizardStepResponse."""
         # Import response model here to avoid circular imports at module load time
-        from app.api.v1.lia_assistant import WizardStepResponse
+        from app.domains.job_management.schemas.wizard_schemas import WizardStepResponse
         from lia_models.company import CompanyProfile, Department
         from lia_models.company_benefit import CompanyBenefit
 

@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.recruitment.repositories.learning_patterns_repository import LearningPatternsRepository
+from app.domains.automation.services.learning_automation import LearningAutomationService, get_learning_automation_service
 
 
 logger = logging.getLogger(__name__)
@@ -148,12 +149,12 @@ async def get_success_profiles(
 
 
 @router.post("/{company_id}/trigger-detection", response_model=None)
-async def trigger_pattern_detection(company_id: str):
+async def trigger_pattern_detection(
+    company_id: str,
+    service: LearningAutomationService = Depends(get_learning_automation_service),
+):
     """Manually trigger pattern detection for a company."""
     try:
-        from app.domains.automation.services.learning_automation import LearningAutomationService
-
-        service = LearningAutomationService()
         detection_result = await service.run_pattern_detection(company_id)
         promotion_result = await service.run_skill_promotion(company_id)
 

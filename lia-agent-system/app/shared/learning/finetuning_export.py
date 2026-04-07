@@ -332,3 +332,10 @@ class FineTuningExportService:
                 "export_ready": False,
                 "error": str(e),
             }
+
+
+finetuning_export_service = FineTuningExportService()
+
+
+def get_finetuning_export_service() -> "FineTuningExportService":
+    return finetuning_export_service

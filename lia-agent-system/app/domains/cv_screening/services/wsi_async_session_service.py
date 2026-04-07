@@ -186,3 +186,7 @@ class WSIAsyncSessionService:
 
 
 wsi_async_session_service = WSIAsyncSessionService()
+
+
+def get_wsi_async_session_service() -> "WSIAsyncSessionService":
+    return wsi_async_session_service

@@ -699,3 +699,7 @@ Regras:
 
 
 market_benchmark_service = MarketBenchmarkService()
+
+
+def get_market_benchmark_service() -> "MarketBenchmarkService":
+    return market_benchmark_service

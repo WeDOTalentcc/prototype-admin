@@ -252,3 +252,10 @@ class CreditService:
             .offset(offset)
         )
         return [t.to_dict() for t in result.scalars().all()]
+
+
+credit_service = CreditService()
+
+
+def get_credit_service() -> "CreditService":
+    return credit_service

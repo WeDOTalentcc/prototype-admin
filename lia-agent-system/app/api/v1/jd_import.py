@@ -23,8 +23,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from app.domains.job_management.services.jd_import_service import JDImportService
-from app.domains.job_management.services.wizard_data_priority_service import JobContext, WizardDataPriorityService
+from app.domains.job_management.services.jd_import_service import JDImportService, get_jd_import_service
+from app.domains.job_management.services.wizard_data_priority_service import JobContext, WizardDataPriorityService, get_wizard_data_priority_service
 
 router = APIRouter(tags=["Learning Loop"])
 logger = logging.getLogger(__name__)
@@ -106,7 +106,8 @@ class DataCoverageResponse(BaseModel):
 async def import_batch_jds(
     request: BatchImportRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: JDImportService = Depends(get_jd_import_service),
 ):
     """
     Import multiple job descriptions in a batch.
@@ -140,8 +141,6 @@ async def import_batch_jds(
             raise
         pass  # fail-open
 
-    service = JDImportService()
-
     jds_data = [jd.model_dump() for jd in request.jds]
 
     batch = await service.import_batch_jds(
@@ -168,7 +167,8 @@ async def import_single_jd(
     jd: JDImportItem,
     source: str = Query("manual_upload", description="Import source"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: JDImportService = Depends(get_jd_import_service),
 ):
     """
     Import a single job description.
@@ -198,8 +198,6 @@ async def import_single_jd(
             raise
         pass  # fail-open
 
-    service = JDImportService()
-
     imported = await service.import_jd(
         db=db,
         company_id=company_id,
@@ -214,7 +212,8 @@ async def import_single_jd(
 @router.get("/import/stats", response_model=dict[str, Any])
 async def get_import_stats(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: JDImportService = Depends(get_jd_import_service),
 ):
     """
     Get import statistics for a company.
@@ -223,7 +222,6 @@ async def get_import_stats(
     """
     company_id = parse_company_id(get_user_company_id(current_user))
     
-    service = JDImportService()
     return await service.get_import_stats(db, company_id)
 
 
@@ -236,7 +234,8 @@ async def get_field_suggestion(
     location: str | None = Query(None),
     work_model: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
 ):
     """
     Get the best suggestion for a wizard field.
@@ -249,8 +248,6 @@ async def get_field_suggestion(
             responsibilities, benefits
     """
     company_id = parse_company_id(get_user_company_id(current_user))
-    
-    service = WizardDataPriorityService()
     
     context = JobContext(
         company_id=company_id,
@@ -282,7 +279,8 @@ async def get_all_field_suggestions(
     seniority: str | None = Query(None),
     location: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
 ):
     """
     Get suggestions for all wizard fields at once.
@@ -290,8 +288,6 @@ async def get_all_field_suggestions(
     More efficient than calling individual endpoints.
     """
     company_id = parse_company_id(get_user_company_id(current_user))
-    
-    service = WizardDataPriorityService()
     
     context = JobContext(
         company_id=company_id,
@@ -321,7 +317,8 @@ async def get_similar_jobs(
     department: str | None = Query(None),
     limit: int = Query(5, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
 ):
     """
     Find similar jobs for Fast Track mode.
@@ -330,8 +327,6 @@ async def get_similar_jobs(
     that can be used as templates.
     """
     company_id = parse_company_id(get_user_company_id(current_user))
-    
-    service = WizardDataPriorityService()
     
     context = JobContext(
         company_id=company_id,
@@ -348,6 +343,7 @@ async def upload_jd_file(
     title: str = Query("", description="Título da vaga (opcional, extraído do arquivo se vazio)"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
+    service: JDImportService = Depends(get_jd_import_service),
 ) -> dict[str, Any]:
     """
     Importa uma Job Description a partir de upload de arquivo (P3-2).
@@ -444,7 +440,6 @@ async def upload_jd_file(
 
     # Importar via JDImportService
     company_id = parse_company_id(get_user_company_id(current_user))
-    service = JDImportService()
 
     jd_data = {
         "title": title or filename.rsplit(".", 1)[0],
@@ -479,7 +474,8 @@ async def upload_jd_file(
 @router.get("/data-coverage", response_model=DataCoverageResponse)
 async def get_data_coverage(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
 ):
     """
     Get data coverage statistics.
@@ -489,7 +485,6 @@ async def get_data_coverage(
     """
     company_id = parse_company_id(get_user_company_id(current_user))
     
-    service = WizardDataPriorityService()
     coverage = await service.get_data_coverage(db, company_id)
     
     return DataCoverageResponse(**coverage)

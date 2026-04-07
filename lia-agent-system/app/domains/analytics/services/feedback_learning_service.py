@@ -849,3 +849,10 @@ class FeedbackLearningService:
                 "fill_rate": 0,
                 "error": str(e)
             }
+
+
+feedback_learning_service = FeedbackLearningService()
+
+
+def get_feedback_learning_service() -> "FeedbackLearningService":
+    return feedback_learning_service

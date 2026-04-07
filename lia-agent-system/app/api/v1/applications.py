@@ -22,7 +22,7 @@ from app.domains.cv_screening.services.cv_parser import CVParserService, cv_pars
 from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.services.candidate_feedback_service import candidate_feedback_service
-from app.services.lia_score_service import LIAScoreService
+from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,6 @@ def _normalize_priority(priority_value) -> RequirementPriorityEnum:
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
-lia_score_service = LIAScoreService()
 
 
 class CandidateApplicationRequest(BaseModel):

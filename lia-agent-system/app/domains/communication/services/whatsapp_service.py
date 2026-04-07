@@ -552,3 +552,7 @@ class WhatsAppService:
 
 
 whatsapp_service = WhatsAppService()
+
+
+def get_whatsapp_service() -> "WhatsAppService":
+    return whatsapp_service

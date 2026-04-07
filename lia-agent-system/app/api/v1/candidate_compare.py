@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.candidate_comparison_service import CandidateComparisonService
+from app.domains.candidates.services.candidate_comparison_service import get_candidate_comparison_service
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ async def compare_candidates(
     payload: CompareRequest,
     company_id: str = Depends(_require_company_id),
     db: AsyncSession = Depends(get_db),
+    service: CandidateComparisonService = Depends(get_candidate_comparison_service),
 ) -> dict:
     """
     Compara 2 a 4 candidatos lado a lado (D9 — Análise Comparativa Visual).
@@ -61,7 +63,6 @@ async def compare_candidates(
     Returns 200 com resultado da comparação.
     """
     try:
-        service = CandidateComparisonService()
         result = await service.compare_candidates(
             db=db,
             candidate_ids=payload.candidate_ids,

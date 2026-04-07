@@ -193,3 +193,7 @@ class LearningAutomationService:
 
 
 learning_automation_service = LearningAutomationService()
+
+
+def get_learning_automation_service() -> "LearningAutomationService":
+    return learning_automation_service

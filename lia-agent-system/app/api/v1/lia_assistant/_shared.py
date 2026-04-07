@@ -212,23 +212,9 @@ class WizardStepRequest(BaseModel):
     context: dict[str, Any] | None = None
 
 
-class WizardStepResponse(BaseModel):
-    conversation_id: str
-    current_stage: int
-    next_stage: int | None = None
-    stage_name: str
-    lia_message: str
-    detected_criteria: dict[str, Any] | None = None
-    is_complete: bool
-    created_job: dict[str, Any] | None = None
-    intent_detected: str | None = None
-    benchmarks: dict[str, Any] | None = None
-    suggestions: dict[str, Any] | None = None
-    field_origins: dict[str, dict[str, Any]] | None = None
-    stage_skipped: bool | None = None
-    skip_reason: str | None = None
-    auto_filled_data: dict[str, Any] | None = None
-    stages_to_skip: list[int] | None = None
+# WizardStepResponse moved to domain schemas to avoid circular imports (api->domain)
+# Re-exported here for backwards compatibility
+from app.domains.job_management.schemas.wizard_schemas import WizardStepResponse  # noqa: F401
 
 
 class WizardEvaluateRequest(BaseModel):
