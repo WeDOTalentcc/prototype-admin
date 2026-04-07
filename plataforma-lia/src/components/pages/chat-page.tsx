@@ -573,7 +573,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-base rounded-2xl"
+                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-xs rounded-2xl"
                       spellCheck={false}
                     />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">

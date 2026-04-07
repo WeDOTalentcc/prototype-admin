@@ -123,7 +123,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   message.type !== "command" &&
                   message.type !== "file-creation" && (
                     <div
-                      className="text-sm leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
+                      className="text-xs leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
@@ -405,7 +405,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 {message.type === "completion" && message.completion && (
                   <>
                     <div
-                      className="text-sm text-lia-text-primary mb-4 font-['Open_Sans',sans-serif]"
+                      className="text-xs text-lia-text-primary mb-4 font-['Open_Sans',sans-serif]"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
