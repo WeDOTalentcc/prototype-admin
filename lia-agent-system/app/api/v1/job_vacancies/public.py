@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from ._shared import *
 from app.domains.job_management.dependencies import get_job_vacancy_public_repo
+from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service
 from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
 from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
@@ -277,6 +278,8 @@ async def apply_to_public_vacancy(
     lgpd_consent: str = Form(...),
     cv_file: UploadFile = File(...),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     try:
         if lgpd_consent.lower() not in ("true", "1", "yes", "sim"):
@@ -296,8 +299,7 @@ async def apply_to_public_vacancy(
         cv_content = await cv_file.read()
         parsed_cv = {}
         try:
-            from app.domains.cv_screening.services.cv_parser import cv_parser_service
-            parsed_cv = await cv_parser_service.parse_cv(
+            parsed_cv = await cv_parser_svc.parse_cv(
                 file_content=cv_content,
                 filename=cv_file.filename
             )

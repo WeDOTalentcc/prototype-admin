@@ -593,3 +593,8 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
 
 
 cv_parser_service = CVParserService()
+
+# FastAPI dependency injection factory — returns singleton (holds HTTP clients)
+def get_cv_parser_service() -> "CVParserService":
+    return cv_parser_service
+

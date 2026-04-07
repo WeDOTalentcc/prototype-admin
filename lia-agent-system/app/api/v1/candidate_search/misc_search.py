@@ -8,13 +8,15 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import (
+    CVParserService,
     CandidateSearchResultDTO,
     HybridSearchRequest,
+    PearchService,
     SearchType,
-    cv_parser_service,
+    get_cv_parser_service,
     get_db,
+    get_pearch_service,
     logger,
-    pearch_service,
     search_analytics_service,
 )
 
@@ -41,6 +43,9 @@ async def search_from_cv(
     search_pearch: bool = Query(True, description="Include Pearch AI search"),
     pearch_type: str = Query("fast", description="Pearch type: fast or pro"),
     db: AsyncSession = Depends(get_db)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Upload a CV file and search for similar candidates.
@@ -58,7 +63,7 @@ async def search_from_cv(
     start_time = time.time()
     
     try:
-        parsed_cv = await cv_parser_service.parse_cv(file)
+        parsed_cv = await cv_parser_svc.parse_cv(file)
         
         query_parts = []
         extracted_title = None
@@ -88,7 +93,7 @@ async def search_from_cv(
             pearch_limit=limit
         )
         
-        result = await pearch_service.hybrid_search(db, hybrid_request)
+        result = await pearch_svc.hybrid_search(db, hybrid_request)
         
         candidates = []
         for profile in result.local_candidates:

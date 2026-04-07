@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import (
+    CVParserService,
     CandidateProfile,
     CandidateSearchResultDTO,
     CreditEstimateDTO,
@@ -27,6 +28,7 @@ from ._shared import (
     JobRequirement,
     JobRequirementCreate,
     LanguageDTO,
+    PearchService,
     PearchSearchRequest,
     SearchRequestDTO,
     SearchResponseDTO,
@@ -40,12 +42,12 @@ from ._shared import (
     _normalize_name,
     _normalize_priority,
     assert_resource_ownership,
-    cv_parser_service,
     get_current_user_or_demo,
+    get_cv_parser_service,
     get_db,
+    get_pearch_service,
     get_user_company_id,
     logger,
-    pearch_service,
     rubric_evaluation_service,
 )
 
@@ -572,6 +574,8 @@ async def search_candidates(
     request: SearchRequestDTO,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Busca candidatos usando busca híbrida (banco local + Pearch AI).
@@ -605,7 +609,7 @@ async def search_candidates(
             logger.info(f"SearchSpec received: {request.search_spec}")
         
         # Executa busca híbrida
-        result = await pearch_service.hybrid_search(db, hybrid_request)
+        result = await pearch_svc.hybrid_search(db, hybrid_request)
         
         # Converte candidatos para DTO
         candidates = []
@@ -1656,7 +1660,9 @@ class DetailedCreditEstimateDTO(BaseModel):
 
 
 @router.post("/candidates/estimate", response_model=DetailedCreditEstimateDTO)
-async def estimate_search_credits(request: CreditEstimateRequest):
+async def estimate_search_credits(request: CreditEstimateRequest,
+    pearch_svc: PearchService = Depends(get_pearch_service),
+):
     """
     Estima o custo em créditos ANTES de executar a busca.
     
@@ -1682,8 +1688,8 @@ async def estimate_search_credits(request: CreditEstimateRequest):
         limit=request.limit
     )
     
-    estimate = pearch_service.estimate_credits(pearch_request)
-    confirmation = pearch_service.create_confirmation_message(pearch_request)
+    estimate = pearch_svc.estimate_credits(pearch_request)
+    confirmation = pearch_svc.create_confirmation_message(pearch_request)
     
     # Gerar alertas de custo
     warnings = []
@@ -1742,6 +1748,8 @@ class SimilarSearchResponse(BaseModel):
 async def search_similar_candidates(
     request: SimilarSearchRequest,
     db: AsyncSession = Depends(get_db)
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Encontra candidatos similares a um perfil específico.
@@ -1828,7 +1836,7 @@ async def search_similar_candidates(
             exclude_candidate_ids=[request.candidate_id] if request.candidate_id else []
         )
         
-        result = await pearch_service.hybrid_search(db, hybrid_request)
+        result = await pearch_svc.hybrid_search(db, hybrid_request)
         
         candidates = []
         for profile in result.local_candidates:
@@ -1875,6 +1883,8 @@ async def combine_profiles_for_search(
     urls: list[str] = Form(default=[]),
     cvs: list[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Combine multiple candidate profiles (URLs and/or CVs) into an ideal profile.
@@ -1918,7 +1928,7 @@ async def combine_profiles_for_search(
     for cv_file in cvs:
         try:
             # Use the real CV parser service for intelligent extraction
-            parsed_cv = await cv_parser_service.parse_cv(cv_file)
+            parsed_cv = await cv_parser_svc.parse_cv(cv_file)
             
             if parsed_cv:
                 # Extract title from parsed CV

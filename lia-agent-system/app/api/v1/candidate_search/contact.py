@@ -9,9 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ._shared import (
     CandidateSearchResultDTO,
     PearchSearchRequest,
+    PearchService,
     SearchType,
     get_db,
-    pearch_service,
+    get_pearch_service,
 )
 
 router = APIRouter()
@@ -86,7 +87,8 @@ async def get_reveal_cost(
 @router.post("/reveal", response_model=RevealContactResponse)
 async def reveal_contact(
     request: RevealContactRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Revela email ou telefone de um candidato Pearch.
@@ -125,7 +127,7 @@ async def reveal_contact(
         )
         
         # Executa busca
-        result = await pearch_service.search_candidates(pearch_request, timeout=30)
+        result = await pearch_svc.search_candidates(pearch_request, timeout=30)
         
         if not result.search_results:
             return RevealContactResponse(

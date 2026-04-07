@@ -9,10 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ._shared import (
     CandidateSearchResultDTO,
     HybridSearchRequest,
+    PearchService,
     SearchResponseDTO,
     SearchType,
     get_db,
-    pearch_service,
+    get_pearch_service,
 )
 
 router = APIRouter()
@@ -52,7 +53,8 @@ class JobDescriptionSearchResponse(BaseModel):
 @router.post("/by-job-description", response_model=JobDescriptionSearchResponse)
 async def search_by_job_description(
     request: JobDescriptionSearchRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Busca candidatos a partir de uma descrição de vaga completa.
@@ -142,7 +144,7 @@ async def search_by_job_description(
             pearch_limit=request.limit
         )
         
-        result = await pearch_service.hybrid_search(db, hybrid_request)
+        result = await pearch_svc.hybrid_search(db, hybrid_request)
         
         candidates = []
         for profile in result.local_candidates:
@@ -171,6 +173,8 @@ async def refine_search(
     additional_query: str = Query(..., description="Critérios adicionais"),
     limit: int | None = Query(None, ge=1, le=50),
     db: AsyncSession = Depends(get_db)
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Refina uma busca existente usando o thread_id.
@@ -178,7 +182,7 @@ async def refine_search(
     Use para adicionar critérios ou pedir mais resultados sem custo completo.
     """
     try:
-        result = await pearch_service.refine_search(
+        result = await pearch_svc.refine_search(
             thread_id=thread_id,
             additional_query=additional_query,
             limit=limit
@@ -213,6 +217,8 @@ async def search_local_only(
     require_email: bool = Query(False, description="Apenas candidatos com email"),
     require_phone: bool = Query(False, description="Apenas candidatos com telefone"),
     db: AsyncSession = Depends(get_db)
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Busca APENAS no banco de dados local (sem custo de créditos).
@@ -226,7 +232,7 @@ async def search_local_only(
         if industries:
             industries_list = [ind.strip() for ind in industries.split(',') if ind.strip()]
         
-        profiles, count = await pearch_service.search_local_candidates(
+        profiles, count = await pearch_svc.search_local_candidates(
             db=db,
             query=query,
             limit=limit,

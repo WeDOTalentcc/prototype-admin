@@ -23,7 +23,7 @@ from app.domains.candidates.repositories.candidate_favorites_repository import (
 )
 from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
-from app.domains.sourcing.services.pearch_service import pearch_service
+from app.domains.sourcing.services.pearch_service import PearchService, get_pearch_service, pearch_service
 from app.models.candidate import (
     Candidate,
     CandidateFavorite,
@@ -1047,6 +1047,7 @@ async def search_candidates_local(
 async def search_candidates(
     request: PearchSearchRequest,
     audit_svc: AuditService = Depends(get_audit_service),
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Search for candidates using natural language query.
@@ -1057,7 +1058,7 @@ async def search_candidates(
         _timeout = getattr(request, "timeout", 60)
         import time as _time
         _gs_start = _time.monotonic()
-        result = await pearch_service.search_candidates(
+        result = await pearch_svc.search_candidates(
             query=request.query,
             search_type=str(_search_type),
             limit=_limit,
@@ -1100,12 +1101,14 @@ async def search_candidates_get(
     search_type: str = Query("fast", description="Search type: 'fast' or 'deep'"),
     limit: int = Query(10, ge=1, le=100, description="Number of results"),
     timeout: int = Query(60, ge=10, le=1800, description="Timeout in seconds")
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Search for candidates using GET request (convenient for testing).
     """
     try:
-        return await pearch_service.search_candidates(
+        return await pearch_svc.search_candidates(
             query=query,
             search_type=search_type,
             limit=limit,
@@ -1123,12 +1126,14 @@ async def search_by_job_description(
     job_description: str,
     location: str | None = None,
     limit: int = Query(20, ge=1, le=100)
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Search candidates by pasting a full job description.
     """
     try:
-        return await pearch_service.search_by_job_description(
+        return await pearch_svc.search_by_job_description(
             job_description=job_description,
             location=location,
             limit=limit

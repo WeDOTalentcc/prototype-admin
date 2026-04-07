@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_service_or_user
 from app.auth.models import User
 from app.core.database import get_db
-from app.domains.cv_screening.services.cv_parser import cv_parser_service
+from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
 from app.schemas.cv_parser import (
     CVConfirmRequest,
@@ -196,6 +196,8 @@ async def upload_and_parse_cv(
     file: UploadFile = File(..., description="CV file (PDF, DOCX, DOC, or TXT)"),
     current_user: User = Depends(get_service_or_user),
     db: AsyncSession = Depends(get_db)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Upload a CV file and extract structured candidate information.
@@ -232,12 +234,12 @@ async def upload_and_parse_cv(
         
         logger.info(f"CV file saved: {file_path}")
         
-        parsed_cv = await cv_parser_service.parse_cv(file)
+        parsed_cv = await cv_parser_svc.parse_cv(file)
         
         parsed_cv.file_url = file_url
         parsed_cv.file_size_bytes = file_size
         
-        duplicate_check = await cv_parser_service.check_duplicate(parsed_cv, db)
+        duplicate_check = await cv_parser_svc.check_duplicate(parsed_cv, db)
         
         duplicate_warning = None
         if duplicate_check.is_duplicate:
@@ -272,6 +274,8 @@ async def parse_cv_text(
     request: CVParseTextRequest,
     current_user: User = Depends(get_service_or_user),
     db: AsyncSession = Depends(get_db)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Parse plain text CV content and extract structured information.
@@ -283,11 +287,11 @@ async def parse_cv_text(
     try:
         logger.info(f"Parsing CV text ({len(request.text)} chars)")
         
-        parsed_cv = await cv_parser_service.extract_with_ai(request.text)
+        parsed_cv = await cv_parser_svc.extract_with_ai(request.text)
         parsed_cv.raw_text = request.text
         parsed_cv.file_type = "text"
         
-        duplicate_check = await cv_parser_service.check_duplicate(parsed_cv, db)
+        duplicate_check = await cv_parser_svc.check_duplicate(parsed_cv, db)
         
         duplicate_warning = None
         if duplicate_check.is_duplicate:
@@ -321,6 +325,8 @@ async def confirm_cv_and_create_candidate(
     request: CVConfirmRequest,
     current_user: User = Depends(get_service_or_user),
     db: AsyncSession = Depends(get_db)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Confirm parsed CV data and create a new candidate in the database.
@@ -335,7 +341,7 @@ async def confirm_cv_and_create_candidate(
     try:
         parsed_cv = request.parsed_cv
         
-        duplicate_check = await cv_parser_service.check_duplicate(parsed_cv, db)
+        duplicate_check = await cv_parser_svc.check_duplicate(parsed_cv, db)
         
         if duplicate_check.is_duplicate and not request.override_duplicate:
             return CVConfirmResponse(
@@ -483,11 +489,13 @@ async def confirm_cv_and_create_candidate(
 
 
 @router.get("/formats", response_model=SupportedFormatsResponse)
-async def get_supported_formats():
+async def get_supported_formats(
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
+):
     """
     Get list of supported CV file formats and size limits.
     """
-    formats_info = cv_parser_service.get_supported_formats()
+    formats_info = cv_parser_svc.get_supported_formats()
     return SupportedFormatsResponse(**formats_info)
 
 

@@ -3,10 +3,10 @@ File Analysis API - Endpoints for analyzing uploaded documents.
 """
 import logging
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from app.domains.cv_screening.services.cv_parser import cv_parser_service
+from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,9 @@ class FileAnalysisResponse(BaseModel):
 
 
 @router.post("/file", response_model=FileAnalysisResponse)
-async def analyze_file(file: UploadFile = File(...)):
+async def analyze_file(file: UploadFile = File(...),
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
+):
     """
     Analyze an uploaded file and extract relevant information.
     
@@ -46,7 +48,7 @@ async def analyze_file(file: UploadFile = File(...)):
         if filename.endswith(('.pdf', '.doc', '.docx')):
             # Use CV parser for document analysis
             await file.seek(0)
-            parsed = await cv_parser_service.parse_cv(file)
+            parsed = await cv_parser_svc.parse_cv(file)
             
             if parsed:
                 keywords = []

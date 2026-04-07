@@ -18,7 +18,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 from app.domains.recruitment.dependencies import get_application_repo
 from app.domains.recruitment.repositories.application_repository import ApplicationRepository
-from app.domains.cv_screening.services.cv_parser import cv_parser_service
+from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.services.candidate_feedback_service import candidate_feedback_service
@@ -103,6 +103,8 @@ async def apply_to_vacancy(
     application: CandidateApplicationRequest,
     cv_file: UploadFile | None = File(None),
     repo: ApplicationRepository = Depends(get_application_repo)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Processa inscricao de candidato em uma vaga.
@@ -130,7 +132,7 @@ async def apply_to_vacancy(
         if cv_file:
             try:
                 cv_content = await cv_file.read()
-                parsed_cv = await cv_parser_service.parse_cv(
+                parsed_cv = await cv_parser_svc.parse_cv(
                     file_content=cv_content,
                     filename=cv_file.filename
                 )
@@ -332,6 +334,8 @@ async def resubmit_cv(
     token: str = Query(..., description="Token de reenvio"),
     cv_file: UploadFile = File(..., description="Curriculo atualizado"),
     repo: ApplicationRepository = Depends(get_application_repo)
+,
+    cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Processa reenvio de CV apos feedback de baixa aderencia.
@@ -360,7 +364,7 @@ async def resubmit_cv(
             raise HTTPException(status_code=404, detail="Vaga nao encontrada")
 
         cv_content = await cv_file.read()
-        parsed_cv = await cv_parser_service.parse_cv(
+        parsed_cv = await cv_parser_svc.parse_cv(
             file_content=cv_content,
             filename=cv_file.filename
         )

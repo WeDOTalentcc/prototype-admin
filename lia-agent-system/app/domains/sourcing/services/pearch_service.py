@@ -1154,3 +1154,8 @@ class PearchService:
 
 # Singleton instance
 pearch_service = PearchService()
+
+# FastAPI dependency injection factory
+def get_pearch_service() -> "PearchService":
+    return pearch_service
+

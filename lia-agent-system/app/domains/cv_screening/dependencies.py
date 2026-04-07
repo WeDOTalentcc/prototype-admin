@@ -7,6 +7,7 @@ from app.domains.cv_screening.repositories.screening_repository import Screening
 def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRepository:
     return ScreeningRepository(db)
 
+from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service
 from app.domains.cv_screening.services.screening_question_set_service import (
     ScreeningQuestionSetService,
     get_screening_question_set_service,
@@ -14,6 +15,8 @@ from app.domains.cv_screening.services.screening_question_set_service import (
 
 __all__ = [
     "get_screening_repo",
+    "CVParserService",
+    "get_cv_parser_service",
     "ScreeningQuestionSetService",
     "get_screening_question_set_service",
 ]

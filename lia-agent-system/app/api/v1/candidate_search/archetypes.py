@@ -12,14 +12,15 @@ from ._shared import (
     ArchetypeResponse,
     CandidateSearchResultDTO,
     HybridSearchRequest,
+    PearchService,
     SearchType,
     User,
     build_archetype_from_search,
     extract_tags_from_search_spec,
     get_current_user_or_demo,
     get_db,
+    get_pearch_service,
     logger,
-    pearch_service,
 )
 
 router = APIRouter()
@@ -870,6 +871,8 @@ async def search_by_archetype(
     archetype_id: str,
     request: ArchetypeSearchRequest,
     db: AsyncSession = Depends(get_db)
+,
+    pearch_svc: PearchService = Depends(get_pearch_service),
 ):
     """
     Executa busca de candidatos usando um arquétipo específico.
@@ -919,7 +922,7 @@ async def search_by_archetype(
         )
         
         # Execute search
-        search_result = await pearch_service.hybrid_search(db, hybrid_request)
+        search_result = await pearch_svc.hybrid_search(db, hybrid_request)
         
         # Prepare criteria for LIA score calculation
         criteria = {
