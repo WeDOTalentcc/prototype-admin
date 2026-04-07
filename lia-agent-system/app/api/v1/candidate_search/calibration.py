@@ -1,8 +1,4 @@
 """
-
-# TODO(phase2-repo-extraction): 17 direct DB calls in this file.
-# Domain: candidate_search / cv_screening | Repo already exists: app/domains/cv_screening/repositories/screening_repository.py
-# Action: Replace direct db.execute/db.scalar calls with repo methods.
 Calibration workflows, vacancy goal-check, and candidate management routes.
 """
 from typing import Any
@@ -22,8 +18,14 @@ from ._shared import (
     get_rubric_evaluation_service,
     rubric_evaluation_service,
 )
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 
 router = APIRouter()
+
+
+async def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRepository:
+    return ScreeningRepository(db)
+
 
 class CalibrationFeedbackRequest(BaseModel):
     """Request para feedback de calibração."""
@@ -116,11 +118,12 @@ from app.services.candidate_goal_service import candidate_goal_service as _recru
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)
 async def submit_calibration_feedback(
     request: CalibrationFeedbackRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Recebe feedback de calibração do recrutador.
-    
+
     O recrutador avalia candidatos com like/dislike para calibrar o perfil ideal.
     Após 5 feedbacks, o sistema:
     1. Analisa padrões dos feedbacks
@@ -128,28 +131,19 @@ async def submit_calibration_feedback(
     3. Confirma status e desbloqueia sourcing automático
     """
     from datetime import datetime
-
-    from sqlalchemy import select
+    import uuid
 
     from app.models.calibration import CalibrationFeedback, CalibrationSession
-    
+
     try:
         session = None
         if request.session_id:
-            stmt = select(CalibrationSession).where(CalibrationSession.id == request.session_id)
-            result = await db.execute(stmt)
-            session = result.scalar_one_or_none()
-        
+            session = await repo.get_calibration_session_by_id(request.session_id)
+
         if not session and request.vacancy_id:
-            stmt = select(CalibrationSession).where(
-                CalibrationSession.vacancy_id == request.vacancy_id,
-                CalibrationSession.sourcing_blocked
-            ).order_by(CalibrationSession.created_at.desc())
-            result = await db.execute(stmt)
-            session = result.scalars().first()
-        
+            session = await repo.get_latest_blocked_session_for_vacancy(request.vacancy_id)
+
         if not session:
-            import uuid
             session = CalibrationSession(
                 id=str(uuid.uuid4()),
                 vacancy_id=request.vacancy_id,
@@ -157,9 +151,8 @@ async def submit_calibration_feedback(
                 sourcing_blocked=True,
                 min_feedbacks_required=5
             )
-            db.add(session)
-            await db.flush()
-        
+            await repo.create_calibration_session(session)
+
         feedback_entry = CalibrationFeedback(
             session_id=session.id,
             candidate_id=request.candidate_id,
@@ -167,43 +160,39 @@ async def submit_calibration_feedback(
             reason=request.reason,
             candidate_snapshot=request.candidate_snapshot
         )
-        db.add(feedback_entry)
-        
+        await repo.create_calibration_feedback(feedback_entry)
+
         if request.feedback.lower() == "like":
             session.likes_count = (session.likes_count or 0) + 1
         else:
             session.dislikes_count = (session.dislikes_count or 0) + 1
         session.total_shown = (session.total_shown or 0) + 1
-        
+
         min_feedbacks = session.min_feedbacks_required or 5
         feedbacks_remaining = max(0, min_feedbacks - session.total_shown)
         calibration_complete = session.total_shown >= min_feedbacks
-        
+
         if calibration_complete and session.sourcing_blocked:
-            stmt = select(CalibrationFeedback).where(
-                CalibrationFeedback.session_id == session.id
-            )
-            result = await db.execute(stmt)
-            all_feedbacks = result.scalars().all()
-            
+            all_feedbacks = await repo.get_feedbacks_by_session(session.id)
+
             feedbacks_for_analysis = [
                 {
                     "feedback": f.feedback_type,
                     "candidate_snapshot": f.candidate_snapshot or {}
                 } for f in all_feedbacks
             ]
-            
+
             analysis = await _recruiter_agent.analyze_calibration_patterns_for_session(
                 session_id=session.id,
                 feedbacks=feedbacks_for_analysis
             )
-            
+
             session.learned_criteria = analysis.get("patterns", {})
             session.status = "confirmed"
             session.sourcing_blocked = False
             session.confirmation_message = analysis.get("confirmation_message", "")
             session.completed_at = datetime.now()
-            
+
             confidence_level = analysis.get("confidence", 0.9)
             message = analysis.get("confirmation_message", "Calibração completa! Sourcing automático liberado.")
         else:
@@ -214,8 +203,7 @@ async def submit_calibration_feedback(
                 session.status = "awaiting_feedback"
                 message = f"Coletando preferências... Avalie mais {feedbacks_remaining} candidato(s)."
             confidence_level = min(0.9, 0.3 + (session.total_shown * 0.12))
-        
-        
+
         return CalibrationFeedbackResponse(
             status=session.status,
             total_feedbacks=session.total_shown,
@@ -231,9 +219,9 @@ async def submit_calibration_feedback(
             feedbacks_remaining=feedbacks_remaining,
             min_feedbacks_required=min_feedbacks
         )
-    
+
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Calibration feedback failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Calibration feedback failed: {str(e)}")
 
@@ -241,26 +229,24 @@ async def submit_calibration_feedback(
 @router.post("/calibration/start", response_model=CalibrationStartResponse)
 async def start_calibration_session(
     request: CalibrationStartRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Inicia uma sessão de calibração.
-    
+
     Retorna uma amostra de candidatos para o recrutador avaliar com like/dislike.
     Os feedbacks são usados para calibrar o perfil ideal para a busca.
     Bloqueia sourcing automático até a calibração ser completada (5 feedbacks).
     """
     import uuid
 
-    from sqlalchemy import func, select
-
     from app.models.calibration import CalibrationSession
-    from app.models.candidate import Candidate
-    
+
     try:
         session_id = str(uuid.uuid4())
         sample_size = request.sample_size or 5
-        
+
         new_session = CalibrationSession(
             id=session_id,
             vacancy_id=request.vacancy_id,
@@ -272,12 +258,10 @@ async def start_calibration_session(
             likes_count=0,
             dislikes_count=0
         )
-        db.add(new_session)
-        
-        query = select(Candidate).order_by(func.random()).limit(sample_size)
-        result = await db.execute(query)
-        candidates_orm = result.scalars().all()
-        
+        await repo.create_calibration_session(new_session)
+
+        candidates_orm = await repo.get_random_candidates(sample_size)
+
         candidates = []
         for c in candidates_orm:
             candidates.append(CandidateSearchResultDTO(
@@ -296,8 +280,7 @@ async def start_calibration_session(
                 has_phone=bool(c.phone),
                 source="local"
             ))
-        
-        
+
         if not candidates:
             return CalibrationStartResponse(
                 session_id=session_id,
@@ -306,7 +289,7 @@ async def start_calibration_session(
                 candidates=[],
                 message="Não há candidatos disponíveis para calibração. Importe candidatos primeiro."
             )
-        
+
         return CalibrationStartResponse(
             session_id=session_id,
             vacancy_id=request.vacancy_id,
@@ -314,9 +297,9 @@ async def start_calibration_session(
             candidates=candidates,
             message=f"Sessão de calibração iniciada com {len(candidates)} candidatos. Avalie cada um com like ou dislike para liberar o sourcing automático."
         )
-    
+
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Start calibration failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Start calibration failed: {str(e)}")
 
@@ -324,22 +307,16 @@ async def start_calibration_session(
 @router.get("/calibration/{session_id}/status", response_model=CalibrationStatusResponse)
 async def get_calibration_status(
     session_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Retorna o status da sessão de calibração.
-    
+
     Mostra progresso, feedbacks recebidos, padrões aprendidos e estado de bloqueio de sourcing.
     """
-    from sqlalchemy import select
-
-    from app.models.calibration import CalibrationSession
-    
     try:
-        stmt = select(CalibrationSession).where(CalibrationSession.id == session_id)
-        result = await db.execute(stmt)
-        session = result.scalar_one_or_none()
-        
+        session = await repo.get_calibration_session_by_id(session_id)
+
         if not session:
             return CalibrationStatusResponse(
                 session_id=session_id,
@@ -359,23 +336,23 @@ async def get_calibration_status(
                 feedbacks_remaining=5,
                 min_feedbacks_required=5
             )
-        
+
         min_feedbacks = session.min_feedbacks_required or 5
         total_shown = session.total_shown or 0
         likes_count = session.likes_count or 0
         dislikes_count = session.dislikes_count or 0
         feedbacks_remaining = max(0, min_feedbacks - total_shown)
-        
+
         calibration_complete = not session.sourcing_blocked
         confidence_level = min(0.9, 0.3 + (total_shown * 0.12))
-        
+
         if calibration_complete:
             message = session.confirmation_message or "Calibração completa! Sourcing automático liberado."
         elif total_shown >= 3:
             message = f"Calibração em andamento. Faltam {feedbacks_remaining} avaliação(ões)."
         else:
             message = f"Coletando preferências. Avalie mais {feedbacks_remaining} candidato(s)."
-        
+
         return CalibrationStatusResponse(
             session_id=session_id,
             vacancy_id=session.vacancy_id,
@@ -394,7 +371,7 @@ async def get_calibration_status(
             feedbacks_remaining=feedbacks_remaining,
             min_feedbacks_required=min_feedbacks
         )
-    
+
     except Exception as e:
         logger.error(f"Get calibration status failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Get calibration status failed: {str(e)}")
@@ -407,7 +384,7 @@ async def check_vacancy_candidate_goal(
 ):
     """
     Verifica se a vaga atingiu a meta de candidatos.
-    
+
     Retorna status (abaixo, na meta, acima), recomendações e ações sugeridas.
     """
     try:
@@ -417,7 +394,7 @@ async def check_vacancy_candidate_goal(
             target_min=request.target_min,
             target_max=request.target_max
         )
-        
+
         return VacancyGoalResponse(
             status=result.get("status", "unknown"),
             vacancy_id=result.get("vacancy_id", request.vacancy_id),
@@ -430,7 +407,7 @@ async def check_vacancy_candidate_goal(
             message=result.get("message", ""),
             suggested_actions=result.get("suggested_actions", [])
         )
-    
+
     except Exception as e:
         logger.error(f"Vacancy goal check failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Vacancy goal check failed: {str(e)}")
@@ -461,44 +438,34 @@ async def add_candidates_to_vacancy(
     request: AddCandidatesToVacancyRequest,
     db: AsyncSession = Depends(get_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Adiciona candidatos a uma vaga e verifica meta automaticamente.
-    
+
     Workflow:
     1. Verifica se calibração foi completada (BLOQUEIO se sourcing_blocked=True)
     2. Conta candidatos atuais na vaga
     3. Adiciona novos candidatos (até limite de 70)
     4. Chama check_vacancy_candidate_goal
     5. Retorna status e recomendações
-    
+
     A meta de candidatos por vaga é de 50-70 candidatos.
     O sistema não permite adicionar além de 70 candidatos.
     """
     import uuid
 
-    from sqlalchemy import func, select
-
-    from app.models.calibration import CalibrationSession
     from app.models.candidate import VacancyCandidate
-    from app.models.job_vacancy import JobVacancy
-    
+
     try:
-        vacancy_result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == vacancy_id)
-        )
-        vacancy = vacancy_result.scalar_one_or_none()
+        vacancy = await repo.get_job_vacancy_by_id(vacancy_id)
         vacancy_company_id = vacancy.company_id if vacancy else None
-        
-        calibration_stmt = select(CalibrationSession).where(
-            CalibrationSession.vacancy_id == vacancy_id,
-        ).order_by(CalibrationSession.created_at.desc())
-        calibration_result = await db.execute(calibration_stmt)
-        calibration_session = calibration_result.scalars().first()
-        
+
+        calibration_session = await repo.get_latest_session_for_vacancy(vacancy_id)
+
         if calibration_session and calibration_session.sourcing_blocked:
             feedbacks_remaining = max(
-                0, 
+                0,
                 (calibration_session.min_feedbacks_required or 5) - (calibration_session.total_shown or 0)
             )
             raise HTTPException(
@@ -512,31 +479,23 @@ async def add_candidates_to_vacancy(
                     "min_feedbacks_required": calibration_session.min_feedbacks_required or 5
                 }
             )
-        
+
         target_min = 50
         target_max = 70
-        
-        count_result = await db.execute(
-            select(func.count(VacancyCandidate.id)).where(
-                VacancyCandidate.vacancy_id == uuid.UUID(vacancy_id)
-            )
-        )
-        current_count = count_result.scalar() or 0
-        
+
+        current_count = await repo.count_vacancy_candidates(uuid.UUID(vacancy_id))
+
         max_to_add = max(0, target_max - current_count)
         candidates_to_add = request.candidate_ids[:max_to_add]
         skipped_ids = request.candidate_ids[max_to_add:]
-        
+
         added_count = 0
         for candidate_id in candidates_to_add:
             try:
-                existing = await db.execute(
-                    select(VacancyCandidate).where(
-                        VacancyCandidate.vacancy_id == uuid.UUID(vacancy_id),
-                        VacancyCandidate.candidate_id == uuid.UUID(candidate_id)
-                    )
+                existing = await repo.get_vacancy_candidate(
+                    uuid.UUID(vacancy_id), uuid.UUID(candidate_id)
                 )
-                if existing.scalar_one_or_none() is None:
+                if existing is None:
                     new_vc = VacancyCandidate(
                         vacancy_id=uuid.UUID(vacancy_id),
                         candidate_id=uuid.UUID(candidate_id),
@@ -546,23 +505,17 @@ async def add_candidates_to_vacancy(
                         status="sourced",
                         stage="initial"
                     )
-                    db.add(new_vc)
+                    await repo.create_vacancy_candidate(new_vc)
                     added_count += 1
                 else:
                     skipped_ids.append(candidate_id)
             except ValueError:
                 skipped_ids.append(candidate_id)
-        
-        
+
         if added_count > 0 and vacancy:
             try:
-                from app.models.candidate import Candidate
-                
-                reqs_result = await db.execute(
-                    select(JobRequirement).where(JobRequirement.job_vacancy_id == uuid.UUID(vacancy_id))
-                )
-                job_requirements = reqs_result.scalars().all()
-                
+                job_requirements = await repo.get_requirements_by_vacancy(uuid.UUID(vacancy_id))
+
                 if job_requirements:
                     requirements_list = [
                         JobRequirementCreate(
@@ -573,14 +526,11 @@ async def add_candidates_to_vacancy(
                         )
                         for req in job_requirements
                     ]
-                    
+
                     for cand_id in candidates_to_add:
                         try:
-                            cand_result = await db.execute(
-                                select(Candidate).where(Candidate.id == uuid.UUID(cand_id))
-                            )
-                            candidate = cand_result.scalar_one_or_none()
-                            
+                            candidate = await repo.get_candidate_by_id(uuid.UUID(cand_id))
+
                             if candidate:
                                 candidate_data = {
                                     "name": candidate.name,
@@ -598,7 +548,7 @@ async def add_candidates_to_vacancy(
                                     "work_history": getattr(candidate, 'work_history', []) or [],
                                     "resume_text": getattr(candidate, 'resume_text', None),
                                 }
-                                
+
                                 await rubric_svc.evaluate_and_create_activity(
                                     candidate_id=cand_id,
                                     candidate_name=candidate.name or "Candidato",
@@ -612,20 +562,20 @@ async def add_candidates_to_vacancy(
                                 )
                         except Exception as eval_err:
                             logger.warning(f"Rubric evaluation failed for candidate {cand_id}: {eval_err}")
-                            
+
             except Exception as rubric_err:
                 logger.warning(f"Rubric evaluation setup failed: {rubric_err}")
-        
+
         new_total = current_count + added_count
         at_capacity = new_total >= target_max
-        
+
         goal_result = await _recruiter_agent.check_vacancy_candidate_goal(
             vacancy_id=vacancy_id,
             current_count=new_total,
             target_min=target_min,
             target_max=target_max
         )
-        
+
         goal_check = VacancyGoalResponse(
             status=goal_result.get("status", "unknown"),
             vacancy_id=vacancy_id,
@@ -638,7 +588,7 @@ async def add_candidates_to_vacancy(
             message=goal_result.get("message", ""),
             suggested_actions=goal_result.get("suggested_actions", [])
         )
-        
+
         if at_capacity:
             message = f"Vaga atingiu capacidade máxima! {added_count} candidato(s) adicionado(s). Total: {new_total}/{target_max}."
         elif added_count == 0:
@@ -648,7 +598,7 @@ async def add_candidates_to_vacancy(
         else:
             deficit = goal_result.get("deficit", 0)
             message = f"{added_count} candidato(s) adicionado(s). Total: {new_total}. Faltam {deficit} para meta mínima."
-        
+
         return AddCandidatesToVacancyResponse(
             vacancy_id=vacancy_id,
             added_count=added_count,
@@ -659,9 +609,11 @@ async def add_candidates_to_vacancy(
             goal_check=goal_check,
             message=message
         )
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
-        await db.rollback()
+        await repo.rollback()
         logger.error(f"Add candidates to vacancy failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Add candidates to vacancy failed: {str(e)}")
 
@@ -669,32 +621,23 @@ async def add_candidates_to_vacancy(
 @router.get("/vacancy/{vacancy_id}/candidates/count", response_model=None)
 async def get_vacancy_candidates_count(
     vacancy_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Retorna a contagem de candidatos em uma vaga e o status da meta.
     """
     import uuid
 
-    from sqlalchemy import func, select
-
-    from app.models.candidate import VacancyCandidate
-    
     try:
-        count_result = await db.execute(
-            select(func.count(VacancyCandidate.id)).where(
-                VacancyCandidate.vacancy_id == uuid.UUID(vacancy_id)
-            )
-        )
-        current_count = count_result.scalar() or 0
-        
+        current_count = await repo.count_vacancy_candidates(uuid.UUID(vacancy_id))
+
         goal_result = await _recruiter_agent.check_vacancy_candidate_goal(
             vacancy_id=vacancy_id,
             current_count=current_count,
             target_min=50,
             target_max=70
         )
-        
+
         return {
             "vacancy_id": vacancy_id,
             "current_count": current_count,
@@ -705,7 +648,7 @@ async def get_vacancy_candidates_count(
             "recommendation": goal_result.get("recommendation", ""),
             "message": goal_result.get("message", "")
         }
-    
+
     except Exception as e:
         logger.error(f"Get vacancy candidates count failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Get vacancy candidates count failed: {str(e)}")

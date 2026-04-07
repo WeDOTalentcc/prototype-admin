@@ -1,8 +1,4 @@
 """
-
-# TODO(phase2-repo-extraction): 17 direct DB calls in this file.
-# Domain: cv_screening | Repo already exists: app/domains/cv_screening/repositories/screening_repository.py
-# Action: Replace direct db.execute/db.scalar calls with repo methods.
 Rubric Evaluation API - Structured rubrics for CV vs Job evaluation.
 
 Based on Schmidt & Hunter (1998) meta-analysis and BARS methodology.
@@ -12,13 +8,11 @@ from enum import Enum as PyEnum
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, rubric_evaluation_service, get_rubric_evaluation_service
-from app.models.candidate import Candidate
-from app.models.job_vacancy import JobVacancy
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
+from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, get_rubric_evaluation_service
 from app.models.rubric import JobRequirement, RubricEvaluation
 from app.schemas.rubric import (
     BatchEvaluateRequest,
@@ -54,6 +48,11 @@ def _normalize_priority(priority_value) -> RequirementPriorityEnum:
             return RequirementPriorityEnum.IMPORTANT
     return RequirementPriorityEnum.IMPORTANT
 
+
+async def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRepository:
+    return ScreeningRepository(db)
+
+
 router = APIRouter()
 
 
@@ -64,6 +63,7 @@ async def evaluate_candidate(
     x_company_id: str | None = Header(None),
     audit_svc: AuditService = Depends(get_audit_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Evaluate a single candidate against job requirements using structured rubrics.
@@ -106,13 +106,10 @@ async def evaluate_candidate(
 
     candidate_data = request.candidate_data
     if not candidate_data:
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == request.candidate_id)
-        )
-        candidate = result.scalar_one_or_none()
+        candidate = await repo.get_candidate_by_id(request.candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        
+
         candidate_data = {
             "id": str(candidate.id),
             "name": candidate.name,
@@ -134,21 +131,16 @@ async def evaluate_candidate(
             "resume_text": candidate.resume_text,
             "self_introduction": candidate.self_introduction,
         }
-    
+
     requirements = request.job_requirements
     if not requirements:
-        result = await db.execute(
-            select(JobRequirement).where(
-                JobRequirement.job_vacancy_id == request.job_vacancy_id
-            )
-        )
-        db_requirements = result.scalars().all()
+        db_requirements = await repo.get_requirements_by_vacancy(request.job_vacancy_id)
         if not db_requirements:
             raise HTTPException(
-                status_code=404, 
+                status_code=404,
                 detail="No requirements found for this job vacancy. Add requirements first."
             )
-        
+
         requirements = [
             JobRequirementCreate(
                 requirement=req.requirement,
@@ -158,7 +150,7 @@ async def evaluate_candidate(
             )
             for req in db_requirements
         ]
-    
+
     evaluation_result = await rubric_svc.evaluate_candidate(
         candidate_data=candidate_data,
         requirements=requirements,
@@ -183,7 +175,7 @@ async def evaluate_candidate(
 
     db_evaluation = None
     if request.save_result:
-        db_evaluation = RubricEvaluation(
+        new_evaluation = RubricEvaluation(
             candidate_id=request.candidate_id,
             job_vacancy_id=request.job_vacancy_id,
             score=evaluation_result.score,
@@ -194,10 +186,8 @@ async def evaluate_candidate(
             evaluated_by="system",
             model_version="claude-sonnet-4-6",
         )
-        db.add(db_evaluation)
-        await db.flush()
-        await db.refresh(db_evaluation)
-    
+        db_evaluation = await repo.create_evaluation(new_evaluation)
+
     try:
         _evals = evaluation_result.evaluations or []
         dimension_summary = [f"{e.requirement}: {e.score}/5" for e in _evals[:5]]
@@ -240,27 +230,23 @@ async def batch_evaluate_candidates(
     request: BatchEvaluateRequest,
     db: AsyncSession = Depends(get_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Evaluate multiple candidates against the same job requirements.
-    
+
     This is useful for ranking candidates for a specific job vacancy.
     Results are sorted by score in descending order.
     """
     requirements = request.job_requirements
     if not requirements:
-        result = await db.execute(
-            select(JobRequirement).where(
-                JobRequirement.job_vacancy_id == request.job_vacancy_id
-            )
-        )
-        db_requirements = result.scalars().all()
+        db_requirements = await repo.get_requirements_by_vacancy(request.job_vacancy_id)
         if not db_requirements:
             raise HTTPException(
                 status_code=404,
                 detail="No requirements found for this job vacancy"
             )
-        
+
         requirements = [
             JobRequirementCreate(
                 requirement=req.requirement,
@@ -270,17 +256,13 @@ async def batch_evaluate_candidates(
             )
             for req in db_requirements
         ]
-    
-    result = await db.execute(
-        select(Candidate).where(Candidate.id.in_(request.candidate_ids))
-    )
-    candidates = result.scalars().all()
-    
+
+    candidates = await repo.get_candidates_by_ids(request.candidate_ids)
     candidate_map = {str(c.id): c for c in candidates}
-    
+
     candidates_data = []
     errors = []
-    
+
     for cid in request.candidate_ids:
         candidate = candidate_map.get(str(cid))
         if candidate:
@@ -307,13 +289,13 @@ async def batch_evaluate_candidates(
             })
         else:
             errors.append({"candidate_id": str(cid), "error": "Candidate not found"})
-    
+
     batch_results = await rubric_svc.batch_evaluate(
         candidates=candidates_data,
         requirements=requirements,
         sort_by_score=True,
     )
-    
+
     responses = []
     for candidate_data, eval_result in batch_results:
         candidate_id = UUID(candidate_data["id"])
@@ -331,7 +313,7 @@ async def batch_evaluate_candidates(
 
         db_evaluation = None
         if request.save_results:
-            db_evaluation = RubricEvaluation(
+            new_eval = RubricEvaluation(
                 candidate_id=candidate_id,
                 job_vacancy_id=request.job_vacancy_id,
                 score=eval_result.score,
@@ -342,8 +324,9 @@ async def batch_evaluate_candidates(
                 evaluated_by="system",
                 model_version="claude-sonnet-4-6",
             )
-            db.add(db_evaluation)
-        
+            await repo.add_evaluation(new_eval)
+            db_evaluation = new_eval
+
         responses.append(RubricEvaluationResponse(
             id=db_evaluation.id if db_evaluation else None,
             candidate_id=candidate_id,
@@ -352,10 +335,10 @@ async def batch_evaluate_candidates(
             evaluated_at=datetime.utcnow(),
             model_version="claude-sonnet-4-6",
         ))
-    
+
     if request.save_results:
-        await db.flush()
-    
+        await repo.flush()
+
     return BatchEvaluateResponse(
         job_vacancy_id=request.job_vacancy_id,
         total_candidates=len(request.candidate_ids),
@@ -369,23 +352,16 @@ async def batch_evaluate_candidates(
 @router.get("/{job_id}/requirements", response_model=list[JobRequirementResponse])
 async def get_job_requirements(
     job_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Get all requirements for a specific job vacancy.
     """
-    result = await db.execute(
-        select(JobVacancy).where(JobVacancy.id == job_id)
-    )
-    job = result.scalar_one_or_none()
+    job = await repo.get_job_vacancy_by_id(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
-    
-    result = await db.execute(
-        select(JobRequirement).where(JobRequirement.job_vacancy_id == job_id)
-    )
-    requirements = result.scalars().all()
-    
+
+    requirements = await repo.get_requirements_by_vacancy(job_id)
     return requirements
 
 
@@ -393,18 +369,15 @@ async def get_job_requirements(
 async def add_job_requirement(
     job_id: UUID,
     requirement: JobRequirementCreate,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Add a requirement to a job vacancy for rubric evaluation.
     """
-    result = await db.execute(
-        select(JobVacancy).where(JobVacancy.id == job_id)
-    )
-    job = result.scalar_one_or_none()
+    job = await repo.get_job_vacancy_by_id(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
-    
+
     db_requirement = JobRequirement(
         job_vacancy_id=job_id,
         requirement=requirement.requirement,
@@ -412,34 +385,23 @@ async def add_job_requirement(
         priority=requirement.priority.value,
         category=requirement.category,
     )
-    db.add(db_requirement)
-    await db.flush()
-    await db.refresh(db_requirement)
-    
-    return db_requirement
+    return await repo.create_requirement(db_requirement)
 
 
 @router.delete("/{job_id}/requirements/{requirement_id}", response_model=None)
 async def delete_job_requirement(
     job_id: UUID,
     requirement_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Delete a requirement from a job vacancy.
     """
-    result = await db.execute(
-        select(JobRequirement).where(
-            JobRequirement.id == requirement_id,
-            JobRequirement.job_vacancy_id == job_id,
-        )
-    )
-    requirement = result.scalar_one_or_none()
+    requirement = await repo.get_requirement_by_id(requirement_id, job_id)
     if not requirement:
         raise HTTPException(status_code=404, detail="Requirement not found")
-    
-    await db.delete(requirement)
-    
+
+    await repo.delete_requirement(requirement)
     return {"message": "Requirement deleted successfully"}
 
 
@@ -447,22 +409,14 @@ async def delete_job_requirement(
 async def get_job_evaluations(
     job_id: UUID,
     min_score: float | None = None,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     """
     Get all rubric evaluations for a specific job vacancy.
     Optionally filter by minimum score.
     """
-    query = select(RubricEvaluation).where(RubricEvaluation.job_vacancy_id == job_id)
-    
-    if min_score is not None:
-        query = query.where(RubricEvaluation.score >= min_score)
-    
-    query = query.order_by(RubricEvaluation.score.desc())
-    
-    result = await db.execute(query)
-    evaluations = result.scalars().all()
-    
+    evaluations = await repo.get_evaluations_by_vacancy(job_id, min_score=min_score)
+
     responses = []
     for ev in evaluations:
         responses.append(RubricEvaluationResponse(
@@ -482,7 +436,7 @@ async def get_job_evaluations(
             evaluated_at=ev.evaluated_at,
             model_version=ev.model_version,
         ))
-    
+
     return responses
 
 
@@ -490,7 +444,7 @@ async def get_job_evaluations(
 async def get_score_breakdown(
     job_id: UUID,
     candidate_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    repo: ScreeningRepository = Depends(get_screening_repo),
 ) -> dict:
     """
     Retorna detalhamento completo do score de um candidato em uma vaga (E1).
@@ -500,13 +454,7 @@ async def get_score_breakdown(
 
     Returns 404 se não houver avaliação para o par candidato+vaga.
     """
-    result = await db.execute(
-        select(RubricEvaluation).where(
-            RubricEvaluation.candidate_id == candidate_id,
-            RubricEvaluation.job_vacancy_id == job_id,
-        ).order_by(RubricEvaluation.evaluated_at.desc()).limit(1)
-    )
-    evaluation = result.scalar_one_or_none()
+    evaluation = await repo.get_latest_evaluation(candidate_id, job_id)
 
     if evaluation is None:
         raise HTTPException(
@@ -537,12 +485,12 @@ async def evaluate_candidate_legacy(
 ):
     """
     Evaluate candidate and return result in legacy LIA Score format.
-    
+
     This endpoint is for backward compatibility during the transition
     from the old LIA Score system to the new Rubric Evaluation system.
     """
     response = await evaluate_candidate(request, db, rubric_svc=rubric_svc)
-    
+
     legacy_result = rubric_svc.to_legacy_format(response.result)
-    
+
     return legacy_result.model_dump()
