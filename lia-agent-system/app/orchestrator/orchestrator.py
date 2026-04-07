@@ -199,6 +199,36 @@ class Orchestrator:
                     }
             except Exception as plan_err:
                 logger.warning(f"Plan detection/execution failed (non-blocking): {plan_err}")
+            # ── Tier 6: AutonomousReActAgent — intercept before DomainRegistry ──
+            if domain_id == "autonomous":
+                _auto_response = (route.intent_details or {}).get("response", "")
+                _auto_meta = (route.intent_details or {}).get("metadata", {})
+                _tool_calls = (route.intent_details or {}).get("tool_calls", 0)
+                if _auto_response:
+                    self.state_manager.add_message(conversation_id, "assistant", _auto_response,
+                        metadata={"agent": "autonomous_react_agent", "intent": "cross_domain",
+                                  "confidence": confidence, "tool_calls": _tool_calls})
+                    state_updates = {"last_agent": "autonomous_react_agent", "last_intent": "cross_domain"}
+                    if conv_state and conversation_id:
+                        state_updates["conversation_state"] = conv_state.to_dict()
+                    self.state_manager.update_state(conversation_id, state_updates)
+                    return {
+                        "success": True,
+                        "conversation_id": conversation_id,
+                        "intent": "cross_domain",
+                        "agent": "autonomous_react_agent",
+                        "agent_type": "autonomous",
+                        "confidence": confidence,
+                        "message": _auto_response,
+                        "requires_user_input": _auto_meta.get("needs_clarification", False),
+                        "suggested_prompts": [],
+                        "next_actions": [],
+                        "result": {"message": _auto_response, "data": {"tool_calls": _tool_calls}},
+                        "policy_constraints": policy.get("constraints", {}),
+                        "tier": 6,
+                    }
+                # If no pre-resolved response (should not happen), fall through to _handle_directly
+                logger.warning("[Orchestrator] Tier 6 routed to autonomous but no response in intent_details")
             domain = self._domain_registry.get_instance(domain_id)
             if domain:
                 dc = DomainContext(domain_id=domain_id, user_id=user_id,

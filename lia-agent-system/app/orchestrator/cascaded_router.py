@@ -1,13 +1,14 @@
 """
-Cascaded Router - 6-tier routing: memory → redis → vector → fast → LLM → clarification.
+Cascaded Router - 7-tier routing: memory → redis → vector → fast → LLM → autonomous → clarification.
 
 Hierarquia de resolução (custo crescente):
-  Tier 0: MemoryResolver  — pronomes/referências de contexto
-  Tier 1: LRU in-process  — hash MD5 em memória local (O(1))
-  Tier 2: Redis hash cache — distribuído, exato, compartilhado entre workers
-  Tier 3: VectorSemanticCache — pgvector, cosine similarity >= 0.85
-  Tier 4: FastRouter      — regex/keyword (O(n) patterns)
-  Tier 5: LLM Cascade     — Haiku→Sonnet→Opus (caro)
+  Tier 0: MemoryResolver       — pronomes/referências de contexto
+  Tier 1: LRU in-process       — hash MD5 em memória local (O(1))
+  Tier 2: Redis hash cache      — distribuído, exato, compartilhado entre workers
+  Tier 3: VectorSemanticCache   — pgvector, cosine similarity >= 0.85
+  Tier 4: FastRouter            — regex/keyword (O(n) patterns)
+  Tier 5: LLM Cascade           — Haiku→Sonnet→Opus (caro)
+  Tier 6: AutonomousReActAgent  — agente cross-domain, fallback final antes de clarification
   Fallback: clarification_needed — pergunta ao usuário quando tudo falha
 
 Coexiste com IntentRouter legado — usa como fallback do Tier 5 quando disponível.
@@ -123,6 +124,7 @@ class CascadedRouter:
             "vector_hits": 0,
             "fast_hits": 0,
             "llm_hits": 0,
+            "autonomous_hits": 0,
             "clarification_issued": 0,
             "total": 0,
         }
@@ -289,6 +291,10 @@ class CascadedRouter:
             return result
 
         # Tier 5 — LLM Cascade (Haiku → Sonnet → Opus)
+        # Threshold: only accept Tier 5 result when confidence is sufficient;
+        # low-confidence Tier 5 falls through to Tier 6 (AutonomousReActAgent).
+        import os as _os_t5
+        _TIER5_MIN_CONFIDENCE = float(_os_t5.getenv("ROUTER_LLM_CASCADE_MIN_CONFIDENCE", "0.5"))
         try:
             company_id = (context or {}).get("company_id")
             _t0 = time.perf_counter()
@@ -301,54 +307,90 @@ class CascadedRouter:
                 cascade_result = await self._apply_adaptive_adjustments(
                     cascade_result, (context or {}).get("company_id")
                 )
-                self._cache_store(cache_key, cascade_result)
-                await self._redis_cache.set(
-                    message,
-                    {"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence},
-                )
-                if self._vector_cache is not None:
-                    try:
-                        await self._vector_cache.set(
-                            message,
-                            {
-                                "domain_id": cascade_result.domain_id,
-                                "confidence": cascade_result.confidence,
-                                "source": cascade_result.source,
-                            },
-                        )
-                    except Exception:
-                        pass
-                self._stats["llm_hits"] += 1
-                if _hit_counter:
-                    _hit_counter.labels(tier="llm_cascade").inc()
-                if _latency_hist:
-                    _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
-                if _conf_hist:
-                    _conf_hist.labels(model=_tier_name).observe(cascade_result.confidence)
-                logger.debug("CascadedRouter: LLM cascade for '%s...' → %s", message[:40], cascade_result.domain_id)
-                return cascade_result
-        except Exception as e:
-            logger.error("CascadedRouter: LLM cascade failed: %s", e)
-
-        # LLM fallback legado (IntentRouter) se cascade não disponível
-        if self.llm_fallback:
-            try:
-                _t0 = time.perf_counter()
-                intent_result = await self._route_via_llm(message, context)
-                if intent_result:
-                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
-                    self._cache_store(cache_key, intent_result)
+                if cascade_result.confidence < _TIER5_MIN_CONFIDENCE:
+                    logger.info(
+                        "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 6",
+                        cascade_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
+                    )
+                else:
+                    self._cache_store(cache_key, cascade_result)
+                    await self._redis_cache.set(
+                        message,
+                        {"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence},
+                    )
+                    if self._vector_cache is not None:
+                        try:
+                            await self._vector_cache.set(
+                                message,
+                                {
+                                    "domain_id": cascade_result.domain_id,
+                                    "confidence": cascade_result.confidence,
+                                    "source": cascade_result.source,
+                                },
+                            )
+                        except Exception:
+                            pass
                     self._stats["llm_hits"] += 1
                     if _hit_counter:
                         _hit_counter.labels(tier="llm_cascade").inc()
                     if _latency_hist:
                         _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
                     if _conf_hist:
-                        _conf_hist.labels(model="llm_fallback").observe(intent_result.confidence)
-                    logger.debug("CascadedRouter: LLM fallback for '%s...' → %s", message[:40], intent_result.domain_id)
-                    return intent_result
+                        _conf_hist.labels(model=_tier_name).observe(cascade_result.confidence)
+                    logger.debug("CascadedRouter: LLM cascade for '%s...' → %s", message[:40], cascade_result.domain_id)
+                    return cascade_result
+        except Exception as e:
+            logger.error("CascadedRouter: LLM cascade failed: %s", e)
+
+        # LLM fallback legado (IntentRouter) se cascade não disponível
+        # Apply the same confidence threshold as Tier 5 — low-confidence results fall to Tier 6.
+        if self.llm_fallback:
+            try:
+                _t0 = time.perf_counter()
+                intent_result = await self._route_via_llm(message, context)
+                if intent_result:
+                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                    if intent_result.confidence < _TIER5_MIN_CONFIDENCE:
+                        logger.info(
+                            "CascadedRouter: legacy LLM fallback confidence %.2f < %.2f for '%s...' — falling to Tier 6",
+                            intent_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
+                        )
+                    else:
+                        self._cache_store(cache_key, intent_result)
+                        self._stats["llm_hits"] += 1
+                        if _hit_counter:
+                            _hit_counter.labels(tier="llm_cascade").inc()
+                        if _latency_hist:
+                            _latency_hist.labels(tier="llm_cascade").observe(_elapsed_ms)
+                        if _conf_hist:
+                            _conf_hist.labels(model="llm_fallback").observe(intent_result.confidence)
+                        logger.debug("CascadedRouter: LLM fallback for '%s...' → %s", message[:40], intent_result.domain_id)
+                        return intent_result
             except Exception as e:
                 logger.error("CascadedRouter: LLM fallback failed: %s", e)
+
+        # Tier 6 — AutonomousReActAgent (cross-domain fallback antes de clarification)
+        import os as _os
+        if _os.getenv("AUTONOMOUS_REACT_ENABLED", "true").lower() == "true":
+            try:
+                _t0 = time.perf_counter()
+                autonomous_result = await self._route_via_autonomous_agent(message, context, session_id)
+                if autonomous_result:
+                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                    self._stats["autonomous_hits"] += 1
+                    if _hit_counter:
+                        _hit_counter.labels(tier="autonomous_react").inc()
+                    if _latency_hist:
+                        _latency_hist.labels(tier="autonomous_react").observe(_elapsed_ms)
+                    if _conf_hist:
+                        _conf_hist.labels(model="autonomous_react").observe(autonomous_result.confidence)
+                    logger.info(
+                        "CascadedRouter: Tier 6 (autonomous) resolved '%s...' in %.0fms",
+                        message[:40], _elapsed_ms,
+                    )
+                    return autonomous_result
+            except Exception as _auto_exc:
+                logger.error("CascadedRouter: Tier 6 (autonomous) failed: %s", _auto_exc)
 
         # Fallback final — clarification_needed (Gap #2)
         # Não retorna silenciosamente recruiter_assistant: pergunta ao usuário.
@@ -394,6 +436,55 @@ class CascadedRouter:
         except Exception:
             pass
         return route_result
+
+    async def _route_via_autonomous_agent(
+        self,
+        message: str,
+        context: dict[str, Any] | None = None,
+        session_id: str | None = None,
+    ) -> RouteResult | None:
+        """
+        Tier 6: invoca o AutonomousReActAgent para queries cross-domain.
+
+        O agente processa a query e retorna uma resposta completa.
+        Quando bem-sucedido, roteia para o domínio 'autonomous' com confiança >= 0.5.
+        Budget controlado por AUTONOMOUS_REACT_MAX_STEPS (env var, padrão 10).
+        """
+        try:
+            from app.domains.autonomous.agents.autonomous_react_agent import get_autonomous_react_agent
+            from lia_agents_core.agent_interface import AgentInput
+
+            agent = get_autonomous_react_agent()
+            agent_input = AgentInput(
+                message=message,
+                session_id=session_id or "cascaded_router",
+                user_id=(context or {}).get("user_id", ""),
+                company_id=(context or {}).get("company_id", ""),
+                context=context or {},
+                conversation_history=(context or {}).get("conversation_history", []),
+            )
+            output = await agent.process(agent_input)
+
+            if output.confidence >= 0.5:
+                return RouteResult(
+                    domain_id="autonomous",
+                    confidence=output.confidence,
+                    source="autonomous_react:tier6",
+                    intent_details={
+                        "response": output.message,
+                        "tool_calls": len(output.actions or []),
+                        "tier": 6,
+                        "metadata": output.metadata or {},
+                    },
+                )
+            logger.debug(
+                "[CascadedRouter][Tier6] Autonomous confidence %.2f < 0.5 — skipping",
+                output.confidence,
+            )
+            return None
+        except Exception as exc:
+            logger.debug("[CascadedRouter][Tier6] autonomous agent error: %s", exc)
+            return None
 
     async def _route_via_llm_cascade(
         self,
@@ -494,6 +585,7 @@ class CascadedRouter:
             "vector_hit_rate": self._stats["vector_hits"] / total,
             "fast_hit_rate": self._stats["fast_hits"] / total,
             "llm_hit_rate": self._stats["llm_hits"] / total,
+            "autonomous_hit_rate": self._stats["autonomous_hits"] / total,
             "clarification_rate": self._stats["clarification_issued"] / total,
         }
 
