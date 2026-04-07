@@ -253,7 +253,7 @@ export function JobScreeningSection({
                         {!collapsedPreviewSections.includes('remuneracao') && (
                           <div className="space-y-2 mt-2">
                             {(() => {
-                              const jobRec = previewJob as Record<string, unknown>
+                              const jobRec = previewJob as unknown as Record<string, unknown>
                               const salaryRange = jobRec.salaryRange as { min?: number; max?: number } | undefined
                               const salaryMin = salaryRange?.min ?? (jobRec.salaryMin as number | undefined)
                               const salaryMax = salaryRange?.max ?? (jobRec.salaryMax as number | undefined)

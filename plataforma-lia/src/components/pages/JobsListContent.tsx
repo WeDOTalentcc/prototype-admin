@@ -91,7 +91,7 @@ interface JobsListContentProps {
   setUserCollapsedLIA: (v: boolean) => void; setIsChatFullscreen: (v: boolean) => void
   setIsResizingLIA: (v: boolean) => void; setLiaWidth: (v: number) => void
   setLiaInlineMessages: (msgs: LiaInlineMessage[]) => void
-  liaInlineMessagesEndRef: React.RefObject<HTMLDivElement>
+  liaInlineMessagesEndRef: React.RefObject<HTMLDivElement | null>
   onAddRecentItem?: (item: RecentItem) => void
   showJobPreview: boolean; previewJob: Job | null
   activePreviewTab: "screening" | "pipeline"; setActivePreviewTab: (tab: "screening" | "pipeline") => void

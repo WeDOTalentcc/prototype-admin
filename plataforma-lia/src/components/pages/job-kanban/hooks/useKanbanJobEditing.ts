@@ -92,9 +92,9 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         updates[fieldMapping[f] || f] = jobEditForm[f]
       })
       const jobId = currentJob.backendId || currentJob.jobId || currentJob.id
-      await liaApi.updateJobVacancy(jobId, updates)
+      await liaApi.updateJobVacancy(String(jobId), updates)
       if (fields.includes('interviewStages') && (jobEditForm as Record<string, unknown>).interviewStages) {
-        const newStages = mapInterviewStagesToKanban((jobEditForm as Record<string, unknown>).interviewStages as unknown[])
+        const newStages = mapInterviewStagesToKanban((jobEditForm as Record<string, unknown>).interviewStages as unknown as InterviewStageFromJob[])
         setDynamicStages(newStages)
         setCandidatesData(prev => {
           const newData = createInitialCandidatesData(newStages)

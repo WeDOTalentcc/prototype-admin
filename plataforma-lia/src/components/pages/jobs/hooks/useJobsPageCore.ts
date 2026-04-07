@@ -148,7 +148,7 @@ export function useJobsPageCore(props: JobsPageProps) {
           id: matchedJob.backendId || matchedJob.jobId || String(matchedJob.id),
           type: 'vaga',
           title: matchedJob.title,
-          subtitle: (matchedJob as Record<string, unknown>).company as string | undefined,
+          subtitle: (matchedJob as unknown as Record<string, unknown>).company as string | undefined,
           meta: { jobId: matchedJob.backendId || matchedJob.jobId || String(matchedJob.id) },
         })
       }
@@ -183,7 +183,7 @@ export function useJobsPageCore(props: JobsPageProps) {
                 'Planejamento': 'Planejamento', 'Aprovação': 'Aprovação', 'Publicada': 'Publicada',
                 'Triagem': 'Triagem', 'Entrevistas': 'Entrevistas', 'Finalização': 'Finalização', 'Encerrada': 'Encerrada',
               }
-              const convertedJobs: Job[] = response.items.map((jv: Record<string, unknown>, index: number) => {
+              const convertedJobs: Job[] = response.items.map((jv_raw, index: number) => { const jv = jv_raw as unknown as Record<string, unknown>
                 const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
                 return {
                   id: index + 1,
@@ -214,7 +214,7 @@ export function useJobsPageCore(props: JobsPageProps) {
                   isConfidential: false, visibility: 'public' as const, technicalRequirements: [], languages: [],
                   behavioralCompetencies: [], screeningQuestions: [], interviewStages: [], hiringProcess: [],
                   isAffirmative: false,
-                } as Job
+                } as unknown as Job
               })
               if (!cancelled) { setBackendJobs(convertedJobs); jobs = convertedJobs }
               break
@@ -254,7 +254,7 @@ export function useJobsPageCore(props: JobsPageProps) {
       id: job.backendId || job.jobId || String(job.id),
       type: 'vaga',
       title: job.title,
-      subtitle: (job as Record<string, unknown>).company as string | undefined,
+      subtitle: (job as unknown as Record<string, unknown>).company as string | undefined,
       meta: { jobId: job.backendId || job.jobId || String(job.id) },
     })
   }

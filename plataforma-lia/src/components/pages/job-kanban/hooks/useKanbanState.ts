@@ -67,7 +67,7 @@ export function useKanbanState(options: UseKanbanStateOptions): UseKanbanStateRe
         status: response.status as KanbanJob['status'],
         stages: defaultStages,
         totalCandidates: 0,
-        createdAt: (response as Record<string, unknown>).created_at as string,
+        createdAt: (response as unknown as Record<string, unknown>).created_at as string,
       }
       
       setJob(jobData)

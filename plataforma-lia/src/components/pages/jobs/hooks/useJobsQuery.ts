@@ -85,15 +85,9 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
     setCurrentPage(1)
 
     try {
-      const response = await liaApi.getJobVacancies({
-        limit: initialPageSize,
-        offset: 0,
-        ...filters,
-        sort_by: sortConfig.column,
-        sort_order: sortConfig.direction,
-      } as any)
+      const response = await liaApi.listJobVacancies(undefined, 0, initialPageSize)
 
-      const transformedJobs = response.items.map(transformJob)
+      const transformedJobs = response.items.map(jv => transformJob(jv as unknown as Record<string, unknown>))
       setJobs(transformedJobs)
       setTotalCount(response.total)
 
@@ -124,15 +118,9 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
     try {
       const nextPage = currentPage + 1
       const offset = (nextPage - 1) * initialPageSize
-      const response = await liaApi.getJobVacancies({
-        limit: initialPageSize,
-        offset,
-        ...filters,
-        sort_by: sortConfig.column,
-        sort_order: sortConfig.direction,
-      } as any)
+      const response = await liaApi.listJobVacancies(undefined, offset, initialPageSize)
 
-      const transformedJobs = response.items.map(transformJob)
+      const transformedJobs = response.items.map(jv => transformJob(jv as unknown as Record<string, unknown>))
       setJobs((prev) => [...prev, ...transformedJobs])
       setCurrentPage(nextPage)
     } catch (err) {
@@ -143,7 +131,7 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
   }, [isLoading, currentPage, initialPageSize, filters, sortConfig, transformJob])
   const createJob = useCallback(async (data: Partial<JobVacancy>): Promise<JobVacancy> => {
     const response = await liaApi.createJobVacancy(data as any)
-    const newJob = transformJob(response as Record<string, unknown>)
+    const newJob = transformJob(response as unknown as Record<string, unknown>)
     setJobs((prev) => [newJob, ...prev])
     setTotalCount((prev) => prev + 1)
     return newJob
@@ -151,7 +139,7 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
 
   const updateJob = useCallback(async (id: string, data: Partial<JobVacancy>): Promise<JobVacancy> => {
     const response = await liaApi.updateJobVacancy(id, data)
-    const updatedJob = transformJob(response as Record<string, unknown>)
+    const updatedJob = transformJob(response as unknown as Record<string, unknown>)
     setJobs((prev) => prev.map((j) => (j.id === id ? updatedJob : j)))
     return updatedJob
   }, [transformJob])

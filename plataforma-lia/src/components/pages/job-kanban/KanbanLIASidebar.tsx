@@ -205,7 +205,7 @@ export function KanbanLIASidebar({
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            const candidate = Object.values(candidatesData).flat().find((c: { id?: string }) => c.id === suggestion.candidate_id)
+                            const candidate = Object.values(candidatesData).flat().find((c) => (c as { id?: string }).id === suggestion.candidate_id)
                             if (candidate) {
                               setSelectedCandidate(candidate as any)
                               setShowCandidatePage(true)

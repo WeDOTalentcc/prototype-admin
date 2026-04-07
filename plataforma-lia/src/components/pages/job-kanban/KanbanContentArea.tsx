@@ -72,6 +72,7 @@ export function KanbanContentArea({ state }: KanbanContentAreaProps) {
     openDecisionFlowModal, viewedCandidateIds,
     isPreviewOpen, previewCandidate, isPreviewMaximized,
     favoriteCandidates,
+    handleDataRequestResend, handleDataRequestViewDetails,
   } = state
 
   return (

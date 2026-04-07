@@ -56,8 +56,8 @@ interface UseJobsChatReturn {
     isTableCollapsed: boolean
     liaInlineMessages: LiaInlineMessage[]
     liaInlineLoading: boolean
-    liaInlineMessagesEndRef: React.RefObject<HTMLDivElement>
-    liaInputRef: React.RefObject<HTMLInputElement>
+    liaInlineMessagesEndRef: React.RefObject<HTMLDivElement | null>
+    liaInputRef: React.RefObject<HTMLInputElement | null>
     showExpandedLIA: boolean
     liaPromptValue: string
     userCollapsedLIA: boolean
@@ -369,7 +369,7 @@ export function useJobsChat({
       const selectedJobsArray = Array.from(selectedJobsForBatch).map(id => {
         const job = jobs.find(j => j.id === id)
         return job ? { id: job.id, title: job.title, department: job.department, status: job.status } : null
-      }).filter((j): j is { id: number; title: string; department: string; status: string } => j !== null)
+      }).filter((j) => j !== null) as { id: number; title: string; department: string; status: string }[]
 
       const response = await callOrchestratedJobsManagement({
         message: command,

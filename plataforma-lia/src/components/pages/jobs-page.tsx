@@ -186,7 +186,7 @@ export function JobsPage(props: JobsPageProps) {
         {activeFilter === 'visao-geral' && (
           <JobsOverviewPanel
             liaPromptValue={liaPromptValue}
-            setLiaPromptValue={setLiaPromptValue}
+            setLiaPromptValue={setLiaPromptValue as (value: string | ((prev: string) => string)) => void}
             setActiveFilter={setActiveFilter}
             openJobCreationChat={openJobCreationChat}
             openGeneralChat={openGeneralChat}
@@ -198,6 +198,9 @@ export function JobsPage(props: JobsPageProps) {
         {activeFilter !== 'visao-geral' && (
           <JobsListContent
             {...state}
+            setLiaPromptValue={state.setLiaPromptValue as (value: string | ((prev: string) => string)) => void}
+            toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
+            activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
             statusOrder={statusOrder}
             groupedJobs={groupedJobs}
             onAddRecentItem={onAddRecentItem}

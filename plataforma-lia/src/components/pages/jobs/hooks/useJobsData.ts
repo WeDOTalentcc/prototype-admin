@@ -64,7 +64,7 @@ export function useJobsData(): UseJobsDataReturn {
         'Finalização': 'Finalização',
         'Encerrada': 'Encerrada'
       }
-      const convertedJobs: Job[] = response.items.map((jv: Record<string, unknown>, index: number) => {
+      const convertedJobs: Job[] = response.items.map((jv_raw, index: number) => { const jv = jv_raw as unknown as Record<string, unknown>
         const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
         return {
           id: index + 1,
@@ -149,7 +149,7 @@ export function useJobsData(): UseJobsDataReturn {
           publishedAt: (jv.published_at as string) || (jv.last_published_at as string) || undefined,
           closedAt: (jv.closed_at as string) || undefined,
           createdByEmail: (jv.created_by_email as string) || undefined,
-        } as Job
+        } as unknown as Job
       })
 
       setBackendJobs(convertedJobs)
@@ -188,9 +188,9 @@ export function useJobsData(): UseJobsDataReturn {
           paralisadas: convertedJobs.filter(job => job.status === 'Paralisada').length,
           concluidas: convertedJobs.filter(job => job.status === 'Concluída').length,
           canceladas: convertedJobs.filter(job => job.status === 'Cancelada').length,
-          noFunil: convertedJobs.reduce((sum, job) => sum + ((job as Record<string, unknown> as { funnel?: { total?: number } }).funnel?.total || 0), 0),
+          noFunil: convertedJobs.reduce((sum, job) => sum + ((job as unknown as { funnel?: { total?: number } }).funnel?.total || 0), 0),
           entrevistasRecentes: 0,
-          ofertas: convertedJobs.filter(job => (job as Record<string, unknown> as { stage?: string }).stage === 'Oferta').length,
+          ofertas: convertedJobs.filter(job => (job as unknown as { stage?: string }).stage === 'Oferta').length,
           ttfMedio: 0,
           taxaConversao: 0,
           atRisco: 0,

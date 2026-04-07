@@ -95,7 +95,7 @@ export function KanbanCardStatusBadges({
 <div className="mt-2 flex flex-wrap gap-1">
   {/* AI Suggestion Badge */}
   {(() => {
-    const suggestion = getSuggestionForCandidate(aiSuggestions, String(candidate.id))
+    const suggestion = getSuggestionForCandidate(aiSuggestions as unknown as import("@/hooks/useCandidateSuggestions").AISuggestion[], String(candidate.id))
     if (suggestion) {
       return (
         <div onClick={(e) => e.stopPropagation()}>
@@ -364,11 +364,12 @@ export function KanbanCardStatusBadges({
             setCandidatesData((prev) => {
               const updated = { ...prev }
               Object.keys(updated).forEach((key) => {
-                updated[key] = updated[key].map((c) =>
-                  String(c.id) === cId
-                    ? { ...c, status: "triado_aprovado" as const, sub_status: undefined, subStatus: undefined }
+                updated[key] = updated[key].map((c) => {
+                  const cObj = c as Record<string, unknown>
+                  return String(cObj.id) === cId
+                    ? { ...cObj, status: "triado_aprovado" as const, sub_status: undefined, subStatus: undefined }
                     : c
-                )
+                })
               })
               return updated
             })

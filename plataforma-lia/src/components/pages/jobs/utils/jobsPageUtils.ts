@@ -30,7 +30,7 @@ interface InterviewStageRecord {
 }
 
 export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job {
-  const funnelData = (jv as Record<string, unknown>).funnel_data as Record<string, number> | undefined || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
+  const funnelData = (jv as unknown as Record<string, unknown>).funnel_data as Record<string, number> | undefined || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
 
   const stageMapping: Record<string, Job['stage']> = {
     'Planejamento': 'Planejamento',
@@ -42,7 +42,7 @@ export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job 
     'Encerrada': 'Encerrada'
   }
 
-  const raw = jv as Record<string, unknown>
+  const raw = jv as unknown as Record<string, unknown>
   const liaMetricsRaw = raw.lia_metrics as Record<string, number> | undefined
   const salaryRange = raw.salary_range as Record<string, number> | undefined
   const interviewStages = (raw.interview_stages as InterviewStageRecord[] | undefined) || []

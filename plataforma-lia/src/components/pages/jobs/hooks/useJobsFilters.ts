@@ -328,11 +328,11 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         const publishedChannels: string[] = []
         if (job.publishedLinkedIn) publishedChannels.push('linkedin')
         if (job.publishedWebsite) publishedChannels.push('website')
-        if ((job as Record<string, unknown>).publishedIndeed) publishedChannels.push('indeed')
+        if ((job as unknown as Record<string, unknown>).publishedIndeed) publishedChannels.push('indeed')
         matchesInlineFilters = matchesInlineFilters && jobFilters.publishing.channels.some(c => publishedChannels.includes(c))
       }
       if (jobFilters.publishing?.unpublished)
-        matchesInlineFilters = matchesInlineFilters && !job.publishedLinkedIn && !job.publishedWebsite && !(job as Record<string, unknown>).publishedIndeed
+        matchesInlineFilters = matchesInlineFilters && !job.publishedLinkedIn && !job.publishedWebsite && !(job as unknown as Record<string, unknown>).publishedIndeed
       if (jobFilters.funnel?.emptyPipeline)
         matchesInlineFilters = matchesInlineFilters && job.funnel.total === 0
       if (jobFilters.metrics?.lowConversion) {
