@@ -1,9 +1,10 @@
 # REFACTOR_PLAN.md — LIA Agent System: Complete Refactor & LOC Reduction Plan
 
-> **Generated:** 2026-04-06
+> **Generated:** 2026-04-06  |  **Last revised:** 2026-04-07
 > **Baseline:** ~556K LOC | 213 API files | 1,557 endpoints
 > **Target:** ≤ 280K LOC | Clean Architecture | Zero SQL in controllers | 100% guardrails enforced
 > **Reference:** See also `HARDENING_PLAN.md` for P0–P2 security fixes (already completed)
+> **Rails integration:** `ats-api-rails` owns candidates, jobs, applies, users, messages — see [Rails Migration Boundary](#rails-migration-boundary)
 
 ---
 
@@ -24,7 +25,9 @@
 13. [Phase 9 — Fix Circular Imports & Misc Quality](#phase-9--fix-circular-imports--misc-quality)
 14. [Phase 10 — Pydantic & Global Error Handling](#phase-10--pydantic--global-error-handling)
 15. [Rails-Style Conventions Cheat-Sheet](#rails-style-conventions-cheat-sheet)
-16. [Progress Tracker](#progress-tracker)
+16. [Rails Migration Boundary](#rails-migration-boundary)
+17. [Phase 4B — Migrate app/shared/services/](#phase-4b--migrate-appsharedservices)
+18. [Progress Tracker](#progress-tracker)
 
 ---
 
@@ -1170,6 +1173,133 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 
 ---
 
+---
+
+## Rails Migration Boundary
+
+> Added 2026-04-07 after ats-api-rails integration audit.
+
+### What Rails owns (do NOT build local SQLAlchemy repos for these)
+
+| Entity | Rails table | FastAPI bridge |
+|---|---|---|
+| Candidates | `candidates` | `RailsAdapter.get_candidate()` |
+| Jobs / Vacancies | `jobs` | `RailsAdapter.get_job()` |
+| Applications | `applies` | `RailsAdapter.get_apply()` |
+| Selective Processes | `selective_processes` | `RailsAdapter.get_selective_process()` |
+| Users | `users` | `RailsAdapter.get_user()` |
+| Messages | `messages` | `RailsAdapter.get_message()` |
+| Roles / Permissions | `roles`, `permissions` | Rails auth middleware |
+
+**Bridge implementation:** `app/domains/integrations_hub/services/rails_adapter.py`
+- UUID ↔ bigint mapping via `candidates.fork_uuid` field
+- Tries Rails API first, falls back to local PostgreSQL during transition period
+- Enabled by `RAILS_API_URL` env var
+
+### What FastAPI owns permanently
+
+| Domain | Key entities | Status |
+|---|---|---|
+| credits | CreditAccount, CreditTransaction | ✅ Domain layer complete |
+| cv_screening | RubricTemplate, ScreeningResult | ✅ Domain layer complete |
+| billing | Plans, Subscriptions | 🔄 Needs repo extraction |
+| analytics | Metrics, Reports | 🔄 Needs repo extraction |
+| ai / llm | Prompts, Scores, Embeddings | 🔄 Needs repo extraction |
+| scheduling | Slots, Calendar | 🔄 Needs repo extraction |
+| communications | EmailLog, Notifications | ⚠️ Partially done |
+| integrations_hub | RailsAdapter, external connectors | ✅ Done |
+
+### Phase-level impact of Rails boundary
+
+| Phase | Original plan | Rails-aware adjustment |
+|---|---|---|
+| **2** | Extract ALL DB calls to repos | Split: Rails-owned → route via rails_adapter (no new repo); FastAPI-owned → create repo |
+| **3** | Shim all model files to lia_models | ⚠️ Follow-up needed: 359 service files import Rails-owned models (Candidate, JobVacancy) — convert to adapter calls |
+| **4B** | (new) Migrate shared/services | Classify first: Rails-deprecated vs AI-permanent before moving |
+
+---
+
+## Phase 4B — Migrate app/shared/services/ to Domain Layer
+
+> The real DDD work. Phase 4 shimmed `app/services/` but `app/shared/services/` has 112 real implementations (400KB+ of business logic) with no domain equivalents.
+
+### Current state (2026-04-07)
+
+```
+app/shared/services/    112 real Python files  (NOT shims)
+app/domains/*/services/ 3 overlap with shared  (only credit_service, rails_adapter, rails_adapter_dependency)
+Pending migration:      109 files
+```
+
+### Classification matrix
+
+| Category | Est. count | Target | Rails impact |
+|---|---|---|---|
+| AI-core (CV scoring, LLM, embeddings, rubrics) | ~25 | `app/domains/{ai,cv_screening}/services/` | None — keep forever |
+| Credits & billing | ~5 | `app/domains/{credits,billing}/services/` | None — keep forever |
+| Candidate CRUD (sourcing, pearch, pipeline) | ~15 | **Rails-deprecated** | Delete after Rails handoff |
+| Job/vacancy CRUD | ~15 | **Rails-deprecated** | Delete after Rails handoff |
+| Cross-cutting (policy, audit, config, LGPD) | ~20 | Keep in `app/shared/` (truly cross-cutting) | None |
+| Communications (email, notifications) | ~10 | `app/domains/communications/services/` | None — keep |
+| Infra/utils (cache, circuit breaker, seed) | ~11 | Keep in `app/shared/infra/` | None |
+| Org/company (org catalog, skills catalog) | ~10 | `app/domains/company/services/` | Partial — some owned by Rails |
+
+### Classification script
+
+```bash
+cd /home/runner/workspace/lia-agent-system
+python3 -c "
+import pathlib
+ss = pathlib.Path('app/shared/services')
+rails_kw = ['candidate', 'job_vacanc', 'apply', 'selective_process', 'vacancy_candidate']
+for f in sorted(ss.glob('*.py')):
+    if f.name == '__init__.py': continue
+    text = f.read_text().lower()
+    rails_hits = sum(1 for kw in rails_kw if kw in text)
+    lines = len(f.read_text().splitlines())
+    tag = 'RAILS-DEPRECATED' if rails_hits >= 3 else 'AI-PERMANENT  '
+    print(f'{tag}  {lines:5}L  {f.name}')
+" | sort
+```
+
+### Tasks
+
+**4B.1 — Run classification script above, review output**
+
+**4B.2 — Move AI-permanent services to their domains**
+
+For each AI-permanent service:
+1. Identify domain (cv_screening, analytics, billing, etc.)
+2. Move to `app/domains/{domain}/services/{name}.py`
+3. Leave a 2-line shim in `app/shared/services/` for backwards compatibility
+4. Update import sites in API layer
+
+**4B.3 — Mark Rails-deprecated services**
+
+For each Rails-deprecated service:
+1. Add deprecation notice: `# RAILS-DEPRECATED: will be deleted after Rails handoff`
+2. Do NOT move to a domain
+3. Ensure imports are routed via RailsAdapter where possible
+
+**4B.4 — Shrink app/shared/services/ to cross-cutting only**
+
+Target: `app/shared/services/` should only contain truly cross-cutting utilities
+(policy engine, audit, LGPD, config). Everything else goes to a domain.
+
+### Success criteria
+
+```bash
+# AI services in domains (target: >= 20)
+find app/domains -path "*/services/*.py" | grep -v __init__ | wc -l
+
+# shared/services real impls (target: <= 25, only cross-cutting)
+find app/shared/services -name "*.py" | grep -v __init__ | wc -l
+
+# shared/services with "Service" class (target: <= 20)
+grep -rl "class.*Service" app/shared/services/ --include="*.py" | wc -l
+```
+
+
 ## Progress Tracker
 
 ### Phase Completion Status
@@ -1178,9 +1308,9 @@ COUNTRY_CODES = {"BR": "Brazil", "US": "United States", ...}  # 200 lines
 |---|---|---|---|---|---|
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
-| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 12 files→repos, 174 pending | 2026-04-06 |
-| 3 — Model consolidation | ✅ DONE 100% | ~393,600 | ~393,200 | 23 domain models shimmed, app/models/__init__ fixed, encrypt_value fix (+628 tests) | 2026-04-07 |
-| 4 — DDD migration | ✅ DONE 100% | — | — | 138 shims + credit_service→credits domain, rails_adapter→integrations_hub; Rails-deprecated services catalogued | 2026-04-07 |
+| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 524 direct-DB calls; ~80 Rails-owned files (deprecate via rails_adapter) vs ~120 FastAPI-owned (need repos) | 2026-04-07 |
+| 3 — Model consolidation | ⚠️ PARTIAL | ~393,600 | ~393,200 | Domain model files shimmed ✅; but 359 `app.models` imports remain in domain service files — will break when Rails models deprecated | 2026-04-07 |
+| 4 — DDD migration | 🔄 PARTIAL | — | — | app/services/ shimmed ✅; app/shared/services/ has 112 real impls (400KB+) not yet in domains — see Phase 4B | 2026-04-07 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
 | 6 — Prompts to YAML | ✅ DONE | ~393,000 | ~392,500 | −544 | 2026-04-06 |
 | 7 — Fix tests | ✅ DONE | — | — | rename only | 2026-04-06 |
