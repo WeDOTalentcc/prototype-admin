@@ -161,7 +161,12 @@ def _extra_react_for_bug(
 
 def _github_token() -> str:
     """Retorna o PAT do GitHub configurado como secret no Replit."""
-    return os.getenv("GITHUB_PAT_WEDOTALENT", "")
+    return (
+        os.getenv("GITHUB_TOKEN")
+        or os.getenv("Github")
+        or os.getenv("GITHUB_PAT_WEDOTALENT")
+        or ""
+    )
 
 
 def _github_file(path: str, ref: str = GITHUB_BRANCH) -> str:

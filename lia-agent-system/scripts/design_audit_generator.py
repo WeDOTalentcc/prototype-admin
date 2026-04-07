@@ -64,7 +64,12 @@ _gh_tree_cache: dict | None = None
 
 
 def _github_token() -> str:
-    return os.getenv("GITHUB_PAT_WEDOTALENT", "")
+    return (
+        os.getenv("GITHUB_TOKEN")
+        or os.getenv("Github")
+        or os.getenv("GITHUB_PAT_WEDOTALENT")
+        or ""
+    )
 
 
 def _github_file(path: str, ref: str = GITHUB_BRANCH) -> str:
