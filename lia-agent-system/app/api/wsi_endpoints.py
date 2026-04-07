@@ -1,4 +1,8 @@
 """
+
+# TODO(phase2-repo-extraction): 25 direct DB calls in this file.
+# Domain: wsi | No repository exists yet.
+# Action: Create app/domains/wsi/repositories/wsi_repository.py
 WSI (WeDoTalent Skill Index) API Endpoints.
 
 Provides RESTful API for WSI screening workflow:

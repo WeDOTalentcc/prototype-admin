@@ -1,4 +1,8 @@
 """
+
+# TODO(phase2-repo-extraction): 19 direct DB calls in this file.
+# Domain: candidate_search | No repository exists yet.
+# Action: Create app/domains/candidate_search/repositories/candidate_search_repository.py
 Core search, evaluate, import, promote, persist-revealed, estimate, similar routes.
 """
 from typing import Any

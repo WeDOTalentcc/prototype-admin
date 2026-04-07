@@ -1,4 +1,8 @@
 """
+
+# TODO(phase2-repo-extraction): 17 direct DB calls in this file.
+# Domain: cv_screening | Repo already exists: app/domains/cv_screening/repositories/screening_repository.py
+# Action: Replace direct db.execute/db.scalar calls with repo methods.
 Rubric Evaluation API - Structured rubrics for CV vs Job evaluation.
 
 Based on Schmidt & Hunter (1998) meta-analysis and BARS methodology.

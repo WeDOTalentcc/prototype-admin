@@ -1,6 +1,10 @@
 import uuid
 
 """
+
+# TODO(phase2-repo-extraction): 14 direct DB calls in this file.
+# Domain: automation | No repository exists yet.
+# Action: Create app/domains/automation/repositories/automation_repository.py
 Event handler trigger routes.
 
 Includes:

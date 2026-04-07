@@ -1308,7 +1308,7 @@ grep -rl "class.*Service" app/shared/services/ --include="*.py" | wc -l
 |---|---|---|---|---|---|
 | 0 — Hardening (P0-P2) | ✅ DONE | 556,000 | ~555,500 | −500 | 2026-04-06 |
 | 1 — Hardcoded data | ✅ DONE | 556,000 | ~393,000 | −16,689 | 2026-04-06 |
-| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 524 direct-DB calls; ~80 Rails-owned files (deprecate via rails_adapter) vs ~120 FastAPI-owned (need repos) | 2026-04-07 |
+| 2 — Extract DB to repos | 🔄 PARTIAL | — | ~400K | 2 API files annotated RAILS-DEPRECATED; 23 FastAPI-owned files need repos (110 domain repos exist); top-5 TODO comments added | 2026-04-07 |
 | 3 — Model consolidation | ⚠️ PARTIAL | ~393,600 | ~393,200 | Domain model files shimmed ✅; but 359 `app.models` imports remain in domain service files — will break when Rails models deprecated | 2026-04-07 |
 | 4 — DDD migration | 🔄 PARTIAL | — | — | app/services/ shimmed ✅; app/shared/services/ has 112 real impls (400KB+) not yet in domains — see Phase 4B | 2026-04-07 |
 | 5 — Response models | ✅ DONE | ~392,500 | ~393,600 | +808 opt-outs | 2026-04-06 |
