@@ -9,10 +9,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/policies", tags=["policies"])
 
 
-# TODO(phase2): extract DB calls to GlobalPolicyRepository
 def get_user_from_headers(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
@@ -35,7 +34,6 @@ def get_user_from_headers(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Company ID required. Please provide X-Company-ID header."
         )
-    
     return {
         "company_id": x_company_id,
         "user_id": x_user_id or "system",
@@ -69,8 +67,6 @@ class PolicyUpdate(BaseModel):
 async def list_policy_types():
     """
     List all available policy types with their schemas.
-    
-    Returns policy types with descriptions and example value schemas.
     """
     return {
         "success": True,
@@ -95,51 +91,25 @@ async def list_policies(
 ):
     """
     List all policies with optional filters.
-    
-    Admin users can see all policies, other users only see their company's policies.
     """
     try:
+        repo = GlobalPolicyRepository(db)
         user_company_id = current_user.get("company_id")
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
-        conditions = []
-        
-        if policy_type:
-            conditions.append(GlobalPolicy.policy_type == policy_type)
-        
-        if scope:
-            conditions.append(GlobalPolicy.scope == scope)
-        
-        if is_active is not None:
-            conditions.append(GlobalPolicy.is_active == is_active)
-        
-        if company_id and is_admin:
-            conditions.append(GlobalPolicy.company_id == company_id)
-        elif not is_admin:
-            conditions.append(
-                or_(
-                    GlobalPolicy.company_id == user_company_id,
-                    GlobalPolicy.scope == PolicyScope.PLATFORM.value
-                )
-            )
-        
-        query = select(GlobalPolicy)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(GlobalPolicy.created_at.desc())
-        query = query.limit(limit).offset(offset)
-        
-        result = await db.execute(query)
-        policies = result.scalars().all()
-        
-        count_query = select(func.count(GlobalPolicy.id))
-        if conditions:
-            count_query = count_query.where(and_(*conditions))
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
+
+        policies, total = await repo.list_policies(
+            policy_type=policy_type,
+            scope=scope,
+            is_active=is_active,
+            company_id=company_id,
+            user_company_id=user_company_id,
+            is_admin=is_admin,
+            limit=limit,
+            offset=offset,
+        )
+
         logger.info(f"📋 Listed {len(policies)} policies (total: {total})")
-        
+
         return {
             "success": True,
             "data": {
@@ -149,7 +119,7 @@ async def list_policies(
                 "offset": offset
             }
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error listing policies: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -170,7 +140,7 @@ async def get_policy(
     try:
         user_company_id = current_user.get("company_id")
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         try:
             policy_uuid = UUID(policy_id)
         except ValueError:
@@ -178,28 +148,27 @@ async def get_policy(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid policy ID format"
             )
-        
-        query = select(GlobalPolicy).where(GlobalPolicy.id == policy_uuid)
-        result = await db.execute(query)
-        policy = result.scalar_one_or_none()
-        
+
+        repo = GlobalPolicyRepository(db)
+        policy = await repo.get_by_id(policy_uuid)
+
         if not policy:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Policy not found: {policy_id}"
             )
-        
+
         if not is_admin and policy.company_id != user_company_id and policy.scope != PolicyScope.PLATFORM.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this policy"
             )
-        
+
         return {
             "success": True,
             "data": policy.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -218,39 +187,36 @@ async def create_policy(
 ):
     """
     Create a new policy.
-    
-    Only admin users can create platform-level policies.
-    Company users can create policies for their own company.
     """
     try:
         user_company_id = current_user.get("company_id")
         user_id = current_user.get("id", current_user.get("user_id"))
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         valid_policy_types = [t.value for t in PolicyType]
         if data.policy_type not in valid_policy_types:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid policy_type. Must be one of: {', '.join(valid_policy_types)}"
             )
-        
+
         valid_scopes = [s.value for s in PolicyScope]
         if data.scope not in valid_scopes:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid scope. Must be one of: {', '.join(valid_scopes)}"
             )
-        
+
         if data.scope == PolicyScope.PLATFORM.value and not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can create platform-level policies"
             )
-        
+
         company_id = data.company_id if is_admin else user_company_id
         if data.scope == PolicyScope.PLATFORM.value:
             company_id = None
-        
+
         policy = GlobalPolicy(
             company_id=company_id,
             name=data.name,
@@ -261,19 +227,18 @@ async def create_policy(
             is_active=data.is_active,
             created_by=user_id
         )
-        
-        db.add(policy)
-        await db.flush()
-        await db.refresh(policy)
-        
+
+        repo = GlobalPolicyRepository(db)
+        policy = await repo.create(policy)
+
         logger.info(f"✅ Created policy: {policy.name} (ID: {policy.id})")
-        
+
         return {
             "success": True,
             "message": "Policy created successfully",
             "data": policy.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -299,7 +264,7 @@ async def update_policy(
         user_company_id = current_user.get("company_id")
         user_id = current_user.get("id", current_user.get("user_id"))
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         try:
             policy_uuid = UUID(policy_id)
         except ValueError:
@@ -307,31 +272,30 @@ async def update_policy(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid policy ID format"
             )
-        
-        query = select(GlobalPolicy).where(GlobalPolicy.id == policy_uuid)
-        result = await db.execute(query)
-        policy = result.scalar_one_or_none()
-        
+
+        repo = GlobalPolicyRepository(db)
+        policy = await repo.get_by_id(policy_uuid)
+
         if not policy:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Policy not found: {policy_id}"
             )
-        
+
         if not is_admin and policy.company_id != user_company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to update this policy"
             )
-        
+
         if policy.scope == PolicyScope.PLATFORM.value and not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can update platform-level policies"
             )
-        
+
         update_data = data.model_dump(exclude_none=True)
-        
+
         if "policy_type" in update_data:
             valid_policy_types = [t.value for t in PolicyType]
             if update_data["policy_type"] not in valid_policy_types:
@@ -339,7 +303,7 @@ async def update_policy(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid policy_type. Must be one of: {', '.join(valid_policy_types)}"
                 )
-        
+
         if "scope" in update_data:
             valid_scopes = [s.value for s in PolicyScope]
             if update_data["scope"] not in valid_scopes:
@@ -352,23 +316,18 @@ async def update_policy(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only admin users can set platform scope"
                 )
-        
-        for field, value in update_data.items():
-            setattr(policy, field, value)
-        
-        policy.updated_by = user_id
-        
-        await db.flush()
-        await db.refresh(policy)
-        
+
+        update_data["updated_by"] = user_id
+        policy = await repo.update(policy, update_data)
+
         logger.info(f"✅ Updated policy: {policy.name} (ID: {policy.id})")
-        
+
         return {
             "success": True,
             "message": "Policy updated successfully",
             "data": policy.to_dict()
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -388,13 +347,11 @@ async def delete_policy(
 ):
     """
     Delete a policy.
-    
-    Only admin users can delete platform-level policies.
     """
     try:
         user_company_id = current_user.get("company_id")
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)
-        
+
         try:
             policy_uuid = UUID(policy_id)
         except ValueError:
@@ -402,39 +359,38 @@ async def delete_policy(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid policy ID format"
             )
-        
-        query = select(GlobalPolicy).where(GlobalPolicy.id == policy_uuid)
-        result = await db.execute(query)
-        policy = result.scalar_one_or_none()
-        
+
+        repo = GlobalPolicyRepository(db)
+        policy = await repo.get_by_id(policy_uuid)
+
         if not policy:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Policy not found: {policy_id}"
             )
-        
+
         if not is_admin and policy.company_id != user_company_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to delete this policy"
             )
-        
+
         if policy.scope == PolicyScope.PLATFORM.value and not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admin users can delete platform-level policies"
             )
-        
+
         policy_name = policy.name
-        await db.delete(policy)
-        
+        await repo.delete(policy)
+
         logger.info(f"🗑️ Deleted policy: {policy_name} (ID: {policy_id})")
-        
+
         return {
             "success": True,
             "message": f"Policy '{policy_name}' deleted successfully"
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:

@@ -18,11 +18,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.candidate_list import CandidateList, CandidateListMember
+from app.domains.candidates.repositories.short_list_repository import ShortListRepository
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +62,6 @@ class ShortListCandidateResponse(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-# TODO(phase2): extract to repository — multi-model candidate list operations
 def _encode_meta(job_id: str, description: str | None = None) -> str:
     """Encoda job_id no campo description com prefixo shortlist:."""
     base = f"{_SHORTLIST_PREFIX}{job_id}"
@@ -84,7 +82,8 @@ def _decode_meta(description: str | None) -> tuple[str, str]:
     return job_id, desc
 
 
-def _to_short_list_response(record: CandidateList) -> ShortListResponse:
+def _to_short_list_response(record) -> ShortListResponse:
+    from app.models.candidate_list import CandidateList
     job_id, desc = _decode_meta(record.description)
     return ShortListResponse(
         id=str(record.id),
@@ -97,10 +96,6 @@ def _to_short_list_response(record: CandidateList) -> ShortListResponse:
     )
 
 
-def _is_shortlist(record: CandidateList) -> bool:
-    return bool(record.description and record.description.startswith(_SHORTLIST_PREFIX))
-
-
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("", response_model=ShortListResponse, status_code=201)
@@ -111,15 +106,13 @@ async def create_short_list(
     db: AsyncSession = Depends(get_db),
 ):
     """Cria uma short list para uma vaga."""
-    record = CandidateList(
+    repo = ShortListRepository(db)
+    record = await repo.create(
         company_id=company_id,
         name=body.name,
-        description=_encode_meta(body.job_id, body.description),
+        description_encoded=_encode_meta(body.job_id, body.description),
         created_by=user_id,
     )
-    db.add(record)
-    await db.flush()
-    await db.refresh(record)
     logger.info("[ShortList] Criada list_id=%s job_id=%s company=%s", record.id, body.job_id, company_id)
     return _to_short_list_response(record)
 
@@ -131,20 +124,8 @@ async def list_short_lists(
     db: AsyncSession = Depends(get_db),
 ):
     """Lista short lists da empresa, opcionalmente filtradas por vaga."""
-    result = await db.execute(
-        select(CandidateList).where(
-            and_(
-                CandidateList.company_id == company_id,
-                CandidateList.is_active,
-                CandidateList.description.like(f"{_SHORTLIST_PREFIX}%"),
-            )
-        ).order_by(CandidateList.created_at.desc())
-    )
-    records = result.scalars().all()
-
-    if job_id:
-        records = [r for r in records if _decode_meta(r.description)[0] == job_id]
-
+    repo = ShortListRepository(db)
+    records = await repo.list_for_company(company_id, job_id=job_id)
     return [_to_short_list_response(r) for r in records]
 
 
@@ -155,14 +136,9 @@ async def get_short_list(
     db: AsyncSession = Depends(get_db),
 ):
     """Retorna uma short list pelo ID."""
-    result = await db.execute(
-        select(CandidateList).where(
-            CandidateList.id == list_id,
-            CandidateList.company_id == company_id,
-        )
-    )
-    record = result.scalar_one_or_none()
-    if not record or not _is_shortlist(record):
+    repo = ShortListRepository(db)
+    record = await repo.get_by_id(list_id, company_id)
+    if not record:
         raise HTTPException(status_code=404, detail="Short list não encontrada")
     return _to_short_list_response(record)
 
@@ -175,34 +151,17 @@ async def add_candidate(
     db: AsyncSession = Depends(get_db),
 ):
     """Adiciona um candidato à short list."""
-    result = await db.execute(
-        select(CandidateList).where(
-            CandidateList.id == list_id,
-            CandidateList.company_id == company_id,
-        )
-    )
-    record = result.scalar_one_or_none()
-    if not record or not _is_shortlist(record):
+    repo = ShortListRepository(db)
+    record = await repo.get_by_id(list_id, company_id)
+    if not record:
         raise HTTPException(status_code=404, detail="Short list não encontrada")
 
     # Evitar duplicatas
-    existing = await db.execute(
-        select(CandidateListMember).where(
-            CandidateListMember.list_id == list_id,
-            CandidateListMember.candidate_id == body.candidate_id,
-        )
-    )
-    if existing.scalar_one_or_none():
+    existing = await repo.get_member(list_id, body.candidate_id)
+    if existing:
         raise HTTPException(status_code=409, detail="Candidato já está na short list")
 
-    member = CandidateListMember(
-        list_id=list_id,
-        candidate_id=body.candidate_id,
-        notes=body.notes,
-    )
-    db.add(member)
-    await db.flush()
-    await db.refresh(member)
+    member = await repo.add_member(list_id, body.candidate_id, body.notes)
     return ShortListCandidateResponse(
         id=str(member.id),
         candidate_id=str(member.candidate_id),
@@ -219,24 +178,13 @@ async def remove_candidate(
     db: AsyncSession = Depends(get_db),
 ):
     """Remove um candidato da short list."""
-    result = await db.execute(
-        select(CandidateList).where(
-            CandidateList.id == list_id,
-            CandidateList.company_id == company_id,
-        )
-    )
-    record = result.scalar_one_or_none()
-    if not record or not _is_shortlist(record):
+    repo = ShortListRepository(db)
+    record = await repo.get_by_id(list_id, company_id)
+    if not record:
         raise HTTPException(status_code=404, detail="Short list não encontrada")
 
-    member_result = await db.execute(
-        select(CandidateListMember).where(
-            CandidateListMember.list_id == list_id,
-            CandidateListMember.candidate_id == candidate_id,
-        )
-    )
-    member = member_result.scalar_one_or_none()
+    member = await repo.get_member(list_id, candidate_id)
     if not member:
         raise HTTPException(status_code=404, detail="Candidato não encontrado na short list")
 
-    await db.delete(member)
+    await repo.remove_member(member)

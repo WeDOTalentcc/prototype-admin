@@ -11,10 +11,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.company.repositories.benefit_template_repository import BenefitTemplateRepository
 from app.models.company import Benefit, BenefitTemplate
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class BenefitTemplateResponse(BaseModel):
     order: int
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -123,7 +123,6 @@ BENEFIT_TEMPLATES_DATA = [
 
 
 @router.get("/templates", response_model=BenefitTemplateListResponse)
-# TODO(phase2): extract to repository — company benefit template operations
 async def get_benefit_templates(
     category: str | None = Query(None, description="Filter by category"),
     search: str | None = Query(None, description="Search by name"),
@@ -132,43 +131,27 @@ async def get_benefit_templates(
 ):
     """
     Get all available benefit templates.
-    Optionally filter by category, search term, or popularity.
     """
     try:
-        query = select(BenefitTemplate).where(BenefitTemplate.is_active)
-        
-        if category:
-            query = query.where(BenefitTemplate.category == category)
-        
-        if search:
-            search_term = f"%{search.lower()}%"
-            query = query.where(
-                or_(
-                    func.lower(BenefitTemplate.name).like(search_term),
-                    func.lower(BenefitTemplate.description).like(search_term)
-                )
-            )
-        
-        if popular_only:
-            query = query.where(BenefitTemplate.is_popular)
-        
-        query = query.order_by(BenefitTemplate.category, BenefitTemplate.order, BenefitTemplate.name)
-        
-        result = await db.execute(query)
-        templates = list(result.scalars().all())
-        
-        by_category = {}
+        repo = BenefitTemplateRepository(db)
+        templates = await repo.list_templates(
+            category=category,
+            search=search,
+            popular_only=popular_only,
+        )
+
+        by_category: dict = {}
         for template in templates:
             if template.category not in by_category:
                 by_category[template.category] = 0
             by_category[template.category] += 1
-        
+
         return BenefitTemplateListResponse(
             items=templates,  # type: ignore
             total=len(templates),
             by_category=by_category
         )
-        
+
     except Exception as e:
         logger.error(f"Error fetching benefit templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -183,9 +166,9 @@ async def seed_benefit_templates(
     Only adds templates that don't already exist (by name).
     """
     try:
-        result = await db.execute(select(func.count(BenefitTemplate.id)))
-        existing_count = result.scalar()
-        
+        repo = BenefitTemplateRepository(db)
+        existing_count = await repo.count_all()
+
         if existing_count and existing_count > 0:
             return {
                 "success": True,
@@ -193,27 +176,24 @@ async def seed_benefit_templates(
                 "created": 0,
                 "total": existing_count
             }
-        
+
         created_count = 0
         for template_data in BENEFIT_TEMPLATES_DATA:
-            existing = await db.execute(
-                select(BenefitTemplate).where(BenefitTemplate.name == template_data["name"])
-            )
-            if not existing.scalar_one_or_none():
+            existing = await repo.get_by_name(template_data["name"])
+            if not existing:
                 template = BenefitTemplate(**template_data)
-                db.add(template)
+                await repo.create(template)
                 created_count += 1
-        
-        
+
         logger.info(f"✅ Seeded {created_count} benefit templates")
-        
+
         return {
             "success": True,
             "message": f"Successfully seeded {created_count} benefit templates",
             "created": created_count,
             "total": len(BENEFIT_TEMPLATES_DATA)
         }
-        
+
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding benefit templates: {e}")
@@ -229,16 +209,14 @@ async def get_benefit_template(
     Get a specific benefit template by ID.
     """
     try:
-        result = await db.execute(
-            select(BenefitTemplate).where(BenefitTemplate.id == template_id)
-        )
-        template = result.scalar_one_or_none()
-        
+        repo = BenefitTemplateRepository(db)
+        template = await repo.get_by_id(template_id)
+
         if not template:
             raise HTTPException(status_code=404, detail="Template not found")
-        
+
         return template
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -261,13 +239,13 @@ def parse_excel_file(content: bytes) -> list[dict[str, str]]:
         ws = wb.active
         if ws is None:
             return []
-        
+
         rows = list(ws.iter_rows(values_only=True))
         if not rows:
             return []
-        
+
         headers = [str(h).strip().lower() if h else f"col_{i}" for i, h in enumerate(rows[0])]
-        
+
         result = []
         for row in rows[1:]:
             if all(cell is None or str(cell).strip() == '' for cell in row):
@@ -277,11 +255,11 @@ def parse_excel_file(content: bytes) -> list[dict[str, str]]:
                 if i < len(headers):
                     row_dict[headers[i]] = str(cell) if cell is not None else ''
             result.append(row_dict)
-        
+
         return result
     except ImportError:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Excel file support requires openpyxl. Please upload a CSV file instead."
         )
 
@@ -289,14 +267,14 @@ def parse_excel_file(content: bytes) -> list[dict[str, str]]:
 def parse_file_content(filename: str, content: bytes) -> list[dict[str, str]]:
     """Parse file content based on extension."""
     file_ext = filename.split('.')[-1].lower() if '.' in filename else ''
-    
+
     if file_ext == 'csv':
         return parse_csv_file(content)
     elif file_ext in ['xlsx', 'xls']:
         return parse_excel_file(content)
     else:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=f"Unsupported file type: .{file_ext}. Allowed: .csv, .xlsx, .xls"
         )
 
@@ -332,20 +310,19 @@ class BenefitImportResponse(BaseModel):
 async def download_benefits_import_template():
     """
     Download CSV template for benefits import.
-    Includes all pre-registered benefit templates as example rows.
     """
     try:
         headers = [
-            "name", "description", "category", "value_type", "value", 
-            "percentage_value", "value_details", "seniority_levels", 
-            "waiting_period_days", "is_mandatory", "is_highlighted", 
+            "name", "description", "category", "value_type", "value",
+            "percentage_value", "value_details", "seniority_levels",
+            "waiting_period_days", "is_mandatory", "is_highlighted",
             "is_discount", "provider"
         ]
-        
+
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=headers)
         writer.writeheader()
-        
+
         for template in BENEFIT_TEMPLATES_DATA:
             row = {
                 "name": template["name"],
@@ -363,11 +340,11 @@ async def download_benefits_import_template():
                 "provider": ""
             }
             writer.writerow(row)
-        
+
         csv_content = output.getvalue()
         buffer = io.BytesIO(csv_content.encode('utf-8'))
         buffer.seek(0)
-        
+
         return StreamingResponse(
             buffer,
             media_type="text/csv",
@@ -375,7 +352,7 @@ async def download_benefits_import_template():
                 "Content-Disposition": "attachment; filename=template_beneficios.csv"
             }
         )
-        
+
     except Exception as e:
         logger.error(f"Error generating benefits import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -389,44 +366,37 @@ async def import_benefits(
 ):
     """
     Import benefits from CSV or Excel file.
-    
-    Performs intelligent matching with BENEFIT_TEMPLATES_DATA:
-    - Case-insensitive name matching
-    - Uses template description/category if not provided in file
-    - Creates new benefits for entries not matching templates
-    
-    Returns import statistics and any errors encountered.
     """
     try:
         content = await file.read()
         if not content:
             raise HTTPException(status_code=400, detail="Empty file uploaded")
-        
+
         rows = parse_file_content(file.filename or "file.csv", content)
-        
+
         if not rows:
             raise HTTPException(status_code=400, detail="No data found in file")
-        
+
         templates_lookup = build_templates_lookup()
-        
+
         imported_count = 0
         matched_count = 0
         new_count = 0
         errors = []
-        
+
         for idx, row in enumerate(rows, start=2):
             try:
                 name = row.get('name', '').strip()
                 if not name:
                     errors.append(f"Row {idx}: Missing required field 'name'")
                     continue
-                
+
                 normalized_name = normalize_name(name)
                 template_match = templates_lookup.get(normalized_name)
-                
+
                 description = row.get('description', '').strip()
                 category = row.get('category', '').strip()
-                
+
                 if template_match:
                     matched_count += 1
                     if not description:
@@ -437,11 +407,11 @@ async def import_benefits(
                     new_count += 1
                     if not category:
                         category = "other"
-                
+
                 value_type = row.get('value_type', 'informative').strip().lower()
                 if value_type not in ['monetary', 'percentage', 'informative']:
                     value_type = 'informative'
-                
+
                 value = None
                 value_str = row.get('value', '').strip()
                 if value_str:
@@ -449,7 +419,7 @@ async def import_benefits(
                         value = float(value_str.replace(',', '.'))
                     except ValueError:
                         pass
-                
+
                 percentage_value = None
                 percentage_str = row.get('percentage_value', '').strip()
                 if percentage_str:
@@ -457,7 +427,7 @@ async def import_benefits(
                         percentage_value = float(percentage_str.replace(',', '.').replace('%', ''))
                     except ValueError:
                         pass
-                
+
                 waiting_period = 0
                 waiting_str = row.get('waiting_period_days', '').strip()
                 if waiting_str:
@@ -465,15 +435,15 @@ async def import_benefits(
                         waiting_period = int(waiting_str)
                     except ValueError:
                         pass
-                
+
                 def parse_bool(val: str) -> bool:
                     return val.strip().lower() in ['true', '1', 'yes', 'sim', 's', 'x']
-                
+
                 seniority_levels_str = row.get('seniority_levels', '').strip()
                 seniority_levels = []
                 if seniority_levels_str:
                     seniority_levels = [s.strip() for s in seniority_levels_str.split(',') if s.strip()]
-                
+
                 benefit = Benefit(
                     company_id=company_id,
                     name=name,
@@ -491,16 +461,16 @@ async def import_benefits(
                     provider=row.get('provider', '').strip() or None,
                     is_active=True
                 )
-                
+
                 db.add(benefit)
                 imported_count += 1
-                
+
             except Exception as row_error:
                 errors.append(f"Row {idx}: {str(row_error)}")
-        
+
         if imported_count > 0:
             logger.info(f"✅ Imported {imported_count} benefits ({matched_count} matched templates, {new_count} new)")
-        
+
         return BenefitImportResponse(
             success=imported_count > 0,
             imported=imported_count,
@@ -508,7 +478,7 @@ async def import_benefits(
             new=new_count,
             errors=errors
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
