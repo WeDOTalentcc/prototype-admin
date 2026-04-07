@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.shared.compliance.audit_service import AuditService, get_audit_service
 
 from ._shared import (
     WSI_PASS_THRESHOLD,
@@ -33,7 +34,6 @@ from ._shared import (
     InterviewScheduledRequest,
     OfferSentPayload,
     ScreeningCompletedRequest,
-    audit_service,
     communication_service,
     get_activity_service,
     get_ats_sync_service,
@@ -53,7 +53,8 @@ router = APIRouter()
 @router.post("/handle-trigger/screening-completed", response_model=None)
 async def handle_screening_completed(
     request: ScreeningCompletedRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle the screening_completed trigger for conversational screening (voice/chat/WhatsApp).
@@ -355,7 +356,7 @@ async def handle_screening_completed(
             else:
                 reasoning_list.append("Candidate did not meet minimum WSI threshold")
             
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="wsi_evaluator",
                 decision_type="screening_evaluation",
@@ -1126,7 +1127,8 @@ Responda em JSON:
 @router.post("/handle-trigger/candidate-inactive", response_model=None)
 async def handle_candidate_inactive(
     request: CandidateInactiveRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle candidate_inactive trigger.
@@ -1367,7 +1369,7 @@ async def handle_candidate_inactive(
         
         # Centralized audit logging via audit_service
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="proactive_agent",
                 decision_type="candidate_follow_up",
@@ -1436,7 +1438,8 @@ async def handle_candidate_inactive(
 @router.post("/handle-trigger/candidate-no-show", response_model=None)
 async def handle_candidate_no_show(
     request: CandidateNoShowRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle candidate_no_show trigger.
@@ -1731,7 +1734,7 @@ async def handle_candidate_no_show(
         
         # Centralized audit logging via audit_service
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="scheduling_agent",
                 decision_type="no_show_handling",
@@ -1798,7 +1801,8 @@ async def handle_candidate_no_show(
 @router.post("/handle-trigger/ats-sync", response_model=None)
 async def handle_ats_sync(
     request: ATSSyncRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle stage change ATS synchronization trigger.
@@ -2002,7 +2006,7 @@ async def handle_ats_sync(
             if error:
                 reasoning_items.append(f"Error: {error}")
             
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="ats_integrator",
                 decision_type="ats_sync",
@@ -2064,7 +2068,8 @@ async def handle_ats_sync(
 @router.post("/handle-trigger/offer-sent", response_model=None)
 async def handle_offer_sent(
     request: OfferSentPayload,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle when an offer is sent to a candidate.
@@ -2169,7 +2174,7 @@ async def handle_offer_sent(
             logger.error(f"❌ [OFFER_SENT] Failed to sync ATS: {e}")
         
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="automation",
                 decision_type="offer_sent",
@@ -2229,7 +2234,8 @@ async def handle_offer_sent(
 @router.post("/handle-trigger/candidate-hired", response_model=None)
 async def handle_candidate_hired(
     request: CandidateHiredPayload,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle when a candidate is hired.
@@ -2367,7 +2373,7 @@ async def handle_candidate_hired(
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to create notification: {e}")
         
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="automation",
                 decision_type="candidate_hired",
@@ -2428,7 +2434,8 @@ async def handle_candidate_hired(
 @router.post("/handle-trigger/candidate-rejected", response_model=None)
 async def handle_candidate_rejected(
     request: CandidateRejectedPayload,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Handle when a candidate is rejected.
@@ -2585,7 +2592,7 @@ async def handle_candidate_rejected(
             logger.error(f"❌ [CANDIDATE_REJECTED] Failed to sync ATS: {e}")
         
         try:
-            await audit_service.log_decision(
+            await audit_svc.log_decision(
                 company_id=request.company_id,
                 agent_name="automation",
                 decision_type="candidate_rejected",

@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.domains.analytics.services.activity_service import ActivityService
 
 from ._shared import (
     ExecuteActionRequest,
@@ -190,7 +191,8 @@ async def get_stage_suggestions(
 @router.post("/execute-action", response_model=None)
 async def execute_action(
     request: ExecuteActionRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    activity_svc: ActivityService = Depends(get_activity_service),
 ):
     """
     Execute a specific automation action.
@@ -369,8 +371,7 @@ async def execute_action(
                 detail=f"Tipo de ação não suportado: {action_type}"
             )
         
-        activity_service = get_activity_service()
-        await activity_service.create_activity(
+        await activity_svc.create_activity(
             activity_type="automation_action_executed",
             title=f"Ação de Automação: {action_type}",
             description=f"Ação '{action_type}' executada com sucesso",
@@ -486,7 +487,8 @@ async def screen_candidate(
 @router.post("/trigger-event", response_model=None)
 async def trigger_automation_event(
     request: TriggerEventRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    activity_svc: ActivityService = Depends(get_activity_service),
 ):
     """
     Trigger an automation event for agent processing.
@@ -511,8 +513,7 @@ async def trigger_automation_event(
             f"for {request.entity_type}={request.entity_id}, company={request.company_id}"
         )
         
-        activity_service = get_activity_service()
-        await activity_service.create_activity(
+        await activity_svc.create_activity(
             activity_type=request.event_type,
             title=f"Evento: {request.event_type}",
             description=f"Evento '{request.event_type}' disparado para {request.entity_type} {request.entity_id}",
