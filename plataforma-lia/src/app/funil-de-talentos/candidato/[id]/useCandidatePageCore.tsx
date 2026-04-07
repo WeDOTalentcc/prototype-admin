@@ -318,8 +318,8 @@ const candidateId = params.id as string
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value)
   }
 
-  const formatDate = (dateStr: string | null | undefined) => {
-    if (!dateStr) return null
+  const formatDate = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return ''
     try {
       return new Date(dateStr).toLocaleDateString('pt-BR', { 
         day: '2-digit', 
@@ -331,8 +331,8 @@ const candidateId = params.id as string
     }
   }
 
-  const formatDateShort = (dateStr: string | null | undefined) => {
-    if (!dateStr) return null
+  const formatDateShort = (dateStr: string | null | undefined): string => {
+    if (!dateStr) return ''
     try {
       return new Date(dateStr).toLocaleDateString('pt-BR', { 
         month: 'short', 
