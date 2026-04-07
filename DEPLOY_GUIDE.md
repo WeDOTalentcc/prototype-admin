@@ -830,27 +830,53 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 
 #### Frontend — `plataforma-lia`
 
-| Variável | Dev (Replit) | Staging | Produção |
-|---|---|---|---|
-| `NEXT_PUBLIC_BACKEND_URL` | `http://localhost:8001` | `https://api-staging.wedotalent.cc` | `https://api.wedotalent.cc` |
-| `NEXT_PUBLIC_APP_URL` | `http://localhost:5000` | `https://staging.wedotalent.cc` | `https://wedotalent.cc` |
-| `MICROSOFT_APP_ID` | `246eb1e7-...` | `246eb1e7-...` | `246eb1e7-...` |
-| `MICROSOFT_APP_PASSWORD` | via Replit Secrets | Secret Manager | Secret Manager |
-| `AZURE_TENANT_ID` | `bd25f438-...` | `bd25f438-...` | `bd25f438-...` |
+> Referência completa: `plataforma-lia/.env.example`
+
+| Variável | Dev (Replit) | Staging | Produção | Notas |
+|---|---|---|---|---|
+| `BACKEND_URL` | `http://127.0.0.1:8001` | URL interna Cloud Run | URL interna Cloud Run | Usada pelo `next.config.js` nos rewrites — NÃO exposta ao browser |
+| `NEXT_PUBLIC_BACKEND_URL` | `http://127.0.0.1:8001` | `https://api-staging.wedotalent.cc` | `https://api.wedotalent.cc` | Usada por código client-side |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:5000` | `https://staging.wedotalent.cc` | `https://wedotalent.cc` | |
+| `NEXT_PUBLIC_WS_URL` | `ws://127.0.0.1:8001` | `wss://api-staging.wedotalent.cc` | `wss://api.wedotalent.cc` | WebSocket para chat real-time |
+| `WORKOS_API_KEY` | Replit Secret | Secret Manager | Secret Manager | **Obrigatório** — auth SSO |
+| `WORKOS_CLIENT_ID` | Replit Secret | Secret Manager | Secret Manager | **Obrigatório** — auth SSO |
+| `WORKOS_REDIRECT_URI` | `http://localhost:5000/api/auth/workos/callback` | `https://staging.wedotalent.cc/api/auth/workos/callback` | `https://wedotalent.cc/api/auth/workos/callback` | Deve ser registrado no dashboard WorkOS |
+| `WORKOS_SESSION_SECRET` | string aleatória | Secret Manager | Secret Manager | Mín. 32 caracteres |
+| `WORKOS_WEBHOOK_SECRET` | Replit Secret | Secret Manager | Secret Manager | |
+| `SECRET_KEY` | string aleatória | Secret Manager | Secret Manager | **Compartilhada com backend** — JWT signing |
+| `INTERNAL_API_SECRET` | string aleatória | Secret Manager | Secret Manager | Token intra-serviço Next.js↔FastAPI |
+| `SERVICE_API_TOKEN` | string aleatória | Secret Manager | Secret Manager | |
+| `MICROSOFT_APP_ID` | `246eb1e7-...` | `246eb1e7-...` | `246eb1e7-...` | |
+| `MICROSOFT_APP_PASSWORD` | Replit Secrets | Secret Manager | Secret Manager | |
+| `AZURE_TENANT_ID` | `bd25f438-...` | `bd25f438-...` | `bd25f438-...` | |
+| `NEXT_PUBLIC_SENTRY_DSN` | (opcional) | obrigatório | obrigatório | |
+
+⚠️ **Alertas de segurança identificados na auditoria:**
+
+| Alerta | Detalhe | Status |
+|---|---|---|
+| `DEV_AUTO_LOGIN_EMAIL/PASSWORD` | Credenciais de auto-login existem no código. Em dev, o middleware **não verifica JWT** — qualquer cookie `lia_access_token` é aceito. | ✅ Já protegido por `NODE_ENV !== 'production'` no middleware e rota 404 em prod |
+| `AI_INTEGRATIONS_ANTHROPIC_API_KEY` | Chave Anthropic referenciada no frontend Next.js | ⚠️ Verificar que é server-side only (Server Components/Actions) — nunca deve chegar ao browser |
+| Variáveis Replit (`REPLIT_DEV_DOMAIN`, `REPL_IDENTITY`) | Usadas em código do app — serão `undefined` no Cloud Run | ⚠️ Auditar e adicionar fallbacks antes do deploy |
+| Variáveis `NEXT_PUBLIC_*` | Todas são injetadas no JS do browser e visíveis ao usuário | ✅ Nenhum secret detectado em vars `NEXT_PUBLIC_*` |
 
 #### Backend — `lia-agent-system`
 
-| Variável | Dev (Replit) | Staging | Produção |
-|---|---|---|---|
-| `DATABASE_URL` | `postgresql://localhost/lia_db` | Cloud SQL staging | Cloud SQL prod |
-| `ANTHROPIC_API_KEY` | via Replit Secrets | Secret Manager | Secret Manager |
-| `GEMINI_API_KEY` | via Replit Secrets | Secret Manager | Secret Manager |
-| `REDIS_URL` | `redis://localhost:6379` | Cloud Redis staging | Cloud Redis prod |
-| `MICROSOFT_APP_ID` | `246eb1e7-...` | `246eb1e7-...` | `246eb1e7-...` |
-| `MICROSOFT_APP_PASSWORD` | via Replit Secrets | Secret Manager | Secret Manager |
-| `AZURE_TENANT_ID` | `bd25f438-...` | `bd25f438-...` | `bd25f438-...` |
-| `RAILS_API_URL` | `http://localhost:3000` | `https://api-staging.wedotalent.cc` | `https://api.wedotalent.cc` |
-| `SENTRY_DSN` | (opcional) | obrigatório | obrigatório |
+> Referência completa: `lia-agent-system/.env.example`
+
+| Variável | Dev (Replit) | Staging | Produção | Notas |
+|---|---|---|---|---|
+| `DATABASE_URL` | `postgresql://localhost/lia_db` | Cloud SQL staging | Cloud SQL prod | |
+| `ANTHROPIC_API_KEY` | via Replit integração | Secret Manager | Secret Manager | |
+| `GEMINI_API_KEY` | via Replit integração | Secret Manager | Secret Manager | |
+| `REDIS_URL` | `redis://localhost:6379` | Cloud Redis staging | Cloud Redis prod | |
+| `RAILS_API_URL` | `http://localhost:3000` | URL interna Cloud Run | URL interna Cloud Run | Core de dados (vagas, candidatos) |
+| `SECRET_KEY` | string aleatória | Secret Manager | Secret Manager | **Mesma do frontend** — JWT signing |
+| `API_PORT` | `8001` | `8001` | `8001` | Anteriormente era 8000 no .env.example (corrigido) |
+| `MICROSOFT_APP_ID` | `246eb1e7-...` | `246eb1e7-...` | `246eb1e7-...` | |
+| `MICROSOFT_APP_PASSWORD` | Replit Secrets | Secret Manager | Secret Manager | |
+| `AZURE_TENANT_ID` | `bd25f438-...` | `bd25f438-...` | `bd25f438-...` | |
+| `SENTRY_DSN` | (opcional) | obrigatório | obrigatório | |
 
 ---
 
@@ -858,9 +884,9 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 
 ### Código (Replit / time dev)
 
-- [ ] Dockerfile do `plataforma-lia` criado e testado com `docker build`
-- [ ] `next.config.js` com `output: 'standalone'`
-- [ ] `.env.production.example` completo e documentado
+- [x] Dockerfile do `plataforma-lia` criado (`plataforma-lia/Dockerfile` — multi-stage, Node 22 Alpine, standalone)
+- [x] `next.config.js` com `output: 'standalone'`, `BACKEND_URL` parametrizado nos rewrites
+- [x] `.env.example` completo e documentado (todas as vars com descrição por seção)
 - [ ] `lia-agent-system` aponta para `DATABASE_URL` via variável de ambiente
 - [ ] GitHub Actions configurado nos dois repositórios
 - [ ] Testes E2E passando no staging
@@ -1135,31 +1161,52 @@ Usuário acessa wedotalent.cc
 
 **Pendência**: Rodar suíte completa com credenciais WorkOS reais em CI (GitHub Actions) para validação de produção.
 
+### O que foi corrigido nesta auditoria (07/04/2026)
+
+| Item | O que era | O que foi feito |
+|---|---|---|
+| `next.config.js` | `distDir: 'out'`, `trailingSlash: true`, rewrites com `127.0.0.1:8001` hardcoded | Removidos. Adicionado `output: 'standalone'`. Rewrites parametrizados via `BACKEND_URL` env var (fallback: `http://127.0.0.1:8001`) |
+| `Dockerfile` | Não existia | Criado: multi-stage build, Node 22 Alpine, `output: standalone` |
+| `.env.example` | Só 2 vars, porta errada (8000) | Reescrito com ~20 vars documentadas por seção (WorkOS, segurança, Sentry, dev flags) |
+| `.env.example` backend | Faltava `RAILS_API_URL`, `API_PORT` errado | Adicionado `RAILS_API_URL`, corrigido `API_PORT` para 8001 |
+| Testes E2E | Nunca rodados, auth incompatível | Chromium instalado via Nix, auth fixture adaptado para cookie bypass, resultados acima |
+| `.dockerignore` | Não existia | Criado (exclui node_modules, .next, e2e, .env*) |
+
 ### O que precisa de atenção antes do deploy
 
 | Área | Problema | Ação |
 |---|---|---|
-| **Mockups pendentes** | Existem mockups de componentes criados no Replit (worktrees agent-a92b041a, agent-af767ad0) que ainda não foram revisados, aprovados ou integrados ao produto | Revisar todos os mockups abertos, aprovar ou descartar, e integrar os aprovados ao código antes do deploy |
-| **Variáveis de ambiente** | `.env.example` documentado, `.env.local` tem 2 vars (restante vem de integrações Replit) | Em prod: mover tudo para Secret Manager |
-| **WorkOS configuração prod** | `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` apontam para dev | Criar ambiente de prod no WorkOS e configurar redirect URIs |
+| **Mockups pendentes** | 6 grupos de componentes no mockup sandbox (wsi-report, weekly-digest, funil-elevenlabs, triagem-flow, chat-layouts 9 variantes, arch-compare) | Revisar cada grupo, aprovar ou descartar, integrar os aprovados |
+| **WorkOS configuração prod** | `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` apontam para dev | Criar ambiente de prod no WorkOS e configurar redirect URIs para `wedotalent.cc` |
+| **AI_INTEGRATIONS_ANTHROPIC_API_KEY** | Chave Anthropic referenciada no frontend — precisa confirmar que é server-side only | Verificar: nunca deve aparecer em `NEXT_PUBLIC_*` ou em Client Components |
+| **Variáveis Replit no código** | `REPLIT_DEV_DOMAIN`, `REPL_IDENTITY`, `WEB_REPL_RENEWAL` usadas no app | Serão `undefined` no Cloud Run — adicionar fallbacks ou remover |
 | **Error Boundaries** | Parcialmente implementado (`error-boundary.tsx`) | Verificar cobertura em pages críticas |
 | **Hydration** | Possíveis mismatches em páginas com dados de sessão | Testar com `next build` e revisar warnings |
 | **Bundle size** | Não auditado ainda | Rodar `next build` e checar `bundle-analyzer` |
 | **Cache headers** | Não configurado | Configurar `Cache-Control` para assets estáticos via Cloud CDN |
 | **CSP / Headers de segurança** | Não configurado em `next.config.js` | Adicionar `Content-Security-Policy`, `X-Frame-Options` |
+| **Testes E2E silenciosos** | Vários testes usam `.catch(() => {})` que mascaram falhas reais | Auditar e remover catch silenciosos — assertions devem falhar explicitamente |
+| **Testes E2E com WorkOS real** | Auth fixture atual usa cookie bypass (dev mode only) | Rodar suíte completa com credenciais WorkOS reais em CI (GitHub Actions) |
 
 ### Checklist de production readiness — Frontend
 
 - [ ] Todos os mockups pendentes revisados — aprovados integrados ao código, descartados removidos
 - [x] `Dockerfile` com `output: standalone` criado (`plataforma-lia/Dockerfile`)
+- [x] `next.config.js` corrigido (standalone, BACKEND_URL parametrizado, distDir/trailingSlash removidos)
+- [x] `.env.example` completo com todas as variáveis documentadas
+- [x] `.dockerignore` criado
+- [x] Testes E2E rodando no Replit (Chromium via Nix + auth fixture adaptado)
 - [ ] `next build` passa sem erros e sem warnings críticos
 - [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
 - [ ] Redirect URIs do WorkOS registrados para `wedotalent.cc`
 - [ ] Sentry DSN de produção configurado (`NEXT_PUBLIC_SENTRY_DSN`)
 - [ ] Todas as variáveis `NEXT_PUBLIC_*` auditadas (sem secrets expostos no cliente)
+- [ ] `AI_INTEGRATIONS_ANTHROPIC_API_KEY` confirmado como server-side only
+- [ ] Variáveis Replit (`REPLIT_DEV_DOMAIN`, etc.) com fallbacks para Cloud Run
 - [ ] Headers de segurança adicionados no `next.config.js`
 - [ ] Error boundary verificado em pages críticas (funil, chat, vagas)
-- [ ] Teste E2E passando (login → criar vaga → chat LIA → mover candidato)
+- [ ] Testes E2E `.catch(() => {})` silenciosos removidos
+- [ ] Testes E2E completos com WorkOS real em CI
 - [ ] Teams Tab URL atualizada para domínio de produção
 
 ---
@@ -1227,7 +1274,8 @@ Requisição do usuário
 
 | Área | Problema | Ação |
 |---|---|---|
-| **Shims de compatibilidade** | Funções privadas não exportadas pelos shims (import *) | ✅ Corrigido para os que encontramos — rodar `python3 -c "from app.main import app"` para validar todos |
+| **Shims de compatibilidade** | Shims usam `import *` que não exporta funções privadas (`_prefixo`) | ✅ Corrigido para os que encontramos — rodar `python3 -c "from app.main import app"` para validar todos. Padrão sistêmico: cada novo shim deve ser verificado |
+| **Bug `wsi_repository.py`** | ✅ CORRIGIDO (07/04/2026) — Linhas 594 e 603 tinham SQL sem aspas e dicts com sintaxe JavaScript (`{call_sid: val}` em vez de `{"call_sid": val}`). Impedia o startup total do backend. | Corrigido e validado — backend rodando normalmente |
 | **GOOGLE_APPLICATION_CREDENTIALS** | Speech/TTS precisam de service account | Configurar Workload Identity no Cloud Run |
 | **RabbitMQ** | Sem serviço gerenciado no GCP | Provisionar (ver Seção 11.5) |
 | **Banco compartilhado** | `DATABASE_URL` precisa apontar para Cloud SQL com Rails | Configurar variável de ambiente (não requer mudança de código) |
@@ -1434,16 +1482,24 @@ Configurações obrigatórias no WorkOS dashboard:
 ### Código (Replit + time dev)
 
 **Frontend:**
-- [ ] Dockerfile Next.js criado com `output: standalone`
+- [x] Dockerfile Next.js criado com `output: standalone` (`plataforma-lia/Dockerfile`)
+- [x] `next.config.js` corrigido (standalone, BACKEND_URL, sem distDir/trailingSlash)
+- [x] `.env.example` completo e documentado
+- [x] `.dockerignore` criado
+- [x] Testes E2E rodando no Replit (24/26 passando, auth via cookie bypass)
 - [ ] `next build` sem erros
-- [ ] WorkOS prod configurado (API key + redirect URIs)
+- [ ] WorkOS prod configurado (API key + redirect URIs para `wedotalent.cc`)
 - [ ] Headers de segurança em `next.config.js`
 - [ ] Sentry DSN frontend
 - [ ] Teams Tab URL atualizada para prod
-- [ ] Teste E2E completo passando
+- [ ] Testes E2E completos com WorkOS real em CI
+- [ ] Variáveis Replit (`REPLIT_DEV_DOMAIN`, etc.) com fallbacks para Cloud Run
+- [ ] Mockups pendentes revisados e finalizados
 
 **AI Agent:**
-- [ ] `python3 -c "from app.main import app"` sem erros
+- [x] Bug `wsi_repository.py` corrigido (SQL sem aspas + dicts JS-style → Python correto)
+- [x] `.env.example` atualizado (`API_PORT` corrigido, `RAILS_API_URL` adicionado)
+- [ ] `python3 -c "from app.main import app"` sem erros (validar todos os shims `import *`)
 - [ ] Migrations Alembic clean
 - [ ] Todos os secrets movidos para Secret Manager
 - [ ] Celery worker configurado como serviço separado
