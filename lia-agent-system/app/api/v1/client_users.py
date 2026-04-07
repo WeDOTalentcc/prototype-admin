@@ -15,7 +15,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from app.core.database import get_db
 from app.domains.client_users.dependencies import get_client_user_repo
 from app.domains.client_users.repositories.client_user_repository import ClientUserRepository
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import get_email_service
+from app.domains.communication.services.email_service import EmailService
 from app.models.client_user import (
     CLIENT_USER_ROLE_OPTIONS,
     CLIENT_USER_STATUS_OPTIONS,
@@ -324,6 +325,7 @@ async def create_client_user(
     data: ClientUserCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Create or invite a new user to a client."""
     try:
@@ -373,7 +375,7 @@ async def create_client_user(
 
         email_sent = False
         try:
-            email_sent = await email_service.send_invite_email(
+            email_sent = await email_svc.send_invite_email(
                 client_user=user,
                 accept_url=accept_url,
                 inviter_name=inviter_name,
@@ -556,6 +558,7 @@ async def resend_invite(
     user_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Resend invitation email to a pending user."""
     try:
@@ -592,7 +595,7 @@ async def resend_invite(
 
         email_sent = False
         try:
-            email_sent = await email_service.send_invite_email(
+            email_sent = await email_svc.send_invite_email(
                 client_user=user,
                 accept_url=accept_url,
                 inviter_name=inviter_name,

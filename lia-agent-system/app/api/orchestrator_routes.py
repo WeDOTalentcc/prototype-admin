@@ -14,7 +14,7 @@ from app.domains.job_management.services.wizard_orchestrator_service import (
     wizard_orchestrator_service,
 )
 from app.orchestrator import Orchestrator
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService, get_llm_service
 from app.services.tool_executor_service import (
     ToolExecutionRequest,
     tool_executor_service,
@@ -173,7 +173,9 @@ async def get_metrics(orch: Orchestrator = Depends(get_orchestrator)):
 
 
 @router.get("/health", response_model=None)
-async def health_check():
+async def health_check(
+    llm_svc: LLMService = Depends(get_llm_service),
+):
     """Health check endpoint with LLM validation."""
     import os
 
@@ -182,8 +184,7 @@ async def health_check():
     llm_error = None
 
     try:
-        llm = LLMService()
-        test_response = await llm.generate("Respond with OK", max_tokens=5)
+        test_response = await llm_svc.generate("Respond with OK", max_tokens=5)
         if test_response and len(test_response.strip()) > 0:
             llm_status = "ok"
         else:

@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService, get_llm_service
 
 from ._shared import (
     # constants
@@ -161,7 +161,8 @@ async def interpret_user_message(
 @router.post("/job-wizard/orchestrate", response_model=WizardOrchestratorResponse)
 async def orchestrate_wizard_message(
     request: WizardOrchestratorRequest,
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    llm_svc: LLMService = Depends(get_llm_service),
 ):
     """
     Intelligent orchestrator for job wizard conversations.
@@ -259,8 +260,6 @@ Ações disponíveis:
             except ValueError as e:
                 logger.warning(f"Structured output failed, falling back to legacy: {e}")
 
-        local_llm_service = LLMService()
-
         prompt = WIZARD_ORCHESTRATOR_PROMPT.format(
             stage_name=stage_info.get("name", request.current_stage),
             stage_purpose=stage_info.get("purpose", ""),
@@ -273,7 +272,7 @@ Ações disponíveis:
             user_message=request.message
         )
 
-        response_text = await local_llm_service.generate(
+        response_text = await llm_svc.generate(
             prompt=prompt,
             provider="gemini"
         )
@@ -386,7 +385,8 @@ async def get_salary_benchmark(
 async def evaluate_wizard_input(
     request: WizardEvaluateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    llm_svc: LLMService = Depends(get_llm_service),
 ):
     """
     Evaluate user input for job wizard and extract structured data using AI.
@@ -402,7 +402,6 @@ async def evaluate_wizard_input(
     user_input = request.user_input
     context = request.context or {}
 
-    local_llm_service = LLMService()
     detected_fields: dict[str, Any] = {}
     suggestions: list[WizardEvaluateSuggestion] = []
     compensation_analysis = None
@@ -453,7 +452,7 @@ IMPORTANTE:
 
 Retorne APENAS o JSON, sem texto adicional."""
 
-        gemini = local_llm_service.gemini_native
+        gemini = llm_svc.gemini_native
         response = await gemini.aio.models.generate_content(
             model="gemini-2.5-flash",
             contents=extraction_prompt

@@ -15,7 +15,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.dependencies.token_budget import require_token_budget
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService, get_llm_service
 
 from ._shared import (
     # data tables
@@ -70,6 +70,7 @@ Responda de forma natural e útil:"""
 async def handle_conversational_message(
     request: ConversationalRequest,
     _budget: None = Depends(require_token_budget),
+    llm_svc: LLMService = Depends(get_llm_service),
 ):
     """
     Handle general conversational messages using LLM for natural responses.
@@ -95,7 +96,6 @@ REGRAS OBRIGATÓRIAS:
 
 Solicitação: {request.message}"""
 
-            llm_svc = LLMService()
             response_text = await llm_svc.generate(salary_prompt, provider="gemini")
             return ConversationalResponse(
                 response=response_text,
@@ -104,7 +104,6 @@ Solicitação: {request.message}"""
                 can_help=True
             )
 
-        llm_svc = LLMService()
         prompt = LIA_CAPABILITIES_PROMPT.format(message=request.message)
         response_text = await llm_svc.generate(prompt, provider="gemini")
 

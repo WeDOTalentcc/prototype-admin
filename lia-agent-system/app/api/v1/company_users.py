@@ -13,7 +13,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
 from app.auth.security import generate_secure_token, get_password_hash
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.company.dependencies import (
     get_company_profile_repo,
     get_department_repo,
@@ -120,6 +120,7 @@ async def create_user(
     data: UserManagementCreate,
     company_id: str | None = Query(None),
     user_repo: UserRepository = Depends(get_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Create a new user with invitation token."""
     try:
@@ -147,7 +148,7 @@ async def create_user(
         })
 
         invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
-        await email_service.send_user_notification(
+        await email_svc.send_user_notification(
             db=user_repo.db,
             notification_type="invitation",
             recipient_email=user.email,
@@ -230,6 +231,7 @@ async def delete_user(
 async def resend_invitation(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Resend invitation email to a user who hasn't activated their account yet."""
     try:
@@ -249,7 +251,7 @@ async def resend_invitation(
         })
 
         invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
-        await email_service.send_user_notification(
+        await email_svc.send_user_notification(
             db=user_repo.db,
             notification_type="invitation",
             recipient_email=user.email,

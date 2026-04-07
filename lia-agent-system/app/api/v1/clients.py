@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from app.domains.clients.dependencies import get_client_repo
 from app.domains.clients.repositories.client_account_repository import ClientAccountRepository
-from app.domains.communication.services.email_service import EmailService
+from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.job_management.services.template_seeder import clone_templates_for_client
 from app.models.client_account import CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS, ClientAccount, ClientStatus
 from app.services.hubspot_service import hubspot_service, sync_client_to_hubspot
@@ -492,7 +492,8 @@ async def get_client_stats(
 async def create_client(
     data: ClientCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: ClientAccountRepository = Depends(get_client_repo)
+    repo: ClientAccountRepository = Depends(get_client_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Create a new client.
@@ -572,8 +573,7 @@ async def create_client(
                 base_url = os.getenv("FRONTEND_URL", "https://app.wedotalent.com")
                 admin_portal_url = f"{base_url}/login"
                 
-                email_service = EmailService()
-                email_sent = await email_service.send_welcome_email(
+                email_sent = await email_svc.send_welcome_email(
                     client=client,
                     admin_portal_url=admin_portal_url,
                     db=repo.db

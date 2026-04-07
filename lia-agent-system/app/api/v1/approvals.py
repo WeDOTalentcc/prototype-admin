@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from app.domains.approvals.dependencies import get_approvals_repo
 from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
@@ -106,7 +106,8 @@ async def create_approval_request(
     request: ApprovalRequestCreate,
     company_id: str = Query(..., description="Company ID"),
     requester_id: str | None = Query(None, description="Requester user ID"),
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
+    repo: ApprovalsRepository = Depends(get_approvals_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Create a new approval request and send notification email to approver."""
     try:
@@ -135,7 +136,7 @@ async def create_approval_request(
         approval = await repo.add_and_flush(approval)
 
         try:
-            await send_approval_request_email(repo.db, approval)
+            await send_approval_request_email(repo.db, approval, email_svc=email_svc)
             approval.email_sent = True
             approval.email_sent_at = datetime.utcnow()
             approval = await repo.flush_and_refresh(approval)
@@ -237,6 +238,7 @@ async def approve_request(
     approved_by: str = Query(..., description="Email of the approver"),
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     audit_svc: AuditService = Depends(get_audit_service),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Approve an approval request."""
     try:
@@ -268,7 +270,7 @@ async def approve_request(
         approval = await repo.flush_and_refresh(approval)
 
         try:
-            await send_approval_result_email(repo.db, approval, approved=True)
+            await send_approval_result_email(repo.db, approval, approved=True, email_svc=email_svc)
             approval.notification_sent = True
         except Exception as e:
             logger.error(f"Failed to send approval result email for {approval_id}: {str(e)}", exc_info=True)
@@ -313,6 +315,7 @@ async def reject_request(
     rejected_by: str = Query(..., description="Email of the rejector"),
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     audit_svc: AuditService = Depends(get_audit_service),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """Reject an approval request."""
     try:
@@ -344,7 +347,7 @@ async def reject_request(
         approval = await repo.flush_and_refresh(approval)
 
         try:
-            await send_approval_result_email(repo.db, approval, approved=False)
+            await send_approval_result_email(repo.db, approval, approved=False, email_svc=email_svc)
             approval.notification_sent = True
         except Exception as e:
             logger.error(f"Failed to send rejection email for {approval_id}: {str(e)}", exc_info=True)
@@ -426,7 +429,7 @@ async def cancel_request(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def send_approval_request_email(db, approval: ApprovalRequest):
+async def send_approval_request_email(db, approval: ApprovalRequest, email_svc: "EmailService" = None):
     """Send email notification to approver about new approval request."""
     request_type_labels = {
         "vacancy_approval": "Aprovacao de Vaga",
@@ -460,7 +463,8 @@ async def send_approval_request_email(db, approval: ApprovalRequest):
     )
 
     try:
-        success = await email_service._send_email_provider(
+        _svc = email_svc or get_email_service()
+        success = await _svc._send_email_provider(
             to_email=approval.approver_email,
             subject=subject,
             body_html=body_html
@@ -471,7 +475,7 @@ async def send_approval_request_email(db, approval: ApprovalRequest):
         raise
 
 
-async def send_approval_result_email(db, approval: ApprovalRequest, approved: bool):
+async def send_approval_result_email(db, approval: ApprovalRequest, approved: bool, email_svc: "EmailService" = None):
     """Send email notification to requester about approval result."""
     status_label = "Aprovada" if approved else "Rejeitada"
     status_color = "#16a34a" if approved else "#dc2626"
@@ -501,7 +505,8 @@ async def send_approval_result_email(db, approval: ApprovalRequest, approved: bo
     )
 
     try:
-        success = await email_service._send_email_provider(
+        _svc = email_svc or get_email_service()
+        success = await _svc._send_email_provider(
             to_email=approval.requester_email,
             subject=subject,
             body_html=body_html

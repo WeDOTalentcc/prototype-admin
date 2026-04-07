@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.template_channels import ALL_CHANNELS, CHANNEL_DESCRIPTIONS, CHANNEL_LABELS
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.email_templates.dependencies import get_email_templates_repo
 from app.domains.email_templates.repositories.email_templates_repository import (
     EmailTemplatesRepository,
@@ -202,6 +202,7 @@ async def get_email_template(
 async def create_email_template(
     template_data: EmailTemplateCreate,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Create a new email template.
@@ -209,7 +210,7 @@ async def create_email_template(
     try:
         logger.info(f"Creating email template: {template_data.name}")
 
-        detected_vars = email_service.extract_variables(
+        detected_vars = email_svc.extract_variables(
             (template_data.subject or "") + " " + template_data.body_html + " " + (template_data.body_text or "")
         )
         variables = list(set(template_data.variables + detected_vars))
@@ -267,6 +268,7 @@ async def update_email_template(
     template_id: str,
     template_data: EmailTemplateUpdate,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Update an existing email template.
@@ -287,7 +289,7 @@ async def update_email_template(
             subject_str = cast(str | None, template.subject) or ""
             body_html_str = cast(str, template.body_html)
             body_text_str = cast(str | None, template.body_text) or ""
-            detected_vars = email_service.extract_variables(
+            detected_vars = email_svc.extract_variables(
                 subject_str + " " + body_html_str + " " + body_text_str
             )
             template.variables = list(set(detected_vars))  # type: ignore[assignment]
@@ -365,13 +367,14 @@ async def delete_email_template(
 async def preview_email(
     request: EmailPreviewRequest,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Preview an email with variables substituted.
     Can use an existing template or provide custom subject/body.
     """
     try:
-        result = await email_service.preview_email(
+        result = await email_svc.preview_email(
             db=repo.db,
             template_id=request.template_id,
             subject=request.subject,
@@ -441,6 +444,7 @@ async def send_email(
     request: EmailSendRequest,
     current_user: User = Depends(get_current_user),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Send an email using a template.
@@ -478,7 +482,7 @@ async def send_email(
 
         logger.info(f"Email send using template {template_id}")
 
-        email_log = await email_service.send_email(
+        email_log = await email_svc.send_email(
             db=repo.db,
             template_id=uuid_module.UUID(template_id),
             recipient_email=request.recipient_email,
@@ -560,13 +564,14 @@ async def list_email_logs(
 async def seed_default_templates(
     created_by: str = Query("system", description="User creating the templates"),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Seed the database with default email templates.
     Only creates templates that don't already exist (by name).
     """
     try:
-        created_templates = await email_service.seed_default_templates(repo.db, created_by)
+        created_templates = await email_svc.seed_default_templates(repo.db, created_by)
 
         return DefaultTemplatesResponse(
             created=len(created_templates),

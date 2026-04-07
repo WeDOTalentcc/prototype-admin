@@ -21,6 +21,7 @@ from app.services.notification_service import (
     NotificationType,
     ProactiveNotificationType,
 )
+from app.domains.communication.services.email_service import EmailService, get_email_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -716,6 +717,7 @@ async def get_alert_thresholds():
 @router.post("/job-created", response_model=None)
 async def send_job_created_notification(
     request: JobCreatedNotificationRequest,
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Send job created notification to recruiter and manager.
@@ -733,7 +735,6 @@ async def send_job_created_notification(
     try:
         from datetime import datetime
 
-        from app.domains.communication.services.email_service import email_service
         from app.domains.communication.services.teams_service import teams_service
 
         notifications_sent = {
@@ -899,7 +900,7 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
                     </html>
                     """
 
-                    await email_service.send_email(
+                    await email_svc.send_email(
                         to_email=recipient["email"],
                         subject=email_subject,
                         html_content=html_content,

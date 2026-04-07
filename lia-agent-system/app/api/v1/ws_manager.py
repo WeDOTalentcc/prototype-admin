@@ -46,3 +46,8 @@ class WSManager:
 
 
 ws_manager = WSManager()
+
+
+def get_ws_manager() -> "WSManager":
+    """Returns the shared WSManager singleton. NEVER create a new instance."""
+    return ws_manager

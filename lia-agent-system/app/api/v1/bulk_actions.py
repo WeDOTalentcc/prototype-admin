@@ -17,7 +17,8 @@ from app.auth.dependencies import get_current_user, require_admin_or_recruiter
 from app.auth.models import User
 from app.domains.bulk_actions.dependencies import get_bulk_actions_repo
 from app.domains.bulk_actions.repositories.bulk_actions_repository import BulkActionsRepository
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import get_email_service
+from app.domains.communication.services.email_service import EmailService
 from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
@@ -359,6 +360,7 @@ async def bulk_send_email(
     request: BulkSendEmailRequest,
     current_user: User = Depends(get_current_user),
     repo: BulkActionsRepository = Depends(get_bulk_actions_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Send emails to multiple candidates using a template.
@@ -417,7 +419,7 @@ async def bulk_send_email(
                     variables.update(request.custom_variables)
 
                 try:
-                    await email_service.send_email(
+                    await email_svc.send_email(
                         db=repo.db,
                         template_id=uuid.UUID(request.template_id),
                         recipient_email=candidate.email,

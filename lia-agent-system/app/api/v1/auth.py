@@ -36,7 +36,7 @@ from app.auth.security import (
 )
 from app.domains.auth.dependencies import get_user_repo
 from app.domains.auth.repositories.user_repository import UserRepository
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 
@@ -253,7 +253,8 @@ async def get_current_user_info(
 @router.post("/public-register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def public_register(
     user_data: UserPublicRegister,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Public self-registration endpoint.
@@ -283,7 +284,7 @@ async def public_register(
     })
 
     verification_link = f"{FRONTEND_URL}/verify-email?token={verification_token}"
-    await email_service.send_user_notification(
+    await email_svc.send_user_notification(
         db=repo.db,
         notification_type="email_verification",
         recipient_email=user.email,
@@ -309,7 +310,8 @@ async def public_register(
 @router.post("/forgot-password", response_model=None)
 async def forgot_password(
     request_data: PasswordResetRequest,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Request a password reset email.
@@ -328,7 +330,7 @@ async def forgot_password(
         })
 
         reset_link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
-        await email_service.send_user_notification(
+        await email_svc.send_user_notification(
             db=repo.db,
             notification_type="password_reset",
             recipient_email=user.email,
@@ -415,7 +417,8 @@ async def verify_email(
 @router.post("/resend-verification", response_model=None)
 async def resend_verification(
     request_data: PasswordResetRequest,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Resend verification email.
@@ -433,7 +436,7 @@ async def resend_verification(
         })
 
         verification_link = f"{FRONTEND_URL}/verify-email?token={verification_token}"
-        await email_service.send_user_notification(
+        await email_svc.send_user_notification(
             db=repo.db,
             notification_type="email_verification",
             recipient_email=user.email,

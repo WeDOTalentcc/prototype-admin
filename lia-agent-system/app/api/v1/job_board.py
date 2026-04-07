@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from app.domains.communication.services.email_service import email_service
+from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.job_management.services.job_board_service import job_board_service
 from app.models.job_vacancy import JobVacancy
 
@@ -256,7 +256,8 @@ Sistema LIA - Plataforma WedoTalent
 """
     
     try:
-        success = await email_service._send_email_provider(
+        _svc = get_email_service()
+        success = await _svc._send_email_provider(
             to_email=recruiter_email,
             subject=subject,
             body_html=body_html,
@@ -603,7 +604,8 @@ class UnpublishCompleteResponse(BaseModel):
 async def unpublish_jobs_complete(
     request: UnpublishCompleteRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    email_svc: EmailService = Depends(get_email_service),
 ):
     """
     Complete unpublish workflow with optional freeze, notifications, and cleanup.

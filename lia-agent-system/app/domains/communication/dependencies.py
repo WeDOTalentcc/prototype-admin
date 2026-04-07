@@ -25,3 +25,10 @@ from app.domains.communication.services.communication_service import Communicati
 
 def get_communication_service() -> CommunicationService:
     return _comm_singleton
+
+from app.domains.communication.services.email_service import (
+    EmailService as _EmailService,
+    MailgunEmailService as _MailgunEmailService,
+    get_email_service,
+    get_mailgun_email_service,
+)

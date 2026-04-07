@@ -53,11 +53,11 @@ _calendar_service = None
 
 
 def get_email_service():
-    """Lazy load EmailService."""
+    """Returns the module-level EmailService singleton (no new DeprecationWarning)."""
     global _email_service
     if _email_service is None:
-        from app.domains.communication.services.email_service import EmailService
-        _email_service = EmailService()
+        from app.domains.communication.services.email_service import get_email_service as _canon_factory
+        _email_service = _canon_factory()
     return _email_service
 
 

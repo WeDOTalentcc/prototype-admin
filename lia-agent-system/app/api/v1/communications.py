@@ -16,7 +16,7 @@ from app.domains.communication.schemas.email_schemas import (
     SendTemplateEmailRequest,
 )
 from app.domains.communication.services.communication_history_service import communication_history_service
-from app.domains.communication.services.email_service import mailgun_email_service
+from app.domains.communication.services.email_service import MailgunEmailService, get_mailgun_email_service
 from app.domains.communication.services.whatsapp_service import (
     SendInteractiveRequest,
     SendWhatsAppRequest,
@@ -282,7 +282,8 @@ async def get_candidate_communications(
 @router.post("/email/send", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(require_company_id),
+    mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
 ):
     """
     Send an email via Mailgun (primary) with Resend as automatic fallback.
@@ -315,7 +316,7 @@ async def send_email(
         metadata = request.metadata or {}
         metadata["company_id"] = company_id
         
-        result = await mailgun_email_service.send_email(
+        result = await mailgun_svc.send_email(
             to_email=request.to_email,
             to_name=request.to_name,
             subject=request.subject,
@@ -346,7 +347,8 @@ async def send_email(
 @router.post("/email/send-template", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_template_email(
     request: SendTemplateEmailRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(require_company_id),
+    mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
 ):
     """
     Send an email using a predefined template.
@@ -369,7 +371,7 @@ async def send_template_email(
         metadata = request.metadata or {}
         metadata["company_id"] = company_id
         
-        result = await mailgun_email_service.send_template_email(
+        result = await mailgun_svc.send_template_email(
             to_email=request.to_email,
             to_name=request.to_name,
             template_name=request.template_name,
@@ -398,7 +400,8 @@ async def send_template_email(
 @router.post("/email/send-bulk", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_bulk_email(
     request: SendBulkEmailRequest,
-    company_id: str = Depends(require_company_id)
+    company_id: str = Depends(require_company_id),
+    mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
 ):
     """
     Send bulk emails to multiple recipients.
@@ -419,7 +422,7 @@ async def send_bulk_email(
         metadata = request.metadata or {}
         metadata["company_id"] = company_id
         
-        result = await mailgun_email_service.send_bulk_email(
+        result = await mailgun_svc.send_bulk_email(
             recipients=request.recipients,
             subject=request.subject,
             body=request.body,

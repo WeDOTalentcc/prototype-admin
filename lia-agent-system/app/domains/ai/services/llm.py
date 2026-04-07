@@ -1008,6 +1008,11 @@ class LLMService:
 
 llm_service = LLMService()
 
+# FastAPI dependency injection factory
+def get_llm_service() -> "LLMService":
+    """Returns the shared LLMService singleton. Creates lazy HTTP clients on first call."""
+    return llm_service
+
 
 async def get_claude_response(
     system_prompt: str,

@@ -29,10 +29,10 @@ import json
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Header, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
-from app.api.v1.ws_manager import ws_manager
+from app.api.v1.ws_manager import ws_manager, get_ws_manager, WSManager
 from app.core.config import settings
 from app.services.token_budget_service import (
     check_budget,
@@ -145,6 +145,7 @@ async def list_active_sessions(
     request: Request,
     authorization: str = Header(default=""),
     token: str = Query(default=""),
+    ws_mgr: WSManager = Depends(get_ws_manager),
 ):
     """List active WebSocket sessions for the authenticated user.
 
@@ -157,7 +158,7 @@ async def list_active_sessions(
     if not user_id or user_id == "anonymous":
         raise HTTPException(status_code=401, detail="Token required")
 
-    session_ids = list(ws_manager.get_user_sessions(user_id))
+    session_ids = list(ws_mgr.get_user_sessions(user_id))
     return {
         "sessions": [
             {"id": sid, "active": True}
@@ -389,6 +390,7 @@ async def agent_chat_ws(
     session_id: str,
     token: str | None = Query(None),
     domain: str = Query("recruiter_assistant"),
+    ws_mgr: WSManager = Depends(get_ws_manager),
 ):
     """
     WebSocket bidirecional para chat com agentes LIA.
@@ -408,14 +410,14 @@ async def agent_chat_ws(
         logger.warning("[AgentChatWS] Rejected unauthenticated WS session=%s", session_id)
         return
 
-    connected = await ws_manager.connect(websocket, session_id, company_id or "anonymous", user_id=user_id)
+    connected = await ws_mgr.connect(websocket, session_id, company_id or "anonymous", user_id=user_id)
     if not connected:
         return
 
     conversation_history: list = []
 
     try:
-        await ws_manager.send_to_session(session_id, {
+        await ws_mgr.send_to_session(session_id, {
             "type": "connected",
             "session_id": session_id,
             "domain": domain,
@@ -426,13 +428,13 @@ async def agent_chat_ws(
                 raw = await asyncio.wait_for(websocket.receive_text(), timeout=300.0)
             except TimeoutError:
                 # Ping de keepalive
-                await ws_manager.send_to_session(session_id, {"type": "ping"})
+                await ws_mgr.send_to_session(session_id, {"type": "ping"})
                 continue
 
             try:
                 msg = json.loads(raw)
             except json.JSONDecodeError:
-                await ws_manager.send_to_session(session_id, {
+                await ws_mgr.send_to_session(session_id, {
                     "type": "error", "message": "JSON inválido"
                 })
                 continue
@@ -440,7 +442,7 @@ async def agent_chat_ws(
             msg_type = msg.get("type", "message")
 
             if msg_type == "ping":
-                await ws_manager.send_to_session(session_id, {"type": "pong"})
+                await ws_mgr.send_to_session(session_id, {"type": "pong"})
                 continue
 
             if msg_type == "abort":
@@ -460,7 +462,7 @@ async def agent_chat_ws(
                         approved=ws_approved,
                         comment=ws_comment,
                     )
-                    await ws_manager.send_to_session(session_id, {
+                    await ws_mgr.send_to_session(session_id, {
                         "type": "approval_confirmed",
                         "thread_id": ws_thread_id,
                         "pending_id": ws_pending_id,
@@ -477,7 +479,7 @@ async def agent_chat_ws(
                             resume_context["hitl_approved"] = True
                             resume_input_dict["context"] = resume_context
 
-                            await ws_manager.send_to_session(session_id, {"type": "thinking"})
+                            await ws_mgr.send_to_session(session_id, {"type": "thinking"})
                             try:
                                 # cv_screening (WSI) usa ainvoke(None) direto — grafo pausado
                                 if resume_domain == "cv_screening":
@@ -492,7 +494,7 @@ async def agent_chat_ws(
                                     )
                                     _wsi_data = _wsi_result.get("wsi_data", {}) if isinstance(_wsi_result, dict) else {}
                                     _wsi_msg = _wsi_data.get("feedback", _wsi_data.get("final_message", "Avaliação WSI concluída."))
-                                    await ws_manager.send_to_session(session_id, {
+                                    await ws_mgr.send_to_session(session_id, {
                                         "type": "message",
                                         "content": _wsi_msg,
                                         "confidence": 0.95,
@@ -518,7 +520,7 @@ async def agent_chat_ws(
                                         if isinstance(_wiz_result, dict) else "Vaga criada com sucesso."
                                     )
                                     _wiz_msg = _strip_react_json(_wiz_msg)
-                                    await ws_manager.send_to_session(session_id, {
+                                    await ws_mgr.send_to_session(session_id, {
                                         "type": "message",
                                         "content": _wiz_msg,
                                         "confidence": 0.95,
@@ -544,7 +546,7 @@ async def agent_chat_ws(
                                             timeout=_AGENT_TIMEOUT,
                                         )
                                         _resume_clean = _strip_react_json(resume_output.message or "")
-                                        await ws_manager.send_to_session(session_id, {
+                                        await ws_mgr.send_to_session(session_id, {
                                             "type": "message",
                                             "content": _resume_clean,
                                             "confidence": resume_output.confidence,
@@ -556,13 +558,13 @@ async def agent_chat_ws(
                                         conversation_history.append({"role": "assistant", "content": _resume_clean})
                             except Exception as _resume_exc:
                                 logger.error("[AgentChatWS] HITL resume falhou: %s", _resume_exc)
-                                await ws_manager.send_to_session(session_id, {
+                                await ws_mgr.send_to_session(session_id, {
                                     "type": "error",
                                     "message": "Erro ao retomar execução após aprovação.",
                                 })
                         elif not ws_approved:
                             # Rejeitado — notificar usuário
-                            await ws_manager.send_to_session(session_id, {
+                            await ws_mgr.send_to_session(session_id, {
                                 "type": "message",
                                 "content": "Ação cancelada pelo aprovador. Nenhuma alteração foi feita.",
                                 "domain": resume_domain or domain,
@@ -596,7 +598,7 @@ async def agent_chat_ws(
 
                 except Exception as _hitl_exc:
                     logger.warning("[AgentChatWS] HITL approval_response falhou: %s", _hitl_exc)
-                    await ws_manager.send_to_session(session_id, {
+                    await ws_mgr.send_to_session(session_id, {
                         "type": "error",
                         "message": "Erro ao processar resposta de aprovação.",
                     })
@@ -617,7 +619,7 @@ async def agent_chat_ws(
                     "patterns=%s confidence=%.2f",
                     session_id, _inj_result.matched_patterns, _inj_result.confidence,
                 )
-                await ws_manager.send_to_session(session_id, {
+                await ws_mgr.send_to_session(session_id, {
                     "type": "error",
                     "message": "Mensagem bloqueada por segurança. Por favor, reformule sua solicitação.",
                     "error_code": "prompt_injection_blocked",
@@ -636,7 +638,7 @@ async def agent_chat_ws(
             active_domain = msg.get("domain", domain)
 
             # Indicar que está processando
-            await ws_manager.send_to_session(session_id, {"type": "thinking"})
+            await ws_mgr.send_to_session(session_id, {"type": "thinking"})
 
             # ── Plan Detection (multi-step workflows) ─────────────────────
             _plan_handled = False
@@ -646,7 +648,7 @@ async def agent_chat_ws(
                     _plan_budget = await get_plan_for_company(company_id)
                     _budget_ok, _used, _limit = await check_budget(company_id, _plan_budget)
                     if not _budget_ok:
-                        await ws_manager.send_to_session(session_id, {
+                        await ws_mgr.send_to_session(session_id, {
                             "type": "error",
                             "message": (
                                 f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
@@ -681,7 +683,7 @@ async def agent_chat_ws(
 
                     async def _ws_plan_progress(event_type: str, data: dict) -> None:
                         try:
-                            await ws_manager.send_to_session(session_id, {
+                            await ws_mgr.send_to_session(session_id, {
                                 "type": "plan_progress",
                                 "event": event_type,
                                 **data,
@@ -732,7 +734,7 @@ async def agent_chat_ws(
                         except Exception as _inc_exc:
                             logger.warning("[AgentChatWS] plan increment_usage falhou: %s", _inc_exc)
 
-                    await ws_manager.send_to_session(session_id, {
+                    await ws_mgr.send_to_session(session_id, {
                         "type": "message",
                         "content": _plan_msg,
                         "confidence": 0.9,
@@ -771,7 +773,7 @@ async def agent_chat_ws(
                         session_id=session_id,
                     )
                     if route.needs_clarification:
-                        await ws_manager.send_to_session(session_id, {
+                        await ws_mgr.send_to_session(session_id, {
                             "type": "clarification",
                             "question": route.clarification_question,
                             "options": route.clarification_options,
@@ -799,7 +801,7 @@ async def agent_chat_ws(
 
             agent = _get_agent(active_domain)
             if agent is None:
-                await ws_manager.send_to_session(session_id, {
+                await ws_mgr.send_to_session(session_id, {
                     "type": "error",
                     "message": f"Agente '{active_domain}' indisponível.",
                 })
@@ -809,7 +811,7 @@ async def agent_chat_ws(
             async def _thinking_callback_pre(event: dict) -> None:
                 """Retransmite evento thinking do ReAct loop para o cliente WebSocket."""
                 try:
-                    await ws_manager.send_to_session(session_id, {
+                    await ws_mgr.send_to_session(session_id, {
                         "type": "thinking",
                         "content": event.get("thought", ""),
                         "step": event.get("step", 0),
@@ -857,7 +859,7 @@ async def agent_chat_ws(
                         progress=0,
                         message="Processando em background...",
                     )
-                    await ws_manager.send_to_session(session_id, {
+                    await ws_mgr.send_to_session(session_id, {
                         "type": "thinking",
                         "job_id": job_id,
                         "message": "Processando em background...",
@@ -874,7 +876,7 @@ async def agent_chat_ws(
                 _plan = await get_plan_for_company(company_id)
                 _budget_ok, _used, _limit = await check_budget(company_id, _plan)
                 if not _budget_ok:
-                    await ws_manager.send_to_session(session_id, {
+                    await ws_mgr.send_to_session(session_id, {
                         "type": "error",
                         "message": (
                             f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
@@ -934,16 +936,16 @@ async def agent_chat_ws(
                 }
                 if _fairness_warnings:
                     _ws_payload["fairness_warnings"] = _fairness_warnings
-                await ws_manager.send_to_session(session_id, _ws_payload)
+                await ws_mgr.send_to_session(session_id, _ws_payload)
 
             except TimeoutError:
-                await ws_manager.send_to_session(session_id, {
+                await ws_mgr.send_to_session(session_id, {
                     "type": "error",
                     "message": "Tempo limite de processamento excedido. Tente novamente.",
                 })
             except Exception as exc:
                 logger.error("[AgentChatWS] Erro no agente session=%s: %s", session_id, exc, exc_info=True)
-                await ws_manager.send_to_session(session_id, {
+                await ws_mgr.send_to_session(session_id, {
                     "type": "error",
                     "message": "Erro interno ao processar sua mensagem.",
                 })
@@ -953,7 +955,7 @@ async def agent_chat_ws(
     except Exception as exc:
         logger.error("[AgentChatWS] Erro inesperado session=%s: %s", session_id, exc)
     finally:
-        ws_manager.disconnect(session_id)
+        ws_mgr.disconnect(session_id)
         # Remove subscription de resposta RabbitMQ para esta sessão
         try:
             from app.shared.messaging.rabbitmq_consumer import rabbitmq_consumer

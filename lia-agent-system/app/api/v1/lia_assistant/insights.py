@@ -16,7 +16,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.dependencies.token_budget import require_token_budget
 from app.models.job_vacancy import JobVacancy
-from app.services.llm import LLMService
+from app.domains.ai.services.llm import LLMService, get_llm_service
 
 from ._shared import (
     ExpandedPromptRequest,
@@ -284,6 +284,7 @@ async def process_expanded_prompt(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     _budget: None = Depends(require_token_budget),
+    llm_svc: LLMService = Depends(get_llm_service),
 ):
     """
     Route expanded commands to appropriate agents based on context.
@@ -299,8 +300,6 @@ async def process_expanded_prompt(
     user_id = str(current_user.id)
 
     try:
-        llm_svc = LLMService()
-
         # --- Phase 1: specialized pre-handlers for job_creation context ---
         if request.context_type == "job_creation":
             question_type = detect_question_type(request.message)

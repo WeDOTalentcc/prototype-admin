@@ -663,3 +663,8 @@ class CacheManagerService:
 
 
 cache_manager_service = CacheManagerService()
+
+
+def get_cache_manager_service() -> "CacheManagerService":
+    """Returns the shared CacheManagerService singleton."""
+    return cache_manager_service

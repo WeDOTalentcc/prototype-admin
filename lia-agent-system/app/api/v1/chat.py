@@ -166,8 +166,8 @@ async def _try_extract_params_with_llm(
     continuarem faltando após a extração.
     """
     try:
-        from app.services.llm import LLMService  # lazy import para evitar circular
-        llm_service = LLMService()
+        from app.domains.ai.services.llm import get_llm_service  # lazy import para evitar circular
+        llm_svc = get_llm_service()
         tool_schema = _build_tool_schema_for_intent(config["action_id"], config)
         messages = [{"role": "user", "content": user_message}]
         system_prompt = (
@@ -175,7 +175,7 @@ async def _try_extract_params_with_llm(
             "e chame a ferramenta adequada. Se um parâmetro não for mencionado, omita o campo — "
             "nunca invente valores."
         )
-        response = await llm_service.generate_with_tools(
+        response = await llm_svc.generate_with_tools(
             messages=messages,
             tools=[tool_schema],
             system_prompt=system_prompt,

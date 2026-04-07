@@ -17,7 +17,6 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
 from app.auth.security import generate_secure_token, get_password_hash
-from app.domains.communication.services.email_service import email_service
 from app.domains.company.dependencies import (
     get_approver_repo,
     get_benefit_repo,

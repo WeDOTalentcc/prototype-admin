@@ -2,12 +2,12 @@
 from lia_agents_core.working_memory import AgentWorkingMemory
 
 from app.auth.models import User, UserRole
-from app.models.ab_testing import (
+from lia_models.ab_testing import (
     ABTestResult,
     PromptVariant,
 )
-from app.models.activity_feed import ActivityFeed
-from app.models.admin_settings import (
+from lia_models.activity_feed import ActivityFeed
+from lia_models.admin_settings import (
     AVAILABLE_PERMISSIONS,
     DEFAULT_ROLES,
     NOTIFICATION_EVENT_TYPES,
@@ -18,11 +18,11 @@ from app.models.admin_settings import (
     PermissionLevel,
     SecuritySetting,
 )
-from app.models.agent_checkpoint import AgentCheckpoint
-from app.models.alert import Alert, AlertRule, AlertSeverity, AlertStatus, AlertType
-from app.models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
-from app.models.archetype import SearchArchetype
-from app.models.ats_integration import (
+from lia_models.agent_checkpoint import AgentCheckpoint
+from lia_models.alert import Alert, AlertRule, AlertSeverity, AlertStatus, AlertType
+from lia_models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
+from lia_models.archetype import SearchArchetype
+from lia_models.ats_integration import (
     ATSCandidate,
     ATSConnection,
     ATSJobMapping,
@@ -31,15 +31,15 @@ from app.models.ats_integration import (
     ATSWebhookLog,
     SyncStatus,
 )
-from app.models.audit_log import AuditLog, DecisionType
-from app.models.audit_logs import (
+from lia_models.audit_log import AuditLog, DecisionType
+from lia_models.audit_logs import (
     DEFAULT_RETENTION_POLICIES,
     ActionCategory,
     AuditRetentionPolicy,
     AuditStatus,
     SOXAuditLog,
 )
-from app.models.automation import (
+from lia_models.automation import (
     DEFAULT_STAGE_AUTOMATION_RULES,
     AISuggestion,
     AutomationExecutionLog,
@@ -47,13 +47,13 @@ from app.models.automation import (
     StageAutomationRule,
     SuggestionStatus,
 )
-from app.models.automation import (
+from lia_models.automation import (
     ActionType as AutomationActionType,
 )
-from app.models.automation import (
+from lia_models.automation import (
     TriggerType as AutomationTriggerType,
 )
-from app.models.background_jobs import (
+from lia_models.background_jobs import (
     ActionPriority,
     ActionStatus,
     ActionType,
@@ -62,7 +62,7 @@ from app.models.background_jobs import (
     JobType,
     ProactiveAction,
 )
-from app.models.billing import (
+from lia_models.billing import (
     INVOICE_STATUS_OPTIONS,
     PAYMENT_METHOD_OPTIONS,
     SUBSCRIPTION_STATUS_OPTIONS,
@@ -74,31 +74,31 @@ from app.models.billing import (
     Subscription,
     SubscriptionStatus,
 )
-from app.models.calibration import (
+from lia_models.calibration import (
     CalibrationEvent,
     CalibrationStatus,
     CalibrationSuggestion,
     CalibrationWeight,
     FeedbackType,
 )
-from app.models.candidate import Candidate, CandidateSearch, CreditsUsage, VacancyCandidate, ViewedCandidate
-from app.models.candidate_attachment import AttachmentType, CandidateAttachment, UploadSource
-from app.models.candidate_feedback import CandidateFeedback, FeedbackType
-from app.models.candidate_list import CandidateList, CandidateListMember
-from app.models.communication_history import (
+from lia_models.candidate import Candidate, CandidateSearch, CreditsUsage, VacancyCandidate, ViewedCandidate
+from lia_models.candidate_attachment import AttachmentType, CandidateAttachment, UploadSource
+from lia_models.candidate_feedback import CandidateFeedback, FeedbackType
+from lia_models.candidate_list import CandidateList, CandidateListMember
+from lia_models.communication_history import (
     CommunicationChannel,
     CommunicationDirection,
     CommunicationHistory,
     CommunicationStatus,
     CommunicationType,
 )
-from app.models.communication_settings import (
+from lia_models.communication_settings import (
     DEFAULT_COMMUNICATION_SETTINGS,
     CommunicationSettings,
     ConsentType,
     LGPDConsent,
 )
-from app.models.company import (
+from lia_models.company import (
     Benefit,
     BigFiveQuestion,
     BigFiveRoleProfile,
@@ -109,17 +109,17 @@ from app.models.company import (
     TechnicalQuestion,
     TechnicalTestTemplate,
 )
-from app.models.company_culture import CompanyCultureProfile, CultureAnalysisJob
-from app.models.company_learning import (
+from lia_models.company_culture import CompanyCultureProfile, CultureAnalysisJob
+from lia_models.company_learning import (
     AgentFeedback,
     CompanyPattern,
     CompanyResponsibility,
     CompanySkill,
     LearningSource,
 )
-from app.models.compensation_policy import CompensationPolicy
-from app.models.conversation import Conversation, ConversationSummary, Message
-from app.models.data_request import (
+from lia_models.compensation_policy import CompensationPolicy
+from lia_models.conversation import Conversation, ConversationSummary, Message
+from lia_models.data_request import (
     DEFAULT_DATA_FIELDS,
     DEFAULT_STAGE_FIELD_MAPPINGS,
     DataFieldType,
@@ -131,29 +131,29 @@ from app.models.data_request import (
     DataRequestTemplate,
     VacancyDataRequestConfig,
 )
-from app.models.data_request import (
+from lia_models.data_request import (
     TriggerType as DataRequestTriggerType,
 )
-from app.models.default_templates import (
+from lia_models.default_templates import (
     AVAILABLE_TEMPLATE_VARIABLES,
     DEFAULT_TEMPLATES_SEED,
     DefaultTemplate,
     TemplateCategory,
     TemplateStatus,
 )
-from app.models.email_template import EmailLog, EmailTemplate
-from app.models.evaluation_criteria import (
+from lia_models.email_template import EmailLog, EmailTemplate
+from lia_models.evaluation_criteria import (
     CriterionCategory,
     EvaluationCriteria,
 )
-from app.models.feedback import (
+from lia_models.feedback import (
     InteractionFeedback,
     LearningPattern,
 )
-from app.models.feedback_learning import JobOutcome, JobOutcomeType, SuggestionFeedback, WizardFeedback
-from app.models.graph_session import GraphSession
-from app.models.guardrail import Guardrail
-from app.models.imported_job_description import (
+from lia_models.feedback_learning import JobOutcome, JobOutcomeType, SuggestionFeedback, WizardFeedback
+from lia_models.graph_session import GraphSession
+from lia_models.guardrail import Guardrail
+from lia_models.imported_job_description import (
     ClientSkillCatalog,
     ImportBatch,
     ImportedJobDescription,
@@ -161,7 +161,7 @@ from app.models.imported_job_description import (
     ImportStatus,
     ProcessingStatus,
 )
-from app.models.integration_hub import (
+from lia_models.integration_hub import (
     DEFAULT_INTEGRATION_PROVIDERS,
     IntegrationCategory,
     IntegrationConnection,
@@ -170,7 +170,7 @@ from app.models.integration_hub import (
     IntegrationSyncLog,
     IntegrationWebhook,
 )
-from app.models.intelligence_layer import (
+from lia_models.intelligence_layer import (
     CorrectionPattern,
     InsightType,
     IntelligenceInsight,
@@ -179,43 +179,43 @@ from app.models.intelligence_layer import (
     PatternType,
     SuccessProfile,
 )
-from app.models.interview import CalendarAvailability, Interview, InterviewFeedback, InterviewNote
-from app.models.job_draft import (
+from lia_models.interview import CalendarAvailability, Interview, InterviewFeedback, InterviewNote
+from lia_models.job_draft import (
     ChangeType,
     DraftFieldHistory,
     JobDraft,
     JobDraftStatus,
 )
-from app.models.job_pattern import (
+from lia_models.job_pattern import (
     EMBEDDING_DIMENSION,
     JobEmbedding,
     JobPattern,
     SalaryBenchmark,
     SkillCluster,
 )
-from app.models.job_vacancy import JobVacancy, JobVacancyInterviewStage, JobVacancyTemplate
-from app.models.job_vacancy_audit import (
+from lia_models.job_vacancy import JobVacancy, JobVacancyInterviewStage, JobVacancyTemplate
+from lia_models.job_vacancy_audit import (
     AuditAction,
     JobVacancyAuditLog,
 )
-from app.models.journey_mapping import IntegrationType, JourneyBlueprint, JourneyIntegration, JourneyStatus, JourneyStep
-from app.models.lia_field_toggles import (
+from lia_models.journey_mapping import IntegrationType, JourneyBlueprint, JourneyIntegration, JourneyStatus, JourneyStep
+from lia_models.lia_field_toggles import (
     DEFAULT_FIELD_TOGGLES,
     LiaFieldToggle,
 )
-from app.models.lia_opinion import LiaOpinion, OpinionSource, OpinionType, RecommendationType
-from app.models.memory import (
+from lia_models.lia_opinion import LiaOpinion, OpinionSource, OpinionType, RecommendationType
+from lia_models.memory import (
     DOCUMENT_TYPES,
     ConversationMemory,
     KnowledgeBase,
 )
-from app.models.message_queue import (
+from lia_models.message_queue import (
     MessageChannel,
     MessagePriority,
     MessageQueue,
     MessageStatus,
 )
-from app.models.observability import (
+from lia_models.observability import (
     AgentType,
     AIInferenceLog,
     BusinessProcess,
@@ -265,12 +265,12 @@ from app.models.observability import (
     SoDRole,
     SoDViolation,
 )
-from app.models.observability import (
+from lia_models.observability import (
     ConsentType as ObservabilityConsentType,
 )
-from app.models.pipeline_template import DEFAULT_PIPELINE_TEMPLATES, PipelineTemplate
-from app.models.planned_task import ExecutionPlan, PlannedTask, PlannedTaskPriority, PlannedTaskStatus
-from app.models.policy import (
+from lia_models.pipeline_template import DEFAULT_PIPELINE_TEMPLATES, PipelineTemplate
+from lia_models.planned_task import ExecutionPlan, PlannedTask, PlannedTaskPriority, PlannedTaskStatus
+from lia_models.policy import (
     DEFAULT_BUSINESS_RULES,
     DEFAULT_ESCALATION_RULES,
     DEFAULT_RATE_LIMIT_RULES,
@@ -286,7 +286,7 @@ from app.models.policy import (
     TargetType,
     TriggerType,
 )
-from app.models.recruiter_profile import (
+from lia_models.recruiter_profile import (
     DEFAULT_IMPACT_DESCRIPTION,
     FIELD_IMPACT_DESCRIPTIONS,
     REMINDER_ACTIONS,
@@ -295,7 +295,7 @@ from app.models.recruiter_profile import (
     RecruiterFieldPreference,
     RecruiterProfile,
 )
-from app.models.recruitment_journey import (
+from lia_models.recruitment_journey import (
     DEFAULT_AUTOMATIONS,
     DEFAULT_SLAS,
     DEFAULT_TEMPLATES,
@@ -306,7 +306,7 @@ from app.models.recruitment_journey import (
     SLAViolation,
     TemplateType,
 )
-from app.models.recruitment_stages import (
+from lia_models.recruitment_stages import (
     DEFAULT_RECRUITMENT_STAGES,
     DEFAULT_SUB_STATUSES,
     GUPY_STAGE_MAPPINGS,
@@ -317,16 +317,16 @@ from app.models.recruitment_stages import (
     RecruitmentSubStatus,
     ScreeningQuestion,
 )
-from app.models.screening import ScreeningTask
-from app.models.screening_question import (
+from lia_models.screening import ScreeningTask
+from lia_models.screening_question import (
     DEFAULT_SCREENING_QUESTIONS,
     QUESTION_CATEGORIES,
     QUESTION_TYPES,
     CompanyScreeningQuestion,
 )
-from app.models.search_feedback import SearchFeedback
-from app.models.self_scheduling import InterviewReminder, RescheduleHistory, SelfSchedulingLink
-from app.models.shared_search import (
+from lia_models.search_feedback import SearchFeedback
+from lia_models.self_scheduling import InterviewReminder, RescheduleHistory, SelfSchedulingLink
+from lia_models.shared_search import (
     FeedbackDecision,
     SharedSearch,
     SharedSearchAccess,
@@ -334,7 +334,7 @@ from app.models.shared_search import (
     SharedSearchStatus,
     ShareType,
 )
-from app.models.structured_responses import (
+from lia_models.structured_responses import (
     CandidateEvaluation,
     ConversationAnalysis,
     IntentClassification,
@@ -346,13 +346,13 @@ from app.models.structured_responses import (
     TextGeneration,
     ValidationResult,
 )
-from app.models.task import Task, TaskPriority, TaskStatus, TaskTemplate, TaskType
-from app.models.teams import TeamsConversation, TeamsMessage, TeamsNotification
-from app.models.triagem import TriagemMessage, TriagemSession
-from app.models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
-from app.models.webhook import WEBHOOK_EVENTS, Webhook, WebhookEvent, WebhookLog, WebhookStatus
-from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
-from app.models.workforce import HiringPlan, ImportJob, PlannedHeadcount
+from lia_models.task import Task, TaskPriority, TaskStatus, TaskTemplate, TaskType
+from lia_models.teams import TeamsConversation, TeamsMessage, TeamsNotification
+from lia_models.triagem import TriagemMessage, TriagemSession
+from lia_models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
+from lia_models.webhook import WEBHOOK_EVENTS, Webhook, WebhookEvent, WebhookLog, WebhookStatus
+from lia_models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
+from lia_models.workforce import HiringPlan, ImportJob, PlannedHeadcount
 
 __all__ = [
     "Conversation",

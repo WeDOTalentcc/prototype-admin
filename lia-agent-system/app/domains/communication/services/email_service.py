@@ -1163,3 +1163,13 @@ class MailgunEmailService:
 
 
 mailgun_email_service = MailgunEmailService()
+
+
+def get_email_service() -> "EmailService":
+    """Returns the module-level singleton (no new DeprecationWarning emitted)."""
+    return email_service
+
+
+def get_mailgun_email_service() -> "MailgunEmailService":
+    """Returns the MailgunEmailService singleton."""
+    return mailgun_email_service
