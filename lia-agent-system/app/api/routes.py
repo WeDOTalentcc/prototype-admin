@@ -347,7 +347,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(company_benefits.router, prefix="/api/v1", tags=["company-benefits"])
     app.include_router(goals.router, prefix="/api/v1", tags=["goals"])
     app.include_router(benefits.router, prefix="/api/v1", tags=["benefits"])
-    app.include_router(clients.router, prefix="/api/v1", tags=["clients"])
+    app.include_router(clients.router, prefix="/api/v1/clients", tags=["clients"])
     app.include_router(client_users.router, prefix="/api/v1", tags=["client-users"])
     app.include_router(client_users.invitation_router, prefix="/api/v1", tags=["invitations"])
     app.include_router(organization_catalog.router, prefix="/api/v1", tags=["organization-catalog"])

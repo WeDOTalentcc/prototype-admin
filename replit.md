@@ -113,3 +113,11 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Twilio (Voice — PSTN fallback only)
 - Deepgram (STT/transcrição de voz)
 - Celery
+
+# Platform Audit (2026-04-07)
+- **Full audit report**: `.local/audit/platform-audit-report.md`
+- **Results**: 87% FUNCIONAL, 7% PARCIAL, 3% STUB, 3% AUSENTE
+- **Backend**: 228 routers, 69 tools, all endpoints return 401 (auth enforced)
+- **Frontend**: 30 pages, ~120 proxy routes, 15 Zustand stores
+- **Top blockers for production**: WhatsApp Meta credentials, Pearch API key
+- **Code gaps**: A/B testing UI, credit purchase system, Weekly Digest cron, i18n

@@ -1,5 +1,8 @@
 """
 candidates package — re-exports a single combined APIRouter.
+
+Sub-module routes are appended directly to avoid FastAPI empty-prefix/path conflict
+(which occurs when include_router is used with both prefix="" and path="").
 """
 from fastapi import APIRouter
 
@@ -9,9 +12,8 @@ from .candidates_metadata import router as metadata_router
 from .candidates_consent import router as consent_router
 
 router = APIRouter()
-router.include_router(crud_router)
-router.include_router(search_router)
-router.include_router(metadata_router)
-router.include_router(consent_router)
+
+for _sub in (crud_router, search_router, metadata_router, consent_router):
+    router.routes.extend(_sub.routes)
 
 __all__ = ["router"]
