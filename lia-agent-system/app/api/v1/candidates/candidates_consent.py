@@ -1,0 +1,148 @@
+"""
+LGPD consent and communication preferences endpoints.
+"""
+import uuid
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, Header, HTTPException
+from pydantic import BaseModel
+
+from ._shared import (
+    CandidateRepository,
+    ConsentCheckerService,
+    User,
+    get_candidate_repo,
+    get_current_user_or_demo,
+    logger,
+)
+
+router = APIRouter()
+
+
+# ---------------------------------------------------------------------------
+# Pydantic models
+# ---------------------------------------------------------------------------
+
+class ConsentCreateRequest(BaseModel):
+    consent_type: str
+    consent_given: bool
+    consent_source: str = "api"
+    consent_text: str | None = None
+    ip_address: str | None = None
+
+
+class CommunicationPreferencesUpdate(BaseModel):
+    preferred_channels: list[str] | None = None  # ["email", "whatsapp", "sms"]
+    channel_opt_out: list[str] | None = None      # ["marketing_email", "whatsapp"]
+
+
+# ---------------------------------------------------------------------------
+# LGPD consent endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/{candidate_id}/consents", response_model=None)
+async def get_candidate_consents(
+    candidate_id: uuid.UUID,
+    x_company_id: str | None = Header(None),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Lista todos os consentimentos LGPD de um candidato."""
+    company_id = x_company_id or "admin_company"
+    svc = ConsentCheckerService(candidate_repo.db)
+    consents = await svc.get_candidate_consents(str(candidate_id), company_id)
+    return {"candidate_id": str(candidate_id), "consents": consents}
+
+
+@router.post("/{candidate_id}/consents", response_model=None)
+async def create_or_update_candidate_consent(
+    candidate_id: uuid.UUID,
+    request: ConsentCreateRequest,
+    x_company_id: str | None = Header(None),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Registra ou atualiza consentimento LGPD de um candidato por finalidade."""
+    company_id = x_company_id or "admin_company"
+    svc = ConsentCheckerService(candidate_repo.db)
+    consent = await svc.register_consent(
+        candidate_id=str(candidate_id),
+        company_id=company_id,
+        consent_type=request.consent_type,
+        consent_given=request.consent_given,
+        consent_source=request.consent_source,
+        consent_text=request.consent_text,
+        ip_address=request.ip_address,
+    )
+    await candidate_repo.db.commit()
+    return consent.to_dict()
+
+
+@router.delete("/{candidate_id}/consents/{consent_type}", status_code=200, response_model=None)
+async def revoke_candidate_consent(
+    candidate_id: uuid.UUID,
+    consent_type: str,
+    x_company_id: str | None = Header(None),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """Revoga consentimento LGPD de um candidato para uma finalidade específica."""
+    company_id = x_company_id or "admin_company"
+    svc = ConsentCheckerService(candidate_repo.db)
+    consent = await svc.register_consent(
+        candidate_id=str(candidate_id),
+        company_id=company_id,
+        consent_type=consent_type,
+        consent_given=False,
+        consent_source="candidate_request",
+    )
+    await candidate_repo.db.commit()
+    return {
+        "success": True,
+        "message": f"Consentimento '{consent_type}' revogado",
+        "consent": consent.to_dict(),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Communication preferences endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/{candidate_id}/communication-preferences", response_model=None)
+async def get_communication_preferences(
+    candidate_id: uuid.UUID,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Retorna preferências de canal de comunicação do candidato."""
+    candidate = await candidate_repo.get_by_id(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidato não encontrado")
+    return {
+        "candidate_id": str(candidate_id),
+        "preferred_channels": candidate.preferred_channels or ["email"],
+        "channel_opt_out": candidate.channel_opt_out or [],
+        "preferred_contact_method": candidate.preferred_contact_method,
+    }
+
+
+@router.put("/{candidate_id}/communication-preferences", response_model=None)
+async def update_communication_preferences(
+    candidate_id: uuid.UUID,
+    request: CommunicationPreferencesUpdate,
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Atualiza preferências de canal de comunicação do candidato."""
+    candidate = await candidate_repo.get_by_id(candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidato não encontrado")
+    if request.preferred_channels is not None:
+        candidate.preferred_channels = request.preferred_channels
+    if request.channel_opt_out is not None:
+        candidate.channel_opt_out = request.channel_opt_out
+    candidate.updated_at = datetime.utcnow()
+    candidate = await candidate_repo.update(candidate)
+    return {
+        "success": True,
+        "candidate_id": str(candidate_id),
+        "preferred_channels": candidate.preferred_channels or ["email"],
+        "channel_opt_out": candidate.channel_opt_out or [],
+    }

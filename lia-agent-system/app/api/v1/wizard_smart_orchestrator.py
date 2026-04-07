@@ -20,6 +20,7 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
+from app.domains.job_management.tools.job_wizard_tools import generate_enriched_jd  # noqa: F401
 from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.shared.tenant_session import create_session_id
 from app.domains.cv_screening.services.screening_question_set_service import (
