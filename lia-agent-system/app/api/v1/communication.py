@@ -93,7 +93,8 @@ class SendResponse(BaseModel):
 @router.post("/send-email", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
-    x_company_id: str | None = Header(None, alias="X-Company-ID")
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
@@ -211,7 +212,8 @@ async def send_email(
 @router.post("/send-whatsapp", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
-    x_company_id: str | None = Header(None, alias="X-Company-ID")
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
@@ -328,6 +330,7 @@ async def send_screening_invite(
     request: SendScreeningInviteRequest,
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     repo: CommunicationRepository = Depends(get_communication_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
 ):
     """
     Send a WSI (Work Sample Interview) screening invite to a candidate.
