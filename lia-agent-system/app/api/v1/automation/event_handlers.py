@@ -71,11 +71,15 @@ async def _fetch_candidate_and_vacancy(db, candidate_id: str, vacancy_id: str):
     from app.models.candidate import Candidate
     from app.models.job_vacancy import JobVacancy
 
+    # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
+    # Target: app/domains/automation/repositories/automation_repository.py
     candidate_result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
     candidate = candidate_result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidato não encontrado")
 
+    # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
+    # Target: app/domains/automation/repositories/automation_repository.py
     vacancy_result = await db.execute(select(JobVacancy).where(JobVacancy.id == vacancy_id))
     vacancy = vacancy_result.scalar_one_or_none()
     if not vacancy:
@@ -2098,6 +2102,8 @@ async def handle_candidate_hired(
 
             from app.models.candidate import VacancyCandidate
             
+            # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
+            # Target: app/domains/automation/repositories/automation_repository.py
             vc_result = await db.execute(
                 select(VacancyCandidate).where(
                     and_(
@@ -2346,6 +2352,8 @@ async def handle_candidate_rejected(
 
             from app.models.candidate import VacancyCandidate
             
+            # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
+            # Target: app/domains/automation/repositories/automation_repository.py
             vc_result = await db.execute(
                 select(VacancyCandidate).where(
                     and_(
