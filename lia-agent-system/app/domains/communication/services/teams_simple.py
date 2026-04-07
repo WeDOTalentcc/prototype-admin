@@ -40,10 +40,14 @@ class SimpleTeamsBot:
             if datetime.utcnow() < self._token_expires:
                 return self._access_token
         
-        # Get new token
+        # Get new token — use tenant-specific endpoint for Single Tenant apps
+        tenant_id = settings.AZURE_TENANT_ID or "botframework.com"
+        token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
+        logger.info(f"[Teams] Acquiring token via {token_url}")
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token",
+                token_url,
                 data={
                     "grant_type": "client_credentials",
                     "client_id": self.app_id,
