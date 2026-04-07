@@ -4,8 +4,27 @@ Sourcing Stage Context - Provides stage-specific context for the sourcing agent.
 Each stage in the talent sourcing flow has different requirements, expected fields,
 and conversation goals. This module injects the right context so the agent knows
 what to focus on during candidate search and screening.
+
+Sub-agentes de sourcing granular e seus estágios de entrada:
+- sourcing_github: search-criteria → github_search
+- sourcing_stackoverflow: search-criteria → stackoverflow_search
+- sourcing_diversity: search-criteria → diversity_sourcing
+- sourcing_passive_pipeline: search-criteria → passive_reactivation
+- sourcing_referral: shortlist-creation → referral_outreach
+- sourcing_nurture_sequence: outreach → nurture_sequence
 """
 from typing import Any
+
+# Mapeamento de domínio de sub-agente → stage de entrada.
+# Usado pelo SourcingReActAgent para delegar ao sub-agente correto.
+SOURCING_SUBAGENT_STAGE_MAP: dict[str, str] = {
+    "sourcing_github": "talent-search",
+    "sourcing_stackoverflow": "talent-search",
+    "sourcing_diversity": "talent-search",
+    "sourcing_passive_pipeline": "talent-search",
+    "sourcing_referral": "shortlist-creation",
+    "sourcing_nurture_sequence": "outreach",
+}
 
 STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
     "search-criteria": {
@@ -33,9 +52,27 @@ STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
         "description": (
             "A LIA executa a busca de candidatos com base nos criterios definidos. "
             "O recrutador pode filtrar resultados, visualizar perfis individuais "
-            "e refinar a busca conforme necessidade."
+            "e refinar a busca conforme necessidade. "
+            "Sub-agentes especializados disponiveis neste estagio: "
+            "sourcing_github (busca GitHub por linguagem/contribuicoes), "
+            "sourcing_stackoverflow (busca Stack Overflow por expertise/tags), "
+            "sourcing_diversity (sourcing afirmativo — FairnessGuard Layer 3), "
+            "sourcing_passive_pipeline (reativacao de candidatos arquivados)."
         ),
-        "available_tools": ["search_candidates", "filter_results", "view_candidate"],
+        "available_tools": [
+            "search_candidates", "filter_results", "view_candidate",
+            "github_search_developers", "github_get_profile",
+            "github_get_repos", "github_get_contributions",
+            "so_search_experts", "so_get_user_tags", "so_get_user_answers",
+            "diversity_search_candidates", "diversity_get_pool_metrics",
+            "diversity_check_goals",
+            "passive_search_archived", "passive_calculate_fit_score",
+            "passive_check_lgpd_ttl",
+        ],
+        "subagents": [
+            "sourcing_github", "sourcing_stackoverflow",
+            "sourcing_diversity", "sourcing_passive_pipeline",
+        ],
         "required_fields": ["search_executed"],
         "optional_fields": ["filters_applied", "results_count"],
         "transition_criteria": {
@@ -69,9 +106,16 @@ STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
         "description": (
             "A LIA ajuda o recrutador a construir a shortlist final de candidatos. "
             "O recrutador pode adicionar ou remover candidatos e a LIA sugere "
-            "rankings baseados nos scores e analises anteriores."
+            "rankings baseados nos scores e analises anteriores. "
+            "Sub-agente disponivel neste estagio: sourcing_referral (pipeline de indicacoes "
+            "com verificacao HITL via communication_matrix)."
         ),
-        "available_tools": ["add_to_shortlist", "remove_from_shortlist", "rank_candidates"],
+        "available_tools": [
+            "add_to_shortlist", "remove_from_shortlist", "rank_candidates",
+            "referral_identify_connectors", "referral_prepare_request",
+            "referral_approve_request", "referral_send_request",
+        ],
+        "subagents": ["sourcing_referral"],
         "required_fields": ["shortlist_created"],
         "optional_fields": ["ranking_criteria", "shortlist_notes"],
         "transition_criteria": {
@@ -87,9 +131,17 @@ STAGE_DEFINITIONS: dict[str, dict[str, Any]] = {
         "description": (
             "A LIA auxilia na abordagem dos candidatos selecionados. Gera mensagens "
             "personalizadas, sugere canais de contato e acompanha respostas. "
-            "Requer confirmacao explicita do recrutador antes de enviar mensagens."
+            "Requer confirmacao explicita do recrutador antes de enviar mensagens. "
+            "Sub-agente disponivel neste estagio: sourcing_nurture_sequence "
+            "(sequencias multi-step com HITL, LGPD TTL 180 dias, "
+            "persiste em candidate_nurture_sequences)."
         ),
-        "available_tools": ["send_outreach", "generate_message", "track_response"],
+        "available_tools": [
+            "send_outreach", "generate_message", "track_response",
+            "nurture_create_sequence", "nurture_approve_step",
+            "nurture_execute_step", "nurture_get_sequence_status",
+        ],
+        "subagents": ["sourcing_nurture_sequence"],
         "required_fields": ["outreach_sent"],
         "optional_fields": ["response_tracking", "follow_up_scheduled"],
         "transition_criteria": {

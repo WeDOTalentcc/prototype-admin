@@ -298,6 +298,54 @@ def register_react_agents() -> ReactAgentRegistry:
         "langgraph_native": True,
     })
 
+    from app.domains.sourcing.agents.github_sourcing_agent import GithubSourcingAgent
+    registry.register("sourcing_github", GithubSourcingAgent, {
+        "description": "Sub-agente de sourcing via GitHub — busca desenvolvedores por linguagem e skills",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
+
+    from app.domains.sourcing.agents.stackoverflow_sourcing_agent import StackOverflowSourcingAgent
+    registry.register("sourcing_stackoverflow", StackOverflowSourcingAgent, {
+        "description": "Sub-agente de sourcing via Stack Overflow — especialistas por tag e reputação",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
+
+    from app.domains.sourcing.agents.diversity_sourcing_agent import DiversitySourcingAgent
+    registry.register("sourcing_diversity", DiversitySourcingAgent, {
+        "description": "Sub-agente de sourcing afirmativo — prioriza grupos subrepresentados com FairnessGuard",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
+
+    from app.domains.sourcing.agents.passive_pipeline_agent import PassivePipelineAgent
+    registry.register("sourcing_passive_pipeline", PassivePipelineAgent, {
+        "description": "Sub-agente de pipeline passivo — reativa candidatos arquivados dentro do TTL LGPD",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
+
+    from app.domains.sourcing.agents.referral_agent import ReferralAgent
+    registry.register("sourcing_referral", ReferralAgent, {
+        "description": "Sub-agente de indicações — solicita referrals via colaboradores internos (HITL)",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
+
+    from app.domains.sourcing.agents.nurture_sequence_agent import NurtureSequenceAgent
+    registry.register("sourcing_nurture_sequence", NurtureSequenceAgent, {
+        "description": "Sub-agente de nurture — sequências multi-touch com HITL por step e LGPD TTL",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
+
     logger.info(
         f"[register_react_agents] {len(registry.list_domains())} agentes registrados: "
         f"{registry.list_domains()}"

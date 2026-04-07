@@ -18,6 +18,7 @@ from lia_agents_core.working_memory import WorkingMemoryService
 
 from app.domains.sourcing.agents.sourcing_stage_context import (
     STAGE_DEFINITIONS,
+    SOURCING_SUBAGENT_STAGE_MAP,
     get_stage_context,
 )
 from app.domains.sourcing.agents.sourcing_system_prompt import get_sourcing_system_prompt
@@ -35,15 +36,58 @@ _CONFIRMATION_WORDS = {
 }
 
 
+def _aggregate_all_tool_names() -> list[str]:
+    """
+    Agrega nomes de tools de todos os domínios e sub-agentes de sourcing.
+
+    Usado para popular `available_tools` com o conjunto completo de ferramentas,
+    garantindo que introspection/observability reflita o que _get_tools() expõe.
+    Importa lazy para evitar circular deps no boot.
+    """
+    try:
+        from app.domains.sourcing.tools import get_sourcing_tools
+        from app.domains.sourcing.agents.github_tool_registry import get_github_tools
+        from app.domains.sourcing.agents.stackoverflow_tool_registry import get_stackoverflow_tools
+        from app.domains.sourcing.agents.diversity_tool_registry import get_diversity_tools
+        from app.domains.sourcing.agents.passive_pipeline_tool_registry import get_passive_pipeline_tools
+        from app.domains.sourcing.agents.referral_tool_registry import get_referral_tools
+        from app.domains.sourcing.agents.nurture_sequence_tool_registry import get_nurture_sequence_tools
+
+        all_defs = (
+            get_sourcing_tools()
+            + get_github_tools()
+            + get_stackoverflow_tools()
+            + get_diversity_tools()
+            + get_passive_pipeline_tools()
+            + get_referral_tools()
+            + get_nurture_sequence_tools()
+        )
+        seen: set[str] = set()
+        names: list[str] = []
+        for td in all_defs:
+            if td.name not in seen:
+                seen.add(td.name)
+                names.append(td.name)
+        return names
+    except Exception as exc:
+        logger.warning("[SourcingReActAgent] _aggregate_all_tool_names fallback: %s", exc)
+        try:
+            from app.domains.sourcing.tools import get_sourcing_tools
+            return [t.name for t in get_sourcing_tools()]
+        except Exception:
+            return []
+
+
 class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     """Autonomous agent for talent sourcing and candidate screening via LangGraph nativo."""
 
     def __init__(self) -> None:
         super().__init__()
         self._memory_service = WorkingMemoryService()
-        self._all_tool_names = [t.name for t in get_sourcing_tools()]
+        # Inclui tools de todos os 6 sub-agentes para introspection/observability precisas
+        self._all_tool_names = _aggregate_all_tool_names()
         self._setup_enhanced(domain="sourcing")
-        logger.info("[SourcingReActAgent] Initialized")
+        logger.info("[SourcingReActAgent] Initialized with %d tools", len(self._all_tool_names))
 
     @property
     def domain_name(self) -> str:
@@ -54,10 +98,49 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:
-        """Todos os tools do domínio Sourcing (LangGraph usa set completo)."""
+        """
+        Todos os tools do domínio Sourcing + tools dos sub-agentes especializados.
+
+        O SourcingReActAgent é o orquestrador de sourcing. Ele inclui as tools de todos
+        os 6 sub-agentes especializados (GitHub, StackOverflow, Diversity,
+        PassivePipeline, Referral, NurtureSequence) para que o LangGraph possa
+        delegar para a ferramenta correta com base na intenção do usuário.
+
+        As tools de cada sub-agente são expostas diretamente no grafo LangGraph principal,
+        permitindo que o LLM selecione a ferramenta correta por intenção sem precisar
+        invocar sub-agentes separadamente. SOURCING_SUBAGENT_STAGE_MAP documenta
+        a associação domain→stage para referência de stage context (não é roteamento ativo).
+        """
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+        from app.domains.sourcing.agents.github_tool_registry import get_github_tools
+        from app.domains.sourcing.agents.stackoverflow_tool_registry import get_stackoverflow_tools
+        from app.domains.sourcing.agents.diversity_tool_registry import get_diversity_tools
+        from app.domains.sourcing.agents.passive_pipeline_tool_registry import get_passive_pipeline_tools
+        from app.domains.sourcing.agents.referral_tool_registry import get_referral_tools
+        from app.domains.sourcing.agents.nurture_sequence_tool_registry import get_nurture_sequence_tools
+
+        # Ferramentas base do sourcing + enhanced mixin
         tool_defs = get_sourcing_tools() + self._get_all_enhanced_tools()
-        return [tool_definition_to_langchain_tool(td) for td in tool_defs]
+
+        # Ferramentas dos sub-agentes especializados — expostas diretamente no grafo LangGraph.
+        # SOURCING_SUBAGENT_STAGE_MAP documenta a associação domain→stage para referência
+        # de stage context, mas o roteamento real é por intenção via tools expostas aqui.
+        tool_defs += get_github_tools()           # sourcing_github   → talent-search
+        tool_defs += get_stackoverflow_tools()    # sourcing_stackoverflow → talent-search
+        tool_defs += get_diversity_tools()        # sourcing_diversity → talent-search
+        tool_defs += get_passive_pipeline_tools() # sourcing_passive_pipeline → talent-search
+        tool_defs += get_referral_tools()         # sourcing_referral → shortlist-creation
+        tool_defs += get_nurture_sequence_tools() # sourcing_nurture_sequence → outreach
+
+        # Deduplicar por nome (base tools têm precedência)
+        seen: set[str] = set()
+        deduped = []
+        for td in tool_defs:
+            if td.name not in seen:
+                seen.add(td.name)
+                deduped.append(td)
+
+        return [tool_definition_to_langchain_tool(td) for td in deduped]
 
     def _get_system_prompt(self, input: AgentInput) -> str:
         current_stage = input.context.get("current_stage", "search-criteria")
