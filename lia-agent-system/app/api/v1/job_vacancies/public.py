@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from ._shared import *
 from app.domains.job_management.dependencies import get_job_vacancy_public_repo
 from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service
+from app.domains.cv_screening.services.lia_score_service import get_lia_score_service, LIAScoreService
 from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
 from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
@@ -280,6 +281,7 @@ async def apply_to_public_vacancy(
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
+    lia_svc: LIAScoreService = Depends(get_lia_score_service),
 ):
     try:
         if lgpd_consent.lower() not in ("true", "1", "yes", "sim"):
@@ -342,8 +344,6 @@ async def apply_to_public_vacancy(
 
         adherence_score = 70.0
         try:
-            from app.services.lia_score_service import LIAScoreService
-            lia_svc = LIAScoreService()
             vacancy_requirements = {
                 "query": job.title or "",
                 "skills": job.required_skills or [],

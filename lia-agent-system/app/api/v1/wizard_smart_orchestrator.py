@@ -22,6 +22,10 @@ from app.core.database import AsyncSessionLocal
 from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
 from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.shared.tenant_session import create_session_id
+from app.domains.cv_screening.services.screening_question_set_service import (
+    get_screening_question_set_service,
+    ScreeningQuestionSetService,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -388,10 +392,7 @@ async def finalize_job_vacancy_from_wizard(
                 )
                 if screening_questions:
                     try:
-                        from app.domains.cv_screening.services.screening_question_set_service import (
-                            ScreeningQuestionSetService,
-                        )
-                        question_set_service = ScreeningQuestionSetService()
+                        question_set_service = get_screening_question_set_service()
                         await question_set_service.save_question_set(
                             db=db,
                             job_vacancy_id=job_id,

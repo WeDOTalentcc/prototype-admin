@@ -18,95 +18,59 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service  # noqa: F401
 from app.domains.automation.services.automation_trigger_service import automation_trigger_service  # noqa: F401
 from app.domains.communication.services.communication_service import CommunicationService, communication_service, get_communication_service  # noqa: F401
-from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 from app.services.audit_service import audit_service
 
 logger = logging.getLogger(__name__)
 
-_cv_scoring_service = None
-_wsi_service = None
-
 def get_cv_scoring_service():
-    """Lazy load CVScoringService."""
-    global _cv_scoring_service
-    if _cv_scoring_service is None:
-        _cv_scoring_service = CVScoringService()
-    return _cv_scoring_service
+    """Return canonical CVScoringService singleton."""
+    from app.domains.cv_screening.services.cv_scoring_service import cv_scoring_service
+    return cv_scoring_service
 
 
 def get_wsi_service():
-    """Lazy load WSIService for conversational screening."""
-    global _wsi_service
-    if _wsi_service is None:
-        from app.domains.cv_screening.services.wsi_service import WSIService
-        _wsi_service = WSIService()
-    return _wsi_service
+    """Return canonical WSIService singleton."""
+    from app.domains.cv_screening.services.wsi_service import wsi_service
+    return wsi_service
 
 
 # router is created in each sub-module and aggregated in __init__.py
 
-_email_service = None
-_whatsapp_service = None
-_activity_service = None
-_scheduling_service = None
-_calendar_service = None
-
 
 def get_email_service():
-    """Returns the module-level EmailService singleton (no new DeprecationWarning)."""
-    global _email_service
-    if _email_service is None:
-        from app.domains.communication.services.email_service import get_email_service as _canon_factory
-        _email_service = _canon_factory()
-    return _email_service
+    """Return canonical EmailService singleton."""
+    from app.domains.communication.services.email_service import get_email_service as _canon_factory
+    return _canon_factory()
 
 
 def get_whatsapp_service():
-    """Lazy load WhatsAppService."""
-    global _whatsapp_service
-    if _whatsapp_service is None:
-        from app.domains.communication.services.whatsapp_service import WhatsAppService
-        _whatsapp_service = WhatsAppService()
-    return _whatsapp_service
+    """Return canonical WhatsAppService singleton."""
+    from app.domains.communication.services.whatsapp_service import whatsapp_service
+    return whatsapp_service
 
 
 def get_activity_service():
-    """Lazy load ActivityService."""
-    global _activity_service
-    if _activity_service is None:
-        from app.services.activity_service import ActivityService
-        _activity_service = ActivityService()
-    return _activity_service
+    """Return canonical ActivityService singleton."""
+    from app.domains.analytics.services.activity_service import activity_service
+    return activity_service
 
 
 def get_scheduling_service():
-    """Lazy load SchedulingService."""
-    global _scheduling_service
-    if _scheduling_service is None:
-        from app.domains.interview_scheduling.services.scheduling_service import SchedulingService
-        _scheduling_service = SchedulingService()
-    return _scheduling_service
+    """Return canonical SchedulingService singleton."""
+    from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
+    return scheduling_service
 
 
 def get_calendar_service():
-    """Lazy load CalendarService."""
-    global _calendar_service
-    if _calendar_service is None:
-        from app.domains.interview_scheduling.services.calendar_service import CalendarService
-        _calendar_service = CalendarService()
-    return _calendar_service
-
-
-_ats_sync_service = None
+    """Return canonical CalendarService singleton."""
+    from app.domains.interview_scheduling.services.calendar_service import calendar_service
+    return calendar_service
 
 
 def get_ats_sync_service():
-    """Lazy load ATSSyncService."""
-    global _ats_sync_service
-    if _ats_sync_service is None:
-        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
-        _ats_sync_service = ATSSyncService()
-    return _ats_sync_service
+    """Return canonical ATSSyncService singleton."""
+    from app.domains.ats_integration.services.ats_sync_service import ats_sync_service
+    return ats_sync_service
 
 
 ATS_STAGE_MAPPING = {

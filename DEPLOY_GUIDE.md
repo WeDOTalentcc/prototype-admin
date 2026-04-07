@@ -1172,42 +1172,301 @@ Usuário acessa wedotalent.cc
 | Testes E2E | Nunca rodados, auth incompatível | Chromium instalado via Nix, auth fixture adaptado para cookie bypass, resultados acima |
 | `.dockerignore` | Não existia | Criado (exclui node_modules, .next, e2e, .env*) |
 
+### 12.1 Diagnóstico Profundo (07/04/2026)
+
+> Auditoria de código analisando: rotas, proxy backend, integrações IA, banco de dados, auth, WebSockets, e build de produção.
+
+#### Mapa de páginas e rotas (✅ saudável)
+
+| Rota | Página | Componente principal |
+|---|---|---|
+| `/` | Dashboard | `DashboardApp` + `OnboardingController` |
+| `/login` | Login | `LoginClient` (WorkOS SSO) |
+| `/login/welcome` | Onboarding | Apresentação animada do fluxo LIA |
+| `/funil` | Pipeline Kanban | `DashboardApp` (visão default) |
+| `/funil-de-talentos` | Talent Funnel | `FunilDeTalentosClient` (busca + gestão candidatos) |
+| `/funil-de-talentos/candidato/[id]` | Perfil do candidato | `CandidatoDetailClient` |
+| `/jobs` | Lista de vagas | `JobsPage` |
+| `/jobs/[id]` | Detalhe da vaga | `JobDetailClient` |
+| `/chat` | Chat com LIA | `ChatPage` (interface do agente IA) |
+| `/tasks` | Tarefas | `DashboardApp` com `initialPage="Tarefas"` |
+| `/configuracoes` | Configurações | `DashboardApp` com `initialPage="Configurações"` |
+| `/configuracoes/ai-credits` | Créditos de IA | `AiCreditsPage` (gráficos recharts) |
+| `/vagas/[slug]` | Página pública da vaga | Landing page para candidatos |
+| `/shared/[token]` | Busca compartilhada | Link público para lista curada de candidatos |
+| `/triagem/[token]` | Triagem IA | Interface de conversa candidato ↔ LIA |
+| `/portal/data-request/[token]` | Portal de dados do candidato | Submissão segura de dados pessoais |
+| `/privacidade` | Portal de privacidade | LGPD compliance, DSR |
+| `/ajuda` | Centro de ajuda | Explicação da análise IA, Big Five, arquétipos |
+| `/register` | Cadastro | `RegisterClient` |
+| `/forgot-password`, `/reset-password` | Recuperação de senha | Fluxo completo |
+| `/upgrade` | Upgrade de plano | Billing |
+| `/design-system` | Referência visual | Tokens de cor, tipografia, sombras |
+| `/teams-tab` | Microsoft Teams | Redirect para `/vagas` |
+
+**Resultado:** Todas as rotas apontam para componentes válidos. Nenhum import quebrado encontrado.
+
+#### P1 — CRÍTICO: 373 arquivos de proxy com porta errada (8000 → deveria ser 8001)
+
+```
+PROBLEMA:
+  O frontend se comunica com o backend via ~413 arquivos de proxy em
+  /api/backend-proxy/*. Cada arquivo define a URL do backend assim:
+
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+                                                                            ^^^^
+  O backend roda na porta 8001, não 8000.
+
+DETALHAMENTO:
+  - 329 arquivos usam:  process.env.NEXT_PUBLIC_BACKEND_URL || '...8000'
+  -  44 arquivos usam:  process.env.BACKEND_URL             || '...8000'
+  -   6 arquivos usam:  process.env.NEXT_PUBLIC_BACKEND_URL || '...8001'  (corretos)
+
+POR QUE FUNCIONA AGORA:
+  O arquivo .env.local define NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8001
+  Então o fallback 8000 nunca é usado — a variável de ambiente salva.
+
+POR QUE É PERIGOSO:
+  1. Se .env.local for apagado ou não carregado → 100% das chamadas falham
+  2. Em produção (Cloud Run), se a env var não for setada → nada funciona
+  3. Dois nomes de variável diferentes (NEXT_PUBLIC_BACKEND_URL vs BACKEND_URL)
+     — configurar um não resolve o outro
+
+IMPACTO ADICIONAL — SEGURANÇA:
+  NEXT_PUBLIC_* é exposta ao browser. Esses proxy routes rodam 100% server-side
+  (são API Routes do Next.js), então não precisam de NEXT_PUBLIC_.
+  O BACKEND_URL do next.config.js já usa a variável correta (sem NEXT_PUBLIC_).
+
+AÇÃO (antes do deploy — pode ser feito agora):
+  Padronizar TODOS os 413 arquivos para:
+    const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+  É um find-and-replace massivo mas seguro — todos os arquivos seguem o mesmo
+  padrão. Nenhuma lógica muda, só o nome da variável e a porta do fallback.
+```
+
+#### P2 — CRÍTICO: `next build` falha — página de Créditos de IA
+
+```
+PROBLEMA:
+  src/app/configuracoes/ai-credits/page.tsx usa dynamic() com ssr:false
+  dentro de um Server Component — proibido no Next.js 15.
+
+  O ERRO:
+    `ssr: false` is not allowed with `next/dynamic` in Server Components.
+    Please move it into a Client Component.
+
+  CONSEQUÊNCIA:
+    O build de produção (next build) não compila. Impossível fazer deploy.
+
+  A PÁGINA EXISTE E ESTÁ IMPLEMENTADA:
+    - Mostra consumo de IA por provedor (Claude, Gemini, OpenAI)
+    - Usa recharts para gráficos
+    - Componente: src/components/pages/ai-credits-page.tsx
+
+AÇÃO (correção de 2 linhas):
+  Adicionar "use client" no topo do arquivo e remover export metadata
+  (Server Component metadata não é permitido em Client Components).
+```
+
+#### P3 — CRÍTICO: Backend desconectado do banco de dados real
+
+```
+PROBLEMA:
+  O backend Python (lia-agent-system/.env) está configurado com:
+    DATABASE_URL=postgresql+asyncpg://lia_user:lia_password@localhost:5432/lia_db
+
+  Mas o banco real do Replit está em:
+    postgresql://postgres:password@helium/heliumdb
+
+  São dois bancos completamente diferentes:
+  - O backend tenta conectar em localhost:5432 (que não existe no Replit)
+  - O Replit tem um PostgreSQL em "helium" com tabelas já criadas via Alembic
+
+TABELAS EXISTENTES NO BANCO REAL (helium/heliumdb):
+  ab_test_results, activity_feed, admin_audit_logs, admin_roles,
+  agent_activities, agent_checkpoints, agent_long_term_memory,
+  ai_consumption, ai_credits_balance, e mais ~60 tabelas
+
+  Todas criadas pelas ~60 migrations Alembic do lia-agent-system.
+
+POR QUE O BACKEND RESPONDE HEALTH OK:
+  O endpoint /health não toca o banco. Mas endpoints que fazem queries
+  (candidatos, vagas, chat) vão falhar com connection refused.
+
+ARQUITETURA FINAL (Rails + LIA):
+  ┌──────────────────┐       ┌──────────────────┐
+  │ lia-agent-system │──REST─► ats-api-copia    │
+  │ (Python/FastAPI) │       │ (Rails 7)        │
+  │                  │       │                  │
+  │ Banco próprio:   │       │ Banco principal: │
+  │ conversas IA,    │       │ candidatos,      │
+  │ memória agentes, │       │ vagas, empresas, │
+  │ métricas, WSI    │       │ aplicações       │
+  └────────┬─────────┘       └────────┬─────────┘
+           │                          │
+           ▼                          ▼
+  Cloud SQL (lia_db)         Cloud SQL (rails_db)
+  ou mesma instância,        ← banco principal
+  schemas separados
+
+AÇÃO AGORA (Replit):
+  Corrigir DATABASE_URL no lia-agent-system/.env para apontar para o banco
+  real do Replit: postgresql+asyncpg://postgres:password@helium/heliumdb
+
+AÇÃO NO DEPLOY (GCP):
+  Provisionar Cloud SQL PostgreSQL 16. O Python terá seu próprio banco
+  (lia_db) e acessará dados do Rails via API REST (RAILS_API_URL).
+  Ver Seção 14 para detalhes.
+```
+
+#### P4 — IMPORTANTE: `NEXT_PUBLIC_BACKEND_URL` expõe URL do backend no browser
+
+```
+Todos os proxy routes são API Routes (rodam server-side), mas usam
+NEXT_PUBLIC_BACKEND_URL — que Next.js injeta no JavaScript do cliente.
+
+Isso significa que a URL interna do backend (ex: http://lia-agent:8001)
+ficaria visível no código-fonte da página no browser.
+
+AÇÃO: Resolver junto com P1 — trocar para BACKEND_URL (sem NEXT_PUBLIC_).
+```
+
+#### P5 — IMPORTANTE: Variáveis exclusivas do Replit no código
+
+```
+O código referencia variáveis que só existem no Replit:
+  - REPLIT_DEV_DOMAIN  → usado para construir URLs (domínio do preview)
+  - REPL_IDENTITY      → usado para identificação do ambiente
+  - WEB_REPL_RENEWAL   → flag interna do Replit
+
+Em produção (Cloud Run), essas variáveis serão undefined.
+
+RISCO: Pode causar erros silenciosos ou URLs quebradas.
+
+AÇÃO AGORA: Não quebra nada (estamos no Replit).
+AÇÃO ANTES DO DEPLOY: Adicionar fallbacks em cada referência:
+  process.env.REPLIT_DEV_DOMAIN || process.env.APP_DOMAIN || 'wedotalent.cc'
+  São poucas referências — trabalho pontual.
+```
+
+#### P6 — IMPORTANTE: WebSockets sem parametrização para produção
+
+```
+2 componentes criam WebSockets diretamente:
+  1. AsyncJobProgress.tsx — progresso de tarefas assíncronas
+  2. VoIPCallButton.tsx  — chamadas VoIP em tempo real
+
+Ambos constroem a URL do WebSocket a partir do domínio atual
+(window.location). Isso funciona quando frontend e backend estão
+no mesmo servidor, mas em produção com serviços separados pode quebrar.
+
+AÇÃO AGORA: Funciona como está no Replit.
+AÇÃO ANTES DO DEPLOY:
+  - Cloud Run suporta WebSockets (precisa habilitar)
+  - Parametrizar URLs WS com env var: NEXT_PUBLIC_WS_URL
+  - Ajustar 2 arquivos
+```
+
+#### Autenticação (✅ totalmente implementada — não é stub)
+
+```
+A autenticação foi auditada e está completamente wired:
+
+  WorkOS SSO:
+    /api/auth/workos/sso     → redireciona para WorkOS
+    /api/auth/workos/callback → recebe token, cria sessão, sincroniza com backend
+
+  JWT tradicional:
+    /api/auth/auto-login     → login dev automático (demo@wedotalent.com)
+    /api/v1/auth/login       → login real no backend
+    /api/v1/auth/refresh     → refresh de token
+
+  Middleware:
+    middleware.ts verifica workos_session OU lia_access_token em TODA request
+    Paths públicos corretamente excluídos (/login, /vagas/*, /triagem/*, etc.)
+
+  Sessão:
+    Cookies HTTP-only (lia_access_token, workos_session)
+    Assinatura HMAC via session-crypto.ts
+    Auto-login dev chama o backend real (não é fake)
+
+  Backend:
+    app/api/v1/auth.py — login, refresh, verificação JWT
+    app/api/v1/workos.py — sync de usuário WorkOS
+    Audit logs implementados para tentativas de login
+```
+
+#### Integrações IA (✅ server-side only — seguras)
+
+```
+Auditoria de chaves API:
+
+  AI_INTEGRATIONS_ANTHROPIC_API_KEY:
+    ✅ CONFIRMADO SERVER-SIDE ONLY
+    Usado em: src/app/api/ai/extract-archetype-info/route.ts (API Route)
+              src/app/api/ai/suggest-companies/route.ts (API Route)
+              src/app/api/ai/suggest-expertise/route.ts (API Route)
+    Todas são API Routes (server-side). Nenhuma usa NEXT_PUBLIC_.
+    A chave NUNCA chega ao browser.
+
+  Providers configurados:
+    - Anthropic (Claude): core — triagem, análise, sugestões
+    - Google (Gemini): core — chat, voz, busca semântica
+    - OpenAI (GPT): fallback terciário
+
+  Frontend apenas exibe status das integrações via IntegrationsHub.tsx
+  (sem chaves, apenas nomes e status on/off).
+```
+
 ### O que precisa de atenção antes do deploy
 
-| Área | Problema | Ação |
-|---|---|---|
-| **Mockups pendentes** | 6 grupos de componentes no mockup sandbox (wsi-report, weekly-digest, funil-elevenlabs, triagem-flow, chat-layouts 9 variantes, arch-compare) | Revisar cada grupo, aprovar ou descartar, integrar os aprovados |
-| **WorkOS configuração prod** | `WORKOS_API_KEY` e `WORKOS_CLIENT_ID` apontam para dev | Criar ambiente de prod no WorkOS e configurar redirect URIs para `wedotalent.cc` |
-| **AI_INTEGRATIONS_ANTHROPIC_API_KEY** | Chave Anthropic referenciada no frontend — precisa confirmar que é server-side only | Verificar: nunca deve aparecer em `NEXT_PUBLIC_*` ou em Client Components |
-| **Variáveis Replit no código** | `REPLIT_DEV_DOMAIN`, `REPL_IDENTITY`, `WEB_REPL_RENEWAL` usadas no app | Serão `undefined` no Cloud Run — adicionar fallbacks ou remover |
-| **Error Boundaries** | Parcialmente implementado (`error-boundary.tsx`) | Verificar cobertura em pages críticas |
-| **Hydration** | Possíveis mismatches em páginas com dados de sessão | Testar com `next build` e revisar warnings |
-| **Bundle size** | Não auditado ainda | Rodar `next build` e checar `bundle-analyzer` |
-| **Cache headers** | Não configurado | Configurar `Cache-Control` para assets estáticos via Cloud CDN |
-| **CSP / Headers de segurança** | Não configurado em `next.config.js` | Adicionar `Content-Security-Policy`, `X-Frame-Options` |
-| **Testes E2E silenciosos** | Vários testes usam `.catch(() => {})` que mascaram falhas reais | Auditar e remover catch silenciosos — assertions devem falhar explicitamente |
-| **Testes E2E com WorkOS real** | Auth fixture atual usa cookie bypass (dev mode only) | Rodar suíte completa com credenciais WorkOS reais em CI (GitHub Actions) |
+| Área | Severidade | Problema | Ação | Quando |
+|---|---|---|---|---|
+| **P1: Porta do proxy** | 🔴 Crítico | 373 arquivos com fallback `8000` em vez de `8001` + 2 nomes de env var misturados | Padronizar para `BACKEND_URL` + porta `8001` (find-and-replace) | **Agora** |
+| **P2: Build falha** | 🔴 Crítico | `ai-credits/page.tsx` usa `dynamic(ssr:false)` em Server Component | Adicionar `"use client"`, remover `metadata` export | **Agora** |
+| **P3: DATABASE_URL** | 🔴 Crítico | Backend aponta para `localhost:5432/lia_db` — banco não existe no Replit | Corrigir para `helium/heliumdb` (banco real) | **Agora** |
+| **P4: NEXT_PUBLIC leak** | 🟡 Importante | URL do backend exposta no browser via `NEXT_PUBLIC_*` | Resolver junto com P1 | **Agora** |
+| **P5: Replit vars** | 🟡 Importante | `REPLIT_DEV_DOMAIN`, `REPL_IDENTITY` → undefined no Cloud Run | Adicionar fallbacks com `APP_DOMAIN` | Antes do deploy |
+| **P6: WebSockets** | 🟡 Importante | URLs WS hardcoded em 2 componentes | Parametrizar com `NEXT_PUBLIC_WS_URL` | Antes do deploy |
+| **Mockups pendentes** | 🟡 Importante | 6 grupos de componentes no mockup sandbox | Revisar, aprovar ou descartar, integrar | Antes do deploy |
+| **WorkOS prod** | 🟡 Importante | Credenciais apontam para dev | Criar ambiente prod + redirect URIs `wedotalent.cc` | Deploy |
+| **Error Boundaries** | 🟢 Desejável | Parcialmente implementado | Verificar cobertura em pages críticas | Antes do deploy |
+| **Headers de segurança** | 🟢 Desejável | CSP, X-Frame-Options não configurados | Adicionar em `next.config.js` | Antes do deploy |
+| **Bundle size** | 🟢 Desejável | Não auditado | Rodar `next build` e checar | Antes do deploy |
+| **Testes E2E silenciosos** | 🟢 Desejável | `.catch(() => {})` mascara falhas | Remover catch silenciosos | Antes do deploy |
+| **Testes E2E WorkOS real** | 🟢 Desejável | Auth fixture usa cookie bypass | Rodar com credenciais reais em CI | Deploy |
 
 ### Checklist de production readiness — Frontend
 
-- [ ] Todos os mockups pendentes revisados — aprovados integrados ao código, descartados removidos
+**Correções críticas (bloqueiam deploy):**
+- [ ] P1: Todos os 413 proxy routes padronizados para `BACKEND_URL` + porta `8001`
+- [ ] P2: `next build` passa sem erros (`ai-credits/page.tsx` corrigido)
+- [ ] P3: `DATABASE_URL` do backend corrigido para banco real
+
+**Preparação para deploy:**
+- [ ] P4+P1: Nenhuma variável `NEXT_PUBLIC_*` expõe URLs internas do backend
+- [ ] P5: Variáveis Replit (`REPLIT_DEV_DOMAIN`, etc.) com fallbacks para Cloud Run
+- [ ] P6: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL`
+- [ ] Mockups pendentes revisados — aprovados integrados, descartados removidos
+- [ ] Headers de segurança adicionados no `next.config.js`
+- [ ] Error boundary verificado em pages críticas (funil, chat, vagas)
+- [ ] Testes E2E `.catch(() => {})` silenciosos removidos
+
+**Configuração de produção (infra + produto):**
+- [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
+- [ ] Redirect URIs do WorkOS registrados para `wedotalent.cc`
+- [ ] Sentry DSN de produção configurado (`NEXT_PUBLIC_SENTRY_DSN`)
+- [ ] Testes E2E completos com WorkOS real em CI
+- [ ] Teams Tab URL atualizada para domínio de produção
+
+**Já feito:**
 - [x] `Dockerfile` com `output: standalone` criado (`plataforma-lia/Dockerfile`)
 - [x] `next.config.js` corrigido (standalone, BACKEND_URL parametrizado, distDir/trailingSlash removidos)
 - [x] `.env.example` completo com todas as variáveis documentadas
 - [x] `.dockerignore` criado
 - [x] Testes E2E rodando no Replit (Chromium via Nix + auth fixture adaptado)
-- [ ] `next build` passa sem erros e sem warnings críticos
-- [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
-- [ ] Redirect URIs do WorkOS registrados para `wedotalent.cc`
-- [ ] Sentry DSN de produção configurado (`NEXT_PUBLIC_SENTRY_DSN`)
-- [ ] Todas as variáveis `NEXT_PUBLIC_*` auditadas (sem secrets expostos no cliente)
-- [ ] `AI_INTEGRATIONS_ANTHROPIC_API_KEY` confirmado como server-side only
-- [ ] Variáveis Replit (`REPLIT_DEV_DOMAIN`, etc.) com fallbacks para Cloud Run
-- [ ] Headers de segurança adicionados no `next.config.js`
-- [ ] Error boundary verificado em pages críticas (funil, chat, vagas)
-- [ ] Testes E2E `.catch(() => {})` silenciosos removidos
-- [ ] Testes E2E completos com WorkOS real em CI
-- [ ] Teams Tab URL atualizada para domínio de produção
+- [x] Integrações IA confirmadas como server-side only (Anthropic, Gemini, OpenAI)
+- [x] Autenticação WorkOS SSO + JWT totalmente implementada (não é stub)
 
 ---
 
@@ -1278,7 +1537,7 @@ Requisição do usuário
 | **Bug `wsi_repository.py`** | ✅ CORRIGIDO (07/04/2026) — Linhas 594 e 603 tinham SQL sem aspas e dicts com sintaxe JavaScript (`{call_sid: val}` em vez de `{"call_sid": val}`). Impedia o startup total do backend. | Corrigido e validado — backend rodando normalmente |
 | **GOOGLE_APPLICATION_CREDENTIALS** | Speech/TTS precisam de service account | Configurar Workload Identity no Cloud Run |
 | **RabbitMQ** | Sem serviço gerenciado no GCP | Provisionar (ver Seção 11.5) |
-| **Banco compartilhado** | `DATABASE_URL` precisa apontar para Cloud SQL com Rails | Configurar variável de ambiente (não requer mudança de código) |
+| 🔴 **P3: DATABASE_URL errado** | Backend `.env` aponta para `localhost:5432/lia_db` mas banco real do Replit está em `helium/heliumdb` com ~60 tabelas já migradas. Endpoints que fazem queries vão falhar com "connection refused" | **Agora:** Corrigir DATABASE_URL para `postgresql+asyncpg://postgres:password@helium/heliumdb`. **Deploy:** Cloud SQL com banco próprio (`lia_db`) + acesso ao Rails via REST (`RAILS_API_URL`) |
 | **Redis prod** | Sem autenticação configurada no código | Adicionar `REDIS_URL` com senha para Memorystore |
 | **Celery workers** | Não configurado para Cloud Run | Adicionar segundo serviço Cloud Run para workers Celery |
 | **LANGSMITH** | Opcional mas recomendado para debug em prod | Adicionar `LANGSMITH_API_KEY` |
@@ -1481,24 +1740,30 @@ Configurações obrigatórias no WorkOS dashboard:
 
 ### Código (Replit + time dev)
 
-**Frontend:**
+**Frontend (ver Seção 12.1 para detalhes de cada item):**
 - [x] Dockerfile Next.js criado com `output: standalone` (`plataforma-lia/Dockerfile`)
 - [x] `next.config.js` corrigido (standalone, BACKEND_URL, sem distDir/trailingSlash)
 - [x] `.env.example` completo e documentado
 - [x] `.dockerignore` criado
 - [x] Testes E2E rodando no Replit (24/26 passando, auth via cookie bypass)
-- [ ] `next build` sem erros
+- [x] Integrações IA confirmadas como server-side only (sem leak de chaves)
+- [x] Autenticação WorkOS SSO + JWT auditada — totalmente implementada
+- [ ] 🔴 **P1:** 413 proxy routes padronizados para `BACKEND_URL` + porta `8001`
+- [ ] 🔴 **P2:** `next build` sem erros (`ai-credits/page.tsx` corrigido)
+- [ ] 🟡 **P4:** Nenhuma `NEXT_PUBLIC_*` expondo URLs internas (resolver com P1)
+- [ ] 🟡 **P5:** Variáveis Replit (`REPLIT_DEV_DOMAIN`) com fallbacks para Cloud Run
+- [ ] 🟡 **P6:** WebSocket URLs parametrizadas com env var
 - [ ] WorkOS prod configurado (API key + redirect URIs para `wedotalent.cc`)
 - [ ] Headers de segurança em `next.config.js`
 - [ ] Sentry DSN frontend
 - [ ] Teams Tab URL atualizada para prod
 - [ ] Testes E2E completos com WorkOS real em CI
-- [ ] Variáveis Replit (`REPLIT_DEV_DOMAIN`, etc.) com fallbacks para Cloud Run
 - [ ] Mockups pendentes revisados e finalizados
 
-**AI Agent:**
+**AI Agent (ver Seção 12.1 P3 e Seção 13 para detalhes):**
 - [x] Bug `wsi_repository.py` corrigido (SQL sem aspas + dicts JS-style → Python correto)
 - [x] `.env.example` atualizado (`API_PORT` corrigido, `RAILS_API_URL` adicionado)
+- [ ] 🔴 **P3:** `DATABASE_URL` corrigido para banco real do Replit (`helium/heliumdb`)
 - [ ] `python3 -c "from app.main import app"` sem erros (validar todos os shims `import *`)
 - [ ] Migrations Alembic clean
 - [ ] Todos os secrets movidos para Secret Manager

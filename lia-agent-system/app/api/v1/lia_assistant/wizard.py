@@ -46,6 +46,7 @@ from ._shared import (
     WizardStepResponse,
     enhanced_intent_classifier,
     # services
+    job_insights_service,
     llm_service,
     logger,
     market_benchmark_service,
@@ -331,9 +332,8 @@ async def get_salary_benchmark(
 
     Combines internal company data with external market data.
     """
-    from app.domains.analytics.services.job_insights_service import JobInsightsService
+    job_insights_svc = job_insights_service
     try:
-        job_insights_svc = JobInsightsService()
 
         internal_benchmark = {}
         market_benchmark = {}

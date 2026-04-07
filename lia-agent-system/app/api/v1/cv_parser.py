@@ -527,6 +527,7 @@ async def upload_and_screen_cv(
     user_id: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_service_or_user),
+    parser: CVParserService = Depends(get_cv_parser_service),
 ):
     """
     Full CV flow: parse → create Candidate → add to vacancy → BARS score.
@@ -547,8 +548,6 @@ async def upload_and_screen_cv(
             raw_text = ""
             if file.content_type == "application/pdf" or (file.filename or "").endswith(".pdf"):
                 content_bytes = await file.read()
-                from app.domains.cv_screening.services.cv_parser import CVParserService
-                parser = CVParserService()
                 raw_text = await parser.extract_text_from_pdf(content_bytes)
             else:
                 raw_bytes = await file.read()
