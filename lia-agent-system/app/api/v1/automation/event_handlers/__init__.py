@@ -16,6 +16,7 @@ Sub-modules:
 from fastapi import APIRouter
 
 from .handlers_screening import router as screening_router
+from .handlers_screening import _normalize_weights
 from .handlers_interview import router as interview_router
 from .handlers_lifecycle import router as lifecycle_router
 from .handlers_ats_sync import router as ats_router
@@ -26,4 +27,4 @@ router.include_router(interview_router)
 router.include_router(lifecycle_router)
 router.include_router(ats_router)
 
-__all__ = ["router"]
+__all__ = ["router", "_normalize_weights"]
