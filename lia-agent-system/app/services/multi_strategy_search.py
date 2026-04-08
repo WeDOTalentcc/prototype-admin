@@ -236,7 +236,7 @@ class MultiStrategySearchService:
         """Execute search using existing SourcingSearchAgent."""
         try:
             from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
-            from app.shared.agents.agent_interface import AgentInput
+            from lia_agents_core.agent_interface import AgentInput
 
             agent = SourcingSearchAgent()
             output = await agent.process(AgentInput(

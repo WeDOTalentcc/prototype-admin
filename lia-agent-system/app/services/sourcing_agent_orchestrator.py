@@ -141,6 +141,20 @@ class SourcingAgentOrchestrator:
 
         await db.commit()
 
+        # 7.6: Feed calibration signal to ML pipeline for weight adaptation
+        try:
+            from app.domains.analytics.services.ml_feedback_service import MLFeedbackService
+            ml_svc = MLFeedbackService()
+            await ml_svc.record_signal(
+                candidate_id=candidate_id,
+                job_id=agent.job_id or "",
+                company_id=agent.company_id,
+                ai_score=0.0,
+                recruiter_decision="hire" if signal_type == "positive" else "reject",
+            )
+        except Exception as ml_err:
+            logger.debug("[SourcingAgent] ML feedback recording skipped: %s", ml_err)
+
         # Count total signals for calibration status
         from sqlalchemy import func
         count_result = await db.execute(
@@ -186,7 +200,7 @@ class SourcingAgentOrchestrator:
 
         try:
             from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
-            from app.shared.agents.agent_interface import AgentInput
+            from lia_agents_core.agent_interface import AgentInput
 
             search_agent = SourcingSearchAgent()
             output = await search_agent.process(AgentInput(

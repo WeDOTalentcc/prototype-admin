@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
+import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import {
   Bot, Plus, Settings, Play, Pause, Briefcase, Database,
   Factory, HeartPulse, ShoppingCart, Code, Truck, Sparkles,
@@ -71,6 +73,7 @@ export default function AgentStudioPage({
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
 
   useEffect(() => {
@@ -191,6 +194,21 @@ export default function AgentStudioPage({
           </div>
         </section>
 
+        {/* Digital Twins */}
+        <section>
+          <h2 className={textStyles.h3}>Digital Twins</h2>
+          <p className={textStyles.description}>Capture o raciocínio de especialistas e use como segunda opinião na triagem.</p>
+          <div className="mt-3">
+            <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} />
+          </div>
+        </section>
+
+        {/* Multi-Strategy Search */}
+        <section>
+          <h2 className={textStyles.h3}>Busca Inteligente Multi-Estratégia</h2>
+          <MultiStrategySearchPanel />
+        </section>
+
         {/* How it works */}
         <section>
           <h2 className={textStyles.h3}>Como funciona</h2>
@@ -214,6 +232,17 @@ export default function AgentStudioPage({
           </div>
         </section>
       </div>
+
+      {/* Digital Twin Evaluation Modal */}
+      {evaluatingTwinId && (
+        <EvaluateWithTwinModal
+          twinId={evaluatingTwinId}
+          candidateProfile={{}}
+          jobContext={{}}
+          isOpen
+          onClose={() => setEvaluatingTwinId(null)}
+        />
+      )}
 
       {/* Create Agent Modal */}
       {showCreateModal && (
