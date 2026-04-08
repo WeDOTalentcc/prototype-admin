@@ -200,7 +200,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
           if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
-      } else if (shouldUsePearch || shouldUseHybrid) {
+      } else {
         const searchSpec = entities ? {
           location: entities.location, job_title: entities.job_title, seniority: entities.seniority,
           years_experience: entities.years_experience, skills: entities.skills || [],
@@ -208,9 +208,10 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         } : undefined
         const searchResponse = await searchCandidatesHybrid({
           query, thread_id: searchThreadId, search_spec: searchSpec,
-          search_local: shouldUseHybrid, search_pearch: true,
-          pearch_type: pearchSearchOptions.searchType, local_limit: shouldUseHybrid ? 20 : 1,
-          pearch_limit: pearchSearchOptions.limit, show_emails: pearchSearchOptions.showEmails,
+          search_local: true, search_pearch: shouldUsePearch || shouldUseHybrid,
+          pearch_type: pearchSearchOptions.searchType, local_limit: 50,
+          pearch_limit: shouldUsePearch || shouldUseHybrid ? pearchSearchOptions.limit : 0,
+          show_emails: pearchSearchOptions.showEmails,
           show_phone_numbers: pearchSearchOptions.showPhoneNumbers, high_freshness: pearchSearchOptions.highFreshness,
           require_emails: pearchSearchOptions.requireEmails, require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
         })
@@ -222,46 +223,6 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         }
         if (searchResponse.candidates?.length > 0) {
           mappedCandidates = searchResponse.candidates.map((c) => mapCandidateToInternal(c as unknown as Record<string, unknown>))
-        }
-      } else {
-        const response = await liaApi.listCandidates(query, undefined, 0, 50)
-        if (response.items?.length > 0) {
-          const tokens = query.toLowerCase().split(/\s+/).filter((t: string) => t.length >= 2)
-          const filtered = tokens.length > 0
-            ? response.items.filter((c: CandidateLocal) =>
-                tokens.every((token: string) =>
-                  c.name?.toLowerCase().includes(token) ||
-                  c.current_title?.toLowerCase().includes(token) ||
-                  c.current_company?.toLowerCase().includes(token) ||
-                  c.location_city?.toLowerCase().includes(token) ||
-                  c.location_state?.toLowerCase().includes(token) ||
-                  c.technical_skills?.some((s: string) => s.toLowerCase().includes(token))
-                )
-              )
-            : response.items
-          totalCount = filtered.length; localCount = filtered.length; pearchCount = 0
-          mappedCandidates = filtered.map((c: CandidateLocal) => ({
-            id: c.id, candidateId: c.id.substring(0, 8).toUpperCase(), name: c.name || 'Sem nome',
-            email: c.email || '', phone: c.phone || '', mobile_phone: c.mobile_phone,
-            current_title: c.current_title || '', current_company: c.current_company || '',
-            current_salary: c.current_salary, desired_salary_min: c.desired_salary_min, desired_salary_max: c.desired_salary_max,
-            location: [c.location_city, c.location_state].filter(Boolean).join(', '),
-            location_city: c.location_city, location_state: c.location_state, linkedin_url: c.linkedin_url,
-            avatar_url: c.avatar_url || (c as Record<string, unknown>).picture_url as string,
-            technical_skills: c.technical_skills || [], skills: c.technical_skills || [],
-            seniority_level: c.seniority_level, years_of_experience: c.years_of_experience,
-            experience: c.years_of_experience || 0, position: c.current_title || '',
-            monthlySalary: c.current_salary || 0,
-            workModel: (c.work_model_preference || 'remoto') as 'remoto' | 'hibrido' | 'presencial',
-            score: c.lia_score || 75,
-            contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
-            linkedin: c.linkedin_url || '', education: c.education || c.educations || [],
-            avatar: c.avatar_url || (c as Record<string, unknown>).picture_url as string,
-            liaAnalysis: { score: c.lia_score || 75, strengths: c.lia_insights?.strengths || [], concerns: c.lia_insights?.concerns || [], recommendation: c.lia_insights?.recommendation || '' },
-            source: 'local', tags: c.tags || [], notes: c.notes, has_email: true, has_phone: true,
-            is_opentowork: c.is_opentowork, is_decision_maker: c.is_decision_maker,
-            is_top_universities: c.is_top_universities,
-          })) as unknown as Candidate[]
         }
       }
 
