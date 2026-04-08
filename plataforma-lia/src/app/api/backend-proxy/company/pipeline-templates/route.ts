@@ -3,5 +3,5 @@ import { createProxyHandlers } from "@/lib/api/proxy-handler"
 export const { dynamic, GET, POST } = createProxyHandlers({
   backendPath: "/api/v1/company/pipeline-templates",
   methods: ["GET", "POST"],
-  auth: false,
+  auth: true,
 })

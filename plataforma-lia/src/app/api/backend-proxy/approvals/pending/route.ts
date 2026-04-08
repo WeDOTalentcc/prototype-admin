@@ -3,5 +3,5 @@ import { createProxyHandlers } from "@/lib/api/proxy-handler"
 export const { dynamic, GET } = createProxyHandlers({
   backendPath: "/api/v1/approvals/pending",
   methods: ["GET"],
-  auth: false,
+  auth: true,
 })
