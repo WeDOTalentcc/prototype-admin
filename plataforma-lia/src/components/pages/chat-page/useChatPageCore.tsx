@@ -439,7 +439,8 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
     showSearch: msg.showSearch, setShowSearch: msg.setShowSearch,
     newMessageIndicator: msg.newMessageIndicator,
     currentMessageIndex: msg.currentMessageIndex,
-    availableCredits: session.availableCredits,
+    availableCredits: session.availableCredits ?? 0,
+    creditsError: session.creditsError,
 
     // Scheduling state (from session)
     isSchedulingModalOpen: session.isSchedulingModalOpen, setIsSchedulingModalOpen: session.setIsSchedulingModalOpen,

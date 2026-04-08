@@ -125,29 +125,16 @@ export async function getCreditBalance(userId: string = "demo-user"): Promise<{
   total_searches: number
   last_updated: string | null
 }> {
-  try {
-    const response = await fetch(`${BACKEND_URL}/credits/balance?user_id=${userId}`, {
-      headers: getAuthHeaders(),
-    })
+  const response = await fetch(`${BACKEND_URL}/credits/balance?user_id=${userId}`, {
+    headers: getAuthHeaders(),
+  })
 
-    if (!response.ok) {
-      return {
-        available_credits: 10000,
-        total_consumed: 0,
-        total_searches: 0,
-        last_updated: null
-      }
-    }
-
-    return response.json()
-  } catch {
-    return {
-      available_credits: 10000,
-      total_consumed: 0,
-      total_searches: 0,
-      last_updated: null
-    }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: response.statusText }))
+    throw new Error(error.detail || `Erro ao obter saldo de créditos (${response.status})`)
   }
+
+  return response.json()
 }
 
 export async function listCandidates(search?: string, source?: string, skip: number = 0, limit: number = 50): Promise<CandidateListResponse> {

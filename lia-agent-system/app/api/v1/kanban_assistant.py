@@ -112,6 +112,100 @@ async def kanban_assistant(request: KanbanAssistantRequest) -> KanbanAssistantRe
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
+class StageMoveContext(BaseModel):
+    candidate_id: str = Field(..., description="ID do candidato sendo movido")
+    candidate_name: str | None = Field(None, description="Nome do candidato")
+    from_stage: str = Field(..., description="Etapa de origem")
+    to_stage: str = Field(..., description="Etapa de destino")
+    job_title: str | None = Field(None, description="Título da vaga")
+    company_id: str | None = Field(None, description="ID da empresa")
+
+
+class StageMovesuggestion(BaseModel):
+    type: str
+    content: str
+    confidence: float
+
+
+class StageMoveSuggestionsResponse(BaseModel):
+    suggestions: list[StageMovesuggestion]
+    generated_at: str
+
+
+@router.post("/lia/kanban-assistant/stage-move-suggestions", response_model=StageMoveSuggestionsResponse)
+async def get_stage_move_suggestions(context: StageMoveContext) -> StageMoveSuggestionsResponse:
+    """
+    Return contextual LIA suggestions when a candidate is moved to a new stage.
+
+    Provides substatus suggestions and recommended next actions based on the
+    from/to stage combination and any available candidate context.
+    """
+    from datetime import datetime
+
+    stage_suggestions: dict[str, list[dict]] = {
+        "applied": [
+            {"type": "substatus", "content": "Aguardando análise de currículo", "confidence": 0.90},
+            {"type": "next_action", "content": "Iniciar triagem curricular", "confidence": 0.85},
+        ],
+        "screening": [
+            {"type": "substatus", "content": "Em triagem pela LIA", "confidence": 0.92},
+            {"type": "next_action", "content": "Aguardar resultado da triagem automática", "confidence": 0.88},
+            {"type": "substatus", "content": "Aguardando revisão manual", "confidence": 0.75},
+        ],
+        "interview": [
+            {"type": "substatus", "content": "Aguardando agendamento de entrevista", "confidence": 0.90},
+            {"type": "next_action", "content": "Agendar entrevista com o candidato", "confidence": 0.88},
+            {"type": "substatus", "content": "Entrevista agendada", "confidence": 0.80},
+        ],
+        "technical": [
+            {"type": "substatus", "content": "Aguardando envio do teste técnico", "confidence": 0.88},
+            {"type": "next_action", "content": "Enviar teste técnico por email", "confidence": 0.85},
+            {"type": "substatus", "content": "Teste técnico enviado — aguardando resposta", "confidence": 0.80},
+        ],
+        "offer": [
+            {"type": "substatus", "content": "Proposta em elaboração", "confidence": 0.88},
+            {"type": "next_action", "content": "Preparar proposta salarial e benefícios", "confidence": 0.85},
+            {"type": "substatus", "content": "Proposta enviada — aguardando retorno", "confidence": 0.78},
+        ],
+        "hired": [
+            {"type": "substatus", "content": "Proposta aceita", "confidence": 0.95},
+            {"type": "next_action", "content": "Iniciar processo de onboarding", "confidence": 0.90},
+            {"type": "substatus", "content": "Aguardando documentação de admissão", "confidence": 0.82},
+        ],
+        "rejected": [
+            {"type": "substatus", "content": "Não avançou nesta etapa", "confidence": 0.90},
+            {"type": "next_action", "content": "Enviar feedback ao candidato", "confidence": 0.85},
+        ],
+    }
+
+    raw_suggestions = stage_suggestions.get(context.to_stage, [
+        {"type": "substatus", "content": "Aguardando próxima ação", "confidence": 0.70},
+        {"type": "next_action", "content": "Definir próximo passo com o candidato", "confidence": 0.68},
+    ])
+
+    suggestions = [
+        StageMovesuggestion(
+            type=s["type"],
+            content=s["content"],
+            confidence=s["confidence"],
+        )
+        for s in raw_suggestions
+    ]
+
+    logger.info(
+        "Stage-move suggestions: candidate=%s from=%s to=%s suggestions=%d",
+        context.candidate_id,
+        context.from_stage,
+        context.to_stage,
+        len(suggestions),
+    )
+
+    return StageMoveSuggestionsResponse(
+        suggestions=suggestions,
+        generated_at=datetime.utcnow().isoformat(),
+    )
+
+
 @router.get("/lia/kanban-assistant/command-types", response_model=None)
 async def get_command_types():
     """

@@ -97,15 +97,18 @@ export function useChatSession({
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false)
 
   // ── Credits ────────────────────────────────────────────────
-  const [availableCredits, setAvailableCredits] = useState<number>(50)
+  const [availableCredits, setAvailableCredits] = useState<number | null>(null)
+  const [creditsError, setCreditsError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchCredits = async () => {
       try {
         const balance = await liaApi.getCreditBalance("demo-user")
         setAvailableCredits(balance.available_credits)
-      } catch {
-        // Keep default value (50) on error
+        setCreditsError(null)
+      } catch (err) {
+        setCreditsError(err instanceof Error ? err.message : "Erro ao obter saldo de créditos")
+        setAvailableCredits(null)
       }
     }
     fetchCredits()
@@ -285,27 +288,47 @@ export function useChatSession({
 
   // "Nova Tarefa"
   useEffect(() => {
-    const handleNewTask = () => {
+    const handleNewTask = async () => {
       setChatTitle('Nova Tarefa')
-      const taskSuggestions = [
-        { icon: '🔍', title: 'Buscar candidatos', description: 'Encontrar perfis que atendam aos requisitos de uma vaga' },
-        { icon: '📋', title: 'Criar nova vaga', description: 'Definir uma nova posição com requisitos e benefícios' },
-        { icon: '📞', title: 'Agendar entrevistas', description: 'Organizar entrevistas com candidatos selecionados' },
-        { icon: '✉️', title: 'Enviar comunicações', description: 'Enviar emails ou mensagens para candidatos' },
-        { icon: '📊', title: 'Gerar relatório', description: 'Criar análises e relatórios de recrutamento' },
-        { icon: '🎯', title: 'Fazer triagem', description: 'Avaliar e qualificar candidatos de uma vaga' },
-      ]
-      const suggestionsText = taskSuggestions.map(s => `${s.icon} **${s.title}** - ${s.description}`).join('\n')
-      setMessages(prev => [...prev, {
-        id: Date.now(), sender: "lia",
-        content: `Olá! Estou pronta para ajudar você a criar uma nova tarefa. O que você gostaria de fazer?\n\n${suggestionsText}\n\nDigite o que você precisa ou escolha uma das opções acima!`,
-        timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        type: "text",
-      }])
+
+      try {
+        const params = new URLSearchParams({ limit: '6' })
+        if (companyId) params.set('company_id', companyId)
+        const response = await fetch(`/api/backend-proxy/lia/suggestions?${params.toString()}`)
+
+        if (!response.ok) {
+          throw new Error(`Suggestions API returned ${response.status}`)
+        }
+
+        const data = await response.json()
+        const taskSuggestions: { icon?: string; title: string; description: string }[] = Array.isArray(data.suggestions)
+          ? data.suggestions
+          : []
+
+        const suggestionsText = taskSuggestions.length > 0
+          ? taskSuggestions.map(s => `${s.icon || '💡'} **${s.title}** - ${s.description}`).join('\n')
+          : null
+
+        setMessages(prev => [...prev, {
+          id: Date.now(), sender: "lia",
+          content: suggestionsText
+            ? `Olá! Estou pronta para ajudar você a criar uma nova tarefa. O que você gostaria de fazer?\n\n${suggestionsText}\n\nDigite o que você precisa ou escolha uma das opções acima!`
+            : `Olá! Estou pronta para ajudar você a criar uma nova tarefa. O que você gostaria de fazer?\n\nDigite o que você precisa e vou ajudá-lo!`,
+          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          type: "text",
+        }])
+      } catch (err) {
+        setMessages(prev => [...prev, {
+          id: Date.now(), sender: "lia",
+          content: `Olá! Estou pronta para ajudar você a criar uma nova tarefa.\n\nNo momento não consegui carregar as sugestões personalizadas, mas pode me contar o que precisa e eu ajudo!`,
+          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          type: "text",
+        }])
+      }
     }
     window.addEventListener('lia-new-task', handleNewTask)
     return () => window.removeEventListener('lia-new-task', handleNewTask)
-  }, [setMessages])
+  }, [setMessages, companyId])
 
   // "Nova Vaga"
   useEffect(() => {
@@ -460,6 +483,7 @@ export function useChatSession({
     currentSuggestion,
     isLoadingSuggestion,
     availableCredits,
+    creditsError,
     chatId,
     chatTitle, setChatTitle,
     activeTab, setActiveTab,

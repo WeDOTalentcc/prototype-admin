@@ -91,23 +91,34 @@ export function useKanbanState(options: UseKanbanStateOptions): UseKanbanStateRe
     setPendingMove(action)
     
     try {
-      const suggestions: LIASuggestion[] = [
-        {
-          type: "substatus",
-          content: "Aguardando documentação",
-          confidence: 0.85,
-        },
-        {
-          type: "next_action",
-          content: "Agendar entrevista técnica",
-          confidence: 0.78,
-        },
-      ]
-      setLiaSuggestions(suggestions)
+      const response = await fetch("/api/backend-proxy/lia/kanban-assistant/stage-move-suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidate_id: action.candidateId,
+          from_stage: action.fromStageId,
+          to_stage: action.toStageId,
+          job_title: job?.title ?? null,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const suggestions: LIASuggestion[] = (data.suggestions ?? []).map(
+          (s: { type: string; content: string; confidence: number }) => ({
+            type: s.type,
+            content: s.content,
+            confidence: s.confidence,
+          })
+        )
+        setLiaSuggestions(suggestions)
+      } else {
+        setLiaSuggestions([])
+      }
     } catch {
       setLiaSuggestions([])
     }
-  }, [])
+  }, [job])
 
   const confirmMove = useCallback(async (substatus?: string, reason?: string) => {
     if (!pendingMove) return

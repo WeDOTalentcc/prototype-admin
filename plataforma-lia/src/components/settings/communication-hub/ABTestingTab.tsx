@@ -1,0 +1,423 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { FlaskConical, Plus, BarChart3, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react"
+import { BACKEND_URL, getAuthHeaders } from "@/services/lia-api/base"
+
+interface ABVariant {
+  variant_name: string
+  traffic_percentage: number
+  is_active?: boolean
+}
+
+interface ABTest {
+  test_name: string
+  variants: ABVariant[]
+  created_at?: string | null
+}
+
+interface ABTestMetrics {
+  test_name: string
+  variants: Record<string, { metrics: Record<string, { sample_size: number; mean: number; std_dev: number; confidence_interval_95: number[] }> }>
+  statistical_significance: Record<string, { control: string; variant: string; metric: string; z_score: number; p_value: number; improvement_pct: number; is_significant: boolean }> | null
+  winner: { variant: string; metric: string; improvement_pct: number; p_value: number } | null
+  total_observations: number
+}
+
+interface CreateTestForm {
+  test_name: string
+  variants: { variant_name: string; prompt_template: string; traffic_percentage: number }[]
+}
+
+const EMPTY_FORM: CreateTestForm = {
+  test_name: "",
+  variants: [
+    { variant_name: "control", prompt_template: "", traffic_percentage: 50 },
+    { variant_name: "treatment", prompt_template: "", traffic_percentage: 50 },
+  ],
+}
+
+export function ABTestingTab() {
+  const [tests, setTests] = useState<ABTest[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [expandedTest, setExpandedTest] = useState<string | null>(null)
+  const [metricsMap, setMetricsMap] = useState<Record<string, ABTestMetrics>>({})
+  const [metricsLoading, setMetricsLoading] = useState<Record<string, boolean>>({})
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [form, setForm] = useState<CreateTestForm>(EMPTY_FORM)
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null)
+
+  const fetchTests = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`${BACKEND_URL}/ab-tests`, { headers: getAuthHeaders() })
+      if (!response.ok) throw new Error(`Erro ao carregar testes: ${response.statusText}`)
+      const data = await response.json()
+      setTests(data.tests || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao carregar experimentos")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchMetrics = useCallback(async (testName: string) => {
+    setMetricsLoading(prev => ({ ...prev, [testName]: true }))
+    try {
+      const response = await fetch(`${BACKEND_URL}/ab-tests/${encodeURIComponent(testName)}/results`, {
+        headers: getAuthHeaders(),
+      })
+      if (!response.ok) throw new Error("Erro ao carregar métricas")
+      const data: ABTestMetrics = await response.json()
+      setMetricsMap(prev => ({ ...prev, [testName]: data }))
+    } catch {
+      // Non-fatal - leave metrics empty
+    } finally {
+      setMetricsLoading(prev => ({ ...prev, [testName]: false }))
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchTests()
+  }, [fetchTests])
+
+  const toggleExpand = (testName: string) => {
+    if (expandedTest === testName) {
+      setExpandedTest(null)
+    } else {
+      setExpandedTest(testName)
+      if (!metricsMap[testName]) {
+        fetchMetrics(testName)
+      }
+    }
+  }
+
+  const handleFormVariantChange = (index: number, field: keyof CreateTestForm["variants"][0], value: string | number) => {
+    setForm(prev => ({
+      ...prev,
+      variants: prev.variants.map((v, i) => i === index ? { ...v, [field]: value } : v),
+    }))
+  }
+
+  const addVariant = () => {
+    setForm(prev => ({
+      ...prev,
+      variants: [...prev.variants, { variant_name: `variant_${prev.variants.length}`, prompt_template: "", traffic_percentage: 0 }],
+    }))
+  }
+
+  const removeVariant = (index: number) => {
+    if (form.variants.length <= 2) return
+    setForm(prev => ({ ...prev, variants: prev.variants.filter((_, i) => i !== index) }))
+  }
+
+  const handleCreate = async () => {
+    setCreateError(null)
+    setCreateSuccess(null)
+
+    if (!form.test_name.trim()) {
+      setCreateError("Nome do experimento é obrigatório")
+      return
+    }
+
+    const totalTraffic = form.variants.reduce((sum, v) => sum + Number(v.traffic_percentage), 0)
+    if (Math.abs(totalTraffic - 100) > 0.1) {
+      setCreateError(`A soma do tráfego deve ser 100% (atual: ${totalTraffic}%)`)
+      return
+    }
+
+    setCreating(true)
+    try {
+      const response = await fetch(`${BACKEND_URL}/ab-tests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({
+          test_name: form.test_name.trim(),
+          variants: form.variants,
+        }),
+      })
+
+      const data = await response.json()
+      if (!response.ok || data.error) {
+        throw new Error(data.error || data.detail || "Erro ao criar experimento")
+      }
+
+      setCreateSuccess(`Experimento "${form.test_name}" criado com sucesso!`)
+      setForm(EMPTY_FORM)
+      setShowCreateForm(false)
+      fetchTests()
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Erro ao criar experimento")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const getStatusColor = (metrics: ABTestMetrics | undefined) => {
+    if (!metrics) return "bg-lia-bg-secondary text-lia-text-tertiary"
+    if (metrics.winner) return "bg-status-success/15 text-status-success"
+    if (metrics.total_observations > 0) return "bg-wedo-cyan/10 text-wedo-cyan"
+    return "bg-lia-bg-secondary text-lia-text-tertiary"
+  }
+
+  const getStatusLabel = (metrics: ABTestMetrics | undefined) => {
+    if (!metrics) return "Sem dados"
+    if (metrics.winner) return "Vencedor identificado"
+    if (metrics.total_observations > 0) return "Em progresso"
+    return "Aguardando dados"
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
+            <FlaskConical className="w-4 h-4 text-wedo-cyan" />
+            A/B Testing de Templates de Email
+          </h3>
+          <p className="text-xs text-lia-text-tertiary mt-0.5">
+            Gerencie experimentos para otimizar templates de email com base em dados reais
+          </p>
+        </div>
+        <button
+          onClick={() => { setShowCreateForm(!showCreateForm); setCreateError(null); setCreateSuccess(null) }}
+          className="flex items-center gap-1.5 text-xs bg-wedo-cyan text-white px-3 py-1.5 rounded-lg hover:bg-wedo-cyan-dark transition-colors font-medium"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Novo Experimento
+        </button>
+      </div>
+
+      {createSuccess && (
+        <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-lg px-3 py-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          {createSuccess}
+        </div>
+      )}
+
+      {showCreateForm && (
+        <div className="border border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary space-y-4">
+          <h4 className="text-sm font-semibold text-lia-text-primary">Novo Experimento</h4>
+
+          <div>
+            <label className="text-xs font-medium text-lia-text-secondary block mb-1">Nome do Experimento</label>
+            <input
+              type="text"
+              value={form.test_name}
+              onChange={e => setForm(prev => ({ ...prev, test_name: e.target.value }))}
+              placeholder="ex: email_screening_invite_v2"
+              className="w-full text-sm bg-lia-bg-primary border border-lia-border-subtle rounded-lg px-3 py-2 text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-lia-text-secondary">Variantes</label>
+              <button
+                onClick={addVariant}
+                className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark font-medium"
+              >
+                + Adicionar variante
+              </button>
+            </div>
+
+            {form.variants.map((variant, i) => (
+              <div key={i} className="border border-lia-border-subtle rounded-lg p-3 space-y-2 bg-lia-bg-primary">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <label className="text-[10px] text-lia-text-tertiary block mb-0.5">Nome da Variante</label>
+                    <input
+                      type="text"
+                      value={variant.variant_name}
+                      onChange={e => handleFormVariantChange(i, "variant_name", e.target.value)}
+                      className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
+                    />
+                  </div>
+                  <div className="w-24">
+                    <label className="text-[10px] text-lia-text-tertiary block mb-0.5">Tráfego (%)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={variant.traffic_percentage}
+                      onChange={e => handleFormVariantChange(i, "traffic_percentage", parseFloat(e.target.value) || 0)}
+                      className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
+                    />
+                  </div>
+                  {form.variants.length > 2 && (
+                    <button
+                      onClick={() => removeVariant(i)}
+                      className="text-status-error text-xs mt-4 hover:opacity-80"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <label className="text-[10px] text-lia-text-tertiary block mb-0.5">Template do Email</label>
+                  <textarea
+                    value={variant.prompt_template}
+                    onChange={e => handleFormVariantChange(i, "prompt_template", e.target.value)}
+                    placeholder="Olá {{candidate_name}}, ..."
+                    rows={3}
+                    className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-wedo-cyan resize-none font-mono"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {createError && (
+            <div className="flex items-center gap-2 text-xs text-status-error bg-status-error/10 border border-status-error/30 rounded-lg px-3 py-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              {createError}
+            </div>
+          )}
+
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => { setShowCreateForm(false); setForm(EMPTY_FORM); setCreateError(null) }}
+              className="text-xs text-lia-text-secondary px-3 py-1.5 rounded-lg border border-lia-border-subtle hover:bg-lia-bg-primary transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={creating}
+              className="flex items-center gap-1.5 text-xs bg-wedo-cyan text-white px-3 py-1.5 rounded-lg hover:bg-wedo-cyan-dark transition-colors font-medium disabled:opacity-60"
+            >
+              {creating && <Loader2 className="w-3 h-3 animate-spin" />}
+              {creating ? "Criando..." : "Criar Experimento"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-5 h-5 animate-spin text-wedo-cyan" />
+          <span className="ml-2 text-sm text-lia-text-tertiary">Carregando experimentos...</span>
+        </div>
+      ) : error ? (
+        <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 border border-status-error/30 rounded-lg px-4 py-3">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
+        </div>
+      ) : tests.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-lia-border-subtle rounded-xl">
+          <FlaskConical className="w-8 h-8 text-lia-text-tertiary mx-auto mb-2" />
+          <p className="text-sm text-lia-text-secondary">Nenhum experimento ativo</p>
+          <p className="text-xs text-lia-text-tertiary mt-1">Crie um experimento para começar a testar variantes de email</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {tests.map(test => {
+            const metrics = metricsMap[test.test_name]
+            const isExpanded = expandedTest === test.test_name
+            const isLoadingMetrics = metricsLoading[test.test_name]
+
+            return (
+              <div key={test.test_name} className="border border-lia-border-subtle rounded-xl overflow-hidden">
+                <button
+                  className="w-full flex items-center justify-between p-4 bg-lia-bg-primary hover:bg-lia-bg-secondary transition-colors text-left"
+                  onClick={() => toggleExpand(test.test_name)}
+                >
+                  <div className="flex items-center gap-3">
+                    <FlaskConical className="w-4 h-4 text-wedo-cyan shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-lia-text-primary">{test.test_name}</p>
+                      <p className="text-xs text-lia-text-tertiary">
+                        {test.variants.length} variante{test.variants.length !== 1 ? "s" : ""}
+                        {test.created_at && ` · criado em ${new Date(test.created_at).toLocaleDateString("pt-BR")}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${getStatusColor(metrics)}`}>
+                      {isLoadingMetrics ? "..." : getStatusLabel(metrics)}
+                    </span>
+                    {isExpanded
+                      ? <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
+                      : <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
+                    }
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t border-lia-border-subtle p-4 bg-lia-bg-secondary space-y-4">
+                    <div>
+                      <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide mb-2">Variantes</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {test.variants.map(variant => (
+                          <div key={variant.variant_name} className="bg-lia-bg-primary rounded-lg border border-lia-border-subtle px-3 py-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-lia-text-primary">{variant.variant_name}</span>
+                              <span className="text-xs text-lia-text-tertiary">{variant.traffic_percentage}%</span>
+                            </div>
+                            <div className="mt-1 h-1.5 bg-lia-bg-secondary rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-wedo-cyan rounded-full transition-all"
+                                style={{ width: `${variant.traffic_percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {isLoadingMetrics ? (
+                      <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Carregando métricas...
+                      </div>
+                    ) : metrics ? (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <BarChart3 className="w-3.5 h-3.5 text-wedo-cyan" />
+                          <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide">
+                            Métricas · {metrics.total_observations} observações
+                          </p>
+                        </div>
+
+                        {metrics.winner && (
+                          <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-lg px-3 py-2 mb-3">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            Vencedor: <strong>{metrics.winner.variant}</strong> (+{metrics.winner.improvement_pct}% em {metrics.winner.metric}, p={metrics.winner.p_value})
+                          </div>
+                        )}
+
+                        {metrics.total_observations === 0 ? (
+                          <p className="text-xs text-lia-text-tertiary">Nenhuma observação registrada ainda.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {Object.entries(metrics.variants).map(([variantName, variantData]) => (
+                              <div key={variantName} className="bg-lia-bg-primary rounded-lg border border-lia-border-subtle px-3 py-2">
+                                <p className="text-xs font-medium text-lia-text-primary mb-1">{variantName}</p>
+                                {Object.entries(variantData.metrics).map(([metricName, metricData]) => (
+                                  <div key={metricName} className="flex items-center justify-between text-xs text-lia-text-secondary">
+                                    <span>{metricName}</span>
+                                    <span className="font-mono">
+                                      média: <strong>{metricData.mean}</strong> · n={metricData.sample_size}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

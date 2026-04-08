@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect } from "react"
-import { Mail, Clock, PenTool, Bell } from "lucide-react"
+import { Mail, Clock, PenTool, Bell, FlaskConical } from "lucide-react"
 import { tabStyles } from '@/lib/design-tokens'
 import type { CommunicationHubProps } from './communication-hub/CommunicationHub.types'
 import { useCommunicationHub } from './communication-hub/useCommunicationHub'
@@ -9,6 +9,7 @@ import { TemplatesTab } from './communication-hub/TemplatesTab'
 import { SignatureTab } from './communication-hub/SignatureTab'
 import { ScheduleTab } from './communication-hub/ScheduleTab'
 import { AlertsTab } from './communication-hub/AlertsTab'
+import { ABTestingTab } from './communication-hub/ABTestingTab'
 
 export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
   const hub = useCommunicationHub(activeSubsection)
@@ -22,7 +23,8 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
     { id: 'templates', label: 'Templates', icon: Mail },
     { id: 'signature', label: 'Assinatura', icon: PenTool },
     { id: 'schedule', label: 'Horários LGPD', icon: Clock },
-    { id: 'alerts', label: 'Alertas', icon: Bell }
+    { id: 'alerts', label: 'Alertas', icon: Bell },
+    { id: 'abtesting', label: 'A/B Testing', icon: FlaskConical },
   ]
 
   const renderContent = () => {
@@ -110,6 +112,8 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             handleToggleWeeklyDigest={hub.handleToggleWeeklyDigest}
           />
         )
+      case 'abtesting':
+        return <ABTestingTab />
       default:
         return null
     }
