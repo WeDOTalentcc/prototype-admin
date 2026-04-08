@@ -120,6 +120,77 @@ JOB_VACANCIES = [
 
 VACANCY_IDS = [_seed_uuid(f"vacancy:{i}:{v['title']}") for i, v in enumerate(JOB_VACANCIES)]
 
+DEPT_TECH_MAP = {
+    "engineering": [
+        {"skill": "Python", "level": "avançado", "weight": 0.3},
+        {"skill": "TypeScript", "level": "avançado", "weight": 0.25},
+        {"skill": "PostgreSQL", "level": "intermediário", "weight": 0.2},
+        {"skill": "Docker/Kubernetes", "level": "intermediário", "weight": 0.15},
+        {"skill": "CI/CD", "level": "intermediário", "weight": 0.1},
+    ],
+    "product": [
+        {"skill": "Product Discovery", "level": "avançado", "weight": 0.3},
+        {"skill": "SQL / Análise de Dados", "level": "intermediário", "weight": 0.25},
+        {"skill": "Figma / Prototipagem", "level": "intermediário", "weight": 0.2},
+        {"skill": "Métricas de Produto", "level": "avançado", "weight": 0.15},
+        {"skill": "Roadmap & OKRs", "level": "intermediário", "weight": 0.1},
+    ],
+    "design": [
+        {"skill": "Figma", "level": "avançado", "weight": 0.3},
+        {"skill": "Design Systems", "level": "avançado", "weight": 0.25},
+        {"skill": "User Research", "level": "intermediário", "weight": 0.2},
+        {"skill": "Prototipagem", "level": "intermediário", "weight": 0.15},
+        {"skill": "Acessibilidade (WCAG)", "level": "básico", "weight": 0.1},
+    ],
+    "data": [
+        {"skill": "Python / PySpark", "level": "avançado", "weight": 0.3},
+        {"skill": "SQL Avançado", "level": "avançado", "weight": 0.25},
+        {"skill": "Machine Learning", "level": "intermediário", "weight": 0.2},
+        {"skill": "Airflow / dbt", "level": "intermediário", "weight": 0.15},
+        {"skill": "Estatística", "level": "intermediário", "weight": 0.1},
+    ],
+}
+
+SENIORITY_BEHAVIORAL_MAP = {
+    "Júnior": [
+        {"competency": "Comunicação", "description": "Capacidade de se expressar com clareza e ouvir ativamente", "weight": 0.3},
+        {"competency": "Aprendizado contínuo", "description": "Busca ativa por conhecimento e desenvolvimento", "weight": 0.4},
+        {"competency": "Trabalho em equipe", "description": "Colaboração e espírito de equipe", "weight": 0.3},
+    ],
+    "Pleno": [
+        {"competency": "Comunicação", "description": "Capacidade de se expressar com clareza em diferentes contextos", "weight": 0.25},
+        {"competency": "Resolução de problemas", "description": "Análise e solução de problemas complexos", "weight": 0.3},
+        {"competency": "Autonomia", "description": "Capacidade de conduzir tarefas com independência", "weight": 0.25},
+        {"competency": "Colaboração", "description": "Trabalho eficaz com times multidisciplinares", "weight": 0.2},
+    ],
+    "Sênior": [
+        {"competency": "Liderança técnica", "description": "Capacidade de guiar decisões técnicas e mentorar colegas", "weight": 0.3},
+        {"competency": "Visão estratégica", "description": "Alinhamento de entregas com objetivos de negócio", "weight": 0.25},
+        {"competency": "Comunicação executiva", "description": "Articulação clara para stakeholders de diferentes níveis", "weight": 0.2},
+        {"competency": "Gestão de complexidade", "description": "Navegação eficaz em projetos ambíguos e de alto impacto", "weight": 0.25},
+    ],
+    "Especialista": [
+        {"competency": "Liderança técnica", "description": "Referência técnica e capacidade de influenciar decisões arquiteturais", "weight": 0.3},
+        {"competency": "Inovação", "description": "Proposta de soluções inovadoras e escaláveis", "weight": 0.25},
+        {"competency": "Mentoria", "description": "Desenvolvimento de talentos e disseminação de conhecimento", "weight": 0.25},
+        {"competency": "Visão sistêmica", "description": "Compreensão holística de impactos e trade-offs", "weight": 0.2},
+    ],
+}
+
+
+def _vacancy_tech_requirements(dept: str):
+    default = [
+        {"skill": "Comunicação escrita", "level": "intermediário", "weight": 0.4},
+        {"skill": "Excel / Google Sheets", "level": "intermediário", "weight": 0.3},
+        {"skill": "Ferramentas de gestão", "level": "básico", "weight": 0.3},
+    ]
+    return DEPT_TECH_MAP.get(dept, default)
+
+
+def _vacancy_behavioral_competencies(seniority: str):
+    return SENIORITY_BEHAVIORAL_MAP.get(seniority, SENIORITY_BEHAVIORAL_MAP["Pleno"])
+
+
 FIRST_NAMES = [
     "Ana", "Beatriz", "Carlos", "Daniel", "Eduardo", "Fernanda", "Gabriel", "Helena",
     "Igor", "Julia", "Karen", "Leonardo", "Mariana", "Nicolas", "Olivia", "Paulo",
@@ -458,14 +529,19 @@ async def seed_job_vacancies(db: AsyncSession):
         open_date = _past(10, 60)
         deadline = open_date + timedelta(days=randint(30, 90))
         salary_json = json.dumps({"min": j["salary_min"], "max": j["salary_max"], "currency": "BRL"})
+        tech_reqs = _vacancy_tech_requirements(j["dept"])
+        behav_comps = _vacancy_behavioral_competencies(j["seniority"])
+        reqs_list = [r["skill"] for r in tech_reqs[:3]]
         await db.execute(text("""
             INSERT INTO job_vacancies (id, company_id, job_id, title, department, location, work_model,
                 employment_type, seniority_level, description, salary_range, status, stage, priority,
                 urgency_level, open_date, deadline, recruiter_email, manager, created_by, visibility,
+                requirements, technical_requirements, behavioral_competencies,
                 created_at, updated_at, is_pipeline_customized)
             VALUES (:id, :cid, :jid, :title, :dept, :loc, :model, :etype, :sen, :desc,
                 cast(:salary as jsonb), :status, :stage, :pri, :urg, :open, :dead, :rec, :mgr, :cb,
-                'public', :created, :now, false)
+                'public', :reqs, cast(:tech_reqs as json), cast(:behav as json),
+                :created, :now, false)
         """), {
             "id": vid, "cid": SEED_COMPANY_ID_STR, "jid": job_id, "title": j["title"],
             "dept": j["dept"].replace("_", " ").title(), "loc": j["location"], "model": j["model"],
@@ -477,6 +553,9 @@ async def seed_job_vacancies(db: AsyncSession):
             "pri": j["priority"], "urg": {"alta": 5, "média": 3, "baixa": 1}[j["priority"]],
             "open": open_date, "dead": deadline, "rec": recruiter,
             "mgr": "Lucas Ferreira", "cb": "ana.costa@wedotalent.cc",
+            "reqs": reqs_list,
+            "tech_reqs": json.dumps(tech_reqs),
+            "behav": json.dumps(behav_comps),
             "created": open_date, "now": NOW,
         })
         count += 1
@@ -727,6 +806,124 @@ async def seed_stage_history(db: AsyncSession):
             prev_stage = stage_name
 
     logger.info(f"  {count} stage history entries seeded.")
+
+
+async def seed_interviews(db: AsyncSession):
+    logger.info("Seeding Interviews & Feedbacks...")
+    existing = await db.execute(
+        text("SELECT id FROM interviews WHERE created_by = :src LIMIT 1"),
+        {"src": SEED_SOURCE},
+    )
+    if existing.fetchone():
+        logger.info("  Interviews already exist, skipping.")
+        return
+
+    rows = await db.execute(
+        text("""SELECT vc.id, vc.vacancy_id, vc.candidate_id, vc.stage
+                FROM vacancy_candidates vc
+                WHERE vc.company_id = :cid
+                AND vc.stage IN ('interview_hr', 'interview_technical', 'interview_manager', 'offer', 'hired')"""),
+        {"cid": SEED_COMPANY_ID_STR},
+    )
+    vc_rows = rows.fetchall()
+
+    interview_types = {
+        "interview_hr": ("Entrevista RH", "behavioral", "video_call"),
+        "interview_technical": ("Entrevista Técnica", "technical", "video_call"),
+        "interview_manager": ("Entrevista Gestor", "final", "in_person"),
+        "offer": ("Entrevista Final", "final", "video_call"),
+        "hired": ("Entrevista Final", "final", "in_person"),
+    }
+
+    interviewers = [
+        ("Ana Beatriz Costa", "ana.costa@wedotalent.cc", "Head de RH"),
+        ("Rafael Mendes", "rafael.mendes@wedotalent.cc", "Recrutador"),
+        ("Camila Oliveira", "camila.oliveira@wedotalent.cc", "Recrutadora"),
+        ("Lucas Ferreira", "lucas.ferreira@wedotalent.cc", "Gestor"),
+    ]
+
+    interview_count = 0
+    feedback_count = 0
+    for vc_id, vacancy_id, candidate_id, stage in vc_rows:
+        cand_row = await db.execute(
+            text("SELECT name, email FROM candidates WHERE id = :id"),
+            {"id": candidate_id},
+        )
+        cand = cand_row.fetchone()
+        if not cand:
+            continue
+
+        title, itype, mode = interview_types.get(stage, ("Entrevista", "general", "video_call"))
+        interviewer_name, interviewer_email, interviewer_role = choice(interviewers)
+        start = _past(1, 20)
+        duration = choice([30, 45, 60])
+        status = choice(["completed", "completed", "completed", "scheduled", "confirmed"])
+
+        interview_id = _uuid()
+        stage_id = STAGE_IDS.get(stage if stage in STAGE_IDS else "interview_hr")
+
+        await db.execute(text("""
+            INSERT INTO interviews (id, title, description, interview_type, interview_mode,
+                candidate_id, candidate_name, candidate_email,
+                interviewer_name, interviewer_email,
+                start_time, end_time, timezone, duration_minutes,
+                location, meeting_platform, status, confirmation_status,
+                job_vacancy_id, job_title, application_stage,
+                recruitment_stage_id, created_by, created_at, updated_at)
+            VALUES (:id, :title, :desc, :itype, :mode,
+                :cand_id, :cand_name, :cand_email,
+                :int_name, :int_email,
+                :start, :end, 'America/Sao_Paulo', :dur,
+                :loc, :platform, :status, :conf,
+                :vac_id, :job_title, :stage,
+                :stage_id, :created_by, :now, :now)
+        """), {
+            "id": interview_id, "title": title,
+            "desc": f"{title} para a vaga — candidato(a) {cand[0]}",
+            "itype": itype, "mode": mode,
+            "cand_id": candidate_id, "cand_name": cand[0], "cand_email": cand[1],
+            "int_name": interviewer_name, "int_email": interviewer_email,
+            "start": start, "end": start + timedelta(minutes=duration),
+            "dur": duration, "loc": "Google Meet" if mode == "video_call" else "Escritório SP",
+            "platform": "google_meet" if mode == "video_call" else None,
+            "status": status, "conf": "confirmed" if status in ("completed", "confirmed") else "pending",
+            "vac_id": vacancy_id, "job_title": title, "stage": stage,
+            "stage_id": stage_id, "created_by": SEED_SOURCE, "now": NOW,
+        })
+        interview_count += 1
+
+        if status == "completed":
+            tech_rating = round(uniform(3.0, 5.0), 1)
+            comm_rating = round(uniform(3.0, 5.0), 1)
+            culture_rating = round(uniform(3.0, 5.0), 1)
+            overall = round((tech_rating + comm_rating + culture_rating) / 3, 1)
+            recommendation = "strong_hire" if overall >= 4.5 else "hire" if overall >= 3.8 else "no_hire"
+            await db.execute(text("""
+                INSERT INTO interview_feedbacks (id, interview_id,
+                    interviewer_name, interviewer_email, interviewer_role,
+                    technical_skills_rating, communication_rating, cultural_fit_rating,
+                    overall_rating, strengths, weaknesses, notes, recommendation,
+                    next_steps_suggested, created_at, updated_at)
+                VALUES (:id, :iid, :name, :email, :role,
+                    :tech, :comm, :culture, :overall,
+                    cast(:str as json), cast(:weak as json), :notes, :rec,
+                    :next, :now, :now)
+            """), {
+                "id": _uuid(), "iid": interview_id,
+                "name": interviewer_name, "email": interviewer_email, "role": interviewer_role,
+                "tech": tech_rating, "comm": comm_rating, "culture": culture_rating,
+                "overall": overall,
+                "str": json.dumps(["Boa comunicação", "Experiência relevante", "Fit cultural"]),
+                "weak": json.dumps(["Pode melhorar em liderança"]),
+                "notes": f"Candidato(a) {cand[0]} demonstrou bom domínio técnico.",
+                "rec": recommendation,
+                "next": "Avançar para próxima etapa" if recommendation != "no_hire" else "Encerrar processo",
+                "now": NOW,
+            })
+            feedback_count += 1
+
+    logger.info(f"  {interview_count} interviews seeded.")
+    logger.info(f"  {feedback_count} interview feedbacks seeded.")
 
 
 async def seed_department_members(db: AsyncSession):
@@ -1047,6 +1244,13 @@ async def clean_seed_data(db: AsyncSession):
     await db.execute(text("DELETE FROM goals WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
     logger.info("  goals cleaned.")
 
+    await db.execute(text("""
+        DELETE FROM interview_feedbacks WHERE interview_id IN
+        (SELECT id FROM interviews WHERE created_by = :src)
+    """), {"src": SEED_SOURCE})
+    await db.execute(text("DELETE FROM interviews WHERE created_by = :src"), {"src": SEED_SOURCE})
+    logger.info("  interviews & feedbacks cleaned.")
+
     await db.execute(text("DELETE FROM candidate_stage_history WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  candidate_stage_history cleaned.")
 
@@ -1075,8 +1279,11 @@ async def clean_seed_data(db: AsyncSession):
     await db.execute(text("DELETE FROM recruitment_stages WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  recruitment_stages cleaned.")
 
-    await db.execute(text("DELETE FROM client_users WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID})
-    logger.info("  client_users cleaned.")
+    await db.execute(text("""
+        DELETE FROM client_users WHERE company_id = :cid
+        AND email NOT IN ('demo@wedotalent.com', 'demo@wedotalent.cc')
+    """), {"cid": SEED_COMPANY_ID})
+    logger.info("  client_users cleaned (demo user preserved).")
 
     await db.execute(text("DELETE FROM department_members WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
     logger.info("  department_members cleaned.")
@@ -1115,6 +1322,7 @@ async def run_seed():
             await seed_candidate_education(db)
             await seed_vacancy_candidates(db)
             await seed_stage_history(db)
+            await seed_interviews(db)
             await seed_activity_feed(db)
             await seed_goals(db)
             await seed_tasks(db)
