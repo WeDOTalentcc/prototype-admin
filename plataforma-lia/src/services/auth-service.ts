@@ -214,33 +214,19 @@ class AuthService {
   }
 
   async getMeDirect(): Promise<User> {
-    console.log('[AUTH-DEBUG] getMeDirect fetching:', `${AUTH_API_URL}/me`)
-    try {
-      const response = await fetch(`${AUTH_API_URL}/me`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      })
+    const response = await fetch(`${AUTH_API_URL}/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
 
-      console.log('[AUTH-DEBUG] getMeDirect response status:', response.status)
-
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'unknown error')
-        console.log('[AUTH-DEBUG] getMeDirect error body:', errorText)
-        throw new Error(`Failed to get user info: ${response.status}`)
-      }
-
-      const data = await response.json()
-      console.log('[AUTH-DEBUG] getMeDirect data:', JSON.stringify(data))
-      return data
-    } catch (fetchErr: unknown) {
-      const errMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr)
-      const errName = fetchErr instanceof Error ? fetchErr.name : 'unknown'
-      console.log('[AUTH-DEBUG] getMeDirect fetch exception:', errName, errMsg)
-      throw fetchErr
+    if (!response.ok) {
+      throw new Error(`Failed to get user info: ${response.status}`)
     }
+
+    return await response.json()
   }
 
   async logout(): Promise<void> {

@@ -115,9 +115,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Celery
 
 # Auth Flow (Dev Mode)
-- **Auto-login**: Middleware redirects unauthenticated requests to `/api/auth/auto-login`, which calls backend `/api/v1/auth/login` with demo credentials, sets cookies via `response.cookies.set()` on the redirect response, and redirects back
+- **Auto-login**: Middleware calls `getDevToken()` which logs in via backend `/api/v1/auth/login` with demo credentials, caches the JWT token, and injects `Authorization: Bearer <token>` header into every non-public request
 - **Cookies**: `lia_access_token` (httpOnly), `lia_refresh_token` (httpOnly), `lia_auth_method` (non-httpOnly, readable by JS)
-- **initAuth flow**: Tries `getMe()` first (via `/api/backend-proxy/auth/me`), only falls back to `refreshToken()` if getMe fails
+- **Server-side user injection**: `layout.tsx` (async server component) calls `getServerUser()` which reads the `Authorization` header (set by middleware), fetches user data from backend `/api/v1/auth/me`, decodes JWT for `company_id`, and injects the result as `window.__INITIAL_USER__` via a `<script>` tag in the HTML
+- **initAuth flow**: Reads `window.__INITIAL_USER__` first (instant, no fetch needed), falls back to `getMeDirect()` client-side fetch, then to JWT cookie-based auth
 - **OnboardingController**: Shows spinner while `authIsLoading` OR `(authIsAuthenticated && !userData)`, prevents flash of "Acesso Restrito"
 - **Important**: In dev mode with 5700+ modules, initial page load takes ~30-60s due to on-demand compilation; subsequent loads are fast
 

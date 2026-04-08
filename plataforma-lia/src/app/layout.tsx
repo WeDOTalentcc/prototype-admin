@@ -18,7 +18,17 @@ async function getServerUser(): Promise<Record<string, unknown> | null> {
     const authHeader = headersList.get('authorization')
     if (!authHeader) return null
 
+    const token = authHeader.replace('Bearer ', '')
     const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+
+    let jwtPayload: Record<string, unknown> = {}
+    try {
+      const payloadB64 = token.split('.')[1]
+      if (payloadB64) {
+        jwtPayload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString())
+      }
+    } catch {}
+
     const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
       method: 'GET',
       headers: {
@@ -27,8 +37,26 @@ async function getServerUser(): Promise<Record<string, unknown> | null> {
       },
       cache: 'no-store',
     })
-    if (!response.ok) return null
-    return await response.json()
+
+    if (response.ok) {
+      const data = await response.json()
+      if (!data.company_id && jwtPayload.company_id) {
+        data.company_id = jwtPayload.company_id
+      }
+      return data
+    }
+
+    if (jwtPayload.sub) {
+      return {
+        id: jwtPayload.sub,
+        email: jwtPayload.sub,
+        name: String(jwtPayload.sub).split('@')[0],
+        role: jwtPayload.role || 'user',
+        company_id: jwtPayload.company_id || '',
+      }
+    }
+
+    return null
   } catch {
     return null
   }

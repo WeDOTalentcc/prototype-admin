@@ -142,14 +142,16 @@ export const useAuthStore = create<AuthStore>()(
       initAuth: async () => {
         if (typeof window !== 'undefined' && (window as Record<string, unknown>).__INITIAL_USER__) {
           const serverData = (window as Record<string, unknown>).__INITIAL_USER__ as Record<string, unknown>
+          const roleStr = String(serverData.role || 'viewer')
           const userData: AuthenticatedUser = {
-            id: String(serverData.id || serverData.user_id || ''),
+            id: String(serverData.id || ''),
             email: String(serverData.email || ''),
-            name: String(serverData.name || serverData.full_name || ''),
-            role: String(serverData.role || 'user'),
-            company_id: String(serverData.company_id || ''),
-            avatar: serverData.avatar as string | undefined,
-            permissions: (serverData.permissions as string[]) || [],
+            name: String(serverData.name || ''),
+            role: (roleStr === 'admin' || roleStr === 'recruiter' || roleStr === 'viewer') ? roleStr : 'viewer',
+            is_active: serverData.is_active !== false,
+            created_at: String(serverData.created_at || ''),
+            updated_at: String(serverData.updated_at || ''),
+            company_id: serverData.company_id ? String(serverData.company_id) : undefined,
           }
           if (userData.email) {
             set({
