@@ -52,17 +52,19 @@ export function useWorkflowRail(userId: string) {
   const loadEntries = useCallback(async () => {
     try {
       const res = await fetch("/api/backend-proxy/recruitment-campaigns?status=active")
-      const data = await res.json()
+      if (!res.ok) return
+      const text = await res.text()
+      if (!text) return
+      const data = JSON.parse(text)
       const campaigns = (data?.data || []).map(
         (d: { id: string; attributes: Record<string, unknown> }) => mapCampaignToEntry(d)
       )
       setEntries(prev => {
-        // Merge: keep search entries, replace campaign entries
         const searches = prev.filter(e => e.type === "search")
         return [...campaigns, ...searches]
       })
     } catch (err) {
-      console.error("[WorkflowRail] Failed to load entries:", err)
+      // Silently ignore — backend may not have this endpoint available
     }
   }, [])
 
