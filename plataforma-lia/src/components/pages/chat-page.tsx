@@ -313,16 +313,17 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                   <div>
                     <h1 className="text-xl text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
                       <Brain className="w-8 h-8 text-wedo-cyan" />
-                      <span className="font-normal text-lia-text-secondary">Oi, eu sou a</span>
+                      <span className="font-normal text-lia-text-primary">Oi, eu sou a</span>
                       <span className="font-bold text-2xl text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
                     </h1>
-                    <p className="text-lia-text-secondary mt-1 text-base-ui font-medium">Como posso ajudar você hoje?</p>
+                    <p className="text-lia-text-primary mt-1 text-base-ui font-medium">Como posso ajudar você hoje?</p>
                   </div>
                 </div>
                 <PromptSuggestionsDock
                   onSelect={(command) => setInput(command)}
                   isEmpty={true}
                 />
+                <div className="mt-6" />
               </div>
             )}
 

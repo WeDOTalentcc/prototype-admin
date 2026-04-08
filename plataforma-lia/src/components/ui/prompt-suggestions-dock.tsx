@@ -182,7 +182,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <div className="bg-wedo-cyan/[0.08] text-wedo-cyan rounded-lg p-1.5 transition-colors group-hover:bg-wedo-cyan/[0.15] flex-shrink-0">
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-base-ui font-medium text-lia-text-secondary group-hover:text-lia-text-primary">
+                <span className="text-base-ui font-medium text-lia-text-primary">
                   {suggestion.title}
                 </span>
               </button>
