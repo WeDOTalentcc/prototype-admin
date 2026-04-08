@@ -11,7 +11,7 @@ import { headers } from "next/headers"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { LiaFloatConditional } from "@/components/lia-float/LiaFloatConditional"
-import { WorkflowRail } from "@/components/workflow-rail"
+import WorkflowRailWrapper from "@/components/workflow-rail/WorkflowRailWrapper"
 
 async function getServerUser(): Promise<Record<string, unknown> | null> {
   try {
@@ -157,7 +157,7 @@ export default async function RootLayout({
                 {children}
 
                 <SonnerToaster position="top-right" richColors />
-                <WorkflowRail userId="" onNavigate={() => {}} />
+                <WorkflowRailWrapper />
                 <LiaFloatConditional />
               </ErrorBoundary>
             </LiaFloatProvider>

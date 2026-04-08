@@ -9,8 +9,8 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
   actionButtonStyles
 } from "@/lib/design-tokens"
-import { useTalentPools, TalentPoolSummary } from "../pages-talent-pools/useTalentPools"
-import { CreatePoolModal } from "../pages-talent-pools/TalentPoolPage"
+import { useTalentPools, TalentPoolSummary } from "@/components/pages-talent-pools/useTalentPools"
+import { CreatePoolModal } from "@/components/pages-talent-pools/TalentPoolPage"
 
 /**
  * TalentPoolsTab — tab content for "Bancos Vivos" in the Funil de Talentos page.

@@ -16,7 +16,7 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
   tabStyles, actionButtonStyles
 } from "@/lib/design-tokens"
-import CandidateOriginBadge from "../pages-agent-studio/CandidateOriginBadge"
+import CandidateOriginBadge from "@/components/pages-agent-studio/CandidateOriginBadge"
 
 // ---------- Types ----------
 
@@ -507,8 +507,8 @@ function CandidatesTab({
 // ---------- Agents Tab — delegates to real AgentsTab from 6.2 ----------
 
 // Import the real AgentsTab component created in Phase 6.2
-import RealAgentsTab from "../pages-agent-studio/AgentsTab"
-import CalibrationCardModal from "../pages-agent-studio/CalibrationCardModal"
+import RealAgentsTab from "@/components/pages-agent-studio/AgentsTab"
+import CalibrationCardModal from "@/components/pages-agent-studio/CalibrationCardModal"
 
 function AgentsTabWrapper({ pool }: { pool: TalentPool }) {
   const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)

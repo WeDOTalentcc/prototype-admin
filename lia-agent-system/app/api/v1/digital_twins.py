@@ -48,7 +48,7 @@ async def create_twin(
 
     The twin captures the decision-making reasoning of a Subject Matter Expert.
     """
-    from app.models.digital_twin import DigitalTwin
+    from libs.models.lia_models.digital_twin import DigitalTwin
 
     company_id = current_user.get("company_id", "unknown")
 
@@ -92,7 +92,7 @@ async def list_twins(
     db: AsyncSession = Depends(get_db),
 ):
     """List all Digital Twins for the current company."""
-    from app.models.digital_twin import DigitalTwin
+    from libs.models.lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select
 
     company_id = current_user.get("company_id", "unknown")
@@ -121,7 +121,7 @@ async def list_twins(
 @router.get("/{twin_id}")
 async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db)):
     """Get details of a specific Digital Twin."""
-    from app.models.digital_twin import DigitalTwin
+    from libs.models.lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select
 
     result = await db.execute(select(DigitalTwin).where(DigitalTwin.id == twin_id))
