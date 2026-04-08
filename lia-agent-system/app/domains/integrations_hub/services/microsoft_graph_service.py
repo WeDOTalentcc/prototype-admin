@@ -150,7 +150,47 @@ class MicrosoftGraphService:
     def is_configured(self) -> bool:
         """Check if the service is properly configured."""
         return all([self.client_id, self.client_secret, self.tenant_id])
-    
+
+    async def health_check(self) -> dict[str, Any]:
+        """
+        Return structured health status for the Microsoft Graph integration.
+
+        When credentials are configured, attempts a lightweight token acquisition
+        to verify connectivity. Returns one of:
+        - connected:       credentials present and token acquisition succeeded
+        - not_configured:  one or more env vars absent
+        - disconnected:    credentials present but token request failed
+        """
+        if not self.is_configured:
+            missing = [
+                v for v, val in [
+                    ("AZURE_CLIENT_ID", self.client_id),
+                    ("AZURE_CLIENT_SECRET", self.client_secret),
+                    ("AZURE_TENANT_ID", self.tenant_id),
+                ]
+                if not val
+            ]
+            return {
+                "status": "not_configured",
+                "configured": False,
+                "missing_vars": missing,
+                "message": f"Microsoft Graph not configured — missing: {', '.join(missing)}",
+            }
+        try:
+            await self._get_access_token()
+            return {
+                "status": "connected",
+                "configured": True,
+                "tenant_id": self.tenant_id,
+            }
+        except Exception as exc:
+            logger.warning("[MicrosoftGraphService] health_check token acquisition failed: %s", exc)
+            return {
+                "status": "disconnected",
+                "configured": True,
+                "message": f"Token acquisition failed: {str(exc)[:200]}",
+            }
+
     async def _get_access_token(self) -> str:
         """
         Get OAuth2 access token using client credentials flow.
@@ -191,6 +231,105 @@ class MicrosoftGraphService:
             logger.info("Successfully obtained Microsoft Graph access token")
             return self._access_token
     
+    async def get_delegated_access_token_for_company(self, company_id: str) -> str | None:
+        """
+        Load the stored OAuth 2.0 delegated refresh token for a company and exchange it
+        for a fresh access token.  This enables per-company calendar operations using
+        user-granted permissions (Calendars.ReadWrite) rather than app-level credentials.
+
+        Returns the access token string, or None if no delegated credentials are stored.
+        Raises GraphAPIError if token refresh fails.
+        """
+        import json as _json
+        import uuid as _uuid
+
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.interview_scheduling.repositories.calendar_credentials_repository import (
+                CalendarCredentialsRepository,
+            )
+            from app.shared.encryption import decrypt_value
+        except ImportError as exc:
+            logger.warning("[MicrosoftGraphService] delegated token: import failed — %s", exc)
+            return None
+
+        try:
+            async with AsyncSessionLocal() as db:
+                repo = CalendarCredentialsRepository(db)
+                creds = await repo.get_credentials(_uuid.UUID(company_id), "microsoft")
+        except Exception as exc:
+            logger.warning("[MicrosoftGraphService] delegated token DB lookup failed: %s", exc)
+            return None
+
+        if not creds or not creds.is_active or not creds.encrypted_credentials:
+            return None
+
+        try:
+            token_data = _json.loads(decrypt_value(creds.encrypted_credentials))
+        except Exception as exc:
+            logger.warning("[MicrosoftGraphService] delegated token decrypt failed: %s", exc)
+            return None
+
+        refresh_token = token_data.get("refresh_token")
+        client_id = token_data.get("client_id") or self.client_id
+        tenant_id = token_data.get("tenant_id") or self.tenant_id
+
+        if not refresh_token or not client_id or not tenant_id:
+            logger.warning("[MicrosoftGraphService] delegated token: missing refresh_token/client_id/tenant_id")
+            return None
+
+        token_url = self.TOKEN_URL_TEMPLATE.format(tenant_id=tenant_id)
+        data = {
+            "grant_type": "refresh_token",
+            "client_id": client_id,
+            "client_secret": self.client_secret,
+            "refresh_token": refresh_token,
+            "scope": "offline_access Calendars.ReadWrite",
+        }
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                token_url,
+                data=data,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+
+        if resp.status_code != 200:
+            logger.error("[MicrosoftGraphService] delegated token refresh failed: %s — %s",
+                         resp.status_code, resp.text[:300])
+            raise GraphAPIError(
+                f"Microsoft delegated token refresh failed: {resp.status_code}",
+                resp.status_code,
+            )
+
+        refreshed = resp.json()
+        access_token = refreshed.get("access_token")
+
+        # Persist updated tokens back to DB so subsequent calls use the new refresh_token
+        if refreshed.get("refresh_token"):
+            try:
+                from app.shared.encryption import encrypt_value
+                updated_data = _json.dumps({
+                    **token_data,
+                    "access_token": access_token,
+                    "refresh_token": refreshed["refresh_token"],
+                    "expires_in": refreshed.get("expires_in"),
+                })
+                async with AsyncSessionLocal() as db:
+                    repo = CalendarCredentialsRepository(db)
+                    await repo.upsert_credentials(
+                        company_id=_uuid.UUID(company_id),
+                        provider="microsoft",
+                        encrypted_credentials=encrypt_value(updated_data),
+                        is_active=True,
+                    )
+                    await db.commit()
+            except Exception as exc:
+                logger.warning("[MicrosoftGraphService] delegated token re-persist failed: %s", exc)
+
+        logger.info("[MicrosoftGraphService] delegated access token obtained for company %s", company_id)
+        return access_token
+
     async def _make_request(
         self,
         method: str,
@@ -198,7 +337,8 @@ class MicrosoftGraphService:
         json_data: dict | None = None,
         params: dict | None = None,
         max_retries: int = 3,
-        retry_delay: float = 1.0
+        retry_delay: float = 1.0,
+        access_token: str | None = None,
     ) -> dict[str, Any]:
         """
         Make an authenticated request to Microsoft Graph API with retry logic.
@@ -220,7 +360,7 @@ class MicrosoftGraphService:
             GraphAPIRateLimitError: For 429 errors after retries exhausted
             GraphAPIError: For other API errors
         """
-        token = await self._get_access_token()
+        token = access_token if access_token else await self._get_access_token()
         
         url = f"{self.GRAPH_API_BASE}{endpoint}"
         headers = {
@@ -317,7 +457,8 @@ class MicrosoftGraphService:
         body_content: str | None = None,
         location: str | None = None,
         timezone: str = "America/Sao_Paulo",
-        send_invites: bool = True
+        send_invites: bool = True,
+        company_id: str | None = None,
     ) -> TeamsOnlineMeeting:
         """
         Create a calendar event with Teams meeting link.
@@ -336,12 +477,21 @@ class MicrosoftGraphService:
             location: Physical location (optional, Teams link is added automatically)
             timezone: Timezone for the meeting
             send_invites: Whether to send calendar invites to attendees
+            company_id: Optional. When provided, uses stored per-company delegated OAuth
+                        credentials (Calendars.ReadWrite) instead of app-level token.
         
         Returns:
             TeamsOnlineMeeting object with meeting details and join URL
         """
         if not self.is_configured:
             raise Exception("Microsoft Graph service not configured")
+
+        delegated_token: str | None = None
+        if company_id:
+            try:
+                delegated_token = await self.get_delegated_access_token_for_company(company_id)
+            except Exception as exc:
+                logger.warning("[MicrosoftGraphService] delegated token failed, falling back to app token: %s", exc)
         
         end_time = start_time + timedelta(minutes=duration_minutes)
         
@@ -388,7 +538,8 @@ class MicrosoftGraphService:
         
         logger.info(f"Creating Teams meeting: {subject} for {organizer_email}")
         
-        result = await self._make_request("POST", endpoint, json_data=event_payload)
+        result = await self._make_request("POST", endpoint, json_data=event_payload,
+                                          access_token=delegated_token)
         
         online_meeting = result.get("onlineMeeting", {})
         join_url = online_meeting.get("joinUrl", "")
@@ -547,7 +698,8 @@ class MicrosoftGraphService:
         user_emails: list[str],
         start_time: datetime,
         end_time: datetime,
-        timezone: str = "America/Sao_Paulo"
+        timezone: str = "America/Sao_Paulo",
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Get free/busy availability for users.
@@ -557,10 +709,19 @@ class MicrosoftGraphService:
             start_time: Start of time range
             end_time: End of time range
             timezone: Timezone for the query
+            company_id: Optional. When provided, uses stored per-company delegated OAuth
+                        credentials instead of app-level token.
         
         Returns:
             Availability information for each user
         """
+        delegated_token: str | None = None
+        if company_id:
+            try:
+                delegated_token = await self.get_delegated_access_token_for_company(company_id)
+            except Exception as exc:
+                logger.warning("[MicrosoftGraphService] delegated token failed for availability, using app token: %s", exc)
+
         payload = {
             "schedules": user_emails,
             "startTime": {
@@ -575,7 +736,8 @@ class MicrosoftGraphService:
         }
         
         endpoint = "/me/calendar/getSchedule"
-        result = await self._make_request("POST", endpoint, json_data=payload)
+        result = await self._make_request("POST", endpoint, json_data=payload,
+                                          access_token=delegated_token)
         
         return result
     
@@ -756,7 +918,7 @@ class MicrosoftGraphService:
         except Exception as e:
             logger.error(f"Microsoft Graph connection test failed: {e}")
             return {
-                "status": "error",
+                "status": "disconnected",
                 "message": str(e),
                 "configured": True
             }

@@ -241,3 +241,147 @@ async def get_integrations_status(
             }
         ]
     }
+
+
+@router.get("/health", response_model=None)
+async def get_integrations_health(
+    current_user: dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Unified health check for all external business integrations.
+
+    Returns structured status for:
+    - WhatsApp (Meta and Twilio providers)
+    - Microsoft Calendar / Teams (Azure Graph API)
+    - Google Calendar (service account or OAuth 2.0)
+    - LinkedIn (job posting via OAuth)
+    - Indeed (direct API or XML feed fallback)
+    - Pearch (candidate sourcing)
+    - Slack (bot token or incoming webhook)
+
+    Each integration returns one of:
+    - connected:       credentials present
+    - not_configured:  credentials absent (graceful fallback where available)
+    """
+    import os
+
+    from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
+    from app.domains.communication.services.whatsapp_twilio_service import twilio_whatsapp_service
+
+    integrations: dict[str, Any] = {}
+
+    # --- WhatsApp ---
+    meta_ok = meta_whatsapp_service.is_configured
+    twilio_ok = twilio_whatsapp_service.is_configured
+    integrations["whatsapp"] = {
+        "status": "connected" if (meta_ok or twilio_ok) else "not_configured",
+        "configured": meta_ok or twilio_ok,
+        "fallback_mode": "development_log" if not (meta_ok or twilio_ok) else None,
+        "providers": {
+            "meta": {
+                "status": "connected" if meta_ok else "not_configured",
+                "configured": meta_ok,
+                "verify_token_set": bool(meta_whatsapp_service.verify_token),
+                "app_secret_set": bool(meta_whatsapp_service.app_secret),
+            },
+            "twilio": {
+                "status": "connected" if twilio_ok else "not_configured",
+                "configured": twilio_ok,
+            },
+        },
+    }
+
+    # --- Microsoft Calendar / Teams (real health_check with token probe when configured) ---
+    try:
+        from app.domains.integrations_hub.services.microsoft_graph_service import MicrosoftGraphService
+        _msgraph = MicrosoftGraphService()
+        ms_health = await _msgraph.health_check()
+    except Exception as _mse:
+        ms_health = {"status": "disconnected", "configured": False, "message": str(_mse)[:200]}
+    integrations["microsoft_calendar"] = {
+        **ms_health,
+        "provider": "microsoft_graph",
+        "check_type": "config_and_token_probe" if ms_health.get("configured") else "config_only",
+        "oauth_flow_url": "/api/v1/calendar/microsoft/auth-url",
+        "oauth_status_url": "/api/v1/calendar/microsoft/oauth-status?company_id=<company_id>",
+    }
+
+    # --- Google Calendar ---
+    gc_enabled = os.getenv("ENABLE_GOOGLE_CALENDAR", "false").lower() in ("1", "true", "yes")
+    gc_sa = bool(os.getenv("GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON"))
+    gc_oauth = bool(os.getenv("GOOGLE_CALENDAR_CLIENT_ID") and os.getenv("GOOGLE_CALENDAR_CLIENT_SECRET"))
+    gc_ok = gc_enabled and (gc_sa or gc_oauth)
+    integrations["google_calendar"] = {
+        "status": "connected" if gc_ok else ("not_configured" if not gc_enabled else "disconnected"),
+        "configured": gc_ok,
+        "enabled": gc_enabled,
+        "auth_method": "service_account" if gc_sa else ("oauth2" if gc_oauth else None),
+        "oauth_flow_url": "/api/v1/calendar/google/auth-url" if gc_oauth else None,
+        "oauth_status_url": "/api/v1/calendar/google/oauth-status?company_id=<company_id>" if gc_oauth else None,
+        "check_type": "config_only",
+        "message": None if gc_ok else (
+            "Google Calendar disabled or credentials not configured. "
+            "Set ENABLE_GOOGLE_CALENDAR=True and GOOGLE_CALENDAR_CLIENT_ID/SECRET."
+        ),
+    }
+
+    # --- Pearch (uses real health_check from PearchService) ---
+    try:
+        from app.domains.sourcing.services.pearch_service import PearchService
+        _pearch = PearchService()
+        pearch_health = await _pearch.health_check()
+    except Exception as _pe:
+        pearch_health = {"status": "disconnected", "configured": False, "message": str(_pe)[:200]}
+    integrations["pearch"] = {
+        **pearch_health,
+        "fallback": "local_rag_search" if not pearch_health.get("configured") else None,
+        "check_type": "config_and_ping" if pearch_health.get("configured") else "config_only",
+    }
+
+    # --- LinkedIn / Indeed (uses real health_check from JobBoardService) ---
+    try:
+        from app.domains.job_management.services.job_board_service import JobBoardService
+        _jbs = JobBoardService()
+        job_board_health = _jbs.health_check()
+    except Exception as _jbe:
+        job_board_health = {
+            "status": "disconnected",
+            "platforms": {
+                "linkedin": {"status": "disconnected", "configured": False, "message": str(_jbe)[:200]},
+                "indeed": {"status": "not_configured", "configured": False, "feed_available": True, "message": str(_jbe)[:200]},
+            },
+        }
+    integrations["linkedin"] = {
+        **job_board_health["platforms"]["linkedin"],
+        "check_type": "config_only",
+    }
+    integrations["indeed"] = {
+        **job_board_health["platforms"]["indeed"],
+        "check_type": "config_only",
+    }
+
+    # --- Slack ---
+    slack_token = os.getenv("SLACK_BOT_TOKEN")
+    slack_webhook = os.getenv("SLACK_WEBHOOK_URL")
+    slack_ok = bool(slack_token or slack_webhook)
+    integrations["slack"] = {
+        "status": "connected" if slack_ok else "not_configured",
+        "configured": slack_ok,
+        "auth_method": "bot_token" if slack_token else ("webhook" if slack_webhook else None),
+        "message": None if slack_ok else "Configure SLACK_BOT_TOKEN ou SLACK_WEBHOOK_URL para habilitar notificações Slack.",
+    }
+
+    # --- Teams ---
+    integrations["teams"] = {
+        "status": "connected" if teams_service.webhook_url else "not_configured",
+        "configured": bool(teams_service.webhook_url),
+        "mode": "development" if teams_service.is_development else "production",
+    }
+
+    configured_count = sum(1 for v in integrations.values() if v.get("configured"))
+    return {
+        "status": "healthy" if configured_count > 0 else "not_configured",
+        "configured_count": configured_count,
+        "total": len(integrations),
+        "integrations": integrations,
+    }

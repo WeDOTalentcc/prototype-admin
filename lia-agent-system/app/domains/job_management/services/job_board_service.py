@@ -56,23 +56,22 @@ class JobBoardService:
         logger.info(f"📤 Publishing job {job.id} to LinkedIn")
         
         if not self.linkedin_client_id or not self.linkedin_client_secret:
-            logger.warning("LinkedIn API credentials not configured")
-            post_id = f"mock_li_{uuid.uuid4().hex[:12]}"
-            
-            job.published_linkedin = True
-            job.linkedin_post_id = post_id
-            job.last_published_at = datetime.utcnow()
-            await db.commit()
-            
+            logger.warning(
+                "[JobBoardService] LinkedIn credentials not configured — "
+                "skipping publish for job_id=%s. Set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET.",
+                job.id,
+            )
             return {
-                "success": True,
-                "mock": True,
-                "message": "LinkedIn API credentials not configured. Job marked as published (mock mode).",
-                "post_id": post_id,
+                "success": False,
+                "error": "not_configured",
+                "message": (
+                    "LinkedIn API credentials not configured. "
+                    "Set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET to enable direct LinkedIn posting. "
+                    "Configure in Configurações > Integrações."
+                ),
                 "platform": "linkedin",
                 "job_id": str(job.id),
                 "job_title": job.title,
-                "published_at": job.last_published_at.isoformat()
             }
         
         try:
@@ -136,7 +135,16 @@ class JobBoardService:
             dict with success status and job details
         """
         logger.info(f"📤 Publishing job {job.id} to Indeed")
-        
+
+        api_configured = bool(self.indeed_api_key)
+        publish_mode = "api_direct" if api_configured else "xml_feed"
+
+        if not api_configured:
+            logger.info(
+                "[JobBoardService] INDEED_API_KEY not set — publishing via XML feed fallback for job_id=%s.",
+                job.id,
+            )
+
         try:
             indeed_job_id = f"wdt_{job.id.hex[:12]}"
             
@@ -148,11 +156,16 @@ class JobBoardService:
             feed_url = f"{self.base_url}/api/v1/job-boards/feed/indeed.xml"
             job_url = f"{self.base_url}/vagas/{job.public_slug or job.id}"
             
-            logger.info(f"✅ Job {job.id} added to Indeed feed with job_id: {indeed_job_id}")
+            logger.info(f"✅ Job {job.id} added to Indeed ({publish_mode}) with job_id: {indeed_job_id}")
             
             return {
                 "success": True,
-                "message": f"Job '{job.title}' added to Indeed XML feed successfully",
+                "publish_mode": publish_mode,
+                "api_configured": api_configured,
+                "message": (
+                    f"Job '{job.title}' published to Indeed via {'API' if api_configured else 'XML feed'}. "
+                    + ("" if api_configured else "Set INDEED_API_KEY for direct API posting.")
+                ),
                 "job_id": indeed_job_id,
                 "platform": "indeed",
                 "vacancy_id": str(job.id),
@@ -160,7 +173,10 @@ class JobBoardService:
                 "published_at": job.last_published_at.isoformat(),
                 "feed_url": feed_url,
                 "job_url": job_url,
-                "note": "Submit the feed URL to Indeed Publisher to complete integration"
+                "note": (
+                    None if api_configured
+                    else "Submit the feed URL to Indeed Publisher to complete integration: " + feed_url
+                ),
             }
             
         except Exception as e:
@@ -270,6 +286,48 @@ class JobBoardService:
                 "job_id": str(job.id)
             }
     
+    def health_check(self) -> dict:
+        """
+        Return structured configuration health for LinkedIn and Indeed integrations.
+
+        Returns:
+            dict with status for each platform:
+            - connected:       API credentials configured
+            - not_configured:  credentials absent (graceful fallback available)
+        """
+        li_configured = bool(self.linkedin_client_id and self.linkedin_client_secret)
+        indeed_configured = bool(self.indeed_api_key)
+
+        linkedin_status = {
+            "status": "connected" if li_configured else "not_configured",
+            "configured": li_configured,
+            "message": None if li_configured else (
+                "LINKEDIN_CLIENT_ID e LINKEDIN_CLIENT_SECRET não configurados. "
+                "A publicação no LinkedIn requer aprovação OAuth e acesso à Company Page. "
+                "Configure as credenciais em Configurações > Integrações."
+            ),
+        }
+        indeed_status = {
+            "status": "connected" if indeed_configured else "not_configured",
+            "configured": indeed_configured,
+            "publish_mode": "api_direct" if indeed_configured else "xml_feed",
+            "feed_available": True,
+            "message": None if indeed_configured else (
+                "INDEED_API_KEY não configurado — vagas publicadas via feed XML "
+                "(/api/v1/job-boards/feed/indeed.xml). "
+                "Configure INDEED_API_KEY em Configurações > Integrações para publicação direta via API."
+            ),
+        }
+
+        any_configured = li_configured or indeed_configured
+        return {
+            "status": "connected" if any_configured else "not_configured",
+            "platforms": {
+                "linkedin": linkedin_status,
+                "indeed": indeed_status,
+            },
+        }
+
     async def get_publishing_status(
         self, 
         job: JobVacancy

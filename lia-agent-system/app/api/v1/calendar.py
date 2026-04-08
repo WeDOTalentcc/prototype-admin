@@ -9,12 +9,15 @@ Provedores suportados:
 import hashlib
 import hmac
 import logging
+from urllib.parse import urlencode
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.database import get_db
 from app.domains.interview_scheduling.repositories.calendar_credentials_repository import CalendarCredentialsRepository
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.schemas.calendar import (
@@ -112,24 +115,56 @@ async def find_meeting_times(request: FindMeetingTimeRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/schedule-interview", response_model=dict, dependencies=[Depends(check_graph_configured)])
-async def schedule_interview(request: ScheduleInterviewRequest):
+@router.post("/schedule-interview", response_model=dict)
+async def schedule_interview(
+    http_request: Request,
+    body: ScheduleInterviewRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Schedule an interview appointment.
     Creates calendar event and sends invitations to all attendees.
+
+    Provider selection (Google / Microsoft delegated / Microsoft app-level) is handled
+    inside CalendarService._get_client() based on stored per-company credentials.
+    The Microsoft Graph config check is NOT enforced here so that Google-only companies
+    can schedule interviews without Azure credentials being set.
+
+    company_id in request body is optional. When provided it is validated against
+    the authenticated user's tenant (request.state.company_id). Falls back to
+    JWT company_id when body company_id is absent.
     """
+    # Derive authoritative company_id from JWT (set by AuthEnforcementMiddleware)
+    jwt_company_id: str | None = getattr(http_request.state, "company_id", None) or None
+    caller_role: str = getattr(http_request.state, "user_role", "") or ""
+
+    # Validate body company_id against JWT tenant (strict for non-admins)
+    if body.company_id:
+        _assert_company_access(http_request, body.company_id)
+        effective_company_id = body.company_id
+    else:
+        # Fail closed: non-platform roles must have a company context
+        if caller_role not in ("super_admin", "platform_admin") and not jwt_company_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden — no company context in authentication token.",
+            )
+        effective_company_id = jwt_company_id
+
     try:
         event = await calendar_service.schedule_interview(
-            organizer_email=request.organizer_email,
-            candidate_name=request.candidate_name,
-            candidate_email=request.candidate_email,
-            interviewer_emails=request.interviewer_emails,
-            position=request.position,
-            start_time=request.start_time,
-            duration_minutes=request.duration_minutes,
-            location=request.location,
-            as_teams_meeting=request.as_teams_meeting,
-            notes=request.notes
+            organizer_email=body.organizer_email,
+            candidate_name=body.candidate_name,
+            candidate_email=body.candidate_email,
+            interviewer_emails=body.interviewer_emails,
+            position=body.position,
+            start_time=body.start_time,
+            duration_minutes=body.duration_minutes,
+            location=body.location,
+            as_teams_meeting=body.as_teams_meeting,
+            notes=body.notes,
+            company_id=effective_company_id,
+            db=db,
         )
         
         return {
@@ -349,11 +384,13 @@ class GoogleOAuthAuthUrlResponse(BaseModel):
 
 
 @router.get("/google/auth-url", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleOAuthAuthUrlResponse)
-async def google_oauth_auth_url(company_id: str = Query(..., description="Company ID")):
+async def google_oauth_auth_url(request: Request, company_id: str = Query(..., description="Company ID")):
     """
     Generate Google OAuth authorization URL.
     Frontend redirects the user (admin) to this URL to grant calendar access.
+    Caller must belong to the same company (tenant-scoped).
     """
+    _assert_company_access(request, company_id)
     if not settings.GOOGLE_CALENDAR_CLIENT_ID or not settings.GOOGLE_CALENDAR_OAUTH_REDIRECT_URI:
         raise HTTPException(
             status_code=503,
@@ -477,3 +514,272 @@ async def google_oauth_callback(
     except Exception as e:
         logger.error("Error in Google OAuth callback: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Microsoft Calendar delegated OAuth 2.0 (per-company user-level access)
+# ---------------------------------------------------------------------------
+
+def check_microsoft_oauth_configured():
+    """Dependency: check if Microsoft delegated OAuth is configured."""
+    if not all([settings.AZURE_CLIENT_ID, settings.AZURE_CLIENT_SECRET, settings.AZURE_TENANT_ID]):
+        raise HTTPException(
+            status_code=503,
+            detail="Microsoft Calendar OAuth not configured. Set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID.",
+        )
+    if not settings.MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI:
+        raise HTTPException(
+            status_code=503,
+            detail="MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI not set.",
+        )
+
+
+class MicrosoftOAuthAuthUrlResponse(BaseModel):
+    auth_url: str
+    state: str
+
+
+def _assert_company_access(request: Request, company_id: str) -> None:
+    """
+    Validate that the authenticated caller's company matches the requested company_id.
+
+    - Super-admins and platform_admins may manage any tenant.
+    - All other roles must have a company_id in their JWT and it must match.
+    - Fails closed: if caller_company_id is absent (token lacks company context), raises 403
+      to prevent unauthenticated or misconfigured tokens from bypassing tenant isolation.
+
+    Raises 403 if access is denied.
+    """
+    caller_company_id: str | None = getattr(request.state, "company_id", None) or None
+    caller_role: str = getattr(request.state, "user_role", "") or ""
+
+    # Platform-level roles bypass tenant isolation
+    if caller_role in ("super_admin", "platform_admin"):
+        return
+
+    # Fail closed: require an authenticated company context
+    if not caller_company_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden — no company context in authentication token.",
+        )
+
+    if str(caller_company_id) != str(company_id):
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden — company_id does not match your authenticated tenant.",
+        )
+
+
+@router.get("/microsoft/auth-url", dependencies=[Depends(check_microsoft_oauth_configured)], response_model=MicrosoftOAuthAuthUrlResponse)
+async def microsoft_oauth_auth_url(request: Request, company_id: str = Query(..., description="Company ID")):
+    """
+    Generate Microsoft OAuth authorization URL for delegated calendar access.
+    Frontend redirects the company admin to this URL to grant calendar permissions.
+    Uses MSAL authorization code flow with offline_access + Calendars.ReadWrite scopes.
+    """
+    _assert_company_access(request, company_id)
+    # HMAC-signed state for CSRF protection (mirrors Google pattern)
+    sig = hmac.new(
+        settings.SECRET_KEY.encode(), company_id.encode(), hashlib.sha256
+    ).hexdigest()
+    csrf_state = f"{company_id}:{sig}"
+
+    scopes = "offline_access Calendars.ReadWrite"
+    tenant = settings.AZURE_TENANT_ID
+    params = urlencode({
+        "client_id": settings.AZURE_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": settings.MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI,
+        "response_mode": "query",
+        "scope": scopes,
+        "state": csrf_state,
+        "prompt": "consent",
+    })
+    auth_url = f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize?{params}"
+    return {"auth_url": auth_url, "state": csrf_state}
+
+
+class MicrosoftOAuthCallbackResponse(BaseModel):
+    status: str
+    company_id: str
+    provider: str
+
+
+@router.get("/microsoft/callback", response_model=MicrosoftOAuthCallbackResponse)
+async def microsoft_oauth_callback(
+    code: str = Query(...),
+    state: str = Query(...),
+):
+    """
+    Handle Microsoft OAuth callback. Exchanges authorization code for tokens
+    and stores encrypted credentials in company_calendar_credentials.
+    """
+    if not all([settings.AZURE_CLIENT_ID, settings.AZURE_CLIENT_SECRET,
+                settings.AZURE_TENANT_ID, settings.MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI]):
+        raise HTTPException(status_code=503, detail="Microsoft Calendar OAuth not fully configured.")
+
+    # Verify HMAC-signed state (CSRF protection)
+    parts = state.split(":", 1)
+    if len(parts) != 2:
+        raise HTTPException(status_code=400, detail="OAuth state inválido")
+    company_id_str, provided_sig = parts
+    expected_sig = hmac.new(
+        settings.SECRET_KEY.encode(), company_id_str.encode(), hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(provided_sig, expected_sig):
+        raise HTTPException(status_code=400, detail="OAuth state inválido — possível CSRF")
+
+    try:
+        import json
+        import uuid
+
+        import httpx as _httpx
+
+        from app.core.database import AsyncSessionLocal
+        from app.shared.encryption import encrypt_value
+
+        token_url = f"https://login.microsoftonline.com/{settings.AZURE_TENANT_ID}/oauth2/v2.0/token"
+        data = {
+            "client_id": settings.AZURE_CLIENT_ID,
+            "client_secret": settings.AZURE_CLIENT_SECRET,
+            "code": code,
+            "redirect_uri": settings.MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI,
+            "grant_type": "authorization_code",
+            "scope": "offline_access Calendars.ReadWrite",
+        }
+
+        async with _httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(token_url, data=data)
+
+        if resp.status_code != 200:
+            logger.error("Microsoft token exchange failed: %s — %s", resp.status_code, resp.text[:500])
+            raise HTTPException(status_code=502, detail=f"Microsoft token exchange failed: {resp.status_code}")
+
+        token_data_raw = resp.json()
+        token_data = json.dumps({
+            "access_token": token_data_raw.get("access_token"),
+            "refresh_token": token_data_raw.get("refresh_token"),
+            "token_type": token_data_raw.get("token_type"),
+            "expires_in": token_data_raw.get("expires_in"),
+            "scope": token_data_raw.get("scope"),
+            "client_id": settings.AZURE_CLIENT_ID,
+            "tenant_id": settings.AZURE_TENANT_ID,
+        })
+
+        async with AsyncSessionLocal() as db:
+            repo = CalendarCredentialsRepository(db)
+            await repo.upsert_credentials(
+                company_id=uuid.UUID(company_id_str),
+                provider="microsoft",
+                encrypted_credentials=encrypt_value(token_data),
+                is_active=True,
+                timezone=settings.MICROSOFT_CALENDAR_DEFAULT_TIMEZONE,
+            )
+            await db.commit()
+
+        return {"status": "connected", "company_id": company_id_str, "provider": "microsoft"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error in Microsoft OAuth callback: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class MicrosoftOAuthStatusResponse(BaseModel):
+    company_id: str
+    provider: str
+    connected: bool
+    is_active: bool | None
+    timezone: str | None
+    message: str
+
+
+@router.get("/microsoft/oauth-status", response_model=MicrosoftOAuthStatusResponse)
+async def microsoft_oauth_status(request: Request, company_id: str = Query(..., description="Company ID")):
+    """
+    Return Microsoft Calendar OAuth connection status for a company.
+    Queries company_calendar_credentials without making external calls.
+    Caller must belong to the same company (tenant-scoped).
+    """
+    _assert_company_access(request, company_id)
+    try:
+        import uuid
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            repo = CalendarCredentialsRepository(db)
+            creds = await repo.get_credentials(uuid.UUID(company_id), "microsoft")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if creds and creds.is_active:
+        return {
+            "company_id": company_id,
+            "provider": "microsoft",
+            "connected": True,
+            "is_active": creds.is_active,
+            "timezone": creds.timezone,
+            "message": "Microsoft Calendar OAuth credentials stored and active.",
+        }
+    return {
+        "company_id": company_id,
+        "provider": "microsoft",
+        "connected": False,
+        "is_active": getattr(creds, "is_active", None),
+        "timezone": getattr(creds, "timezone", None),
+        "message": (
+            "Microsoft Calendar not connected for this company. "
+            "Complete the OAuth flow via GET /api/v1/calendar/microsoft/auth-url."
+        ),
+    }
+
+
+class GoogleOAuthStatusResponse(BaseModel):
+    company_id: str
+    provider: str
+    connected: bool
+    is_active: bool | None
+    timezone: str | None
+    message: str
+
+
+@router.get("/google/oauth-status", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleOAuthStatusResponse)
+async def google_oauth_status(request: Request, company_id: str = Query(..., description="Company ID")):
+    """
+    Return the current Google Calendar OAuth connection status for a company.
+    Caller must belong to the same company (tenant-scoped).
+
+    Queries the encrypted credentials store (company_calendar_credentials).
+    Does NOT refresh tokens or make external calls.
+    """
+    _assert_company_access(request, company_id)
+    try:
+        import uuid
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            repo = CalendarCredentialsRepository(db)
+            creds = await repo.get_credentials(uuid.UUID(company_id), "google")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if creds and creds.is_active:
+        return {
+            "company_id": company_id,
+            "provider": "google",
+            "connected": True,
+            "is_active": creds.is_active,
+            "timezone": creds.timezone,
+            "message": "Google Calendar OAuth credentials stored and active.",
+        }
+    return {
+        "company_id": company_id,
+        "provider": "google",
+        "connected": False,
+        "is_active": getattr(creds, "is_active", None),
+        "timezone": getattr(creds, "timezone", None),
+        "message": (
+            "Google Calendar not connected for this company. "
+            "Complete the OAuth flow via GET /api/v1/calendar/google/auth-url."
+        ),
+    }

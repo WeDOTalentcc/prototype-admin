@@ -153,10 +153,15 @@ class AuthSettings(BaseSettings):
     WORKOS_API_KEY: Optional[str] = None
     WORKOS_WEBHOOK_SECRET: Optional[str] = None
 
-    # Azure AD / Microsoft Graph
+    # Azure AD / Microsoft Graph (client credentials — service-to-service)
     AZURE_TENANT_ID: Optional[str] = None
     AZURE_CLIENT_ID: Optional[str] = None
     AZURE_CLIENT_SECRET: Optional[str] = None
+
+    # Microsoft Calendar OAuth 2.0 delegated flow (user-level calendar access per company)
+    # If absent, falls back to client-credentials app-level access.
+    MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI: Optional[str] = None
+    MICROSOFT_CALENDAR_DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
 
     # Microsoft Teams
     MICROSOFT_APP_ID: Optional[str] = None

@@ -127,7 +127,44 @@ class PearchService:
         self.api_key = os.getenv("PEARCH_API_KEY")
         if not self.api_key:
             logger.warning("PEARCH_API_KEY not set - external candidate search will not work")
-    
+
+    @property
+    def is_configured(self) -> bool:
+        """Check if Pearch API key is configured."""
+        return bool(self.api_key)
+
+    async def health_check(self) -> dict[str, Any]:
+        """
+        Return structured health status for the Pearch integration.
+
+        Returns:
+            dict with status (connected | not_configured | error) and details.
+        """
+        if not self.is_configured:
+            return {
+                "status": "not_configured",
+                "message": "PEARCH_API_KEY not set — external candidate search unavailable. "
+                           "Fallback to local RAG search is active.",
+                "configured": False,
+            }
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(
+                    f"{self.BASE_URL}/health",
+                    headers=self._get_headers(),
+                )
+                if response.status_code < 400:
+                    return {"status": "connected", "configured": True, "http_status": response.status_code}
+                return {
+                    "status": "disconnected",
+                    "configured": True,
+                    "http_status": response.status_code,
+                    "message": f"Pearch API returned HTTP {response.status_code}",
+                }
+        except Exception as exc:
+            logger.warning("Pearch health check failed: %s", exc)
+            return {"status": "disconnected", "configured": True, "message": str(exc)[:200]}
+
     def _get_headers(self) -> dict[str, str]:
         """Get headers for API requests."""
         return {
@@ -234,7 +271,11 @@ class PearchService:
             PearchSearchResponse com resultados
         """
         if not self.api_key:
-            raise ValueError("PEARCH_API_KEY environment variable is not set")
+            logger.warning(
+                "[PearchService] PEARCH_API_KEY not set — routing to local RAG fallback for query='%s'",
+                request.query if request else "",
+            )
+            return await _pearch_search_fallback(self, request, timeout)
 
         # FAR-2: FairnessGuard — bloquear queries discriminatórias antes de enviar ao Pearch
         try:
@@ -318,6 +359,14 @@ class PearchService:
                 return parsed_response
         
         except httpx.HTTPStatusError as e:
+            if e.response.status_code == 429:
+                retry_after = e.response.headers.get("Retry-After", "unknown")
+                logger.warning(
+                    "[PearchService] Rate limited (429) — Retry-After: %s. "
+                    "Routing to local RAG fallback for query='%s'.",
+                    retry_after, request.query,
+                )
+                return await _pearch_search_fallback(self, request, timeout)
             logger.error(f"Pearch API error: {e.response.status_code} - {e.response.text}")
             raise
         except httpx.TimeoutException:

@@ -180,6 +180,100 @@ def _check_dlq() -> dict:
         return {"status": "unavailable", "error": str(exc)[:200]}
 
 
+def _check_external_integrations() -> dict:
+    """
+    Check configuration status of all external business integrations.
+
+    Returns a structured dict with status for each integration:
+    - connected:       key present AND service reachable
+    - not_configured:  key absent (graceful — fallback active)
+    - disconnected:    key present but validation failed
+    """
+    integrations: dict[str, dict] = {}
+
+    # --- WhatsApp Meta ---
+    wa_phone = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
+    wa_token = os.getenv("WHATSAPP_ACCESS_TOKEN")
+    wa_configured = bool(wa_phone and wa_token)
+    integrations["whatsapp"] = {
+        "status": "connected" if wa_configured else "not_configured",
+        "configured": wa_configured,
+        "provider": "meta",
+        "fallback": "development_log" if not wa_configured else None,
+    }
+
+    # --- Microsoft Calendar (Graph API / Teams) ---
+    az_client = os.getenv("AZURE_CLIENT_ID")
+    az_secret = os.getenv("AZURE_CLIENT_SECRET")
+    az_tenant = os.getenv("AZURE_TENANT_ID")
+    ms_configured = bool(az_client and az_secret and az_tenant)
+    integrations["microsoft_calendar"] = {
+        "status": "connected" if ms_configured else "not_configured",
+        "configured": ms_configured,
+        "provider": "microsoft_graph",
+    }
+
+    # --- Google Calendar ---
+    gc_enabled = os.getenv("ENABLE_GOOGLE_CALENDAR", "false").lower() in ("1", "true", "yes")
+    gc_service_account = bool(os.getenv("GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON"))
+    gc_oauth = bool(os.getenv("GOOGLE_CALENDAR_CLIENT_ID") and os.getenv("GOOGLE_CALENDAR_CLIENT_SECRET"))
+    gc_configured = gc_enabled and (gc_service_account or gc_oauth)
+    integrations["google_calendar"] = {
+        "status": "connected" if gc_configured else ("not_configured" if not gc_enabled else "disconnected"),
+        "configured": gc_configured,
+        "enabled": gc_enabled,
+        "auth_method": "service_account" if gc_service_account else ("oauth2" if gc_oauth else None),
+    }
+
+    # --- LinkedIn ---
+    li_client_id = os.getenv("LINKEDIN_CLIENT_ID")
+    li_secret = os.getenv("LINKEDIN_CLIENT_SECRET")
+    li_configured = bool(li_client_id and li_secret)
+    integrations["linkedin"] = {
+        "status": "connected" if li_configured else "not_configured",
+        "configured": li_configured,
+        "note": "OAuth 2.0 required for posting. Requires LinkedIn Company Page admin access." if not li_configured else None,
+    }
+
+    # --- Indeed ---
+    indeed_key = os.getenv("INDEED_API_KEY")
+    indeed_configured = bool(indeed_key)
+    integrations["indeed"] = {
+        "status": "connected" if indeed_configured else "not_configured",
+        "configured": indeed_configured,
+        "note": "XML feed mode available when not configured — jobs served at /api/v1/job-boards/feed/indeed.xml",
+    }
+
+    # --- Pearch (sourcing) ---
+    pearch_key = os.getenv("PEARCH_API_KEY")
+    pearch_configured = bool(pearch_key)
+    integrations["pearch"] = {
+        "status": "connected" if pearch_configured else "not_configured",
+        "configured": pearch_configured,
+        "fallback": "local_rag_search" if not pearch_configured else None,
+    }
+
+    # --- Slack ---
+    slack_token = os.getenv("SLACK_BOT_TOKEN")
+    slack_webhook = os.getenv("SLACK_WEBHOOK_URL")
+    slack_configured = bool(slack_token or slack_webhook)
+    integrations["slack"] = {
+        "status": "connected" if slack_configured else "not_configured",
+        "configured": slack_configured,
+        "auth_method": "bot_token" if slack_token else ("webhook" if slack_webhook else None),
+    }
+
+    configured_count = sum(1 for v in integrations.values() if v.get("configured"))
+    total = len(integrations)
+
+    return {
+        "status": "healthy" if configured_count > 0 else "not_configured",
+        "configured_count": configured_count,
+        "total": total,
+        "integrations": integrations,
+    }
+
+
 async def _check_broker() -> dict:
     """Check broker health via BrokerInterface factory.
 
@@ -289,6 +383,9 @@ async def system_health(db: AsyncSession = Depends(get_db)):
         "deepgram": "configured" if os.getenv("DEEPGRAM_API_KEY") else "not_configured",
         "openmic": "configured" if os.getenv("OPENMIC_API_KEY") else "not_configured",
     }
+
+    # --- External integrations health (WhatsApp, Calendar, LinkedIn/Indeed, Pearch, Slack) ---
+    components["integrations"] = _check_external_integrations()
 
     # --- Voice services (Deepgram STT + OpenMic) ---
     components["voice_services"] = _check_voice_services()

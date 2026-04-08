@@ -20,19 +20,171 @@ from app.utils.datetime_helpers import parse_graph_datetime
 logger = logging.getLogger(__name__)
 
 
-async def _get_company_calendar_credentials(company_id: str, db: AsyncSession):
-    """Load company calendar credentials from DB. Returns None if not found."""
+async def _get_company_calendar_credentials(company_id: str, db: AsyncSession, provider: str | None = None):
+    """
+    Load company calendar credentials from DB.
+
+    Args:
+        company_id: Company UUID.
+        db: Async DB session.
+        provider: Optional provider filter ("google" | "microsoft"). When given, only
+                  credentials for that provider are returned, avoiding ambiguity when
+                  a company has both Google and Microsoft rows active.
+
+    Returns None if no matching active credentials are found.
+    """
     try:
         from lia_models.company_calendar_credentials import CompanyCalendarCredentials
-        result = await db.execute(
-            select(CompanyCalendarCredentials).where(
-                CompanyCalendarCredentials.company_id == company_id,
-                CompanyCalendarCredentials.is_active.is_(True),
-            )
-        )
+        filters = [
+            CompanyCalendarCredentials.company_id == company_id,
+            CompanyCalendarCredentials.is_active.is_(True),
+        ]
+        if provider:
+            filters.append(CompanyCalendarCredentials.provider == provider)
+        result = await db.execute(select(CompanyCalendarCredentials).where(*filters))
         return result.scalar_one_or_none()
     except Exception:
         return None
+
+
+class _DelegatedGraphClient:
+    """
+    Thin wrapper around GraphAPIClient that injects a per-company delegated OAuth access token
+    into every request, overriding the app-level client credentials token.
+
+    This allows Microsoft calendar operations (create event, get availability, etc.) to run
+    under the calendar owner's identity (Calendars.ReadWrite delegated scope) rather than
+    the service account's application-level scope.
+    """
+
+    def __init__(self, base_client, delegated_token: str) -> None:
+        self._base = base_client
+        self._token = delegated_token
+
+    async def make_request(self, method: str, endpoint: str, data=None, params=None):
+        """Proxy make_request with delegated token injected into Authorization header."""
+        import httpx
+
+        url = f"https://graph.microsoft.com/v1.0{endpoint}"
+        headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Content-Type": "application/json",
+        }
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.request(
+                method=method,
+                url=url,
+                headers=headers,
+                json=data,
+                params=params,
+            )
+            if resp.status_code == 204:
+                return {}
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_user_calendar_view(self, user_email: str, start_time, end_time) -> list:
+        """Get calendar events for a user using the delegated OAuth token."""
+        endpoint = f"/users/{user_email}/calendar/calendarView"
+        params = {
+            "startDateTime": start_time.isoformat(),
+            "endDateTime": end_time.isoformat(),
+            "$select": "subject,start,end,location,attendees,organizer,isAllDay",
+            "$orderby": "start/dateTime",
+        }
+        response = await self.make_request("GET", endpoint, params=params)
+        return response.get("value", [])
+
+    async def create_calendar_event(self, user_email, subject, start_time, end_time,
+                                    attendees, location=None, body=None, is_online_meeting=False):
+        """Create a calendar event using the delegated OAuth token."""
+        endpoint = f"/users/{user_email}/calendar/events"
+        event_data = {
+            "subject": subject,
+            "start": {"dateTime": start_time.isoformat(), "timeZone": "UTC"},
+            "end": {"dateTime": end_time.isoformat(), "timeZone": "UTC"},
+            "attendees": [
+                {"emailAddress": {"address": email}, "type": "required"}
+                for email in attendees
+            ],
+        }
+        if location:
+            event_data["location"] = {"displayName": location}
+        if body:
+            event_data["body"] = {"contentType": "HTML", "content": body}
+        if is_online_meeting:
+            event_data["isOnlineMeeting"] = True
+            event_data["onlineMeetingProvider"] = "teamsForBusiness"
+        return await self.make_request("POST", endpoint, data=event_data)
+
+    def __getattr__(self, name):
+        """Fall back to base client for any other methods not explicitly overridden."""
+        return getattr(self._base, name)
+
+
+class _GoogleCalendarAdapter:
+    """
+    Adapter that wraps GoogleCalendarClient to expose the same interface expected by CalendarService:
+        - create_calendar_event(user_email, subject, start_time, end_time, attendees, location, body, is_online_meeting)
+        - get_user_calendar_view(user_email, start_time, end_time)
+
+    GoogleCalendarClient has a different signature — this adapter bridges the gap so
+    CalendarService._get_client() always returns a uniform client regardless of provider.
+    """
+
+    def __init__(self, google_client) -> None:
+        self._client = google_client
+
+    async def create_calendar_event(
+        self,
+        user_email: str,
+        subject: str,
+        start_time,
+        end_time,
+        attendees: list[str],
+        location: str | None = None,
+        body: str | None = None,
+        is_online_meeting: bool = False,
+    ) -> dict:
+        """
+        Translate CalendarService's generic call into GoogleCalendarClient.create_calendar_event().
+        end_time is converted to duration_minutes as expected by the Google client.
+        """
+        duration_minutes = int((end_time - start_time).total_seconds() / 60)
+        return await self._client.create_calendar_event(
+            attendees=attendees,
+            start_time=start_time,
+            duration_minutes=duration_minutes,
+            summary=subject,
+            description=body or "",
+            create_meet_link=is_online_meeting,
+            organizer_email=user_email,
+        )
+
+    async def get_user_calendar_view(self, user_email: str, start_time, end_time) -> list:
+        """
+        Translate to GoogleCalendarClient.get_user_busy_times() and return busy slots
+        in a shape compatible with the Graph calendarView format consumed by
+        check_interviewer_availability().
+        """
+        busy_slots = await self._client.get_user_busy_times(
+            user_email=user_email,
+            start_date=start_time,
+            end_date=end_time,
+        )
+        # Normalise to the shape that check_interviewer_availability expects
+        # (each slot needs start.dateTime and end.dateTime)
+        result = []
+        for slot in busy_slots:
+            result.append({
+                "start": {"dateTime": slot["start"], "timeZone": "UTC"},
+                "end": {"dateTime": slot["end"], "timeZone": "UTC"},
+            })
+        return result
+
+    def __getattr__(self, name):
+        """Delegate any other method call to the underlying GoogleCalendarClient."""
+        return getattr(self._client, name)
 
 
 class CalendarService:
@@ -50,25 +202,49 @@ class CalendarService:
 
         Priority:
         1. Google Calendar (if ENABLE_GOOGLE_CALENDAR=True and company has Google credentials)
-        2. Microsoft Graph (default)
+        2. Microsoft Graph with delegated OAuth (if company has stored provider=microsoft credentials)
+        3. Microsoft Graph with app-level client credentials (default)
         """
-        if settings.ENABLE_GOOGLE_CALENDAR and company_id and db:
-            creds = await _get_company_calendar_credentials(company_id, db)
-            if creds and creds.provider == "google":
+        if company_id and db:
+            # Provider-specific lookups to avoid ambiguity when multiple rows exist
+
+            # 1. Google Calendar (user-delegated)
+            if settings.ENABLE_GOOGLE_CALENDAR:
+                google_creds = await _get_company_calendar_credentials(company_id, db, provider="google")
+                if google_creds and google_creds.is_active:
+                    try:
+                        from app.domains.integrations_hub.services.google_calendar_client import GoogleCalendarClient
+                        from app.shared.encryption import decrypt_value
+                        raw_json = decrypt_value(google_creds.encrypted_credentials)
+                        google_client = GoogleCalendarClient(
+                            credentials_json=raw_json,
+                            timezone=google_creds.timezone or settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE,
+                        )
+                        # Wrap in adapter so it exposes the same interface as GraphAPIClient
+                        return _GoogleCalendarAdapter(google_client)
+                    except Exception as exc:
+                        logger.warning(
+                            "Failed to load Google Calendar client for company %s: %s — falling back to Graph",
+                            company_id,
+                            exc,
+                        )
+
+            # 2. Microsoft Calendar with per-company delegated OAuth token
+            ms_creds = await _get_company_calendar_credentials(company_id, db, provider="microsoft")
+            if ms_creds and ms_creds.is_active:
                 try:
-                    from app.services.google_calendar_client import GoogleCalendarClient
-                    from app.shared.encryption import decrypt_value
-                    raw_json = decrypt_value(creds.encrypted_credentials)
-                    return GoogleCalendarClient(
-                        credentials_json=raw_json,
-                        timezone=creds.timezone or settings.GOOGLE_CALENDAR_DEFAULT_TIMEZONE,
-                    )
+                    from app.domains.integrations_hub.services.microsoft_graph_service import MicrosoftGraphService
+                    ms_service = MicrosoftGraphService()
+                    delegated_token = await ms_service.get_delegated_access_token_for_company(company_id)
+                    if delegated_token:
+                        return _DelegatedGraphClient(self.graph, delegated_token)
                 except Exception as exc:
                     logger.warning(
-                        "Failed to load Google Calendar client for company %s: %s — falling back to Graph",
+                        "Failed to load Microsoft delegated token for company %s: %s — using app token",
                         company_id,
                         exc,
                     )
+
         return self.graph
     
     async def check_interviewer_availability(
@@ -119,9 +295,12 @@ class CalendarService:
 
         start_of_day = date.replace(hour=start_hour, minute=0, second=0, microsecond=0, tzinfo=UTC)
         end_of_day = date.replace(hour=end_hour, minute=0, second=0, microsecond=0, tzinfo=UTC)
-        
+
+        # Select calendar client (uses per-company delegated token when available)
+        client = await self._get_client(company_id, db)
+
         # Get existing events
-        events = await self.graph.get_user_calendar_view(
+        events = await client.get_user_calendar_view(
             user_email=interviewer_email,
             start_time=start_of_day,
             end_time=end_of_day
@@ -314,8 +493,11 @@ class CalendarService:
         
         # All attendees (candidate + interviewers)
         all_attendees = [candidate_email] + interviewer_emails
-        
-        event = await self.graph.create_calendar_event(
+
+        # Select calendar client — uses per-company delegated token when available
+        client = await self._get_client(company_id, db)
+
+        event = await client.create_calendar_event(
             user_email=organizer_email,
             subject=subject,
             start_time=start_time,

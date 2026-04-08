@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
@@ -29,7 +30,8 @@ import {
   X,
   ExternalLink,
   Coins,
-  Brain
+  Brain,
+  Info,
 } from "lucide-react"
 
 interface JobPublishModalProps {
@@ -57,13 +59,34 @@ interface ChannelConfig {
   icon: React.ReactNode
   connected: boolean
   configUrl?: string
+  notConfiguredMessage?: string
 }
 
-const PUBLICATION_CHANNELS: ChannelConfig[] = [
-  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="w-3.5 h-3.5" />, connected: true },
-  { id: 'indeed', name: 'Indeed', icon: <Globe className="w-3.5 h-3.5" />, connected: true },
-  { id: 'gupy', name: 'Gupy', icon: <Building2 className="w-3.5 h-3.5" />, connected: false, configUrl: '/configuracoes/integracoes' },
-  { id: 'portal', name: 'Portal Carreiras', icon: <ExternalLink className="w-3.5 h-3.5" />, connected: true },
+const BASE_CHANNELS: Omit<ChannelConfig, 'connected'>[] = [
+  {
+    id: 'linkedin',
+    name: 'LinkedIn',
+    icon: <Linkedin className="w-3.5 h-3.5" />,
+    configUrl: '/configuracoes/integracoes',
+    notConfiguredMessage: 'A integração com LinkedIn requer credenciais OAuth configuradas (LINKEDIN_CLIENT_ID e LINKEDIN_CLIENT_SECRET). Configure em Integrações para habilitar a publicação automática de vagas.',
+  },
+  {
+    id: 'indeed',
+    name: 'Indeed',
+    icon: <Globe className="w-3.5 h-3.5" />,
+    configUrl: '/configuracoes/integracoes',
+  },
+  {
+    id: 'gupy',
+    name: 'Gupy',
+    icon: <Building2 className="w-3.5 h-3.5" />,
+    configUrl: '/configuracoes/integracoes',
+  },
+  {
+    id: 'portal',
+    name: 'Portal Carreiras',
+    icon: <ExternalLink className="w-3.5 h-3.5" />,
+  },
 ]
 
 export function JobPublishModal({
@@ -81,6 +104,29 @@ export function JobPublishModal({
   const [autoSearchInternal, setAutoSearchInternal] = useState(false)
   const [autoSearchGlobal, setAutoSearchGlobal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [channelInfoModal, setChannelInfoModal] = useState<{ name: string; message: string; configUrl?: string } | null>(null)
+  const [integrationHealth, setIntegrationHealth] = useState<Record<string, { configured: boolean }>>({})
+
+  const PUBLICATION_CHANNELS: ChannelConfig[] = BASE_CHANNELS.map((ch) => {
+    if (ch.id === 'linkedin') {
+      return { ...ch, connected: integrationHealth['linkedin']?.configured ?? false }
+    }
+    if (ch.id === 'indeed') {
+      const indeedHealth = integrationHealth['indeed']
+      const apiConfigured = indeedHealth?.configured ?? false
+      return {
+        ...ch,
+        connected: true,
+        notConfiguredMessage: !apiConfigured
+          ? 'INDEED_API_KEY não configurado — vagas publicadas via feed XML automaticamente. Para publicação direta via API, configure a chave em Integrações.'
+          : undefined,
+      }
+    }
+    if (ch.id === 'portal') {
+      return { ...ch, connected: true }
+    }
+    return { ...ch, connected: false }
+  })
   
   const [freezeJob, setFreezeJob] = useState(false)
   const [freezeReason, setFreezeReason] = useState('')
@@ -118,15 +164,34 @@ export function JobPublishModal({
       setUnfreezeDate('')
       setNotifyApplicants(false)
       setWsiWarningConfirmed(false)
+      setChannelInfoModal(null)
+
+      fetch('/api/backend-proxy/integrations/health', { credentials: 'include' })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data?.integrations) {
+            setIntegrationHealth(data.integrations as Record<string, { configured: boolean }>)
+          }
+        })
+        .catch(() => {})
     }
   }, [isOpen])
 
-  const toggleChannel = (channelId: string) => {
+  const toggleChannel = (channel: ChannelConfig) => {
+    if (!channel.connected) {
+      if (channel.notConfiguredMessage) {
+        setChannelInfoModal({ name: channel.name, message: channel.notConfiguredMessage, configUrl: channel.configUrl })
+      }
+      return
+    }
     const newSelected = new Set(selectedChannels)
-    if (newSelected.has(channelId)) {
-      newSelected.delete(channelId)
+    if (newSelected.has(channel.id)) {
+      newSelected.delete(channel.id)
     } else {
-      newSelected.add(channelId)
+      newSelected.add(channel.id)
+      if (channel.notConfiguredMessage) {
+        setChannelInfoModal({ name: channel.name, message: channel.notConfiguredMessage, configUrl: channel.configUrl })
+      }
     }
     setSelectedChannels(newSelected)
   }
@@ -192,6 +257,7 @@ export function JobPublishModal({
   }
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent data-testid="job-publish-modal" className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
@@ -467,23 +533,29 @@ export function JobPublishModal({
                               ? "border-lia-btn-primary-bg bg-lia-bg-secondary"
                               : "border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-default"
                           )}
-                          onClick={() => channel.connected && toggleChannel(channel.id)}
+                          onClick={() => toggleChannel(channel)}
                         >
                           <Checkbox
                             checked={selectedChannels.has(channel.id)}
                             disabled={!channel.connected}
                             className="data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                           />
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded-md bg-lia-bg-tertiary flex items-center justify-center text-lia-text-secondary">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <div className="w-5 h-5 rounded-md bg-lia-bg-tertiary flex items-center justify-center text-lia-text-secondary flex-shrink-0">
                               {channel.icon}
                             </div>
-                            <span className="text-xs font-medium text-lia-text-primary">{channel.name}</span>
+                            <span className="text-xs font-medium text-lia-text-primary truncate">{channel.name}</span>
                           </div>
-                          {!channel.connected && (
+                          {!channel.connected && channel.notConfiguredMessage && (
+                            <Info
+                              className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 ml-auto"
+                              title="Clique para saber como configurar"
+                            />
+                          )}
+                          {!channel.connected && !channel.notConfiguredMessage && (
                             <a
                               href={channel.configUrl}
-                              className="text-micro font-medium text-lia-text-secondary hover:text-lia-text-primary ml-auto"
+                              className="text-micro font-medium text-lia-text-secondary hover:text-lia-text-primary ml-auto flex-shrink-0"
                               onClick={(e) => e.stopPropagation()}
                             >
                               Config
@@ -591,5 +663,53 @@ export function JobPublishModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Informative modal for unconfigured channels (LinkedIn/Indeed) */}
+    <Dialog open={channelInfoModal !== null} onOpenChange={(open) => !open && setChannelInfoModal(null)}>
+      <DialogContent className="max-w-md bg-lia-bg-primary border border-lia-border-subtle">
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+              <Info className="w-4 h-4 text-lia-text-secondary" />
+            </div>
+            <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+              {channelInfoModal?.name} — Integração não configurada
+            </DialogTitle>
+          </div>
+          <DialogDescription className="sr-only">
+            Informações sobre como configurar a integração com {channelInfoModal?.name}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-2">
+          <div className="flex items-start gap-2 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+            <AlertTriangle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-lia-text-primary leading-relaxed">
+              {channelInfoModal?.message}
+            </p>
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setChannelInfoModal(null)}
+            className="h-8 px-3 text-xs border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
+          >
+            Fechar
+          </Button>
+          {channelInfoModal?.configUrl && (
+            <Button
+              asChild
+              className="h-8 px-3 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
+            >
+              <a href={channelInfoModal.configUrl} onClick={() => setChannelInfoModal(null)}>
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                Ir para Integrações
+              </a>
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }

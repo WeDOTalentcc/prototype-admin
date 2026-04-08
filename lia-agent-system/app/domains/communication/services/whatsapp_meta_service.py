@@ -60,7 +60,17 @@ class MetaWhatsAppService(WhatsAppProvider):
         self.environment = os.getenv("ENVIRONMENT", "development")
         
         if not self.is_configured:
-            logger.warning("Meta WhatsApp credentials not configured. Service will log messages only.")
+            missing = []
+            if not self.phone_number_id:
+                missing.append("WHATSAPP_PHONE_NUMBER_ID")
+            if not self.access_token:
+                missing.append("WHATSAPP_ACCESS_TOKEN")
+            logger.warning(
+                "[MetaWhatsAppService] Credentials not configured — missing: %s. "
+                "All sends will use development log fallback (no real messages sent). "
+                "Set these env vars to enable the Meta Cloud API.",
+                ", ".join(missing),
+            )
     
     @property
     def provider_type(self) -> ProviderType:

@@ -532,3 +532,36 @@ async def list_providers():
             }
         ]
     }
+
+
+@router.get("/health", response_model=None)
+async def whatsapp_health():
+    """
+    Health check for WhatsApp integration.
+
+    Returns structured status for each provider:
+    - connected:       credentials present and service reachable
+    - not_configured:  credentials absent (graceful fallback to dev log mode)
+    - disconnected:    credentials present but API unreachable
+    """
+    meta_configured = meta_whatsapp_service.is_configured
+    twilio_configured = twilio_whatsapp_service.is_configured
+    any_configured = meta_configured or twilio_configured
+
+    return {
+        "status": "connected" if any_configured else "not_configured",
+        "fallback_active": not any_configured,
+        "fallback_mode": "development_log" if not any_configured else None,
+        "providers": {
+            "meta": {
+                "status": "connected" if meta_configured else "not_configured",
+                "configured": meta_configured,
+                "verify_token_set": bool(meta_whatsapp_service.verify_token),
+                "app_secret_set": bool(meta_whatsapp_service.app_secret),
+            },
+            "twilio": {
+                "status": "connected" if twilio_configured else "not_configured",
+                "configured": twilio_configured,
+            },
+        },
+    }

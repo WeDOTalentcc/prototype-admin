@@ -44,6 +44,11 @@ class ScheduleInterviewRequest(BaseModel):
     location: str | None = Field(default=None, max_length=200)
     as_teams_meeting: bool = True
     notes: str | None = Field(default=None, max_length=2000)
+    company_id: str | None = Field(
+        default=None,
+        description="Company ID. When set, uses stored per-company delegated OAuth credentials "
+                    "for Microsoft Calendar (if available) instead of app-level token.",
+    )
 
 
 class CancelInterviewRequest(BaseModel):
