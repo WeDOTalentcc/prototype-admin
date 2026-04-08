@@ -6,6 +6,7 @@ import { KanbanJobHeader } from "@/components/pages/job-kanban/KanbanJobHeader"
 import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals"
 import { KanbanPageContent } from "@/components/pages/job-kanban/KanbanPageContent"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
+import { VagaProgressBar } from "@/components/workflow-rail"
 
 export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {
   const state = useKanbanPageCore({ job, onBack })
@@ -80,6 +81,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         pipelineInheritance={state.pipelineInheritance}
         setJobLocalOverrides={state.setJobLocalOverrides}
       />
+
+      {/* Workflow Rail — Campaign progress bar */}
+      <VagaProgressBar jobId={String(state.currentJob?.id || "")} onNavigateToStage={(stage) => state.setActiveTab?.(stage as any)} />
 
       {state.proactiveInsights.length > 0 && state.activeTab === 'management' && (
         <div className="px-4 py-2 space-y-1.5">

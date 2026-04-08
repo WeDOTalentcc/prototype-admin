@@ -5,7 +5,7 @@ export interface Message {
   sender: "lia" | "user"
   content: string
   timestamp: string
-  type?: "text" | "action" | "structured" | "file" | "system" | "approval" | "thinking" | "progress" | "command" | "file-creation" | "completion"
+  type?: "text" | "action" | "structured" | "file" | "system" | "approval" | "thinking" | "progress" | "command" | "file-creation" | "completion" | "flow"
   actions?: Array<{ label: string; icon?: React.ComponentType<{ className?: string }>; variant?: "default" | "outline" | "secondary" }>
   data?: Record<string, unknown>
   step?: string
@@ -21,6 +21,8 @@ export interface Message {
   chatCardType?: import("@/components/ui-actions/types").ChatCardType
   chatCardData?: Record<string, unknown>
   thinkingMessage?: string
+  flowSteps?: Array<{ id: string; label: string; icon?: string; status: "completed" | "in_progress" | "pending"; detail?: string }>
+  flowQuestion?: string
   progressSteps?: Array<{
     id: string
     label: string

@@ -20,6 +20,7 @@ import { ActionResultCard } from "@/components/chat/action-result-card"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import { Message } from "@/types/chat"
+import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { sanitizeHtml } from "@/lib/sanitize"
 
 interface Props {
@@ -423,6 +424,13 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   </>
                 )}
 
+
+                {message.type === "flow" && message.flowSteps && (
+                  <FlowStepMessage
+                    steps={message.flowSteps}
+                    question={message.flowQuestion}
+                  />
+                )}
                 {message.needsApproval && message.approvalRequest && (
                   <div
                     className="mt-4 p-5 rounded-md bg-stone-50 dark:bg-stone-900/20"
