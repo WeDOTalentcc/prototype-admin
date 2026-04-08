@@ -16,155 +16,145 @@ from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     if not candidate_id:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
-    try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT c.id, c.name, c.email, c.phone, c.linkedin_url,
-                           c.current_title, c.current_company,
-                           c.technical_skills, c.soft_skills,
-                           c.location_city, c.location_state,
-                           c.salary_expectation_clt, c.salary_expectation_pj,
-                           c.work_model_preference, c.is_remote,
-                           c.source, c.resume_url
-                    FROM candidates c
-                    WHERE c.id = :cid
-                    LIMIT 1
-                """),
-                {"cid": candidate_id},
-            )
-            row = result.mappings().first()
-            if not row:
-                return {"success": False, "error": "Candidato não encontrado"}
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text("""
+                SELECT c.id, c.name, c.email, c.phone, c.linkedin_url,
+                       c.current_title, c.current_company,
+                       c.technical_skills, c.soft_skills,
+                       c.location_city, c.location_state,
+                       c.salary_expectation_clt, c.salary_expectation_pj,
+                       c.work_model_preference, c.is_remote,
+                       c.source, c.resume_url
+                FROM candidates c
+                WHERE c.id = :cid
+                LIMIT 1
+            """),
+            {"cid": candidate_id},
+        )
+        row = result.mappings().first()
+        if not row:
+            return {"success": False, "error": "Candidato não encontrado"}
 
-            profile = dict(row)
-            for k, v in profile.items():
-                if isinstance(v, (datetime,)):
-                    profile[k] = v.isoformat()
+        profile = dict(row)
+        for k, v in profile.items():
+            if isinstance(v, (datetime,)):
+                profile[k] = v.isoformat()
 
-            return {"success": True, "profile": profile}
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_candidate_profile error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        return {"success": True, "profile": profile}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_candidate_wsi_scores(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
 
-    try:
-        async with AsyncSessionLocal() as db:
-            query = """
-                SELECT lo.id, lo.score, lo.wsi_score, lo.opinion_type, lo.source,
-                       lo.recommendation, lo.technical_analysis, lo.behavioral_analysis,
-                       lo.strengths, lo.concerns, lo.gaps,
-                       lo.created_at
-                FROM lia_opinions lo
-                WHERE lo.candidate_id = :cid
-            """
-            params: dict[str, Any] = {"cid": candidate_id}
-            if job_id:
-                query += " AND lo.job_vacancy_id = :jid"
-                params["jid"] = job_id
-            query += " ORDER BY lo.created_at DESC LIMIT 5"
+    async with AsyncSessionLocal() as db:
+        query = """
+            SELECT lo.id, lo.score, lo.wsi_score, lo.opinion_type, lo.source,
+                   lo.recommendation, lo.technical_analysis, lo.behavioral_analysis,
+                   lo.strengths, lo.concerns, lo.gaps,
+                   lo.created_at
+            FROM lia_opinions lo
+            WHERE lo.candidate_id = :cid
+        """
+        params: dict[str, Any] = {"cid": candidate_id}
+        if job_id:
+            query += " AND lo.job_vacancy_id = :jid"
+            params["jid"] = job_id
+        query += " ORDER BY lo.created_at DESC LIMIT 5"
 
-            result = await db.execute(text(query), params)
-            rows = result.mappings().all()
+        result = await db.execute(text(query), params)
+        rows = result.mappings().all()
 
-            if not rows:
-                return {"success": True, "scores": [], "message": "Nenhum score WSI encontrado para este candidato"}
+        if not rows:
+            return {"success": True, "scores": [], "message": "Nenhum score WSI encontrado para este candidato"}
 
-            scores = []
-            for row in rows:
-                score_data = dict(row)
-                for k, v in score_data.items():
-                    if isinstance(v, (datetime,)):
-                        score_data[k] = v.isoformat()
-                scores.append(score_data)
+        scores = []
+        for row in rows:
+            score_data = dict(row)
+            for k, v in score_data.items():
+                if isinstance(v, (datetime,)):
+                    score_data[k] = v.isoformat()
+            scores.append(score_data)
 
-            return {"success": True, "scores": scores}
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_candidate_wsi_scores error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        return {"success": True, "scores": scores}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     job_id = kwargs.get("job_id", "")
 
-    try:
-        async with AsyncSessionLocal() as db:
-            query = """
-                SELECT st.id, st.status, st.channel, st.screening_type,
-                       st.responses, st.lia_analysis, st.score,
-                       st.started_at, st.completed_at,
-                       st.created_at
-                FROM screening_tasks st
-                WHERE st.candidate_id = :cid
-            """
-            params: dict[str, Any] = {"cid": candidate_id}
-            if job_id:
-                query += " AND st.job_vacancy_id = :jid"
-                params["jid"] = job_id
-            query += " ORDER BY st.created_at DESC LIMIT 3"
+    async with AsyncSessionLocal() as db:
+        query = """
+            SELECT st.id, st.status, st.channel, st.screening_type,
+                   st.responses, st.lia_analysis, st.score,
+                   st.started_at, st.completed_at,
+                   st.created_at
+            FROM screening_tasks st
+            WHERE st.candidate_id = :cid
+        """
+        params: dict[str, Any] = {"cid": candidate_id}
+        if job_id:
+            query += " AND st.job_vacancy_id = :jid"
+            params["jid"] = job_id
+        query += " ORDER BY st.created_at DESC LIMIT 3"
 
-            result = await db.execute(text(query), params)
-            rows = result.mappings().all()
+        result = await db.execute(text(query), params)
+        rows = result.mappings().all()
 
-            if not rows:
-                return {"success": True, "results": [], "message": "Nenhum resultado de triagem encontrado"}
+        if not rows:
+            return {"success": True, "results": [], "message": "Nenhum resultado de triagem encontrado"}
 
-            results = []
-            for row in rows:
-                r = dict(row)
-                for k, v in r.items():
-                    if isinstance(v, (datetime,)):
-                        r[k] = v.isoformat()
-                results.append(r)
+        results = []
+        for row in rows:
+            r = dict(row)
+            for k, v in r.items():
+                if isinstance(v, (datetime,)):
+                    r[k] = v.isoformat()
+            results.append(r)
 
-            return {"success": True, "results": results}
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_candidate_screening_results error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        return {"success": True, "results": results}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
 
-    try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT c.salary_expectation_clt, c.salary_expectation_pj,
-                           c.current_title, c.current_company
-                    FROM candidates c
-                    WHERE c.id = :cid
-                    LIMIT 1
-                """),
-                {"cid": candidate_id},
-            )
-            row = result.mappings().first()
-            if not row:
-                return {"success": False, "error": "Candidato não encontrado"}
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text("""
+                SELECT c.salary_expectation_clt, c.salary_expectation_pj,
+                       c.current_title, c.current_company
+                FROM candidates c
+                WHERE c.id = :cid
+                LIMIT 1
+            """),
+            {"cid": candidate_id},
+        )
+        row = result.mappings().first()
+        if not row:
+            return {"success": False, "error": "Candidato não encontrado"}
 
-            salary_info = dict(row)
-            return {"success": True, "salary_info": salary_info}
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_candidate_salary_info error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        salary_info = dict(row)
+        return {"success": True, "salary_info": salary_info}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     field_name = kwargs.get("field_name", "")
@@ -210,6 +200,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_request_data_collection(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     data_type = kwargs.get("data_type", "")
@@ -238,51 +229,49 @@ async def _wrap_request_data_collection(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_stage_sub_statuses(**kwargs: Any) -> dict[str, Any]:
     to_stage = kwargs.get("to_stage", "")
     company_id = kwargs.get("company_id", "")
 
-    try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT rs.name AS stage_name,
-                           ss.name AS sub_status_name,
-                           ss.display_name,
-                           ss.is_default,
-                           ss.is_waiting,
-                           ss.waiting_for,
-                           ss.color,
-                           ss.description
-                    FROM recruitment_stages rs
-                    JOIN recruitment_sub_statuses ss ON ss.stage_id = rs.id
-                    WHERE rs.name = :stage_name
-                      AND rs.company_id = :company_id
-                      AND ss.is_active = TRUE
-                    ORDER BY ss.sub_status_order
-                """),
-                {"stage_name": to_stage, "company_id": company_id},
-            )
-            rows = result.mappings().all()
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text("""
+                SELECT rs.name AS stage_name,
+                       ss.name AS sub_status_name,
+                       ss.display_name,
+                       ss.is_default,
+                       ss.is_waiting,
+                       ss.waiting_for,
+                       ss.color,
+                       ss.description
+                FROM recruitment_stages rs
+                JOIN recruitment_sub_statuses ss ON ss.stage_id = rs.id
+                WHERE rs.name = :stage_name
+                  AND rs.company_id = :company_id
+                  AND ss.is_active = TRUE
+                ORDER BY ss.sub_status_order
+            """),
+            {"stage_name": to_stage, "company_id": company_id},
+        )
+        rows = result.mappings().all()
 
-            if not rows:
-                logger.debug("[pipeline_tools] get_stage_sub_statuses: no active sub-statuses for stage=%s company=%s", to_stage, company_id)
-                return {
-                    "success": True,
-                    "sub_statuses": [],
-                    "message": "Nenhum sub-status ativo encontrado para esta etapa.",
-                }
-
-            logger.debug("[pipeline_tools] get_stage_sub_statuses: found %d sub-statuses for stage=%s", len(rows), to_stage)
+        if not rows:
+            logger.debug("[pipeline_tools] get_stage_sub_statuses: no active sub-statuses for stage=%s company=%s", to_stage, company_id)
             return {
                 "success": True,
-                "sub_statuses": [dict(r) for r in rows],
+                "sub_statuses": [],
+                "message": "Nenhum sub-status ativo encontrado para esta etapa.",
             }
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_stage_sub_statuses error: {e}", exc_info=True)
-        return {"success": True, "sub_statuses": [], "message": "Erro ao buscar sub-statuses."}
+
+        logger.debug("[pipeline_tools] get_stage_sub_statuses: found %d sub-statuses for stage=%s", len(rows), to_stage)
+        return {
+            "success": True,
+            "sub_statuses": [dict(r) for r in rows],
+        }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     action_behavior = kwargs.get("action_behavior", "")
     to_stage = kwargs.get("to_stage", "")
@@ -339,6 +328,7 @@ async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_extract_preferences(**kwargs: Any) -> dict[str, Any]:
     text_input = kwargs.get("text", "")
     kwargs.get("action_behavior", "")
@@ -428,6 +418,7 @@ async def _wrap_extract_preferences(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_validate_transition(**kwargs: Any) -> dict[str, Any]:
     from_stage = kwargs.get("from_stage", "")
     to_stage = kwargs.get("to_stage", "")
@@ -443,41 +434,39 @@ async def _wrap_validate_transition(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_job_context(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
 
     if not job_id:
         return {"success": False, "error": "job_id é obrigatório"}
 
-    try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT jv.id, jv.title, jv.department, jv.description,
-                           jv.work_model, jv.salary_range,
-                           jv.status, jv.stage,
-                           jv.screening_config, jv.pipeline_config
-                    FROM job_vacancies jv
-                    WHERE jv.id = :jid
-                    LIMIT 1
-                """),
-                {"jid": job_id},
-            )
-            row = result.mappings().first()
-            if not row:
-                return {"success": False, "error": "Vaga não encontrada"}
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text("""
+                SELECT jv.id, jv.title, jv.department, jv.description,
+                       jv.work_model, jv.salary_range,
+                       jv.status, jv.stage,
+                       jv.screening_config, jv.pipeline_config
+                FROM job_vacancies jv
+                WHERE jv.id = :jid
+                LIMIT 1
+            """),
+            {"jid": job_id},
+        )
+        row = result.mappings().first()
+        if not row:
+            return {"success": False, "error": "Vaga não encontrada"}
 
-            job_data = dict(row)
-            for k, v in job_data.items():
-                if isinstance(v, (datetime,)):
-                    job_data[k] = v.isoformat()
+        job_data = dict(row)
+        for k, v in job_data.items():
+            if isinstance(v, (datetime,)):
+                job_data[k] = v.isoformat()
 
-            return {"success": True, "job": job_data}
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_job_context error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        return {"success": True, "job": job_data}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_schedule_secondary_task(**kwargs: Any) -> dict[str, Any]:
     task_type = kwargs.get("task_type", "")
     description = kwargs.get("description", "")
@@ -492,6 +481,7 @@ async def _wrap_schedule_secondary_task(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_personalize_communication(**kwargs: Any) -> dict[str, Any]:
     tone = kwargs.get("tone", "professional")
     language = kwargs.get("language", "pt-BR")
@@ -510,61 +500,59 @@ async def _wrap_personalize_communication(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     rejection_reason = kwargs.get("rejection_reason", "")
     candidate_name = kwargs.get("candidate_name", "")
 
-    try:
-        explicit_result = _fairness_guard.check(rejection_reason)
-        implicit_warnings = _fairness_guard.check_implicit_bias(rejection_reason)
+    explicit_result = _fairness_guard.check(rejection_reason)
+    implicit_warnings = _fairness_guard.check_implicit_bias(rejection_reason)
 
-        warnings = []
-        educational_message = None
+    warnings = []
+    educational_message = None
 
-        if explicit_result.is_blocked:
-            educational_message = explicit_result.educational_message
-            warnings.extend([
-                f"Viés explícito detectado ({explicit_result.category}): {', '.join(explicit_result.blocked_terms)}"
-            ])
+    if explicit_result.is_blocked:
+        educational_message = explicit_result.educational_message
+        warnings.extend([
+            f"Viés explícito detectado ({explicit_result.category}): {', '.join(explicit_result.blocked_terms)}"
+        ])
 
-        if implicit_warnings:
-            warnings.extend(implicit_warnings)
+    if implicit_warnings:
+        warnings.extend(implicit_warnings)
 
-        if explicit_result.soft_warnings:
-            for sw in explicit_result.soft_warnings:
-                if sw not in warnings:
-                    warnings.append(sw)
+    if explicit_result.soft_warnings:
+        for sw in explicit_result.soft_warnings:
+            if sw not in warnings:
+                warnings.append(sw)
 
-        if not explicit_result.is_blocked:
-            try:
-                semantic_result = await _fairness_guard.check_semantic(
-                    rejection_reason, context="candidate_rejection"
-                )
-                if semantic_result.is_blocked:
-                    educational_message = semantic_result.educational_message
-                    warnings.append(f"Viés semântico detectado: {semantic_result.educational_message}")
-                if semantic_result.soft_warnings:
-                    for sw in semantic_result.soft_warnings:
-                        if sw not in warnings:
-                            warnings.append(sw)
-            except Exception as sem_err:
-                logger.debug(f"[pipeline_tools] semantic check skipped: {sem_err}")
+    if not explicit_result.is_blocked:
+        try:
+            semantic_result = await _fairness_guard.check_semantic(
+                rejection_reason, context="candidate_rejection"
+            )
+            if semantic_result.is_blocked:
+                educational_message = semantic_result.educational_message
+                warnings.append(f"Viés semântico detectado: {semantic_result.educational_message}")
+            if semantic_result.soft_warnings:
+                for sw in semantic_result.soft_warnings:
+                    if sw not in warnings:
+                        warnings.append(sw)
+        except Exception as sem_err:
+            logger.debug(f"[pipeline_tools] semantic check skipped: {sem_err}")
 
-        is_fair = not explicit_result.is_blocked and len(warnings) == 0
+    is_fair = not explicit_result.is_blocked and len(warnings) == 0
 
-        return {
-            "success": True,
-            "is_fair": is_fair,
-            "warnings": warnings,
-            "educational_message": educational_message,
-            "candidate_name": candidate_name,
-            "rejection_reason": rejection_reason,
-        }
-    except Exception as e:
-        logger.error(f"[pipeline_tools] check_rejection_fairness error: {e}", exc_info=True)
-        return {"success": True, "is_fair": True, "warnings": [], "error": str(e)}
+    return {
+        "success": True,
+        "is_fair": is_fair,
+        "warnings": warnings,
+        "educational_message": educational_message,
+        "candidate_name": candidate_name,
+        "rejection_reason": rejection_reason,
+    }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_check_candidate_availability(**kwargs: Any) -> dict[str, Any]:
     kwargs.get("candidate_id", "")
 
@@ -578,6 +566,7 @@ async def _wrap_check_candidate_availability(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     action_behavior = kwargs.get("action_behavior", "")
@@ -617,6 +606,7 @@ async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "preferences": [], "message": "Sistema de preferências ainda não configurado"}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
     recruiter_id = kwargs.get("recruiter_id", "")
     preference_key = kwargs.get("preference_key", "")
@@ -719,64 +709,61 @@ async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str |
     return None
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_get_interview_details(**kwargs: Any) -> dict[str, Any]:
     """Busca detalhes da entrevista agendada para o candidato na vaga atual."""
     candidate_id = kwargs.get("candidate_id", "") or kwargs.get("vacancy_candidate_id", "")
     if not candidate_id:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
-    try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT
-                        i.id::text AS interview_id,
-                        i.title,
-                        i.interview_type,
-                        i.interview_mode,
-                        i.start_time,
-                        i.end_time,
-                        i.duration_minutes,
-                        i.meeting_url,
-                        i.meeting_platform,
-                        i.graph_event_id,
-                        i.graph_organizer_email,
-                        i.candidate_email,
-                        i.candidate_name,
-                        i.interviewer_email,
-                        i.interviewer_name,
-                        i.location,
-                        i.status,
-                        i.timezone
-                    FROM interviews i
-                    WHERE i.candidate_id::text = :cid
-                      AND i.status IN ('scheduled', 'rescheduled')
-                    ORDER BY i.start_time ASC
-                    LIMIT 1
-                """),
-                {"cid": candidate_id},
-            )
-            row = result.mappings().first()
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text("""
+                SELECT
+                    i.id::text AS interview_id,
+                    i.title,
+                    i.interview_type,
+                    i.interview_mode,
+                    i.start_time,
+                    i.end_time,
+                    i.duration_minutes,
+                    i.meeting_url,
+                    i.meeting_platform,
+                    i.graph_event_id,
+                    i.graph_organizer_email,
+                    i.candidate_email,
+                    i.candidate_name,
+                    i.interviewer_email,
+                    i.interviewer_name,
+                    i.location,
+                    i.status,
+                    i.timezone
+                FROM interviews i
+                WHERE i.candidate_id::text = :cid
+                  AND i.status IN ('scheduled', 'rescheduled')
+                ORDER BY i.start_time ASC
+                LIMIT 1
+            """),
+            {"cid": candidate_id},
+        )
+        row = result.mappings().first()
 
-            if not row:
-                return {
-                    "success": True,
-                    "found": False,
-                    "message": "Nenhuma entrevista agendada encontrada para este candidato",
-                }
+        if not row:
+            return {
+                "success": True,
+                "found": False,
+                "message": "Nenhuma entrevista agendada encontrada para este candidato",
+            }
 
-            interview = dict(row)
-            for k, v in interview.items():
-                if isinstance(v, datetime):
-                    interview[k] = v.isoformat()
+        interview = dict(row)
+        for k, v in interview.items():
+            if isinstance(v, datetime):
+                interview[k] = v.isoformat()
 
-            return {"success": True, "found": True, "interview": interview}
-
-    except Exception as e:
-        logger.error(f"[pipeline_tools] get_interview_details error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
+        return {"success": True, "found": True, "interview": interview}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
     """
     Cancela a entrevista agendada do candidato.
@@ -920,6 +907,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+@tool_handler("pipeline", require_company=False)
 async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
     """
     Reagenda a entrevista para nova data e hora.

@@ -15,83 +15,80 @@ from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
 
+@tool_handler("hiring_policy")
 async def _wrap_get_current_policy(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
-    logger.info(f"[policy_tools] get_current_policy called for company={company_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT pipeline_rules, scheduling_rules, communication_rules,
-                           screening_rules, automation_rules, pipeline_templates,
-                           learned_patterns, setup_progress, autonomy_level,
-                           created_at, updated_at
-                    FROM company_hiring_policies
-                    WHERE company_id = :company_id
-                    LIMIT 1
-                """),
-                {"company_id": company_id},
-            )
-            row = result.mappings().first()
-            if not row:
-                return {
-                    "success": True,
-                    "data": {
-                        "exists": False,
-                        "pipeline_rules": {},
-                        "scheduling_rules": {},
-                        "communication_rules": {},
-                        "screening_rules": {},
-                        "automation_rules": {},
-                        "pipeline_templates": [],
-                        "setup_progress": 0,
-                    },
-                    "message": "Nenhuma politica configurada ainda. Vamos comecar do zero.",
-                }
-
-            data = {}
-            for key in [
-                "pipeline_rules", "scheduling_rules", "communication_rules",
-                "screening_rules", "automation_rules", "pipeline_templates",
-                "learned_patterns",
-            ]:
-                val = row[key]
-                if isinstance(val, str):
-                    try:
-                        data[key] = json.loads(val)
-                    except (json.JSONDecodeError, TypeError):
-                        data[key] = val
-                elif val is not None:
-                    data[key] = val
-                else:
-                    data[key] = {} if key != "pipeline_templates" else []
-
-            data["exists"] = True
-            data["setup_progress"] = row["setup_progress"] or 0
-            data["autonomy_level"] = row["autonomy_level"] or "low"
-
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("""
+                SELECT pipeline_rules, scheduling_rules, communication_rules,
+                       screening_rules, automation_rules, pipeline_templates,
+                       learned_patterns, setup_progress, autonomy_level,
+                       created_at, updated_at
+                FROM company_hiring_policies
+                WHERE company_id = :company_id
+                LIMIT 1
+            """),
+            {"company_id": company_id},
+        )
+        row = result.mappings().first()
+        if not row:
             return {
                 "success": True,
-                "data": data,
-                "message": "Politicas atuais carregadas com sucesso.",
+                "data": {
+                    "exists": False,
+                    "pipeline_rules": {},
+                    "scheduling_rules": {},
+                    "communication_rules": {},
+                    "screening_rules": {},
+                    "automation_rules": {},
+                    "pipeline_templates": [],
+                    "setup_progress": 0,
+                },
+                "message": "Nenhuma politica configurada ainda. Vamos comecar do zero.",
             }
-    except Exception as e:
-        logger.error(f"[policy_tools] get_current_policy error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao carregar politicas: {str(e)}"}
+
+        data = {}
+        for key in [
+            "pipeline_rules", "scheduling_rules", "communication_rules",
+            "screening_rules", "automation_rules", "pipeline_templates",
+            "learned_patterns",
+        ]:
+            val = row[key]
+            if isinstance(val, str):
+                try:
+                    data[key] = json.loads(val)
+                except (json.JSONDecodeError, TypeError):
+                    data[key] = val
+            elif val is not None:
+                data[key] = val
+            else:
+                data[key] = {} if key != "pipeline_templates" else []
+
+        data["exists"] = True
+        data["setup_progress"] = row["setup_progress"] or 0
+        data["autonomy_level"] = row["autonomy_level"] or "low"
+
+        return {
+            "success": True,
+            "data": data,
+            "message": "Politicas atuais carregadas com sucesso.",
+        }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_save_policy_field(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     block = kwargs.get("block", "")
     field = kwargs.get("field", "")
     value = kwargs.get("value")
-    logger.info(f"[policy_tools] save_policy_field called: company={company_id} block={block} field={field}")
 
     valid_blocks = [
         "pipeline_rules", "scheduling_rules", "communication_rules",
@@ -104,147 +101,135 @@ async def _wrap_save_policy_field(**kwargs: Any) -> dict[str, Any]:
             "message": f"Bloco '{block}' nao e valido. Blocos validos: {valid_blocks}",
         }
 
-    try:
-        async with AsyncSessionLocal() as session:
-            existing = await session.execute(
-                text(f"SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
-                {"company_id": company_id},
-            )
-            row = existing.mappings().first()
+    async with AsyncSessionLocal() as session:
+        existing = await session.execute(
+            text(f"SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
+            {"company_id": company_id},
+        )
+        row = existing.mappings().first()
 
-            if row:
-                current_block = row[block]
-                if isinstance(current_block, str):
-                    try:
-                        current_block = json.loads(current_block)
-                    except (json.JSONDecodeError, TypeError):
-                        current_block = {}
-                elif current_block is None:
+        if row:
+            current_block = row[block]
+            if isinstance(current_block, str):
+                try:
+                    current_block = json.loads(current_block)
+                except (json.JSONDecodeError, TypeError):
                     current_block = {}
+            elif current_block is None:
+                current_block = {}
 
-                current_block[field] = value
-                block_json = json.dumps(current_block, ensure_ascii=False)
+            current_block[field] = value
+            block_json = json.dumps(current_block, ensure_ascii=False)
 
-                await session.execute(
-                    text(f"""
-                        UPDATE company_hiring_policies
-                        SET {block} = :block_data::jsonb, updated_at = NOW()
-                        WHERE company_id = :company_id
-                    """),
-                    {"block_data": block_json, "company_id": company_id},
-                )
-            else:
-                block_data = {field: value}
-                block_json = json.dumps(block_data, ensure_ascii=False)
-                await session.execute(
-                    text(f"""
-                        INSERT INTO company_hiring_policies (company_id, {block}, created_at, updated_at)
-                        VALUES (:company_id, :block_data::jsonb, NOW(), NOW())
-                    """),
-                    {"company_id": company_id, "block_data": block_json},
-                )
+            await session.execute(
+                text(f"""
+                    UPDATE company_hiring_policies
+                    SET {block} = :block_data::jsonb, updated_at = NOW()
+                    WHERE company_id = :company_id
+                """),
+                {"block_data": block_json, "company_id": company_id},
+            )
+        else:
+            block_data = {field: value}
+            block_json = json.dumps(block_data, ensure_ascii=False)
+            await session.execute(
+                text(f"""
+                    INSERT INTO company_hiring_policies (company_id, {block}, created_at, updated_at)
+                    VALUES (:company_id, :block_data::jsonb, NOW(), NOW())
+                """),
+                {"company_id": company_id, "block_data": block_json},
+            )
 
-            await session.commit()
+        await session.commit()
 
-            return {
-                "success": True,
-                "data": {
-                    "block": block,
-                    "field": field,
-                    "value": value,
-                    "saved": True,
-                },
-                "message": f"Politica salva: {block}.{field} = {value}",
-            }
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[policy_tools] save_policy_field error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao salvar politica: {str(e)}"}
+        return {
+            "success": True,
+            "data": {
+                "block": block,
+                "field": field,
+                "value": value,
+                "saved": True,
+            },
+            "message": f"Politica salva: {block}.{field} = {value}",
+        }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_get_policy_summary(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
-    logger.info(f"[policy_tools] get_policy_summary called for company={company_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT pipeline_rules, scheduling_rules, communication_rules,
-                           screening_rules, automation_rules, setup_progress,
-                           autonomy_level
-                    FROM company_hiring_policies
-                    WHERE company_id = :company_id
-                    LIMIT 1
-                """),
-                {"company_id": company_id},
-            )
-            row = result.mappings().first()
-            if not row:
-                return {
-                    "success": True,
-                    "data": {"configured": False, "summary": "Nenhuma politica configurada."},
-                    "message": "Nenhuma politica foi definida para esta empresa.",
-                }
-
-            summary_parts = []
-            blocks = {
-                "pipeline_rules": "Pipeline e Processo",
-                "scheduling_rules": "Agendamento",
-                "communication_rules": "Comunicacao",
-                "screening_rules": "Triagem",
-                "automation_rules": "Autonomia da LIA",
-            }
-
-            configured_count = 0
-            for block_key, block_name in blocks.items():
-                block_data = row[block_key]
-                if isinstance(block_data, str):
-                    try:
-                        block_data = json.loads(block_data)
-                    except (json.JSONDecodeError, TypeError):
-                        block_data = {}
-                elif block_data is None:
-                    block_data = {}
-
-                if block_data:
-                    configured_count += 1
-                    fields = []
-                    for k, v in block_data.items():
-                        if v not in (None, "", [], {}):
-                            fields.append(f"  - {k}: {v}")
-                    if fields:
-                        summary_parts.append(f"**{block_name}**:")
-                        summary_parts.extend(fields)
-                    else:
-                        summary_parts.append(f"**{block_name}**: (vazio)")
-                else:
-                    summary_parts.append(f"**{block_name}**: Nao configurado")
-
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("""
+                SELECT pipeline_rules, scheduling_rules, communication_rules,
+                       screening_rules, automation_rules, setup_progress,
+                       autonomy_level
+                FROM company_hiring_policies
+                WHERE company_id = :company_id
+                LIMIT 1
+            """),
+            {"company_id": company_id},
+        )
+        row = result.mappings().first()
+        if not row:
             return {
                 "success": True,
-                "data": {
-                    "configured": True,
-                    "blocks_configured": configured_count,
-                    "total_blocks": len(blocks),
-                    "setup_progress": row["setup_progress"] or 0,
-                    "autonomy_level": row["autonomy_level"] or "low",
-                    "summary": "\n".join(summary_parts),
-                },
-                "message": f"Resumo das politicas: {configured_count}/{len(blocks)} blocos configurados.",
+                "data": {"configured": False, "summary": "Nenhuma politica configurada."},
+                "message": "Nenhuma politica foi definida para esta empresa.",
             }
-    except Exception as e:
-        logger.error(f"[policy_tools] get_policy_summary error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao gerar resumo: {str(e)}"}
+
+        summary_parts = []
+        blocks = {
+            "pipeline_rules": "Pipeline e Processo",
+            "scheduling_rules": "Agendamento",
+            "communication_rules": "Comunicacao",
+            "screening_rules": "Triagem",
+            "automation_rules": "Autonomia da LIA",
+        }
+
+        configured_count = 0
+        for block_key, block_name in blocks.items():
+            block_data = row[block_key]
+            if isinstance(block_data, str):
+                try:
+                    block_data = json.loads(block_data)
+                except (json.JSONDecodeError, TypeError):
+                    block_data = {}
+            elif block_data is None:
+                block_data = {}
+
+            if block_data:
+                configured_count += 1
+                fields = []
+                for k, v in block_data.items():
+                    if v not in (None, "", [], {}):
+                        fields.append(f"  - {k}: {v}")
+                if fields:
+                    summary_parts.append(f"**{block_name}**:")
+                    summary_parts.extend(fields)
+                else:
+                    summary_parts.append(f"**{block_name}**: (vazio)")
+            else:
+                summary_parts.append(f"**{block_name}**: Nao configurado")
+
+        return {
+            "success": True,
+            "data": {
+                "configured": True,
+                "blocks_configured": configured_count,
+                "total_blocks": len(blocks),
+                "setup_progress": row["setup_progress"] or 0,
+                "autonomy_level": row["autonomy_level"] or "low",
+                "summary": "\n".join(summary_parts),
+            },
+            "message": f"Resumo das politicas: {configured_count}/{len(blocks)} blocos configurados.",
+        }
 
 
+@tool_handler("hiring_policy", require_company=False)
 async def _wrap_validate_policy_compliance(**kwargs: Any) -> dict[str, Any]:
     policy_text = kwargs.get("policy_text", "")
     field_name = kwargs.get("field_name", "")
     deep_check = kwargs.get("deep_check", False)
-    logger.info(f"[policy_tools] validate_policy_compliance called for field={field_name} deep_check={deep_check}")
 
     if not policy_text:
         return {
@@ -300,65 +285,61 @@ async def _wrap_validate_policy_compliance(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_get_company_context(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
-    logger.info(f"[policy_tools] get_company_context called for company={company_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            jobs = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) AS total_jobs,
-                        COUNT(*) FILTER (WHERE status = 'active') AS active_jobs,
-                        COUNT(*) FILTER (WHERE status = 'closed') AS closed_jobs
-                    FROM job_vacancies
-                    WHERE company_id = :company_id
-                """),
-                {"company_id": company_id},
-            )
-            jobs_row = jobs.mappings().first()
+    async with AsyncSessionLocal() as session:
+        jobs = await session.execute(
+            text("""
+                SELECT
+                    COUNT(*) AS total_jobs,
+                    COUNT(*) FILTER (WHERE status = 'active') AS active_jobs,
+                    COUNT(*) FILTER (WHERE status = 'closed') AS closed_jobs
+                FROM job_vacancies
+                WHERE company_id = :company_id
+            """),
+            {"company_id": company_id},
+        )
+        jobs_row = jobs.mappings().first()
 
-            candidates = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(DISTINCT vc.candidate_id) AS total_candidates,
-                        AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)::int AS avg_days_in_pipeline
-                    FROM vacancy_candidates vc
-                    JOIN job_vacancies jv ON vc.vacancy_id = jv.id
-                    WHERE jv.company_id = :company_id
-                """),
-                {"company_id": company_id},
-            )
-            cand_row = candidates.mappings().first()
+        candidates = await session.execute(
+            text("""
+                SELECT
+                    COUNT(DISTINCT vc.candidate_id) AS total_candidates,
+                    AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)::int AS avg_days_in_pipeline
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON vc.vacancy_id = jv.id
+                WHERE jv.company_id = :company_id
+            """),
+            {"company_id": company_id},
+        )
+        cand_row = candidates.mappings().first()
 
-            company = await session.execute(
-                text("""
-                    SELECT name, industry, company_size, employee_count
-                    FROM company_profiles
-                    WHERE id::text = :company_id OR id::text LIKE :company_id_like
-                    LIMIT 1
-                """),
-                {"company_id": company_id, "company_id_like": f"%{company_id[:8]}%"},
-            )
-            comp_row = company.mappings().first()
+        company = await session.execute(
+            text("""
+                SELECT name, industry, company_size, employee_count
+                FROM company_profiles
+                WHERE id::text = :company_id OR id::text LIKE :company_id_like
+                LIMIT 1
+            """),
+            {"company_id": company_id, "company_id_like": f"%{company_id[:8]}%"},
+        )
+        comp_row = company.mappings().first()
 
-            return {
-                "success": True,
-                "data": {
-                    "company_name": comp_row["name"] if comp_row else "N/A",
-                    "industry": comp_row["industry"] if comp_row else "N/A",
-                    "company_size": comp_row["company_size"] if comp_row else "N/A",
-                    "employee_count": comp_row["employee_count"] if comp_row else 0,
-                    "total_jobs": jobs_row["total_jobs"] if jobs_row else 0,
-                    "active_jobs": jobs_row["active_jobs"] if jobs_row else 0,
-                    "total_candidates": cand_row["total_candidates"] if cand_row else 0,
-                    "avg_days_in_pipeline": cand_row["avg_days_in_pipeline"] if cand_row else 0,
-                },
-                "message": "Contexto da empresa carregado.",
-            }
-    except Exception as e:
-        logger.error(f"[policy_tools] get_company_context error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao carregar contexto: {str(e)}"}
+        return {
+            "success": True,
+            "data": {
+                "company_name": comp_row["name"] if comp_row else "N/A",
+                "industry": comp_row["industry"] if comp_row else "N/A",
+                "company_size": comp_row["company_size"] if comp_row else "N/A",
+                "employee_count": comp_row["employee_count"] if comp_row else 0,
+                "total_jobs": jobs_row["total_jobs"] if jobs_row else 0,
+                "active_jobs": jobs_row["active_jobs"] if jobs_row else 0,
+                "total_candidates": cand_row["total_candidates"] if cand_row else 0,
+                "avg_days_in_pipeline": cand_row["avg_days_in_pipeline"] if cand_row else 0,
+            },
+            "message": "Contexto da empresa carregado.",
+        }
 
 
 INDUSTRY_BENCHMARKS = {
@@ -487,9 +468,9 @@ INDUSTRY_BENCHMARKS = {
 }
 
 
+@tool_handler("hiring_policy", require_company=False)
 async def _wrap_get_industry_benchmarks(**kwargs: Any) -> dict[str, Any]:
     industry = kwargs.get("industry", "technology")
-    logger.info(f"[policy_tools] get_industry_benchmarks called for industry={industry}")
 
     industry_lower = industry.lower() if industry else "technology"
     data = INDUSTRY_BENCHMARKS.get(industry_lower, INDUSTRY_BENCHMARKS["technology"])
@@ -506,90 +487,86 @@ async def _wrap_get_industry_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("hiring_policy", require_company=False)
 async def _wrap_get_platform_benchmarks(**kwargs: Any) -> dict[str, Any]:
     industry = kwargs.get("industry", "")
-    logger.info(f"[policy_tools] get_platform_benchmarks called for industry={industry}")
-    try:
-        async with AsyncSessionLocal() as session:
-            time_query = await session.execute(
-                text("""
-                    SELECT
-                        AVG(EXTRACT(EPOCH FROM (jv.updated_at - jv.created_at)) / 86400)::int AS avg_time_to_fill,
-                        COUNT(*) AS total_jobs,
-                        COUNT(*) FILTER (WHERE jv.status = 'closed') AS filled_jobs
-                    FROM job_vacancies jv
-                    LEFT JOIN company_profiles cp ON jv.company_id = cp.id::text
-                    WHERE (:industry = '' OR LOWER(cp.industry) = LOWER(:industry))
-                    AND jv.created_at > NOW() - INTERVAL '180 days'
-                """),
-                {"industry": industry},
-            )
-            time_row = time_query.mappings().first()
+    async with AsyncSessionLocal() as session:
+        time_query = await session.execute(
+            text("""
+                SELECT
+                    AVG(EXTRACT(EPOCH FROM (jv.updated_at - jv.created_at)) / 86400)::int AS avg_time_to_fill,
+                    COUNT(*) AS total_jobs,
+                    COUNT(*) FILTER (WHERE jv.status = 'closed') AS filled_jobs
+                FROM job_vacancies jv
+                LEFT JOIN company_profiles cp ON jv.company_id = cp.id::text
+                WHERE (:industry = '' OR LOWER(cp.industry) = LOWER(:industry))
+                AND jv.created_at > NOW() - INTERVAL '180 days'
+            """),
+            {"industry": industry},
+        )
+        time_row = time_query.mappings().first()
 
-            stage_query = await session.execute(
-                text("""
-                    SELECT
-                        vc.stage,
-                        COUNT(*) AS candidates_count,
-                        AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)::int AS avg_days
-                    FROM vacancy_candidates vc
-                    JOIN job_vacancies jv ON vc.vacancy_id = jv.id
-                    LEFT JOIN company_profiles cp ON jv.company_id = cp.id::text
-                    WHERE (:industry = '' OR LOWER(cp.industry) = LOWER(:industry))
-                    AND vc.created_at > NOW() - INTERVAL '180 days'
-                    GROUP BY vc.stage
-                    ORDER BY candidates_count DESC
-                """),
-                {"industry": industry},
-            )
-            stage_rows = stage_query.mappings().all()
+        stage_query = await session.execute(
+            text("""
+                SELECT
+                    vc.stage,
+                    COUNT(*) AS candidates_count,
+                    AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)::int AS avg_days
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON vc.vacancy_id = jv.id
+                LEFT JOIN company_profiles cp ON jv.company_id = cp.id::text
+                WHERE (:industry = '' OR LOWER(cp.industry) = LOWER(:industry))
+                AND vc.created_at > NOW() - INTERVAL '180 days'
+                GROUP BY vc.stage
+                ORDER BY candidates_count DESC
+            """),
+            {"industry": industry},
+        )
+        stage_rows = stage_query.mappings().all()
 
-            total_jobs = time_row["total_jobs"] if time_row else 0
+        total_jobs = time_row["total_jobs"] if time_row else 0
 
-            if total_jobs < 5:
-                return {
-                    "success": True,
-                    "data": {
-                        "has_data": False,
-                        "industry": industry or "todos",
-                        "total_jobs_analyzed": total_jobs,
-                    },
-                    "message": f"Dados insuficientes na plataforma para o setor '{industry or 'todos'}' (apenas {total_jobs} vagas). Use benchmarks de mercado como referencia.",
-                }
-
-            stage_data = {}
-            for row in stage_rows:
-                stage_data[row["stage"]] = {
-                    "candidates": row["candidates_count"],
-                    "avg_days": row["avg_days"] or 0,
-                }
-
-            fill_rate = (time_row["filled_jobs"] / total_jobs * 100) if total_jobs > 0 else 0
-
+        if total_jobs < 5:
             return {
                 "success": True,
                 "data": {
-                    "has_data": True,
+                    "has_data": False,
                     "industry": industry or "todos",
                     "total_jobs_analyzed": total_jobs,
-                    "avg_time_to_fill_days": time_row["avg_time_to_fill"] or 0,
-                    "fill_rate_percent": round(fill_rate, 1),
-                    "stages": stage_data,
-                    "period": "ultimos 180 dias",
-                    "note": "Dados calculados a partir de processos reais na plataforma.",
                 },
-                "message": f"Benchmarks reais da plataforma para '{industry or 'todos'}': {total_jobs} vagas analisadas.",
+                "message": f"Dados insuficientes na plataforma para o setor '{industry or 'todos'}' (apenas {total_jobs} vagas). Use benchmarks de mercado como referencia.",
             }
-    except Exception as e:
-        logger.error(f"[policy_tools] get_platform_benchmarks error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao calcular benchmarks da plataforma: {str(e)}"}
+
+        stage_data = {}
+        for row in stage_rows:
+            stage_data[row["stage"]] = {
+                "candidates": row["candidates_count"],
+                "avg_days": row["avg_days"] or 0,
+            }
+
+        fill_rate = (time_row["filled_jobs"] / total_jobs * 100) if total_jobs > 0 else 0
+
+        return {
+            "success": True,
+            "data": {
+                "has_data": True,
+                "industry": industry or "todos",
+                "total_jobs_analyzed": total_jobs,
+                "avg_time_to_fill_days": time_row["avg_time_to_fill"] or 0,
+                "fill_rate_percent": round(fill_rate, 1),
+                "stages": stage_data,
+                "period": "ultimos 180 dias",
+                "note": "Dados calculados a partir de processos reais na plataforma.",
+            },
+            "message": f"Benchmarks reais da plataforma para '{industry or 'todos'}': {total_jobs} vagas analisadas.",
+        }
 
 
+@tool_handler("hiring_policy", require_company=False)
 async def _wrap_explain_policy_impact(**kwargs: Any) -> dict[str, Any]:
     block = kwargs.get("block", "")
     field = kwargs.get("field", "")
     value = kwargs.get("value")
-    logger.info(f"[policy_tools] explain_policy_impact called: {block}.{field}={value}")
 
     impacts = {
         "automation_rules.autonomy_level": {
@@ -634,316 +611,304 @@ async def _wrap_explain_policy_impact(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_get_setup_progress(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
-    logger.info(f"[policy_tools] get_setup_progress called for company={company_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT pipeline_rules, scheduling_rules, communication_rules,
-                           screening_rules, automation_rules, setup_progress
-                    FROM company_hiring_policies
-                    WHERE company_id = :company_id
-                    LIMIT 1
-                """),
-                {"company_id": company_id},
-            )
-            row = result.mappings().first()
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("""
+                SELECT pipeline_rules, scheduling_rules, communication_rules,
+                       screening_rules, automation_rules, setup_progress
+                FROM company_hiring_policies
+                WHERE company_id = :company_id
+                LIMIT 1
+            """),
+            {"company_id": company_id},
+        )
+        row = result.mappings().first()
 
-            if not row:
-                return {
-                    "success": True,
-                    "data": {
-                        "overall_progress": 0,
-                        "blocks": {
-                            "pipeline_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
-                            "scheduling_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
-                            "communication_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
-                            "screening_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
-                            "automation_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
-                        },
-                        "pending_blocks": ["Pipeline e Processo", "Agendamento", "Comunicacao", "Triagem", "Autonomia da LIA"],
-                    },
-                    "message": "Nenhuma politica configurada. Todos os blocos estao pendentes.",
-                }
-
-            block_names = {
-                "pipeline_rules": "Pipeline e Processo",
-                "scheduling_rules": "Agendamento",
-                "communication_rules": "Comunicacao",
-                "screening_rules": "Triagem",
-                "automation_rules": "Autonomia da LIA",
-            }
-            field_counts = {
-                "pipeline_rules": 4,
-                "scheduling_rules": 4,
-                "communication_rules": 4,
-                "screening_rules": 4,
-                "automation_rules": 4,
-            }
-
-            blocks_info = {}
-            pending = []
-            total_fields = 0
-            filled_fields = 0
-
-            for block_key, block_name in block_names.items():
-                block_data = row[block_key]
-                if isinstance(block_data, str):
-                    try:
-                        block_data = json.loads(block_data)
-                    except (json.JSONDecodeError, TypeError):
-                        block_data = {}
-                elif block_data is None:
-                    block_data = {}
-
-                expected = field_counts.get(block_key, 4)
-                fields_set = sum(1 for v in block_data.values() if v not in (None, "", [], {}))
-                total_fields += expected
-                filled_fields += min(fields_set, expected)
-
-                configured = fields_set > 0
-                blocks_info[block_key] = {
-                    "configured": configured,
-                    "fields_set": fields_set,
-                    "total_fields": expected,
-                    "block_name": block_name,
-                }
-                if not configured:
-                    pending.append(block_name)
-
-            overall = int(filled_fields / total_fields * 100) if total_fields > 0 else 0
-
+        if not row:
             return {
                 "success": True,
                 "data": {
-                    "overall_progress": overall,
-                    "blocks": blocks_info,
-                    "pending_blocks": pending,
-                    "completed_blocks": [
-                        info["block_name"] for info in blocks_info.values() if info["configured"]
-                    ],
+                    "overall_progress": 0,
+                    "blocks": {
+                        "pipeline_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
+                        "scheduling_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
+                        "communication_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
+                        "screening_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
+                        "automation_rules": {"configured": False, "fields_set": 0, "total_fields": 4},
+                    },
+                    "pending_blocks": ["Pipeline e Processo", "Agendamento", "Comunicacao", "Triagem", "Autonomia da LIA"],
                 },
-                "message": f"Progresso: {overall}%. Pendentes: {', '.join(pending) if pending else 'nenhum'}.",
+                "message": "Nenhuma politica configurada. Todos os blocos estao pendentes.",
             }
-    except Exception as e:
-        logger.error(f"[policy_tools] get_setup_progress error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao calcular progresso: {str(e)}"}
+
+        block_names = {
+            "pipeline_rules": "Pipeline e Processo",
+            "scheduling_rules": "Agendamento",
+            "communication_rules": "Comunicacao",
+            "screening_rules": "Triagem",
+            "automation_rules": "Autonomia da LIA",
+        }
+        field_counts = {
+            "pipeline_rules": 4,
+            "scheduling_rules": 4,
+            "communication_rules": 4,
+            "screening_rules": 4,
+            "automation_rules": 4,
+        }
+
+        blocks_info = {}
+        pending = []
+        total_fields = 0
+        filled_fields = 0
+
+        for block_key, block_name in block_names.items():
+            block_data = row[block_key]
+            if isinstance(block_data, str):
+                try:
+                    block_data = json.loads(block_data)
+                except (json.JSONDecodeError, TypeError):
+                    block_data = {}
+            elif block_data is None:
+                block_data = {}
+
+            expected = field_counts.get(block_key, 4)
+            fields_set = sum(1 for v in block_data.values() if v not in (None, "", [], {}))
+            total_fields += expected
+            filled_fields += min(fields_set, expected)
+
+            configured = fields_set > 0
+            blocks_info[block_key] = {
+                "configured": configured,
+                "fields_set": fields_set,
+                "total_fields": expected,
+                "block_name": block_name,
+            }
+            if not configured:
+                pending.append(block_name)
+
+        overall = int(filled_fields / total_fields * 100) if total_fields > 0 else 0
+
+        return {
+            "success": True,
+            "data": {
+                "overall_progress": overall,
+                "blocks": blocks_info,
+                "pending_blocks": pending,
+                "completed_blocks": [
+                    info["block_name"] for info in blocks_info.values() if info["configured"]
+                ],
+            },
+            "message": f"Progresso: {overall}%. Pendentes: {', '.join(pending) if pending else 'nenhum'}.",
+        }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_detect_policy_impact_anomalies(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
-    logger.info(f"[policy_tools] detect_policy_impact_anomalies called for company={company_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            policy_result = await session.execute(
-                text("""
-                    SELECT pipeline_rules, automation_rules, updated_at
-                    FROM company_hiring_policies
-                    WHERE company_id = :company_id
-                    LIMIT 1
-                """),
-                {"company_id": company_id},
-            )
-            policy_row = policy_result.mappings().first()
-            if not policy_row:
-                return {
-                    "success": True,
-                    "data": {"anomalies": [], "has_policy": False},
-                    "message": "Nenhuma politica configurada para analise de impacto.",
-                }
-
-            pipeline_rules = policy_row["pipeline_rules"]
-            if isinstance(pipeline_rules, str):
-                try:
-                    pipeline_rules = json.loads(pipeline_rules)
-                except (json.JSONDecodeError, TypeError):
-                    pipeline_rules = {}
-            elif pipeline_rules is None:
-                pipeline_rules = {}
-
-            max_days = pipeline_rules.get("max_days_in_stage", {})
-
-            stagnated = await session.execute(
-                text("""
-                    SELECT vc.stage, COUNT(*) AS stuck_count,
-                           AVG(EXTRACT(EPOCH FROM (NOW() - vc.updated_at)) / 86400)::int AS avg_days_stuck
-                    FROM vacancy_candidates vc
-                    JOIN job_vacancies jv ON vc.vacancy_id = jv.id
-                    WHERE jv.company_id = :company_id
-                    AND jv.status = 'active'
-                    AND vc.status NOT IN ('hired', 'rejected', 'withdrawn')
-                    AND EXTRACT(EPOCH FROM (NOW() - vc.updated_at)) / 86400 > 7
-                    GROUP BY vc.stage
-                    ORDER BY stuck_count DESC
-                """),
-                {"company_id": company_id},
-            )
-            stagnated_rows = stagnated.mappings().all()
-
-            abandonment = await session.execute(
-                text("""
-                    SELECT vc.stage,
-                           COUNT(*) AS total,
-                           COUNT(*) FILTER (WHERE vc.status = 'withdrawn') AS withdrawn
-                    FROM vacancy_candidates vc
-                    JOIN job_vacancies jv ON vc.vacancy_id = jv.id
-                    WHERE jv.company_id = :company_id
-                    AND vc.created_at > NOW() - INTERVAL '90 days'
-                    GROUP BY vc.stage
-                    HAVING COUNT(*) > 3
-                """),
-                {"company_id": company_id},
-            )
-            abandon_rows = abandonment.mappings().all()
-
-            anomalies = []
-
-            for row in stagnated_rows:
-                stage = row["stage"] or "desconhecida"
-                count = row["stuck_count"]
-                avg_days = row["avg_days_stuck"] or 0
-                stage_limit = max_days.get(stage, 7)
-
-                if avg_days > stage_limit:
-                    severity = "critical" if avg_days > stage_limit * 2 else "warning"
-                    anomalies.append({
-                        "type": "stagnation",
-                        "severity": severity,
-                        "stage": stage,
-                        "stuck_count": count,
-                        "avg_days_stuck": avg_days,
-                        "sla_limit": stage_limit,
-                        "recommendation": f"{count} candidatos estagnados na etapa '{stage}' ha {avg_days} dias (SLA: {stage_limit} dias). Considere revisar o SLA ou criar alertas automaticos.",
-                    })
-
-            for row in abandon_rows:
-                stage = row["stage"] or "desconhecida"
-                total = row["total"]
-                withdrawn = row["withdrawn"]
-                rate = (withdrawn / total * 100) if total > 0 else 0
-                if rate > 30:
-                    severity = "critical" if rate > 50 else "warning"
-                    anomalies.append({
-                        "type": "high_abandonment",
-                        "severity": severity,
-                        "stage": stage,
-                        "abandonment_rate": round(rate, 1),
-                        "total_candidates": total,
-                        "withdrawn": withdrawn,
-                        "recommendation": f"Taxa de desistencia de {rate:.0f}% na etapa '{stage}'. Candidatos podem estar perdendo interesse. Considere reduzir o tempo nesta etapa ou melhorar a comunicacao.",
-                    })
-
-            if not anomalies:
-                anomalies.append({
-                    "type": "all_clear",
-                    "severity": "info",
-                    "recommendation": "Nenhuma anomalia detectada. As politicas estao operando dentro dos parametros esperados.",
-                })
-
+    async with AsyncSessionLocal() as session:
+        policy_result = await session.execute(
+            text("""
+                SELECT pipeline_rules, automation_rules, updated_at
+                FROM company_hiring_policies
+                WHERE company_id = :company_id
+                LIMIT 1
+            """),
+            {"company_id": company_id},
+        )
+        policy_row = policy_result.mappings().first()
+        if not policy_row:
             return {
                 "success": True,
-                "data": {
-                    "anomalies": anomalies,
-                    "has_policy": True,
-                    "analysis_period": "ultimos 90 dias",
-                },
-                "message": f"Analise de impacto concluida: {len(anomalies)} observacoes encontradas.",
+                "data": {"anomalies": [], "has_policy": False},
+                "message": "Nenhuma politica configurada para analise de impacto.",
             }
-    except Exception as e:
-        logger.error(f"[policy_tools] detect_policy_impact_anomalies error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro na analise de impacto: {str(e)}"}
+
+        pipeline_rules = policy_row["pipeline_rules"]
+        if isinstance(pipeline_rules, str):
+            try:
+                pipeline_rules = json.loads(pipeline_rules)
+            except (json.JSONDecodeError, TypeError):
+                pipeline_rules = {}
+        elif pipeline_rules is None:
+            pipeline_rules = {}
+
+        max_days = pipeline_rules.get("max_days_in_stage", {})
+
+        stagnated = await session.execute(
+            text("""
+                SELECT vc.stage, COUNT(*) AS stuck_count,
+                       AVG(EXTRACT(EPOCH FROM (NOW() - vc.updated_at)) / 86400)::int AS avg_days_stuck
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON vc.vacancy_id = jv.id
+                WHERE jv.company_id = :company_id
+                AND jv.status = 'active'
+                AND vc.status NOT IN ('hired', 'rejected', 'withdrawn')
+                AND EXTRACT(EPOCH FROM (NOW() - vc.updated_at)) / 86400 > 7
+                GROUP BY vc.stage
+                ORDER BY stuck_count DESC
+            """),
+            {"company_id": company_id},
+        )
+        stagnated_rows = stagnated.mappings().all()
+
+        abandonment = await session.execute(
+            text("""
+                SELECT vc.stage,
+                       COUNT(*) AS total,
+                       COUNT(*) FILTER (WHERE vc.status = 'withdrawn') AS withdrawn
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON vc.vacancy_id = jv.id
+                WHERE jv.company_id = :company_id
+                AND vc.created_at > NOW() - INTERVAL '90 days'
+                GROUP BY vc.stage
+                HAVING COUNT(*) > 3
+            """),
+            {"company_id": company_id},
+        )
+        abandon_rows = abandonment.mappings().all()
+
+        anomalies = []
+
+        for row in stagnated_rows:
+            stage = row["stage"] or "desconhecida"
+            count = row["stuck_count"]
+            avg_days = row["avg_days_stuck"] or 0
+            stage_limit = max_days.get(stage, 7)
+
+            if avg_days > stage_limit:
+                severity = "critical" if avg_days > stage_limit * 2 else "warning"
+                anomalies.append({
+                    "type": "stagnation",
+                    "severity": severity,
+                    "stage": stage,
+                    "stuck_count": count,
+                    "avg_days_stuck": avg_days,
+                    "sla_limit": stage_limit,
+                    "recommendation": f"{count} candidatos estagnados na etapa '{stage}' ha {avg_days} dias (SLA: {stage_limit} dias). Considere revisar o SLA ou criar alertas automaticos.",
+                })
+
+        for row in abandon_rows:
+            stage = row["stage"] or "desconhecida"
+            total = row["total"]
+            withdrawn = row["withdrawn"]
+            rate = (withdrawn / total * 100) if total > 0 else 0
+            if rate > 30:
+                severity = "critical" if rate > 50 else "warning"
+                anomalies.append({
+                    "type": "high_abandonment",
+                    "severity": severity,
+                    "stage": stage,
+                    "abandonment_rate": round(rate, 1),
+                    "total_candidates": total,
+                    "withdrawn": withdrawn,
+                    "recommendation": f"Taxa de desistencia de {rate:.0f}% na etapa '{stage}'. Candidatos podem estar perdendo interesse. Considere reduzir o tempo nesta etapa ou melhorar a comunicacao.",
+                })
+
+        if not anomalies:
+            anomalies.append({
+                "type": "all_clear",
+                "severity": "info",
+                "recommendation": "Nenhuma anomalia detectada. As politicas estao operando dentro dos parametros esperados.",
+            })
+
+        return {
+            "success": True,
+            "data": {
+                "anomalies": anomalies,
+                "has_policy": True,
+                "analysis_period": "ultimos 90 dias",
+            },
+            "message": f"Analise de impacto concluida: {len(anomalies)} observacoes encontradas.",
+        }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_get_policy_effectiveness_report(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     period_days = kwargs.get("period_days", 30)
-    logger.info(f"[policy_tools] get_policy_effectiveness_report called for company={company_id} period={period_days}d")
-    try:
-        async with AsyncSessionLocal() as session:
-            hiring_metrics = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) AS total_jobs,
-                        COUNT(*) FILTER (WHERE status = 'closed') AS filled_jobs,
-                        AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)::int AS avg_time_to_fill
-                    FROM job_vacancies
-                    WHERE company_id = :company_id
-                    AND created_at > NOW() - INTERVAL :period
-                """),
-                {"company_id": company_id, "period": f"{period_days} days"},
-            )
-            metrics_row = hiring_metrics.mappings().first()
+    async with AsyncSessionLocal() as session:
+        hiring_metrics = await session.execute(
+            text("""
+                SELECT
+                    COUNT(*) AS total_jobs,
+                    COUNT(*) FILTER (WHERE status = 'closed') AS filled_jobs,
+                    AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)::int AS avg_time_to_fill
+                FROM job_vacancies
+                WHERE company_id = :company_id
+                AND created_at > NOW() - INTERVAL :period
+            """),
+            {"company_id": company_id, "period": f"{period_days} days"},
+        )
+        metrics_row = hiring_metrics.mappings().first()
 
-            funnel = await session.execute(
-                text("""
-                    SELECT
-                        vc.stage,
-                        COUNT(*) AS candidates,
-                        COUNT(*) FILTER (WHERE vc.status = 'rejected') AS rejected,
-                        COUNT(*) FILTER (WHERE vc.status = 'hired') AS hired,
-                        AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)::int AS avg_days
-                    FROM vacancy_candidates vc
-                    JOIN job_vacancies jv ON vc.vacancy_id = jv.id
-                    WHERE jv.company_id = :company_id
-                    AND vc.created_at > NOW() - INTERVAL :period
-                    GROUP BY vc.stage
-                    ORDER BY candidates DESC
-                """),
-                {"company_id": company_id, "period": f"{period_days} days"},
-            )
-            funnel_rows = funnel.mappings().all()
+        funnel = await session.execute(
+            text("""
+                SELECT
+                    vc.stage,
+                    COUNT(*) AS candidates,
+                    COUNT(*) FILTER (WHERE vc.status = 'rejected') AS rejected,
+                    COUNT(*) FILTER (WHERE vc.status = 'hired') AS hired,
+                    AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)::int AS avg_days
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON vc.vacancy_id = jv.id
+                WHERE jv.company_id = :company_id
+                AND vc.created_at > NOW() - INTERVAL :period
+                GROUP BY vc.stage
+                ORDER BY candidates DESC
+            """),
+            {"company_id": company_id, "period": f"{period_days} days"},
+        )
+        funnel_rows = funnel.mappings().all()
 
-            total_jobs = metrics_row["total_jobs"] if metrics_row else 0
-            filled_jobs = metrics_row["filled_jobs"] if metrics_row else 0
-            avg_ttf = metrics_row["avg_time_to_fill"] if metrics_row else 0
-            fill_rate = (filled_jobs / total_jobs * 100) if total_jobs > 0 else 0
+        total_jobs = metrics_row["total_jobs"] if metrics_row else 0
+        filled_jobs = metrics_row["filled_jobs"] if metrics_row else 0
+        avg_ttf = metrics_row["avg_time_to_fill"] if metrics_row else 0
+        fill_rate = (filled_jobs / total_jobs * 100) if total_jobs > 0 else 0
 
-            funnel_data = {}
-            for row in funnel_rows:
-                funnel_data[row["stage"] or "unknown"] = {
-                    "candidates": row["candidates"],
-                    "rejected": row["rejected"],
-                    "hired": row["hired"],
-                    "avg_days_in_stage": row["avg_days"] or 0,
-                }
-
-            insights = []
-            if avg_ttf and avg_ttf > 40:
-                insights.append("Tempo medio de contratacao acima de 40 dias. Considere otimizar etapas com maior tempo de permanencia.")
-            if fill_rate < 50 and total_jobs > 3:
-                insights.append(f"Taxa de preenchimento de {fill_rate:.0f}% esta abaixo do ideal. Revise criterios de triagem ou amplie o funil de candidatos.")
-            for stage, data in funnel_data.items():
-                if data["candidates"] > 5 and data["avg_days_in_stage"] > 10:
-                    insights.append(f"Etapa '{stage}' tem tempo medio de {data['avg_days_in_stage']} dias. Considere ajustar o SLA.")
-
-            if not insights:
-                insights.append("Metricas dentro dos parametros esperados para o periodo analisado.")
-
-            return {
-                "success": True,
-                "data": {
-                    "period_days": period_days,
-                    "total_jobs": total_jobs,
-                    "filled_jobs": filled_jobs,
-                    "fill_rate_percent": round(fill_rate, 1),
-                    "avg_time_to_fill_days": avg_ttf or 0,
-                    "funnel": funnel_data,
-                    "insights": insights,
-                },
-                "message": f"Relatorio de efetividade: {total_jobs} vagas, {fill_rate:.0f}% preenchidas, TTF medio: {avg_ttf or 'N/A'} dias.",
+        funnel_data = {}
+        for row in funnel_rows:
+            funnel_data[row["stage"] or "unknown"] = {
+                "candidates": row["candidates"],
+                "rejected": row["rejected"],
+                "hired": row["hired"],
+                "avg_days_in_stage": row["avg_days"] or 0,
             }
-    except Exception as e:
-        logger.error(f"[policy_tools] get_policy_effectiveness_report error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao gerar relatorio: {str(e)}"}
+
+        insights = []
+        if avg_ttf and avg_ttf > 40:
+            insights.append("Tempo medio de contratacao acima de 40 dias. Considere otimizar etapas com maior tempo de permanencia.")
+        if fill_rate < 50 and total_jobs > 3:
+            insights.append(f"Taxa de preenchimento de {fill_rate:.0f}% esta abaixo do ideal. Revise criterios de triagem ou amplie o funil de candidatos.")
+        for stage, data in funnel_data.items():
+            if data["candidates"] > 5 and data["avg_days_in_stage"] > 10:
+                insights.append(f"Etapa '{stage}' tem tempo medio de {data['avg_days_in_stage']} dias. Considere ajustar o SLA.")
+
+        if not insights:
+            insights.append("Metricas dentro dos parametros esperados para o periodo analisado.")
+
+        return {
+            "success": True,
+            "data": {
+                "period_days": period_days,
+                "total_jobs": total_jobs,
+                "filled_jobs": filled_jobs,
+                "fill_rate_percent": round(fill_rate, 1),
+                "avg_time_to_fill_days": avg_ttf or 0,
+                "funnel": funnel_data,
+                "insights": insights,
+            },
+            "message": f"Relatorio de efetividade: {total_jobs} vagas, {fill_rate:.0f}% preenchidas, TTF medio: {avg_ttf or 'N/A'} dias.",
+        }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_save_policy_block(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     block = kwargs.get("block", "")
     data = kwargs.get("data", {})
-    logger.info(f"[policy_tools] save_policy_block called: company={company_id} block={block} fields={len(data)}")
 
     valid_blocks = [
         "pipeline_rules", "scheduling_rules", "communication_rules",
@@ -977,70 +942,62 @@ async def _wrap_save_policy_block(**kwargs: Any) -> dict[str, Any]:
                 implicit = _fairness_guard.check_implicit_bias(field_value)
                 compliance_warnings.extend(implicit)
 
-    try:
-        async with AsyncSessionLocal() as session:
-            existing = await session.execute(
-                text(f"SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
-                {"company_id": company_id},
-            )
-            row = existing.mappings().first()
+    async with AsyncSessionLocal() as session:
+        existing = await session.execute(
+            text(f"SELECT id, {block} FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
+            {"company_id": company_id},
+        )
+        row = existing.mappings().first()
 
-            if row:
-                current_block = row[block]
-                if isinstance(current_block, str):
-                    try:
-                        current_block = json.loads(current_block)
-                    except (json.JSONDecodeError, TypeError):
-                        current_block = {}
-                elif current_block is None:
+        if row:
+            current_block = row[block]
+            if isinstance(current_block, str):
+                try:
+                    current_block = json.loads(current_block)
+                except (json.JSONDecodeError, TypeError):
                     current_block = {}
+            elif current_block is None:
+                current_block = {}
 
-                current_block.update(data)
-                block_json = json.dumps(current_block, ensure_ascii=False)
+            current_block.update(data)
+            block_json = json.dumps(current_block, ensure_ascii=False)
 
-                await session.execute(
-                    text(f"""
-                        UPDATE company_hiring_policies
-                        SET {block} = :block_data::jsonb, updated_at = NOW()
-                        WHERE company_id = :company_id
-                    """),
-                    {"block_data": block_json, "company_id": company_id},
-                )
-            else:
-                block_json = json.dumps(data, ensure_ascii=False)
-                await session.execute(
-                    text(f"""
-                        INSERT INTO company_hiring_policies (company_id, {block}, created_at, updated_at)
-                        VALUES (:company_id, :block_data::jsonb, NOW(), NOW())
-                    """),
-                    {"company_id": company_id, "block_data": block_json},
-                )
+            await session.execute(
+                text(f"""
+                    UPDATE company_hiring_policies
+                    SET {block} = :block_data::jsonb, updated_at = NOW()
+                    WHERE company_id = :company_id
+                """),
+                {"block_data": block_json, "company_id": company_id},
+            )
+        else:
+            block_json = json.dumps(data, ensure_ascii=False)
+            await session.execute(
+                text(f"""
+                    INSERT INTO company_hiring_policies (company_id, {block}, created_at, updated_at)
+                    VALUES (:company_id, :block_data::jsonb, NOW(), NOW())
+                """),
+                {"company_id": company_id, "block_data": block_json},
+            )
 
-            await session.commit()
+        await session.commit()
 
-            return {
-                "success": True,
-                "data": {
-                    "block": block,
-                    "fields_saved": list(data.keys()),
-                    "field_count": len(data),
-                    "compliance_warnings": compliance_warnings,
-                },
-                "message": f"Bloco '{block}' salvo com {len(data)} campos: {', '.join(data.keys())}.",
-            }
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[policy_tools] save_policy_block error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao salvar bloco: {str(e)}"}
+        return {
+            "success": True,
+            "data": {
+                "block": block,
+                "fields_saved": list(data.keys()),
+                "field_count": len(data),
+                "compliance_warnings": compliance_warnings,
+            },
+            "message": f"Bloco '{block}' salvo com {len(data)} campos: {', '.join(data.keys())}.",
+        }
 
 
+@tool_handler("hiring_policy")
 async def _wrap_apply_industry_defaults(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     industry = kwargs.get("industry", "technology")
-    logger.info(f"[policy_tools] apply_industry_defaults called: company={company_id} industry={industry}")
 
     industry_lower = industry.lower() if industry else "technology"
     benchmarks = INDUSTRY_BENCHMARKS.get(industry_lower, INDUSTRY_BENCHMARKS["technology"])
@@ -1076,64 +1033,56 @@ async def _wrap_apply_industry_defaults(**kwargs: Any) -> dict[str, Any]:
         },
     }
 
-    try:
-        async with AsyncSessionLocal() as session:
-            existing = await session.execute(
-                text("SELECT id FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
-                {"company_id": company_id},
-            )
-            row = existing.mappings().first()
+    async with AsyncSessionLocal() as session:
+        existing = await session.execute(
+            text("SELECT id FROM company_hiring_policies WHERE company_id = :company_id LIMIT 1"),
+            {"company_id": company_id},
+        )
+        row = existing.mappings().first()
 
-            if row:
-                for block_name, block_data in defaults.items():
-                    block_json = json.dumps(block_data, ensure_ascii=False)
-                    await session.execute(
-                        text(f"""
-                            UPDATE company_hiring_policies
-                            SET {block_name} = :block_data::jsonb, updated_at = NOW()
-                            WHERE company_id = :company_id
-                        """),
-                        {"block_data": block_json, "company_id": company_id},
-                    )
-            else:
-                all_json = {k: json.dumps(v, ensure_ascii=False) for k, v in defaults.items()}
-                await session.execute(
-                    text("""
-                        INSERT INTO company_hiring_policies
-                            (company_id, pipeline_rules, scheduling_rules, communication_rules,
-                             screening_rules, automation_rules, created_at, updated_at)
-                        VALUES
-                            (:company_id, :pipeline_rules::jsonb, :scheduling_rules::jsonb,
-                             :communication_rules::jsonb, :screening_rules::jsonb,
-                             :automation_rules::jsonb, NOW(), NOW())
-                    """),
-                    {"company_id": company_id, **all_json},
-                )
-
-            await session.commit()
-
-            applied_summary = []
+        if row:
             for block_name, block_data in defaults.items():
-                fields = ", ".join(f"{k}={v}" for k, v in block_data.items())
-                applied_summary.append(f"**{block_name}**: {fields}")
+                block_json = json.dumps(block_data, ensure_ascii=False)
+                await session.execute(
+                    text(f"""
+                        UPDATE company_hiring_policies
+                        SET {block_name} = :block_data::jsonb, updated_at = NOW()
+                        WHERE company_id = :company_id
+                    """),
+                    {"block_data": block_json, "company_id": company_id},
+                )
+        else:
+            all_json = {k: json.dumps(v, ensure_ascii=False) for k, v in defaults.items()}
+            await session.execute(
+                text("""
+                    INSERT INTO company_hiring_policies
+                        (company_id, pipeline_rules, scheduling_rules, communication_rules,
+                         screening_rules, automation_rules, created_at, updated_at)
+                    VALUES
+                        (:company_id, :pipeline_rules::jsonb, :scheduling_rules::jsonb,
+                         :communication_rules::jsonb, :screening_rules::jsonb,
+                         :automation_rules::jsonb, NOW(), NOW())
+                """),
+                {"company_id": company_id, **all_json},
+            )
 
-            return {
-                "success": True,
-                "data": {
-                    "industry": industry_lower,
-                    "blocks_applied": list(defaults.keys()),
-                    "defaults": defaults,
-                    "sources": benchmarks.get("sources", []),
-                },
-                "message": f"Defaults do setor '{industry_lower}' aplicados com sucesso em {len(defaults)} blocos. Fonte: {benchmarks.get('last_updated', 'N/A')}.",
-            }
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[policy_tools] apply_industry_defaults error: {e}")
-        return {"success": False, "data": {}, "message": f"Erro ao aplicar defaults: {str(e)}"}
+        await session.commit()
+
+        applied_summary = []
+        for block_name, block_data in defaults.items():
+            fields = ", ".join(f"{k}={v}" for k, v in block_data.items())
+            applied_summary.append(f"**{block_name}**: {fields}")
+
+        return {
+            "success": True,
+            "data": {
+                "industry": industry_lower,
+                "blocks_applied": list(defaults.keys()),
+                "defaults": defaults,
+                "sources": benchmarks.get("sources", []),
+            },
+            "message": f"Defaults do setor '{industry_lower}' aplicados com sucesso em {len(defaults)} blocos. Fonte: {benchmarks.get('last_updated', 'N/A')}.",
+        }
 
 
 def get_policy_tools() -> list[ToolDefinition]:

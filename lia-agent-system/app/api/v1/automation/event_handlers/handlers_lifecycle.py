@@ -30,10 +30,12 @@ from .._shared import (
     CandidateRejectedResponse,
     OfferSentPayload,
     OfferSentResponse,
+    ensure_company_access,
     get_activity_service,
     get_ats_sync_service,
     get_email_service,
     get_whatsapp_service,
+    log_automation_execution,
     validate_multi_tenancy,
 )
 
@@ -81,15 +83,11 @@ async def handle_candidate_inactive(
         )
 
         # Step 0: Multi-tenancy validation
-        is_valid, error_message = await validate_multi_tenancy(
-            db=db,
-            candidate_id=request.candidate_id,
-            vacancy_id=request.vacancy_id,
-            company_id=request.company_id
+        await ensure_company_access(
+            db, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id, company_id=request.company_id,
+            handler_tag="CANDIDATE_INACTIVE",
         )
-        if not is_valid:
-            logger.warning(f"🚫 [CANDIDATE_INACTIVE] Multi-tenancy validation failed: {error_message}")
-            raise HTTPException(status_code=403, detail=error_message)
 
         # Result tracking
         email_sent = False
@@ -195,7 +193,6 @@ async def handle_candidate_inactive(
         # Step 4a: Notify recruiter if communications failed (error handling)
         if communication_failures and (candidate_email or candidate_phone):
             try:
-                activity_service = get_activity_service()
                 failure_details = "; ".join([f"{f['channel']}: {f['error']}" for f in communication_failures])
                 await activity_svc.create_activity(
                     activity_type="follow_up_failed",
@@ -225,8 +222,6 @@ async def handle_candidate_inactive(
 
         # Step 4b: Create recruiter notification
         try:
-            activity_service = get_activity_service()
-
             await activity_svc.create_activity(
                 activity_type="candidate_inactive",
                 title=f"Candidato Inativo - {candidate_name}",
@@ -258,37 +253,29 @@ async def handle_candidate_inactive(
             logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create notification: {e}")
 
         # Step 5: Log audit entries (both legacy and centralized)
-        try:
-            from app.models.automation import AutomationExecutionLog
-
-            # Legacy audit log for backwards compatibility
-            audit_log = AutomationExecutionLog(
-                company_id=request.company_id,
-                trigger_event="candidate_inactive",
-                trigger_data={
-                    "candidate_id": request.candidate_id,
-                    "vacancy_id": request.vacancy_id,
-                    "days_inactive": days_inactive,
-                    "current_stage": current_stage,
-                    "last_activity_date": request.last_activity_date.isoformat() if request.last_activity_date else None
-                },
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                action_executed="send_inactive_follow_up",
-                action_result={
-                    "email_sent": email_sent,
-                    "whatsapp_sent": whatsapp_sent,
-                    "notification_created": notification_created,
-                    "follow_up_type": follow_up_type,
-                    "communication_failures": communication_failures
-                },
-                status="success" if (email_sent or whatsapp_sent) else ("partial" if notification_created else "no_action"),
-                execution_time_ms="0"
-            )
-            db.add(audit_log)
-            logger.info("📝 [CANDIDATE_INACTIVE] Legacy audit log created")
-        except Exception as e:
-            logger.error(f"❌ [CANDIDATE_INACTIVE] Failed to create legacy audit log: {e}")
+        await log_automation_execution(
+            db,
+            trigger_event="candidate_inactive",
+            trigger_data={
+                "candidate_id": request.candidate_id,
+                "vacancy_id": request.vacancy_id,
+                "days_inactive": days_inactive,
+                "current_stage": current_stage,
+                "last_activity_date": request.last_activity_date.isoformat() if request.last_activity_date else None,
+            },
+            candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id,
+            company_id=request.company_id,
+            action_executed="send_inactive_follow_up",
+            action_result={
+                "email_sent": email_sent,
+                "whatsapp_sent": whatsapp_sent,
+                "notification_created": notification_created,
+                "follow_up_type": follow_up_type,
+                "communication_failures": communication_failures,
+            },
+            status="success" if (email_sent or whatsapp_sent) else ("partial" if notification_created else "no_action"),
+        )
 
         # Centralized audit logging via audit_service
         try:
@@ -399,15 +386,11 @@ async def handle_candidate_no_show(
         )
 
         # Step 0: Multi-tenancy validation
-        is_valid, error_message = await validate_multi_tenancy(
-            db=db,
-            candidate_id=request.candidate_id,
-            vacancy_id=request.vacancy_id,
-            company_id=request.company_id
+        await ensure_company_access(
+            db, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id, company_id=request.company_id,
+            handler_tag="CANDIDATE_NO_SHOW",
         )
-        if not is_valid:
-            logger.warning(f"🚫 [CANDIDATE_NO_SHOW] Multi-tenancy validation failed: {error_message}")
-            raise HTTPException(status_code=403, detail=error_message)
 
         # Initialize response tracking
         email_sent = False
@@ -593,8 +576,6 @@ async def handle_candidate_no_show(
 
         # Step 3: Create recruiter notification
         try:
-            activity_service = get_activity_service()
-
             await activity_svc.create_activity(
                 activity_type="candidate_no_show",
                 title=f"No-Show: {candidate_name} - {job_title}",
@@ -626,39 +607,31 @@ async def handle_candidate_no_show(
             logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to create notification: {e}")
 
         # Step 4: Log audit entries (both legacy and centralized)
-        try:
-            from app.models.automation import AutomationExecutionLog
-
-            # Legacy audit log for backwards compatibility
-            audit_log = AutomationExecutionLog(
-                company_id=request.company_id,
-                trigger_event="candidate_no_show",
-                trigger_data={
-                    "candidate_id": request.candidate_id,
-                    "vacancy_id": request.vacancy_id,
-                    "interview_id": request.interview_id,
-                    "interview_datetime": request.interview_datetime.isoformat(),
-                    "interview_type": request.interview_type,
-                    "no_show_count": no_show_count
-                },
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                action_executed=action_taken,
-                action_result={
-                    "email_sent": email_sent,
-                    "whatsapp_sent": whatsapp_sent,
-                    "notification_created": notification_created,
-                    "suggestion_created": suggestion_created,
-                    "recommendation": recommendation,
-                    "confidence_score": confidence_score
-                },
-                status="success" if (email_sent or whatsapp_sent or notification_created or suggestion_created) else "no_action",
-                execution_time_ms="0"
-            )
-            db.add(audit_log)
-            logger.info("📝 [CANDIDATE_NO_SHOW] Legacy audit log created")
-        except Exception as e:
-            logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to create legacy audit log: {e}")
+        await log_automation_execution(
+            db,
+            trigger_event="candidate_no_show",
+            trigger_data={
+                "candidate_id": request.candidate_id,
+                "vacancy_id": request.vacancy_id,
+                "interview_id": request.interview_id,
+                "interview_datetime": request.interview_datetime.isoformat(),
+                "interview_type": request.interview_type,
+                "no_show_count": no_show_count,
+            },
+            candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id,
+            company_id=request.company_id,
+            action_executed=action_taken,
+            action_result={
+                "email_sent": email_sent,
+                "whatsapp_sent": whatsapp_sent,
+                "notification_created": notification_created,
+                "suggestion_created": suggestion_created,
+                "recommendation": recommendation,
+                "confidence_score": confidence_score,
+            },
+            status="success" if (email_sent or whatsapp_sent or notification_created or suggestion_created) else "no_action",
+        )
 
         # Centralized audit logging via audit_service
         try:
@@ -753,12 +726,11 @@ async def handle_offer_sent(
             f"candidate={request.candidate_id}, vacancy={request.vacancy_id}"
         )
 
-        is_valid, error_msg = await validate_multi_tenancy(
-            db, request.candidate_id, request.vacancy_id, request.company_id
+        await ensure_company_access(
+            db, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id, company_id=request.company_id,
+            handler_tag="OFFER_SENT",
         )
-        if not is_valid:
-            logger.warning(f"⚠️ [OFFER_SENT] Multi-tenancy validation failed: {error_msg}")
-            raise HTTPException(status_code=403, detail=error_msg)
 
         actions_taken = []
         email_sent = False
@@ -920,12 +892,11 @@ async def handle_candidate_hired(
             f"candidate={request.candidate_id}, vacancy={request.vacancy_id}"
         )
 
-        is_valid, error_msg = await validate_multi_tenancy(
-            db, request.candidate_id, request.vacancy_id, request.company_id
+        await ensure_company_access(
+            db, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id, company_id=request.company_id,
+            handler_tag="CANDIDATE_HIRED",
         )
-        if not is_valid:
-            logger.warning(f"⚠️ [CANDIDATE_HIRED] Multi-tenancy validation failed: {error_msg}")
-            raise HTTPException(status_code=403, detail=error_msg)
 
         actions_taken = []
         email_sent = False
@@ -1134,12 +1105,11 @@ async def handle_candidate_rejected(
             f"stage={request.rejection_stage}, reviewer={request.reviewer_id}"
         )
 
-        is_valid, error_msg = await validate_multi_tenancy(
-            db, request.candidate_id, request.vacancy_id, request.company_id
+        await ensure_company_access(
+            db, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id, company_id=request.company_id,
+            handler_tag="CANDIDATE_REJECTED",
         )
-        if not is_valid:
-            logger.warning(f"⚠️ [CANDIDATE_REJECTED] Multi-tenancy validation failed: {error_msg}")
-            raise HTTPException(status_code=403, detail=error_msg)
 
         actions_taken = []
         email_sent = False

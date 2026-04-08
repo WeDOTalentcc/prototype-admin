@@ -19,12 +19,14 @@ from .._shared import (
     InterviewScheduledResponse,
     InterviewCompletedRequest,
     InterviewCompletedResponse,
+    ensure_company_access,
     get_activity_service,
     get_calendar_service,
     get_email_service,
     get_scheduling_service,
     get_whatsapp_service,
     get_wsi_service,
+    log_automation_execution,
     validate_multi_tenancy,
 )
 
@@ -308,15 +310,11 @@ async def handle_interview_completed(
         )
 
         # Step 0: Multi-tenancy validation
-        is_valid, error_message = await validate_multi_tenancy(
-            db=db,
-            candidate_id=request.candidate_id,
-            vacancy_id=request.vacancy_id,
-            company_id=request.company_id
+        await ensure_company_access(
+            db, candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id, company_id=request.company_id,
+            handler_tag="INTERVIEW_COMPLETED",
         )
-        if not is_valid:
-            logger.warning(f"🚫 [INTERVIEW_COMPLETED] Multi-tenancy validation failed: {error_message}")
-            raise HTTPException(status_code=403, detail=error_message)
 
         notification_created = False
         parecer_id = None
@@ -478,8 +476,6 @@ Responda em JSON:
             logger.error(f"❌ [INTERVIEW_COMPLETED] Failed to save parecer: {e}")
 
         try:
-            activity_service = get_activity_service()
-
             recommendation_text = {
                 "advance": "✅ Recomendado para próxima etapa",
                 "hold": "⏸️ Aguardando avaliação adicional",
@@ -518,39 +514,32 @@ Responda em JSON:
         except Exception as e:
             logger.error(f"❌ [INTERVIEW_COMPLETED] Failed to create notification: {e}")
 
-        try:
-            from app.models.automation import AutomationExecutionLog
-
-            audit_log = AutomationExecutionLog(
-                company_id=request.company_id,
-                trigger_event="interview_completed",
-                trigger_data={
-                    "candidate_id": request.candidate_id,
-                    "vacancy_id": request.vacancy_id,
-                    "interview_id": request.interview_id,
-                    "interview_type": request.interview_type,
-                    "has_notes": bool(request.interviewer_notes),
-                    "has_transcript": bool(request.transcript),
-                    "competency_count": len(request.competency_ratings) if request.competency_ratings else 0
-                },
-                candidate_id=request.candidate_id,
-                vacancy_id=request.vacancy_id,
-                action_executed="generate_parecer",
-                action_result={
-                    "parecer_id": parecer_id,
-                    "recommendation": recommendation,
-                    "average_rating": average_rating,
-                    "suggested_next_stage": suggested_next_stage,
-                    "confidence": confidence,
-                    "notification_created": notification_created
-                },
-                status="success" if parecer_id else "partial",
-                execution_time_ms="0"
-            )
-            db.add(audit_log)
-            logger.info("📝 [INTERVIEW_COMPLETED] Audit log created")
-        except Exception as e:
-            logger.error(f"❌ [INTERVIEW_COMPLETED] Failed to create audit log: {e}")
+        await log_automation_execution(
+            db,
+            trigger_event="interview_completed",
+            trigger_data={
+                "candidate_id": request.candidate_id,
+                "vacancy_id": request.vacancy_id,
+                "interview_id": request.interview_id,
+                "interview_type": request.interview_type,
+                "has_notes": bool(request.interviewer_notes),
+                "has_transcript": bool(request.transcript),
+                "competency_count": len(request.competency_ratings) if request.competency_ratings else 0,
+            },
+            candidate_id=request.candidate_id,
+            vacancy_id=request.vacancy_id,
+            company_id=request.company_id,
+            action_executed="generate_parecer",
+            action_result={
+                "parecer_id": parecer_id,
+                "recommendation": recommendation,
+                "average_rating": average_rating,
+                "suggested_next_stage": suggested_next_stage,
+                "confidence": confidence,
+                "notification_created": notification_created,
+            },
+            status="success" if parecer_id else "partial",
+        )
 
         response_data = {
             "success": True,

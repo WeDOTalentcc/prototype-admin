@@ -14,12 +14,14 @@ from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     """Check rejection reason against FairnessGuard for discriminatory bias."""
     rejection_reason = kwargs.get("rejection_reason", "")
@@ -29,54 +31,51 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
         f"candidate={candidate_name or 'N/A'} reason='{rejection_reason[:60]}...'"
     )
 
-    try:
-        explicit_result = _fairness_guard.check(rejection_reason)
-        implicit_warnings = _fairness_guard.check_implicit_bias(rejection_reason)
+    explicit_result = _fairness_guard.check(rejection_reason)
+    implicit_warnings = _fairness_guard.check_implicit_bias(rejection_reason)
 
-        warnings = []
-        educational_message = None
+    warnings = []
+    educational_message = None
 
-        if explicit_result.is_blocked:
-            educational_message = explicit_result.educational_message
-            warnings.extend([
-                f"Vies explicito detectado ({explicit_result.category}): {', '.join(explicit_result.blocked_terms)}"
-            ])
+    if explicit_result.is_blocked:
+        educational_message = explicit_result.educational_message
+        warnings.extend([
+            f"Vies explicito detectado ({explicit_result.category}): {', '.join(explicit_result.blocked_terms)}"
+        ])
 
-        if implicit_warnings:
-            warnings.extend(implicit_warnings)
+    if implicit_warnings:
+        warnings.extend(implicit_warnings)
 
-        if explicit_result.soft_warnings:
-            for sw in explicit_result.soft_warnings:
-                if sw not in warnings:
-                    warnings.append(sw)
+    if explicit_result.soft_warnings:
+        for sw in explicit_result.soft_warnings:
+            if sw not in warnings:
+                warnings.append(sw)
 
-        if not explicit_result.is_blocked:
-            try:
-                semantic_result = await _fairness_guard.check_semantic(rejection_reason, context="candidate_rejection")
-                if semantic_result.is_blocked:
-                    educational_message = semantic_result.educational_message
-                    warnings.append(f"Vies semantico detectado: {semantic_result.educational_message}")
-                if semantic_result.soft_warnings:
-                    for sw in semantic_result.soft_warnings:
-                        if sw not in warnings:
-                            warnings.append(sw)
-            except Exception as sem_err:
-                logger.debug(f"[kanban_tools] semantic check skipped: {sem_err}")
+    if not explicit_result.is_blocked:
+        try:
+            semantic_result = await _fairness_guard.check_semantic(rejection_reason, context="candidate_rejection")
+            if semantic_result.is_blocked:
+                educational_message = semantic_result.educational_message
+                warnings.append(f"Vies semantico detectado: {semantic_result.educational_message}")
+            if semantic_result.soft_warnings:
+                for sw in semantic_result.soft_warnings:
+                    if sw not in warnings:
+                        warnings.append(sw)
+        except Exception as sem_err:
+            logger.debug(f"[kanban_tools] semantic check skipped: {sem_err}")
 
-        is_fair = not explicit_result.is_blocked and len(warnings) == 0
+    is_fair = not explicit_result.is_blocked and len(warnings) == 0
 
-        return {
-            "is_fair": is_fair,
-            "warnings": warnings,
-            "educational_message": educational_message,
-            "candidate_name": candidate_name,
-            "rejection_reason": rejection_reason,
-        }
-    except Exception as e:
-        logger.error(f"[kanban_tools] check_rejection_fairness error: {e}", exc_info=True)
-        return {"is_fair": True, "warnings": [], "error": str(e)}
+    return {
+        "is_fair": is_fair,
+        "warnings": warnings,
+        "educational_message": educational_message,
+        "candidate_name": candidate_name,
+        "rejection_reason": rejection_reason,
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -170,220 +169,200 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban")
 async def _wrap_get_recruiter_backlog(**kwargs: Any) -> dict[str, Any]:
     """Return the recruiter's prioritized action backlog — candidates waiting beyond stage thresholds."""
     from app.services.recruiter_metrics_service import recruiter_metrics_service
 
     recruiter_id = kwargs.get("recruiter_id", "")
-    company_id = kwargs.get("company_id", "")
+    company_id = kwargs["company_id"]
 
-    if not recruiter_id or not company_id:
+    if not recruiter_id:
         return {
             "success": False,
             "error": "recruiter_id e company_id são obrigatórios.",
         }
 
-    try:
-        backlog = await recruiter_metrics_service.get_action_backlog(
-            recruiter_id=recruiter_id,
-            company_id=company_id,
-        )
-        summary = await recruiter_metrics_service.get_weekly_summary(
-            recruiter_id=recruiter_id,
-            company_id=company_id,
-        )
-        return {
-            "success": True,
-            "total_waiting": len(backlog),
-            "critical_count": summary.get("critical_count", 0),
-            "offers_pending": summary.get("offers_pending", 0),
-            "avg_response_time_days": summary.get("avg_response_time_days"),
-            "candidates_advanced_this_week": summary.get("candidates_advanced_this_week", 0),
-            "backlog": backlog[:10],  # top 10 mais urgentes
-        }
-    except Exception as e:
-        logger.error(f"_wrap_get_recruiter_backlog failed: {e}")
-        return {"success": False, "error": str(e)}
+    backlog = await recruiter_metrics_service.get_action_backlog(
+        recruiter_id=recruiter_id,
+        company_id=company_id,
+    )
+    summary = await recruiter_metrics_service.get_weekly_summary(
+        recruiter_id=recruiter_id,
+        company_id=company_id,
+    )
+    return {
+        "success": True,
+        "total_waiting": len(backlog),
+        "critical_count": summary.get("critical_count", 0),
+        "offers_pending": summary.get("offers_pending", 0),
+        "avg_response_time_days": summary.get("avg_response_time_days"),
+        "candidates_advanced_this_week": summary.get("candidates_advanced_this_week", 0),
+        "backlog": backlog[:10],  # top 10 mais urgentes
+    }
 
 
+@tool_handler("kanban")
 async def _wrap_get_recruiter_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Compare recruiter metrics against anonymised company median (Sprint 2D)."""
     from app.services.recruiter_metrics_service import recruiter_metrics_service
 
     recruiter_id = kwargs.get("recruiter_id", "")
-    company_id = kwargs.get("company_id", "")
+    company_id = kwargs["company_id"]
 
-    if not recruiter_id or not company_id:
+    if not recruiter_id:
         return {"success": False, "error": "recruiter_id e company_id são obrigatórios."}
 
-    try:
-        result = await recruiter_metrics_service.get_recruiter_benchmark_comparison(
-            recruiter_id=recruiter_id,
-            company_id=company_id,
-        )
+    result = await recruiter_metrics_service.get_recruiter_benchmark_comparison(
+        recruiter_id=recruiter_id,
+        company_id=company_id,
+    )
 
-        if not result.get("benchmark_available"):
-            return {
-                "success": True,
-                "benchmark_available": False,
-                "message": "Dados insuficientes para benchmark (requer ≥ 2 recrutadores ativos na empresa).",
-            }
+    if not result.get("benchmark_available"):
+        return {
+            "success": True,
+            "benchmark_available": False,
+            "message": "Dados insuficientes para benchmark (requer ≥ 2 recrutadores ativos na empresa).",
+        }
 
-        cmp = result.get("comparison", {})
-        overall = result.get("overall_performance", "unknown")
+    cmp = result.get("comparison", {})
+    overall = result.get("overall_performance", "unknown")
 
-        perf_map = {"above_average": "acima da média", "average": "na média", "below_average": "abaixo da média"}
-        lines = [f"Performance geral: {perf_map.get(overall, overall)}"]
-        for key, label in [
-            ("response_time", "Tempo de resposta"),
-            ("advanced_per_week", "Candidatos avançados/semana"),
-            ("backlog_count", "Backlog"),
-            ("offers_pending", "Ofertas pendentes"),
-        ]:
-            c = cmp.get(key, {})
-            if c.get("personal") is not None and c.get("benchmark") is not None:
-                perf = {"better": "✅ melhor", "at_par": "➡️ na média", "worse": "⚠️ abaixo"}.get(
-                    c.get("performance", ""), ""
-                )
-                lines.append(f"  {label}: {c['personal']} (mediana: {c['benchmark']}) {perf}")
+    perf_map = {"above_average": "acima da média", "average": "na média", "below_average": "abaixo da média"}
+    lines = [f"Performance geral: {perf_map.get(overall, overall)}"]
+    for key, label in [
+        ("response_time", "Tempo de resposta"),
+        ("advanced_per_week", "Candidatos avançados/semana"),
+        ("backlog_count", "Backlog"),
+        ("offers_pending", "Ofertas pendentes"),
+    ]:
+        c = cmp.get(key, {})
+        if c.get("personal") is not None and c.get("benchmark") is not None:
+            perf = {"better": "✅ melhor", "at_par": "➡️ na média", "worse": "⚠️ abaixo"}.get(
+                c.get("performance", ""), ""
+            )
+            lines.append(f"  {label}: {c['personal']} (mediana: {c['benchmark']}) {perf}")
 
-        result["interpretation"] = "\n".join(lines)
-        result["success"] = True
-        return result
-    except Exception as e:
-        logger.error(f"_wrap_get_recruiter_benchmark failed: {e}")
-        return {"success": False, "error": str(e)}
+    result["interpretation"] = "\n".join(lines)
+    result["success"] = True
+    return result
 
 
+@tool_handler("kanban")
 async def _wrap_get_journey_metrics(**kwargs: Any) -> dict[str, Any]:
     """Return funnel metrics, health score and risk patterns for a vacancy."""
     from app.services.journey_intelligence_service import journey_intelligence_service
 
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "")
+    company_id = kwargs["company_id"]
 
-    if not vacancy_id or not company_id:
+    if not vacancy_id:
         return {"success": False, "error": "vacancy_id e company_id são obrigatórios."}
 
-    try:
-        result = await journey_intelligence_service.get_vacancy_metrics(
-            vacancy_id=vacancy_id,
-            company_id=company_id,
-        )
-        if not result.get("success"):
-            return result
-
-        # Gerar mensagem interpretativa para a LIA
-        hs = result["health_score"]
-        label = result["health_label"]
-        patterns = result["risk_patterns"]
-        summary = result["summary"]
-
-        interpretation = (
-            f"Health score: {hs}/100 ({label}). "
-            f"{summary['total_active']} candidatos ativos, "
-            f"{summary['candidates_in_advanced_stages']} em etapas avançadas, "
-            f"conversão geral: {summary['conversion_rate_overall']:.0%}."
-        )
-        if patterns:
-            interpretation += " Padrões de risco: " + " | ".join(p["message"] for p in patterns[:2])
-
-        result["interpretation"] = interpretation
+    result = await journey_intelligence_service.get_vacancy_metrics(
+        vacancy_id=vacancy_id,
+        company_id=company_id,
+    )
+    if not result.get("success"):
         return result
-    except Exception as e:
-        logger.error(f"_wrap_get_journey_metrics failed: {e}")
-        return {"success": False, "error": str(e)}
+
+    # Gerar mensagem interpretativa para a LIA
+    hs = result["health_score"]
+    label = result["health_label"]
+    patterns = result["risk_patterns"]
+    summary = result["summary"]
+
+    interpretation = (
+        f"Health score: {hs}/100 ({label}). "
+        f"{summary['total_active']} candidatos ativos, "
+        f"{summary['candidates_in_advanced_stages']} em etapas avançadas, "
+        f"conversão geral: {summary['conversion_rate_overall']:.0%}."
+    )
+    if patterns:
+        interpretation += " Padrões de risco: " + " | ".join(p["message"] for p in patterns[:2])
+
+    result["interpretation"] = interpretation
+    return result
 
 
+@tool_handler("kanban")
 async def _wrap_get_pipeline_prediction(**kwargs: Any) -> dict[str, Any]:
     """Return closure probability prediction for a vacancy or company overview."""
     from app.services.pipeline_prediction_service import pipeline_prediction_service
 
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "")
+    company_id = kwargs["company_id"]
 
-    if not company_id:
-        return {"success": False, "error": "company_id é obrigatório."}
+    if vacancy_id:
+        result = await pipeline_prediction_service.get_vacancy_prediction(
+            vacancy_id=vacancy_id,
+            company_id=company_id,
+        )
+    else:
+        result = await pipeline_prediction_service.get_company_overview(
+            company_id=company_id,
+        )
 
-    try:
-        if vacancy_id:
-            result = await pipeline_prediction_service.get_vacancy_prediction(
-                vacancy_id=vacancy_id,
-                company_id=company_id,
-            )
-        else:
-            result = await pipeline_prediction_service.get_company_overview(
-                company_id=company_id,
-            )
+    # Interpretação para a LIA
+    if vacancy_id:
+        prob = result.get("closure_probability", 0)
+        est = result.get("estimated_days_to_close")
+        conf = result.get("confidence_level", "medium")
+        days_str = f" em aproximadamente {est} dias" if est else ""
+        pos = result.get("positive_factors", [])
+        risks = result.get("risk_factors", [])
+        interpretation = (
+            f"Probabilidade de fechamento: {prob}% (confiança: {conf}){days_str}. "
+        )
+        if pos:
+            interpretation += f"Pontos positivos: {', '.join(pos[:3])}. "
+        if risks:
+            interpretation += f"Riscos: {', '.join(risks[:3])}."
+    else:
+        summary = result.get("summary", {})
+        interpretation = (
+            f"{summary.get('total_active_vacancies', 0)} vagas ativas. "
+            f"{summary.get('at_risk_count', 0)} em risco de não fechar (<30%), "
+            f"{summary.get('near_closure_count', 0)} prestes a fechar (≥80%). "
+            f"Probabilidade média: {summary.get('avg_closure_probability', 0)}%."
+        )
 
-        # Interpretação para a LIA
-        if vacancy_id:
-            prob = result.get("closure_probability", 0)
-            est = result.get("estimated_days_to_close")
-            conf = result.get("confidence_level", "medium")
-            days_str = f" em aproximadamente {est} dias" if est else ""
-            pos = result.get("positive_factors", [])
-            risks = result.get("risk_factors", [])
-            interpretation = (
-                f"Probabilidade de fechamento: {prob}% (confiança: {conf}){days_str}. "
-            )
-            if pos:
-                interpretation += f"Pontos positivos: {', '.join(pos[:3])}. "
-            if risks:
-                interpretation += f"Riscos: {', '.join(risks[:3])}."
-        else:
-            summary = result.get("summary", {})
-            interpretation = (
-                f"{summary.get('total_active_vacancies', 0)} vagas ativas. "
-                f"{summary.get('at_risk_count', 0)} em risco de não fechar (<30%), "
-                f"{summary.get('near_closure_count', 0)} prestes a fechar (≥80%). "
-                f"Probabilidade média: {summary.get('avg_closure_probability', 0)}%."
-            )
-
-        result["success"] = True
-        result["interpretation"] = interpretation
-        return result
-    except Exception as e:
-        logger.error(f"_wrap_get_pipeline_prediction failed: {e}")
-        return {"success": False, "error": str(e)}
+    result["success"] = True
+    result["interpretation"] = interpretation
+    return result
 
 
+@tool_handler("kanban")
 async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
     """Return candidates at risk of ghosting ranked by EWS score."""
     from app.services.early_warning_service import early_warning_service
 
-    company_id = kwargs.get("company_id", "")
+    company_id = kwargs["company_id"]
     min_risk_level = kwargs.get("min_risk_level", "medium")
 
-    if not company_id:
-        return {"success": False, "error": "company_id é obrigatório."}
-
-    try:
-        candidates = await early_warning_service.get_at_risk_candidates(
-            company_id=company_id,
-            min_risk_level=min_risk_level,
-        )
-        summary = await early_warning_service.get_summary_by_risk_level(
-            company_id=company_id,
-        )
-        return {
-            "success": True,
-            "total": len(candidates),
-            "summary": summary,
-            "candidates": candidates[:15],
-            "message": (
-                f"{summary['by_risk_level']['critical']} candidato(s) em risco crítico, "
-                f"{summary['by_risk_level']['high']} alto risco, "
-                f"{summary['by_risk_level']['medium']} risco médio."
-                if candidates else
-                "Nenhum candidato em risco de desengajamento no momento."
-            ),
-        }
-    except Exception as e:
-        logger.error(f"_wrap_get_at_risk_candidates failed: {e}")
-        return {"success": False, "error": str(e)}
+    candidates = await early_warning_service.get_at_risk_candidates(
+        company_id=company_id,
+        min_risk_level=min_risk_level,
+    )
+    summary = await early_warning_service.get_summary_by_risk_level(
+        company_id=company_id,
+    )
+    return {
+        "success": True,
+        "total": len(candidates),
+        "summary": summary,
+        "candidates": candidates[:15],
+        "message": (
+            f"{summary['by_risk_level']['critical']} candidato(s) em risco crítico, "
+            f"{summary['by_risk_level']['high']} alto risco, "
+            f"{summary['by_risk_level']['medium']} risco médio."
+            if candidates else
+            "Nenhum candidato em risco de desengajamento no momento."
+        ),
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     """Find warm candidates from past processes to re-surface for current vacancies."""
     from app.services.silver_medalist_service import silver_medalist_service
@@ -392,34 +371,32 @@ async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id") or ""
     limit = int(kwargs.get("limit", 20))
     logger.info(f"[kanban_tools] find_silver_medalists called: vacancy={vacancy_id} company={company_id}")
-    try:
-        if vacancy_id:
-            medalists = await silver_medalist_service.find_for_vacancy(
-                target_vacancy_id=vacancy_id,
-                company_id=company_id,
-                limit=limit,
-            )
-        else:
-            medalists = await silver_medalist_service.find_for_company(
-                company_id=company_id,
-                limit=limit,
-            )
-        return {
-            "success": True,
-            "total": len(medalists),
-            "medalists": medalists,
-            "message": (
-                f"{len(medalists)} candidato(s) prata encontrado(s) — "
-                f"chegaram à etapa de entrevista em processos anteriores e não foram contratados."
-                if medalists else
-                "Nenhum candidato prata encontrado no período."
-            ),
-        }
-    except Exception as e:
-        logger.error(f"[kanban_tools] find_silver_medalists error: {e}")
-        return {"success": False, "error": str(e)}
+
+    if vacancy_id:
+        medalists = await silver_medalist_service.find_for_vacancy(
+            target_vacancy_id=vacancy_id,
+            company_id=company_id,
+            limit=limit,
+        )
+    else:
+        medalists = await silver_medalist_service.find_for_company(
+            company_id=company_id,
+            limit=limit,
+        )
+    return {
+        "success": True,
+        "total": len(medalists),
+        "medalists": medalists,
+        "message": (
+            f"{len(medalists)} candidato(s) prata encontrado(s) — "
+            f"chegaram à etapa de entrevista em processos anteriores e não foram contratados."
+            if medalists else
+            "Nenhum candidato prata encontrado no período."
+        ),
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
     """Return per-stage velocity metrics using precise stage_entered_at timestamps."""
     from app.services.pipeline_velocity_service import pipeline_velocity_service
@@ -429,17 +406,15 @@ async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
     logger.info(
         f"[kanban_tools] get_pipeline_velocity called: vacancy={vacancy_id} company={company_id}"
     )
-    try:
-        metrics = await pipeline_velocity_service.get_velocity_metrics(
-            vacancy_id=vacancy_id,
-            company_id=company_id,
-        )
-        return {"success": True, "data": metrics}
-    except Exception as e:
-        logger.error(f"[kanban_tools] get_pipeline_velocity error: {e}")
-        return {"success": False, "error": str(e)}
+
+    metrics = await pipeline_velocity_service.get_velocity_metrics(
+        vacancy_id=vacancy_id,
+        company_id=company_id,
+    )
+    return {"success": True, "data": metrics}
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     """Get overall pipeline summary with candidate counts per stage."""
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -487,6 +462,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     """Get metrics for a specific pipeline stage."""
     stage = kwargs.get("stage", "")
@@ -530,6 +506,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in a specific stage."""
     stage = kwargs.get("stage", "")
@@ -587,51 +564,50 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_analyze_stage(**kwargs: Any) -> dict[str, Any]:
     """Deep analysis of a pipeline stage."""
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[kanban_tools] analyze_stage called: stage={stage} vacancy={vacancy_id or 'all'}")
-    try:
-        metrics_result = await _wrap_get_stage_metrics(
-            stage=stage, vacancy_id=vacancy_id, company_id=company_id)
-        m = metrics_result.get("data", {})
-        count = m.get("candidate_count", 0)
-        avg_days = m.get("avg_time_days", 0.0)
-        avg_score = m.get("avg_lia_score", 0.0)
-        bottleneck_risk = m.get("bottleneck_risk", "low")
 
-        risks = []
-        recommendations = []
-        if bottleneck_risk == "high":
-            risks.append({"type": "stagnation", "severity": "high",
-                          "detail": f"Candidatos parados ha {avg_days} dias em media"})
-            recommendations.append("Agendar entrevistas pendentes com urgencia")
-        if avg_score > 0 and avg_score < 3.0:
-            risks.append({"type": "low_quality", "severity": "medium",
-                          "detail": f"Score medio baixo ({avg_score}/5)"})
-            recommendations.append("Revisar criterios de avanco para esta etapa")
-        if count == 0:
-            risks.append({"type": "empty_stage", "severity": "low",
-                          "detail": "Nenhum candidato nesta etapa"})
+    metrics_result = await _wrap_get_stage_metrics(
+        stage=stage, vacancy_id=vacancy_id, company_id=company_id)
+    m = metrics_result.get("data", {})
+    count = m.get("candidate_count", 0)
+    avg_days = m.get("avg_time_days", 0.0)
+    avg_score = m.get("avg_lia_score", 0.0)
+    bottleneck_risk = m.get("bottleneck_risk", "low")
 
-        health = "critical" if any(r["severity"] == "high" for r in risks) else \
-                 ("attention" if risks else "healthy")
+    risks = []
+    recommendations = []
+    if bottleneck_risk == "high":
+        risks.append({"type": "stagnation", "severity": "high",
+                      "detail": f"Candidatos parados ha {avg_days} dias em media"})
+        recommendations.append("Agendar entrevistas pendentes com urgencia")
+    if avg_score > 0 and avg_score < 3.0:
+        risks.append({"type": "low_quality", "severity": "medium",
+                      "detail": f"Score medio baixo ({avg_score}/5)"})
+        recommendations.append("Revisar criterios de avanco para esta etapa")
+    if count == 0:
+        risks.append({"type": "empty_stage", "severity": "low",
+                      "detail": "Nenhum candidato nesta etapa"})
 
-        return {
-            "success": True,
-            "data": {"stage": stage, "vacancy_id": vacancy_id or "all",
-                     "health": health, "candidate_count": count,
-                     "avg_time_days": avg_days, "avg_lia_score": avg_score,
-                     "recommendations": recommendations, "risks": risks},
-            "message": f"Analise da etapa '{stage}': {health}. {len(risks)} riscos, {count} candidatos.",
-        }
-    except Exception as e:
-        logger.error(f"[kanban_tools] analyze_stage error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao analisar etapa {stage}."}
+    health = "critical" if any(r["severity"] == "high" for r in risks) else \
+             ("attention" if risks else "healthy")
+
+    return {
+        "success": True,
+        "data": {"stage": stage, "vacancy_id": vacancy_id or "all",
+                 "health": health, "candidate_count": count,
+                 "avg_time_days": avg_days, "avg_lia_score": avg_score,
+                 "recommendations": recommendations, "risks": risks},
+        "message": f"Analise da etapa '{stage}': {health}. {len(risks)} riscos, {count} candidatos.",
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     """Identify bottlenecks across the pipeline."""
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -680,6 +656,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     """Get aging report for candidates stuck in stages."""
     stage = kwargs.get("stage", "")
@@ -731,6 +708,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
     """Compare metrics between pipeline stages."""
     stages = kwargs.get("stages", [])
@@ -753,6 +731,7 @@ async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     """Suggest candidate movements based on score and aging."""
     stage = kwargs.get("stage", "")
@@ -808,6 +787,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     """Move multiple candidates to a target stage (real DB UPDATE)."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -848,6 +828,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     """Send communication to multiple candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -857,22 +838,19 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
         f"[kanban_tools] send_batch_communication called: candidates={len(candidate_ids)} "
         f"channel={channel}"
     )
-    try:
-        return {
-            "success": True,
-            "data": {
-                "sent_count": len(candidate_ids),
-                "channel": channel,
-                "template": template,
-                "candidate_ids": candidate_ids,
-            },
-            "message": f"Comunicacao enviada para {len(candidate_ids)} candidatos via {channel}.",
-        }
-    except Exception as e:
-        logger.error(f"[kanban_tools] send_batch_communication error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": "Erro ao enviar comunicacao em lote."}
+    return {
+        "success": True,
+        "data": {
+            "sent_count": len(candidate_ids),
+            "channel": channel,
+            "template": template,
+            "candidate_ids": candidate_ids,
+        },
+        "message": f"Comunicacao enviada para {len(candidate_ids)} candidatos via {channel}.",
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_start_screening_batch(**kwargs: Any) -> dict[str, Any]:
     """Start WSI screening for multiple candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -881,22 +859,19 @@ async def _wrap_start_screening_batch(**kwargs: Any) -> dict[str, Any]:
         f"[kanban_tools] start_screening_batch called: candidates={len(candidate_ids)} "
         f"vacancy={vacancy_id}"
     )
-    try:
-        return {
-            "success": True,
-            "data": {
-                "started_count": len(candidate_ids),
-                "vacancy_id": vacancy_id,
-                "candidate_ids": candidate_ids,
-                "status": "screening_initiated",
-            },
-            "message": f"Screening WSI iniciado para {len(candidate_ids)} candidatos.",
-        }
-    except Exception as e:
-        logger.error(f"[kanban_tools] start_screening_batch error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": "Erro ao iniciar screening em lote."}
+    return {
+        "success": True,
+        "data": {
+            "started_count": len(candidate_ids),
+            "vacancy_id": vacancy_id,
+            "candidate_ids": candidate_ids,
+            "status": "screening_initiated",
+        },
+        "message": f"Screening WSI iniciado para {len(candidate_ids)} candidatos.",
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
     """Generate pipeline analytics report with real data."""
     report_type = kwargs.get("report_type", "summary")
@@ -904,30 +879,27 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[kanban_tools] generate_pipeline_report called: type={report_type} vacancy={vacancy_id or 'all'}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: dict[str, Any] = {}
-    try:
-        summary_result = await _wrap_get_pipeline_summary(
-            vacancy_id=vacancy_id, company_id=company_id)
-        bottleneck_result = await _wrap_identify_bottlenecks(
-            vacancy_id=vacancy_id, company_id=company_id)
-        summary = {
-            "total_candidates": summary_result.get("data", {}).get("total_candidates", 0),
-            "stages": summary_result.get("data", {}).get("stages", {}),
-            "conversion_rate": summary_result.get("data", {}).get("conversion_rate", 0.0),
-            "bottleneck_count": len(bottleneck_result.get("data", {}).get("bottlenecks", [])),
-            "overall_health": bottleneck_result.get("data", {}).get("overall_health", "unknown"),
-        }
-        return {
-            "success": True,
-            "data": {"report_type": report_type, "vacancy_id": vacancy_id or "all",
-                     "report_id": report_id, "generated": True, "summary": summary},
-            "message": f"Relatorio '{report_type}' gerado (id: {report_id}). {summary['total_candidates']} candidatos no pipeline.",
-        }
-    except Exception as e:
-        logger.error(f"[kanban_tools] generate_pipeline_report error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao gerar relatorio {report_type}."}
+
+    summary_result = await _wrap_get_pipeline_summary(
+        vacancy_id=vacancy_id, company_id=company_id)
+    bottleneck_result = await _wrap_identify_bottlenecks(
+        vacancy_id=vacancy_id, company_id=company_id)
+    summary = {
+        "total_candidates": summary_result.get("data", {}).get("total_candidates", 0),
+        "stages": summary_result.get("data", {}).get("stages", {}),
+        "conversion_rate": summary_result.get("data", {}).get("conversion_rate", 0.0),
+        "bottleneck_count": len(bottleneck_result.get("data", {}).get("bottlenecks", [])),
+        "overall_health": bottleneck_result.get("data", {}).get("overall_health", "unknown"),
+    }
+    return {
+        "success": True,
+        "data": {"report_type": report_type, "vacancy_id": vacancy_id or "all",
+                 "report_id": report_id, "generated": True, "summary": summary},
+        "message": f"Relatorio '{report_type}' gerado (id: {report_id}). {summary['total_candidates']} candidatos no pipeline.",
+    }
 
 
+@tool_handler("kanban", require_company=False)
 async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education, work history and scores."""
     candidate_id = kwargs.get("candidate_id", "")

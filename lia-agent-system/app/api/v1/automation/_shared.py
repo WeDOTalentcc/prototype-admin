@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 from typing import Any, Literal
 
+from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -864,3 +865,72 @@ class CandidateRejectedResponse(BaseModel):
 
 
 
+
+
+# ---------------------------------------------------------------------------
+# Helper: log_automation_execution
+# ---------------------------------------------------------------------------
+
+async def log_automation_execution(
+    db,
+    *,
+    trigger_event: str,
+    trigger_data: dict,
+    candidate_id: str,
+    vacancy_id: str,
+    company_id: str,
+    action_executed: str,
+    action_result: dict,
+    status: str = "success",
+    execution_time_ms: str = "0",
+) -> None:
+    """Create an AutomationExecutionLog entry with error handling.
+
+    Absorbs the identical try/except + db.add() pattern that was repeated
+    across every event handler.
+    """
+    try:
+        from app.models.automation import AutomationExecutionLog
+
+        db.add(AutomationExecutionLog(
+            company_id=company_id,
+            trigger_event=trigger_event,
+            trigger_data=trigger_data,
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            action_executed=action_executed,
+            action_result=action_result,
+            status=status,
+            execution_time_ms=execution_time_ms,
+        ))
+        logger.info(f"📝 [{trigger_event.upper()}] Automation execution log created")
+    except Exception as e:
+        logger.error(f"❌ [{trigger_event.upper()}] Failed to create execution log: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Helper: ensure_company_access
+# ---------------------------------------------------------------------------
+
+async def ensure_company_access(
+    db,
+    *,
+    candidate_id: str,
+    vacancy_id: str,
+    company_id: str,
+    handler_tag: str = "HANDLER",
+) -> None:
+    """Validate multi-tenancy and raise HTTP 403 on mismatch.
+
+    Combines the validate_multi_tenancy call with the repeated
+    if-not-valid / log-warning / raise-HTTPException pattern.
+    """
+    is_valid, error_message = await validate_multi_tenancy(
+        db=db,
+        candidate_id=candidate_id,
+        vacancy_id=vacancy_id,
+        company_id=company_id,
+    )
+    if not is_valid:
+        logger.warning(f"🚫 [{handler_tag}] Multi-tenancy validation failed: {error_message}")
+        raise HTTPException(status_code=403, detail=error_message)
