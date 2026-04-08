@@ -136,7 +136,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('todas')
   const [selectedDaysFilter, setSelectedDaysFilter] = useState<string>('todas')
-  const [activeFilter, setActiveFilter] = useState<string>('visao-geral')
+  const [activeFilter, setActiveFilter] = useState<string>('todas')
   const [booleanSearch, setBooleanSearch] = useState("")
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({ ...EMPTY_ADVANCED_FILTERS })
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
