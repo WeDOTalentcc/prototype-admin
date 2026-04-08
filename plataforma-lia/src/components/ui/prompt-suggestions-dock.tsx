@@ -182,7 +182,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <div className="bg-wedo-cyan/[0.08] text-wedo-cyan rounded-lg p-1.5 transition-colors group-hover:bg-wedo-cyan/[0.15] flex-shrink-0">
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-lia-text-secondary group-hover:text-lia-text-primary">
+                <span className="text-base-ui font-medium text-lia-text-secondary group-hover:text-lia-text-primary">
                   {suggestion.title}
                 </span>
               </button>
@@ -213,7 +213,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
-            className="text-xs font-medium font-['Open_Sans',sans-serif] text-lia-text-primary"
+            className="text-base-ui font-medium text-lia-text-primary"
           >
             Sugestões
           </span>
@@ -238,7 +238,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <h3
-                className="text-xs font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary"
+                className="text-base-ui font-semibold text-lia-text-primary"
               >
                 Tarefas Sugeridas
               </h3>
@@ -265,14 +265,14 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     onSelect(suggestion.command)
                     setIsExpanded(false)
                   }}
-                  className="w-full p-2.5 rounded-md transition-colors motion-reduce:transition-none text-left group bg-white"
+                  className="w-full p-2.5 rounded-md transition-colors motion-reduce:transition-none text-left group bg-lia-bg-primary"
                   style={{border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = colors.hoverBg
                     e.currentTarget.style.borderColor = colors.border
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--white)'
+                    e.currentTarget.style.backgroundColor = 'var(--lia-bg-primary)'
                     e.currentTarget.style.borderColor = colors.bg
                   }}
                 >
@@ -285,7 +285,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 
-                        className="font-medium text-xs leading-tight font-['Open_Sans',sans-serif] text-lia-text-primary"
+                        className="font-medium text-base-ui leading-tight text-lia-text-primary"
                       >
                         {suggestion.title}
                       </h4>

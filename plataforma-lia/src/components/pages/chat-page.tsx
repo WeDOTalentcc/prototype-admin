@@ -311,12 +311,12 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
               <div className="mb-6">
                 <div className="flex flex-col items-center text-center gap-3 mb-6">
                   <div>
-                    <h1 className="text-xl font-['Open_Sans',sans-serif] text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
+                    <h1 className="text-xl text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
                       <Brain className="w-8 h-8 text-wedo-cyan" />
                       <span className="font-normal text-lia-text-secondary">Oi, eu sou a</span>
                       <span className="font-bold text-2xl text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
                     </h1>
-                    <p className="text-lia-text-secondary mt-1 text-xs font-medium font-['Open_Sans',sans-serif]">Como posso ajudar você hoje?</p>
+                    <p className="text-lia-text-secondary mt-1 text-base-ui font-medium">Como posso ajudar você hoje?</p>
                   </div>
                 </div>
                 <PromptSuggestionsDock
@@ -556,7 +556,7 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-xs font-['Open_Sans',sans-serif] rounded-xl"
+                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-base-ui rounded-xl"
                       spellCheck={false}
                     />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
