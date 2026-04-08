@@ -72,55 +72,6 @@ export function MultimodalUpload({
     return 'document'
   }, [analysisType])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- analyzeFile is defined below; safe circular ref
-  const handleFileSelect = useCallback(async (selectedFile: File) => {
-    setFile(selectedFile)
-    setError(null)
-    setResult(null)
-    setResultType(null)
-    setProgress(0)
-    onFileSelect?.(selectedFile)
-
-    if (selectedFile.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (e) => setPreview(e.target?.result as string)
-      reader.readAsDataURL(selectedFile)
-    } else {
-      setPreview(null)
-    }
-
-    if (autoAnalyze) {
-      await analyzeFile(selectedFile)
-    }
-  }, [autoAnalyze, onFileSelect])
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (selectedFile) {
-      handleFileSelect(selectedFile)
-    }
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-    
-    const droppedFile = e.dataTransfer.files?.[0]
-    if (droppedFile) {
-      handleFileSelect(droppedFile)
-    }
-  }
-
   const analyzeFile = useCallback(async (fileToAnalyze?: File) => {
     const targetFile = fileToAnalyze || file
     if (!targetFile) return
@@ -159,7 +110,57 @@ export function MultimodalUpload({
     } finally {
       setIsAnalyzing(false)
     }
-  }, [analysisType, file, detectAnalysisType, onAnalysisComplete, onError])
+  }, [file, detectAnalysisType, onAnalysisComplete, onError])
+
+  const handleFileSelect = useCallback(async (selectedFile: File) => {
+    setFile(selectedFile)
+    setError(null)
+    setResult(null)
+    setResultType(null)
+    setProgress(0)
+    onFileSelect?.(selectedFile)
+
+    if (selectedFile.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = (e) => setPreview(e.target?.result as string)
+      reader.readAsDataURL(selectedFile)
+    } else {
+      setPreview(null)
+    }
+
+    if (autoAnalyze) {
+      await analyzeFile(selectedFile)
+    }
+  }, [autoAnalyze, analyzeFile, onFileSelect])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      handleFileSelect(selectedFile)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    
+    const droppedFile = e.dataTransfer.files?.[0]
+    if (droppedFile) {
+      handleFileSelect(droppedFile)
+    }
+  }
+
+
 
   const clearFile = () => {
     setFile(null)

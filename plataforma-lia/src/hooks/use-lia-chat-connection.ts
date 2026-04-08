@@ -53,9 +53,9 @@ export function useLiaChatConnection({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const dismissFairnessWarnings = useCallback(() => socket.setFairnessWarnings([]), [socket.setFairnessWarnings])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const clearBackgroundTask = useCallback((taskId: string) => {
     socket.setBackgroundTasks(prev => prev.filter(t => t.task_id !== taskId))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket.setBackgroundTasks])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -52,7 +52,30 @@ export function VoiceChatButton({
     }
   }, [])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- processAudio is defined below; safe ordering
+  const processAudio = useCallback(async (audioBlob: Blob) => {
+    setIsProcessing(true)
+    try {
+      const result = await voiceChat(audioBlob, sessionId)
+      
+      if (result.transcription) {
+        onTranscription?.(result.transcription)
+      }
+      
+      onResponse?.({ 
+        text: result.response_text, 
+        audio: result.response_audio_base64 
+      })
+      
+      if (result.response_audio_base64) {
+        playAudioResponse(result.response_audio_base64)
+      }
+    } catch (err) {
+      onError?.('Erro ao processar áudio. Tente novamente.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [onError, onResponse, onTranscription, sessionId])
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -84,7 +107,7 @@ export function VoiceChatButton({
     } catch (err) {
       onError?.('Não foi possível acessar o microfone. Verifique as permissões do navegador.')
     }
-  }, [onError])
+  }, [onError, processAudio])
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) {
@@ -98,29 +121,7 @@ export function VoiceChatButton({
     }
   }, [])
 
-  const processAudio = useCallback(async (audioBlob: Blob) => {
-    setIsProcessing(true)
-    try {
-      const result = await voiceChat(audioBlob, sessionId)
-      
-      if (result.transcription) {
-        onTranscription?.(result.transcription)
-      }
-      
-      onResponse?.({ 
-        text: result.response_text, 
-        audio: result.response_audio_base64 
-      })
-      
-      if (result.response_audio_base64) {
-        playAudioResponse(result.response_audio_base64)
-      }
-    } catch (err) {
-      onError?.('Erro ao processar áudio. Tente novamente.')
-    } finally {
-      setIsProcessing(false)
-    }
-  }, [onError, onResponse, onTranscription, sessionId])
+
 
   const playAudioResponse = (base64Audio: string) => {
     try {
