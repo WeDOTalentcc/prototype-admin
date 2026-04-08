@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, FormEvent } from "react"
+import { useState, useEffect, FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useJWTAuth } from "@/contexts/auth-context"
@@ -20,6 +20,12 @@ function getSafeRedirectUrl(next: string | null): string {
 export default function LoginPage() {
   const router = useRouter()
   const { login, isLoading: authLoading } = useJWTAuth()
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      router.replace('/')
+    }
+  }, [router])
 
   const [step, setStep] = useState<"email" | "password">("email")
   const [email, setEmail] = useState("")

@@ -51,12 +51,9 @@ export function useJobsData(): UseJobsDataReturn {
       setIsLoadingJobs(true)
       setJobsError(null)
 
-      console.log('[useJobsData] fetching jobs...')
       const response = await liaApi.listJobVacancies()
-      console.log('[useJobsData] response:', JSON.stringify({ total: response?.total, itemsCount: response?.items?.length, keys: response ? Object.keys(response) : 'null' }))
 
       if (!response || !response.items) {
-        console.error('[useJobsData] Invalid response format:', response)
         throw new Error('Invalid response format')
       }
 

@@ -116,6 +116,7 @@ export const useAuthStore = create<AuthStore>()(
             set({ user: null, authMethod: null, isAuthenticated: false, isSSO: false }, false, 'auth/refreshUser/sso-error')
           }
         } else if (currentAuthMethod === 'jwt' || currentAuthMethod === 'dev-auto-login' || authService.isJWTAuthenticated()) {
+          const isDevLogin = currentAuthMethod === 'dev-auto-login'
           try {
             const userData = await authService.getMe()
             set({
@@ -125,9 +126,14 @@ export const useAuthStore = create<AuthStore>()(
               isSSO: false,
             }, false, 'auth/refreshUser/jwt')
           } catch {
+            if (isDevLogin) {
+              return
+            }
             set({ user: null, authMethod: null, isAuthenticated: false, isSSO: false }, false, 'auth/refreshUser/jwt-fail')
             await authService.clearTokens()
           }
+        } else if (currentAuthMethod === null && process.env.NODE_ENV !== 'production') {
+          return
         } else {
           set({ user: null, authMethod: null, isAuthenticated: false, isSSO: false }, false, 'auth/refreshUser/none')
         }
