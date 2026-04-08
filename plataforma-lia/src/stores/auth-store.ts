@@ -172,7 +172,7 @@ export const useAuthStore = create<AuthStore>()(
               const userData = await authService.getMe()
               set({
                 user: userData,
-                authMethod: 'jwt',
+                authMethod: currentAuthMethod === 'dev-auto-login' ? 'dev-auto-login' as AuthMethod : 'jwt',
                 isAuthenticated: true,
                 isSSO: false,
               }, false, 'auth/init/jwt-refreshed')
