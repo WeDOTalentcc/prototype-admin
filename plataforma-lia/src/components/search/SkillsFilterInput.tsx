@@ -88,7 +88,7 @@ export function SkillsFilterInput({
     onChange([...value, { name: trimmed, isPinned }])
     setInputValue("")
     closeDropdown()
-  }, [value, onChange, existingSkillNames, closeDropdown])
+  }, [value, onChange, existingSkillNames, closeDropdown, setInputValue, setIsDropdownOpen, setFocusedIndex])
 
   const removeSkill = useCallback((name: string) => {
     onChange(value.filter(s => s.name !== name))
@@ -142,7 +142,7 @@ export function SkillsFilterInput({
       setIsLoadingAI(false)
       setInputValue("")
     }
-  }, [value, onChange, existingSkillNames, addSkill])
+  }, [value, onChange, existingSkillNames, addSkill, setInputValue, setIsDropdownOpen])
 
   const findSimilarSkills = useCallback(async () => {
     if (value.length === 0) return

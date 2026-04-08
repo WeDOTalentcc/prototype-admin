@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 # F2 Big Five Pipeline — modelos e constantes (spec WSI F2.5/F3/F5)
 # ---------------------------------------------------------------------------
 
+@dataclass
 class OceanTraitScore:
     """Score de relevância 0-100 de um trait OCEAN para a vaga (F2.5 NEO-PI-R rubric)."""
     trait: str              # openness | conscientiousness | extraversion | agreeableness | stability

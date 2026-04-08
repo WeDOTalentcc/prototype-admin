@@ -190,7 +190,7 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
 }
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function CollectionModelContent(_props: Record<string, any>) {
   return null
 }

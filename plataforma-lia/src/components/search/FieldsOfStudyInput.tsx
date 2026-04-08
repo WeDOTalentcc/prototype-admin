@@ -310,7 +310,7 @@ export function FieldsOfStudyInput({
     setInputValue("")
     setIsDropdownOpen(false)
     setFocusedIndex(-1)
-  }, [value, onChange, existingFields])
+  }, [value, onChange, existingFields, setInputValue, setIsDropdownOpen, setFocusedIndex])
 
   const removeField = useCallback((field: string) => {
     onChange(value.filter(f => f !== field))
@@ -363,7 +363,7 @@ export function FieldsOfStudyInput({
         setInputValue("")
       }
     }
-  }, [value, onChange, existingFields])
+  }, [value, onChange, existingFields, setInputValue, setIsDropdownOpen])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

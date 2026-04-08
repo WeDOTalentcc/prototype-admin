@@ -54,7 +54,7 @@ export function useCandidatesPageEffects({
       }
     }
     prevSelectedCountRef.current = currentCount
-  }, [selectedCandidatesForBatch.size, userCollapsedLIA, candidates, selectedCandidatesForBatch])
+  }, [selectedCandidatesForBatch.size, userCollapsedLIA, candidates, selectedCandidatesForBatch, setChatMessages, setShowExpandedLIA])
 
   useEffect(() => {
     const emptyEntities: ParsedEntities = {
@@ -84,7 +84,8 @@ export function useCandidatesPageEffects({
       } catch {} finally { setLiaIsParsingEntities(false) }
     }, 500)
     return () => clearTimeout(timer)
-  }, [liaPromptValue])
+  }, [liaPromptValue, setLiaIsParsingEntities, setLiaPromptEntities, setLiaSuggestions])
 
-  useEffect(() => { setShowExpandedLIA(true) }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setShowExpandedLIA(true) }, []) // intentional: run only on mount to expand LIA panel
 }

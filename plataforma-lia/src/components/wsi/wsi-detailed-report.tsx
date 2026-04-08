@@ -182,7 +182,7 @@ function ScoresByDimension({ data }: { data: WSIResultDetails }) {
             <p className="text-3xl font-bold text-lia-text-primary">{s.value.toFixed(1)}</p>
             <p className="text-xs text-lia-text-tertiary mb-2">{s.label} ({s.pct}%)</p>
             <div className="h-1.5 bg-lia-bg-secondary rounded-full overflow-hidden">
-              <div className="h-full bg-lia-text-primary rounded-full transition-all" style={{ width: `${s.pct}%` }} />
+              <div className="h-full bg-lia-text-primary rounded-full transition-[width]" style={{ width: `${s.pct}%` }} />
             </div>
           </div>
         ))}
@@ -555,8 +555,10 @@ export function WSIDetailedReport({
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<WSIResultDetails | null>(null)
 
+   
   useEffect(() => {
     loadDetails()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultId])
 
   const loadDetails = async () => {

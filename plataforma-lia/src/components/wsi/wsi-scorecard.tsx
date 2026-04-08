@@ -65,8 +65,10 @@ export function WSIScorecard({
   const [results, setResults] = useState<WSIResultsResponse | null>(null)
   const [expanded, setExpanded] = useState(!compact)
 
+   
   useEffect(() => {
     loadResults()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidateId])
 
   const loadResults = async () => {

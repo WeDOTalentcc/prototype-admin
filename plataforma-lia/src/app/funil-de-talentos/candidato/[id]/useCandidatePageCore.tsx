@@ -126,7 +126,7 @@ const candidateId = params.id as string
     } finally {
       setIsLoadingOpinions(false)
     }
-  }, [candidateId])
+  }, [candidateId, companyId])
 
   const fetchOpinionsHistory = useCallback(async () => {
     if (!candidateId) return
@@ -138,7 +138,7 @@ const candidateId = params.id as string
       }
     } catch (error) {
     }
-  }, [candidateId])
+  }, [candidateId, companyId])
 
   const fetchSavedAnalyses = useCallback(async () => {
     if (!candidateId) return
@@ -156,7 +156,7 @@ const candidateId = params.id as string
     } finally {
       setIsLoadingAnalyses(false)
     }
-  }, [candidateId])
+  }, [candidateId, companyId])
 
   const fetchCandidateFiles = useCallback(async () => {
     if (!candidateId) return
@@ -174,7 +174,7 @@ const candidateId = params.id as string
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [candidateId, BACKEND_URL])
+  }, [candidateId, BACKEND_URL, companyId])
 
   const handleFileUpload = async (files: File[]) => {
     if (!candidateId || files.length === 0) return
@@ -300,7 +300,7 @@ const candidateId = params.id as string
     }
     
     fetchActivities()
-  }, [activeTab, candidateId])
+  }, [activeTab, candidateId, companyId])
 
   const getInitials = (name: string) => {
     const parts = name.split(" ")

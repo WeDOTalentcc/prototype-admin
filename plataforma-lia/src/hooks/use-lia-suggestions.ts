@@ -176,6 +176,7 @@ export function useJobWizard() {
     } finally {
       setLoading(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId])
 
   const reset = useCallback(() => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import React, { useState, useMemo } from "react"
 import {
   Dialog,
   DialogContent,
@@ -70,7 +70,7 @@ export function JobAssignRecruiterModal({
   const [notifyRecruiter, setNotifyRecruiter] = useState(true)
   const [transferCommunications, setTransferCommunications] = useState(false)
 
-  const safeRecruiters = recruiters ?? []
+  const safeRecruiters = React.useMemo(() => recruiters ?? [], [recruiters])
 
   const filteredRecruiters = useMemo(() => {
     if (!searchTerm.trim()) return safeRecruiters

@@ -73,7 +73,8 @@ async def _notify_subject(
         True se enviado com sucesso, False se falhou (logado como warning).
     """
     try:
-        from app.services.notification_service import notification_service as svc
+        from app.services.notification_service import NotificationService
+        svc = NotificationService()
         await svc.send_notification(
             user_id=subject_email,
             title=subject,

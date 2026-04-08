@@ -63,6 +63,10 @@ PUBLIC_PATHS = {
     "/api/v1/webhooks/mailgun",
     "/api/v1/openmic/webhook",
     "/favicon.ico",
+    "/api/v1/health",
+    "/api/v1/health/",
+    "/api/v1/health/langgraph",
+    "/api/v1/navigation-intent",
 }
 
 # Path prefixes that are public (e.g. static files, docs)

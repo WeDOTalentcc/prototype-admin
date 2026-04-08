@@ -24,7 +24,7 @@ export default function Error({ error, reset }: ErrorProps) {
     <div className="min-h-content-lg flex items-center justify-center">
       <div className="text-center space-y-6 max-w-md px-6">
         <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
         </div>

@@ -116,7 +116,10 @@ export function CloseVacancyModal({
   const { user } = useAuth()
   const { companyId: resolvedCompanyId } = useCompanyId()
 
-  const hiredCandidates = hiredCandidatesProp || (hiredCandidateProp ? [hiredCandidateProp] : [])
+  const hiredCandidates = React.useMemo(
+    () => hiredCandidatesProp || (hiredCandidateProp ? [hiredCandidateProp] : []),
+    [hiredCandidatesProp, hiredCandidateProp]
+  )
   const skipStep1 = closeWithoutHire || hiredCandidates.length === 0
 
   const [currentStep, setCurrentStep] = useState(skipStep1 ? 2 : 1)
@@ -320,6 +323,9 @@ export function CloseVacancyModal({
     otherCandidates,
     onConfirm,
     onClose,
+    closingWithoutHire,
+    othersTemplateId,
+    resolvedCompanyId,
   ])
   
   const renderChannelSelector = (

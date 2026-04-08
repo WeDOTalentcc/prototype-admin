@@ -116,6 +116,7 @@ export function useJobColumnConfig() {
     } catch {
     }
     setIsLoaded(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const saveToStore = useCallback((cols: ColumnConfig[], views: SavedView[]) => {

@@ -92,16 +92,16 @@ function InlineLeftShell({
 
   const handleSelectSession = useCallback((sessionId: string) => {
     state.handleLoadConversation(sessionId)
-  }, [state.handleLoadConversation])
+  }, [state])
 
   const handleClearMode = useCallback(() => {
     state.setActiveActionType(null)
     state.setActionLabel(null)
-  }, [state.setActiveActionType, state.setActionLabel])
+  }, [state])
 
   const handleDismissTask = useCallback((taskId: string) => {
     state.clearBackgroundTask(taskId)
-  }, [state.clearBackgroundTask])
+  }, [state])
 
   const handleViewResult = useCallback((task: BackgroundTask) => {
     const resultSummary = task.message || "Tarefa concluída"
@@ -112,7 +112,7 @@ function InlineLeftShell({
       timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
     })
     state.clearBackgroundTask(task.id)
-  }, [state.addMessage, state.clearBackgroundTask])
+  }, [state])
 
   const handleClose = useCallback(() => {
     if (onClose) {
@@ -120,7 +120,7 @@ function InlineLeftShell({
     } else {
       state.close()
     }
-  }, [onClose, state.close])
+  }, [onClose, state])
 
   const hasDynamicPanel = !!state.dynamicPanel
 
@@ -324,16 +324,16 @@ function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
 
   const handleSelectSession = useCallback((sessionId: string) => {
     state.handleLoadConversation(sessionId)
-  }, [state.handleLoadConversation])
+  }, [state])
 
   const handleClearMode = useCallback(() => {
     state.setActiveActionType(null)
     state.setActionLabel(null)
-  }, [state.setActiveActionType, state.setActionLabel])
+  }, [state])
 
   const handleDismissTask = useCallback((taskId: string) => {
     state.clearBackgroundTask(taskId)
-  }, [state.clearBackgroundTask])
+  }, [state])
 
   const handleViewResult = useCallback((task: BackgroundTask) => {
     const resultSummary = task.message || "Tarefa concluída"

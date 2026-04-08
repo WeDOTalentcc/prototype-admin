@@ -34,7 +34,7 @@ export function useCandidatesData({
   useEffect(() => {
     onCandidatesChange(candidatesListHook.candidates)
     onLoadingChange(candidatesListHook.loading)
-  }, [candidatesListHook.candidates, candidatesListHook.loading])
+  }, [candidatesListHook.candidates, candidatesListHook.loading, onCandidatesChange, onLoadingChange])
 
   // ── Bulk data requests for visible candidates ─────────────────────────────
   const { dataRequestsMap, getDataRequestForCandidate } = useBulkCandidateDataRequests({
@@ -74,7 +74,8 @@ export function useCandidatesData({
         }
       })
       .catch(() => {})
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentional: runs once on mount to fetch viewed candidates; onViewedIdsChange is a setState - stable but adding it could cause re-runs
 
   useEffect(() => {
     liaApi

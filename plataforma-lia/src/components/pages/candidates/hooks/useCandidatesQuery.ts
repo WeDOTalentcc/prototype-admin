@@ -197,7 +197,7 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, lastQuery, currentPage, initialPageSize, transformCandidate])
+  }, [isLoading, lastQuery, currentPage, initialPageSize, transformCandidate, candidates])
 
   const refresh = useCallback(async () => {
     if (lastQuery) {

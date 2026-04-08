@@ -111,7 +111,7 @@ export function useSearchResults(state: SearchStateReturn, api: SearchAPIReturn)
       onChange(promptEnhancement.enhanced_query)
       setPromptEnhancement(null)
     }
-  }, [promptEnhancement, onChange])
+  }, [promptEnhancement, onChange, setPromptEnhancement])
 
   const handleEditEnhancement = useCallback(() => {
     if (promptEnhancement) {
@@ -119,20 +119,20 @@ export function useSearchResults(state: SearchStateReturn, api: SearchAPIReturn)
       setPromptEnhancement(null)
       textareaRef.current?.focus()
     }
-  }, [promptEnhancement, onChange])
+  }, [promptEnhancement, onChange, setPromptEnhancement, textareaRef])
 
   const handleDismissEnhancement = useCallback(() => {
     setPromptEnhancement(null)
     setPromptEnhancementDismissed(true)
     dismissedQueryRef.current = value
-  }, [value])
+  }, [value, setPromptEnhancement, setPromptEnhancementDismissed, dismissedQueryRef])
 
   const handleApplySuggestion = useCallback((suggestionValue: string) => {
     const currentValue = value.trim()
     const newValue = currentValue ? `${currentValue}, ${suggestionValue}` : suggestionValue
     onChange(newValue)
     textareaRef.current?.focus()
-  }, [value, onChange])
+  }, [value, onChange, textareaRef])
 
   const handleSourceChange = (newSource: SearchSource) => {
     if (newSource === 'local') {

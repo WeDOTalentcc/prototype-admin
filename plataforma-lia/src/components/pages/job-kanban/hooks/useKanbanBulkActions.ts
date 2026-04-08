@@ -82,7 +82,6 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
   }, [
     selectedCandidates,
     allTableCandidates,
-    toast,
     setBulkActionType,
     setShowBulkActionModal,
     setDataRequestModalCandidate,

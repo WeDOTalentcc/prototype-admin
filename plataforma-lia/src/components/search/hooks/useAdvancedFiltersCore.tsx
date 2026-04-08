@@ -121,6 +121,7 @@ export function useAdvancedFiltersCore(props: AdvancedFiltersModalProps) {
     return () => {
       observers.forEach((observer) => observer.disconnect())
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- sidebarCategories is a stable constant defined inline
   }, [isOpen])
 
   const scrollToSection = useCallback((sectionKey: string) => {

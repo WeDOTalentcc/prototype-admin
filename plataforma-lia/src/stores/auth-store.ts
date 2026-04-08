@@ -154,7 +154,6 @@ export const useAuthStore = create<AuthStore>()(
           }
         } else if (authService.isJWTAuthenticated()) {
           try {
-            await authService.refreshToken()
             const userData = await authService.getMe()
             set({
               user: userData,
@@ -163,8 +162,19 @@ export const useAuthStore = create<AuthStore>()(
               isSSO: false,
             }, false, 'auth/init/jwt')
           } catch {
-            await authService.clearTokens()
-            set({ user: null, authMethod: null, isAuthenticated: false, isSSO: false }, false, 'auth/init/jwt-fail')
+            try {
+              await authService.refreshToken()
+              const userData = await authService.getMe()
+              set({
+                user: userData,
+                authMethod: 'jwt',
+                isAuthenticated: true,
+                isSSO: false,
+              }, false, 'auth/init/jwt-refreshed')
+            } catch {
+              await authService.clearTokens()
+              set({ user: null, authMethod: null, isAuthenticated: false, isSSO: false }, false, 'auth/init/jwt-fail')
+            }
           }
         }
 

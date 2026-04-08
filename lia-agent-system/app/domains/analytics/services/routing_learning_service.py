@@ -30,7 +30,10 @@ class RoutingLearningService:
         message: str = "",
     ) -> bool:
         """Record a routing correction. Fail-open."""
-        if not USE_ADAPTIVE_ROUTING:
+        # Check flag dynamically to support monkeypatching in tests
+        import app.services.routing_learning_service as _svc_mod
+        _flag = getattr(_svc_mod, 'USE_ADAPTIVE_ROUTING', USE_ADAPTIVE_ROUTING)
+        if not _flag:
             return False
         try:
             from lia_models.routing_feedback import RoutingFeedback

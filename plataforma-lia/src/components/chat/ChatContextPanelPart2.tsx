@@ -22,7 +22,7 @@ interface Props {
  */
 export function ChatContextPanelPart2({ contextData }: Props) {
   // TODO: fix type - cast contextData.data for dynamic data access
-  const data = contextData.data as any // eslint-disable-line @typescript-eslint/no-explicit-any
+  const data = contextData.data as any  
   return (
     <>
       {contextData.type === "sourcing-progress" && (

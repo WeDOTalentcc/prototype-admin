@@ -552,7 +552,7 @@ def test_lgpd_schedule_deletion_returns_datetime(lgpd_module):
 
     candidate_id = "00000000-0000-0000-0000-000000000001"
 
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         lgpd_module.schedule_deletion_for_candidate(mock_db, candidate_id, "rejected")
     )
     assert isinstance(result, datetime)
@@ -574,7 +574,7 @@ def test_lgpd_schedule_deletion_uses_default_days(lgpd_module):
 
     candidate_id = "00000000-0000-0000-0000-000000000002"
     before = datetime.utcnow()
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         lgpd_module.schedule_deletion_for_candidate(mock_db, candidate_id, "rejected")
     )
     expected_min = before + timedelta(days=89)
@@ -596,7 +596,7 @@ def test_lgpd_schedule_deletion_custom_days(lgpd_module):
 
     candidate_id = "00000000-0000-0000-0000-000000000003"
     before = datetime.utcnow()
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         lgpd_module.schedule_deletion_for_candidate(mock_db, candidate_id, "rejected", retention_days=30)
     )
     expected_min = before + timedelta(days=29)
@@ -617,7 +617,7 @@ def test_lgpd_schedule_deletion_no_candidate_found(lgpd_module):
     mock_db.commit = AsyncMock()
 
     candidate_id = "00000000-0000-0000-0000-000000000004"
-    result = asyncio.get_event_loop().run_until_complete(
+    result = asyncio.run(
         lgpd_module.schedule_deletion_for_candidate(mock_db, candidate_id, "rejected")
     )
     assert isinstance(result, datetime)

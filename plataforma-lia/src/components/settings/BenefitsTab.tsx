@@ -159,12 +159,14 @@ export function BenefitsTab() {
     const updatedToggles = { ...liaToggles, [fieldKey]: isActive }
     setLiaToggles(updatedToggles)
     saveLiaFieldToggles(updatedToggles)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liaToggles])
 
   const handleLiaInstructionSave = useCallback(async (fieldKey: string, instruction: string) => {
     const updatedInstructions = { ...liaInstructions, [fieldKey]: instruction }
     setLiaInstructions(updatedInstructions)
     await saveLiaFieldToggles(liaToggles, updatedInstructions)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liaInstructions, liaToggles])
 
   const getCompanyId = async (): Promise<string> => {

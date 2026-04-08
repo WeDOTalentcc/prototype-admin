@@ -126,8 +126,10 @@ export function UniversitiesFilterInput({
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current)
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- ref cleanup
+      const timeout = debounceTimeoutRef.current
+      if (timeout) {
+        clearTimeout(timeout)
       }
     }
   }, [])
@@ -163,7 +165,7 @@ export function UniversitiesFilterInput({
     setCustomPresetsInStore('university_custom_presets', [...existingPresets, newPreset])
     setSavePresetName("")
     setShowSavePresetModal(false)
-  }, [savePresetName, value])
+  }, [savePresetName, value, getCustomPresets, setCustomPresetsInStore])
 
   const askAIForUniversities = useCallback(async (query: string) => {
     if (!query.trim()) return

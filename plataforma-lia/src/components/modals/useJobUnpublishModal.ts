@@ -156,7 +156,7 @@ export function useJobUnpublishModal({
     }
 
     fetchCandidatesForJobs()
-  }, [isOpen, jobs.length, candidates.length])
+  }, [isOpen, jobs, candidates.length])
 
   useEffect(() => {
     if (!isOpen) {

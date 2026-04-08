@@ -24,6 +24,13 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.jd_import_service import JDImportService, get_jd_import_service
+
+
+# Local factory — uses module-local JDImportService (supports test mocking)
+def get_jd_import_service():  # type: ignore[override]  # noqa: F811
+    """DI factory for JDImportService — creates new instance using module-local class."""
+    return JDImportService()
+
 from app.domains.job_management.services.wizard_data_priority_service import JobContext, WizardDataPriorityService, get_wizard_data_priority_service
 
 router = APIRouter(tags=["Learning Loop"])

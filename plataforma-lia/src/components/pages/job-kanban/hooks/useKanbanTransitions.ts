@@ -84,7 +84,7 @@ export function useKanbanTransitions({
     } catch {
       toast.error('Erro na transição', { description: 'Não foi possível completar a transição.' })
     }
-  }, [closeTransition, universalModalState.candidates, candidatesData, setCandidatesData, universalModalState.actionBehavior])
+  }, [closeTransition, universalModalState.candidates, setCandidatesData, universalModalState.actionBehavior])
 
   return { handleUniversalTransitionConfirm }
 }

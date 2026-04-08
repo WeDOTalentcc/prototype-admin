@@ -112,7 +112,7 @@ export async function upgradeModule(moduleId: LicenseModule): Promise<boolean> {
 }
 
 // Export default para compatibilidade
-export default {
+const licenseManager = {
   hasModuleAccess,
   canAccessOnboarding,
   canAccessMLAnalytics,
@@ -126,3 +126,4 @@ export default {
   hasPremiumAccess,
   upgradeModule
 }
+export default licenseManager

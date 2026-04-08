@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from ._shared import (
     VALID_ACTION_BEHAVIORS,
     STANDARD_STAGE_CATALOG,
+    InferBehaviorRequest,
     StageCreate,
     StageUpdate,
     StageConfigUpdate,
@@ -351,12 +352,11 @@ async def reorder_stages(
 
 @router.post("/stages/infer-behavior", response_model=None)
 async def infer_stage_behavior(
-    request: "InferBehaviorRequest",
+    request: InferBehaviorRequest,
     method: str = Query(default="auto", regex="^(keyword|llm|auto)$"),
     current_user: User = Depends(get_current_active_user),
 ):
     """Infer action_behavior for a custom stage name."""
-    from ._shared import InferBehaviorRequest  # noqa: F401
     try:
         if method == "keyword":
             from app.domains.communication.services.infer_behavior_service import infer_behavior

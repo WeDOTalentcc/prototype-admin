@@ -33,7 +33,7 @@ export function LIAToolbarBrainButton({
     >
       <Brain
         className={cn(
-          "w-5 h-5 transition-all duration-200 motion-reduce:transition-none",
+          "w-5 h-5 transition-transform duration-200 motion-reduce:transition-none",
           isOpen
             ? "text-wedo-cyan drop-shadow-lia-md scale-110"
             : "text-wedo-cyan hover:drop-shadow-lia-sm"

@@ -194,7 +194,7 @@ export function CompanyFilterInput({
     setInputValue("")
     setIsDropdownOpen(false)
     setFocusedIndex(-1)
-  }, [value, onChange, existingCompanyNames])
+  }, [value, onChange, existingCompanyNames, setInputValue, setIsDropdownOpen, setFocusedIndex])
 
   const removeCompany = useCallback((name: string) => {
     onChange(value.filter(c => c.name !== name))
@@ -231,7 +231,7 @@ export function CompanyFilterInput({
       setIsLoadingAI(false)
       setInputValue("")
     }
-  }, [value, onChange, existingCompanyNames])
+  }, [value, onChange, existingCompanyNames, setInputValue, setIsDropdownOpen])
 
   const findSimilarCompanies = useCallback(async () => {
     if (value.length === 0) return

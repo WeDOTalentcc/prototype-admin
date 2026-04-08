@@ -145,7 +145,7 @@ class TestFallbackResponse:
 
 class TestRouteWithMockedCascade:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def _make_router_with_cascade(self, content, confidence=0.9, model="haiku"):
         from app.orchestrator.intent_router import IntentRouter

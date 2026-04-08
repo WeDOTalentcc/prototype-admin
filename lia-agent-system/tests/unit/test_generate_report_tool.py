@@ -56,7 +56,7 @@ async def test_talent_generate_report_db_error_still_success():
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
     with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
-        result = await _wrap_generate_report()
+        result = await _wrap_generate_report(company_id="c1")
 
     assert result["success"] is True
     assert result["data"]["summary"] == {}
@@ -145,7 +145,7 @@ async def test_invalid_period_defaults_to_30_days():
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
     with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
-        await _wrap_generate_report(period="invalid_period")
+        await _wrap_generate_report(period="invalid_period", company_id="c1")
 
     assert captured_params.get("days") == 30
 
@@ -162,8 +162,8 @@ async def test_report_id_unique_per_call():
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
     with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
-        r1 = await _wrap_generate_report()
-        r2 = await _wrap_generate_report()
+        r1 = await _wrap_generate_report(company_id="c1")
+        r2 = await _wrap_generate_report(company_id="c1")
 
     assert r1["data"]["report_id"] != r2["data"]["report_id"]
 

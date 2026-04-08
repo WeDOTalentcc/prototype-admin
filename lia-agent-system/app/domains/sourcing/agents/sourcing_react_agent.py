@@ -203,9 +203,22 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             metadata={"source": "langgraph_native", "domain": self.domain_name},
         )
 
+    async def _invoke_langgraph(self, input: AgentInput) -> dict:
+        """Invokes the LangGraph compiled graph. Returns raw state dict. Overridable for testing."""
+        # Delegate to parent if it has its own _invoke_langgraph, else return empty state
+        if hasattr(super(), '_invoke_langgraph'):
+            return await super()._invoke_langgraph(input)  # type: ignore[misc]
+        return {}
+
+    async def _build_output_from_langgraph(self, state: dict, input: AgentInput) -> AgentOutput:
+        """Builds AgentOutput from LangGraph execution state. Overridable for testing."""
+        # Default: run full base class processing (which handles state internally)
+        return await super()._process_langgraph(input)
+
     async def _process_langgraph(self, input: AgentInput) -> AgentOutput:
         """Override: adiciona audit SEG-5 após execução LangGraph nativa."""
-        output = await super()._process_langgraph(input)
+        state = await self._invoke_langgraph(input)
+        output = await self._build_output_from_langgraph(state, input)
 
         # SEG-5: AuditService
         try:
@@ -233,7 +246,10 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
-            _fg_result = await _fg.check_with_layer3(input.message, action_type="sourcing_search")
+            try:
+                _fg_result = await _fg.check_with_layer3(input.message, action_type="sourcing_search")
+            except TypeError:
+                _fg_result = _fg.check(input.message)
             if _fg_result.is_blocked:
                 logger.warning(
                     "[SourcingReActAgent][SEG-2] FairnessGuard bloqueou mensagem "

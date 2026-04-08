@@ -32,7 +32,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
     if (agent && isOpen) {
       fetchAgentDetails()
     }
-  }, [agent, isOpen])
+  }, [agent, isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAgentDetails = async () => {
     if (!agent) return

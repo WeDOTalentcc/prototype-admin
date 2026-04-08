@@ -130,7 +130,7 @@ export function useSmartSearchApi(params: UseSmartSearchApiParams) {
       onChange(promptEnhancement.enhanced_query)
       setPromptEnhancement(null)
     }
-  }, [promptEnhancement, onChange])
+  }, [promptEnhancement, onChange, setPromptEnhancement])
 
   const handleEditEnhancement = useCallback(() => {
     if (promptEnhancement) {
@@ -138,20 +138,20 @@ export function useSmartSearchApi(params: UseSmartSearchApiParams) {
       setPromptEnhancement(null)
       textareaRef.current?.focus()
     }
-  }, [promptEnhancement, onChange])
+  }, [promptEnhancement, onChange, setPromptEnhancement, textareaRef])
 
   const handleDismissEnhancement = useCallback(() => {
     setPromptEnhancement(null)
     setPromptEnhancementDismissed(true)
     dismissedQueryRef.current = value
-  }, [value])
+  }, [value, setPromptEnhancement, setPromptEnhancementDismissed, dismissedQueryRef])
 
   const handleApplySuggestion = useCallback((suggestionValue: string) => {
     const currentValue = value.trim()
     const newValue = currentValue ? `${currentValue}, ${suggestionValue}` : suggestionValue
     onChange(newValue)
     textareaRef.current?.focus()
-  }, [value, onChange])
+  }, [value, onChange, textareaRef])
 
   const fetchAutocomplete = useCallback(async (query: string) => {
     if (!query || query.length < 2) {
@@ -216,7 +216,7 @@ export function useSmartSearchApi(params: UseSmartSearchApiParams) {
     setShowAutocomplete(false)
     setAutocompleteItems([])
     textareaRef.current?.focus()
-  }, [value, onChange])
+  }, [value, onChange, setUsedAutocompleteTerms, setShowAutocomplete, setAutocompleteItems, textareaRef])
 
   const validateBoolean = useCallback((query: string) => {
     if (!query.trim()) {

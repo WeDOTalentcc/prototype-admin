@@ -41,6 +41,16 @@ function isPublicPath(pathname: string): boolean {
   return false
 }
 
+function getBaseUrl(request: NextRequest): string {
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`
+  }
+  const host = request.headers.get('host') || 'localhost:5000'
+  return `http://${host}`
+}
+
 function denyAccess(request: NextRequest, pathname: string): NextResponse {
   if (pathname.startsWith('/api/')) {
     return NextResponse.json(
@@ -49,13 +59,15 @@ function denyAccess(request: NextRequest, pathname: string): NextResponse {
     )
   }
 
+  const base = getBaseUrl(request)
+
   if (DEV_AUTO_LOGIN) {
-    const autoLoginUrl = new URL('/api/auth/auto-login', request.url)
+    const autoLoginUrl = new URL('/api/auth/auto-login', base)
     autoLoginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(autoLoginUrl)
   }
 
-  const loginUrl = new URL('/login', request.url)
+  const loginUrl = new URL('/login', base)
   loginUrl.searchParams.set('next', pathname)
   return NextResponse.redirect(loginUrl)
 }

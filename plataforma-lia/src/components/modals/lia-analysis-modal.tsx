@@ -92,7 +92,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
     } finally {
       setLoadingAnalysis(null)
     }
-  }, [candidate, toast])
+  }, [candidate])
 
   useEffect(() => {
     if (isOpen && candidate?.id && !analyses[activeTab] && loadingAnalysis !== activeTab) {
@@ -136,7 +136,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
 
       onTransportToOpinions?.(analysis)
       
-      // Show inline message instead of toast, don't close modal
+      // Show inline message instead of don't close modal
       const tabLabel = ANALYSIS_TABS.find(t => t.id === activeTab)?.label || 'Análise'
       setSavedMessage(`${tabLabel} salvo com sucesso`)
       setTimeout(() => setSavedMessage(null), 3000)

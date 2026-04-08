@@ -75,6 +75,7 @@ export function useKanbanJobFormInit(currentJob: Record<string, unknown> | null)
               }))
           })(),
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only re-initialize form when job ID changes, not on every field change
   }, [currentJob?.id])
 
   useEffect(() => {

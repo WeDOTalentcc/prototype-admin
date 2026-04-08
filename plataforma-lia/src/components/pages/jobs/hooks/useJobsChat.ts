@@ -419,7 +419,7 @@ export function useJobsChat({
     } finally {
       setIsLiaProcessing(false)
     }
-  }, [filteredJobs, selectedJobsForBatch, liaMessages, jobsConversationId, loadBackendJobs, openJobCreationChat, setActiveFilter])
+  }, [filteredJobs, selectedJobsForBatch, liaMessages, jobsConversationId, loadBackendJobs, openJobCreationChat, setActiveFilter, resolvedCompanyId])
 
   // -------------------------------------------------------------------------
   // getContextualSuggestions

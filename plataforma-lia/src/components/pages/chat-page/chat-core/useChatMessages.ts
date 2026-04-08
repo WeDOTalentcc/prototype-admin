@@ -79,7 +79,7 @@ export function useChatMessages({
   useEffect(() => {
     scrollToBottom()
     checkNewMessageIndicator()
-  }, [messages, chatStreamingContent, checkNewMessageIndicator])
+  }, [messages, chatStreamingContent, checkNewMessageIndicator, scrollToBottom])
 
   useEffect(() => {
     setMessages(
@@ -167,7 +167,7 @@ export function useChatMessages({
     } else {
       toast.error("Erro na análise", { description: analysis.error || `Não foi possível analisar ${file.name}` })
     }
-  }, [toast])
+  }, [])
 
   // ── Voice recording handlers ────────────────────────────────
   const startRecording = useCallback(async () => {
@@ -225,15 +225,15 @@ export function useChatMessages({
     setInput(prev => prev ? `${prev} ${text}` : text)
     toast.success("Áudio transcrito", { description: "O texto foi adicionado ao campo de mensagem." })
     inputRef.current?.focus()
-  }, [toast])
+  }, [])
 
   const handleAudioRecordingStart = useCallback(() => {
     toast.success("Gravando...", { description: "Fale sua mensagem. Clique novamente para parar." })
-  }, [toast])
+  }, [])
 
   const handleAudioRecordingEnd = useCallback(() => {
     toast.success("Processando áudio", { description: "Aguarde enquanto transcrevemos sua mensagem." })
-  }, [toast])
+  }, [])
 
   // Cleanup on unmount
   useEffect(() => {

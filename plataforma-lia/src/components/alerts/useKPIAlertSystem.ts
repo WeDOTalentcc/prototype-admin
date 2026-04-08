@@ -202,7 +202,7 @@ export function useKPIAlertSystem(recruiterData: Record<string, unknown>[], onAl
     loadData()
   }, [fetchAlertsFromBackend, fetchPreferences])
 
-  useEffect(() => { if (alertRules.length === 0) setAlertRules(defaultAlertRules) }, [])
+  useEffect(() => { if (alertRules.length === 0) setAlertRules(defaultAlertRules) }, [alertRules.length])
 
   const generateAlerts = useMemo(() => {
     const newAlerts: KPIAlert[] = []

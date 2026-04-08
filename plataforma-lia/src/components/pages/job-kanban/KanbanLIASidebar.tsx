@@ -329,7 +329,7 @@ export function KanbanLIASidebar({
         {/* Input Area - Fixo na parte inferior */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2">
           {/* Campo de Input */}
-          <div className="flex items-center gap-2 p-2 rounded-2xl border border-lia-border-subtle bg-lia-bg-primary">
+          <div className="flex items-center gap-2 p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
             <input
               type="text"
               placeholder="Envie mensagem para a LIA..."

@@ -203,6 +203,7 @@ export function useJobsTableColumns(): UseJobsTableColumnsReturn {
       } catch (e) {
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return {

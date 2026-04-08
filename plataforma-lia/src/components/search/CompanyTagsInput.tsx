@@ -127,7 +127,7 @@ export function CompanyTagsInput({
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [inputValue])
+  }, [inputValue, fetchAISuggestions])
 
   const fetchAISuggestions = useCallback(async (query: string) => {
     if (!query || query.length < 3) return

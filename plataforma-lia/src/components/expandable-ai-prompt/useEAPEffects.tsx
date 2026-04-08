@@ -80,7 +80,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
     if (searchSource !== 'local') {
       creditEstimator.fetchBalance().catch(() => { /* TODO: integrar com Sentry */ })
     }
-  }, [searchSource])
+  }, [searchSource, creditEstimator])
 
   useEffect(() => {
     const loadArchetypesAndJobs = async () => {
@@ -104,7 +104,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
     }
 
     loadArchetypesAndJobs()
-  }, [])
+  }, [setArchetypes, setClosedJobsForArchetype])
 
   useEffect(() => {
     if (activeSearchTab !== 'natural' || !naturalSearchValue || naturalSearchValue.length < 10) {
@@ -160,7 +160,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
       } catch (error) {
       }
     }
-  }, [])
+  }, [handleSubmit, setInputValue, setIsExpanded])
 
   const liaTemplates = useChatStateStore((s) => s.liaTemplates)
 

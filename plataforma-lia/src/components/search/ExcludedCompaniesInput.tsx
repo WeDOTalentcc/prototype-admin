@@ -105,7 +105,7 @@ export function ExcludedCompaniesInput({
     onChange([...value, company])
     setInputValue("")
     closeDropdown()
-  }, [value, onChange, existingCompanyNames, closeDropdown])
+  }, [value, onChange, existingCompanyNames, closeDropdown, setInputValue])
 
   const removeCompany = useCallback((name: string) => {
     onChange(value.filter(c => c.name !== name))
@@ -128,7 +128,7 @@ export function ExcludedCompaniesInput({
     setCustomPresets('excluded_company_custom_presets', [...existingPresets, newPreset])
     setSavePresetName("")
     setShowSavePresetModal(false)
-  }, [savePresetName, value])
+  }, [savePresetName, value, getCustomPresets, setCustomPresets])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     handleKeyNavigation(

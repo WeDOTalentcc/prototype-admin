@@ -162,7 +162,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
     } else {
       setDuplicateIds([])
     }
-  }, [selectedJobId, candidateIds])
+  }, [selectedJobId, candidateIds, checkDuplicates])
 
   const checkDuplicates = async (jobId: string) => {
     try {

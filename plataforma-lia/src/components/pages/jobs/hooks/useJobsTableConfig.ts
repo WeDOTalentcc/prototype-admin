@@ -110,6 +110,7 @@ export function useJobsTableConfig(): UseJobsTableConfigReturn {
       } catch {
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleToggleColumnConfig = () => setShowColumnConfig(prev => !prev)

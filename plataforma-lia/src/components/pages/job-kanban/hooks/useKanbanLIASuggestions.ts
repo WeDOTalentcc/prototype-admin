@@ -146,7 +146,8 @@ export function useKanbanLIASuggestions({
     }
 
     buildBriefing()
-  }, [currentJob?.id, allTableCandidates.length, computedSuggestions, liaMessages.length])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: allTableCandidates.length avoids full array dep; currentJob.* fields omitted intentionally
+  }, [currentJob?.id, allTableCandidates.length, computedSuggestions, liaMessages.length, companyId, setLiaMessages])
 
   return { computedSuggestions, hasShownProactiveSuggestion, lastBriefingJobId }
 }

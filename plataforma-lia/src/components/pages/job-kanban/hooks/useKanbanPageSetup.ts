@@ -50,6 +50,7 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     if (job?.id) {
       pipelineInheritance.checkStatus()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
 
   const viewMode = useKanbanStore((s) => s.viewMode)
@@ -118,9 +119,11 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     setCandidatesData(initial)
     useKanbanStore.getState().clearSelection()
     useKanbanStore.getState().setSearchQuery("")
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: jobStagesJson covers interviewStages; setCandidatesData is stable
   }, [jobId, jobStagesJson])
   useEffect(() => {
     return () => { resetKanbanStore() }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run only on unmount
   }, [])
 
   const [draggedCandidate, setDraggedCandidate] = useState<Record<string, unknown> | null>(null)

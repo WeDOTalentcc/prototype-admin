@@ -151,11 +151,13 @@ export function WSITextScreeningModal({
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+   
   useEffect(() => {
     if (isOpen && step === 'loading') {
       initializeScreening()
     }
-  }, [isOpen])
+  }, // eslint-disable-next-line react-hooks/exhaustive-deps
+  [isOpen])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

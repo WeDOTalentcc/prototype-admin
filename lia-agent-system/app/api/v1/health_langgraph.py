@@ -36,6 +36,7 @@ class LangGraphHealthResponse(BaseModel):
     checkpointer_type: str
     graphs: list[GraphHealthItem]
     overall: str         # "ok" | "degraded" | "error"
+    status: str          # alias for overall, for schema compatibility
 
 
 def _probe_graph(name: str, factory) -> GraphHealthItem:
@@ -136,4 +137,5 @@ async def langgraph_health(
         checkpointer_type=cp_type,
         graphs=graphs,
         overall=overall,
+        status=overall,
     )

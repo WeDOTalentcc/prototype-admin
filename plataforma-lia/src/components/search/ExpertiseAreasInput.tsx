@@ -87,7 +87,7 @@ export function ExpertiseAreasInput({
     onChange([...value, trimmed])
     setInputValue("")
     closeDropdown()
-  }, [value, onChange, existingExpertise, closeDropdown])
+  }, [value, onChange, existingExpertise, closeDropdown, setInputValue])
 
   const removeExpertise = useCallback((name: string) => {
     onChange(value.filter(e => e !== name))
@@ -133,7 +133,7 @@ export function ExpertiseAreasInput({
       setIsLoadingAI(false)
       setInputValue("")
     }
-  }, [value, onChange, existingExpertise, addExpertise])
+  }, [value, onChange, existingExpertise, addExpertise, setInputValue, setIsDropdownOpen])
 
   const findSimilarExpertise = useCallback(async () => {
     if (value.length === 0) return

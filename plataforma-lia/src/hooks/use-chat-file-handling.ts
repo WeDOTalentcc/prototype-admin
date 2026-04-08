@@ -192,7 +192,8 @@ const [attachedFiles, setAttachedFiles] = useState<File[]>([])
         toast.error("Erro na análise", { description: analysis.error || `Não foi possível analisar ${file.name}` })
       }
     },
-    [toast]
+     
+    []
   )
 
   // ── audio / recording handlers ───────────────────────────────────────────────
@@ -203,16 +204,18 @@ const [attachedFiles, setAttachedFiles] = useState<File[]>([])
       toast.success("Áudio transcrito", { description: "O texto foi adicionado ao campo de mensagem." })
       inputRef.current?.focus()
     },
-    [toast, setInput, inputRef]
+    [setInput, inputRef]
   )
 
   const handleAudioRecordingStart = useCallback(() => {
     toast.success("Gravando...", { description: "Fale sua mensagem. Clique novamente para parar." })
-  }, [toast])
+   
+  }, [])
 
   const handleAudioRecordingEnd = useCallback(() => {
     toast.success("Processando áudio", { description: "Aguarde enquanto transcrevemos sua mensagem." })
-  }, [toast])
+   
+  }, [])
 
   const startRecording = useCallback(async () => {
     try {

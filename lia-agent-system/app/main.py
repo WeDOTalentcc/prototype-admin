@@ -422,7 +422,7 @@ async def request_validation_error_handler(request: FastAPIRequest, exc: Request
 # Register all API routers
 from app.api.routes import register_all_routes
 
-register_all_routes(app)
+register_all_routes(app)  # includes: admin_dlq_router, health, sourcing, etc.
 
 
 # Root-level health check redirects to comprehensive system health

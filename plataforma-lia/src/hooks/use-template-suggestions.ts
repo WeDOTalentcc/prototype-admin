@@ -68,6 +68,7 @@ export const useTemplateSuggestions = () => {
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const saveToStore = useCallback((history: CommandHistory[]) => {
@@ -124,7 +125,7 @@ export const useTemplateSuggestions = () => {
     saveToStore(updatedHistory)
 
     analyzePatterns(updatedHistory, newCommand)
-  }, [commandHistory, settings, sessionId, calculateComplexity, saveToStore])
+  }, [commandHistory, settings, sessionId, calculateComplexity, saveToStore, analyzePatterns])
 
   const analyzePatterns = useCallback((history: CommandHistory[], newCommand: CommandHistory) => {
     if (!settings.enabled) return

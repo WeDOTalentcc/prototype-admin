@@ -88,7 +88,7 @@ export function useStageTransitionModal({
       setIsMessageEdited(false)
       setShowPulse(false)
     }
-  }, [isOpen, currentStage, newStage])
+  }, [isOpen, currentStage, newStage, suggestedActions])
 
   const regenerateMessage = useCallback(async () => {
     if (!selectedAction || selectedAction === 'apenas_mover') return
@@ -152,7 +152,7 @@ export function useStageTransitionModal({
     if (isOpen && selectedAction && selectedAction !== 'apenas_mover') {
       regenerateMessage()
     }
-  }, [isOpen, selectedAction, channel])
+  }, [isOpen, selectedAction, channel, regenerateMessage])
 
   const handleTemplateSelect = (template: CommunicationTemplate) => {
     setSelectedTemplateId(template.id)

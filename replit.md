@@ -114,6 +114,13 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Deepgram (STT/transcrição de voz)
 - Celery
 
+# Auth Flow (Dev Mode)
+- **Auto-login**: Middleware redirects unauthenticated requests to `/api/auth/auto-login`, which calls backend `/api/v1/auth/login` with demo credentials, sets cookies via `response.cookies.set()` on the redirect response, and redirects back
+- **Cookies**: `lia_access_token` (httpOnly), `lia_refresh_token` (httpOnly), `lia_auth_method` (non-httpOnly, readable by JS)
+- **initAuth flow**: Tries `getMe()` first (via `/api/backend-proxy/auth/me`), only falls back to `refreshToken()` if getMe fails
+- **OnboardingController**: Shows spinner while `authIsLoading` OR `(authIsAuthenticated && !userData)`, prevents flash of "Acesso Restrito"
+- **Important**: In dev mode with 5700+ modules, initial page load takes ~30-60s due to on-demand compilation; subsequent loads are fast
+
 # Platform Audit (2026-04-07)
 - **Full audit report**: `.local/audit/platform-audit-report.md`
 - **Results**: 87% FUNCIONAL, 7% PARCIAL, 3% STUB, 3% AUSENTE

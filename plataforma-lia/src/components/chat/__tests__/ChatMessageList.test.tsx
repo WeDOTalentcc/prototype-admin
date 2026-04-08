@@ -11,9 +11,13 @@ vi.mock('@/stores/auth-store', () => ({
 }))
 
 vi.mock('lucide-react', () => {
-  const icon = (name: string) => (props: Record<string, unknown>) => (
-    <span data-testid={`icon-${name}`} {...props} />
-  )
+  const icon = (name: string) => {
+    function Icon(props: Record<string, unknown>) {
+      return <span data-testid={`icon-${name}`} {...props} />
+    }
+    Icon.displayName = `Icon-${name}`
+    return Icon
+  }
   return {
     Loader2: icon('loader'),
     Clock: icon('clock'),
@@ -40,7 +44,7 @@ vi.mock('@/components/ui/button', () => ({
 }))
 
 vi.mock('@/components/ui/lia-icon', () => ({
-  LIAIcon: () => <span data-testid="lia-icon" />,
+  LIAIcon: Object.assign(() => <span data-testid="lia-icon" />, { displayName: 'LIAIcon' }),
 }))
 
 vi.mock('@/components/ui/card', () => ({

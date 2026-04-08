@@ -72,13 +72,14 @@ export function useKanbanDataEffects({
         })
       })
       .catch(() => {})
-  }, [isLoadingCandidates, currentJob?.id])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: candidatesData/setCandidatesData excluded to avoid infinite loop
+  }, [isLoadingCandidates, currentJob?.id, currentJob?.backendId])
 
   useEffect(() => {
     if (chatScrollRef.current) {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
     }
-  }, [liaMessages, isLiaLoading])
+  }, [liaMessages, isLiaLoading, chatScrollRef])
 
   useEffect(() => {
     const handler = (e: Event) => {

@@ -643,7 +643,7 @@ export function formatScorePercent(score: number | string | null | undefined, de
   return `${formatScore(score, decimals)}%`
 }
 
-export default {
+const designTokens = {
   colors,
   typography,
   spacing,
@@ -666,3 +666,4 @@ export default {
   formatScore,
   formatScorePercent,
 }
+export default designTokens

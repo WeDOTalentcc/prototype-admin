@@ -296,6 +296,8 @@ export function useCandidatesTableConfig() {
 
   const storedColumnOrder = useUIPreferencesStore(s => s.candidateTableColumnOrder)
 
+  // intentional: run once on mount to restore persisted column order; adding storedColumnOrder would cause re-runs on every store write
+   
   useEffect(() => {
     const defaultOrder = ['checkbox', 'id', 'candidato', 'cargo', 'empresa', 'salario_mensal', 'localizacao', 'modelo_trabalho', 'acoes']
     const savedOrder = storedColumnOrder
@@ -314,7 +316,8 @@ export function useCandidatesTableConfig() {
         setColumnOrder(defaultOrder)
       }
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentional: mount-only init from persisted store; adding deps would re-run on every store write
 
   return {
     state: {

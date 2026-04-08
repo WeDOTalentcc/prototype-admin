@@ -140,7 +140,7 @@ export default function LoginPage() {
 
       <div className="w-full lg:w-1/2 flex flex-col relative z-10">
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 lg:p-10">
+        <div className="w-full max-w-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-2xl p-8 lg:p-10">
 
           <div className="lg:hidden flex items-center justify-center mb-8">
             <Image

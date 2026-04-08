@@ -122,7 +122,7 @@ export function useKpiAlerts(
     if (alertRules.length === 0) {
       setAlertRules(defaultAlertRules)
     }
-  }, [])
+  }, [alertRules.length])
 
   useEffect(() => {
     setAlerts(prevAlerts => {

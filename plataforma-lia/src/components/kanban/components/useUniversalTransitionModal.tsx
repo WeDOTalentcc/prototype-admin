@@ -251,7 +251,7 @@ export function useUniversalTransitionModal({
         }, 300)
       }
     }
-  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt])
+  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt, candidates, companyId, currentActionBehavior, fromStage, jobTitle, selectedToStage, sendMessage])
 
   useEffect(() => {
     if (isRejectedBatch && Object.keys(predictedSubStatuses).length > 0) {

@@ -101,7 +101,7 @@ export function useCandidatesPageCore({
   const resetCandidatesStore = useCandidatesStore((s) => s.resetStore)
   useEffect(() => {
     return () => { resetCandidatesStore() }
-  }, [])
+  }, [resetCandidatesStore])
 
   const {
     state: {

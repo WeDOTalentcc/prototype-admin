@@ -136,7 +136,7 @@ export function IndustryFilterInput({
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [inputValue])
+  }, [inputValue, fetchAISuggestions])
 
   const fetchAISuggestions = useCallback(async (query: string) => {
     if (!query || query.length < 3) return
@@ -201,7 +201,7 @@ export function IndustryFilterInput({
     setIsDropdownOpen(false)
     setFocusedIndex(-1)
     setAiSuggestions([])
-  }, [value, onChange, existingIndustries])
+  }, [value, onChange, existingIndustries, setInputValue, setIsDropdownOpen, setFocusedIndex])
 
   const removeIndustry = useCallback((industry: string) => {
     onChange(value.filter(i => i !== industry))

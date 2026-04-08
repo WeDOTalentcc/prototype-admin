@@ -466,7 +466,7 @@ export function TransitionChatPanel({
 
         {/* Input */}
         <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle dark:border-lia-border-strong">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-lia-border-subtle bg-lia-bg-primary">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-lia-border-subtle bg-lia-bg-primary">
             <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
             </div>

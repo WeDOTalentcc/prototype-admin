@@ -309,11 +309,13 @@ export function useWizardAutoSave(
 
   useEffect(() => {
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
+      const debounceTimer = debounceTimerRef.current
+      const autoSaveInterval = autoSaveIntervalRef.current
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
       }
-      if (autoSaveIntervalRef.current) {
-        clearInterval(autoSaveIntervalRef.current)
+      if (autoSaveInterval) {
+        clearInterval(autoSaveInterval)
       }
     }
   }, [])

@@ -371,7 +371,7 @@ class CascadedRouter:
 
         # Tier 6 — AutonomousReActAgent (cross-domain fallback antes de clarification)
         import os as _os
-        if _os.getenv("AUTONOMOUS_REACT_ENABLED", "true").lower() == "true":
+        if _os.getenv("AUTONOMOUS_REACT_ENABLED", "false").lower() == "true":
             try:
                 _t0 = time.perf_counter()
                 autonomous_result = await self._route_via_autonomous_agent(message, context, session_id)

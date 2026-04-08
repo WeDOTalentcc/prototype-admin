@@ -532,7 +532,7 @@ export function CandidateSearchResultsView({
             isResizingLIA={isResizingLIA}
             setIsResizingLIA={setIsResizingLIA}
             activeSearchTab={activeSearchTab as unknown as never}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             setActiveSearchTab={setActiveSearchTab as unknown as any}
             liaPromptValue={liaPromptValue}
             setLiaPromptValue={((v: React.SetStateAction<string>) => setLiaPromptValue(typeof v === 'function' ? v('') : v)) as React.Dispatch<React.SetStateAction<string>>}

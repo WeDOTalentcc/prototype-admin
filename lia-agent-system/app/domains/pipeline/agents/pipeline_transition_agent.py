@@ -138,9 +138,12 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
-            _fg_result = await _fg.check_with_layer3(
-                input.message, action_type="pipeline_move",
-            )
+            try:
+                _fg_result = await _fg.check_with_layer3(
+                    input.message, action_type="pipeline_move",
+                )
+            except TypeError:
+                _fg_result = _fg.check(input.message)
             if _fg_result.is_blocked:
                 logger.warning(
                     "[PipelineTransitionAgent][SEG-2] FairnessGuard bloqueou mensagem "

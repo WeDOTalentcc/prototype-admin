@@ -351,6 +351,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
     if (searchSource !== 'local') {
       creditEstimator.fetchBalance().catch(() => { })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchSource])
 
   const searchTags: SearchTag[] = useMemo(() => [

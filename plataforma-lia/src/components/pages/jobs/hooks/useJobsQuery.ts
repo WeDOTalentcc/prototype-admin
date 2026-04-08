@@ -108,7 +108,7 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
     } finally {
       setIsLoading(false)
     }
-  }, [initialPageSize, filters, sortConfig, transformJob])
+  }, [initialPageSize, transformJob])
 
   const loadMore = useCallback(async () => {
     if (isLoading) return
@@ -128,7 +128,7 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, currentPage, initialPageSize, filters, sortConfig, transformJob])
+  }, [isLoading, currentPage, initialPageSize, transformJob])
   const createJob = useCallback(async (data: Partial<JobVacancy>): Promise<JobVacancy> => {
     const response = await liaApi.createJobVacancy(data as any)
     const newJob = transformJob(response as unknown as Record<string, unknown>)

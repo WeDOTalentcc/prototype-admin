@@ -178,6 +178,8 @@ export function useCandidatesColumnConfig() {
   const setCandidateColumnViews = useUIPreferencesStore(s => s.setCandidateColumnViews)
   const setCandidateTableColumnOrder = useUIPreferencesStore(s => s.setCandidateTableColumnOrder)
 
+  // intentional: run once on mount to restore persisted column order; adding storedColumnOrder/defaultColumnOrder would cause re-runs on every store write
+   
   useEffect(() => {
     if (storedColumnOrder) {
       try {
@@ -194,7 +196,8 @@ export function useCandidatesColumnConfig() {
         setColumnOrder(defaultColumnOrder)
       }
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentional: mount-only init from persisted store; adding deps would re-run on every store write
 
   const visibleTableColumns = tableColumns.filter(col => col.visible).sort((a, b) => a.order - b.order)
 

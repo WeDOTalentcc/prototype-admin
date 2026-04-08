@@ -61,7 +61,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
     if (open && sharedSearchId) {
       loadDetails()
     }
-  }, [open, sharedSearchId])
+  }, [open, sharedSearchId, loadDetails])
 
   useEffect(() => {
     if (!open) {

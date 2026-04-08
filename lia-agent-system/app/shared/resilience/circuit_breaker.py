@@ -616,7 +616,7 @@ CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
         "description": "Screening por voz — Twilio Programmable Voice",
     },
     "gemini_live": {
-        "availability_target": 0.995,
+        "availability_target": 0.999,
         "latency_p95_ms": 500,
         "error_budget_pct": 0.5,
         "tier": "critical",

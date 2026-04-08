@@ -242,6 +242,7 @@ class TestRoutingFeedbackHashMessage(unittest.TestCase):
 
         # Ensure Base is a proper MagicMock
         db_mod = sys.modules.get("app.core.database", types.ModuleType("app.core.database"))
+        original_base = getattr(db_mod, 'Base', None)  # save for cleanup
         db_mod.Base = MagicMock()
         sys.modules["app.core.database"] = db_mod
 
@@ -258,6 +259,13 @@ class TestRoutingFeedbackHashMessage(unittest.TestCase):
             # If import fails due to stub, verify the logic directly
             h = hashlib.md5("test message".encode()).hexdigest()
             assert len(h) == 32
+        finally:
+            # Restore original Base to avoid contaminating other tests
+            if original_base is not None:
+                db_mod.Base = original_base
+            elif hasattr(db_mod, 'Base'):
+                del db_mod.Base
+            sys.modules.pop("app.models.routing_feedback", None)
 
 
 if __name__ == "__main__":

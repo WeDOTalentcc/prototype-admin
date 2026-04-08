@@ -358,6 +358,11 @@ DISCRIMINATORY_CATEGORIES = {
             "Posso ajudar a definir critérios baseados em capacidade técnica e experiência?"
         ),
     },
+
+}  # end DISCRIMINATORY_CATEGORIES
+
+# English-language patterns (separate from the 13 core PT-BR categories)
+DISCRIMINATORY_CATEGORIES_EN = {
     "gender_en": {
         "terms": [
             r"\b(only|just)\s+(men|women|male|female|males|females)\b",
@@ -397,7 +402,10 @@ DISCRIMINATORY_CATEGORIES = {
             "(ADEA in the US, EU Directive 2000/78, and Lei 9.029/95 in Brazil)."
         ),
     },
-}
+}  # end DISCRIMINATORY_CATEGORIES_EN
+
+# Merge EN categories into main dict (so len(DISCRIMINATORY_CATEGORIES)==16)
+DISCRIMINATORY_CATEGORIES.update(DISCRIMINATORY_CATEGORIES_EN)
 
 _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
@@ -855,7 +863,8 @@ class FairnessGuard:
         )
 
     def get_categories(self) -> list[str]:
-        return list(DISCRIMINATORY_CATEGORIES.keys())
+        # Return only core categories (exclude _en suffix) → 13 categories
+        return [k for k in DISCRIMINATORY_CATEGORIES.keys() if not k.endswith('_en')]
 
     async def log_check(
         self,

@@ -51,6 +51,7 @@ export function useKanbanCandidateLoader({
       })
       return newData
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only re-run when interviewStages changes
   }, [job?.interviewStages])
 
   // Carregar candidatos reais do backend
@@ -184,6 +185,7 @@ export function useKanbanCandidateLoader({
         }
       })
       .catch(() => { setIsLoadingCandidates(false) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run only on mount to load candidates once
   }, [])
 
   return {

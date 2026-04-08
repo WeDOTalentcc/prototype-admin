@@ -93,7 +93,7 @@ export function useKanbanPublishing({
     } finally {
       setIsPublishing(false)
     }
-  }, [job?.backendId, jobEditForm])
+  }, [job?.backendId, jobEditForm, setJobEditForm])
 
   return {
     isCreationMode, setIsCreationMode,

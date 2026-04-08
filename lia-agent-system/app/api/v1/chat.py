@@ -100,7 +100,7 @@ JOB_ACTION_MAP: dict[str, str] = {
     "marcar urgente": "vaga_urgente",
 }
 
-SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown"}
+SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown", "search_candidates"}
 
 
 def _flatten_entities(entities: dict[str, Any]) -> dict[str, Any]:
@@ -166,8 +166,8 @@ async def _try_extract_params_with_llm(
     continuarem faltando após a extração.
     """
     try:
-        from app.domains.ai.services.llm import get_llm_service  # lazy import para evitar circular
-        llm_svc = get_llm_service()
+        from app.services.llm import LLMService as _LLMService  # lazy import — patchable by tests
+        llm_svc = _LLMService()
         tool_schema = _build_tool_schema_for_intent(config["action_id"], config)
         messages = [{"role": "user", "content": user_message}]
         system_prompt = (

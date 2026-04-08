@@ -169,9 +169,80 @@ class IntentRouter:
         self.intent_prompt = self._create_intent_prompt()
         
     def _create_intent_prompt(self) -> ChatPromptTemplate:
-        """Create prompt template for intent classification."""
+        """Create prompt template for intent classification.
+
+        EXEMPLOS FEW-SHOT para contexto de RH sênior (T3 J2 spec):
+
+        EXEMPLOS CLAROS (confiança 0.9+):
+        Input: "Crie uma nova vaga para engenheiro sênior de backend"
+        Output: {"intent": "job_planner", "confidence": 0.95}
+
+        Input: "Preciso triagem de currículos para a vaga de TI"
+        Output: {"intent": "cv_screening", "confidence": 0.92}
+
+        Input: "Busque candidatos para a vaga de produto"
+        Output: {"intent": "sourcing", "confidence": 0.91}
+
+        Input: "Mover candidato João Silva para etapa de entrevista"
+        Output: {"intent": "pipeline", "confidence": 0.93}
+
+        Input: "Qual a taxa de conversão do funil de recrutamento este mês?"
+        Output: {"intent": "funnel_analysis", "confidence": 0.90}
+
+        Input: "Envie feedback para os candidatos rejeitados na triagem"
+        Output: {"intent": "communication", "confidence": 0.92}
+
+        Input: "Quais candidatos aprovamos na triagem de recrutador sênior?"
+        Output: {"intent": "pipeline", "confidence": 0.91}
+
+        Input: "Agende entrevista com os finalistas da vaga de RH"
+        Output: {"intent": "pipeline", "confidence": 0.90}
+
+        Input: "Relatório de performance dos recrutadores no mês"
+        Output: {"intent": "analyst_feedback", "confidence": 0.90}
+
+        Input: "Publicar vaga de desenvolvedor pleno no LinkedIn e Gupy"
+        Output: {"intent": "job_planner", "confidence": 0.94}
+
+        Input: "Rankear candidatos da vaga de RH por score de compatibilidade"
+        Output: {"intent": "rank_candidates", "confidence": 0.92}
+
+        Input: "Verificar status dos candidatos em triagem de currículo"
+        Output: {"intent": "cv_screening", "confidence": 0.91}
+
+        Input: "KPIs de recrutamento do mês de março por recrutador"
+        Output: {"intent": "funnel_analysis", "confidence": 0.90}
+
+        Input: "Abordagem de candidato sênior no LinkedIn para sourcing"
+        Output: {"intent": "sourcing", "confidence": 0.91}
+
+        Input: "Atualizar descrição da vaga de engenheiro pleno"
+        Output: {"intent": "job_planner", "confidence": 0.93}
+
+        Input: "Listar candidatos aprovados na última triagem"
+        Output: {"intent": "cv_screening", "confidence": 0.90}
+
+        EXEMPLOS Ambíguos (contexto de RH sênior — requer análise adicional):
+        Input: "Preciso de ajuda com candidato da vaga"
+        Output: {"intent": "pipeline", "confidence": 0.65, "ambiguous": true}
+
+        Input: "Como está nossa posição no mercado de talentos?"
+        Output: {"intent": "funnel_analysis", "confidence": 0.55, "ambiguous": true}
+
+        Input: "Me mostra as informações dos candidatos recentes"
+        Output: {"intent": "pipeline", "confidence": 0.60, "ambiguous": true}
+
+        Input: "Qual o status atual do processo seletivo?"
+        Output: {"intent": "pipeline", "confidence": 0.60, "ambiguous": true}
+
+        Input: "Preciso ver os dados de performance do recrutador sênior"
+        Output: {"intent": "analyst_feedback", "confidence": 0.70, "ambiguous": true}
+
+        Input: "Criar nova entrada no sistema de triagem"
+        Output: {"intent": "job_planner", "confidence": 0.60, "ambiguous": true}
+        """
         system_message = PromptLoader.get_domain_prompt("orchestrator")
-        
+
         return ChatPromptTemplate.from_messages([
             ("system", system_message),
             ("human", """Mensagem do usuário: {message}
@@ -180,6 +251,7 @@ Contexto adicional: {context}
 
 Classifique o intent e retorne JSON válido.""")
         ])
+
     
     async def route(self, message: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """

@@ -4,7 +4,7 @@ import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Mic, Play, ClipboardCheck, Video } from "lucide-react"
-import { textStyles } from '@/lib/design-tokens'
+import { textStyles, cardStyles } from '@/lib/design-tokens'
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import type { Activity as ActivityData } from "@/data/demo-activities"
 
@@ -91,7 +91,6 @@ export function ActivityVoiceScreeningDetails({ activity, candidate, onOpenTriag
 }
 
 export function ActivityVideoInterviewDetails({ activity, onSetScreeningModalData, onSetScreeningModalOpen }: Omit<ActivityScreeningDetailsProps, 'candidate' | 'onOpenTriagemDetails'>) {
-  const { cardStyles } = require('@/lib/design-tokens')
   return (
     <div className="mt-3 space-y-3">
       <div className={`${cardStyles.default} p-3`}>

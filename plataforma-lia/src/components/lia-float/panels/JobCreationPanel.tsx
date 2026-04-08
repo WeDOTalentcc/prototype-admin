@@ -50,7 +50,7 @@ export function JobCreationPanel({ data }: JobCreationPanelProps) {
         </div>
         <div className="w-full h-2 rounded-full bg-lia-bg-tertiary overflow-hidden">
           <div
-            className="h-full rounded-full bg-wedo-cyan transition-all duration-500"
+            className="h-full rounded-full bg-wedo-cyan transition-[width] duration-500"
             style={{ width: `${progressPercent}%` }}
           />
         </div>

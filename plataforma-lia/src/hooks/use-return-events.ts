@@ -71,7 +71,8 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
     const toastVariant = event.notification_type === 'warning' ? 'destructive' as const : 'default' as const
 
     toast.success(event.title, { description: event.description })
-  }, [toast])
+   
+  }, [])
 
   const computeAlerts = useCallback((candidates: Array<{
     id: string

@@ -1,25 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
-
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: IS_PRODUCTION,
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
-}
-
-const SESSION_FLAG_OPTIONS = {
-  httpOnly: false,
-  secure: IS_PRODUCTION,
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
-}
 
 export async function GET(request: NextRequest) {
   if (IS_PRODUCTION) {
@@ -57,20 +40,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    const cookieStore = await cookies()
-    cookieStore.set('lia_access_token', accessToken, COOKIE_OPTIONS)
-    if (refreshToken) {
-      cookieStore.set('lia_refresh_token', refreshToken, COOKIE_OPTIONS)
-    }
-    cookieStore.set('lia_auth_method', 'jwt', SESSION_FLAG_OPTIONS)
-
     const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/'
-    const baseUrl = new URL(request.url)
-    const host = request.headers.get('host')
-    if (host) {
-      baseUrl.host = host
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+    const host = forwardedHost || request.headers.get('host') || 'localhost:5000'
+    const protocol = forwardedHost ? forwardedProto : 'http'
+    const baseUrl = `${protocol}://${host}`
+
+    const response = NextResponse.redirect(new URL(safeRedirect, baseUrl))
+
+    const cookieBase = {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+      secure: IS_PRODUCTION,
+      sameSite: 'lax' as const,
     }
-    return NextResponse.redirect(new URL(safeRedirect, baseUrl))
+
+    response.cookies.set('lia_access_token', accessToken, { ...cookieBase, httpOnly: true })
+    if (refreshToken) {
+      response.cookies.set('lia_refresh_token', refreshToken, { ...cookieBase, httpOnly: true })
+    }
+    response.cookies.set('lia_auth_method', 'jwt', { ...cookieBase, httpOnly: false })
+
+    return response
   } catch {
     const url = new URL('/login', request.url)
     url.searchParams.set('error', 'backend-unreachable')

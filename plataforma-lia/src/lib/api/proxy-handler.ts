@@ -25,6 +25,10 @@ interface ProxyConfig<M extends HttpMethod> {
   auth?: boolean
   /** Backend target for future Rails migration. Defaults to "fastapi" */
   backendTarget?: BackendTarget
+  /** Default query params appended to every request */
+  defaultParams?: Record<string, string>
+  /** Transform the response data before returning to the client */
+  onResponse?: (data: unknown) => unknown
 }
 
 function resolvePath(
@@ -53,6 +57,18 @@ function resolvePath(
  *     backendPath: "/api/v1/candidates/:id/viewed",
  *     methods: ["POST", "DELETE"],
  *   })
+ *
+ * Usage (with default params):
+ *   export const { dynamic, GET } = createProxyHandlers({
+ *     backendPath: "/api/v1/items",
+ *     defaultParams: { status: "active", limit: "50" },
+ *   })
+ *
+ * Usage (with response transform):
+ *   export const { dynamic, GET } = createProxyHandlers({
+ *     backendPath: "/api/v1/items",
+ *     onResponse: (data) => (data as any).items ?? [],
+ *   })
  */
 export function createProxyHandlers<M extends HttpMethod = "GET">(
   config: ProxyConfig<M>
@@ -62,6 +78,8 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
     methods = ["GET"] as unknown as M[],
     auth = true,
     backendTarget: _backendTarget = "fastapi",
+    defaultParams,
+    onResponse,
   } = config
 
   const hasParams = backendPath.includes(":")
@@ -80,6 +98,16 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           : backendPath
 
         const { searchParams } = new URL(request.url)
+
+        // Merge default params (request params take precedence)
+        if (defaultParams) {
+          for (const [key, value] of Object.entries(defaultParams)) {
+            if (!searchParams.has(key)) {
+              searchParams.set(key, value)
+            }
+          }
+        }
+
         const queryString = searchParams.toString()
         const url = BACKEND_URL + resolvedPath + (queryString ? "?" + queryString : "")
 
@@ -118,7 +146,8 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         }
 
         const data = await response.json()
-        return NextResponse.json(data)
+        const result = onResponse ? onResponse(data) : data
+        return NextResponse.json(result)
       } catch (error) {
         return NextResponse.json(
           { error: "Erro ao conectar com o backend" },

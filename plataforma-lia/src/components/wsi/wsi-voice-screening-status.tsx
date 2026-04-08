@@ -134,6 +134,7 @@ export function WSIVoiceScreeningStatus({
       setStatus('in_progress')
       setError(null)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voipSessionId])
 
   const pollStatus = useCallback(async () => {
@@ -198,6 +199,7 @@ export function WSIVoiceScreeningStatus({
     if (isOpen && autoStart && status === 'idle') {
       startVoiceScreening()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, autoStart])
 
   const startVoiceScreening = async () => {

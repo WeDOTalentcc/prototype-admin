@@ -57,6 +57,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
       setPreviewTags([])
       setNewPreviewTag("")
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewSuggestion?.name])
 
   return (

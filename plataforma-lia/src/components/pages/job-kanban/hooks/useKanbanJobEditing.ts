@@ -131,7 +131,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     } catch {
       toast.error('Erro ao renomear', { description: 'Nao foi possivel renomear a etapa.' })
     }
-  }, [toast, setDynamicStages])
+  }, [setDynamicStages])
 
   const handleInlineToggleActive = useCallback(async (stageId: string, isActive: boolean) => {
     try {
@@ -150,7 +150,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     } catch {
       toast.error('Erro', { description: 'Nao foi possivel alterar o status da etapa.' })
     }
-  }, [toast, setDynamicStages])
+  }, [setDynamicStages])
 
   const handleInlineRemove = useCallback(async (stageId: string) => {
     try {
@@ -163,7 +163,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     } catch {
       toast.error('Erro ao remover', { description: 'Nao foi possivel remover a coluna.' })
     }
-  }, [toast, setDynamicStages])
+  }, [setDynamicStages])
 
   const handleInlineMove = useCallback(async (stageId: string, direction: -1 | 1) => {
     setDynamicStages(prev => {
@@ -200,7 +200,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     } catch {
       toast.error('Erro ao atualizar SLA')
     }
-  }, [toast])
+  }, [])
 
   return {
     handleSaveJobSection,

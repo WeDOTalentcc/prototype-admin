@@ -616,7 +616,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
       }
       setMessages(prev => [...prev, errorMessage])
     }
-  }, [messages.length, contextData, setContextData, setIsSchedulingModalOpen, setMessages, setSelectedCandidateForScheduling])
+  }, [messages.length, contextData, setContextData, setIsSchedulingModalOpen, setMessages, setSelectedCandidateForScheduling, addChatMessage])
 
 
   const handleSmartSearchCancel = useCallback(() => {

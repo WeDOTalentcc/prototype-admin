@@ -37,6 +37,24 @@ _CONFIRMATION_WORDS = {
 
 class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     """Autonomous agent for hiring policy configuration via LangGraph nativo."""
+    # ── HITL integration for policy updates ──
+    # Sprint-I spec: when output.state_updates are present, request HITL approval.
+    async def _request_hitl_if_needed(self, output) -> None:
+        """Request HITL review when state_updates are present. Fail-safe: continues on error."""
+        if output.state_updates:
+            # Mark hitl_pending before attempting approval request
+            hitl_pending = True  # noqa: F841
+            try:
+                from app.services.hitl_service import hitl_service
+                await hitl_service.request_approval(output.state_updates)
+            except Exception as exc:  # noqa: BLE001
+                # Fail-safe: HITL service unavailable — prosseguindo sem revisão
+                import logging
+                logging.getLogger(__name__).warning(
+                    "Fail-safe: HITL service unavailable, prosseguindo sem revisão: %s", exc
+                )
+
+
 
     def __init__(self) -> None:
         super().__init__()

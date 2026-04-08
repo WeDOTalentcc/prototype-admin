@@ -72,6 +72,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   useEffect(() => {
     if (job?.id) pipelineInheritance.checkStatus()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
 
   const viewMode = useKanbanStore((s) => s.viewMode)
@@ -137,9 +138,11 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setCandidatesData(initial)
     useKanbanStore.getState().clearSelection()
     useKanbanStore.getState().setSearchQuery('')
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: jobStagesJson covers interviewStages; setCandidatesData is stable
   }, [jobId, jobStagesJson])
   useEffect(() => {
     return () => { resetKanbanStore() }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run only on unmount
   }, [])
 
   const { handleUniversalTransitionConfirm } = useKanbanTransitions({
@@ -213,6 +216,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     toast.success("Solicitação Enviada", { description: `Solicitação de dados enviada para ${(uiModals.state.dataRequestModalCandidate as Record<string,unknown>|null)?.name as string || 'candidato'}` })
     uiModals.actions.setShowDataRequestModal(false)
     uiModals.actions.setDataRequestModalCandidate(null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: uiModals.actions is a stable object from zustand
   }, [uiModals.state.dataRequestModalCandidate])
 
   const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
@@ -356,6 +360,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const handleOpenTriagem = useCallback((candidate: Record<string, unknown>) => {
     uiModals.actions.setTriagemCandidate(candidate)
     uiModals.actions.setIsTriagemOpen(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: uiModals.actions is stable from zustand store
   }, [])
 
   const handleOpenScoreModal = (candidate: Record<string, unknown>, modalType: 'geral' | 'triagem' | 'cv' | 'tecnico' | 'ingles' | 'b5') => {

@@ -42,6 +42,7 @@ export function ChatPage({ initialConversationId }: { initialConversationId?: st
 }
 
 export function LegacyChatPage({ initialConversationId }: { initialConversationId?: string | null }) {
+  const { user: authUser } = useAuth()
   const { dynamicPanel, closeDynamicPanel, setHasInlineChat, contextPage } = useLiaFloat()
   const { chatHitlPending, sendApproval } = useLiaChatContext()
 
@@ -565,15 +566,15 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* Input com botões */}
                 <div className="w-full relative group">
-                  <div className="absolute -inset-0.5 bg-wedo-cyan/[0.15] rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-                  <div className="relative bg-white border border-lia-border-subtle rounded-2xl shadow-sm transition-colors duration-200 focus-within:border-wedo-cyan/40 focus-within:ring-2 focus-within:ring-wedo-cyan/[0.12] focus-within:shadow-md flex flex-col">
+                  <div className="absolute -inset-0.5 bg-wedo-cyan/[0.15] rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+                  <div className="relative bg-white border border-lia-border-subtle rounded-xl shadow-sm transition-colors duration-200 focus-within:border-wedo-cyan/40 focus-within:ring-2 focus-within:ring-wedo-cyan/[0.12] focus-within:shadow-md flex flex-col">
                     <textarea
                       ref={inputRef}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-xs rounded-2xl"
+                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-xs rounded-xl"
                       spellCheck={false}
                     />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
@@ -669,8 +670,8 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
           candidateId={selectedCandidateForScheduling.id}
           jobTitle={selectedCandidateForScheduling.job_title}
           jobVacancyId={selectedCandidateForScheduling.job_vacancy_id}
-          userName={useAuth().user?.name || "Recrutador"}
-          userEmail={useAuth().user?.email || ""}
+          userName={authUser?.name || "Recrutador"}
+          userEmail={authUser?.email || ""}
         />
       )}
 

@@ -221,7 +221,7 @@ const initialState: CandidatesFullState = {
 }
 
 function setOrUpdate<T>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   set: (partial: any, replace?: any, actionName?: any) => void,
   key: keyof CandidatesFullState,
   actionName: string,

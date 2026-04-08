@@ -59,7 +59,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
     } else if (mode === "boolean") {
       validateBoolean(value)
     }
-  }, [value, mode, parseQuery, validateBoolean])
+  }, [value, mode, parseQuery, validateBoolean, parseTimeoutRef])
 
   useEffect(() => {
     if (mode === "natural" && value && Object.keys(entities).length > 0) {
@@ -75,7 +75,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
         }
       }
     }
-  }, [entities, value, mode, analyzeSearch])
+  }, [entities, value, mode, analyzeSearch, analyzeTimeoutRef])
 
   useEffect(() => {
     if (mode === "natural" && value && autocompleteEnabled) {
@@ -94,17 +94,17 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
       setShowAutocomplete(false)
       setAutocompleteItems([])
     }
-  }, [value, mode, fetchAutocomplete, autocompleteEnabled])
+  }, [value, mode, fetchAutocomplete, autocompleteEnabled, autocompleteTimeoutRef, setShowAutocomplete, setAutocompleteItems])
 
   useEffect(() => {
     if (!value || value.trim().length === 0) {
       setUsedAutocompleteTerms(new Set())
     }
-  }, [value])
+  }, [value, setUsedAutocompleteTerms])
 
   useEffect(() => {
     setUsedAutocompleteTerms(new Set())
-  }, [mode])
+  }, [mode, setUsedAutocompleteTerms])
 
   useEffect(() => {
     if (promptEnhancementDismissed && dismissedQueryRef.current) {
@@ -133,10 +133,11 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
     } else if (!promptEnhancementDismissed) {
       setPromptEnhancement(null)
     }
-  }, [value, mode, searchSource, fetchPromptEnhancement, promptEnhancementDismissed])
+  }, [value, mode, searchSource, fetchPromptEnhancement, promptEnhancementDismissed, dismissedQueryRef, enhanceTimeoutRef, setPromptEnhancement, setPromptEnhancementDismissed])
 
   useEffect(() => {
     textareaRef.current?.focus()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- textareaRef is a stable ref, run only on mount
   }, [])
 
   useEffect(() => {
@@ -154,7 +155,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
       loadArchetypes()
       loadClosedJobSuggestions()
     }
-  }, [mode, loadArchetypes, loadClosedJobSuggestions])
+  }, [mode, loadArchetypes, loadClosedJobSuggestions, onChange, setEntities, setBooleanError, setSelectedArchetype, setSimilarSearchPrompt, setJdSearchPrompt, setBooleanFinalPrompt, setArchetypeSearchPrompt])
 
   useEffect(() => {
     if (combinedSuggestions.length > 0 && showCombinedSuggestions) {
@@ -165,7 +166,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
         : `Buscar candidatos similares ao perfil: ${combinedSuggestions.join(", ")}`
       setSimilarSearchPrompt(prompt)
     }
-  }, [combinedSuggestions, showCombinedSuggestions, similarUrls, similarCvFiles])
+  }, [combinedSuggestions, showCombinedSuggestions, similarUrls, similarCvFiles, setSimilarSearchPrompt])
 
   useEffect(() => {
     if (jdContent.trim().length > 0) {
@@ -176,7 +177,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
     } else {
       setJdSearchPrompt("")
     }
-  }, [jdContent])
+  }, [jdContent, setJdSearchPrompt])
 
   useEffect(() => {
     if (value.trim() && mode === "boolean") {
@@ -184,7 +185,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
     } else {
       setBooleanFinalPrompt("")
     }
-  }, [value, mode])
+  }, [value, mode, setBooleanFinalPrompt])
 
   useEffect(() => {
     if (selectedArchetype) {
@@ -193,7 +194,7 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
     } else {
       setArchetypeSearchPrompt("")
     }
-  }, [selectedArchetype, buildArchetypePrompt])
+  }, [selectedArchetype, buildArchetypePrompt, setArchetypeSearchPrompt])
 
   useEffect(() => {
     if (jdVacancySearchTimeoutRef.current) {
@@ -212,5 +213,5 @@ export function useSearchEffects(state: SearchStateReturn, api: SearchAPIReturn)
         clearTimeout(jdVacancySearchTimeoutRef.current)
       }
     }
-  }, [jdVacancySearch, searchJobVacancies])
+  }, [jdVacancySearch, searchJobVacancies, jdVacancySearchTimeoutRef, setJdVacancyResults, setShowVacancyResults])
 }

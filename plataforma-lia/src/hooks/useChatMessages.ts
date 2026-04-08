@@ -179,6 +179,7 @@ export function useChatMessages({
     } catch {
       onCompleteRef.current?.("Erro ao conectar com a LIA. Tente novamente.")
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsSend, clearTokens, isConnected, sessionId, conversationId, getPageContext, hitlRef, setHitlPending])
 
   const sendApproval = useCallback((approved: boolean) => {

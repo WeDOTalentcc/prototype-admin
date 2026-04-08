@@ -156,6 +156,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     }
   }, [allJobs, onAddRecentItem, navigationStoreNavigateToCandidate, consumeNavigateToCandidate])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   // Navigate to newly created job when it appears in allJobs (fallback)
   useEffect(() => {
     if (!previewState.pendingNavigateJobId || !allJobs.length) return
@@ -165,6 +166,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     setSelectedJobAndOpenKanban(matched)
   }, [allJobs, previewState.pendingNavigateJobId])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   // Open pending job from external navigation
   useEffect(() => {
     if (!pendingJobOpen) return
@@ -232,6 +234,7 @@ export function useJobsPageCore(props: JobsPageProps) {
 
     tryOpenJob()
     return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingJobOpen])
 
   // -----------------------------------------------------------------------

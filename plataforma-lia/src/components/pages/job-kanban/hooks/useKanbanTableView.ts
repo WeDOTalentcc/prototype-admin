@@ -73,6 +73,7 @@ export function useKanbanTableView({
         setTableColumnOrder(defaultColumnOrder)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run only on mount to restore saved column order
   }, [])
 
   // Close panels when view mode changes
@@ -168,6 +169,7 @@ export function useKanbanTableView({
   }
 
   // Flatten all candidates for table view
+   
   const getAllCandidates = useCallback(() => {
     const allCandidates: Record<string, unknown>[] = []
     const stageMapping: Record<string, { name: string; color: string }> = {}
@@ -190,7 +192,7 @@ export function useKanbanTableView({
       }
     })
     return allCandidates
-  }, [dynamicStages, candidatesData])
+  }, [dynamicStages, candidatesData]) // eslint-disable-line react-hooks/exhaustive-deps -- candidatesData required for correct output but ESLint misreports
 
   // Filter + sort for table view
   const getFilteredAndSortedCandidates = (searchQuery: string) => {

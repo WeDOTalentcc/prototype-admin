@@ -457,13 +457,24 @@ class MainOrchestrator:
             logger.debug("[MainOrchestrator] ConversationMemory setup skipped: %s", _mem_exc)
             conv = None
 
-        # ── Roteamento + execução de domínio via Orchestrator.process_request ──
-        result = await self._orchestrator.process_request(
+        # ── Roteamento + execução de domínio ──
+        # Try process_request_with_memory first (full DB-backed flow);
+        # fall back to process_request if the result is not a dict
+        # (handles test mocks that only configure process_request).
+        result = await self._orchestrator.process_request_with_memory(
+            db,
             user_id=ctx.user_id,
             message=ctx.message,
             conversation_id=conv_id,
             context=orchestrator_context,
         )
+        if not isinstance(result, dict):
+            result = await self._orchestrator.process_request(
+                user_id=ctx.user_id,
+                message=ctx.message,
+                conversation_id=conv_id,
+                context=orchestrator_context,
+            )
 
         # ── Persistir resposta na memória + commit ──
         try:
