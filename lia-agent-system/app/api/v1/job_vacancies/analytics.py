@@ -994,3 +994,74 @@ async def get_work_model_analytics(
         "total": total_all,
         "period": period,
     }
+
+
+# ─── Pipeline Overview (cross-vacancy) ────────────────────────────────────────
+
+class PipelineOverviewCandidateItem(BaseModel):
+    vc_id: str
+    vacancy_id: str
+    name: str
+
+
+class PipelineOverviewStageItem(BaseModel):
+    stage: str
+    count: int
+    candidates: list[PipelineOverviewCandidateItem] = []
+
+
+class PipelineOverviewResponse(BaseModel):
+    stages: list[PipelineOverviewStageItem]
+    total_candidates: int
+
+
+@router.get("/pipeline-overview", response_model=PipelineOverviewResponse)
+async def get_pipeline_overview(
+    candidates_per_stage: int = Query(default=100, ge=1, le=500, description="Max candidates to return per stage"),
+    current_user=Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+):
+    """
+    Aggregate candidate counts by stage across all active job vacancies
+    for the current user's company. Returns stage name, count, and the
+    full candidate list for each stage (up to candidates_per_stage, default 100).
+    """
+    company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
+    if not company_id:
+        raise HTTPException(status_code=403, detail="Company not associated with user")
+
+    try:
+        rows = await repo.get_pipeline_overview(company_id)
+    except Exception as e:
+        logger.error(f"Error fetching pipeline overview: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+    stages: list[PipelineOverviewStageItem] = []
+    total = 0
+
+    for row in rows:
+        stage = row.stage
+        count = int(row.count)
+        total += count
+
+        # Return up to candidates_per_stage previews; count always reflects the true total.
+        names = list(row.candidate_names or [])[:candidates_per_stage]
+        vc_ids = list(row.vc_ids or [])[:candidates_per_stage]
+        vacancy_ids_list = list(row.vacancy_ids or [])[:candidates_per_stage]
+
+        candidates = [
+            PipelineOverviewCandidateItem(
+                vc_id=vc_ids[i] if i < len(vc_ids) else "",
+                vacancy_id=vacancy_ids_list[i] if i < len(vacancy_ids_list) else "",
+                name=names[i] if i < len(names) else "Candidato",
+            )
+            for i in range(len(names))
+        ]
+
+        stages.append(PipelineOverviewStageItem(
+            stage=stage,
+            count=count,
+            candidates=candidates,
+        ))
+
+    return PipelineOverviewResponse(stages=stages, total_candidates=total)

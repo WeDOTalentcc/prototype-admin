@@ -25,6 +25,7 @@ import { useRecentItems, type RecentItem } from "@/hooks/use-recent-items"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
 import { GlobalSearchModal } from "@/components/global-search-modal"
+import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 
 interface DashboardAppProps {
   initialPage?: string
@@ -168,6 +169,8 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         return <TalentPoolsTab onSelectPool={(id) => handleNavigate("Bancos de Talentos")} />
       case "Agent Studio":
         return <AgentStudioPage />
+      case "Visão do Pipeline":
+        return <PipelineOverviewPage />
       case "Configurações":
         return <SettingsPageEnhanced />
       default:

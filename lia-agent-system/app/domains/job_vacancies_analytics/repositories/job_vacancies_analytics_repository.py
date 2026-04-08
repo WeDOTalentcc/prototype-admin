@@ -276,3 +276,31 @@ class JobVacanciesAnalyticsRepository:
             {"co": company_id, "days": str(days)},
         )
         return result.fetchall()
+
+    async def get_pipeline_overview(self, company_id: str) -> list:
+        """
+        Return cross-vacancy stage counts for active vacancies.
+        Each row has: stage (str), count (int), candidate_names (list[str])
+        grouped by stage across all active vacancies in the company.
+        """
+        result = await self.db.execute(
+            text("""
+                SELECT
+                    vc.stage,
+                    COUNT(vc.id) AS count,
+                    ARRAY_AGG(c.name ORDER BY vc.created_at DESC) AS candidate_names,
+                    ARRAY_AGG(vc.id::text ORDER BY vc.created_at DESC) AS vc_ids,
+                    ARRAY_AGG(vc.vacancy_id::text ORDER BY vc.created_at DESC) AS vacancy_ids
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON jv.id = vc.vacancy_id
+                JOIN candidates c ON c.id = vc.candidate_id
+                WHERE jv.company_id = CAST(:co AS uuid)
+                  AND LOWER(jv.status) IN ('ativa', 'active', 'open', 'published', 'publicada', 'em andamento')
+                  AND vc.stage IS NOT NULL
+                  AND vc.stage NOT IN ('rejected', 'declined', 'withdrawn', 'cancelado', 'reprovado')
+                GROUP BY vc.stage
+                ORDER BY count DESC
+            """),
+            {"co": company_id},
+        )
+        return result.fetchall()

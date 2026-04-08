@@ -28,7 +28,8 @@ import {
   Trash2,
   Search,
   Database,
-  Bot
+  Bot,
+  GitBranch,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -37,15 +38,35 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LIATipsModal } from "@/components/lia-tips-modal"
 import Image from "next/image"
 
-// Memoizar os dados estáticos para evitar recriações
-// Menu principal - apenas páginas operacionais do dia-a-dia
-const menuItems: MenuItemType[] = [
-  { icon: Target, label: "Tarefas", isCore: true },
-  { icon: MessageCircle, label: "Chat LIA", isCore: true },
-  { icon: Users, label: "Funil de Talentos", isCore: true },
-  { icon: Briefcase, label: "Vagas", isCore: true },
-  { icon: Database, label: "Bancos de Talentos", isCore: true },
-  { icon: Bot, label: "Agent Studio", isCore: true },
+// Menu principal estruturado em seções lógicas de recrutamento
+interface MenuSection {
+  label: string
+  items: MenuItemType[]
+}
+
+const menuSections: MenuSection[] = [
+  {
+    label: "Recrutamento",
+    items: [
+      { icon: Briefcase, label: "Vagas", isCore: true },
+      { icon: Database, label: "Bancos de Talentos", isCore: true },
+      { icon: Users, label: "Funil de Talentos", isCore: true },
+      { icon: GitBranch, label: "Visão do Pipeline", isCore: true },
+    ],
+  },
+  {
+    label: "Operacional",
+    items: [
+      { icon: MessageCircle, label: "Chat LIA", isCore: true },
+      { icon: Target, label: "Tarefas", isCore: true },
+    ],
+  },
+  {
+    label: "Configuração",
+    items: [
+      { icon: Bot, label: "Agent Studio", isCore: true },
+    ],
+  },
 ]
 
 
@@ -366,24 +387,30 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Menu and Workspace - Scrollable */}
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
-        <div className="mb-4">
-          {shouldShowContent && (
-            <h3 className="text-xs font-semibold text-lia-text-primary mb-2 tracking-[0.2em] uppercase">
-              MENU
-            </h3>
-          )}
-        </div>
-
-        <nav className="space-y-1">
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.label}
-              item={item}
-              currentPage={currentPage}
-              onNavigate={onNavigate}
-              isCollapsed={isCollapsed}
-              shouldShowContent={shouldShowContent}
-            />
+        <nav className="space-y-4">
+          {menuSections.map((section, sectionIdx) => (
+            <div key={section.label}>
+              {shouldShowContent && (
+                <h3 className="text-[10px] font-semibold text-lia-text-disabled mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
+                  {section.label}
+                </h3>
+              )}
+              {!shouldShowContent && sectionIdx > 0 && (
+                <div className="border-t border-lia-border-subtle my-1.5" />
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => (
+                  <MenuItem
+                    key={item.label}
+                    item={item}
+                    currentPage={currentPage}
+                    onNavigate={onNavigate}
+                    isCollapsed={isCollapsed}
+                    shouldShowContent={shouldShowContent}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
