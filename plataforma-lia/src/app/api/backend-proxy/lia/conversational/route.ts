@@ -1,49 +1,7 @@
-export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
-import { z } from 'zod'
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
-const _bodySchema = z.record(z.string(), z.unknown())
-
-export async function POST(request: NextRequest) {
-  try {
-    const bodyResult = await validateBody(request, _bodySchema)
-
-    if (!bodyResult.success) return bodyResult.response
-
-    const body = bodyResult.data
-    
-    const response = await fetch(`${BACKEND_URL}/api/v1/lia/conversational`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { 
-          response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
-          understood_intent: "fallback",
-          can_help: true
-        },
-        { status: 200 }
-      )
-    }
-
-    const data = await response.json()
-    return NextResponse.json(data)
-  } catch (error) {
-    return NextResponse.json(
-      { 
-        response: "Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:\n\n• **Criar uma nova vaga** do zero com toda inteligência da plataforma\n• **Reutilizar uma vaga anterior** para publicar rapidamente\n\nComo gostaria de começar?",
-        understood_intent: "fallback",
-        can_help: true
-      },
-      { status: 200 }
-    )
-  }
-}
+export const { dynamic, POST } = createProxyHandlers({
+  backendPath: "/api/v1/lia/conversational",
+  methods: ["POST"],
+  auth: false,
+})

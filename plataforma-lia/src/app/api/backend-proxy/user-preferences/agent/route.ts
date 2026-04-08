@@ -1,60 +1,7 @@
-export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
-import { z } from 'zod'
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
-// GET  /api/backend-proxy/user-preferences/agent  → GET  /api/v1/user-preferences/agent
-// POST /api/backend-proxy/user-preferences/agent  → POST /api/v1/user-preferences/agent
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const queryString = searchParams.toString()
-    const url = `${BACKEND_URL}/api/v1/user-preferences/agent${queryString ? `?${queryString}` : ''}`
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Erro ao buscar preferências do usuário' },
-        { status: response.status }
-      )
-    }
-
-    return NextResponse.json(await response.json())
-  } catch {
-    return NextResponse.json({ error: 'Erro interno ao buscar preferências' }, { status: 500 })
-  }
-}
-
-const _bodySchema = z.record(z.string(), z.unknown())
-
-export async function POST(request: NextRequest) {
-  try {
-    const bodyResult = await validateBody(request, _bodySchema)
-
-    if (!bodyResult.success) return bodyResult.response
-
-    const body = bodyResult.data
-    const response = await fetch(`${BACKEND_URL}/api/v1/user-preferences/agent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Erro ao salvar preferência de auto_confirm' },
-        { status: response.status }
-      )
-    }
-
-    return NextResponse.json(await response.json())
-  } catch {
-    return NextResponse.json({ error: 'Erro interno ao salvar preferência' }, { status: 500 })
-  }
-}
+export const { dynamic, GET, POST } = createProxyHandlers({
+  backendPath: "/api/v1/user-preferences/agent",
+  methods: ["GET", "POST"],
+  auth: false,
+})

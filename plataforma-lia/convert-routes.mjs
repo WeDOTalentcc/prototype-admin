@@ -33,18 +33,11 @@ function isAlreadyConverted(content) {
   return content.includes("createProxyHandlers");
 }
 
-function hasFormData(content) {
-  return /formData|FormData|multipart/i.test(content);
-}
-
-function hasCatchAll(relPath) {
-  return relPath.includes("[...");
-}
-
+function hasFormData(content) { return /formData|FormData|multipart/i.test(content); }
+function hasCatchAll(relPath) { return relPath.includes("[..."); }
 function hasCustomHeaders(content) {
   return content.includes("X-Company-ID") || content.includes("X-User-ID") || content.includes("X-Admin-Key");
 }
-
 function hasRealValidation(content) {
   if (!/(validateBody|validateQuery)/.test(content)) return false;
   const hasPassthrough = content.includes("z.record(z.string(), z.unknown())");
@@ -52,31 +45,33 @@ function hasRealValidation(content) {
   if (content.includes("validateBody") && !hasPassthrough) return true;
   return false;
 }
-
 function hasResponseTransform(content) {
   return /response\.text\(\)|Content-Disposition|text\/csv/.test(content);
 }
-
 function hasRequiredParamValidation(content) {
   return /if\s*\(\s*![a-zA-Z_]+\s*\)\s*\{[^}]*(?:status:\s*400|400\s*\))/.test(content);
 }
-
-function hasBodyToUrlTransform(content) {
-  const bodyDestructure = content.match(/const\s*\{([^}]+)\}\s*=\s*(?:body|await\s+request\.json\(\))/);
-  if (!bodyDestructure) return false;
-  const vars = bodyDestructure[1].split(",").map(v => v.trim().split(":")[0].trim().split("=")[0].trim());
-  for (const v of vars) {
-    if (content.match(new RegExp("(?:url|backendUrl|BACKEND_URL)[^;]*\\$\\{" + v + "\\}"))) return true;
-  }
-  return false;
-}
-
 function hasConditionalUrl(content) {
   return /let\s+url\s*=/.test(content) && /url\s*\+=/.test(content);
 }
-
 function hasSelectiveParamForwarding(content) {
   return /new\s+URLSearchParams\(\)/.test(content) && /\.(?:append|set)\(/.test(content);
+}
+function hasBodyTransformation(content) {
+  // Routes that build a custom body object before sending
+  // Pattern: body: JSON.stringify({ custom_key: someValue })
+  // (not just body: JSON.stringify(body))
+  const bodyStringify = content.match(/JSON\.stringify\(\s*\{/g);
+  if (bodyStringify && bodyStringify.length > 0) {
+    // Check if it's just JSON.stringify(body) or JSON.stringify({})
+    if (content.match(/JSON\.stringify\(\s*\{[^}]+:/)) {
+      // Has custom keys in the body
+      // But skip if it's just { sync_type: ... } pattern for simple proxying
+      // Actually, any custom body transformation means we can't use the proxy
+      return true;
+    }
+  }
+  return false;
 }
 
 function extractParamsFromRoute(relPath) {
@@ -95,26 +90,25 @@ function extractAllBackendPaths(content, relPath) {
   for (const match of urlDefs) {
     let path = match[1];
 
-    // Remove trailing query strings and template expressions for query/search params
-    // Handle: ?xxx, ${queryString}, ${searchParams}, ${params.toString()}, ${force ? '...' : ''}
-    // Strategy: find the FIRST occurrence of ? or ${ that looks like a query param appendage
-    // and chop everything after it
-
-    // First, handle explicit query strings
+    // Remove query string and trailing template expressions
     const qIdx = path.indexOf("?");
     if (qIdx >= 0) path = path.substring(0, qIdx);
-
-    // Handle ${xxx} at the end that are query-related
     path = path.replace(/\$\{(?:searchParams|queryString|params\.toString\(\)|query|qs|force|newName)[^}]*\}.*$/, "");
-
-    // Handle conditional expressions ${xxx ? yyy : zzz}
     path = path.replace(/\$\{[^}]*\?[^}]*:[^}]*\}$/g, "");
 
-    // Replace param interpolations
+    // Replace ${encodeURIComponent(xxx)} patterns
+    path = path.replace(/\$\{encodeURIComponent\((?:params\.)?(\w+)\)\}/g, (_, name) => {
+      if (routeParams.includes(name)) return ":" + name;
+      if (content.match(new RegExp("const\\s*\\{[^}]*\\b" + name + "\\b[^}]*\\}\\s*=\\s*(?:await\\s+)?params"))) {
+        return ":" + name;
+      }
+      return "UNKNOWN";
+    });
+
+    // Replace ${params.xxx} or ${xxx}
     let hasUnknownParam = false;
     path = path.replace(/\$\{(?:params\.|resolvedParams\.)?(\w+)\}/g, (_, name) => {
       if (routeParams.includes(name)) return ":" + name;
-      // Check if declared from await params
       if (content.match(new RegExp("const\\s*\\{[^}]*\\b" + name + "\\b[^}]*\\}\\s*=\\s*(?:await\\s+)?params"))) {
         return ":" + name;
       }
@@ -123,8 +117,6 @@ function extractAllBackendPaths(content, relPath) {
     });
 
     if (path.includes("UNKNOWN") || hasUnknownParam) continue;
-
-    // Remove any remaining ${...}
     if (/\$\{/.test(path)) continue;
 
     path = path.replace(/\/+/g, "/").replace(/\/$/, "");
@@ -135,8 +127,15 @@ function extractAllBackendPaths(content, relPath) {
 }
 
 function isValidPath(path) {
-  // Path should only contain alphanumeric, hyphens, underscores, colons (params), and slashes
   return /^\/[a-zA-Z0-9/:_-]+$/.test(path);
+}
+
+function verifyParamsInPath(backendPath, routeParams) {
+  // Every route param from the filesystem should appear in the backend path
+  for (const p of routeParams) {
+    if (!backendPath.includes(":" + p)) return false;
+  }
+  return true;
 }
 
 function generateConversion(backendPath, methods, auth) {
@@ -169,16 +168,17 @@ for (const file of routes) {
   if (hasResponseTransform(content)) { skipped.push({ file: relPath, reason: "response transform" }); continue; }
   if (hasCustomHeaders(content)) { skipped.push({ file: relPath, reason: "custom auth headers" }); continue; }
   if (hasRealValidation(content)) { skipped.push({ file: relPath, reason: "real Zod validation" }); continue; }
-  if (hasBodyToUrlTransform(content)) { skipped.push({ file: relPath, reason: "body-to-URL transform" }); continue; }
   if (hasConditionalUrl(content)) { skipped.push({ file: relPath, reason: "conditional URL" }); continue; }
   if (hasRequiredParamValidation(content)) { skipped.push({ file: relPath, reason: "required param check" }); continue; }
   if (hasSelectiveParamForwarding(content)) { skipped.push({ file: relPath, reason: "selective param forwarding" }); continue; }
+  if (hasBodyTransformation(content)) { skipped.push({ file: relPath, reason: "body transformation" }); continue; }
 
   const methods = extractMethods(content);
   if (methods.length === 0) { skipped.push({ file: relPath, reason: "no methods found" }); continue; }
 
   const auth = hasAuth(content);
   const backendPaths = extractAllBackendPaths(content, relPath);
+  const routeParams = extractParamsFromRoute(relPath);
 
   if (backendPaths.length === 0) {
     skipped.push({ file: relPath, reason: "cannot extract backend path" });
@@ -187,14 +187,20 @@ for (const file of routes) {
 
   const uniquePaths = [...new Set(backendPaths)];
   if (uniquePaths.length > 1) {
-    skipped.push({ file: relPath, reason: "multiple backend paths: " + uniquePaths.join(", ") });
+    skipped.push({ file: relPath, reason: "multiple backend paths" });
     continue;
   }
 
   const backendPath = uniquePaths[0];
 
   if (!isValidPath(backendPath)) {
-    skipped.push({ file: relPath, reason: "invalid path chars: " + backendPath });
+    skipped.push({ file: relPath, reason: "invalid path: " + backendPath });
+    continue;
+  }
+
+  // Verify all route params are in the backend path
+  if (!verifyParamsInPath(backendPath, routeParams)) {
+    skipped.push({ file: relPath, reason: "route params missing from backend path" });
     continue;
   }
 
@@ -237,7 +243,8 @@ console.log("\n=== SKIPPED (" + skipped.length + ") by reason ===");
 const reasons = {};
 for (const s of skipped) {
   const r = s.reason.startsWith("multiple backend") ? "multiple backend paths" :
-            s.reason.startsWith("invalid path") ? "invalid path chars" : s.reason;
+            s.reason.startsWith("invalid path") ? "invalid path" :
+            s.reason.startsWith("route params") ? "route params missing" : s.reason;
   reasons[r] = (reasons[r] || 0) + 1;
 }
 for (const [reason, count] of Object.entries(reasons).sort((a, b) => b[1] - a[1])) {

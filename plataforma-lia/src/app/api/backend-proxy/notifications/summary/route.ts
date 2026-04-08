@@ -1,24 +1,5 @@
-export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from "next/server"
-import { getAuthHeaders } from "@/lib/api/auth-headers"
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get("user_id") || "default_user"
-    
-    const response = await fetch(`${BACKEND_URL}/api/v1/notifications/summary?user_id=${userId}`, {
-      headers: getAuthHeaders(request),
-    })
-    
-    const data = await response.json()
-    return NextResponse.json(data)
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch notification summary" },
-      { status: 500 }
-    )
-  }
-}
+export const { dynamic, GET } = createProxyHandlers({
+  backendPath: "/api/v1/notifications/summary",
+})

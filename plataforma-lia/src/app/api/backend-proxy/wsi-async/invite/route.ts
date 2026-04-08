@@ -1,22 +1,7 @@
-export const dynamic = "force-dynamic"
-import { NextResponse } from "next/server";
-import { z } from 'zod'
+import { createProxyHandlers } from "@/lib/api/proxy-handler"
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
-
-const _bodySchema = z.record(z.string(), z.unknown())
-
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const res = await fetch(`${BACKEND_URL}/api/v1/wsi/async/invite`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch {
-    return NextResponse.json({ error: "Backend unavailable" }, { status: 503 });
-  }
-}
+export const { dynamic, POST } = createProxyHandlers({
+  backendPath: "/api/v1/wsi/async/invite",
+  methods: ["POST"],
+  auth: false,
+})

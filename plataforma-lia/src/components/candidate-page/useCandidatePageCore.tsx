@@ -420,7 +420,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
 
     fetchOpinionsHistory()
     fetchSavedAnalyses()
-  }, [candidate?.id])
+  }, [candidate?.id, companyId])
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "bg-wedo-green-pastel text-lia-text-primary"
