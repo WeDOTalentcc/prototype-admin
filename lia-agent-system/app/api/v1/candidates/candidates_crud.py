@@ -196,6 +196,10 @@ async def get_candidate(
 ):
     """Get a specific candidate by ID."""
     try:
+        try:
+            uuid.UUID(candidate_id)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Candidate not found")
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")

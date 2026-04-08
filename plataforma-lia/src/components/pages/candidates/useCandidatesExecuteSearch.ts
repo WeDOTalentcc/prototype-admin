@@ -399,17 +399,19 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
         const response = await liaApi.listCandidates(query, undefined, 0, 50)
 
         if (response.items?.length > 0) {
-          const searchLower = query.toLowerCase()
-          const filtered = response.items.filter((c: CandidateLocal) => {
-            return (
-              c.name?.toLowerCase().includes(searchLower) ||
-              c.current_title?.toLowerCase().includes(searchLower) ||
-              c.current_company?.toLowerCase().includes(searchLower) ||
-              c.location_city?.toLowerCase().includes(searchLower) ||
-              c.location_state?.toLowerCase().includes(searchLower) ||
-              c.technical_skills?.some((s: string) => s.toLowerCase().includes(searchLower))
-            )
-          })
+          const tokens = query.toLowerCase().split(/\s+/).filter((t: string) => t.length >= 2)
+          const filtered = tokens.length > 0
+            ? response.items.filter((c: CandidateLocal) =>
+                tokens.every((token: string) =>
+                  c.name?.toLowerCase().includes(token) ||
+                  c.current_title?.toLowerCase().includes(token) ||
+                  c.current_company?.toLowerCase().includes(token) ||
+                  c.location_city?.toLowerCase().includes(token) ||
+                  c.location_state?.toLowerCase().includes(token) ||
+                  c.technical_skills?.some((s: string) => s.toLowerCase().includes(token))
+                )
+              )
+            : response.items
 
           totalCount = filtered.length
           localCount = filtered.length

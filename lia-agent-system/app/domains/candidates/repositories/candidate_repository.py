@@ -71,18 +71,24 @@ class CandidateRepository:
             query = query.where(Candidate.id.in_(ids))
 
         if search:
+            from sqlalchemy import and_
             normalized = unicodedata.normalize("NFKD", search).encode("ASCII", "ignore").decode("ASCII")
-            term = f"%{normalized.lower()}%"
-            query = query.where(
-                or_(
-                    func.lower(func.unaccent(Candidate.name)).like(term),
-                    func.lower(func.unaccent(Candidate.current_title)).like(term),
-                    func.lower(func.unaccent(Candidate.current_company)).like(term),
-                    func.lower(func.unaccent(Candidate.location_city)).like(term),
-                    func.lower(func.unaccent(Candidate.location_state)).like(term),
-                    func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, " "))).like(term),
-                )
-            )
+            tokens = [t for t in normalized.lower().split() if len(t) >= 2]
+            if tokens:
+                token_conditions = []
+                for token in tokens:
+                    term = f"%{token}%"
+                    token_conditions.append(
+                        or_(
+                            func.lower(func.unaccent(Candidate.name)).like(term),
+                            func.lower(func.unaccent(Candidate.current_title)).like(term),
+                            func.lower(func.unaccent(Candidate.current_company)).like(term),
+                            func.lower(func.unaccent(Candidate.location_city)).like(term),
+                            func.lower(func.unaccent(Candidate.location_state)).like(term),
+                            func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, " "))).like(term),
+                        )
+                    )
+                query = query.where(and_(*token_conditions))
 
         if status:
             query = query.where(Candidate.status == status)
