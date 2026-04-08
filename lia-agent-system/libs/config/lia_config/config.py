@@ -147,6 +147,8 @@ class AuthSettings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # WorkOS
+    # Rails JWT shared secret (same as Rails secret_key_base)
+    RAILS_JWT_SECRET_KEY: Optional[str] = None
     WORKOS_CLIENT_ID: Optional[str] = None
     WORKOS_API_KEY: Optional[str] = None
     WORKOS_WEBHOOK_SECRET: Optional[str] = None

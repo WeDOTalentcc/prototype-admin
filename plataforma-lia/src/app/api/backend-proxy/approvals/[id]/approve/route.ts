@@ -4,4 +4,5 @@ export const { dynamic, PUT } = createProxyHandlers({
   backendPath: "/api/v1/approvals/:id/approve",
   methods: ["PUT"],
   auth: true,
+  backendTarget: "rails",
 })

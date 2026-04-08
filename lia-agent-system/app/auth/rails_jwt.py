@@ -85,3 +85,18 @@ async def resolve_company_from_rails_user(
     except Exception as e:
         logger.warning("[RailsJWT] Failed to resolve company: %s", e)
         return None
+
+
+def get_rails_jwt_secret() -> str | None:
+    """Return the Rails JWT secret from settings (RAILS_JWT_SECRET_KEY env var)."""
+    from app.core.config import settings
+    return getattr(settings, "RAILS_JWT_SECRET_KEY", None)
+
+
+def validate_rails_token_from_env(token: str) -> RailsTokenPayload | None:
+    """Convenience: validate a Rails JWT using the configured env var secret."""
+    secret = get_rails_jwt_secret()
+    if not secret:
+        logger.warning("[RailsJWT] RAILS_JWT_SECRET_KEY not configured")
+        return None
+    return validate_rails_token(token, secret)

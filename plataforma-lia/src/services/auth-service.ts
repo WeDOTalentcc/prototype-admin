@@ -3,7 +3,7 @@ const SESSION_API_URL = '/api/auth/session'
 const WORKOS_SSO_URL = '/api/auth/workos/sso'
 const WORKOS_SESSION_URL = '/api/auth/workos/session'
 
-export type AuthMethod = 'jwt' | 'sso'
+export type AuthMethod = 'jwt' | 'sso' | 'dev-auto-login'
 
 export interface User {
   id: string

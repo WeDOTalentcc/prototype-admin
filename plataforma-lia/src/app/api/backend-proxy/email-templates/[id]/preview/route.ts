@@ -4,4 +4,5 @@ export const { dynamic, POST } = createProxyHandlers({
   backendPath: "/api/v1/email-templates/:id/preview",
   methods: ["POST"],
   auth: true,
+  backendTarget: "rails",
 })

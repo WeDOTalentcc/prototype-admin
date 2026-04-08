@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
+const RAILS_BACKEND_URL = process.env.RAILS_BACKEND_URL || ""
 
 type BackendTarget = "fastapi" | "rails"
 
@@ -23,7 +24,7 @@ interface ProxyConfig<M extends HttpMethod> {
   methods?: M[]
   /** Whether to forward auth headers via getAuthHeaders. Defaults to true */
   auth?: boolean
-  /** Backend target for future Rails migration. Defaults to "fastapi" */
+  /** Backend target for Rails migration. Defaults to "fastapi". When "rails" AND RAILS_BACKEND_URL is set, routes to Rails. */
   backendTarget?: BackendTarget
   /** Default query params appended to every request */
   defaultParams?: Record<string, string>
@@ -40,6 +41,13 @@ function resolvePath(
     resolved = resolved.replace(":" + key, encodeURIComponent(value))
   }
   return resolved
+}
+
+function resolveBackendUrl(target: BackendTarget): string {
+  if (target === "rails" && RAILS_BACKEND_URL) {
+    return RAILS_BACKEND_URL
+  }
+  return BACKEND_URL
 }
 
 /**
@@ -69,6 +77,13 @@ function resolvePath(
  *     backendPath: "/api/v1/items",
  *     onResponse: (data) => (data as any).items ?? [],
  *   })
+ *
+ * Usage (Rails-targeted CRUD):
+ *   export const { dynamic, GET, POST } = createProxyHandlers({
+ *     backendPath: "/api/v1/candidates",
+ *     methods: ["GET", "POST"],
+ *     backendTarget: "rails",
+ *   })
  */
 export function createProxyHandlers<M extends HttpMethod = "GET">(
   config: ProxyConfig<M>
@@ -77,7 +92,7 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
     backendPath,
     methods = ["GET"] as unknown as M[],
     auth = true,
-    backendTarget: _backendTarget = "fastapi",
+    backendTarget = "fastapi",
     defaultParams,
     onResponse,
   } = config
@@ -109,7 +124,8 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
         }
 
         const queryString = searchParams.toString()
-        const url = BACKEND_URL + resolvedPath + (queryString ? "?" + queryString : "")
+        const baseUrl = resolveBackendUrl(backendTarget)
+        const url = baseUrl + resolvedPath + (queryString ? "?" + queryString : "")
 
         const headers: HeadersInit = auth
           ? getAuthHeaders(request)

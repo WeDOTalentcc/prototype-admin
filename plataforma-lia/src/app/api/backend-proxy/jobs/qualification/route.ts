@@ -4,4 +4,5 @@ export const { dynamic, POST } = createProxyHandlers({
   backendPath: "/api/v1/jobs/qualification/classify",
   methods: ["POST"],
   auth: true,
+  backendTarget: "rails",
 })

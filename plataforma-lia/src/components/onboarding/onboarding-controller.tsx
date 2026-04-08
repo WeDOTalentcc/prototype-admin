@@ -47,11 +47,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   const [userData, setUserData] = useState<UserData | null>(null)
 
-  const [isDevMode, setIsDevMode] = useState(false)
-
-  useEffect(() => {
-    setIsDevMode(process.env.NODE_ENV !== 'production')
-  }, [])
+  const [isDevMode, setIsDevMode] = useState(process.env.NODE_ENV !== 'production')
 
   useEffect(() => {
     const storeState = useOnboardingStore.getState()
@@ -82,23 +78,19 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   useEffect(() => {
     if (isDevMode && !userData) {
-      const timeout = setTimeout(() => {
-        if (userData) return
-        const fallbackUser: UserData = {
-          id: 'dev-auto',
-          name: 'Demo User',
-          email: 'demo@wedotalent.com',
-          role: 'recruiter',
-          companyId: 'demo_company',
-          companyName: 'WeDO Talent',
-          isFirstAccess: false,
-          permissions: [],
-          createdAt: new Date().toISOString(),
-        }
-        setUserData(fallbackUser)
-        onboardingStore.setUserData(fallbackUser as unknown as Record<string, unknown>)
-      }, 500)
-      return () => clearTimeout(timeout)
+      const fallbackUser: UserData = {
+        id: 'dev-auto',
+        name: 'Demo User',
+        email: 'demo@wedotalent.com',
+        role: 'recruiter',
+        companyId: 'demo_company',
+        companyName: 'WeDO Talent',
+        isFirstAccess: false,
+        permissions: [],
+        createdAt: new Date().toISOString(),
+      }
+      setUserData(fallbackUser)
+      onboardingStore.setUserData(fallbackUser as unknown as Record<string, unknown>)
     }
   }, [isDevMode, userData, onboardingStore])
 
@@ -206,7 +198,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
     )
   }
 
-  if (userData) {
+  if (userData || isDevMode) {
     return <>{children}</>
   }
 

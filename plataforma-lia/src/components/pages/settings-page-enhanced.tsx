@@ -16,7 +16,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
 } from "lucide-react"
 import dynamic from "next/dynamic"
 import { LoadingFallback } from "@/components/ui/loading"
@@ -26,6 +26,7 @@ const CommunicationHub = dynamic(() => import("@/components/settings/Communicati
 const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando metas..." /> })
 const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando busca..." /> })
 const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
+const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
@@ -167,6 +168,21 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'communication', title: 'Comunicação', description: 'Teams, WhatsApp, Email/SMTP', fields: ['communication_integrations'] },
       { id: 'crm-hris', title: 'CRM & HRIS', description: 'Salesforce, SAP, Workday', fields: ['crm_hris_integrations'] },
       { id: 'mcps-apis', title: 'MCPs & APIs', description: 'Webhooks e API REST', fields: ['api_integrations'] },
+    ]
+  },
+  {
+    id: 'fairness-compliance',
+    title: 'Fairness & Compliance',
+    description: 'Monitoramento de equidade e conformidade da IA',
+    icon: Shield,
+    status: 'completed',
+    priority: 'medium',
+    category: 'advanced',
+    estimatedTime: 5,
+    subsections: [
+      { id: 'dashboard', title: 'Dashboard', description: 'Visão geral de fairness', fields: ['fairness_summary'] },
+      { id: 'audit-log', title: 'Auditoria', description: 'Log de eventos de compliance', fields: ['audit_log'] },
+      { id: 'export', title: 'Exportar', description: 'Relatórios para auditores', fields: ['export_reports'] },
     ]
   },
 ]
@@ -426,6 +442,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <IntegrationsHub activeSubsection={activeSubsection} />
+          </ErrorBoundarySection>
+        )
+      case 'fairness-compliance':
+        return (
+          <ErrorBoundarySection>
+            <FairnessComplianceHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
       default:

@@ -132,6 +132,33 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  if (DEV_AUTO_LOGIN) {
+    const token = await getDevToken()
+    if (token) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('Authorization', `Bearer ${token}`)
+
+      const response = NextResponse.next({ request: { headers: requestHeaders } })
+
+      response.cookies.set('lia_access_token', token, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        secure: false,
+        sameSite: 'lax' as const,
+        httpOnly: true,
+      })
+      response.cookies.set('lia_auth_method', 'dev-auto-login', {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        secure: false,
+        sameSite: 'lax' as const,
+        httpOnly: false,
+      })
+
+      return response
+    }
+  }
+
   const accessTokenCookie = request.cookies.get('lia_access_token')
   const workosSessionCookie = request.cookies.get('workos_session')
 
@@ -155,14 +182,6 @@ export async function middleware(request: NextRequest) {
   if (accessTokenCookie && accessTokenCookie.value !== '_sso_session_') {
     const token = accessTokenCookie.value
 
-    if (DEV_AUTO_LOGIN) {
-      const requestHeaders = new Headers(request.headers)
-      if (!requestHeaders.get('Authorization')) {
-        requestHeaders.set('Authorization', `Bearer ${token}`)
-      }
-      return NextResponse.next({ request: { headers: requestHeaders } })
-    }
-
     const payload = await verifyJwt(token)
     if (!payload) {
       return denyAccess(request, pathname)
@@ -176,33 +195,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({
       request: { headers: requestHeaders },
     })
-  }
-
-  if (DEV_AUTO_LOGIN) {
-    const token = await getDevToken()
-    if (token) {
-      const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('Authorization', `Bearer ${token}`)
-
-      const response = NextResponse.next({ request: { headers: requestHeaders } })
-
-      response.cookies.set('lia_access_token', token, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-        secure: true,
-        sameSite: 'none' as const,
-        httpOnly: true,
-      })
-      response.cookies.set('lia_auth_method', 'jwt', {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-        secure: true,
-        sameSite: 'none' as const,
-        httpOnly: false,
-      })
-
-      return response
-    }
   }
 
   return denyAccess(request, pathname)

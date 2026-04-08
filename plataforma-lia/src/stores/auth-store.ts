@@ -115,12 +115,12 @@ export const useAuthStore = create<AuthStore>()(
           } catch {
             set({ user: null, authMethod: null, isAuthenticated: false, isSSO: false }, false, 'auth/refreshUser/sso-error')
           }
-        } else if (currentAuthMethod === 'jwt' || authService.isJWTAuthenticated()) {
+        } else if (currentAuthMethod === 'jwt' || currentAuthMethod === 'dev-auto-login' || authService.isJWTAuthenticated()) {
           try {
             const userData = await authService.getMe()
             set({
               user: userData,
-              authMethod: 'jwt',
+              authMethod: currentAuthMethod as AuthMethod,
               isAuthenticated: true,
               isSSO: false,
             }, false, 'auth/refreshUser/jwt')
@@ -152,16 +152,21 @@ export const useAuthStore = create<AuthStore>()(
           } catch {
             await authService.clearTokens()
           }
-        } else if (authService.isJWTAuthenticated()) {
+        } else if (authService.isJWTAuthenticated() || currentAuthMethod === 'dev-auto-login') {
+          const isDevLogin = currentAuthMethod === 'dev-auto-login'
           try {
             const userData = await authService.getMe()
             set({
               user: userData,
-              authMethod: 'jwt',
+              authMethod: isDevLogin ? 'dev-auto-login' as AuthMethod : 'jwt',
               isAuthenticated: true,
               isSSO: false,
             }, false, 'auth/init/jwt')
           } catch {
+            if (isDevLogin) {
+              set({ isLoading: false }, false, 'auth/init/dev-skip')
+              return
+            }
             try {
               await authService.refreshToken()
               const userData = await authService.getMe()
