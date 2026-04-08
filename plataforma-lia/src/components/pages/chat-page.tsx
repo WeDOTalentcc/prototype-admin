@@ -311,10 +311,10 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
               <div className="mb-6">
                 <div className="flex flex-col items-center text-center gap-3 mb-6">
                   <div>
-                    <h1 className="text-xl text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
-                      <Brain className="w-8 h-8 text-wedo-cyan" />
+                    <h1 className="text-base-ui text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
+                      <Brain className="w-5 h-5 text-wedo-cyan" />
                       <span className="font-normal text-lia-text-secondary">Oi, eu sou a</span>
-                      <span className="font-bold text-2xl text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
+                      <span className="font-bold text-lia-text-primary tracking-normal">LIA.</span>
                     </h1>
                     <p className="text-lia-text-secondary mt-1 text-base-ui font-medium">Como posso ajudar você hoje?</p>
                   </div>
