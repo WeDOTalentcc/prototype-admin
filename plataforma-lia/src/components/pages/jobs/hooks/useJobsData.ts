@@ -43,6 +43,8 @@ export function useJobsData(): UseJobsDataReturn {
     setHasMounted(true)
   }, [])
 
+  const retryCount = useRef(0)
+
   const loadBackendJobs = async () => {
     if (!hasMounted) return
     try {
@@ -204,6 +206,11 @@ export function useJobsData(): UseJobsDataReturn {
         setIsLoadingStats(false)
       }
     } catch (error) {
+      if (retryCount.current < 2) {
+        retryCount.current += 1
+        setTimeout(() => loadBackendJobs(), 2000 * retryCount.current)
+        return
+      }
       setJobsError(error instanceof Error ? error.message : 'Failed to load jobs')
       setIsLoadingStats(false)
       setIsLoadingJobs(false)
@@ -212,6 +219,7 @@ export function useJobsData(): UseJobsDataReturn {
 
   useEffect(() => {
     if (!hasMounted) return
+    retryCount.current = 0
     loadBackendJobs()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMounted, jobsRefreshKey])

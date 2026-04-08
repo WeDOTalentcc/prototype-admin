@@ -32,15 +32,23 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
 
   const url = `${BACKEND_URL}/job-vacancies?${params}`
 
-  const response = await fetch(url, {
-    headers: getAuthHeaders(),
-  })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30000)
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch job vacancies: ${response.statusText}`)
+  try {
+    const response = await fetch(url, {
+      headers: getAuthHeaders(),
+      signal: controller.signal,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch job vacancies: ${response.statusText}`)
+    }
+
+    return response.json()
+  } finally {
+    clearTimeout(timeout)
   }
-
-  return response.json()
 }
 
 export async function getJobVacancy(id: string): Promise<JobVacancy> {
@@ -376,7 +384,7 @@ export async function getJobVacanciesOverview(recruiterEmail?: string): Promise<
   if (recruiterEmail) params.set('recruiter_email', recruiterEmail)
 
   const queryString = params.toString()
-  const url = `${BACKEND_URL}/job-vacancies/stats/overview/${queryString ? `?${queryString}` : ''}`
+  const url = `${BACKEND_URL}/job-vacancies/stats/overview${queryString ? `?${queryString}` : ''}`
 
   const response = await fetch(url, {
     headers: getAuthHeaders(),
