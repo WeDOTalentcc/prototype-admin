@@ -38,7 +38,12 @@ from app.orchestrator.context_adapter import UniversalContext
 from app.orchestrator.pending_action import pending_action_store
 from app.services.tenant_context_service import TenantContextService
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.robustness.security_patterns import check_input_security, get_block_response
 from app.shared.memory.candidate_list_store import candidate_list_store
+
+# Multi-tenant LLM provider injection
+from app.shared.providers.llm_factory import get_provider_for_tenant
+from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +158,25 @@ class MainOrchestrator:
         conv_id = ctx.conversation_id or str(uuid.uuid4())
 
         try:
+            # ── Pré-check SecurityPatterns — antes de qualquer processamento ──
+            message_text = ctx.message or ""
+            _security_result = check_input_security(message_text)
+            if _security_result.is_blocked:
+                logger.warning(
+                    "[MainOrchestrator] SecurityPatterns blocked input: "
+                    "user=%s company=%s risk=%s categories=%s",
+                    ctx.user_id, ctx.company_id,
+                    _security_result.risk_level, _security_result.threat_categories,
+                )
+                return ChatResponse(
+                    success=False,
+                    content=get_block_response(_security_result, language="pt"),
+                    agent_used="security_patterns",
+                    confidence=_security_result.confidence,
+                    intent_detected="blocked_security",
+                    conversation_id=conv_id,
+                )
+
             # ── Pré-check FairnessGuard — antes de qualquer fase de processamento ──
             message_text = ctx.message or ""
             _fairness_result = self._fairness_guard.check(message_text)
@@ -457,24 +481,64 @@ class MainOrchestrator:
             logger.debug("[MainOrchestrator] ConversationMemory setup skipped: %s", _mem_exc)
             conv = None
 
+        # ── Tenant-aware LLM provider injection ───────────────────
+        # Resolve tenant LLM config and temporarily set the provider container
+        # on the orchestrator's llm_service. Falls back to global if no config.
+        _llm_svc = getattr(self._orchestrator, "llm_service", None)
+        _original_container = getattr(_llm_svc, "_tenant_container", None) if _llm_svc else None
+        _original_tenant = getattr(_llm_svc, "_current_tenant", "") if _llm_svc else ""
+        _tenant_id = str(ctx.company_id) if ctx.company_id else get_current_llm_tenant()
+
+        if _tenant_id and _llm_svc:
+            try:
+                _tenant_config = await get_tenant_llm_config(_tenant_id)
+                if _tenant_config:
+                    _container = get_provider_for_tenant(
+                        tenant_id=_tenant_id,
+                        primary_provider=_tenant_config.get("primary_provider"),
+                        fallback_order=_tenant_config.get("fallback_order"),
+                    )
+                    _llm_svc._tenant_container = _container
+                    _llm_svc._current_tenant = _tenant_id
+                    logger.info(
+                        "[MainOrchestrator] Tenant LLM provider set: tenant=%s primary=%s",
+                        _tenant_id, _container.primary_provider,
+                    )
+                else:
+                    logger.debug(
+                        "[MainOrchestrator] No tenant LLM config for %s — using global",
+                        _tenant_id,
+                    )
+            except Exception as _tenant_exc:
+                logger.debug(
+                    "[MainOrchestrator] Tenant LLM resolution failed for %s: %s — using global",
+                    _tenant_id, _tenant_exc,
+                )
+
         # ── Roteamento + execução de domínio ──
         # Try process_request_with_memory first (full DB-backed flow);
         # fall back to process_request if the result is not a dict
         # (handles test mocks that only configure process_request).
-        result = await self._orchestrator.process_request_with_memory(
-            db,
-            user_id=ctx.user_id,
-            message=ctx.message,
-            conversation_id=conv_id,
-            context=orchestrator_context,
-        )
-        if not isinstance(result, dict):
-            result = await self._orchestrator.process_request(
+        try:
+            result = await self._orchestrator.process_request_with_memory(
+                db,
                 user_id=ctx.user_id,
                 message=ctx.message,
                 conversation_id=conv_id,
                 context=orchestrator_context,
             )
+            if not isinstance(result, dict):
+                result = await self._orchestrator.process_request(
+                    user_id=ctx.user_id,
+                    message=ctx.message,
+                    conversation_id=conv_id,
+                    context=orchestrator_context,
+                )
+        finally:
+            # Always restore original LLM service state (backward compatible)
+            if _llm_svc:
+                _llm_svc._tenant_container = _original_container
+                _llm_svc._current_tenant = _original_tenant
 
         # ── Persistir resposta na memória + commit ──
         try:
@@ -532,10 +596,10 @@ class MainOrchestrator:
                 from app.shared.compliance.audit_service import AuditService
                 _audit_svc = AuditService()
                 await _audit_svc.log_output(
-                    company_id=company_id,
+                    company_id=str(ctx.company_id or ""),
                     session_id=conv_id,
                     agent_used=result.get("agent_used", "unknown"),
-                    input_text=message,
+                    input_text=ctx.message or "",
                     output_text=result.get("content") or result.get("message", ""),
                     action_executed=result.get("action_executed"),
                     candidate_id=result.get("candidate_id"),

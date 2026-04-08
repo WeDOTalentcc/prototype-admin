@@ -4,6 +4,10 @@ Prompt Injection Protection - Guards against adversarial inputs.
 Detects and blocks common prompt injection patterns in user messages
 before they reach LLM processing. Provides sanitization and detection.
 
+CONSOLIDATED: This module now delegates to the canonical security engine
+in app.shared.robustness.security_patterns. The PromptInjectionGuard class
+and InjectionCheckResult dataclass are preserved for backward compatibility.
+
 Usage:
     from app.shared.prompt_injection import PromptInjectionGuard
     
@@ -20,11 +24,17 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from app.shared.robustness.security_patterns import (
+    check_input_security,
+    SecurityCheckResult,
+)
+
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class InjectionCheckResult:
+    """Backward-compatible result wrapper over SecurityCheckResult."""
     is_suspicious: bool
     risk_level: str = "none"
     matched_patterns: list[str] = field(default_factory=list)
@@ -33,81 +43,27 @@ class InjectionCheckResult:
     confidence: float = 0.0
 
 
-INJECTION_PATTERNS = [
-    {
-        "name": "system_prompt_override",
-        "patterns": [
-            re.compile(r"ignore\s+(all\s+)?previous\s+instructions", re.IGNORECASE),
-            re.compile(r"ignore\s+(all\s+)?above\s+instructions", re.IGNORECASE),
-            re.compile(r"disregard\s+(all\s+)?previous", re.IGNORECASE),
-            re.compile(r"forget\s+(all\s+)?previous", re.IGNORECASE),
-            re.compile(r"ignore\s+tudo\s+anterior", re.IGNORECASE),
-            re.compile(r"desconsidere?\s+(todas?\s+)?instru[çc][õo]es", re.IGNORECASE),
-        ],
-        "risk": "high",
-        "confidence": 0.9,
-    },
-    {
-        "name": "role_manipulation",
-        "patterns": [
-            re.compile(r"you\s+are\s+now\s+(a|an)\s+", re.IGNORECASE),
-            re.compile(r"act\s+as\s+(a|an)\s+", re.IGNORECASE),
-            re.compile(r"pretend\s+(to\s+be|you\s+are)", re.IGNORECASE),
-            re.compile(r"voc[êe]\s+agora\s+[ée]\s+(um|uma)", re.IGNORECASE),
-            re.compile(r"finja\s+(ser|que)", re.IGNORECASE),
-            re.compile(r"assuma\s+o\s+papel", re.IGNORECASE),
-        ],
-        "risk": "high",
-        "confidence": 0.85,
-    },
-    {
-        "name": "system_prompt_extraction",
-        "patterns": [
-            re.compile(r"(show|reveal|print|display)\s+(me\s+)?(your|the)\s+system\s+prompt", re.IGNORECASE),
-            re.compile(r"what\s+(is|are)\s+your\s+(system\s+)?instructions", re.IGNORECASE),
-            re.compile(r"(mostre|revele|exiba)\s+(seu\s+)?prompt\s+d[eo]\s+sistema", re.IGNORECASE),
-            re.compile(r"quais?\s+s[ãa]o\s+suas?\s+instru[çc][õo]es", re.IGNORECASE),
-        ],
-        "risk": "medium",
-        "confidence": 0.8,
-    },
-    {
-        "name": "delimiter_injection",
-        "patterns": [
-            re.compile(r"```system", re.IGNORECASE),
-            re.compile(r"\[SYSTEM\]", re.IGNORECASE),
-            re.compile(r"<\|?system\|?>", re.IGNORECASE),
-            re.compile(r"###\s*SYSTEM", re.IGNORECASE),
-            re.compile(r"<\|?im_start\|?>", re.IGNORECASE),
-        ],
-        "risk": "high",
-        "confidence": 0.95,
-    },
-    {
-        "name": "data_exfiltration",
-        "patterns": [
-            re.compile(r"(send|post|fetch|curl)\s+.*(http|url|api|endpoint)", re.IGNORECASE),
-            re.compile(r"(envie|mande|poste)\s+.*(http|url|api|endpoint)", re.IGNORECASE),
-            re.compile(r"(base64|encode|decrypt|hexadecimal)", re.IGNORECASE),
-        ],
-        "risk": "medium",
-        "confidence": 0.7,
-    },
-    {
-        "name": "jailbreak_attempt",
-        "patterns": [
-            re.compile(r"(DAN|do\s+anything\s+now)", re.IGNORECASE),
-            re.compile(r"developer\s+mode", re.IGNORECASE),
-            re.compile(r"(bypass|circumvent|override)\s+.*(filter|guard|safety|restriction)", re.IGNORECASE),
-        ],
-        "risk": "high",
-        "confidence": 0.9,
-    },
-]
+def _to_injection_result(sec: SecurityCheckResult, sanitized: str = "") -> InjectionCheckResult:
+    """Convert canonical SecurityCheckResult to legacy InjectionCheckResult."""
+    return InjectionCheckResult(
+        is_suspicious=sec.is_blocked,
+        risk_level=sec.risk_level,
+        matched_patterns=sec.matched_pattern_names,
+        original_input=sec.original_input,
+        sanitized_input=sanitized or sec.original_input,
+        confidence=sec.confidence,
+    )
 
 
 class PromptInjectionGuard:
-    def __init__(self):
+    """
+    Prompt injection guard — delegates to security_patterns.check_input_security().
+
+    Preserves the original class API (check, sanitize, get_stats) so all existing
+    callers (agent_chat_ws.py, wsi_interview_graph.py, compliance_base.py) keep working.
+    """
+
+    def __init__(self) -> None:
         self._total_checks = 0
         self._total_blocks = 0
 
@@ -117,44 +73,19 @@ class PromptInjectionGuard:
         if not user_input or not user_input.strip():
             return InjectionCheckResult(
                 is_suspicious=False,
-                original_input=user_input,
-                sanitized_input=user_input,
+                original_input=user_input or "",
+                sanitized_input=user_input or "",
             )
 
-        matched_patterns = []
-        max_confidence = 0.0
-        max_risk = "none"
+        sec_result = check_input_security(user_input)
 
-        risk_priority = {"none": 0, "low": 1, "medium": 2, "high": 3}
-
-        for category in INJECTION_PATTERNS:
-            for pattern in category["patterns"]:
-                if pattern.search(user_input):
-                    matched_patterns.append(category["name"])
-                    max_confidence = max(max_confidence, category["confidence"])
-                    if risk_priority.get(category["risk"], 0) > risk_priority.get(max_risk, 0):
-                        max_risk = category["risk"]
-                    break
-
-        is_suspicious = len(matched_patterns) > 0
-
-        if is_suspicious:
+        if sec_result.is_blocked:
             self._total_blocks += 1
-            logger.warning(
-                f"[PROMPT-INJECTION] Suspicious input detected: "
-                f"patterns={matched_patterns}, risk={max_risk}, "
-                f"confidence={max_confidence:.2f}, "
-                f"input_preview='{user_input[:80]}...'"
-            )
+            sanitized = self.sanitize(user_input)
+        else:
+            sanitized = user_input
 
-        return InjectionCheckResult(
-            is_suspicious=is_suspicious,
-            risk_level=max_risk,
-            matched_patterns=matched_patterns,
-            original_input=user_input,
-            sanitized_input=self.sanitize(user_input) if is_suspicious else user_input,
-            confidence=max_confidence,
-        )
+        return _to_injection_result(sec_result, sanitized)
 
     def sanitize(self, user_input: str) -> str:
         sanitized = user_input

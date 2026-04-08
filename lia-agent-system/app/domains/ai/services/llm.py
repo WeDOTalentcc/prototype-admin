@@ -71,6 +71,9 @@ class LLMService:
         self._claude_client: ChatAnthropic | None = None
         self._openai_client: ChatOpenAI | None = None
         self._gemini_client = None
+        # Multi-tenant LLM routing — set by MainOrchestrator per request
+        self._tenant_container = None  # ProviderContainer | None
+        self._current_tenant: str = ""
     
     @property
     def gemini_native(self):
@@ -201,6 +204,25 @@ class LLMService:
                 )
         except Exception:
             pass  # Audit is non-blocking
+
+        # ── Multi-tenant provider routing ──
+        # If a tenant ProviderContainer is active, delegate to it instead
+        # of using the global provider clients. This enables per-tenant
+        # API keys, models, and fallback chains.
+        if self._tenant_container is not None:
+            try:
+                tenant_provider = self._tenant_container.get(provider)
+                if system_prompt := kwargs.pop("system", None):
+                    result = await tenant_provider.generate_with_system(system_prompt, prompt, **kwargs)
+                else:
+                    result = await tenant_provider.generate(prompt, **kwargs)
+                return result.text
+            except Exception as _tenant_exc:
+                logger.warning(
+                    "[LLMService] Tenant provider failed (tenant=%s, provider=%s): %s — falling back to global",
+                    self._current_tenant, provider, _tenant_exc,
+                )
+                # Fall through to global provider
 
         if provider == "gemini":
             return await self.generate_with_gemini(prompt, model=model)

@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lia_models.candidate import Candidate
 from app.schemas.cv_parser import DuplicateCheck, Education, Experience, ParsedCV
 from app.services.llm import LLMService
+from app.shared.robustness.document_scanner import scan_document
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,11 @@ class CVParserService:
                     detail="Could not extract enough text from file. The file may be empty, corrupted, or image-based."
                 )
             
+            # Scan document for injection payloads before AI processing
+            scan_result = scan_document(text)
+            if scan_result.threats:
+                logger.warning("CV document scan threats: %s", scan_result.threats)
+            text = scan_result.sanitized_text
             parsed_cv = await self.extract_with_ai(text)
             
             parsed_cv.file_name = file.filename

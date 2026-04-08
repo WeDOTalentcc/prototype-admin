@@ -1,8 +1,6 @@
 import uuid as uuid_lib
 from datetime import datetime
-from typing import (
-    Any,  # noqa: F401
-    )
+from typing import Any, Union
 from uuid import UUID
 
 from pydantic import ConfigDict, Field
@@ -39,9 +37,9 @@ class JobVacancyDetailResponse(BaseModel):
     status: str | None = None
     is_confidential: bool | None = None
     salary_range: dict | None = None
-    technical_requirements: list[str] | None = None
-    languages: list[str] | None = None
-    behavioral_competencies: list[str] | None = None
+    technical_requirements: list[Union[str, dict]] | None = None
+    languages: list[Union[str, dict]] | None = None
+    behavioral_competencies: list[Union[str, dict]] | None = None
     interview_stages: list[dict] | None = None
     screening_questions: list[dict] | None = None
     disabled_eligibility_question_ids: list[str] = []
@@ -57,6 +55,7 @@ class JobVacancyDetailResponse(BaseModel):
 
 class JobVacancyListItemResponse(BaseModel):
     """Single item in list response for GET /job-vacancies."""
+    model_config = ConfigDict(extra='allow')
     id: str
     title: str | None = None
     department: str | None = None
@@ -65,12 +64,12 @@ class JobVacancyListItemResponse(BaseModel):
     employment_type: str | None = None
     seniority_level: str | None = None
     description: str | None = None
-    requirements: list[str] = []
-    technical_requirements: list[str] = []
-    languages: list[str] = []
-    behavioral_competencies: list[str] = []
+    requirements: list[Union[str, dict]] = []
+    technical_requirements: list[Union[str, dict]] = []
+    languages: list[Union[str, dict]] = []
+    behavioral_competencies: list[Union[str, dict]] = []
     salary_range: dict | None = None
-    benefits: list[str] = []
+    benefits: list[Union[str, dict]] = []
     manager: str | None = None
     status: str | None = None
     visibility: str | None = None

@@ -7,6 +7,8 @@ Provides tools for:
   3. create_and_screen_candidate — end-to-end: parse CV text → create → add to vacancy → BARS score
 """
 import logging
+
+from app.shared.robustness.document_scanner import scan_document
 import uuid
 from datetime import date, datetime
 from typing import Any
@@ -76,6 +78,10 @@ async def parse_and_create_candidate(
                 return self._content
 
         parser = CVParserService()
+        scan_result = scan_document(cv_text)
+        if scan_result.threats:
+            logger.warning("CV upload tool scan threats: %s", scan_result.threats)
+        cv_text = scan_result.sanitized_text
         parsed = await parser.extract_with_ai(cv_text)
 
         # ----------------------------------------------------------------

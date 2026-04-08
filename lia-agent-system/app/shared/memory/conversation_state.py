@@ -1,4 +1,7 @@
 import logging
+import os
+import time
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -7,6 +10,9 @@ logger = logging.getLogger(__name__)
 MAX_CANDIDATES_SHOWN = 20
 MAX_DETAILED_HISTORY = 10
 MAX_SHORTLIST = 50
+
+_DEFAULT_TTL_SECONDS = 1800  # 30 minutes
+_DEFAULT_MAX_SIZE = 1000
 
 
 @dataclass
@@ -173,3 +179,97 @@ class ConversationState:
     def reset_pagination(self) -> None:
         """Reseta o cursor de paginação (nova busca)."""
         self.pagination_cursor = 0
+
+
+class ConversationStateStore:
+    """In-memory LRU store for ConversationState with TTL-based expiration.
+
+    Prevents unbounded memory growth in long-running processes by evicting
+    entries that exceed the TTL or the max-size cap.
+
+    Configuration via environment variables:
+        CONVERSATION_STATE_TTL_SECONDS  — default 1800 (30 min)
+        CONVERSATION_STATE_MAX_SIZE     — default 1000
+    """
+
+    def __init__(
+        self,
+        ttl_seconds: int | None = None,
+        max_size: int | None = None,
+    ) -> None:
+        self.ttl_seconds: int = ttl_seconds or int(
+            os.environ.get("CONVERSATION_STATE_TTL_SECONDS", _DEFAULT_TTL_SECONDS)
+        )
+        self.max_size: int = max_size or int(
+            os.environ.get("CONVERSATION_STATE_MAX_SIZE", _DEFAULT_MAX_SIZE)
+        )
+        # OrderedDict for LRU: most-recently-used at the end
+        self._entries: OrderedDict[str, tuple[ConversationState, float]] = OrderedDict()
+        self._op_count: int = 0
+        self._cleanup_interval: int = 100
+
+    # -- public API (matches dict-like usage) --------------------------------
+
+    def get(self, conversation_id: str) -> ConversationState | None:
+        """Return the state for *conversation_id*, or None if missing/expired."""
+        self._tick()
+        entry = self._entries.get(conversation_id)
+        if entry is None:
+            return None
+        state, created_at = entry
+        if self._is_expired(created_at):
+            del self._entries[conversation_id]
+            logger.debug("ConversationStateStore: evicted expired key=%s", conversation_id)
+            return None
+        # Move to end (most-recently-used)
+        self._entries.move_to_end(conversation_id)
+        return state
+
+    def set(self, conversation_id: str, state: ConversationState) -> None:
+        """Store or replace the state for *conversation_id*."""
+        self._tick()
+        if conversation_id in self._entries:
+            self._entries.move_to_end(conversation_id)
+        self._entries[conversation_id] = (state, time.monotonic())
+        self._evict_if_over_capacity()
+
+    def delete(self, conversation_id: str) -> None:
+        """Remove a single entry."""
+        self._entries.pop(conversation_id, None)
+
+    def __contains__(self, conversation_id: str) -> bool:
+        return self.get(conversation_id) is not None
+
+    def __len__(self) -> int:
+        return len(self._entries)
+
+    # -- internal helpers ----------------------------------------------------
+
+    def _is_expired(self, created_at: float) -> bool:
+        return (time.monotonic() - created_at) > self.ttl_seconds
+
+    def _evict_if_over_capacity(self) -> None:
+        """Drop oldest entries until we are at or below max_size."""
+        while len(self._entries) > self.max_size:
+            key, _ = self._entries.popitem(last=False)
+            logger.debug("ConversationStateStore: LRU evicted key=%s", key)
+
+    def _tick(self) -> None:
+        """Periodic lazy cleanup of expired entries (every N operations)."""
+        self._op_count += 1
+        if self._op_count >= self._cleanup_interval:
+            self._op_count = 0
+            self._purge_expired()
+
+    def _purge_expired(self) -> None:
+        """Scan and remove all expired entries."""
+        now = time.monotonic()
+        expired = [k for k, (_, ts) in self._entries.items() if (now - ts) > self.ttl_seconds]
+        for k in expired:
+            del self._entries[k]
+        if expired:
+            logger.info("ConversationStateStore: purged %d expired entries", len(expired))
+
+
+# Module-level singleton
+conversation_state_store = ConversationStateStore()
