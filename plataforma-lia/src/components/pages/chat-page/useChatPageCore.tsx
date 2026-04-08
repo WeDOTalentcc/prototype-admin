@@ -192,6 +192,7 @@ export function useChatPageCore({ initialConversationId }: { initialConversation
       chatConversationId,
       setChatConversationId,
       addChatMessage,
+      scrollToBottom: msg.scrollToBottom,
     })
 
   // ── AI-First Action Handlers ──────────────────────────────────────────────

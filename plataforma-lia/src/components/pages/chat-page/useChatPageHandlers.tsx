@@ -49,6 +49,7 @@ interface ChatPageHandlersContext {
   chatConversationId: string | null
   setChatConversationId: (id: string | null) => void
   addChatMessage: (msg: LiaChatMessage) => void
+  scrollToBottom: () => void
 }
 
 export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
@@ -60,7 +61,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     setChatTitle, setFileAnalysisContext, fileAnalysisContext,
     wsIsConnected, wsSendMessage, wsClearTokens, wsStreamingModeRef,
     selectedCandidateForScheduling, setSelectedCandidateForScheduling, setIsSchedulingModalOpen,
-    chatConversationId, setChatConversationId, addChatMessage,
+    chatConversationId, setChatConversationId, addChatMessage, scrollToBottom,
   } = ctx
 
   const handleSmartSearchSubmit = useCallback(async (query: string, entities: ParsedEntities, mode?: SearchMode, metadata?: SearchMetadata) => {
@@ -92,6 +93,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       type: "text"
     }
     setMessages(prev => [...prev, userMessage])
+    scrollToBottom()
     addChatMessage({ id: `user-search-${timestamp}`, sender: "user", content: query, timestamp: formatMessageTime() })
 
     // Set preview data with loading state
@@ -204,7 +206,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     } finally {
       setIsLoading(false)
     }
-  }, [searchFlow, activeSearchFilters, setContextData, setHasSearchResults, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSearchPreviewData, setSmartSearchQuery, chatConversationId, setChatConversationId, addChatMessage])
+  }, [searchFlow, activeSearchFilters, setContextData, setHasSearchResults, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSearchPreviewData, setSmartSearchQuery, chatConversationId, setChatConversationId, addChatMessage, scrollToBottom])
 
   const handleSendMessage = useCallback(async (customContent?: string) => {
     const userMessageContent = customContent || input
@@ -232,6 +234,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
         type: "text"
       }
       setMessages(prev => [...prev, newMessage])
+      scrollToBottom()
       setInput("")
       
       // LIA asks for profile details instead of searching immediately
@@ -274,6 +277,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
     }
 
     setMessages(prev => [...prev, newMessage])
+    scrollToBottom()
     setInput("")
     setIsLoading(true)
     
@@ -561,7 +565,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         setIsLoading(false)
       }
     }
-  }, [input, isLoading, messages.length, wsIsConnected, wsSendMessage, wsClearTokens, attachedFiles, audioBlob, fileAnalysisContext, searchFlow, setAttachedFiles, setAudioBlob, setChatTitle, setContextData, setFileAnalysisContext, setInput, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSmartSearchQuery, wsStreamingModeRef, chatConversationId, setChatConversationId, addChatMessage])
+  }, [input, isLoading, messages.length, wsIsConnected, wsSendMessage, wsClearTokens, attachedFiles, audioBlob, fileAnalysisContext, searchFlow, setAttachedFiles, setAudioBlob, setChatTitle, setContextData, setFileAnalysisContext, setInput, setIsLoading, setIsPanelOpen, setIsSmartSearchMode, setMessages, setSmartSearchQuery, wsStreamingModeRef, chatConversationId, setChatConversationId, addChatMessage, scrollToBottom])
 
   const handlePipelineAction = useCallback(async (candidateId: string, actionId: string, candidateName: string) => {
     try {

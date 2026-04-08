@@ -64,21 +64,28 @@ export function useChatMessages({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const isUserAtBottomRef = useRef<boolean>(true)
+
 // ── Scroll helpers ─────────────────────────────────────────
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    isUserAtBottomRef.current = true
   }, [])
 
   const checkNewMessageIndicator = useCallback(() => {
     if (!messagesContainerRef.current) return
     const container = messagesContainerRef.current
     const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100
+    isUserAtBottomRef.current = isAtBottom
     setNewMessageIndicator(!isAtBottom && messages.length > 0)
   }, [messages.length])
 
   useEffect(() => {
-    scrollToBottom()
-    checkNewMessageIndicator()
+    if (isUserAtBottomRef.current) {
+      scrollToBottom()
+    } else {
+      checkNewMessageIndicator()
+    }
   }, [messages, chatStreamingContent, checkNewMessageIndicator, scrollToBottom])
 
   useEffect(() => {
