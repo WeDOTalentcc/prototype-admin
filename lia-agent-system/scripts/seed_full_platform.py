@@ -39,11 +39,18 @@ def _past(days_ago_min: int, days_ago_max: int) -> datetime:
     return NOW - timedelta(days=randint(days_ago_min, days_ago_max))
 
 
+SEED_NS = uuid.UUID("00000000-0000-4000-a000-ffffffffffff")
+
+
+def _seed_uuid(label: str) -> uuid.UUID:
+    return uuid.uuid5(SEED_NS, label)
+
+
 def _uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 
-DEPT_IDS = {n: _uuid() for n in [
+DEPT_IDS = {n: _seed_uuid(f"dept:{n}") for n in [
     "engineering", "product", "design", "data", "hr",
     "finance", "sales", "marketing", "legal", "operations",
 ]}
@@ -62,7 +69,7 @@ STAGE_DEFS = [
     {"name": "rejected",             "display_name": "Reprovado",         "order": 99, "color": "#EF4444", "icon": "x-circle",    "type": "terminal", "cat": "system",  "behavior": "passive", "is_final": True, "is_rejection": True},
 ]
 
-STAGE_IDS = {s["name"]: _uuid() for s in STAGE_DEFS}
+STAGE_IDS = {s["name"]: _seed_uuid(f"stage:{s['name']}") for s in STAGE_DEFS}
 
 BENEFITS_DATA = [
     {"name": "Vale Refeição",       "category": "alimentação",  "value": 1200.0, "icon": "utensils"},
@@ -94,7 +101,7 @@ CLIENT_USERS = [
     {"name": "Pedro Almeida",          "email": "pedro.almeida@wedotalent.cc",  "role": "recruiter", "status": "pending"},
 ]
 
-USER_IDS = [_uuid() for _ in CLIENT_USERS]
+USER_IDS = [_seed_uuid(f"user:{u['email']}") for u in CLIENT_USERS]
 
 JOB_VACANCIES = [
     {"title": "Engenheiro(a) de Software Sênior",       "dept": "engineering",  "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "alta",    "salary_min": 18000, "salary_max": 25000},
@@ -111,7 +118,7 @@ JOB_VACANCIES = [
     {"title": "Advogado(a) Trabalhista",                "dept": "legal",        "location": "São Paulo, SP",       "model": "presencial",  "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "média",   "salary_min": 12000, "salary_max": 18000},
 ]
 
-VACANCY_IDS = [_uuid() for _ in JOB_VACANCIES]
+VACANCY_IDS = [_seed_uuid(f"vacancy:{i}:{v['title']}") for i, v in enumerate(JOB_VACANCIES)]
 
 FIRST_NAMES = [
     "Ana", "Beatriz", "Carlos", "Daniel", "Eduardo", "Fernanda", "Gabriel", "Helena",
@@ -192,33 +199,38 @@ CITIES = [
 ]
 
 
+SEED_SOURCE = "seed_script"
+import random as _rng
+_CANDIDATE_RNG = _rng.Random(42)
+
 def _generate_candidates(count: int):
+    rng = _CANDIDATE_RNG
     candidates = []
     used_names = set()
     for i in range(count):
         while True:
-            fn = choice(FIRST_NAMES)
-            ln = choice(LAST_NAMES)
+            fn = rng.choice(FIRST_NAMES)
+            ln = rng.choice(LAST_NAMES)
             name = f"{fn} {ln}"
             if name not in used_names:
                 used_names.add(name)
                 break
-        city, state = choice(CITIES)
+        city, state = rng.choice(CITIES)
         email_base = f"{fn.lower()}.{ln.lower()}".replace("á","a").replace("ã","a").replace("é","e").replace("ê","e").replace("í","i").replace("ó","o").replace("ô","o").replace("ú","u")
-        email = f"{email_base}{randint(1,99)}@email.com"
-        yrs = randint(1, 18)
+        email = f"{email_base}{rng.randint(1,99)}@email.com"
+        yrs = rng.randint(1, 18)
         seniority_map = {(1,3): "Júnior", (4,7): "Pleno", (8,12): "Sênior", (13,99): "Especialista"}
         seniority = next(v for (lo,hi),v in seniority_map.items() if lo <= yrs <= hi)
-        skills_count = randint(4, 10)
+        skills_count = rng.randint(4, 10)
         candidates.append({
-            "id": _uuid(),
+            "id": _seed_uuid(f"candidate:{i}"),
             "name": name,
             "email": email,
-            "phone": f"+55 11 9{randint(1000,9999)}-{randint(1000,9999)}",
+            "phone": f"+55 11 9{rng.randint(1000,9999)}-{rng.randint(1000,9999)}",
             "city": city,
             "state": state,
-            "current_company": choice(COMPANIES_BR),
-            "current_title": choice([
+            "current_company": rng.choice(COMPANIES_BR),
+            "current_title": rng.choice([
                 "Software Engineer", "Analista de Sistemas", "Product Manager",
                 "UX Designer", "Data Analyst", "DevOps Engineer", "QA Engineer",
                 "Gerente de Projetos", "Tech Lead", "Analista de Dados",
@@ -227,13 +239,13 @@ def _generate_candidates(count: int):
             ]),
             "seniority": seniority,
             "years_of_experience": yrs,
-            "technical_skills": sample(TECH_SKILLS_POOL, min(skills_count, len(TECH_SKILLS_POOL))),
-            "soft_skills": sample(SOFT_SKILLS, randint(2, 5)),
-            "source": choice(["manual", "linkedin", "ats", "referral", "pearch"]),
-            "salary_current": round(uniform(5000, 30000), 2),
-            "salary_min": round(uniform(6000, 25000), 2),
-            "salary_max": round(uniform(15000, 35000), 2),
-            "linkedin_url": f"https://linkedin.com/in/{email_base}{randint(1,99)}",
+            "technical_skills": rng.sample(TECH_SKILLS_POOL, min(skills_count, len(TECH_SKILLS_POOL))),
+            "soft_skills": rng.sample(SOFT_SKILLS, rng.randint(2, 5)),
+            "source": SEED_SOURCE,
+            "salary_current": round(rng.uniform(5000, 30000), 2),
+            "salary_min": round(rng.uniform(6000, 25000), 2),
+            "salary_max": round(rng.uniform(15000, 35000), 2),
+            "linkedin_url": f"https://linkedin.com/in/{email_base}{rng.randint(1,99)}",
             "created_at": _past(5, 120),
         })
     return candidates
@@ -489,6 +501,7 @@ async def seed_candidates(db: AsyncSession):
                 :tech, :soft, :source, :sal, :sal_min, :sal_max,
                 :li, 'active', true, 'BRL',
                 :created, :now)
+            ON CONFLICT (id) DO NOTHING
         """), {
             "id": c["id"], "name": c["name"], "email": c["email"], "phone": c["phone"],
             "city": c["city"], "state": c["state"], "company": c["current_company"],
@@ -567,6 +580,13 @@ async def seed_candidate_education(db: AsyncSession):
 
 async def seed_vacancy_candidates(db: AsyncSession):
     logger.info("Seeding VacancyCandidates (pipeline)...")
+    existing = await db.execute(
+        text("SELECT id FROM vacancy_candidates WHERE company_id = :cid LIMIT 1"),
+        {"cid": SEED_COMPANY_ID_STR},
+    )
+    if existing.fetchone():
+        logger.info("  VacancyCandidates already exist, skipping.")
+        return
     count = 0
     active_vacancy_indices = [i for i, j in enumerate(JOB_VACANCIES) if j["status"] == "Ativa"]
     concluded_idx = [i for i, j in enumerate(JOB_VACANCIES) if j["status"] == "Concluída"]
@@ -643,6 +663,13 @@ async def seed_vacancy_candidates(db: AsyncSession):
 
 async def seed_stage_history(db: AsyncSession):
     logger.info("Seeding CandidateStageHistory...")
+    existing = await db.execute(
+        text("SELECT id FROM candidate_stage_history WHERE company_id = :cid LIMIT 1"),
+        {"cid": SEED_COMPANY_ID_STR},
+    )
+    if existing.fetchone():
+        logger.info("  StageHistory already exists, skipping.")
+        return
     count = 0
     stage_order_map = {s["name"]: s["order"] for s in STAGE_DEFS}
     stage_progression = ["sourcing", "screening", "long_list", "short_list", "interview_hr",
@@ -702,8 +729,323 @@ async def seed_stage_history(db: AsyncSession):
     logger.info(f"  {count} stage history entries seeded.")
 
 
+async def seed_department_members(db: AsyncSession):
+    logger.info("Seeding DepartmentMembers...")
+    count = 0
+    members_data = [
+        ("engineering", [
+            ("Marcos Ribeiro",    "Tech Lead",                "marcos.ribeiro@wedotalent.cc",   "c-level"),
+            ("Fernanda Lima",     "Software Engineer Sênior", "fernanda.lima@wedotalent.cc",    "senior"),
+            ("Diego Souza",       "Software Engineer Pleno",  "diego.souza@wedotalent.cc",      "pleno"),
+            ("Aline Barros",      "QA Engineer",              "aline.barros@wedotalent.cc",     "pleno"),
+        ]),
+        ("product", [
+            ("Carla Mendes",      "Head de Produto",          "carla.mendes@wedotalent.cc",     "c-level"),
+            ("Thiago Nunes",      "Product Manager",          "thiago.nunes@wedotalent.cc",     "senior"),
+        ]),
+        ("design", [
+            ("Juliana Moreira",   "Design Lead",              "juliana.moreira@wedotalent.cc",  "senior"),
+            ("Bruno Castro",      "UX Designer",              "bruno.castro@wedotalent.cc",     "pleno"),
+        ]),
+        ("data", [
+            ("Renato Gomes",      "Data Engineering Lead",    "renato.gomes@wedotalent.cc",     "senior"),
+            ("Patrícia Duarte",   "Data Scientist",           "patricia.duarte@wedotalent.cc",  "pleno"),
+        ]),
+        ("hr", [
+            ("Ana Beatriz Costa", "Head de RH",               "ana.costa@wedotalent.cc",        "c-level"),
+            ("Camila Oliveira",   "Recrutadora Sênior",       "camila.oliveira@wedotalent.cc",  "senior"),
+        ]),
+    ]
+    for dept_key, members in members_data:
+        dept_id = DEPT_IDS.get(dept_key)
+        if not dept_id:
+            continue
+        for i, (name, title, email, level) in enumerate(members):
+            existing = await db.execute(
+                text("SELECT id FROM department_members WHERE company_id = :cid AND email = :email"),
+                {"cid": SEED_COMPANY_PROFILE_ID, "email": email},
+            )
+            if existing.fetchone():
+                continue
+            await db.execute(text("""
+                INSERT INTO department_members (id, department_id, company_id, name, title, email, level,
+                    is_active, "order", created_at, updated_at)
+                VALUES (:id, :did, :cid, :name, :title, :email, :level, true, :ord, :now, :now)
+            """), {
+                "id": _uuid(), "did": dept_id, "cid": SEED_COMPANY_PROFILE_ID,
+                "name": name, "title": title, "email": email, "level": level,
+                "ord": i, "now": NOW,
+            })
+            count += 1
+    logger.info(f"  {count} department members seeded.")
+
+
+SUB_STATUS_DATA = {
+    "sourcing": [
+        ("identified",         "Identificado",           0, False),
+        ("contacted",          "Contatado",              1, True),
+        ("awaiting_response",  "Aguardando Retorno",     2, True),
+    ],
+    "screening": [
+        ("cv_review",          "Análise de CV",          0, False),
+        ("scheduled",          "Triagem Agendada",       1, True),
+        ("completed",          "Triagem Realizada",      2, False),
+        ("documents_pending",  "Documentos Pendentes",   3, True),
+    ],
+    "interview_hr": [
+        ("to_schedule",        "A Agendar",              0, False),
+        ("scheduled",          "Agendada",               1, True),
+        ("completed",          "Realizada",              2, False),
+        ("feedback_pending",   "Feedback Pendente",      3, True),
+    ],
+    "interview_technical": [
+        ("to_schedule",        "A Agendar",              0, False),
+        ("scheduled",          "Agendada",               1, True),
+        ("completed",          "Realizada",              2, False),
+    ],
+    "offer": [
+        ("drafting",           "Elaborando Proposta",    0, False),
+        ("sent",               "Proposta Enviada",       1, True),
+        ("negotiating",        "Em Negociação",          2, True),
+        ("accepted",           "Aceita",                 3, False),
+    ],
+}
+
+
+async def seed_recruitment_sub_statuses(db: AsyncSession):
+    logger.info("Seeding RecruitmentSubStatuses...")
+    count = 0
+    for stage_name, subs in SUB_STATUS_DATA.items():
+        stage_id = STAGE_IDS.get(stage_name)
+        if not stage_id:
+            continue
+        for name, display, order, is_waiting in subs:
+            existing = await db.execute(
+                text("SELECT id FROM recruitment_sub_statuses WHERE stage_id = :sid AND name = :name"),
+                {"sid": stage_id, "name": name},
+            )
+            if existing.fetchone():
+                continue
+            await db.execute(text("""
+                INSERT INTO recruitment_sub_statuses (id, stage_id, company_id, name, display_name,
+                    sub_status_order, is_default, is_waiting, is_active, created_at, updated_at)
+                VALUES (:id, :sid, :cid, :name, :dn, :ord, :def, :wait, true, :now, :now)
+            """), {
+                "id": _uuid(), "sid": stage_id, "cid": SEED_COMPANY_ID_STR,
+                "name": name, "dn": display, "ord": order,
+                "def": order == 0, "wait": is_waiting, "now": NOW,
+            })
+            count += 1
+    logger.info(f"  {count} recruitment sub-statuses seeded.")
+
+
+async def seed_activity_feed(db: AsyncSession):
+    logger.info("Seeding ActivityFeed...")
+    existing = await db.execute(
+        text("SELECT id FROM activity_feed WHERE actor_id = :aid LIMIT 1"),
+        {"aid": SEED_COMPANY_ID_STR},
+    )
+    if existing.fetchone():
+        logger.info("  ActivityFeed already exists, skipping.")
+        return
+    activities = [
+        ("vacancy_created",   "Nova vaga criada",                       "Engenheiro(a) de Software Sênior",            "job_vacancy"),
+        ("candidate_added",   "Candidato adicionado ao pipeline",       "Ana Silva adicionada à vaga Eng. Software",   "candidate"),
+        ("stage_change",      "Candidato avançou de etapa",             "Carlos Souza movido para Entrevista RH",      "candidate"),
+        ("interview_scheduled","Entrevista agendada",                   "Entrevista técnica com Julia Santos",         "interview"),
+        ("feedback_submitted","Feedback submetido",                     "Avaliação positiva para Pedro Mendes",        "feedback"),
+        ("vacancy_created",   "Nova vaga criada",                       "Product Manager — Remoto",                    "job_vacancy"),
+        ("candidate_added",   "Novo candidato via LinkedIn",            "Fernanda Lima importada do LinkedIn",         "candidate"),
+        ("offer_sent",        "Proposta enviada",                       "Proposta CLT para Marcos Ribeiro",            "offer"),
+        ("stage_change",      "Candidato avançou de etapa",             "Bruna Costa movida para Short List",          "candidate"),
+        ("vacancy_closed",    "Vaga concluída",                         "Vendedor(a) Enterprise — vaga preenchida",    "job_vacancy"),
+        ("candidate_hired",   "Candidato contratado",                   "Ricardo Santos contratado como vendedor",     "candidate"),
+        ("screening_done",    "Triagem realizada por LIA",              "LIA triou 15 candidatos para Eng. ML",        "screening"),
+        ("document_uploaded", "Documento recebido",                     "CV atualizado de Tatiana Vieira",             "document"),
+        ("feedback_submitted","Feedback do gestor",                     "Lucas Ferreira avaliou candidato Tech Lead",  "feedback"),
+        ("vacancy_created",   "Nova vaga criada",                       "Advogado(a) Trabalhista",                     "job_vacancy"),
+    ]
+    count = 0
+    actors = ["ana.costa@wedotalent.cc", "rafael.mendes@wedotalent.cc", "camila.oliveira@wedotalent.cc", "lia_agent"]
+    actor_names = ["Ana Costa", "Rafael Mendes", "Camila Oliveira", "LIA"]
+    for i, (atype, title, desc, ttype) in enumerate(activities):
+        actor_idx = i % len(actors)
+        await db.execute(text("""
+            INSERT INTO activity_feed (id, activity_type, actor_id, actor_name, actor_type,
+                target_type, title, description, priority, category, is_visible, created_at)
+            VALUES (:id, :atype, :aid, :aname, :at, :tt, :title, :desc, :pri, :cat, true, :created)
+        """), {
+            "id": str(_uuid()), "atype": atype, "aid": SEED_COMPANY_ID_STR,
+            "aname": actor_names[actor_idx], "at": "user" if actors[actor_idx] != "lia_agent" else "agent",
+            "tt": ttype, "title": title, "desc": desc,
+            "pri": choice(["normal", "high"]), "cat": "recruitment",
+            "created": _past(0, 30),
+        })
+        count += 1
+    logger.info(f"  {count} activity feed entries seeded.")
+
+
+async def seed_goals(db: AsyncSession):
+    logger.info("Seeding Goals...")
+    existing = await db.execute(
+        text("SELECT id FROM goals WHERE company_id = :cid LIMIT 1"),
+        {"cid": SEED_COMPANY_PROFILE_ID},
+    )
+    if existing.fetchone():
+        logger.info("  Goals already exist, skipping.")
+        return
+    goals_data = [
+        ("Candidatos na pipeline",          "Manter pelo menos 50 candidatos ativos no pipeline",   50, 46, "candidatos",   "monthly",  "pipeline"),
+        ("Vagas ativas",                    "Preencher todas as vagas abertas no trimestre",         12,  9, "vagas",        "quarterly","hiring"),
+        ("Tempo médio de contratação",      "Reduzir tempo de contratação para menos de 30 dias",   30, 35, "dias",         "quarterly","efficiency"),
+        ("Taxa de conversão — triagem",     "Converter 60% dos triados para entrevista",            60, 52, "percentual",   "monthly",  "conversion"),
+        ("Entrevistas realizadas",          "Realizar 40 entrevistas por mês",                      40, 28, "entrevistas",  "monthly",  "hiring"),
+        ("NPS do processo seletivo",        "Manter NPS acima de 70",                               70, 75, "pontos",       "quarterly","satisfaction"),
+        ("Diversidade no pipeline",         "30% de candidatos de grupos sub-representados",         30, 22, "percentual",   "quarterly","diversity"),
+        ("Custo por contratação",           "Manter custo abaixo de R$ 3.000 por contratação",    3000,2800, "BRL",         "monthly",  "financial"),
+    ]
+    count = 0
+    for name, desc, target, current, unit, period, category in goals_data:
+        progress = min(round((current / target) * 100, 1), 100.0) if target > 0 else 0
+        status = "completed" if current >= target else "in_progress"
+        await db.execute(text("""
+            INSERT INTO goals (id, user_id, company_id, name, description, target, current, unit,
+                period, category, status, progress, is_custom, is_active, start_date, end_date,
+                created_at, updated_at)
+            VALUES (:id, :uid, :cid, :name, :desc, :target, :current, :unit, :period, :cat,
+                :status, :progress, false, true, :start, :end, :now, :now)
+        """), {
+            "id": _uuid(), "uid": "ana.costa@wedotalent.cc", "cid": SEED_COMPANY_PROFILE_ID,
+            "name": name, "desc": desc, "target": target, "current": current,
+            "unit": unit, "period": period, "cat": category, "status": status,
+            "progress": progress,
+            "start": NOW.replace(day=1), "end": (NOW.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1),
+            "now": NOW,
+        })
+        count += 1
+    logger.info(f"  {count} goals seeded.")
+
+
+async def seed_tasks(db: AsyncSession):
+    logger.info("Seeding Tasks...")
+    existing = await db.execute(
+        text("SELECT id FROM tasks WHERE created_by_agent = 'seed_script' LIMIT 1"),
+    )
+    if existing.fetchone():
+        logger.info("  Tasks already exist, skipping.")
+        return
+    tasks_data = [
+        ("Dar feedback — Ana Silva (Eng. Software)",         "FEEDBACK_PENDING",    "HIGH",     "PENDING",      "rafael.mendes@wedotalent.cc",   2),
+        ("Agendar entrevista técnica — Carlos Souza",        "INTERVIEW_SCHEDULE",  "HIGH",     "PENDING",      "camila.oliveira@wedotalent.cc",  1),
+        ("Revisar CV — 5 novos candidatos Product Manager",  "CV_REVIEW",           "MEDIUM",   "PENDING",      "rafael.mendes@wedotalent.cc",   3),
+        ("Enviar proposta — Marcos Ribeiro (Tech Lead)",     "GENERAL",             "CRITICAL", "IN_PROGRESS",  "ana.costa@wedotalent.cc",       1),
+        ("Follow-up — candidatos sem resposta (7 dias)",     "FOLLOW_UP",           "MEDIUM",   "PENDING",      "camila.oliveira@wedotalent.cc",  5),
+        ("Calibrar triagem — vaga ML Engineer",              "SOURCING",            "MEDIUM",   "PENDING",      "rafael.mendes@wedotalent.cc",   4),
+        ("Entrevista com gestor — Julia Santos",             "INTERVIEW_SCHEDULE",  "HIGH",     "PENDING",      "camila.oliveira@wedotalent.cc",  2),
+        ("Atualizar descrição de vaga — UX Designer",        "GENERAL",             "LOW",      "COMPLETED",    "rafael.mendes@wedotalent.cc",   7),
+        ("Feedback negativo — 3 candidatos reprovados",      "FEEDBACK_PENDING",    "MEDIUM",   "PENDING",      "camila.oliveira@wedotalent.cc",  3),
+        ("Reunião de alinhamento — nova vaga Jurídico",      "GENERAL",             "MEDIUM",   "PENDING",      "ana.costa@wedotalent.cc",       2),
+    ]
+    count = 0
+    for title, ttype, priority, status, assigned_to, due_days in tasks_data:
+        await db.execute(text("""
+            INSERT INTO tasks (id, title, task_type, priority, status, created_by_agent,
+                assigned_to_user_id, due_date, is_automated, requires_confirmation,
+                created_at, updated_at)
+            VALUES (:id, :title, :ttype, :pri, :status, 'seed_script',
+                :assigned, :due, :auto, false, :created, :now)
+        """), {
+            "id": str(_uuid()), "title": title, "ttype": ttype, "pri": priority,
+            "status": status, "assigned": assigned_to,
+            "due": NOW + timedelta(days=due_days),
+            "auto": ttype in ("FOLLOW_UP", "ALERT"),
+            "created": _past(0, 10), "now": NOW,
+        })
+        count += 1
+    logger.info(f"  {count} tasks seeded.")
+
+
+async def seed_client_metrics(db: AsyncSession):
+    logger.info("Seeding ClientUsageMetrics, ClientHealthMetrics, ClientSaasMetrics...")
+    existing = await db.execute(
+        text("SELECT id FROM client_usage_metrics WHERE client_id = :cid LIMIT 1"),
+        {"cid": SEED_COMPANY_ID},
+    )
+    if existing.fetchone():
+        logger.info("  Client metrics already exist, skipping.")
+        return
+    count = 0
+    for month_offset in range(3):
+        period_start = (NOW - timedelta(days=30 * month_offset)).replace(day=1)
+        period_end = (period_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        await db.execute(text("""
+            INSERT INTO client_usage_metrics (id, client_id, ai_credits_used, ai_credits_limit,
+                users_active, users_limit, jobs_active, jobs_limit,
+                storage_used_mb, storage_limit_mb, api_calls_month, api_calls_limit,
+                period_start, period_end, created_at, updated_at)
+            VALUES (:id, :cid, :credits_used, :credits_limit, :users, :users_limit,
+                :jobs, :jobs_limit, :storage, :storage_limit, :api, :api_limit,
+                :start, :end, :now, :now)
+        """), {
+            "id": _uuid(), "cid": SEED_COMPANY_ID,
+            "credits_used": randint(800, 3500), "credits_limit": 5000,
+            "users": 5 + month_offset, "users_limit": 50,
+            "jobs": 8 + month_offset * 2, "jobs_limit": 200,
+            "storage": round(uniform(500, 2000), 1), "storage_limit": 10000,
+            "api": randint(5000, 20000), "api_limit": 50000,
+            "start": period_start.date(), "end": period_end.date(), "now": NOW,
+        })
+        count += 1
+
+    await db.execute(text("""
+        INSERT INTO client_health_metrics (id, client_id, churn_risk, health_score,
+            last_login, days_since_login, nps_score, csat_score,
+            support_tickets_open, support_tickets_total,
+            avg_response_time_hours, engagement_level, feature_adoption_rate,
+            logins_last_30_days, actions_last_30_days, created_at, updated_at)
+        VALUES (:id, :cid, :risk, :score, :login, :days, :nps, :csat,
+            :open, :total, :rt, :eng, :adopt, :logins, :actions, :now, :now)
+    """), {
+        "id": _uuid(), "cid": SEED_COMPANY_ID, "risk": "low", "score": 85,
+        "login": _past(0, 1), "days": 0, "nps": 78, "csat": 4.2,
+        "open": 1, "total": 12, "rt": 2.5, "eng": "high", "adopt": 72.5,
+        "logins": 45, "actions": 320, "now": NOW,
+    })
+    count += 1
+
+    await db.execute(text("""
+        INSERT INTO client_saas_metrics (id, client_id, mrr, arr, ltv, cac,
+            payback_months, contract_start, contract_end, plan_name,
+            billing_cycle, discount_percent, currency, created_at, updated_at)
+        VALUES (:id, :cid, :mrr, :arr, :ltv, :cac, :payback, :start, :end,
+            :plan, :cycle, :discount, 'BRL', :now, :now)
+    """), {
+        "id": _uuid(), "cid": SEED_COMPANY_ID,
+        "mrr": 8500.0, "arr": 102000.0, "ltv": 306000.0, "cac": 15000.0,
+        "payback": 1.8, "start": (NOW - timedelta(days=365)).date(),
+        "end": (NOW + timedelta(days=365)).date(), "plan": "Enterprise",
+        "cycle": "annual", "discount": 10.0, "now": NOW,
+    })
+    count += 1
+    logger.info(f"  {count} client metric records seeded.")
+
+
 async def clean_seed_data(db: AsyncSession):
     logger.info("Cleaning seed data...")
+
+    await db.execute(text("DELETE FROM client_saas_metrics WHERE client_id = :cid"), {"cid": SEED_COMPANY_ID})
+    await db.execute(text("DELETE FROM client_health_metrics WHERE client_id = :cid"), {"cid": SEED_COMPANY_ID})
+    await db.execute(text("DELETE FROM client_usage_metrics WHERE client_id = :cid"), {"cid": SEED_COMPANY_ID})
+    logger.info("  client metrics cleaned.")
+
+    await db.execute(text("DELETE FROM tasks WHERE created_by_agent = 'seed_script'"))
+    logger.info("  tasks cleaned.")
+
+    await db.execute(text("DELETE FROM activity_feed WHERE actor_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
+    logger.info("  activity_feed cleaned.")
+
+    await db.execute(text("DELETE FROM goals WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
+    logger.info("  goals cleaned.")
 
     await db.execute(text("DELETE FROM candidate_stage_history WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  candidate_stage_history cleaned.")
@@ -714,20 +1056,30 @@ async def clean_seed_data(db: AsyncSession):
     await db.execute(text("DELETE FROM job_vacancies WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  job_vacancies cleaned.")
 
-    cand_ids_str = ", ".join(f"'{str(c['id'])}'" for c in CANDIDATES)
-    if cand_ids_str:
-        await db.execute(text(f"DELETE FROM candidate_experiences WHERE candidate_id::text IN ({cand_ids_str})"))
-        logger.info("  candidate_experiences cleaned.")
-        await db.execute(text(f"DELETE FROM candidate_education WHERE candidate_id::text IN ({cand_ids_str})"))
-        logger.info("  candidate_education cleaned.")
-        await db.execute(text(f"DELETE FROM candidates WHERE id::text IN ({cand_ids_str})"))
-        logger.info("  candidates cleaned.")
+    await db.execute(text("""
+        DELETE FROM candidate_experiences WHERE candidate_id IN
+        (SELECT id FROM candidates WHERE source = :src)
+    """), {"src": SEED_SOURCE})
+    logger.info("  candidate_experiences cleaned.")
+    await db.execute(text("""
+        DELETE FROM candidate_education WHERE candidate_id IN
+        (SELECT id FROM candidates WHERE source = :src)
+    """), {"src": SEED_SOURCE})
+    logger.info("  candidate_education cleaned.")
+    await db.execute(text("DELETE FROM candidates WHERE source = :src"), {"src": SEED_SOURCE})
+    logger.info("  candidates cleaned.")
+
+    await db.execute(text("DELETE FROM recruitment_sub_statuses WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
+    logger.info("  recruitment_sub_statuses cleaned.")
 
     await db.execute(text("DELETE FROM recruitment_stages WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  recruitment_stages cleaned.")
 
     await db.execute(text("DELETE FROM client_users WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID})
     logger.info("  client_users cleaned.")
+
+    await db.execute(text("DELETE FROM department_members WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
+    logger.info("  department_members cleaned.")
 
     await db.execute(text("DELETE FROM culture_values WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
     logger.info("  culture_values cleaned.")
@@ -751,16 +1103,22 @@ async def run_seed():
             await seed_client_account(db)
             await seed_company_profile(db)
             await seed_departments(db)
+            await seed_department_members(db)
             await seed_benefits(db)
             await seed_culture_values(db)
             await seed_client_users(db)
             await seed_recruitment_stages(db)
+            await seed_recruitment_sub_statuses(db)
             await seed_job_vacancies(db)
             await seed_candidates(db)
             await seed_candidate_experiences(db)
             await seed_candidate_education(db)
             await seed_vacancy_candidates(db)
             await seed_stage_history(db)
+            await seed_activity_feed(db)
+            await seed_goals(db)
+            await seed_tasks(db)
+            await seed_client_metrics(db)
             await db.commit()
             logger.info("All seed data committed successfully!")
         except Exception as e:
@@ -788,18 +1146,18 @@ async def run_reset():
 
 def main():
     parser = argparse.ArgumentParser(description="LIA Platform Full Seed Data")
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--seed", action="store_true", help="Insert all seed data")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--seed", action="store_true", help="Insert all seed data (default)")
     group.add_argument("--clean", action="store_true", help="Remove all seed data")
     group.add_argument("--reset", action="store_true", help="Clean + Seed")
     args = parser.parse_args()
 
-    if args.seed:
-        asyncio.run(run_seed())
-    elif args.clean:
+    if args.clean:
         asyncio.run(run_clean())
     elif args.reset:
         asyncio.run(run_reset())
+    else:
+        asyncio.run(run_seed())
 
 
 if __name__ == "__main__":
