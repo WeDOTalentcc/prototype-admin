@@ -23,7 +23,13 @@ export const workos = new Proxy({} as WorkOS, {
 
 export const WORKOS_CONFIG = {
   clientId: process.env.WORKOS_CLIENT_ID!,
-  redirectUri: process.env.WORKOS_REDIRECT_URI || `${process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000'}/api/auth/workos/callback`,
+  redirectUri: process.env.WORKOS_REDIRECT_URI || `${
+    process.env.REPLIT_DEV_DOMAIN
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : process.env.APP_DOMAIN
+        ? `https://${process.env.APP_DOMAIN}`
+        : 'https://wedotalent.cc'
+  }/api/auth/workos/callback`,
 }
 
 export interface WorkOSProfile {

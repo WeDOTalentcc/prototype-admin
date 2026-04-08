@@ -39,7 +39,7 @@ test.describe('Chat - Tool Calling Flow', () => {
         }
       } else {
         const responseMessage = authenticatedPage.locator('[data-testid="chat-message"][data-role="lia"]').last();
-        await expect(responseMessage).toBeVisible({ timeout: 10000 }).catch(() => {});
+        await expect.soft(responseMessage).toBeVisible({ timeout: 10000 });
       }
     }
   });
@@ -67,7 +67,7 @@ test.describe('Chat - Tool Calling Flow', () => {
         await expect(toolConfirmation).not.toBeVisible({ timeout: 5000 });
         
         const successFeedback = authenticatedPage.locator('[data-testid="tool-feedback"][data-status="success"]');
-        await expect(successFeedback).not.toBeVisible({ timeout: 2000 }).catch(() => {});
+        await expect(successFeedback).not.toBeVisible({ timeout: 2000 });
       }
     }
   });

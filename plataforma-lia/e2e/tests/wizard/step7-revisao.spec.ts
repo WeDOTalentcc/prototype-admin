@@ -8,7 +8,7 @@ test.describe('Wizard Step 7 - Revisão e Publicação', () => {
 
   test('deve exibir resumo completo da vaga', async ({ authenticatedPage }) => {
     const summarySection = authenticatedPage.locator('[data-testid="job-summary"], [class*="summary"]');
-    await expect(summarySection.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+    await expect.soft(summarySection.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve exibir origem dos campos (field origin)', async ({ authenticatedPage }) => {
@@ -44,7 +44,7 @@ test.describe('Wizard Step 7 - Revisão e Publicação', () => {
       await draftButton.click();
       
       const successMessage = authenticatedPage.locator('[class*="toast"], [role="alert"]');
-      await expect(successMessage.first()).toContainText(/salvo|sucesso/i).catch(() => {});
+      await expect.soft(successMessage.first()).toContainText(/salvo|sucesso/i, { timeout: 5000 });
     }
   });
 

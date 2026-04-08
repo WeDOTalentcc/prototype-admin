@@ -205,9 +205,10 @@ export function VoIPCallButton({
     }
 
     try {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
+      const wsBase = process.env.NEXT_PUBLIC_WS_URL
+        || `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
       const wsToken = sessionRes.ws_token ? `&ws_token=${encodeURIComponent(sessionRes.ws_token)}` : ""
-      const wsUrl = `${protocol}//${window.location.host}/api/v1/gemini-voice/live-stream?session_id=${sessionRes.session_id}${wsToken}`
+      const wsUrl = `${wsBase}/api/v1/gemini-voice/live-stream?session_id=${sessionRes.session_id}${wsToken}`
 
       const ws = new WebSocket(wsUrl)
       wsRef.current = ws

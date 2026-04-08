@@ -8,7 +8,7 @@ test.describe('Wizard Step 5 - Perguntas WSI', () => {
 
   test('deve exibir perguntas WSI geradas pela LIA', async ({ authenticatedPage }) => {
     const wsiSection = authenticatedPage.locator('[data-testid="wsi-questions"], [class*="wsi"]');
-    await expect(wsiSection.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+    await expect.soft(wsiSection.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve exibir 7 blocos de metodologia WSI', async ({ authenticatedPage }) => {

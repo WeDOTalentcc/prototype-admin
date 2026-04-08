@@ -62,9 +62,10 @@ export function AsyncJobProgress({
   const connectWebSocket = useCallback(() => {
     if (completedRef.current) return
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
-    const host = wsBaseUrl || window.location.host
-    const url = `${protocol}//${host}/ws/jobs/${jobId}`
+    const base = wsBaseUrl
+      || process.env.NEXT_PUBLIC_WS_URL
+      || `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
+    const url = `${base}/ws/jobs/${jobId}`
 
     try {
       const ws = new WebSocket(url)

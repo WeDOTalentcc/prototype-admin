@@ -18,7 +18,7 @@ test.describe('Autenticação', () => {
       await submitButton.click();
       
       const errorMessage = page.locator('[role="alert"], .error, [class*="error"]');
-      await expect(errorMessage.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+      await expect.soft(errorMessage.first()).toBeVisible({ timeout: 5000 });
     }
   });
 
@@ -62,13 +62,13 @@ test.describe('Autenticação', () => {
       
       if (await submitButton.isVisible()) {
         await submitButton.click();
-        await page.waitForURL('**/dashboard**', { timeout: 15000 }).catch(() => {});
+        await expect.soft(page).toHaveURL(/dashboard/, { timeout: 15000 });
       }
     }
   });
 
   test('deve exibir link de recuperação de senha', async ({ page }) => {
     const forgotLink = page.getByRole('link', { name: /esqueci|recuperar|forgot/i });
-    await expect(forgotLink.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+    await expect.soft(forgotLink.first()).toBeVisible({ timeout: 5000 });
   });
 });

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import CandidatoDetailClient from "./CandidatoDetailClient"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export async function generateMetadata({
   params,
@@ -15,5 +16,9 @@ export async function generateMetadata({
 }
 
 export default function CandidateProfilePage() {
-  return <CandidatoDetailClient />
+  return (
+    <ErrorBoundarySection>
+      <CandidatoDetailClient />
+    </ErrorBoundarySection>
+  )
 }

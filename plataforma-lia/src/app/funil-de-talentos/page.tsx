@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import FunilDeTalentosClient from "./FunilDeTalentosClient"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export const metadata: Metadata = {
   title: "Funil de Talentos | LIA — WeDo Talent",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function FunilDeTalentosPage() {
-  return <FunilDeTalentosClient />
+  return (
+    <ErrorBoundarySection>
+      <FunilDeTalentosClient />
+    </ErrorBoundarySection>
+  )
 }

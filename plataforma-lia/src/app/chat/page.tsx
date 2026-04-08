@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { ChatPage } from "@/components/pages/chat-page"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export const metadata: Metadata = {
   title: "Chat LIA | LIA — WeDo Talent",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function ChatRoute() {
-  return <ChatPage />
+  return (
+    <ErrorBoundarySection>
+      <ChatPage />
+    </ErrorBoundarySection>
+  )
 }

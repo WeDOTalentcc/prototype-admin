@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { DashboardApp } from "@/components/dashboard-app"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export const metadata: Metadata = {
   title: "Funil de Candidatos | LIA — WeDo Talent",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function FunilPage() {
-  return <DashboardApp />
+  return (
+    <ErrorBoundarySection>
+      <DashboardApp />
+    </ErrorBoundarySection>
+  )
 }

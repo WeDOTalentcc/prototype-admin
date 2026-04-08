@@ -8,7 +8,7 @@ test.describe('Wizard Step 2 - Requisitos', () => {
 
   test('deve exibir campos de requisitos', async ({ authenticatedPage }) => {
     const requirementsSection = authenticatedPage.locator('[data-testid="requirements"], [class*="requirement"]');
-    await expect(requirementsSection.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+    await expect.soft(requirementsSection.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve adicionar requisito técnico', async ({ authenticatedPage }) => {

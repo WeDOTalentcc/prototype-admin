@@ -42,16 +42,54 @@ async function getAccessToken(): Promise<JiraAuth> {
   
   connectionSettings = null;
   cachedCloudId = null;
-  
+
+  if (process.env.JIRA_ACCESS_TOKEN && process.env.JIRA_SITE_URL) {
+    const directToken = process.env.JIRA_ACCESS_TOKEN;
+    const directSiteUrl = process.env.JIRA_SITE_URL;
+
+    if (process.env.JIRA_CLOUD_ID) {
+      cachedCloudId = process.env.JIRA_CLOUD_ID;
+    } else {
+      const resourcesResp = await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
+        headers: {
+          'Authorization': `Bearer ${directToken}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!resourcesResp.ok) {
+        throw new Error('Failed to fetch Jira accessible resources with JIRA_ACCESS_TOKEN');
+      }
+
+      const resources = await resourcesResp.json();
+      const targetResource = resources.find((r: Record<string, unknown>) => r.url === directSiteUrl) || resources[0];
+
+      if (!targetResource?.id) {
+        throw new Error('No accessible Jira cloud found for JIRA_SITE_URL');
+      }
+
+      cachedCloudId = targetResource.id;
+    }
+
+    return {
+      accessToken: directToken,
+      hostName: directSiteUrl,
+      cloudId: cachedCloudId!,
+      apiBaseUrl: `https://api.atlassian.com/ex/jira/${cachedCloudId}`,
+    };
+  }
+
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+  const xReplitToken = process.env.REPL_IDENTITY
+    ? 'repl ' + process.env.REPL_IDENTITY
+    : process.env.WEB_REPL_RENEWAL
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL
     : null;
 
-  if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+  if (!xReplitToken || !hostname) {
+    throw new Error(
+      'Jira authentication not configured. Set JIRA_ACCESS_TOKEN + JIRA_SITE_URL (Cloud Run) or REPL_IDENTITY/WEB_REPL_RENEWAL + REPLIT_CONNECTORS_HOSTNAME (Replit).'
+    );
   }
 
   connectionSettings = await fetch(
@@ -75,7 +113,6 @@ async function getAccessToken(): Promise<JiraAuth> {
     throw new Error('Jira not connected - missing access token or site URL');
   }
 
-  // Get cloud ID from accessible resources
   const resourcesResp = await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
     headers: {
       'Authorization': `Bearer ${accessToken}`,

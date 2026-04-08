@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import VagasDetailClient from "./VagasDetailClient"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export async function generateMetadata({
   params,
@@ -16,5 +17,9 @@ export async function generateMetadata({
 }
 
 export default function PublicVacancyPage() {
-  return <VagasDetailClient />
+  return (
+    <ErrorBoundarySection>
+      <VagasDetailClient />
+    </ErrorBoundarySection>
+  )
 }

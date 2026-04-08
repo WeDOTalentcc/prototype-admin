@@ -189,7 +189,7 @@ test.describe('Chat - Conversation Memory', () => {
       await authenticatedPage.waitForTimeout(10000);
       
       const response = authenticatedPage.locator('[data-testid="chat-message"][data-role="lia"]').last();
-      await expect(response).toBeVisible({ timeout: 15000 }).catch(() => {});
+      await expect.soft(response).toBeVisible({ timeout: 15000 });
     }
   });
 

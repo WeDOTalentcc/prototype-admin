@@ -8,7 +8,7 @@ test.describe('Wizard Step 3 - Competências', () => {
 
   test('deve exibir lista de competências sugeridas', async ({ authenticatedPage }) => {
     const competenciesSection = authenticatedPage.locator('[data-testid="competencies"], [class*="competenc"]');
-    await expect(competenciesSection.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+    await expect.soft(competenciesSection.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve selecionar competência técnica', async ({ authenticatedPage }) => {

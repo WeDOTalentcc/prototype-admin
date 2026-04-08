@@ -14,7 +14,7 @@ test.describe('Wizard Step 6 - Descrição da Vaga', () => {
       await authenticatedPage.waitForTimeout(3000);
       
       const preview = authenticatedPage.locator('[data-testid="jd-preview"], [class*="preview"]');
-      await expect(preview.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+      await expect.soft(preview.first()).toBeVisible({ timeout: 10000 });
     }
   });
 
@@ -57,7 +57,7 @@ test.describe('Wizard Step 6 - Descrição da Vaga', () => {
       await copyButton.click();
       
       const successMessage = authenticatedPage.locator('[class*="toast"], [role="alert"]');
-      await expect(successMessage.first()).toBeVisible({ timeout: 3000 }).catch(() => {});
+      await expect.soft(successMessage.first()).toBeVisible({ timeout: 3000 });
     }
   });
 });

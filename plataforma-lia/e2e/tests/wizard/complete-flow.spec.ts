@@ -119,7 +119,7 @@ test.describe('Wizard - Fluxo Completo E2E', () => {
       await authenticatedPage.waitForTimeout(5000);
       
       const response = authenticatedPage.locator('[data-testid="lia-response"], [class*="ai-response"]');
-      await expect(response.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+      await expect.soft(response.first()).toBeVisible({ timeout: 10000 });
     }
   });
 });

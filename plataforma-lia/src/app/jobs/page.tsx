@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { JobsPage } from "@/components/pages/jobs-page"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export const metadata: Metadata = {
   title: "Vagas | LIA — WeDo Talent",
@@ -25,8 +26,10 @@ function LoadingSkeleton() {
 
 export default function JobsListPage() {
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <JobsPage />
-    </Suspense>
+    <ErrorBoundarySection>
+      <Suspense fallback={<LoadingSkeleton />}>
+        <JobsPage />
+      </Suspense>
+    </ErrorBoundarySection>
   )
 }

@@ -20,7 +20,7 @@ test.describe('Kanban - Movimentação de Candidatos', () => {
 
   test('deve exibir candidatos nas colunas', async ({ authenticatedPage }) => {
     const candidateCards = authenticatedPage.locator('[data-testid="candidate-card"], [class*="candidate-card"]');
-    await expect(candidateCards.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+    await expect.soft(candidateCards.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve mover candidato via drag and drop', async ({ authenticatedPage }) => {
@@ -46,7 +46,7 @@ test.describe('Kanban - Movimentação de Candidatos', () => {
         await moveButton.click();
         
         const modal = authenticatedPage.locator('[role="dialog"], [class*="modal"]');
-        await expect(modal.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+        await expect.soft(modal.first()).toBeVisible({ timeout: 5000 });
       }
     }
   });
@@ -66,7 +66,7 @@ test.describe('Kanban - Movimentação de Candidatos', () => {
       await confirmButton.click();
       
       const successMessage = authenticatedPage.locator('[class*="toast"], [role="alert"]');
-      await expect(successMessage.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+      await expect.soft(successMessage.first()).toBeVisible({ timeout: 5000 });
     }
   });
 
@@ -77,7 +77,7 @@ test.describe('Kanban - Movimentação de Candidatos', () => {
       await historyTab.click();
       
       const historyItems = authenticatedPage.locator('[data-testid="history-item"], [class*="timeline-item"]');
-      await expect(historyItems.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+      await expect.soft(historyItems.first()).toBeVisible({ timeout: 5000 });
     }
   });
 });

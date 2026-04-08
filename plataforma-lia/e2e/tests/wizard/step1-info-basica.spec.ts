@@ -16,7 +16,7 @@ test.describe('Wizard Step 1 - Informações Básicas', () => {
     if (await nextButton.isVisible()) {
       await nextButton.click();
       const errorMessage = authenticatedPage.locator('[role="alert"], .error, [class*="error"]');
-      await expect(errorMessage.first()).toBeVisible({ timeout: 5000 }).catch(() => {});
+      await expect.soft(errorMessage.first()).toBeVisible({ timeout: 5000 });
     }
   });
 

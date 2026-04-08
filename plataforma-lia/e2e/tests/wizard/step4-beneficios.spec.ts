@@ -8,7 +8,7 @@ test.describe('Wizard Step 4 - Benefícios e Salário', () => {
 
   test('deve exibir campos de salário', async ({ authenticatedPage }) => {
     const salarySection = authenticatedPage.locator('[data-testid="salary"], [class*="salary"]');
-    await expect(salarySection.first()).toBeVisible({ timeout: 10000 }).catch(() => {});
+    await expect.soft(salarySection.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve sugerir faixa salarial baseada no mercado', async ({ authenticatedPage }) => {
