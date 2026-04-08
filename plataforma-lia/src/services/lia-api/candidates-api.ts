@@ -332,27 +332,29 @@ export async function addCandidatesToPipeline(request: AddCandidatesToPipelineRe
 }
 
 export async function getCandidates(params: CandidateListParams): Promise<CandidatePaginatedResponse> {
-  try {
-    const query = new URLSearchParams()
-    if (params.search) query.set('search', params.search)
-    if (params.status) query.set('status', params.status)
-    if (params.tags) query.set('tags', params.tags)
-    if (params.seniority) query.set('seniority', params.seniority)
-    if (params.ids) query.set('ids', params.ids)
-    if (params.limit !== undefined) query.set('limit', String(params.limit))
-    if (params.offset !== undefined) query.set('offset', String(params.offset))
-    if (params.sort_by) query.set('sort_by', params.sort_by)
-    if (params.sort_order) query.set('sort_order', params.sort_order)
-    const qs = query.toString()
-    const response = await fetch(
-      `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`,
-      { headers: getAuthHeaders() }
-    )
-    if (!response.ok) {
-      return { candidates: [], total: 0, page: 1, per_page: params.limit ?? 20 }
-    }
-    return response.json()
-  } catch {
-    return { candidates: [], total: 0, page: 1, per_page: params.limit ?? 20 }
+  const query = new URLSearchParams()
+  if (params.search) query.set('search', params.search)
+  if (params.status) query.set('status', params.status)
+  if (params.tags) query.set('tags', params.tags)
+  if (params.seniority) query.set('seniority', params.seniority)
+  if (params.ids) query.set('ids', params.ids)
+  if (params.limit !== undefined) query.set('limit', String(params.limit))
+  if (params.offset !== undefined) query.set('offset', String(params.offset))
+  if (params.sort_by) query.set('sort_by', params.sort_by)
+  if (params.sort_order) query.set('sort_order', params.sort_order)
+  const qs = query.toString()
+  const response = await fetch(
+    `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`,
+    { headers: getAuthHeaders() }
+  )
+  if (!response.ok) {
+    throw new Error(`Backend retornou ${response.status}: ${response.statusText}`)
+  }
+  const data = await response.json()
+  return {
+    candidates: data.candidates || data.items || [],
+    total: data.total ?? 0,
+    page: data.page ?? 1,
+    per_page: data.per_page ?? data.limit ?? params.limit ?? 20,
   }
 }

@@ -376,7 +376,11 @@ export interface CandidateListParams {
 
 export interface CandidatePaginatedResponse {
   candidates: CandidateLocal[]
+  items?: CandidateLocal[]
   total: number
   page: number
   per_page: number
+  skip?: number
+  limit?: number
+  source?: string
 }
