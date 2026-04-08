@@ -229,6 +229,14 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 pass
 
         except Exception as e:
+            if _DEV_MODE:
+                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
+                request.state.user_id = "dev-user"
+                request.state.company_id = "demo_company"
+                _current_company_id.set("demo_company")
+                request.state.user_role = "admin"
+                logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user after token error on {path}: {e}")
+                return await call_next(request)
             logger.warning(f"[AuthEnforcement] Token validation failed for {path}: {e}")
             return JSONResponse(
                 {"detail": "Invalid or expired token"},
