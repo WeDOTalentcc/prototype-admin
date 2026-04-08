@@ -1,0 +1,309 @@
+"""
+SourcingAgentOrchestrator — manages persistent multi-agent sourcing per job/pool.
+
+Each sourcing agent is an isolated instance with:
+  - Persistent search_strategy that evolves via recruiter feedback
+  - Calibration via Big Card modal (min 3 approvals)
+  - Recalibration on every approve/reject signal
+
+Integrates with:
+  - SourcingSearchAgent (existing LIA) for actual candidate search
+  - AgentTemplate (Stage 8) for prompt configuration
+  - TalentPool (Phase 6.1) as candidate destination
+
+Apply to: lia-agent-system/app/services/sourcing_agent_orchestrator.py
+"""
+
+import json
+import logging
+import uuid
+from dataclasses import dataclass
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CalibrationResult:
+    calibration_version: int
+    total_signals: int
+    approved_count: int
+    rejected_count: int
+    strategy_updated: bool
+    new_exclusions: list[str]
+    new_positive_signals: list[str]
+
+
+class SourcingAgentOrchestrator:
+
+    async def create_agent(
+        self,
+        company_id: str,
+        agent_name: str,
+        job_id: Optional[str] = None,
+        talent_pool_id: Optional[str] = None,
+        agent_template_id: Optional[str] = None,
+        search_strategy: Optional[dict] = None,
+        preferences: Optional[dict] = None,
+        db=None,
+    ) -> dict:
+        """
+        Create a new sourcing agent for a job or talent pool.
+
+        If no search_strategy provided and job_id given, extracts strategy from JD via LLM.
+        """
+        from app.models.sourcing_agent import SourcingAgent
+
+        # Extract strategy from JD if not provided
+        if not search_strategy and job_id:
+            search_strategy = await self._extract_strategy_from_job(job_id, db)
+        elif not search_strategy:
+            search_strategy = {"required_skills": [], "exclusions": [], "positive_signals": []}
+
+        agent = SourcingAgent(
+            id=str(uuid.uuid4()),
+            company_id=company_id,
+            job_id=job_id,
+            talent_pool_id=talent_pool_id,
+            agent_template_id=agent_template_id,
+            agent_name=agent_name,
+            status="active",
+            calibration_v=0,
+            search_strategy=search_strategy,
+            preferences=preferences or self._default_preferences(),
+            outreach_config={},
+        )
+
+        db.add(agent)
+        await db.commit()
+        await db.refresh(agent)
+
+        logger.info("[SourcingAgent] Created agent=%s for job=%s pool=%s", agent.id, job_id, talent_pool_id)
+        return {"agent_id": str(agent.id), "status": "active", "strategy": search_strategy}
+
+    async def process_feedback(
+        self,
+        agent_id: str,
+        candidate_id: str,
+        signal_type: str,  # "positive" or "negative"
+        reason: str,
+        db=None,
+    ) -> CalibrationResult:
+        """
+        Process recruiter feedback (approve/reject) and recalibrate agent strategy.
+
+        This is the core of the Juicebox-style feedback loop:
+        - Each rejection + reason → LLM extracts anti-criteria → added to exclusions
+        - Each approval → LLM extracts positive criteria → reinforces positive_signals
+        """
+        from app.models.sourcing_agent import SourcingAgent, SourcingAgentSignal
+        from sqlalchemy import select
+
+        # Load agent
+        result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+        agent = result.scalar_one()
+
+        # Extract criteria from reason via LLM
+        criteria = await self._extract_criteria(reason, signal_type)
+
+        # Persist signal
+        signal = SourcingAgentSignal(
+            id=str(uuid.uuid4()),
+            agent_id=agent_id,
+            signal_type=signal_type,
+            candidate_id=candidate_id,
+            reason=reason,
+            criteria_extracted=criteria,
+        )
+        db.add(signal)
+
+        # Recalibrate strategy
+        strategy = dict(agent.search_strategy)
+        new_exclusions = []
+        new_positives = []
+
+        if signal_type == "negative":
+            strategy.setdefault("exclusions", [])
+            new_exclusions = [c for c in criteria if c not in strategy["exclusions"]]
+            strategy["exclusions"] = list(set(strategy["exclusions"] + criteria))
+        else:
+            strategy.setdefault("positive_signals", [])
+            new_positives = [c for c in criteria if c not in strategy["positive_signals"]]
+            strategy["positive_signals"] = list(set(strategy.get("positive_signals", []) + criteria))
+
+        agent.search_strategy = strategy
+        agent.calibration_v += 1
+
+        if signal_type == "positive":
+            agent.profiles_approved = (agent.profiles_approved or 0) + 1
+        else:
+            agent.profiles_rejected = (agent.profiles_rejected or 0) + 1
+
+        await db.commit()
+
+        # Count total signals for calibration status
+        from sqlalchemy import func
+        count_result = await db.execute(
+            select(func.count()).where(SourcingAgentSignal.agent_id == agent_id)
+        )
+        total = count_result.scalar()
+
+        logger.info(
+            "[SourcingAgent] agent=%s recalibrated to v%d | %s | criteria=%s",
+            agent_id, agent.calibration_v, signal_type, criteria,
+        )
+
+        return CalibrationResult(
+            calibration_version=agent.calibration_v,
+            total_signals=total,
+            approved_count=agent.profiles_approved or 0,
+            rejected_count=agent.profiles_rejected or 0,
+            strategy_updated=bool(new_exclusions or new_positives),
+            new_exclusions=new_exclusions,
+            new_positive_signals=new_positives,
+        )
+
+    async def get_calibration_candidates(
+        self,
+        agent_id: str,
+        limit: int = 10,
+        db=None,
+    ) -> list[dict]:
+        """
+        Get initial candidates for the Big Card calibration modal.
+
+        Uses the agent's search_strategy to find candidates, then generates
+        match_criteria for each (Why we matched this profile).
+        """
+        from app.models.sourcing_agent import SourcingAgent
+        from sqlalchemy import select
+
+        result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+        agent = result.scalar_one()
+
+        # Use existing SourcingSearchAgent to find candidates
+        query = self._strategy_to_query(agent.search_strategy)
+
+        try:
+            from app.domains.sourcing.agents.sourcing_search_agent import SourcingSearchAgent
+            from app.shared.agents.agent_interface import AgentInput
+
+            search_agent = SourcingSearchAgent()
+            output = await search_agent.process(AgentInput(
+                message=query,
+                context={"company_id": agent.company_id, "limit": limit},
+            ))
+            candidates = output.data.get("candidates", [])[:limit]
+        except Exception as e:
+            logger.warning("[SourcingAgent] Search failed, returning empty: %s", e)
+            candidates = []
+
+        # Generate match_criteria for each candidate (Why we matched)
+        enriched = []
+        for c in candidates:
+            match_criteria = await self._generate_match_criteria(c, agent.search_strategy)
+            enriched.append({**c, "match_criteria": match_criteria})
+
+        return enriched
+
+    async def get_agent_timeline(self, agent_id: str, limit: int = 20, db=None) -> list[dict]:
+        """Get activity timeline for the Agents tab."""
+        from app.models.sourcing_agent import SourcingAgentSignal
+        from sqlalchemy import select
+
+        result = await db.execute(
+            select(SourcingAgentSignal)
+            .where(SourcingAgentSignal.agent_id == agent_id)
+            .order_by(SourcingAgentSignal.created_at.desc())
+            .limit(limit)
+        )
+        signals = result.scalars().all()
+
+        timeline = []
+        for s in signals:
+            icon = "✅" if s.signal_type == "positive" else "❌"
+            timeline.append({
+                "id": str(s.id),
+                "icon": icon,
+                "type": s.signal_type,
+                "reason": s.reason,
+                "criteria": s.criteria_extracted or [],
+                "candidate_id": s.candidate_id,
+                "created_at": s.created_at.isoformat() if s.created_at else None,
+            })
+        return timeline
+
+    async def _extract_criteria(self, reason: str, signal_type: str) -> list[str]:
+        """Extract criteria from recruiter's feedback reason via LLM."""
+        try:
+            from app.shared.providers.llm_factory import get_llm
+            llm = get_llm(tier="fast")
+            action = "aprovou" if signal_type == "positive" else "rejeitou"
+            prompt = (
+                f"Um recrutador {action} um candidato.\n"
+                f'Motivo: "{reason}"\n\n'
+                f"Extraia os critérios técnicos como lista de strings curtas (máx 5 itens).\n"
+                f'Responda APENAS com JSON: {{"criterios": ["critério 1", "critério 2"]}}'
+            )
+            resp = await llm.ainvoke(prompt)
+            data = json.loads(resp.content)
+            return data.get("criterios", [])[:5]
+        except Exception as e:
+            logger.warning("[SourcingAgent] Criteria extraction failed: %s", e)
+            return [reason[:100]]  # Fallback: use reason as-is
+
+    async def _extract_strategy_from_job(self, job_id: str, db) -> dict:
+        """Extract search strategy from job description via LLM."""
+        try:
+            from app.shared.providers.llm_factory import get_llm
+            llm = get_llm(tier="fast")
+            # Load job (simplified — adapt to actual model)
+            prompt = (
+                f"Extraia os critérios de busca para um agente de sourcing.\n"
+                f"Job ID: {job_id}\n\n"
+                f"Responda com JSON:\n"
+                f'{{"required_skills": [], "seniority": "", "location": "", '
+                f'"min_years_exp": 0, "exclusions": [], "positive_signals": []}}'
+            )
+            resp = await llm.ainvoke(prompt)
+            return json.loads(resp.content)
+        except Exception:
+            return {"required_skills": [], "exclusions": [], "positive_signals": []}
+
+    async def _generate_match_criteria(self, candidate: dict, strategy: dict) -> list[dict]:
+        """Generate 'Why we matched' criteria for calibration card."""
+        try:
+            from app.shared.providers.llm_factory import get_llm
+            llm = get_llm(tier="fast")
+            prompt = (
+                f"Critérios de busca: {json.dumps(strategy, ensure_ascii=False)}\n"
+                f"Candidato: {json.dumps(candidate, ensure_ascii=False)[:500]}\n\n"
+                f"Para cada critério da busca, avalie se o candidato atende.\n"
+                f"Responda com JSON:\n"
+                f'[{{"criterion": "5+ anos Python", "match": "good"|"partial"|"no", '
+                f'"explanation": "Candidato tem 7 anos de Python..."}}]'
+            )
+            resp = await llm.ainvoke(prompt)
+            return json.loads(resp.content)
+        except Exception:
+            return [{"criterion": "Análise geral", "match": "partial", "explanation": "Avaliação automática indisponível"}]
+
+    @staticmethod
+    def _strategy_to_query(strategy: dict) -> str:
+        skills = ", ".join(strategy.get("required_skills", []))
+        loc = strategy.get("location", "")
+        excl = strategy.get("exclusions", [])
+        excl_str = f" Excluir: {', '.join(excl)}." if excl else ""
+        return f"Buscar candidatos com {skills} em {loc}.{excl_str}"
+
+    @staticmethod
+    def _default_preferences() -> dict:
+        return {
+            "candidates_per_day": 20,
+            "channels": ["internal", "linkedin"],
+            "schedule": "continuous",
+            "notify_frequency": "daily",
+        }
+
+
+sourcing_agent_orchestrator = SourcingAgentOrchestrator()

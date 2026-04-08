@@ -1,0 +1,129 @@
+"use client"
+
+import React from "react"
+import { Database, Plus, ChevronDown, ChevronRight, Bot } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { textStyles, badgeStyles } from "@/lib/design-tokens"
+import { useTalentPools, TalentPoolSummary } from "./useTalentPools"
+
+/**
+ * TalentPoolsSidebar — sidebar section for Talent Pools.
+ *
+ * Designed to be inserted into the main app sidebar navigation.
+ * Follows the existing collapsible section pattern from settings-page-enhanced.tsx.
+ *
+ * Usage:
+ *   <TalentPoolsSidebar
+ *     activePoolId={selectedPoolId}
+ *     onSelectPool={(id) => navigate(`/talent-pools/${id}`)}
+ *     onCreatePool={() => setShowCreateModal(true)}
+ *   />
+ */
+
+interface TalentPoolsSidebarProps {
+  activePoolId?: string | null
+  onSelectPool: (poolId: string) => void
+  onCreatePool: () => void
+  isCollapsed?: boolean
+}
+
+export default function TalentPoolsSidebar({
+  activePoolId,
+  onSelectPool,
+  onCreatePool,
+  isCollapsed = false,
+}: TalentPoolsSidebarProps) {
+  const { activePools, isLoading } = useTalentPools()
+  const [isExpanded, setIsExpanded] = React.useState(true)
+
+  if (isCollapsed) {
+    return (
+      <div className="py-2 px-3" title="Bancos de Talentos">
+        <Database className="w-5 h-5 text-gray-500 mx-auto" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="py-1">
+      {/* Section header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Database className="w-4 h-4 text-gray-500" />
+          <span className={textStyles.sidebarTitle}>Bancos de Talentos</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {activePools.length > 0 && (
+            <Badge className={badgeStyles.success}>{activePools.length}</Badge>
+          )}
+          {isExpanded ? (
+            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          )}
+        </div>
+      </button>
+
+      {/* Pool items */}
+      {isExpanded && (
+        <div className="mt-1 space-y-0.5">
+          {isLoading ? (
+            <p className={`px-3 py-1 ${textStyles.caption}`}>Carregando...</p>
+          ) : activePools.length === 0 ? (
+            <p className={`px-3 py-1 ${textStyles.caption}`}>Nenhum banco ativo</p>
+          ) : (
+            activePools.map(pool => (
+              <PoolItem
+                key={pool.id}
+                pool={pool}
+                isActive={activePoolId === pool.id}
+                onClick={() => onSelectPool(pool.id)}
+              />
+            ))
+          )}
+
+          {/* Create new */}
+          <button
+            onClick={onCreatePool}
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 rounded-md transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className={textStyles.sidebarItem}>Novo banco</span>
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PoolItem({
+  pool,
+  isActive,
+  onClick,
+}: {
+  pool: TalentPoolSummary
+  isActive: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md transition-colors ${
+        isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-50"
+      }`}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        {pool.agent_sourcing_enabled && (
+          <Bot className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" title="Agente ativo" />
+        )}
+        <span className={`${textStyles.sidebarItem} truncate`}>{pool.name}</span>
+      </div>
+      <span className={`${textStyles.caption} flex-shrink-0 ml-2`}>
+        {pool.candidates_count}
+      </span>
+    </button>
+  )
+}

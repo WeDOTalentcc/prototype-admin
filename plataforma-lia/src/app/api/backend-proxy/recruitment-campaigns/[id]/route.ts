@@ -1,0 +1,26 @@
+/**
+ * Place at: src/app/api/backend-proxy/recruitment-campaigns/[id]/route.ts
+ * Handles: GET show, PATCH update
+ * Sub-actions (advance-stage, complete-stage, add-checkpoint) have dedicated route files.
+ */
+import { NextRequest, NextResponse } from "next/server"
+
+const RAILS_URL = process.env.RAILS_BACKEND_URL || process.env.BACKEND_URL || ""
+
+function getAuthHeaders(req: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  const auth = req.headers.get("authorization")
+  if (auth) headers["Authorization"] = auth
+  return headers
+}
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const res = await fetch(`${RAILS_URL}/v1/users/recruitment_campaigns/${params.id}`, { headers: getAuthHeaders(req) })
+  return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const body = await req.text()
+  const res = await fetch(`${RAILS_URL}/v1/users/recruitment_campaigns/${params.id}`, { method: "PATCH", headers: getAuthHeaders(req), body })
+  return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
+}
