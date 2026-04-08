@@ -99,6 +99,7 @@ CLIENT_USERS = [
     {"name": "Lucas Ferreira",         "email": "lucas.ferreira@wedotalent.cc", "role": "manager",   "status": "active"},
     {"name": "Juliana Santos",         "email": "juliana.santos@wedotalent.cc", "role": "viewer",    "status": "active"},
     {"name": "Pedro Almeida",          "email": "pedro.almeida@wedotalent.cc",  "role": "recruiter", "status": "pending"},
+    {"name": "Mariana Duarte",         "email": "mariana.duarte@wedotalent.cc", "role": "hiring_manager", "status": "active"},
 ]
 
 USER_IDS = [_seed_uuid(f"user:{u['email']}") for u in CLIENT_USERS]
@@ -112,7 +113,7 @@ JOB_VACANCIES = [
     {"title": "Analista de RH Pleno",                   "dept": "hr",           "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Pleno",        "status": "Ativa",      "priority": "média",   "salary_min": 7000,  "salary_max": 10000},
     {"title": "DevOps Engineer",                        "dept": "engineering",  "location": "Remoto",              "model": "remoto",      "type": "PJ",  "seniority": "Sênior",       "status": "Ativa",      "priority": "alta",    "salary_min": 16000, "salary_max": 24000},
     {"title": "Analista Financeiro Júnior",             "dept": "finance",      "location": "São Paulo, SP",       "model": "presencial",  "type": "CLT", "seniority": "Júnior",       "status": "Rascunho",   "priority": "baixa",   "salary_min": 4500,  "salary_max": 6500},
-    {"title": "Gerente de Marketing Digital",           "dept": "marketing",    "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Sênior",       "status": "Pausada",    "priority": "média",   "salary_min": 14000, "salary_max": 20000},
+    {"title": "Gerente de Marketing Digital",           "dept": "marketing",    "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Sênior",       "status": "Aprovada",   "priority": "média",   "salary_min": 14000, "salary_max": 20000},
     {"title": "Engenheiro(a) de Machine Learning",      "dept": "data",         "location": "Remoto",              "model": "remoto",      "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "alta",    "salary_min": 20000, "salary_max": 30000},
     {"title": "Vendedor(a) Enterprise",                 "dept": "sales",        "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Pleno",        "status": "Concluída",  "priority": "alta",    "salary_min": 8000,  "salary_max": 12000},
     {"title": "Advogado(a) Trabalhista",                "dept": "legal",        "location": "São Paulo, SP",       "model": "presencial",  "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "média",   "salary_min": 12000, "salary_max": 18000},
@@ -1295,11 +1296,18 @@ async def clean_seed_data(db: AsyncSession):
     await db.execute(text("DELETE FROM departments WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
     logger.info("  departments cleaned.")
 
-    await db.execute(text("DELETE FROM company_profiles WHERE id = :id"), {"id": SEED_COMPANY_PROFILE_ID})
-    logger.info("  company_profiles cleaned.")
-
-    await db.execute(text("DELETE FROM client_accounts WHERE id = :id"), {"id": SEED_COMPANY_ID})
-    logger.info("  client_accounts cleaned.")
+    remaining_users = await db.execute(
+        text("SELECT count(*) FROM client_users WHERE company_id = :cid"),
+        {"cid": SEED_COMPANY_ID},
+    )
+    user_count = remaining_users.scalar() or 0
+    if user_count > 0:
+        logger.info(f"  {user_count} preserved user(s) remain — skipping company_profiles/client_accounts deletion.")
+    else:
+        await db.execute(text("DELETE FROM company_profiles WHERE id = :id"), {"id": SEED_COMPANY_PROFILE_ID})
+        logger.info("  company_profiles cleaned.")
+        await db.execute(text("DELETE FROM client_accounts WHERE id = :id"), {"id": SEED_COMPANY_ID})
+        logger.info("  client_accounts cleaned.")
 
     logger.info("All seed data cleaned.")
 
