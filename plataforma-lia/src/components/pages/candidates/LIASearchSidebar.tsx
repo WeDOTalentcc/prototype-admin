@@ -91,7 +91,7 @@ export function LIASearchSidebar({
   return (
     <div
       data-testid="lia-search-sidebar"
-      className={`transition-colors motion-reduce:transition-none duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
+      className={`transition-colors motion-reduce:transition-none duration-300 relative group min-h-0 ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
       style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`, maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >
       <Card className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary">

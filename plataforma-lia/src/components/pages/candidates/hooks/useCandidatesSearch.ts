@@ -436,23 +436,20 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
           global: globalCandidates as unknown as typeof prev.global,
           localCount: searchResponse.local_count || localCandidates.length,
           globalCount: searchResponse.pearch_count || globalCandidates.length,
-          showGlobalResults: true
+          showGlobalResults: globalCandidates.length > 0
         }))
 
-        // Notificar usuário
-        toast.success("Busca expandida com sucesso!", { description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.` })
+        if (globalCandidates.length > 0) {
+          toast.success("Busca expandida com sucesso!", { description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.` })
 
-        // Adicionar mensagem no chat
-        const liaMessage = {
-          id: `lia-expand-global-${Date.now()}`,
-          type: 'lia',
-          content: `🌐 **Busca expandida para base global**\n\nEncontrei mais **${globalCandidates.length} candidatos** na Busca Global!\n\nAgora você tem acesso a um pool ampliado de talentos para sua vaga.`,
-          timestamp: new Date()
-        }
-        setChatMessages(prev => [...prev, liaMessage])
+          const liaMessage = {
+            id: `lia-expand-global-${Date.now()}`,
+            type: 'lia',
+            content: `🌐 **Busca expandida para base global**\n\nEncontrei mais **${globalCandidates.length} candidatos** na Busca Global!\n\nAgora você tem acesso a um pool ampliado de talentos para sua vaga.`,
+            timestamp: new Date()
+          }
+          setChatMessages(prev => [...prev, liaMessage])
 
-        // 🎯 Chamar análise proativa após expansão para busca global
-        if (mappedCandidates.length > 0) {
           try {
             const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
               method: 'POST',
@@ -483,7 +480,6 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             if (analyzeResponse.ok) {
               const analyticsData: SearchAnalytics = await analyzeResponse.json()
 
-              // Inserir card de insights proativos no chat
               const insightMessage = {
                 id: `proactive-insight-global-${Date.now()}`,
                 type: 'proactive_insight',
@@ -495,7 +491,29 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             }
           } catch (analyzeError) {
           }
+        } else {
+          toast.info("Busca global indisponível", {
+            description: "O serviço de busca global (Pearch AI) não está configurado no momento. Os resultados da base local foram mantidos."
+          })
+          const liaMessage = {
+            id: `lia-expand-unavailable-${Date.now()}`,
+            type: 'lia' as const,
+            content: `A busca global não está disponível no momento. Os resultados da base local foram mantidos.\n\nPara habilitar a busca global, configure a integração com Pearch AI nas configurações da plataforma.`,
+            timestamp: new Date()
+          }
+          setChatMessages(prev => [...prev, liaMessage])
         }
+      } else {
+        toast.info("Busca global indisponível", {
+          description: "O serviço de busca global (Pearch AI) não está configurado no momento. Os resultados da base local foram mantidos."
+        })
+        const liaMessage = {
+          id: `lia-expand-unavailable-${Date.now()}`,
+          type: 'lia' as const,
+          content: `A busca global não está disponível no momento. Os resultados da base local foram mantidos.\n\nPara habilitar a busca global, configure a integração com Pearch AI nas configurações da plataforma.`,
+          timestamp: new Date()
+        }
+        setChatMessages(prev => [...prev, liaMessage])
       }
 
       setShowExpandGlobalOption(false)
