@@ -87,7 +87,7 @@ export default function AgentStudioPage({
       const agentsData = await agentsRes.json()
       const templatesData = await templatesRes.json()
       setAgents(agentsData?.agents || [])
-      setTemplates(templatesData || [])
+      setTemplates(Array.isArray(templatesData) ? templatesData : [])
     } catch (err) {
       console.error("Failed to load agent studio data:", err)
     } finally {

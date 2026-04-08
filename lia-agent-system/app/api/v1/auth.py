@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.auth.dependencies import get_current_active_user
+from app.auth.dependencies import get_current_active_user, get_current_user_or_demo
 from app.auth.models import User, UserRole
 from app.auth.schemas import (
     EmailVerificationRequest,
@@ -232,7 +232,7 @@ async def refresh_token(
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_user_or_demo)
 ):
     """
     Get current authenticated user information.
