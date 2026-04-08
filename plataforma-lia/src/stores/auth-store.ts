@@ -140,6 +140,47 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       initAuth: async () => {
+        if (typeof window !== 'undefined' && (window as Record<string, unknown>).__INITIAL_USER__) {
+          const serverData = (window as Record<string, unknown>).__INITIAL_USER__ as Record<string, unknown>
+          const userData: AuthenticatedUser = {
+            id: String(serverData.id || serverData.user_id || ''),
+            email: String(serverData.email || ''),
+            name: String(serverData.name || serverData.full_name || ''),
+            role: String(serverData.role || 'user'),
+            company_id: String(serverData.company_id || ''),
+            avatar: serverData.avatar as string | undefined,
+            permissions: (serverData.permissions as string[]) || [],
+          }
+          if (userData.email) {
+            set({
+              user: userData,
+              authMethod: 'dev-auto-login' as AuthMethod,
+              isAuthenticated: true,
+              isSSO: false,
+              isLoading: false,
+            }, false, 'auth/init/server-injected')
+            delete (window as Record<string, unknown>).__INITIAL_USER__
+            return
+          }
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const userData = await authService.getMeDirect()
+            if (userData && userData.email) {
+              set({
+                user: userData,
+                authMethod: 'dev-auto-login' as AuthMethod,
+                isAuthenticated: true,
+                isSSO: false,
+                isLoading: false,
+              }, false, 'auth/init/dev')
+              return
+            }
+          } catch {
+          }
+        }
+
         const currentAuthMethod = authService.getAuthMethod()
 
         if (currentAuthMethod === 'sso') {
@@ -158,27 +199,22 @@ export const useAuthStore = create<AuthStore>()(
           } catch {
             await authService.clearTokens()
           }
-        } else if (authService.isJWTAuthenticated() || currentAuthMethod === 'dev-auto-login') {
-          const isDevLogin = currentAuthMethod === 'dev-auto-login'
+        } else if (authService.isJWTAuthenticated()) {
           try {
             const userData = await authService.getMe()
             set({
               user: userData,
-              authMethod: isDevLogin ? 'dev-auto-login' as AuthMethod : 'jwt',
+              authMethod: 'jwt',
               isAuthenticated: true,
               isSSO: false,
             }, false, 'auth/init/jwt')
           } catch {
-            if (isDevLogin) {
-              set({ isLoading: false }, false, 'auth/init/dev-skip')
-              return
-            }
             try {
               await authService.refreshToken()
               const userData = await authService.getMe()
               set({
                 user: userData,
-                authMethod: currentAuthMethod === 'dev-auto-login' ? 'dev-auto-login' as AuthMethod : 'jwt',
+                authMethod: 'jwt',
                 isAuthenticated: true,
                 isSSO: false,
               }, false, 'auth/init/jwt-refreshed')

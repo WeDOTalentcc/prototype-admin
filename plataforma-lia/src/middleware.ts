@@ -143,15 +143,15 @@ export async function middleware(request: NextRequest) {
       response.cookies.set('lia_access_token', token, {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
-        secure: false,
-        sameSite: 'lax' as const,
+        secure: true,
+        sameSite: 'none' as const,
         httpOnly: true,
       })
       response.cookies.set('lia_auth_method', 'dev-auto-login', {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
-        secure: false,
-        sameSite: 'lax' as const,
+        secure: true,
+        sameSite: 'none' as const,
         httpOnly: false,
       })
 

@@ -210,31 +210,37 @@ class AuthService {
       throw new Error('No active session')
     }
 
-    const response = await fetch(`${AUTH_API_URL}/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    })
+    return this.getMeDirect()
+  }
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        try {
-          await this.refreshToken()
-          return this.getMe()
-        } catch {
-          await this.clearTokens()
-          throw new Error('Session expired')
-        }
+  async getMeDirect(): Promise<User> {
+    console.log('[AUTH-DEBUG] getMeDirect fetching:', `${AUTH_API_URL}/me`)
+    try {
+      const response = await fetch(`${AUTH_API_URL}/me`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      console.log('[AUTH-DEBUG] getMeDirect response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'unknown error')
+        console.log('[AUTH-DEBUG] getMeDirect error body:', errorText)
+        throw new Error(`Failed to get user info: ${response.status}`)
       }
-      const error: AuthError = await response.json().catch(() => ({ 
-        error: 'Failed to get user info' 
-      }))
-      throw new Error(error.error || 'Failed to get user info')
-    }
 
-    return response.json()
+      const data = await response.json()
+      console.log('[AUTH-DEBUG] getMeDirect data:', JSON.stringify(data))
+      return data
+    } catch (fetchErr: unknown) {
+      const errMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr)
+      const errName = fetchErr instanceof Error ? fetchErr.name : 'unknown'
+      console.log('[AUTH-DEBUG] getMeDirect fetch exception:', errName, errMsg)
+      throw fetchErr
+    }
   }
 
   async logout(): Promise<void> {

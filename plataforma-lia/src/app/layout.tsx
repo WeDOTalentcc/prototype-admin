@@ -6,10 +6,33 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { JWTAuthProvider } from "@/contexts/auth-context"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { headers } from "next/headers"
 
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { LiaFloatConditional } from "@/components/lia-float/LiaFloatConditional"
+
+async function getServerUser(): Promise<Record<string, unknown> | null> {
+  try {
+    const headersList = await headers()
+    const authHeader = headersList.get('authorization')
+    if (!authHeader) return null
+
+    const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+    const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
+}
 
 
 const inter = Inter({
@@ -82,11 +105,13 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const serverUser = await getServerUser()
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head suppressHydrationWarning>
@@ -99,7 +124,13 @@ export default function RootLayout({
         className={`${inter.variable} ${openSans.variable} ${crimsonText.variable} ${sourceSerif4.variable} antialiased`}
         suppressHydrationWarning
       >
-      {/* Skip to content — acessibilidade para navegação por teclado */}
+      {serverUser && (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__INITIAL_USER__=${JSON.stringify(serverUser)};`,
+          }}
+        />
+      )}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-modal focus:px-4 focus:py-2 focus:bg-wedo-cyan focus:text-white focus:rounded-lg focus:text-sm focus:font-medium focus:shadow-lg"
