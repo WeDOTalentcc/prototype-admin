@@ -152,7 +152,6 @@ export function useInterpretContext() {
       setIsLoading(false)
     }
     return null
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, conversationId])
 
   const interpret = useCallback(async (params: InterpretContextParams) => {

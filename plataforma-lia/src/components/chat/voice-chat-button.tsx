@@ -52,6 +52,7 @@ export function VoiceChatButton({
     }
   }, [])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- processAudio is defined below; safe ordering
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })

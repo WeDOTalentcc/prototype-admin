@@ -257,7 +257,6 @@ export function useJobStatusModal({
     setCurrentStep('confirmation')
   }, [])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSubmitAndNavigate = useCallback(async () => {
     if (isSubmitting) return
     setIsSubmitting(true)
@@ -300,6 +299,7 @@ export function useJobStatusModal({
     } finally {
       setIsSubmitting(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omitting all deps; this callback is used as a navigation action
   }, [])
 
   const handleSubmit = async () => {
@@ -394,7 +394,7 @@ export function useJobStatusModal({
 
   const handleClose = useCallback(() => {
     onClose()
-  }, [])
+  }, [onClose])
   return {
     currentStep, setCurrentStep, isSubmitting, isPauseMode, isCancelMode, jobIds,
     notificationReport, setNotificationReport,

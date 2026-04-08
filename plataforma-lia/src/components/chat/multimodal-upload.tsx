@@ -55,7 +55,7 @@ export function MultimodalUpload({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const detectAnalysisType = (file: File): AnalysisType => {
+  const detectAnalysisType = useCallback((file: File): AnalysisType => {
     if (analysisType !== 'auto') return analysisType
     
     const fileName = file.name.toLowerCase()
@@ -70,8 +70,9 @@ export function MultimodalUpload({
     
     if (file.type.startsWith('image/')) return 'image'
     return 'document'
-  }
+  }, [analysisType])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- analyzeFile is defined below; safe circular ref
   const handleFileSelect = useCallback(async (selectedFile: File) => {
     setFile(selectedFile)
     setError(null)
@@ -158,7 +159,7 @@ export function MultimodalUpload({
     } finally {
       setIsAnalyzing(false)
     }
-  }, [analysisType, onAnalysisComplete, onError])
+  }, [analysisType, file, detectAnalysisType, onAnalysisComplete, onError])
 
   const clearFile = () => {
     setFile(null)

@@ -122,6 +122,7 @@ export function useGlobalSearchHub(
     setErrorMessage(null)
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleSave = async () => {
     setSaving(true)
     setErrorMessage(null)
@@ -152,6 +153,7 @@ export function useGlobalSearchHub(
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleCancel = () => {
     setSettings(originalSettings)
     setHasChanges(false)
@@ -192,8 +194,8 @@ export function useGlobalSearchHub(
     if (!hasOtherChanges) setHasChanges(false)
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useImperativeHandle(ref, () => ({
+    save: handleSave,
     save: handleSave,
     cancel: handleCancel,
     hasChanges

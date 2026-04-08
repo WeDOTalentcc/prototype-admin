@@ -5,6 +5,7 @@ import { jwtVerify } from 'jose'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
 const DEV_AUTO_LOGIN = process.env.NODE_ENV !== 'production'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const PUBLIC_PATHS = [
   '/login',
@@ -51,6 +52,37 @@ function getBaseUrl(request: NextRequest): string {
   return `http://${host}`
 }
 
+let cachedDevToken: { token: string; expiresAt: number } | null = null
+
+async function getDevToken(): Promise<string | null> {
+  if (cachedDevToken && cachedDevToken.expiresAt > Date.now()) {
+    return cachedDevToken.token
+  }
+
+  const demoEmail = process.env.DEV_AUTO_LOGIN_EMAIL || 'demo@wedotalent.com'
+  const demoPassword = process.env.DEV_AUTO_LOGIN_PASSWORD || 'demo123'
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data.access_token) return null
+
+    cachedDevToken = {
+      token: data.access_token,
+      expiresAt: Date.now() + 25 * 60 * 1000,
+    }
+    return data.access_token
+  } catch {
+    return null
+  }
+}
+
 function denyAccess(request: NextRequest, pathname: string): NextResponse {
   if (pathname.startsWith('/api/')) {
     return NextResponse.json(
@@ -60,13 +92,6 @@ function denyAccess(request: NextRequest, pathname: string): NextResponse {
   }
 
   const base = getBaseUrl(request)
-
-  if (DEV_AUTO_LOGIN) {
-    const autoLoginUrl = new URL('/api/auth/auto-login', base)
-    autoLoginUrl.searchParams.set('next', pathname)
-    return NextResponse.redirect(autoLoginUrl)
-  }
-
   const loginUrl = new URL('/login', base)
   loginUrl.searchParams.set('next', pathname)
   return NextResponse.redirect(loginUrl)
@@ -86,9 +111,8 @@ async function verifyJwt(token: string): Promise<Record<string, unknown> | null>
     }
   }
 
-  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
   try {
-    const response = await fetch(`${backendUrl}/api/v1/auth/me`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
       signal: AbortSignal.timeout(3000),
@@ -128,33 +152,60 @@ export async function middleware(request: NextRequest) {
     })
   }
 
-  if (!accessTokenCookie || accessTokenCookie.value === '_sso_session_') {
-    return denyAccess(request, pathname)
-  }
+  if (accessTokenCookie && accessTokenCookie.value !== '_sso_session_') {
+    const token = accessTokenCookie.value
 
-  const token = accessTokenCookie.value
+    if (DEV_AUTO_LOGIN) {
+      const requestHeaders = new Headers(request.headers)
+      if (!requestHeaders.get('Authorization')) {
+        requestHeaders.set('Authorization', `Bearer ${token}`)
+      }
+      return NextResponse.next({ request: { headers: requestHeaders } })
+    }
 
-  if (DEV_AUTO_LOGIN) {
+    const payload = await verifyJwt(token)
+    if (!payload) {
+      return denyAccess(request, pathname)
+    }
+
     const requestHeaders = new Headers(request.headers)
     if (!requestHeaders.get('Authorization')) {
       requestHeaders.set('Authorization', `Bearer ${token}`)
     }
-    return NextResponse.next({ request: { headers: requestHeaders } })
+
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    })
   }
 
-  const payload = await verifyJwt(token)
-  if (!payload) {
-    return denyAccess(request, pathname)
+  if (DEV_AUTO_LOGIN) {
+    const token = await getDevToken()
+    if (token) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('Authorization', `Bearer ${token}`)
+
+      const response = NextResponse.next({ request: { headers: requestHeaders } })
+
+      response.cookies.set('lia_access_token', token, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        secure: true,
+        sameSite: 'none' as const,
+        httpOnly: true,
+      })
+      response.cookies.set('lia_auth_method', 'jwt', {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        secure: true,
+        sameSite: 'none' as const,
+        httpOnly: false,
+      })
+
+      return response
+    }
   }
 
-  const requestHeaders = new Headers(request.headers)
-  if (!requestHeaders.get('Authorization')) {
-    requestHeaders.set('Authorization', `Bearer ${token}`)
-  }
-
-  return NextResponse.next({
-    request: { headers: requestHeaders },
-  })
+  return denyAccess(request, pathname)
 }
 
 export const config = {
