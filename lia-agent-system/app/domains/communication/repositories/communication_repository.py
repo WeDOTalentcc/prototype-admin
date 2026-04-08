@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import and_, func, not_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.communication.services.communication_service import CommunicationLog
+from app.domains.communication.services.communication_models import CommunicationLog
 from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy

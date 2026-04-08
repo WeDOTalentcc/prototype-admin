@@ -320,7 +320,7 @@ class EmailTrackingService:
     ) -> dict[str, str]:
         """Resolve A/B test data from CommunicationLog.extra_data via provider_message_id."""
         try:
-            from app.domains.communication.services.communication_service import CommunicationLog
+            from app.domains.communication.services.communication_models import CommunicationLog
             stmt = select(
                 CommunicationLog.company_id,
                 CommunicationLog.extra_data,

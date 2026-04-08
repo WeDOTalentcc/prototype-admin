@@ -22,16 +22,21 @@ This service handles:
 """
 import asyncio
 import logging
-import os
 import random
-import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Text, and_, desc, or_, select
+from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import AsyncSessionLocal, Base
+from app.core.database import AsyncSessionLocal
+from app.domains.communication.services.communication_models import (
+    CandidateOptOut,
+    CandidateQuarantine,
+    CommunicationLog,
+    PendingApproval,
+)
 from app.domains.communication.services.message_providers import (
     AWSEmailProvider,
     MailgunMessageProvider,
@@ -78,256 +83,23 @@ MESSAGE_REQUIRES_APPROVAL = {
     MessageType.GENERAL: True,
 }
 
-class PendingApproval(Base):
-    """Pending approval requests for communications requiring human review."""
-    __tablename__ = "pending_approvals"
-    
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    company_id = Column(String, nullable=False, index=True)
-    
-    candidate_id = Column(String, nullable=False, index=True)
-    candidate_name = Column(String(255), nullable=True)
-    candidate_email = Column(String(255), nullable=True)
-    candidate_phone = Column(String(50), nullable=True)
-    
-    job_id = Column(String, nullable=True, index=True)
-    job_title = Column(String(255), nullable=True)
-    
-    message_type = Column(String(50), nullable=False, index=True)
-    channel = Column(String(20), nullable=False, default="email")
-    
-    subject = Column(String(500), nullable=True)
-    body = Column(Text, nullable=False)
-    body_html = Column(Text, nullable=True)
-    
-    ai_personalization = Column(Text, nullable=True)
-    personalization_context = Column(JSON, default=dict)
-    
-    status = Column(String(20), default="pending", index=True)
-    
-    requested_by = Column(String(255), nullable=True)
-    requested_at = Column(DateTime, default=datetime.utcnow)
-    
-    reviewed_by = Column(String(255), nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
-    review_notes = Column(Text, nullable=True)
-    
-    modified_subject = Column(String(500), nullable=True)
-    modified_body = Column(Text, nullable=True)
-    
-    priority = Column(String(20), default="normal")
-    expires_at = Column(DateTime, nullable=True)
-    
-    communication_log_id = Column(String, nullable=True)
-    
-    extra_data = Column(JSON, default=dict)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
-        return {
-            "id": self.id,
-            "company_id": self.company_id,
-            "candidate_id": self.candidate_id,
-            "candidate_name": self.candidate_name,
-            "candidate_email": self.candidate_email,
-            "candidate_phone": self.candidate_phone,
-            "job_id": self.job_id,
-            "job_title": self.job_title,
-            "message_type": self.message_type,
-            "channel": self.channel,
-            "subject": self.subject,
-            "body": self.body,
-            "body_html": self.body_html,
-            "ai_personalization": self.ai_personalization,
-            "personalization_context": self.personalization_context,
-            "status": self.status,
-            "requested_by": self.requested_by,
-            "requested_at": self.requested_at.isoformat() if self.requested_at else None,
-            "reviewed_by": self.reviewed_by,
-            "reviewed_at": self.reviewed_at.isoformat() if self.reviewed_at else None,
-            "review_notes": self.review_notes,
-            "modified_subject": self.modified_subject,
-            "modified_body": self.modified_body,
-            "priority": self.priority,
-            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
-            "communication_log_id": self.communication_log_id,
-            "extra_data": self.extra_data,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-        }
 
+@asynccontextmanager
+async def _get_db(db: AsyncSession | None = None):
+    """Async context manager for DB session lifecycle.
 
-class CommunicationLog(Base):
-    """Audit log for all communications sent."""
-    __tablename__ = "communication_logs"
-    
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    company_id = Column(String, nullable=False, index=True)
-    
-    candidate_id = Column(String, nullable=False, index=True)
-    candidate_email = Column(String(255), nullable=True)
-    candidate_phone = Column(String(50), nullable=True)
-    
-    job_id = Column(String, nullable=True, index=True)
-    
-    message_type = Column(String(50), nullable=False, index=True)
-    channel = Column(String(20), nullable=False, index=True)
-    
-    subject = Column(String(500), nullable=True)
-    body = Column(Text, nullable=False)
-    body_html = Column(Text, nullable=True)
-    
-    status = Column(String(20), default="pending", index=True)
-    
-    sent_at = Column(DateTime, nullable=True, index=True)
-    delivered_at = Column(DateTime, nullable=True)
-    read_at = Column(DateTime, nullable=True)
-    failed_at = Column(DateTime, nullable=True)
-    
-    provider_name = Column(String(50), nullable=True)
-    provider_message_id = Column(String(255), nullable=True)
-    provider_response = Column(JSON, default=dict)
-    
-    retry_count = Column(Integer, default=0)
-    last_retry_at = Column(DateTime, nullable=True)
-    next_retry_at = Column(DateTime, nullable=True)
-    
-    error_message = Column(Text, nullable=True)
-    error_code = Column(String(50), nullable=True)
-    
-    approval_id = Column(String, nullable=True)
-    approved_by = Column(String(255), nullable=True)
-    
-    sent_by = Column(String(255), nullable=True)
-    
-    extra_data = Column(JSON, default=dict)
-    
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
-        return {
-            "id": self.id,
-            "company_id": self.company_id,
-            "candidate_id": self.candidate_id,
-            "candidate_email": self.candidate_email,
-            "candidate_phone": self.candidate_phone,
-            "job_id": self.job_id,
-            "message_type": self.message_type,
-            "channel": self.channel,
-            "subject": self.subject,
-            "body": self.body,
-            "status": self.status,
-            "sent_at": self.sent_at.isoformat() if self.sent_at else None,
-            "delivered_at": self.delivered_at.isoformat() if self.delivered_at else None,
-            "read_at": self.read_at.isoformat() if self.read_at else None,
-            "provider_name": self.provider_name,
-            "provider_message_id": self.provider_message_id,
-            "retry_count": self.retry_count,
-            "error_message": self.error_message,
-            "approval_id": self.approval_id,
-            "approved_by": self.approved_by,
-            "sent_by": self.sent_by,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
-
-
-class CandidateOptOut(Base):
-    """LGPD-compliant opt-out tracking for candidates."""
-    __tablename__ = "candidate_opt_outs"
-    
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    company_id = Column(String, nullable=False, index=True)
-    
-    candidate_id = Column(String, nullable=False, index=True)
-    candidate_email = Column(String(255), nullable=True, index=True)
-    candidate_phone = Column(String(50), nullable=True, index=True)
-    
-    channel = Column(String(20), nullable=False, index=True)
-    
-    opt_out_type = Column(String(50), nullable=False, default="all")
-    opt_out_reason = Column(Text, nullable=True)
-    
-    opted_out_at = Column(DateTime, default=datetime.utcnow, index=True)
-    opted_out_via = Column(String(50), nullable=True)
-    
-    is_active = Column(Boolean, default=True)
-    reactivated_at = Column(DateTime, nullable=True)
-    reactivated_by = Column(String(255), nullable=True)
-    
-    consent_given_at = Column(DateTime, nullable=True)
-    consent_ip_address = Column(String(50), nullable=True)
-    consent_user_agent = Column(String(500), nullable=True)
-    
-    extra_data = Column(JSON, default=dict)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
-        return {
-            "id": self.id,
-            "company_id": self.company_id,
-            "candidate_id": self.candidate_id,
-            "candidate_email": self.candidate_email,
-            "candidate_phone": self.candidate_phone,
-            "channel": self.channel,
-            "opt_out_type": self.opt_out_type,
-            "opt_out_reason": self.opt_out_reason,
-            "opted_out_at": self.opted_out_at.isoformat() if self.opted_out_at else None,
-            "is_active": self.is_active,
-            "consent_given_at": self.consent_given_at.isoformat() if self.consent_given_at else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
-
-
-class CandidateQuarantine(Base):
-    """Quarantine tracking for rejected candidates (3 months no-contact)."""
-    __tablename__ = "candidate_quarantines"
-    
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    company_id = Column(String, nullable=False, index=True)
-    
-    candidate_id = Column(String, nullable=False, index=True)
-    job_id = Column(String, nullable=True, index=True)
-    
-    reason = Column(String(100), nullable=False, default="rejection")
-    
-    quarantine_start = Column(DateTime, default=datetime.utcnow, index=True)
-    quarantine_end = Column(DateTime, nullable=False, index=True)
-    quarantine_days = Column(Integer, default=90)
-    
-    is_active = Column(Boolean, default=True, index=True)
-    lifted_at = Column(DateTime, nullable=True)
-    lifted_by = Column(String(255), nullable=True)
-    lift_reason = Column(Text, nullable=True)
-    
-    extra_data = Column(JSON, default=dict)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary."""
-        return {
-            "id": self.id,
-            "company_id": self.company_id,
-            "candidate_id": self.candidate_id,
-            "job_id": self.job_id,
-            "reason": self.reason,
-            "quarantine_start": self.quarantine_start.isoformat() if self.quarantine_start else None,
-            "quarantine_end": self.quarantine_end.isoformat() if self.quarantine_end else None,
-            "quarantine_days": self.quarantine_days,
-            "is_active": self.is_active,
-            "lifted_at": self.lifted_at.isoformat() if self.lifted_at else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
-
+    If *db* is already provided the caller owns the session and we just
+    yield it back.  When *db* is ``None`` we create a fresh
+    ``AsyncSessionLocal`` and close it on exit.
+    """
+    should_close = db is None
+    if should_close:
+        db = AsyncSessionLocal()
+    try:
+        yield db
+    finally:
+        if should_close:
+            await db.close()
 
 
 class CommunicationService:
@@ -506,12 +278,7 @@ class CommunicationService:
         
         Returns validation result with details about any blocking issues.
         """
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
+        async with _get_db(db) as db:
             result = {
                 "can_send": True,
                 "requires_approval": MESSAGE_REQUIRES_APPROVAL.get(message_type, True),
@@ -568,10 +335,6 @@ class CommunicationService:
                 })
             
             return result
-            
-        finally:
-            if should_close:
-                await db.close()
     
     async def create_approval_request(
         self,
@@ -600,85 +363,172 @@ class CommunicationService:
         
         Returns the created approval request.
         """
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            validation = await self.validate_can_send(
-                candidate_id, company_id, channel, message_type, db
-            )
-            
-            if not validation["can_send"]:
+        async with _get_db(db) as db:
+            try:
+                validation = await self.validate_can_send(
+                    candidate_id, company_id, channel, message_type, db
+                )
+                
+                if not validation["can_send"]:
+                    return {
+                        "success": False,
+                        "error": "cannot_send",
+                        "validation": validation
+                    }
+                
+                expires_at = datetime.utcnow() + timedelta(hours=expires_in_hours)
+                
+                approval = PendingApproval(
+                    company_id=company_id,
+                    candidate_id=candidate_id,
+                    candidate_name=candidate_name,
+                    candidate_email=candidate_email,
+                    candidate_phone=candidate_phone,
+                    job_id=job_id,
+                    job_title=job_title,
+                    message_type=message_type.value,
+                    channel=channel.value,
+                    subject=subject,
+                    body=body,
+                    body_html=body_html,
+                    ai_personalization=ai_personalization,
+                    personalization_context=personalization_context or {},
+                    status=ApprovalStatus.PENDING.value,
+                    requested_by=requested_by,
+                    priority=priority,
+                    expires_at=expires_at,
+                    extra_data=extra_data or {}
+                )
+                
+                db.add(approval)
+                await db.commit()
+                await db.refresh(approval)
+                
+                await self.notification_service.create_notification(
+                    user_id=requested_by or "system",
+                    title=f"Aprovação pendente: {message_type.value}",
+                    message=f"Mensagem para {candidate_name} aguarda aprovação",
+                    notification_type=NotificationType.ACTION_REQUIRED,
+                    category="approval",
+                    source_agent="communication_agent",
+                    related_candidate_id=candidate_id,
+                    related_job_id=job_id,
+                    action_url=f"/approvals/{approval.id}",
+                    action_label="Revisar",
+                    expires_in_hours=expires_in_hours,
+                    db=db
+                )
+                
+                logger.info(f"📝 Approval request created: {approval.id} for {candidate_name}")
+                
                 return {
-                    "success": False,
-                    "error": "cannot_send",
+                    "success": True,
+                    "approval_id": approval.id,
+                    "approval": approval.to_dict(),
                     "validation": validation
                 }
-            
-            expires_at = datetime.utcnow() + timedelta(hours=expires_in_hours)
-            
-            approval = PendingApproval(
-                company_id=company_id,
-                candidate_id=candidate_id,
-                candidate_name=candidate_name,
-                candidate_email=candidate_email,
-                candidate_phone=candidate_phone,
-                job_id=job_id,
-                job_title=job_title,
-                message_type=message_type.value,
-                channel=channel.value,
-                subject=subject,
-                body=body,
-                body_html=body_html,
-                ai_personalization=ai_personalization,
-                personalization_context=personalization_context or {},
-                status=ApprovalStatus.PENDING.value,
-                requested_by=requested_by,
-                priority=priority,
-                expires_at=expires_at,
-                extra_data=extra_data or {}
-            )
-            
-            db.add(approval)
-            await db.commit()
-            await db.refresh(approval)
-            
-            await self.notification_service.create_notification(
-                user_id=requested_by or "system",
-                title=f"Aprovação pendente: {message_type.value}",
-                message=f"Mensagem para {candidate_name} aguarda aprovação",
-                notification_type=NotificationType.ACTION_REQUIRED,
-                category="approval",
-                source_agent="communication_agent",
-                related_candidate_id=candidate_id,
-                related_job_id=job_id,
-                action_url=f"/approvals/{approval.id}",
-                action_label="Revisar",
-                expires_in_hours=expires_in_hours,
-                db=db
-            )
-            
-            logger.info(f"📝 Approval request created: {approval.id} for {candidate_name}")
-            
-            return {
-                "success": True,
-                "approval_id": approval.id,
-                "approval": approval.to_dict(),
-                "validation": validation
-            }
-            
-        except Exception:
-            try:
-                await db.rollback()
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
     
+    async def _process_review(
+        self,
+        approval_id: str,
+        action: str,
+        reviewed_by: str,
+        review_notes: str | None = None,
+        modified_subject: str | None = None,
+        modified_body: str | None = None,
+        send_immediately: bool = False,
+        db: AsyncSession | None = None,
+    ) -> dict[str, Any]:
+        """Shared logic for approve_request and reject_request.
+
+        Args:
+            action: Either ``"approve"`` or ``"reject"``.
+        """
+        new_status = (
+            ApprovalStatus.APPROVED.value if action == "approve"
+            else ApprovalStatus.REJECTED.value
+        )
+
+        async with _get_db(db) as db:
+            try:
+                result = await db.execute(
+                    select(PendingApproval).where(
+                        PendingApproval.id == approval_id
+                    )
+                )
+                approval = result.scalar_one_or_none()
+
+                if not approval:
+                    return {"success": False, "error": "not_found"}
+
+                if approval.status != ApprovalStatus.PENDING.value:
+                    return {"success": False, "error": "already_processed", "status": approval.status}
+
+                approval.status = new_status
+                approval.reviewed_by = reviewed_by
+                approval.reviewed_at = datetime.utcnow()
+                approval.review_notes = review_notes
+
+                if action == "approve":
+                    approval.modified_subject = modified_subject
+                    approval.modified_body = modified_body
+
+                await db.commit()
+                await db.refresh(approval)
+
+                if action == "approve":
+                    logger.info(f"✅ Approval approved: {approval_id} by {reviewed_by}")
+                else:
+                    logger.info(f"❌ Approval rejected: {approval_id} by {reviewed_by}")
+
+                communication_result = None
+                if action == "approve" and send_immediately:
+                    final_subject = modified_subject or approval.subject
+                    final_body = modified_body or approval.body
+
+                    communication_result = await self.send_message(
+                        company_id=approval.company_id,
+                        candidate_id=approval.candidate_id,
+                        candidate_email=approval.candidate_email,
+                        candidate_phone=approval.candidate_phone,
+                        message_type=MessageType(approval.message_type),
+                        channel=MessageChannel(approval.channel),
+                        subject=final_subject,
+                        body=final_body,
+                        body_html=approval.body_html,
+                        job_id=approval.job_id,
+                        approval_id=approval_id,
+                        approved_by=reviewed_by,
+                        sent_by=reviewed_by,
+                        db=db
+                    )
+
+                    if communication_result.get("success"):
+                        approval.communication_log_id = communication_result.get("log_id")
+                        await db.commit()
+
+                resp: dict[str, Any] = {
+                    "success": True,
+                    "approval": approval.to_dict(),
+                }
+                if communication_result is not None:
+                    resp["communication_result"] = communication_result
+                return resp
+
+            except Exception:
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
+
     async def approve_request(
         self,
         approval_id: str,
@@ -694,78 +544,16 @@ class CommunicationService:
         
         Returns the approval result and communication log if sent.
         """
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            result = await db.execute(
-                select(PendingApproval).where(
-                    PendingApproval.id == approval_id
-                )
-            )
-            approval = result.scalar_one_or_none()
-            
-            if not approval:
-                return {"success": False, "error": "not_found"}
-            
-            if approval.status != ApprovalStatus.PENDING.value:
-                return {"success": False, "error": "already_processed", "status": approval.status}
-            
-            approval.status = ApprovalStatus.APPROVED.value
-            approval.reviewed_by = reviewed_by
-            approval.reviewed_at = datetime.utcnow()
-            approval.review_notes = review_notes
-            approval.modified_subject = modified_subject
-            approval.modified_body = modified_body
-            
-            await db.commit()
-            await db.refresh(approval)
-            
-            logger.info(f"✅ Approval approved: {approval_id} by {reviewed_by}")
-            
-            communication_result = None
-            if send_immediately:
-                final_subject = modified_subject or approval.subject
-                final_body = modified_body or approval.body
-                
-                communication_result = await self.send_message(
-                    company_id=approval.company_id,
-                    candidate_id=approval.candidate_id,
-                    candidate_email=approval.candidate_email,
-                    candidate_phone=approval.candidate_phone,
-                    message_type=MessageType(approval.message_type),
-                    channel=MessageChannel(approval.channel),
-                    subject=final_subject,
-                    body=final_body,
-                    body_html=approval.body_html,
-                    job_id=approval.job_id,
-                    approval_id=approval_id,
-                    approved_by=reviewed_by,
-                    sent_by=reviewed_by,
-                    db=db
-                )
-                
-                if communication_result.get("success"):
-                    approval.communication_log_id = communication_result.get("log_id")
-                    await db.commit()
-            
-            return {
-                "success": True,
-                "approval": approval.to_dict(),
-                "communication_result": communication_result
-            }
-            
-        except Exception:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+        return await self._process_review(
+            approval_id=approval_id,
+            action="approve",
+            reviewed_by=reviewed_by,
+            review_notes=review_notes,
+            modified_subject=modified_subject,
+            modified_body=modified_body,
+            send_immediately=send_immediately,
+            db=db,
+        )
     
     async def reject_request(
         self,
@@ -777,49 +565,13 @@ class CommunicationService:
         """
         Reject a pending communication request.
         """
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            result = await db.execute(
-                select(PendingApproval).where(
-                    PendingApproval.id == approval_id
-                )
-            )
-            approval = result.scalar_one_or_none()
-            
-            if not approval:
-                return {"success": False, "error": "not_found"}
-            
-            if approval.status != ApprovalStatus.PENDING.value:
-                return {"success": False, "error": "already_processed", "status": approval.status}
-            
-            approval.status = ApprovalStatus.REJECTED.value
-            approval.reviewed_by = reviewed_by
-            approval.reviewed_at = datetime.utcnow()
-            approval.review_notes = review_notes
-            
-            await db.commit()
-            await db.refresh(approval)
-            
-            logger.info(f"❌ Approval rejected: {approval_id} by {reviewed_by}")
-            
-            return {
-                "success": True,
-                "approval": approval.to_dict()
-            }
-            
-        except Exception:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+        return await self._process_review(
+            approval_id=approval_id,
+            action="reject",
+            reviewed_by=reviewed_by,
+            review_notes=review_notes,
+            db=db,
+        )
     
     async def get_pending_approvals(
         self,
@@ -832,12 +584,7 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Get pending approval requests for a company."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
+        async with _get_db(db) as db:
             conditions = [
                 PendingApproval.company_id == company_id,
                 PendingApproval.status == ApprovalStatus.PENDING.value,
@@ -873,10 +620,6 @@ class CommunicationService:
                 "total": len(approvals),
                 "has_more": len(approvals) == limit
             }
-            
-        finally:
-            if should_close:
-                await db.close()
     
     def _get_provider(self, channel: MessageChannel) -> MessageProvider | None:
         """Get an available provider for the given channel."""
@@ -916,124 +659,117 @@ class CommunicationService:
         
         Handles provider selection, fallbacks, and retry logic.
         """
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            if not skip_policy_checks:
-                validation = await self.validate_can_send(
-                    candidate_id, company_id, channel, message_type, db
-                )
+        async with _get_db(db) as db:
+            try:
+                if not skip_policy_checks:
+                    validation = await self.validate_can_send(
+                        candidate_id, company_id, channel, message_type, db
+                    )
+                    
+                    if not validation["can_send"]:
+                        return {
+                            "success": False,
+                            "error": "blocked",
+                            "validation": validation
+                        }
                 
-                if not validation["can_send"]:
+                if channel == MessageChannel.EMAIL:
+                    recipient = candidate_email
+                else:
+                    recipient = candidate_phone
+                
+                if not recipient:
                     return {
                         "success": False,
-                        "error": "blocked",
-                        "validation": validation
+                        "error": "no_recipient",
+                        "message": f"No {channel.value} address available for candidate"
                     }
-            
-            if channel == MessageChannel.EMAIL:
-                recipient = candidate_email
-            else:
-                recipient = candidate_phone
-            
-            if not recipient:
-                return {
-                    "success": False,
-                    "error": "no_recipient",
-                    "message": f"No {channel.value} address available for candidate"
-                }
-            
-            log = CommunicationLog(
-                company_id=company_id,
-                candidate_id=candidate_id,
-                candidate_email=candidate_email,
-                candidate_phone=candidate_phone,
-                job_id=job_id,
-                message_type=message_type.value,
-                channel=channel.value,
-                subject=subject,
-                body=body,
-                body_html=body_html,
-                status=CommunicationStatus.PENDING.value,
-                approval_id=approval_id,
-                approved_by=approved_by,
-                sent_by=sent_by
-            )
-            
-            db.add(log)
-            await db.commit()
-            await db.refresh(log)
-            
-            if not self._is_within_sending_hours():
-                next_window = self._get_next_sending_window()
-                log.status = CommunicationStatus.QUEUED.value
-                log.next_retry_at = next_window
-                await db.commit()
                 
-                logger.info(f"📬 Message queued for sending at {next_window}: {log.id}")
-                
-                return {
-                    "success": True,
-                    "queued": True,
-                    "log_id": log.id,
-                    "scheduled_for": next_window.isoformat(),
-                    "message": "Message queued for next sending window"
-                }
-            
-            success, provider_msg_id, response = await self._send_with_retry(
-                channel, recipient, subject, body, body_html, log, db
-            )
-            
-            if success:
-                log.status = CommunicationStatus.SENT.value
-                log.sent_at = datetime.utcnow()
-                log.provider_message_id = provider_msg_id
-                log.provider_response = response or {}
-                
-                logger.info(f"✉️ Message sent successfully: {log.id}")
-            else:
-                log.status = CommunicationStatus.FAILED.value
-                log.failed_at = datetime.utcnow()
-                log.error_message = response.get("error") if response else "Unknown error"
-                
-                logger.error(f"❌ Message failed: {log.id} - {log.error_message}")
-            
-            await db.commit()
-            await db.refresh(log)
-            
-            try:
-                from app.services.event_dispatcher import event_dispatcher
-                await event_dispatcher.on_message_sent(
+                log = CommunicationLog(
                     company_id=company_id,
                     candidate_id=candidate_id,
+                    candidate_email=candidate_email,
+                    candidate_phone=candidate_phone,
+                    job_id=job_id,
                     message_type=message_type.value,
                     channel=channel.value,
-                    job_id=job_id,
-                    success=success,
-                    log_id=str(log.id)
+                    subject=subject,
+                    body=body,
+                    body_html=body_html,
+                    status=CommunicationStatus.PENDING.value,
+                    approval_id=approval_id,
+                    approved_by=approved_by,
+                    sent_by=sent_by
                 )
-            except Exception as e:
-                logger.warning(f"Event dispatch failed for message sent: {e}")
-            
-            return {
-                "success": success,
-                "log_id": log.id,
-                "log": log.to_dict(),
-                "provider_message_id": provider_msg_id
-            }
-            
-        except Exception:
-            try:
-                await db.rollback()
+                
+                db.add(log)
+                await db.commit()
+                await db.refresh(log)
+                
+                if not self._is_within_sending_hours():
+                    next_window = self._get_next_sending_window()
+                    log.status = CommunicationStatus.QUEUED.value
+                    log.next_retry_at = next_window
+                    await db.commit()
+                    
+                    logger.info(f"📬 Message queued for sending at {next_window}: {log.id}")
+                    
+                    return {
+                        "success": True,
+                        "queued": True,
+                        "log_id": log.id,
+                        "scheduled_for": next_window.isoformat(),
+                        "message": "Message queued for next sending window"
+                    }
+                
+                success, provider_msg_id, response = await self._send_with_retry(
+                    channel, recipient, subject, body, body_html, log, db
+                )
+                
+                if success:
+                    log.status = CommunicationStatus.SENT.value
+                    log.sent_at = datetime.utcnow()
+                    log.provider_message_id = provider_msg_id
+                    log.provider_response = response or {}
+                    
+                    logger.info(f"✉️ Message sent successfully: {log.id}")
+                else:
+                    log.status = CommunicationStatus.FAILED.value
+                    log.failed_at = datetime.utcnow()
+                    log.error_message = response.get("error") if response else "Unknown error"
+                    
+                    logger.error(f"❌ Message failed: {log.id} - {log.error_message}")
+                
+                await db.commit()
+                await db.refresh(log)
+                
+                try:
+                    from app.services.event_dispatcher import event_dispatcher
+                    await event_dispatcher.on_message_sent(
+                        company_id=company_id,
+                        candidate_id=candidate_id,
+                        message_type=message_type.value,
+                        channel=channel.value,
+                        job_id=job_id,
+                        success=success,
+                        log_id=str(log.id)
+                    )
+                except Exception as e:
+                    logger.warning(f"Event dispatch failed for message sent: {e}")
+                
+                return {
+                    "success": success,
+                    "log_id": log.id,
+                    "log": log.to_dict(),
+                    "provider_message_id": provider_msg_id
+                }
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
     
     async def _send_with_retry(
         self,
@@ -1158,22 +894,6 @@ class CommunicationService:
 
         Delegates template resolution and rendering to TemplateService, then sends
         the rendered content via send_message() with all policy checks applied.
-
-        Args:
-            db: Database session
-            message_type: Type of message (determines template selection)
-            company_id: Company ID for multi-tenancy
-            candidate_id: Candidate ID
-            candidate_email: Candidate's email address
-            candidate_name: Candidate's name
-            variables: Template variables for rendering
-            channel: Communication channel (default: EMAIL)
-            job_id: Optional job vacancy ID
-            sent_by: Who is sending (default: system)
-            skip_approval_check: Skip approval check for auto-approved message types
-
-        Returns:
-            Result dict with success status and details
         """
         from app.domains.communication.services.template_service import render_message_template
 
@@ -1286,43 +1006,36 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Record a candidate's opt-out from communications (LGPD compliance)."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            opt_out = CandidateOptOut(
-                company_id=company_id,
-                candidate_id=candidate_id,
-                candidate_email=candidate_email,
-                candidate_phone=candidate_phone,
-                channel=channel.value,
-                opt_out_type="channel_specific",
-                opt_out_reason=opt_out_reason,
-                opted_out_via=opted_out_via
-            )
-            
-            db.add(opt_out)
-            await db.commit()
-            await db.refresh(opt_out)
-            
-            logger.info(f"🚫 Opt-out recorded: {candidate_id} for {channel.value}")
-            
-            return {
-                "success": True,
-                "opt_out": opt_out.to_dict()
-            }
-            
-        except Exception:
+        async with _get_db(db) as db:
             try:
-                await db.rollback()
+                opt_out = CandidateOptOut(
+                    company_id=company_id,
+                    candidate_id=candidate_id,
+                    candidate_email=candidate_email,
+                    candidate_phone=candidate_phone,
+                    channel=channel.value,
+                    opt_out_type="channel_specific",
+                    opt_out_reason=opt_out_reason,
+                    opted_out_via=opted_out_via
+                )
+                
+                db.add(opt_out)
+                await db.commit()
+                await db.refresh(opt_out)
+                
+                logger.info(f"🚫 Opt-out recorded: {candidate_id} for {channel.value}")
+                
+                return {
+                    "success": True,
+                    "opt_out": opt_out.to_dict()
+                }
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
     
     async def record_consent(
         self,
@@ -1336,53 +1049,46 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Record a candidate's consent for communications (LGPD compliance)."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            result = await db.execute(
-                select(CandidateOptOut).where(
-                    and_(
-                        CandidateOptOut.candidate_id == candidate_id,
-                        CandidateOptOut.company_id == company_id,
-                        CandidateOptOut.channel == channel.value,
-                        CandidateOptOut.is_active
+        async with _get_db(db) as db:
+            try:
+                result = await db.execute(
+                    select(CandidateOptOut).where(
+                        and_(
+                            CandidateOptOut.candidate_id == candidate_id,
+                            CandidateOptOut.company_id == company_id,
+                            CandidateOptOut.channel == channel.value,
+                            CandidateOptOut.is_active
+                        )
                     )
                 )
-            )
-            opt_out = result.scalar_one_or_none()
-            
-            if opt_out:
-                opt_out.is_active = False
-                opt_out.reactivated_at = datetime.utcnow()
-                opt_out.reactivated_by = "consent"
-                opt_out.consent_given_at = datetime.utcnow()
-                opt_out.consent_ip_address = ip_address
-                opt_out.consent_user_agent = user_agent
+                opt_out = result.scalar_one_or_none()
                 
-                await db.commit()
-                await db.refresh(opt_out)
+                if opt_out:
+                    opt_out.is_active = False
+                    opt_out.reactivated_at = datetime.utcnow()
+                    opt_out.reactivated_by = "consent"
+                    opt_out.consent_given_at = datetime.utcnow()
+                    opt_out.consent_ip_address = ip_address
+                    opt_out.consent_user_agent = user_agent
+                    
+                    await db.commit()
+                    await db.refresh(opt_out)
+                    
+                    logger.info(f"✅ Consent recorded (reactivated): {candidate_id} for {channel.value}")
+                else:
+                    logger.info(f"ℹ️ Consent recorded (no prior opt-out): {candidate_id} for {channel.value}")
                 
-                logger.info(f"✅ Consent recorded (reactivated): {candidate_id} for {channel.value}")
-            else:
-                logger.info(f"ℹ️ Consent recorded (no prior opt-out): {candidate_id} for {channel.value}")
-            
-            return {
-                "success": True,
-                "reactivated": bool(opt_out)
-            }
-            
-        except Exception:
-            try:
-                await db.rollback()
+                return {
+                    "success": True,
+                    "reactivated": bool(opt_out)
+                }
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
     
     async def add_to_quarantine(
         self,
@@ -1394,45 +1100,38 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Add a candidate to quarantine (no contact for specified period)."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            now = datetime.utcnow()
-            quarantine_end = now + timedelta(days=quarantine_days)
-            
-            quarantine = CandidateQuarantine(
-                company_id=company_id,
-                candidate_id=candidate_id,
-                job_id=job_id,
-                reason=reason,
-                quarantine_start=now,
-                quarantine_end=quarantine_end,
-                quarantine_days=quarantine_days
-            )
-            
-            db.add(quarantine)
-            await db.commit()
-            await db.refresh(quarantine)
-            
-            logger.info(f"⏳ Quarantine added: {candidate_id} until {quarantine_end.strftime('%Y-%m-%d')}")
-            
-            return {
-                "success": True,
-                "quarantine": quarantine.to_dict()
-            }
-            
-        except Exception:
+        async with _get_db(db) as db:
             try:
-                await db.rollback()
+                now = datetime.utcnow()
+                quarantine_end = now + timedelta(days=quarantine_days)
+                
+                quarantine = CandidateQuarantine(
+                    company_id=company_id,
+                    candidate_id=candidate_id,
+                    job_id=job_id,
+                    reason=reason,
+                    quarantine_start=now,
+                    quarantine_end=quarantine_end,
+                    quarantine_days=quarantine_days
+                )
+                
+                db.add(quarantine)
+                await db.commit()
+                await db.refresh(quarantine)
+                
+                logger.info(f"⏳ Quarantine added: {candidate_id} until {quarantine_end.strftime('%Y-%m-%d')}")
+                
+                return {
+                    "success": True,
+                    "quarantine": quarantine.to_dict()
+                }
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
     
     async def lift_quarantine(
         self,
@@ -1442,46 +1141,39 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Lift a quarantine early."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            result = await db.execute(
-                select(CandidateQuarantine).where(
-                    CandidateQuarantine.id == quarantine_id
-                )
-            )
-            quarantine = result.scalar_one_or_none()
-            
-            if not quarantine:
-                return {"success": False, "error": "not_found"}
-            
-            quarantine.is_active = False
-            quarantine.lifted_at = datetime.utcnow()
-            quarantine.lifted_by = lifted_by
-            quarantine.lift_reason = lift_reason
-            
-            await db.commit()
-            await db.refresh(quarantine)
-            
-            logger.info(f"🔓 Quarantine lifted: {quarantine_id} by {lifted_by}")
-            
-            return {
-                "success": True,
-                "quarantine": quarantine.to_dict()
-            }
-            
-        except Exception:
+        async with _get_db(db) as db:
             try:
-                await db.rollback()
+                result = await db.execute(
+                    select(CandidateQuarantine).where(
+                        CandidateQuarantine.id == quarantine_id
+                    )
+                )
+                quarantine = result.scalar_one_or_none()
+                
+                if not quarantine:
+                    return {"success": False, "error": "not_found"}
+                
+                quarantine.is_active = False
+                quarantine.lifted_at = datetime.utcnow()
+                quarantine.lifted_by = lifted_by
+                quarantine.lift_reason = lift_reason
+                
+                await db.commit()
+                await db.refresh(quarantine)
+                
+                logger.info(f"🔓 Quarantine lifted: {quarantine_id} by {lifted_by}")
+                
+                return {
+                    "success": True,
+                    "quarantine": quarantine.to_dict()
+                }
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
     
     async def get_communication_history(
         self,
@@ -1494,12 +1186,7 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Get communication history for a candidate."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
+        async with _get_db(db) as db:
             conditions = [
                 CommunicationLog.company_id == company_id,
                 CommunicationLog.candidate_id == candidate_id
@@ -1525,10 +1212,6 @@ class CommunicationService:
                 "total": len(logs),
                 "has_more": len(logs) == limit
             }
-            
-        finally:
-            if should_close:
-                await db.close()
     
     async def get_daily_stats(
         self,
@@ -1537,12 +1220,7 @@ class CommunicationService:
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
         """Get daily communication statistics."""
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
+        async with _get_db(db) as db:
             if date is None:
                 date = datetime.utcnow()
             
@@ -1580,10 +1258,6 @@ class CommunicationService:
                 stats["success_rate"] = (sent_count / len(logs)) * 100
             
             return stats
-            
-        finally:
-            if should_close:
-                await db.close()
     
     async def send_screening_result(
         self,
@@ -1606,24 +1280,6 @@ class CommunicationService:
         
         - If passed: Send screening_passed via email AND WhatsApp
         - If failed: Send screening_failed via email only (with approval if configured)
-        
-        Args:
-            db: Database session
-            candidate_id: ID of the candidate
-            vacancy_id: ID of the vacancy
-            company_id: ID of the company
-            passed: Whether the candidate passed screening
-            wsi_score: WSI score (0-100)
-            strengths: List of identified strengths
-            development_areas: List of development areas (for failed candidates)
-            candidate_name: Candidate's name
-            candidate_email: Candidate's email address
-            candidate_phone: Candidate's phone number (for WhatsApp)
-            job_title: Title of the job vacancy
-            company_name: Name of the company
-            
-        Returns:
-            Dict with results for each channel attempted
         """
         results = {
             "success": True,
@@ -1772,76 +1428,69 @@ class CommunicationService:
                 "message": "Outside sending hours"
             }
         
-        should_close = False
-        if db is None:
-            db = AsyncSessionLocal()
-            should_close = True
-        
-        try:
-            now = datetime.utcnow()
-            
-            result = await db.execute(
-                select(CommunicationLog).where(
-                    and_(
-                        CommunicationLog.status == CommunicationStatus.QUEUED.value,
-                        or_(
-                            CommunicationLog.next_retry_at.is_(None),
-                            CommunicationLog.next_retry_at <= now
+        async with _get_db(db) as db:
+            try:
+                now = datetime.utcnow()
+                
+                result = await db.execute(
+                    select(CommunicationLog).where(
+                        and_(
+                            CommunicationLog.status == CommunicationStatus.QUEUED.value,
+                            or_(
+                                CommunicationLog.next_retry_at.is_(None),
+                                CommunicationLog.next_retry_at <= now
+                            )
                         )
-                    )
-                ).limit(100)
-            )
-            
-            queued_logs = list(result.scalars())
-            processed = 0
-            
-            for log in queued_logs:
-                recipient = log.candidate_email if log.channel == "email" else log.candidate_phone
-                
-                if not recipient:
-                    log.status = CommunicationStatus.FAILED.value
-                    log.error_message = "No recipient address"
-                    continue
-                
-                success, msg_id, response = await self._send_with_retry(
-                    MessageChannel(log.channel),
-                    recipient,
-                    log.subject,
-                    log.body,
-                    log.body_html,
-                    log,
-                    db
+                    ).limit(100)
                 )
                 
-                if success:
-                    log.status = CommunicationStatus.SENT.value
-                    log.sent_at = datetime.utcnow()
-                    log.provider_message_id = msg_id
-                    log.provider_response = response or {}
-                    processed += 1
-                else:
-                    log.status = CommunicationStatus.FAILED.value
-                    log.failed_at = datetime.utcnow()
-                    log.error_message = response.get("error") if response else "Unknown error"
-            
-            await db.commit()
-            
-            logger.info(f"📤 Processed {processed} queued messages")
-            
-            return {
-                "processed": processed,
-                "total_queued": len(queued_logs)
-            }
-            
-        except Exception:
-            try:
-                await db.rollback()
+                queued_logs = list(result.scalars())
+                processed = 0
+                
+                for log in queued_logs:
+                    recipient = log.candidate_email if log.channel == "email" else log.candidate_phone
+                    
+                    if not recipient:
+                        log.status = CommunicationStatus.FAILED.value
+                        log.error_message = "No recipient address"
+                        continue
+                    
+                    success, msg_id, response = await self._send_with_retry(
+                        MessageChannel(log.channel),
+                        recipient,
+                        log.subject,
+                        log.body,
+                        log.body_html,
+                        log,
+                        db
+                    )
+                    
+                    if success:
+                        log.status = CommunicationStatus.SENT.value
+                        log.sent_at = datetime.utcnow()
+                        log.provider_message_id = msg_id
+                        log.provider_response = response or {}
+                        processed += 1
+                    else:
+                        log.status = CommunicationStatus.FAILED.value
+                        log.failed_at = datetime.utcnow()
+                        log.error_message = response.get("error") if response else "Unknown error"
+                
+                await db.commit()
+                
+                logger.info(f"📤 Processed {processed} queued messages")
+                
+                return {
+                    "processed": processed,
+                    "total_queued": len(queued_logs)
+                }
+                
             except Exception:
-                pass
-            raise
-        finally:
-            if should_close:
-                await db.close()
+                try:
+                    await db.rollback()
+                except Exception:
+                    pass
+                raise
 
 
 communication_service = CommunicationService()
