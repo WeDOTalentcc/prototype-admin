@@ -105,10 +105,22 @@ async def update_global_search_settings(
 async def list_users(
     company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
     user_repo: UserRepository = Depends(get_user_repo),
+    current_user=Depends(get_current_user_or_demo),
 ):
     """List all users for a company."""
     if not company_id or company_id in ("default", "unknown"):
         raise HTTPException(status_code=400, detail="Valid company_id is required")
+
+    user_cid = str(current_user.company_id) if current_user and hasattr(current_user, 'company_id') and current_user.company_id else None
+    if user_cid and company_id != user_cid:
+        users = await user_repo.list_for_company(company_id, is_active=None)
+        if not users:
+            return await user_repo.list_for_company(user_cid, is_active=None)
+        user_ids_match = any(str(getattr(u, 'company_id', '')) == user_cid for u in users)
+        if not user_ids_match:
+            raise HTTPException(status_code=403, detail="Access denied: cross-tenant user listing not allowed")
+        return users
+
     try:
         return await user_repo.list_for_company(company_id, is_active=None)
     except Exception as e:

@@ -525,9 +525,26 @@ async def get_company_profile(
         effective_company_id = company_id if (company_id and company_id not in ("default", "unknown")) else None
 
         if not effective_company_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
-            profile = await profile_repo.get_by_client_account(str(current_user.company_id))
+            user_cid = str(current_user.company_id)
+            try:
+                profile = await profile_repo.get_by_client_account(user_cid)
+                if profile:
+                    return profile
+            except Exception:
+                pass
+
+            try:
+                cid_uuid = uuid.UUID(user_cid)
+                profile = await profile_repo.get_by_id(cid_uuid)
+                if profile:
+                    return profile
+            except (ValueError, Exception):
+                pass
+
+            profile = await profile_repo.get_default()
             if profile:
                 return profile
+
             logger.warning(f"get_company_profile: no profile linked to user's company_id={current_user.company_id}")
             raise HTTPException(status_code=404, detail="No company profile found for your tenant. Please complete company setup.")
 

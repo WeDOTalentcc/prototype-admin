@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { useAuthStore } from '@/stores/auth-store'
 
 interface Company {
   id: string
@@ -12,6 +13,7 @@ interface Company {
 interface UseCurrentCompanyReturn {
   company: Company | null
   companyId: string | null
+  tenantId: string | null
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
@@ -24,6 +26,7 @@ const jsonFetcher = (url: string) =>
   })
 
 export function useCurrentCompany(): UseCurrentCompanyReturn {
+  const user = useAuthStore(s => s.user)
   const { data, error, isLoading, mutate } = useSWR<Company>(
     '/api/backend-proxy/company/profile',
     jsonFetcher,
@@ -33,6 +36,7 @@ export function useCurrentCompany(): UseCurrentCompanyReturn {
   return {
     company: data ?? null,
     companyId: data?.id ?? null,
+    tenantId: user?.company_id ?? null,
     loading: isLoading,
     error: error?.message ?? null,
     refetch: async () => { await mutate() },

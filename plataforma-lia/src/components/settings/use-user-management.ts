@@ -36,14 +36,15 @@ export function useUserManagement() {
   const [formData, setFormData] = useState<Partial<UserData>>(EMPTY_FORM)
 
   const { isSCIMEnabled, scimConfig } = useSCIMConfig()
-  const { companyId } = useCurrentCompany()
+  const { companyId, tenantId } = useCurrentCompany()
+  const effectiveCompanyId = tenantId || companyId
 
   const fetchUsers = useCallback(async () => {
-    if (!companyId) return
+    if (!effectiveCompanyId) return
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/backend-proxy/company/users?company_id=${companyId}`)
+      const response = await fetch(`/api/backend-proxy/company/users?company_id=${effectiveCompanyId}`)
       if (!response.ok) throw new Error('Failed to fetch users')
       const data = await response.json()
       const usersData = data.data || data.users || data || []
@@ -72,13 +73,13 @@ export function useUserManagement() {
     } finally {
       setIsLoading(false)
     }
-  }, [companyId])
+  }, [effectiveCompanyId])
 
   useEffect(() => {
-    if (companyId) {
+    if (effectiveCompanyId) {
       fetchUsers()
     }
-  }, [companyId, fetchUsers])
+  }, [effectiveCompanyId, fetchUsers])
 
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
@@ -124,13 +125,13 @@ export function useUserManagement() {
   }, [])
 
   const handleSaveUser = useCallback(async () => {
-    if (!companyId) {
+    if (!effectiveCompanyId) {
       alert('Empresa não identificada. Recarregue a página.')
       return
     }
     try {
       if (isCreating) {
-        const response = await fetch(`/api/backend-proxy/company/users?company_id=${companyId}`, {
+        const response = await fetch(`/api/backend-proxy/company/users?company_id=${effectiveCompanyId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -150,7 +151,7 @@ export function useUserManagement() {
         setSuccessMessage(`Usuário criado com sucesso! Um email de convite foi enviado para ${formData.email} com instruções para ativar a conta.`)
         setTimeout(() => setSuccessMessage(null), 8000)
       } else if (selectedUser) {
-        const response = await fetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${companyId}`, {
+        const response = await fetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${effectiveCompanyId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -171,13 +172,13 @@ export function useUserManagement() {
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Erro ao salvar usuário')
     }
-  }, [companyId, isCreating, formData, selectedUser, fetchUsers])
+  }, [effectiveCompanyId, isCreating, formData, selectedUser, fetchUsers])
 
   const handleResendInvitation = useCallback(async (userId: string, userEmail: string) => {
-    if (!companyId) return
+    if (!effectiveCompanyId) return
     setResendingInvite(userId)
     try {
-      const response = await fetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${companyId}`, {
+      const response = await fetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${effectiveCompanyId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -192,13 +193,13 @@ export function useUserManagement() {
     } finally {
       setResendingInvite(null)
     }
-  }, [companyId])
+  }, [effectiveCompanyId])
 
   const handleDeleteUser = useCallback(async (userId: string) => {
-    if (!companyId) return
+    if (!effectiveCompanyId) return
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       try {
-        const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${companyId}`, {
+        const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${effectiveCompanyId}`, {
           method: 'DELETE'
         })
         if (!response.ok) throw new Error('Failed to delete user')
@@ -207,7 +208,7 @@ export function useUserManagement() {
         alert('Erro ao excluir usuário')
       }
     }
-  }, [companyId, fetchUsers])
+  }, [effectiveCompanyId, fetchUsers])
 
   const getStatusColor = useCallback((status: string) => {
     switch (status) {

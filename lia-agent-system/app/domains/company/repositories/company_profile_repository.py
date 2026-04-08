@@ -32,9 +32,12 @@ class CompanyProfileRepository:
 
     async def get_default(self) -> CompanyProfile | None:
         result = await self.db.execute(
-            select(CompanyProfile).where(CompanyProfile.is_default)
+            select(CompanyProfile)
+            .where(CompanyProfile.is_default)
+            .order_by(CompanyProfile.created_at)
+            .limit(1)
         )
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def list_for_company(
         self, company_id: str, skip: int = 0, limit: int = 100
