@@ -4,9 +4,12 @@ Rails Adapter — Field mapping and data source abstraction.
 Maps between fork models (UUID, 275 tables) and Rails models (bigint, 12 tables).
 Provides a unified interface: tries Rails first, falls back to local DB.
 
+Auth: Uses RAILS_API_TOKEN env var for service-to-service calls when no user
+token is provided. The token is injected automatically by the dependency.
+
 Usage:
-    from app.services.rails_adapter import RailsAdapter
-    adapter = RailsAdapter(db_session, rails_token)
+    from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
+    adapter = RailsAdapter(db_session)
     candidate = await adapter.get_candidate(candidate_id)
     jobs = await adapter.list_jobs(search="developer", page=1)
 """
@@ -20,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 # Whether to try Rails first (set RAILS_API_URL to enable)
 RAILS_ENABLED = bool(os.environ.get("RAILS_API_URL"))
+RAILS_API_TOKEN = os.environ.get("RAILS_API_TOKEN", "")
 
 
 # ----------------------------------------------------------------
@@ -197,9 +201,11 @@ def rails_candidate_to_fork(data: dict) -> dict:
     """Convert Rails candidate JSON to fork format (complete mapping)."""
     if not data:
         return {}
+    rails_int_id = data.get("id")
     result = {
-        # IDs
-        "rails_id": data.get("id"),
+        # IDs — `id` must be a string for FastAPI response contracts
+        "id": str(rails_int_id) if rails_int_id is not None else "",
+        "rails_id": rails_int_id,
         "_source": "rails",
         # Basic
         "name": data.get("name", ""),
@@ -259,16 +265,32 @@ def rails_candidate_to_fork(data: dict) -> dict:
 
 
 def rails_job_to_fork(data: dict) -> dict:
-    """Convert Rails job JSON to fork format."""
+    """Convert Rails job JSON to fork format.
+
+    `id` is always a string so FastAPI response models (id: str) validate correctly.
+    `rails_id` retains the original integer from Rails for reference.
+    Visibility/auth fields (visibility, created_by, recruiter_email, access_list) are
+    mapped so that defense-in-depth confidentiality checks in endpoints work correctly.
+    """
     if not data:
         return {}
+    rails_int_id = data.get("id")
     return {
-        "rails_id": data.get("id"),
+        # `id` required by FastAPI response contracts (JobVacancyDetailResponse, JobVacancyListItemResponse)
+        "id": str(rails_int_id) if rails_int_id is not None else "",
+        "rails_id": rails_int_id,
         "title": data.get("title", ""),
         "description": data.get("description", ""),
         "location": f"{data.get('city', '')}, {data.get('state', '')}".strip(", "),
         "work_model": "remoto" if data.get("is_remote") else data.get("workplace_type", "presencial"),
         "status": "Ativa" if data.get("status") else "Rascunho",
+        "_source": "rails",
+        # Visibility / authorization fields — required for defense-in-depth confidentiality checks
+        "visibility": data.get("visibility", "public"),
+        "is_confidential": data.get("is_confidential", False),
+        "created_by": data.get("created_by"),
+        "recruiter_email": data.get("recruiter_email"),
+        "access_list": data.get("access_list") or [],
         # Rails-only
         "provider": data.get("provider"),
         "provider_job_id": data.get("provider_job_id"),
@@ -280,12 +302,49 @@ def rails_apply_to_fork(data: dict) -> dict:
     """Convert Rails apply JSON to fork format."""
     if not data:
         return {}
+    rails_int_id = data.get("id")
     return {
-        "rails_id": data.get("id"),
+        "id": str(rails_int_id) if rails_int_id is not None else "",
+        "rails_id": rails_int_id,
         "candidate_id": data.get("candidate_id"),
         "job_id": data.get("job_id"),
         "stage_id": data.get("selective_process_id"),
         "is_active": not data.get("is_deleted", False),
+    }
+
+
+def rails_selective_process_to_fork(data: dict) -> dict:
+    """Convert Rails selective_process JSON to fork format."""
+    if not data:
+        return {}
+    rails_int_id = data.get("id")
+    return {
+        "id": str(rails_int_id) if rails_int_id is not None else "",
+        "rails_id": rails_int_id,
+        "name": data.get("name", ""),
+        "position": data.get("position"),
+        "job_id": data.get("job_id"),
+        "status": data.get("status"),
+        "sub_stages": data.get("sub_status"),
+    }
+
+
+def rails_message_to_fork(data: dict) -> dict:
+    """Convert Rails message JSON to fork format."""
+    if not data:
+        return {}
+    rails_int_id = data.get("id")
+    return {
+        "id": str(rails_int_id) if rails_int_id is not None else "",
+        "rails_id": rails_int_id,
+        "content": data.get("content", ""),
+        "entity": data.get("entity"),
+        "status": data.get("status"),
+        "parent_message_id": data.get("parent_message_id"),
+        "reference_type": data.get("reference_type"),
+        "reference_id": data.get("reference_id"),
+        "metadata": data.get("metadata"),
+        "account_id": data.get("account_id"),
     }
 
 
@@ -298,11 +357,16 @@ class RailsAdapter:
     Unified data access: Rails first, local DB fallback.
 
     When RAILS_API_URL is configured:
-      get_candidate(id) → calls Rails → maps to fork format
+      get_candidate(id) → calls Rails (via circuit-breaker-protected HTTP) → maps to fork format
       If Rails fails → falls back to local DB
 
     When RAILS_API_URL is NOT configured:
       get_candidate(id) → uses local DB directly (current behavior)
+
+    Auth:
+      User JWT is forwarded when available (rails_token arg).
+      Falls back to RAILS_API_TOKEN service-to-service token automatically
+      (handled in WeDOTalentATSClient constructor).
     """
 
     def __init__(
@@ -312,7 +376,7 @@ class RailsAdapter:
     ):
         self.db = db
         self._rails_client = None
-        self._rails_token = rails_token
+        self._rails_token = rails_token or RAILS_API_TOKEN or None
 
     async def _get_rails_client(self):
         if self._rails_client is None and RAILS_ENABLED:
@@ -320,22 +384,109 @@ class RailsAdapter:
             self._rails_client = WeDOTalentATSClient(token=self._rails_token)
         return self._rails_client
 
-    # ---- Candidates ----
+    # ---- Auth / Session ----
 
-    async def get_candidate(self, candidate_id: str) -> dict | None:
-        """Get candidate: Rails first, local DB fallback."""
-        # Try Rails
+    async def login(self, email: str, password: str) -> str | None:
+        """Authenticate with Rails and get JWT. Returns token or None."""
         client = await self._get_rails_client()
         if client:
             try:
-                data = await client.get_candidate(int(candidate_id) if candidate_id.isdigit() else 0)
-                if data:
-                    logger.debug("[RailsAdapter] Candidate %s from Rails", candidate_id)
-                    return rails_candidate_to_fork(data)
+                token = await client.login(email, password)
+                if token:
+                    self._rails_token = token
+                    self._rails_client = None
+                    return token
             except Exception as e:
-                logger.warning("[RailsAdapter] Rails failed for candidate %s: %s", candidate_id, e)
+                logger.warning("[RailsAdapter] login failed: %s", e)
+        return None
 
-        # Fallback: local DB
+    async def get_current_user(self) -> dict | None:
+        """Get current authenticated user profile from Rails (/v1/me)."""
+        client = await self._get_rails_client()
+        if client:
+            try:
+                return await client.get_current_user()
+            except Exception as e:
+                logger.warning("[RailsAdapter] get_current_user failed: %s", e)
+        return None
+
+    # ---- Candidates ----
+
+    @staticmethod
+    def _to_rails_id(id_str: str) -> int | None:
+        """Convert a string ID to Rails integer ID. Returns None if not a valid integer."""
+        if id_str and id_str.isdigit():
+            return int(id_str)
+        return None
+
+    async def get_candidate_from_rails_only(self, candidate_id: str) -> dict | None:
+        """Fetch candidate from Rails only — no local DB fallback.
+
+        Raises if Rails is unavailable so the caller's (endpoint) own fallback logic runs.
+        Returns None if Rails returns nothing (e.g. 404), does not raise.
+        """
+        client = await self._get_rails_client()
+        if not client:
+            return None
+        rails_id = self._to_rails_id(candidate_id)
+        if rails_id is None:
+            logger.debug("[RailsAdapter] get_candidate_from_rails_only: non-integer ID %r — skipping", candidate_id)
+            return None
+        data = await client.get_candidate(rails_id)
+        if data:
+            return rails_candidate_to_fork(data)
+        return None
+
+    async def list_candidates_from_rails_only(
+        self,
+        search: str = "*",
+        page: int = 1,
+        limit: int = 30,
+        status: str | None = None,
+        source: str | None = None,
+        seniority: str | None = None,
+    ) -> list[dict] | None:
+        """Fetch candidates from Rails only — no local DB fallback.
+
+        Returns None when Rails is unavailable, returns non-success (401/5xx/circuit-open),
+        or the client itself is not configured. The caller should fall back to local repo.
+        Returns an empty list [] only when Rails explicitly responded with zero records.
+        """
+        client = await self._get_rails_client()
+        if not client:
+            return None
+        filters: dict = {}
+        if status:
+            filters["status"] = status
+        if source:
+            filters["source"] = source
+        if seniority:
+            filters["position_level"] = seniority
+        try:
+            # list_candidates_or_none returns None on non-success, [] on empty success
+            results = await client.list_candidates_or_none(
+                search=search, page=page, limit=limit, **filters
+            )
+        except Exception:
+            return None
+        if results is None:
+            return None
+        return [rails_candidate_to_fork(r) for r in results]
+
+    async def get_candidate(self, candidate_id: str) -> dict | None:
+        """Get candidate: Rails first, local DB fallback."""
+        client = await self._get_rails_client()
+        if client:
+            rails_id = self._to_rails_id(candidate_id)
+            if rails_id is not None:
+                try:
+                    data = await client.get_candidate(rails_id)
+                    if data:
+                        logger.debug("[RailsAdapter] Candidate %s from Rails", candidate_id)
+                        return rails_candidate_to_fork(data)
+                except Exception as e:
+                    logger.warning("[RailsAdapter] Rails failed for candidate %s: %s", candidate_id, e)
+
         if self.db:
             try:
                 from libs.models.lia_models.candidate import Candidate
@@ -364,7 +515,6 @@ class RailsAdapter:
             except Exception as e:
                 logger.warning("[RailsAdapter] Rails list_candidates failed: %s", e)
 
-        # Fallback: local DB
         if self.db:
             try:
                 from libs.models.lia_models.candidate import Candidate
@@ -377,18 +527,141 @@ class RailsAdapter:
 
         return []
 
+    async def create_candidate(self, candidate_data: dict) -> dict | None:
+        """Create candidate: Rails first, local DB fallback."""
+        rails_data = {}
+        for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
+            if fork_field in candidate_data and rails_field != "id":
+                rails_data[rails_field] = candidate_data[fork_field]
+
+        client = await self._get_rails_client()
+        if client:
+            try:
+                result = await client.create_candidate(rails_data)
+                if result:
+                    logger.info("[RailsAdapter] Candidate created in Rails: %s", result.get("id"))
+                    return rails_candidate_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails create_candidate failed: %s", e)
+
+        if self.db:
+            try:
+                from libs.models.lia_models.candidate import Candidate
+                candidate = Candidate(**candidate_data)
+                self.db.add(candidate)
+                await self.db.commit()
+                await self.db.refresh(candidate)
+                return {"source": "local", "id": str(candidate.id)}
+            except Exception as e:
+                logger.warning("[RailsAdapter] Local create_candidate failed: %s", e)
+                await self.db.rollback()
+
+        return None
+
+    async def update_candidate(self, candidate_id: str, candidate_data: dict) -> dict | None:
+        """Update candidate: Rails first, local DB fallback."""
+        rails_data = {}
+        for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
+            if fork_field in candidate_data and rails_field != "id":
+                rails_data[rails_field] = candidate_data[fork_field]
+
+        client = await self._get_rails_client()
+        if client:
+            rails_id = self._to_rails_id(candidate_id)
+            if rails_id is None:
+                logger.warning("[RailsAdapter] update_candidate: non-integer ID %r — skipping Rails", candidate_id)
+                return None
+            try:
+                result = await client.update_candidate(rails_id, rails_data)
+                if result:
+                    return rails_candidate_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails update_candidate failed: %s", e)
+
+        return None
+
+    async def delete_candidate(self, candidate_id: str) -> bool:
+        """Delete candidate from Rails."""
+        client = await self._get_rails_client()
+        if client:
+            rails_id = self._to_rails_id(candidate_id)
+            if rails_id is None:
+                logger.warning("[RailsAdapter] delete_candidate: non-integer ID %r — skipping Rails", candidate_id)
+                return False
+            try:
+                return await client.delete_candidate(rails_id)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails delete_candidate failed: %s", e)
+        return False
+
     # ---- Jobs ----
+
+    async def get_job_from_rails_only(self, job_id: str) -> dict | None:
+        """Fetch job from Rails only — no local DB fallback.
+
+        Returns None if Rails is unavailable or ID is not a valid integer.
+        Does not raise so callers can run their own fallback without try/except.
+        """
+        client = await self._get_rails_client()
+        if not client:
+            return None
+        rails_id = self._to_rails_id(job_id)
+        if rails_id is None:
+            logger.debug("[RailsAdapter] get_job_from_rails_only: non-integer ID %r — skipping", job_id)
+            return None
+        try:
+            data = await client.get_job(rails_id)
+        except Exception:
+            return None
+        if data:
+            return rails_job_to_fork(data)
+        return None
+
+    async def list_jobs_from_rails_only(
+        self,
+        search: str = "*",
+        page: int = 1,
+        limit: int = 30,
+        status: str | None = None,
+        visibility: str | None = None,
+    ) -> list[dict] | None:
+        """Fetch jobs from Rails only — no local DB fallback.
+
+        Returns None when Rails is unavailable, returns non-success (401/5xx/circuit-open),
+        or the client itself is not configured. The caller should fall back to local repo.
+        Returns an empty list [] only when Rails explicitly responded with zero records.
+        """
+        client = await self._get_rails_client()
+        if not client:
+            return None
+        filters: dict = {}
+        if status:
+            filters["status"] = status
+        if visibility:
+            filters["visibility"] = visibility
+        try:
+            # list_jobs_or_none returns None on non-success, [] on empty success
+            results = await client.list_jobs_or_none(
+                search=search, page=page, limit=limit, **filters
+            )
+        except Exception:
+            return None
+        if results is None:
+            return None
+        return [rails_job_to_fork(r) for r in results]
 
     async def get_job(self, job_id: str) -> dict | None:
         """Get job: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
-            try:
-                data = await client.get_job(int(job_id) if job_id.isdigit() else 0)
-                if data:
-                    return rails_job_to_fork(data)
-            except Exception as e:
-                logger.warning("[RailsAdapter] Rails failed for job %s: %s", job_id, e)
+            rails_id = self._to_rails_id(job_id)
+            if rails_id is not None:
+                try:
+                    data = await client.get_job(rails_id)
+                    if data:
+                        return rails_job_to_fork(data)
+                except Exception as e:
+                    logger.warning("[RailsAdapter] Rails failed for job %s: %s", job_id, e)
 
         if self.db:
             try:
@@ -430,76 +703,6 @@ class RailsAdapter:
 
         return []
 
-    # ---- Applies ----
-
-    async def list_applies(
-        self, search: str = "*", page: int = 1, limit: int = 30
-    ) -> list[dict]:
-        """List applies: Rails first, local DB fallback."""
-        client = await self._get_rails_client()
-        if client:
-            try:
-                results = await client.list_applies(search=search, page=page, limit=limit)
-                if results:
-                    return [rails_apply_to_fork(r) for r in results]
-            except Exception as e:
-                logger.warning("[RailsAdapter] Rails list_applies failed: %s", e)
-        return []
-
-
-    # ---- Write Operations (Work C) ----
-
-    async def create_candidate(self, candidate_data: dict) -> dict | None:
-        """Create candidate: Rails first, local DB fallback."""
-        # Map fork fields to Rails fields
-        rails_data = {}
-        for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
-            if fork_field in candidate_data and rails_field != "id":
-                rails_data[rails_field] = candidate_data[fork_field]
-
-        client = await self._get_rails_client()
-        if client:
-            try:
-                result = await client.create_candidate(rails_data)
-                if result:
-                    logger.info("[RailsAdapter] Candidate created in Rails: %s", result.get("id"))
-                    return rails_candidate_to_fork(result)
-            except Exception as e:
-                logger.warning("[RailsAdapter] Rails create_candidate failed: %s", e)
-
-        # Fallback: local DB
-        if self.db:
-            try:
-                from libs.models.lia_models.candidate import Candidate
-                candidate = Candidate(**candidate_data)
-                self.db.add(candidate)
-                await self.db.commit()
-                await self.db.refresh(candidate)
-                return {"source": "local", "id": str(candidate.id)}
-            except Exception as e:
-                logger.warning("[RailsAdapter] Local create_candidate failed: %s", e)
-                await self.db.rollback()
-
-        return None
-
-    async def update_candidate(self, candidate_id: str, candidate_data: dict) -> dict | None:
-        """Update candidate: Rails first, local DB fallback."""
-        rails_data = {}
-        for fork_field, rails_field in CANDIDATE_FORK_TO_RAILS.items():
-            if fork_field in candidate_data and rails_field != "id":
-                rails_data[rails_field] = candidate_data[fork_field]
-
-        client = await self._get_rails_client()
-        if client:
-            try:
-                result = await client.update_candidate(int(candidate_id) if candidate_id.isdigit() else 0, rails_data)
-                if result:
-                    return rails_candidate_to_fork(result)
-            except Exception as e:
-                logger.warning("[RailsAdapter] Rails update_candidate failed: %s", e)
-
-        return None
-
     async def create_job(self, job_data: dict) -> dict | None:
         """Create job: Rails first, local DB fallback."""
         rails_data = {}
@@ -540,14 +743,193 @@ class RailsAdapter:
 
         client = await self._get_rails_client()
         if client:
+            rails_id = self._to_rails_id(job_id)
+            if rails_id is None:
+                logger.warning("[RailsAdapter] update_job: non-integer ID %r — skipping Rails", job_id)
+                return None
             try:
-                result = await client.update_job(int(job_id) if job_id.isdigit() else 0, rails_data)
+                result = await client.update_job(rails_id, rails_data)
                 if result:
                     return rails_job_to_fork(result)
             except Exception as e:
                 logger.warning("[RailsAdapter] Rails update_job failed: %s", e)
 
         return None
+
+    async def delete_job(self, job_id: str) -> bool:
+        """Delete job from Rails."""
+        client = await self._get_rails_client()
+        if client:
+            rails_id = self._to_rails_id(job_id)
+            if rails_id is None:
+                logger.warning("[RailsAdapter] delete_job: non-integer ID %r — skipping Rails", job_id)
+                return False
+            try:
+                return await client.delete_job(rails_id)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails delete_job failed: %s", e)
+        return False
+
+    # ---- Applies ----
+
+    async def list_applies(
+        self, search: str = "*", page: int = 1, limit: int = 30
+    ) -> list[dict]:
+        """List applies: Rails first, local DB fallback."""
+        client = await self._get_rails_client()
+        if client:
+            try:
+                results = await client.list_applies(search=search, page=page, limit=limit)
+                if results:
+                    return [rails_apply_to_fork(r) for r in results]
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails list_applies failed: %s", e)
+        return []
+
+    async def get_apply(self, apply_id: str) -> dict | None:
+        """Get a single apply from Rails."""
+        client = await self._get_rails_client()
+        if client:
+            rails_id = self._to_rails_id(apply_id)
+            if rails_id is None:
+                logger.warning("[RailsAdapter] get_apply: non-integer ID %r — skipping Rails", apply_id)
+                return None
+            try:
+                data = await client.get_apply(rails_id)
+                if data:
+                    return rails_apply_to_fork(data)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails get_apply failed: %s", e)
+        return None
+
+    async def create_apply(self, candidate_id: str, job_id: str) -> dict | None:
+        """Create an apply in Rails."""
+        client = await self._get_rails_client()
+        if client:
+            cand_rails_id = self._to_rails_id(candidate_id)
+            job_rails_id = self._to_rails_id(job_id)
+            if cand_rails_id is None or job_rails_id is None:
+                logger.warning(
+                    "[RailsAdapter] create_apply: non-integer IDs candidate=%r job=%r — skipping Rails",
+                    candidate_id, job_id,
+                )
+                return None
+            try:
+                data = await client.create_apply(cand_rails_id, job_rails_id)
+                if data:
+                    return rails_apply_to_fork(data)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails create_apply failed: %s", e)
+        return None
+
+    async def update_apply(self, apply_id: str, apply_data: dict) -> dict | None:
+        """Update an apply in Rails."""
+        client = await self._get_rails_client()
+        if client:
+            rails_id = self._to_rails_id(apply_id)
+            if rails_id is None:
+                logger.warning("[RailsAdapter] update_apply: non-integer ID %r — skipping Rails", apply_id)
+                return None
+            try:
+                data = await client.update_apply(rails_id, apply_data)
+                if data:
+                    return rails_apply_to_fork(data)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails update_apply failed: %s", e)
+        return None
+
+    # ---- Selective Processes ----
+
+    async def list_selective_processes(
+        self, job_id: str | None = None
+    ) -> list[dict]:
+        """List selective processes (pipeline stages) from Rails."""
+        client = await self._get_rails_client()
+        if client:
+            try:
+                job_id_int = int(job_id) if job_id and job_id.isdigit() else None
+                results = await client.list_selective_processes(job_id=job_id_int)
+                if results:
+                    return [rails_selective_process_to_fork(r) for r in results]
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails list_selective_processes failed: %s", e)
+        return []
+
+    # ---- Messages ----
+
+    async def list_messages(
+        self,
+        page: int = 1,
+        limit: int = 30,
+        reference_type: str | None = None,
+        reference_id: str | None = None,
+    ) -> list[dict]:
+        """List messages from Rails."""
+        client = await self._get_rails_client()
+        if client:
+            try:
+                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
+                results = await client.list_messages(
+                    page=page,
+                    limit=limit,
+                    reference_type=reference_type,
+                    reference_id=ref_id_int,
+                )
+                if results:
+                    return [rails_message_to_fork(r) for r in results]
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails list_messages failed: %s", e)
+        return []
+
+    async def send_message(
+        self,
+        content: str,
+        entity: str | None = None,
+        reference_type: str | None = None,
+        reference_id: str | None = None,
+        parent_message_id: str | None = None,
+        metadata: dict | None = None,
+    ) -> dict | None:
+        """Send a message via Rails."""
+        client = await self._get_rails_client()
+        if client:
+            try:
+                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
+                parent_id_int = int(parent_message_id) if parent_message_id and parent_message_id.isdigit() else None
+                result = await client.send_message(
+                    content=content,
+                    entity=entity,
+                    reference_type=reference_type,
+                    reference_id=ref_id_int,
+                    parent_message_id=parent_id_int,
+                    metadata=metadata,
+                )
+                if result:
+                    return rails_message_to_fork(result)
+            except Exception as e:
+                logger.warning("[RailsAdapter] Rails send_message failed: %s", e)
+        return None
+
+    # ---- Health ----
+
+    async def health_check(self) -> dict:
+        """Check Rails API connectivity and return status dict."""
+        from app.shared.resilience.circuit_breaker import RAILS_CIRCUIT
+        circuit_stats = RAILS_CIRCUIT.get_stats()
+
+        client = await self._get_rails_client()
+        if not client:
+            return {
+                "rails_enabled": False,
+                "status": "disabled",
+                "message": "RAILS_API_URL not configured",
+                "circuit_breaker": circuit_stats,
+            }
+
+        probe = await client.health_check()
+        probe["rails_enabled"] = True
+        probe["circuit_breaker"] = circuit_stats
+        return probe
 
     # ---- Cleanup ----
 

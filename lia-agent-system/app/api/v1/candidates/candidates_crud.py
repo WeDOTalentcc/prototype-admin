@@ -3,6 +3,7 @@ CRUD endpoints for candidates: list, get, create, update, stage-update, delete, 
 """
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
@@ -28,6 +29,8 @@ from ._shared import (
     normalize_array_field,
 )
 from pydantic import BaseModel
+from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
+from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 
 router = APIRouter()
 
@@ -153,8 +156,34 @@ async def list_candidates(
     sort_by: str | None = None,
     sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
-    """List all candidates from the proprietary database."""
+    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
+    # bypassing endpoint-level filters and authorization.
+    if RAILS_ENABLED:
+        try:
+            page = (offset or skip) // limit + 1 if limit else 1
+            rails_items = await rails_adapter.list_candidates_from_rails_only(
+                search=search or "*",
+                page=page,
+                limit=limit,
+                status=status,
+                source=source,
+                seniority=seniority,
+            )
+            if rails_items is not None:
+                logger.debug("[list_candidates] Returning %d candidates from Rails", len(rails_items))
+                return {
+                    "total": len(rails_items),
+                    "skip": offset or skip,
+                    "limit": limit,
+                    "source": "rails",
+                    "items": rails_items,
+                }
+        except Exception as e:
+            logger.warning("[list_candidates] Rails unavailable, falling back to local DB: %s", e)
+
     try:
         id_list: list[str] | None = None
         if ids:
@@ -182,6 +211,7 @@ async def list_candidates(
             "total": total,
             "skip": effective_skip,
             "limit": limit,
+            "source": "local",
             "items": [_serialize_candidate(c) for c in candidates],
         }
     except Exception as e:
@@ -193,8 +223,20 @@ async def list_candidates(
 async def get_candidate(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
-    """Get a specific candidate by ID."""
+    """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
+    # returning unscoped/unfiltered data.
+    if RAILS_ENABLED:
+        try:
+            rails_result = await rails_adapter.get_candidate_from_rails_only(candidate_id)
+            if rails_result:
+                logger.debug("[get_candidate] Returning candidate %s from Rails", candidate_id)
+                return rails_result
+        except Exception as e:
+            logger.warning("[get_candidate] Rails unavailable for %s, falling back to local DB: %s", candidate_id, e)
+
     try:
         try:
             uuid.UUID(candidate_id)

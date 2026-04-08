@@ -1,6 +1,6 @@
 import uuid as uuid_lib
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, Union, Optional
 from uuid import UUID
 
 from pydantic import ConfigDict, Field
@@ -18,6 +18,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
+from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
+from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 
 router = APIRouter()
 
@@ -359,15 +361,50 @@ async def find_job_by_identifier(
 
 @router.get("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDetailResponse)
 async def get_job_vacancy(
-    job_vacancy_id: UUID,
+    job_vacancy_id: str,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
-    """Get job vacancy by ID."""
+    """Get job vacancy by ID. Accepts UUID (local) or integer string (Rails bigint).
+    When RAILS_API_URL is configured and the ID looks like a Rails bigint, queries Rails first.
+    Falls back to local DB with company/visibility authorization when Rails is disabled or ID is a UUID.
+    """
     try:
+        # When Rails is enabled and the ID is a bigint (Rails-style), try Rails first.
+        # UUID-style IDs are always served from local DB with full authorization checks.
+        if RAILS_ENABLED and job_vacancy_id.isdigit():
+            rails_job = await rails_adapter.get_job_from_rails_only(job_vacancy_id)
+            if rails_job:
+                # Apply visibility/confidentiality checks equivalent to local path.
+                # Rails is the authoritative auth source for its own data, but we
+                # enforce confidentiality rules here as a defense-in-depth layer.
+                jv_visibility = rails_job.get("visibility", "public")
+                is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
+                can_access = jv_visibility in ("public", "internal") or is_admin
+                if not can_access and jv_visibility == "confidential":
+                    user_email = (current_user.email or "").lower()
+                    user_id = str(current_user.id) if current_user.id else ""
+                    jv_created_by = (rails_job.get("created_by") or "").lower()
+                    jv_recruiter_email = (rails_job.get("recruiter_email") or "").lower()
+                    jv_access_list = [x.lower() for x in (rails_job.get("access_list") or [])]
+                    if user_email in (jv_created_by, jv_recruiter_email) or \
+                       user_email in jv_access_list or user_id in (rails_job.get("access_list") or []):
+                        can_access = True
+                if not can_access:
+                    raise HTTPException(status_code=403, detail="Você não tem acesso a esta vaga")
+                logger.debug("[get_job_vacancy] Returning job %s from Rails", job_vacancy_id)
+                return rails_job
+
+        # Parse as UUID for local repository lookup
+        try:
+            job_vacancy_uuid = UUID(job_vacancy_id)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Job vacancy not found")
+
         user_company = get_user_company_id(current_user)
 
-        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_uuid, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -436,14 +473,62 @@ async def list_job_vacancies(
     skip: int = 0,
     limit: int = 500,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
-    """List job vacancies with optional status filter."""
+    """List job vacancies. When RAILS_API_URL is configured, tries Rails first then local DB."""
     try:
-        company_id = get_user_company_id(current_user)
+        # Only query Rails when explicitly enabled — never let the adapter's own DB fallback
+        # bypass company/visibility scoping and authorization done in the local path below.
         user_email = current_user.email.lower() if current_user.email else ""
         user_id = str(current_user.id) if current_user.id else ""
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
+
+        if RAILS_ENABLED:
+            page = skip // limit + 1 if limit else 1
+            rails_jobs = await rails_adapter.list_jobs_from_rails_only(
+                page=page,
+                limit=limit,
+                status=status,
+                visibility=visibility,
+            )
+            if rails_jobs is not None:
+                # Apply the same confidentiality/visibility filtering used in the local DB path.
+                # This is a defense-in-depth layer — Rails may enforce its own access control,
+                # but we must be consistent with our own security model.
+                filtered: list[dict] = []
+                for jv in rails_jobs:
+                    jv_visibility = (jv.get("visibility") or "public")
+
+                    if jv_visibility in ("public", "internal"):
+                        filtered.append(jv)
+                        continue
+
+                    if is_admin:
+                        filtered.append(jv)
+                        continue
+
+                    if jv_visibility == "confidential":
+                        jv_created_by = (jv.get("created_by") or "").lower()
+                        jv_recruiter_email = (jv.get("recruiter_email") or "").lower()
+                        jv_access_list = [x.lower() for x in (jv.get("access_list") or [])]
+                        if (user_email in (jv_created_by, jv_recruiter_email)
+                                or user_email in jv_access_list
+                                or user_id in (jv.get("access_list") or [])):
+                            filtered.append(jv)
+
+                logger.debug(
+                    "[list_job_vacancies] Rails returned %d jobs; %d visible after auth filter",
+                    len(rails_jobs), len(filtered),
+                )
+                return {
+                    "total": len(filtered),
+                    "skip": skip,
+                    "limit": limit,
+                    "items": filtered,
+                }
+
+        company_id = get_user_company_id(current_user)
 
         all_vacancies = await repo.list_vacancies(
             company_id=company_id,

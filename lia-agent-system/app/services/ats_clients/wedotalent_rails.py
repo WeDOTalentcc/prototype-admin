@@ -2,25 +2,35 @@
 WeDOTalent Rails ATS Client — HTTP client to call ats_api (Rails) endpoints.
 
 Based on contracts read from WeDOTalent/ats_api GitHub:
-- Base URL: configurable via RAILS_API_URL env var
-- Auth: Bearer JWT (Rails-issued or service token)
+- Base URL: configurable via RAILS_API_URL env var (default: http://localhost:3000)
+- Auth: Bearer token — user JWT (forwarded from request) OR service token (RAILS_API_TOKEN)
 - Format: JSONAPI (jsonapi-serializer gem)
 - Search: Searchkick via ?search=term&page=1&limit=30
 - Tenant: Apartment gem (schema-based) — tenant set server-side via user's account
+- Resilience: RAILS_CIRCUIT from circuit_breaker.py + exponential backoff on retries
 
 Endpoints:
-  POST   /v1/sessions          — Login (email + password → JWT)
-  GET    /v1/me                — Current user info
-  GET    /v1/users/jobs        — List/search jobs
-  GET    /v1/users/jobs/:id    — Get job
-  GET    /v1/users/candidates  — List/search candidates
-  GET    /v1/users/candidates/:id — Get candidate
-  GET    /v1/users/applies     — List/search applies
-  GET    /v1/users/applies/:id — Get apply
-  GET    /v1/users/selective_processes — List processes
-  POST   /v1/users/applies     — Create apply
-  PUT    /v1/users/applies/:id — Update apply
+  POST   /v1/sessions                   — Login (email + password → JWT)
+  GET    /v1/me                         — Current user info
+  GET    /v1/users/jobs                 — List/search jobs
+  GET    /v1/users/jobs/:id             — Get job
+  POST   /v1/users/jobs                 — Create job
+  PUT    /v1/users/jobs/:id             — Update job
+  DELETE /v1/users/jobs/:id             — Delete job
+  GET    /v1/users/candidates           — List/search candidates
+  GET    /v1/users/candidates/:id       — Get candidate
+  POST   /v1/users/candidates           — Create candidate
+  PUT    /v1/users/candidates/:id       — Update candidate
+  DELETE /v1/users/candidates/:id       — Delete candidate
+  GET    /v1/users/applies              — List/search applies
+  GET    /v1/users/applies/:id          — Get apply
+  POST   /v1/users/applies              — Create apply
+  PUT    /v1/users/applies/:id          — Update apply
+  GET    /v1/users/selective_processes  — List processes
+  GET    /v1/users/messages             — List messages
+  POST   /v1/users/messages             — Send message
 """
+import asyncio
 import logging
 import os
 from dataclasses import dataclass, field
@@ -35,8 +45,12 @@ from app.services.ats_clients.base import (
 
 logger = logging.getLogger(__name__)
 
-RAILS_API_URL = os.environ.get("RAILS_API_URL", "http://localhost:8080")
+RAILS_API_URL = os.environ.get("RAILS_API_URL", "http://localhost:3000")
 RAILS_API_TIMEOUT = int(os.environ.get("RAILS_API_TIMEOUT", "30"))
+RAILS_API_TOKEN = os.environ.get("RAILS_API_TOKEN", "")
+
+_RETRY_BASE_DELAY = 0.5
+_RETRY_MAX_DELAY = 8.0
 
 
 @dataclass
@@ -53,7 +67,11 @@ class WeDOTalentATSClient:
     """HTTP client for WeDOTalent ats_api (Rails).
 
     Implements retry with exponential backoff, auto-refresh on 401,
-    and JSONAPI response parsing.
+    JSONAPI response parsing, and circuit breaker integration.
+
+    Auth precedence:
+      1. ``token`` argument (user JWT forwarded from request)
+      2. ``RAILS_API_TOKEN`` env var (service-to-service token)
 
     Usage:
         client = WeDOTalentATSClient(token="eyJ...")
@@ -68,13 +86,13 @@ class WeDOTalentATSClient:
         timeout: int = RAILS_API_TIMEOUT,
     ):
         self.base_url = (base_url or RAILS_API_URL).rstrip("/")
-        self.token = token
+        self.token = token or RAILS_API_TOKEN or None
         self.timeout = timeout
         self._client: httpx.AsyncClient | None = None
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
-            headers = {"Content-Type": "application/json"}
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
             if self.token:
                 headers["Authorization"] = f"Bearer {self.token}"
             self._client = httpx.AsyncClient(
@@ -89,7 +107,7 @@ class WeDOTalentATSClient:
             await self._client.aclose()
 
     # ------------------------------------------------------------------
-    # Low-level HTTP
+    # Low-level HTTP (retry + backoff + circuit breaker)
     # ------------------------------------------------------------------
 
     async def _request(
@@ -100,54 +118,107 @@ class WeDOTalentATSClient:
         json_body: dict | None = None,
         retry: int = 3,
     ) -> RailsAPIResponse:
-        """Make HTTP request with retry and JSONAPI parsing."""
-        client = await self._get_client()
-        last_error = None
+        """Make HTTP request with retry, exponential backoff, and JSONAPI parsing."""
+        from app.shared.resilience.circuit_breaker import RAILS_CIRCUIT, CircuitBreakerError
 
-        for attempt in range(retry):
-            try:
-                response = await client.request(
-                    method=method,
-                    url=path,
-                    params=params,
-                    json=json_body,
-                )
+        async def _do_request() -> RailsAPIResponse:
+            """
+            Inner retry loop. Raises on retryable failure (timeout / 5xx) so the
+            outer circuit-breaker wrapper can track the failure correctly.
+            Non-retryable responses (401, 4xx client errors) are returned as
+            RailsAPIResponse with success=False — they do NOT open the circuit.
+            """
+            client = await self._get_client()
+            last_error: Exception | None = None
 
-                result = RailsAPIResponse(status_code=response.status_code)
+            for attempt in range(retry):
+                try:
+                    response = await client.request(
+                        method=method,
+                        url=path,
+                        params=params,
+                        json=json_body,
+                    )
 
-                if response.status_code == 401:
-                    logger.warning("[RailsClient] 401 Unauthorized on %s %s", method, path)
-                    result.errors = ["Unauthorized"]
-                    return result
+                    # 401 — auth problem: non-retryable, not a Rails service fault
+                    if response.status_code == 401:
+                        logger.warning("[RailsClient] 401 Unauthorized on %s %s", method, path)
+                        return RailsAPIResponse(
+                            status_code=401,
+                            errors=["Unauthorized"],
+                        )
 
-                if response.status_code >= 400:
+                    # 5xx — server fault: retryable, counts against circuit
+                    if response.status_code >= 500:
+                        body = response.json() if response.content else {}
+                        errors = body.get("errors", [str(response.status_code)])
+                        exc = httpx.HTTPStatusError(
+                            f"Rails server error {response.status_code}",
+                            request=response.request,
+                            response=response,
+                        )
+                        last_error = exc
+                        delay = min(_RETRY_BASE_DELAY * (2 ** attempt), _RETRY_MAX_DELAY)
+                        logger.warning(
+                            "[RailsClient] 5xx (%s) on %s %s (attempt %d/%d) — retrying in %.1fs",
+                            response.status_code, method, path, attempt + 1, retry, delay,
+                        )
+                        if attempt < retry - 1:
+                            await asyncio.sleep(delay)
+                        continue
+
+                    # 4xx client error — non-retryable, not a Rails service fault
+                    if response.status_code >= 400:
+                        body = response.json() if response.content else {}
+                        return RailsAPIResponse(
+                            status_code=response.status_code,
+                            errors=body.get("errors", [str(response.status_code)]),
+                        )
+
+                    # 2xx / 3xx — success
                     body = response.json() if response.content else {}
-                    result.errors = body.get("errors", [str(response.status_code)])
-                    return result
+                    return RailsAPIResponse(
+                        data=body.get("data"),
+                        meta=body.get("meta", {}),
+                        status_code=response.status_code,
+                        success=True,
+                    )
 
-                body = response.json() if response.content else {}
-                result.data = body.get("data")
-                result.meta = body.get("meta", {})
-                result.success = True
-                return result
+                except httpx.TimeoutException as e:
+                    last_error = e
+                    delay = min(_RETRY_BASE_DELAY * (2 ** attempt), _RETRY_MAX_DELAY)
+                    logger.warning(
+                        "[RailsClient] Timeout on %s %s (attempt %d/%d) — retrying in %.1fs",
+                        method, path, attempt + 1, retry, delay,
+                    )
+                    if attempt < retry - 1:
+                        await asyncio.sleep(delay)
 
-            except httpx.TimeoutException as e:
-                last_error = e
-                logger.warning(
-                    "[RailsClient] Timeout on %s %s (attempt %d/%d)",
-                    method, path, attempt + 1, retry,
-                )
-            except Exception as e:
-                last_error = e
-                logger.error(
-                    "[RailsClient] Error on %s %s: %s (attempt %d/%d)",
-                    method, path, e, attempt + 1, retry,
-                )
+                except Exception as e:
+                    # Unexpected error (connection refused, DNS, etc.) — raise immediately
+                    logger.error("[RailsClient] Error on %s %s: %s", method, path, e)
+                    raise
 
-        return RailsAPIResponse(
-            errors=[f"All {retry} attempts failed: {last_error}"],
-            status_code=0,
-        )
+            # All retry attempts exhausted — raise so circuit breaker records failure
+            raise RuntimeError(
+                f"[RailsClient] All {retry} attempts failed for {method} {path}: {last_error}"
+            )
+
+        try:
+            return await RAILS_CIRCUIT.call(_do_request)
+        except CircuitBreakerError as e:
+            logger.warning("[RailsClient] Circuit OPEN for rails_api: retry_after=%.0fs", e.retry_after)
+            return RailsAPIResponse(
+                errors=[f"Rails API unavailable (circuit open, retry after {e.retry_after:.0f}s)"],
+                status_code=503,
+            )
+        except Exception as e:
+            # Circuit recorded failure; return safe error response
+            logger.warning("[RailsClient] Rails call failed (recorded in circuit): %s", e)
+            return RailsAPIResponse(
+                errors=[str(e)],
+                status_code=0,
+            )
 
     async def get(self, path: str, params: dict | None = None) -> RailsAPIResponse:
         return await self._request("GET", path, params=params)
@@ -175,7 +246,6 @@ class WeDOTalentATSClient:
             token = resp.data.get("token")
             if token:
                 self.token = token
-                # Refresh client headers
                 self._client = None
                 return token
         return None
@@ -201,6 +271,23 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/jobs", params=params)
         return self._extract_list(resp)
 
+    async def list_jobs_or_none(
+        self, search: str = "*", page: int = 1, limit: int = 30, **filters
+    ) -> list[dict] | None:
+        """Like list_jobs but returns None on any Rails failure (non-success response).
+
+        This distinguishes a successful empty list [] from a Rails error,
+        allowing callers to fall back to a local data source on failure.
+        """
+        params = {"search": search, "page": page, "limit": limit}
+        if filters:
+            import json
+            params["where"] = json.dumps(filters)
+        resp = await self.get("/v1/users/jobs", params=params)
+        if not resp.success:
+            return None
+        return self._extract_list(resp)
+
     async def get_job(self, job_id: int) -> dict | None:
         resp = await self.get(f"/v1/users/jobs/{job_id}")
         if resp.success:
@@ -219,6 +306,23 @@ class WeDOTalentATSClient:
             import json
             params["where"] = json.dumps(filters)
         resp = await self.get("/v1/users/candidates", params=params)
+        return self._extract_list(resp)
+
+    async def list_candidates_or_none(
+        self, search: str = "*", page: int = 1, limit: int = 30, **filters
+    ) -> list[dict] | None:
+        """Like list_candidates but returns None on any Rails failure (non-success response).
+
+        This distinguishes a successful empty list [] from a Rails error,
+        allowing callers to fall back to a local data source on failure.
+        """
+        params = {"search": search, "page": page, "limit": limit}
+        if filters:
+            import json
+            params["where"] = json.dumps(filters)
+        resp = await self.get("/v1/users/candidates", params=params)
+        if not resp.success:
+            return None
         return self._extract_list(resp)
 
     async def get_candidate(self, candidate_id: int) -> dict | None:
@@ -270,9 +374,55 @@ class WeDOTalentATSClient:
         resp = await self.get("/v1/users/selective_processes", params=params)
         return self._extract_list(resp)
 
+    # ------------------------------------------------------------------
+    # Messages
+    # ------------------------------------------------------------------
+
+    async def list_messages(
+        self,
+        page: int = 1,
+        limit: int = 30,
+        reference_type: str | None = None,
+        reference_id: int | None = None,
+    ) -> list[dict]:
+        """List messages from Rails (/v1/users/messages)."""
+        params: dict[str, Any] = {"page": page, "limit": limit}
+        if reference_type:
+            params["reference_type"] = reference_type
+        if reference_id:
+            params["reference_id"] = reference_id
+        resp = await self.get("/v1/users/messages", params=params)
+        return self._extract_list(resp)
+
+    async def send_message(
+        self,
+        content: str,
+        entity: str | None = None,
+        reference_type: str | None = None,
+        reference_id: int | None = None,
+        parent_message_id: int | None = None,
+        metadata: dict | None = None,
+    ) -> dict | None:
+        """Send a message via Rails (/v1/users/messages)."""
+        payload: dict[str, Any] = {"content": content}
+        if entity:
+            payload["entity"] = entity
+        if reference_type:
+            payload["reference_type"] = reference_type
+        if reference_id:
+            payload["reference_id"] = reference_id
+        if parent_message_id:
+            payload["parent_message_id"] = parent_message_id
+        if metadata:
+            payload["metadata"] = metadata
+        resp = await self.post("/v1/users/messages", json_body={"message": payload})
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] send_message failed: %s", resp.errors)
+        return None
 
     # ------------------------------------------------------------------
-    # Write Operations (Work C)
+    # Write Operations
     # ------------------------------------------------------------------
 
     async def create_candidate(self, candidate_data: dict) -> dict | None:
@@ -291,6 +441,11 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] update_candidate %s failed: %s", candidate_id, resp.errors)
         return None
 
+    async def delete_candidate(self, candidate_id: int) -> bool:
+        """Delete a candidate in Rails."""
+        resp = await self.delete(f"/v1/users/candidates/{candidate_id}")
+        return resp.success
+
     async def create_job(self, job_data: dict) -> dict | None:
         """Create a job in Rails."""
         resp = await self.post("/v1/users/jobs", json_body={"job": job_data})
@@ -307,6 +462,11 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] update_job %s failed: %s", job_id, resp.errors)
         return None
 
+    async def delete_job(self, job_id: int) -> bool:
+        """Delete a job in Rails."""
+        resp = await self.delete(f"/v1/users/jobs/{job_id}")
+        return resp.success
+
     async def update_apply(self, apply_id: int, apply_data: dict) -> dict | None:
         """Update an apply in Rails."""
         resp = await self.put(f"/v1/users/applies/{apply_id}", json_body={"apply": apply_data})
@@ -315,18 +475,13 @@ class WeDOTalentATSClient:
         logger.warning("[RailsClient] update_apply %s failed: %s", apply_id, resp.errors)
         return None
 
-    async def delete_candidate(self, candidate_id: int) -> bool:
-        """Delete a candidate in Rails."""
-        resp = await self.delete(f"/v1/users/candidates/{candidate_id}")
-        return resp.success
-
-    async def delete_job(self, job_id: int) -> bool:
-        """Delete a job in Rails."""
-        resp = await self.delete(f"/v1/users/jobs/{job_id}")
+    async def delete_apply(self, apply_id: int) -> bool:
+        """Delete (cancel) an apply in Rails."""
+        resp = await self.delete(f"/v1/users/applies/{apply_id}")
         return resp.success
 
     # ------------------------------------------------------------------
-    # New Resources (Work C)
+    # New Resources
     # ------------------------------------------------------------------
 
     async def list_interviews(self, **filters) -> list[dict]:
@@ -344,6 +499,40 @@ class WeDOTalentATSClient:
     async def list_email_templates(self, **filters) -> list[dict]:
         resp = await self.get("/v1/users/email_templates")
         return self._extract_list(resp)
+
+    # ------------------------------------------------------------------
+    # Health Check
+    # ------------------------------------------------------------------
+
+    async def health_check(self) -> dict:
+        """Probe Rails API availability. Returns status dict."""
+        import time
+        start = time.monotonic()
+        try:
+            resp = await self.get("/v1/me")
+            latency_ms = int((time.monotonic() - start) * 1000)
+            if resp.success or resp.status_code in (200, 401):
+                return {
+                    "status": "ok",
+                    "latency_ms": latency_ms,
+                    "rails_reachable": True,
+                    "status_code": resp.status_code,
+                }
+            return {
+                "status": "degraded",
+                "latency_ms": latency_ms,
+                "rails_reachable": True,
+                "status_code": resp.status_code,
+                "errors": resp.errors,
+            }
+        except Exception as e:
+            latency_ms = int((time.monotonic() - start) * 1000)
+            return {
+                "status": "unreachable",
+                "latency_ms": latency_ms,
+                "rails_reachable": False,
+                "error": str(e),
+            }
 
     # ------------------------------------------------------------------
     # JSONAPI Helpers

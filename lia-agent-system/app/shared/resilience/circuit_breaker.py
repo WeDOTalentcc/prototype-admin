@@ -494,6 +494,16 @@ OPENMIC_CIRCUIT = CircuitBreaker(
     )
 )
 
+RAILS_CIRCUIT = CircuitBreaker(
+    "rails_api",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=30.0,
+        success_threshold=2,
+        timeout=15.0,
+    )
+)
+
 ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
@@ -512,6 +522,7 @@ ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "gemini_live": GEMINI_LIVE_CIRCUIT,
     "deepgram": DEEPGRAM_CIRCUIT,
     "openmic": OPENMIC_CIRCUIT,
+    "rails_api": RAILS_CIRCUIT,
 }
 
 
@@ -636,6 +647,13 @@ CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
         "tier": "high",
         "description": "Triagem automatizada por voz — OpenMic.ai",
     },
+    "rails_api": {
+        "availability_target": 0.999,
+        "latency_p95_ms": 500,
+        "error_budget_pct": 0.1,
+        "tier": "critical",
+        "description": "ATS core — WeDOTalent Rails API (candidatos, vagas, aplicações)",
+    },
 }
 
 # F1-03: respostas de modo degradado — retornadas quando o circuit está OPEN
@@ -709,6 +727,11 @@ DEGRADED_MODE_RESPONSES: dict[str, str] = {
     "openmic": (
         "O screening automatizado por voz está temporariamente indisponível. "
         "A triagem será conduzida via chat ou WhatsApp como alternativa."
+    ),
+    "rails_api": (
+        "O ATS principal está temporariamente indisponível. "
+        "Os dados locais em cache continuam acessíveis. "
+        "Operações de escrita serão enfileiradas para sincronização assim que o serviço for restaurado."
     ),
 }
 
