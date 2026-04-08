@@ -466,6 +466,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     connection.dismissFairnessWarnings,
     connection.connect,
     connection.disconnect,
+    setSharedMessages,
   ])
 
   return (

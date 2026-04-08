@@ -84,6 +84,7 @@ export function useTalentFunnel() {
 
   useEffect(() => {
     loadFromStorage()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadFromStorage = async () => {

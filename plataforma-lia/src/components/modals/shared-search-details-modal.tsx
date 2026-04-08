@@ -72,7 +72,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
     }
   }, [open])
 
-  const loadDetails = async () => {
+  const loadDetails = useCallback(async () => {
     try {
       setLoading(true)
       const data = await liaApi.getSharedSearchDetail(sharedSearchId)
@@ -82,8 +82,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
     } finally {
       setLoading(false)
     }
-  }
-
+  }, [sharedSearchId])
   const feedbackMap = useMemo(() => {
     if (!sharedSearch) return new Map<string, CandidateFeedback>()
     const map = new Map<string, CandidateFeedback>()

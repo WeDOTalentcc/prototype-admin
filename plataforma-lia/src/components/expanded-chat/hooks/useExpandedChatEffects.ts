@@ -346,7 +346,7 @@ export function useExpandedChatEffects(ctx) {
       clearTimeout(timer)
       clearInterval(interval)
     }
-  }, [user, proactiveActionIds, setMessages, setProactiveActionIds])
+  }, [user, proactiveActionIds, setMessages, setProactiveActionIds, resolvedTenantId])
 
   // Detect draft and show choice message instead of auto-restoring
   // NOTE: The synchronous check in checkForExistingDraftSync() handles immediate UI feedback

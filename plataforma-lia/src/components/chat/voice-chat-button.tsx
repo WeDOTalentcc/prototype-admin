@@ -97,7 +97,7 @@ export function VoiceChatButton({
     }
   }, [])
 
-  const processAudio = async (audioBlob: Blob) => {
+  const processAudio = useCallback(async (audioBlob: Blob) => {
     setIsProcessing(true)
     try {
       const result = await voiceChat(audioBlob, sessionId)
@@ -119,7 +119,7 @@ export function VoiceChatButton({
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [onError, onResponse, onTranscription, sessionId])
 
   const playAudioResponse = (base64Audio: string) => {
     try {

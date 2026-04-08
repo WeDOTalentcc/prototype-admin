@@ -175,7 +175,7 @@ Quer que eu avance para a etapa de **Competências**, ou prefere ajustar algo an
     }
     
     fetchBenchmark()
-  }, [currentStage, basicInfoFields.cargo, basicInfoFields.area, basicInfoFields.localidade, detectedCriteria, salaryBenchmark, salaryInfo.maxSalary, salaryInfo.minSalary, setIsLoadingBenchmark, setSalaryBenchmark, setSalaryInfo])
+  }, [currentStage, basicInfoFields, detectedCriteria, salaryBenchmark, salaryInfo.maxSalary, salaryInfo.minSalary, setIsLoadingBenchmark, setSalaryBenchmark, setSalaryInfo])
 
   // Proactive input-evaluation stage completion detection - timer resets on each basicInfoFields change
   useEffect(() => {

@@ -710,6 +710,7 @@ class TestConsentCheckerServiceAbsentConsent:
         mock_module = MagicMock()
         mock_module.settings = MagicMock()
         mock_module.settings.LGPD_CONSENT_ABSENT_HARD_BLOCK = True
+        _orig_lia_config = sys.modules.get("lia_config")
         sys.modules["lia_config.config"] = mock_module
         sys.modules["lia_config"] = MagicMock()
 
@@ -724,6 +725,10 @@ class TestConsentCheckerServiceAbsentConsent:
                 assert result.reason == "absent"
             finally:
                 sys.modules.pop("lia_config.config", None)
+                if _orig_lia_config is None:
+                    sys.modules.pop("lia_config", None)
+                else:
+                    sys.modules["lia_config"] = _orig_lia_config
 
 
 class TestConsentCheckerServicePresentConsent:

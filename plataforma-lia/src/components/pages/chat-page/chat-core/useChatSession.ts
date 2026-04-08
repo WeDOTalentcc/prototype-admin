@@ -321,7 +321,7 @@ export function useChatSession({
     }
     window.addEventListener('lia-new-job', handleNewJob)
     return () => window.removeEventListener('lia-new-job', handleNewJob)
-  }, [emptyFieldNotifications, setMessages])
+  }, [emptyFieldNotifications, setMessages, companyId])
 
   // Library events
   useEffect(() => {
@@ -398,7 +398,7 @@ export function useChatSession({
         type: "text",
       }])
     }
-  }, [emptyFieldNotifications, setMessages])
+  }, [emptyFieldNotifications, setMessages, companyId])
 
   const handleSuggestionAccepted = useCallback((fieldKey: string, value: unknown) => {
     const formattedValue = typeof value === 'object' ? JSON.stringify(value) : String(value)

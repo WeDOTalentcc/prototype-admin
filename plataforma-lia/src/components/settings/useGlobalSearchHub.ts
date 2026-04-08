@@ -192,6 +192,7 @@ export function useGlobalSearchHub(
     if (!hasOtherChanges) setHasChanges(false)
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useImperativeHandle(ref, () => ({
     save: handleSave,
     cancel: handleCancel,

@@ -134,7 +134,7 @@ export function SalaryStage({
       groups[cat].push(b)
     }
     return groups
-  }, [salaryInfo.benefits])
+  }, [salaryInfo])
 
   return (
     <div data-testid="salary-stage" className="space-y-3">

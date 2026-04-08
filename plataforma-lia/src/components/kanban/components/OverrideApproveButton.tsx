@@ -25,7 +25,6 @@ useEffect(() => {
     if (error) {
       toast.error('Erro ao aprovar candidato', { description: error })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error])
 
   const handleClick = (e: React.MouseEvent) => {

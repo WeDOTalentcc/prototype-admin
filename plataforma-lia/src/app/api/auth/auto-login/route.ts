@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
     const cookieBase = {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
-      secure: isHttps,
-      sameSite: 'lax' as const,
+      secure: isHttps || !IS_PRODUCTION,
+      sameSite: 'none' as const,
     }
 
     response.cookies.set('lia_access_token', accessToken, { ...cookieBase, httpOnly: true })

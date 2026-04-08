@@ -172,6 +172,7 @@ const [attachedFiles, setAttachedFiles] = useState<File[]>([])
         e.target.value = ""
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 

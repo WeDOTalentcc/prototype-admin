@@ -258,7 +258,7 @@ export function useWizardState(options: UseWizardStateOptions = {}): UseWizardSt
     setCatalogMaturityState('minimal')
     setFastTrackSourceJobId(null)
     setDraftId(null)
-  }, [])
+  }, [setDraftId])
 
   const setHasPendingChanges = useCallback((value: boolean) => {
     setHasPendingChangesState(value)

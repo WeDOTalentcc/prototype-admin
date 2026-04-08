@@ -81,6 +81,22 @@ tenants:
 
 @pytest.fixture(autouse=True)
 def reset_all():
+    # Track which stubs we added (not already in sys.modules)
+    stubs_to_remove = []
+    stubs = {
+        "app.shared.providers.ats_factory",
+        "app.shared.providers.voice_provider",
+        "app.services",
+        "app.services.ats_clients",
+        "app.services.ats_clients.base",
+        "app.core",
+        "app.core.config",
+        "lia_config",
+        "lia_config.config",
+    }
+    for mod in stubs:
+        if mod not in sys.modules:
+            stubs_to_remove.append(mod)
     _stub_heavy_modules()
 
     from app.shared.global_tool_registry import GlobalToolRegistry
@@ -91,6 +107,9 @@ def reset_all():
     yield
     GlobalToolRegistry._instance = None
     ToolPermissionsLoader.invalidate_cache()
+    # Clean up stubs that this fixture installed
+    for mod in stubs_to_remove:
+        sys.modules.pop(mod, None)
 
 
 @pytest.fixture

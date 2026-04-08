@@ -300,9 +300,10 @@ export function useWizardAutoSave(
       }
     }, saveInterval)
 
+    const intervalToCleanup = autoSaveIntervalRef
     return () => {
-      if (autoSaveIntervalRef.current) {
-        clearInterval(autoSaveIntervalRef.current)
+      if (intervalToCleanup.current) {
+        clearInterval(intervalToCleanup.current)
       }
     }
   }, [enabled, hasPendingChanges, saveInterval, performSave])

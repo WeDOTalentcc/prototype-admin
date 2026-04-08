@@ -584,6 +584,7 @@ export function useLiaChatPanelState() {
     contextDismissed,
     pendingCvFields, uploadedFileInfo, setPendingCvFields, setUploadedFileInfo,
     updateRecentItem,
+    attachedCvFile, awaitingCandidateName, screenCv, setChatConversationId,
   ])
 
   const handleKeyDown = useCallback(

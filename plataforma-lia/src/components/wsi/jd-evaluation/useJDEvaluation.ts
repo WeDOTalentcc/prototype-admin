@@ -115,6 +115,7 @@ export function useJDEvaluation(props: {
   const [jdDynamicMessage, setJdDynamicMessage] = useState('')
   const [jdGenerationStep, setJdGenerationStep] = useState(0)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchEvaluation() }, [jobTitle, responsibilities.length, technicalSkills.length, behavioralCompetencies.length])
 
   useEffect(() => {

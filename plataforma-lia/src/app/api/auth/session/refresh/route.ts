@@ -41,11 +41,10 @@ export async function POST(request: NextRequest) {
 
     const data = await backendResponse.json()
 
-    const secure = isSecureContext(request)
     const cookieOpts = {
       httpOnly: true,
-      secure,
-      sameSite: 'lax' as const,
+      secure: true,
+      sameSite: 'none' as const,
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
     }

@@ -194,7 +194,7 @@ export function useJobStatusModal({
     }
 
     fetchCandidatesForJobs()
-  }, [isOpen, jobs.length, candidates.length, isPauseMode])
+  }, [isOpen, jobs, candidates.length, isPauseMode])
 
   useEffect(() => {
     if (!isOpen) {
@@ -251,13 +251,14 @@ export function useJobStatusModal({
     } else {
       setCurrentStep('confirmation')
     }
-  }, [hasProposalBlock, isPauseMode, isCancelMode, candidatesInProposal.length, notifyApplicants, onNavigateToJobWithCommunication])
+  }, [hasProposalBlock, isPauseMode, isCancelMode, candidatesInProposal.length, notifyApplicants, onNavigateToJobWithCommunication, handleSubmitAndNavigate])
 
   const handleCommunicationProceed = useCallback(() => {
     setCurrentStep('confirmation')
   }, [])
 
-  const handleSubmitAndNavigate = async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleSubmitAndNavigate = useCallback(async () => {
     if (isSubmitting) return
     setIsSubmitting(true)
 
@@ -299,7 +300,7 @@ export function useJobStatusModal({
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [])
 
   const handleSubmit = async () => {
     if (isSubmitting) return
@@ -393,8 +394,7 @@ export function useJobStatusModal({
 
   const handleClose = useCallback(() => {
     onClose()
-  }, [onClose])
-
+  }, [])
   return {
     currentStep, setCurrentStep, isSubmitting, isPauseMode, isCancelMode, jobIds,
     notificationReport, setNotificationReport,

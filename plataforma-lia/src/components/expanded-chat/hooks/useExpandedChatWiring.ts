@@ -288,7 +288,7 @@ export function useExpandedChatWiring({
         state.setInputValue("")
       }, 500)
     }
-  }, [isOpen, initialMessage, state.messages.length, state.isTypingEffect, handleSendMessage])
+  }, [isOpen, initialMessage, state.messages.length, state.isTypingEffect, handleSendMessage, state])
 
   return {
     activeInputTab: state.activeInputTab,

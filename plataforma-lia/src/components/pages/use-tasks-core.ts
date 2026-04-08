@@ -404,8 +404,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   }
 
   const tasks: Task[] = []
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const jobRequests = React.useMemo<JobRequest[]>(() => [], [])
+  const jobRequests = useMemo<JobRequest[]>(() => [], [])
 
   const filteredPendingTasks = useMemo(() => {
     if (pendingTaskFilter === 'all') return pendingTasks

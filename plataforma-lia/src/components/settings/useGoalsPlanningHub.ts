@@ -84,6 +84,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     } catch (err) {
       return null
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchCompanyUsers = useCallback(async () => {

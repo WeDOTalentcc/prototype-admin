@@ -268,7 +268,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
         seniority: undefined
       })
     }
-  }, [detectedCriteria?.cargo, detectedCriteria?.departamento, mode, fetchWizardSuggestions])
+  }, [detectedCriteria?.cargo, detectedCriteria?.departamento, mode, fetchWizardSuggestions, resolvedCompanyId])
 
   const {
     clearSuggestions: clearFastTrackSuggestions,
@@ -295,7 +295,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
         }
       }
     }
-  }, [fastTrackHasSuggestions, fastTrackSuggestions, fastTrackMessageSent, mode, currentStage, analytics, fastTrackSuggestionsShownTracked, getFastTrackLiaMessage, setFastTrackMessageSent, setFastTrackSuggestionsShownTracked])
+  }, [fastTrackHasSuggestions, fastTrackSuggestions, fastTrackMessageSent, mode, currentStage, analytics, fastTrackSuggestionsShownTracked, getFastTrackLiaMessage, setFastTrackMessageSent, setFastTrackSuggestionsShownTracked, setMessages])
 
   useEffect(() => {
     if (!isOpen || mode !== 'job-creation') {

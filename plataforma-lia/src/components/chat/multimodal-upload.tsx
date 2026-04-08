@@ -120,7 +120,7 @@ export function MultimodalUpload({
     }
   }
 
-  const analyzeFile = async (fileToAnalyze?: File) => {
+  const analyzeFile = useCallback(async (fileToAnalyze?: File) => {
     const targetFile = fileToAnalyze || file
     if (!targetFile) return
     
@@ -158,7 +158,7 @@ export function MultimodalUpload({
     } finally {
       setIsAnalyzing(false)
     }
-  }
+  }, [analysisType, onAnalysisComplete, onError])
 
   const clearFile = () => {
     setFile(null)
