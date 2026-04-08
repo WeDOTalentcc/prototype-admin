@@ -15,11 +15,14 @@ from app.core.database import AsyncSessionLocal
 from app.domains.hiring_policy.agents.policy_tool_registry import INDUSTRY_BENCHMARKS
 from app.shared.compliance.fairness_guard import FairnessGuard
 
+from app.shared.tool_handler import tool_handler
+
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     period_days = kwargs.get("period_days", 90)
@@ -100,6 +103,7 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     status = kwargs.get("status", "all")
     department = kwargs.get("department", "all")
@@ -163,63 +167,59 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT id, title, status, priority, department, location,
-                           description, requirements, technical_requirements,
-                           salary_range, benefits, created_at, deadline,
-                           recruiter, manager, company_id,
-                           EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
-                    FROM job_vacancies WHERE id = :jid
-                """),
-                {"jid": job_id},
-            )
-            data = row.mappings().first()
-            if not data:
-                return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
+    async with AsyncSessionLocal() as session:
+        row = await session.execute(
+            text("""
+                SELECT id, title, status, priority, department, location,
+                       description, requirements, technical_requirements,
+                       salary_range, benefits, created_at, deadline,
+                       recruiter, manager, company_id,
+                       EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
+                FROM job_vacancies WHERE id = :jid
+            """),
+            {"jid": job_id},
+        )
+        data = row.mappings().first()
+        if not data:
+            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
 
-            counts = await session.execute(
-                text("""
-                    SELECT status, COUNT(*) AS cnt
-                    FROM vacancy_candidates WHERE vacancy_id = :jid
-                    GROUP BY status
-                """),
-                {"jid": job_id},
-            )
-            by_status = {r["status"]: int(r["cnt"]) for r in counts.mappings()}
-            total_candidates = sum(by_status.values())
+        counts = await session.execute(
+            text("""
+                SELECT status, COUNT(*) AS cnt
+                FROM vacancy_candidates WHERE vacancy_id = :jid
+                GROUP BY status
+            """),
+            {"jid": job_id},
+        )
+        by_status = {r["status"]: int(r["cnt"]) for r in counts.mappings()}
+        total_candidates = sum(by_status.values())
 
-            return {
-                "success": True,
-                "data": {
-                    "job_id": str(data["id"]),
-                    "title": data["title"],
-                    "status": data["status"],
-                    "priority": data["priority"],
-                    "department": data["department"],
-                    "location": data["location"],
-                    "description": (data["description"] or "")[:500],
-                    "technical_requirements": data["technical_requirements"],
-                    "salary_range": data["salary_range"],
-                    "recruiter": data["recruiter"],
-                    "manager": data["manager"],
-                    "deadline": str(data["deadline"]) if data["deadline"] else None,
-                    "days_open": int(data["days_open"] or 0),
-                    "candidates_total": total_candidates,
-                    "candidates_by_status": by_status,
-                },
-                "message": f"Detalhes da vaga '{data['title']}' carregados. {total_candidates} candidatos.",
-            }
-    except Exception as e:
-        logger.error(f"[jobs_mgmt_tools] view_job_details error: {e}", exc_info=True)
-        return {"success": False, "data": {}, "message": str(e)}
-
-
+        return {
+            "success": True,
+            "data": {
+                "job_id": str(data["id"]),
+                "title": data["title"],
+                "status": data["status"],
+                "priority": data["priority"],
+                "department": data["department"],
+                "location": data["location"],
+                "description": (data["description"] or "")[:500],
+                "technical_requirements": data["technical_requirements"],
+                "salary_range": data["salary_range"],
+                "recruiter": data["recruiter"],
+                "manager": data["manager"],
+                "deadline": str(data["deadline"]) if data["deadline"] else None,
+                "days_open": int(data["days_open"] or 0),
+                "candidates_total": total_candidates,
+                "candidates_by_status": by_status,
+            },
+            "message": f"Detalhes da vaga '{data['title']}' carregados. {total_candidates} candidatos.",
+        }
+@tool_handler("jobs_mgmt")
 async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
@@ -266,6 +266,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     job_ids = kwargs.get("job_ids", [])
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
@@ -310,6 +311,7 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
@@ -363,6 +365,7 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
@@ -427,95 +430,69 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] pause_job called: job={job_id} reason={reason}")
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()
-                    WHERE id = :jid AND (:cid = '' OR company_id = :cid)
-                    RETURNING status
-                """),
-                {"jid": job_id, "cid": company_id},
-            )
-            if not result.fetchone():
-                return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
-            await session.commit()
-        return {"success": True,
-                "data": {"job_id": job_id, "new_status": "Pausada", "reason": reason},
-                "message": f"Vaga {job_id} pausada com sucesso."}
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[jobs_mgmt_tools] pause_job error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao pausar vaga {job_id}."}
-
-
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("""
+                UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()
+                WHERE id = :jid AND (:cid = '' OR company_id = :cid)
+                RETURNING status
+            """),
+            {"jid": job_id, "cid": company_id},
+        )
+        if not result.fetchone():
+            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
+        await session.commit()
+    return {"success": True,
+            "data": {"job_id": job_id, "new_status": "Pausada", "reason": reason},
+            "message": f"Vaga {job_id} pausada com sucesso."}
+@tool_handler("jobs_mgmt")
 async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] reopen_job called: job={job_id}")
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    UPDATE job_vacancies SET status = 'Ativa', updated_at = NOW()
-                    WHERE id = :jid AND (:cid = '' OR company_id = :cid)
-                    RETURNING status
-                """),
-                {"jid": job_id, "cid": company_id},
-            )
-            if not result.fetchone():
-                return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
-            await session.commit()
-        return {"success": True,
-                "data": {"job_id": job_id, "new_status": "Ativa"},
-                "message": f"Vaga {job_id} reaberta com sucesso."}
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[jobs_mgmt_tools] reopen_job error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao reabrir vaga {job_id}."}
-
-
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("""
+                UPDATE job_vacancies SET status = 'Ativa', updated_at = NOW()
+                WHERE id = :jid AND (:cid = '' OR company_id = :cid)
+                RETURNING status
+            """),
+            {"jid": job_id, "cid": company_id},
+        )
+        if not result.fetchone():
+            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
+        await session.commit()
+    return {"success": True,
+            "data": {"job_id": job_id, "new_status": "Ativa"},
+            "message": f"Vaga {job_id} reaberta com sucesso."}
+@tool_handler("jobs_mgmt")
 async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] close_job called: job={job_id} reason={reason}")
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    UPDATE job_vacancies SET status = 'Concluída', updated_at = NOW()
-                    WHERE id = :jid AND (:cid = '' OR company_id = :cid)
-                    RETURNING status
-                """),
-                {"jid": job_id, "cid": company_id},
-            )
-            if not result.fetchone():
-                return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
-            await session.commit()
-        return {"success": True,
-                "data": {"job_id": job_id, "new_status": "Concluída", "reason": reason},
-                "message": f"Vaga {job_id} fechada com sucesso."}
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[jobs_mgmt_tools] close_job error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao fechar vaga {job_id}."}
-
-
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            text("""
+                UPDATE job_vacancies SET status = 'Concluída', updated_at = NOW()
+                WHERE id = :jid AND (:cid = '' OR company_id = :cid)
+                RETURNING status
+            """),
+            {"jid": job_id, "cid": company_id},
+        )
+        if not result.fetchone():
+            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
+        await session.commit()
+    return {"success": True,
+            "data": {"job_id": job_id, "new_status": "Concluída", "reason": reason},
+            "message": f"Vaga {job_id} fechada com sucesso."}
+@tool_handler("jobs_mgmt")
 async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     priority = kwargs.get("priority", "média")
@@ -524,32 +501,23 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
                     "alta": "alta", "média": "média", "baixa": "baixa"}
     priority_pt = priority_map.get(priority.lower(), priority)
     logger.info(f"[jobs_mgmt_tools] update_priority called: job={job_id} priority={priority_pt}")
-    try:
-        async with AsyncSessionLocal() as session:
-            prev = await session.execute(
-                text("SELECT priority FROM job_vacancies WHERE id = :jid AND (:cid = '' OR company_id = :cid)"),
-                {"jid": job_id, "cid": company_id},
-            )
-            prev_row = prev.mappings().first()
-            if not prev_row:
-                return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
-            await session.execute(
-                text("UPDATE job_vacancies SET priority = :p, updated_at = NOW() WHERE id = :jid"),
-                {"p": priority_pt, "jid": job_id},
-            )
-            await session.commit()
-        return {"success": True,
-                "data": {"job_id": job_id, "previous_priority": prev_row["priority"], "new_priority": priority_pt},
-                "message": f"Prioridade da vaga {job_id} atualizada para '{priority_pt}'."}
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[jobs_mgmt_tools] update_priority error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao atualizar prioridade da vaga {job_id}."}
-
-
+    async with AsyncSessionLocal() as session:
+        prev = await session.execute(
+            text("SELECT priority FROM job_vacancies WHERE id = :jid AND (:cid = '' OR company_id = :cid)"),
+            {"jid": job_id, "cid": company_id},
+        )
+        prev_row = prev.mappings().first()
+        if not prev_row:
+            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
+        await session.execute(
+            text("UPDATE job_vacancies SET priority = :p, updated_at = NOW() WHERE id = :jid"),
+            {"p": priority_pt, "jid": job_id},
+        )
+        await session.commit()
+    return {"success": True,
+            "data": {"job_id": job_id, "previous_priority": prev_row["priority"], "new_priority": priority_pt},
+            "message": f"Prioridade da vaga {job_id} atualizada para '{priority_pt}'."}
+@tool_handler("jobs_mgmt")
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
@@ -591,6 +559,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
     action_description = kwargs.get("action_description", "")
     action_type = kwargs.get("action_type", "general")
@@ -660,6 +629,7 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "data": {"is_compliant": True, "soft_warnings": []}, "error": str(e)}
 
 
+@tool_handler("jobs_mgmt")
 async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> dict[str, Any]:
     """Return closure probability prediction for company overview or individual vacancy."""
     from app.services.pipeline_prediction_service import pipeline_prediction_service
@@ -667,46 +637,37 @@ async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> dict[str, An
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
 
-    if not company_id:
-        return {"success": False, "error": "company_id é obrigatório."}
-
-    try:
-        if vacancy_id:
-            result = await pipeline_prediction_service.get_vacancy_prediction(
-                vacancy_id=vacancy_id,
-                company_id=company_id,
-            )
-            prob = result.get("closure_probability", 0)
-            est = result.get("estimated_days_to_close")
-            days_str = f" em ~{est} dias" if est else ""
-            interpretation = (
-                f"Probabilidade de fechamento: {prob}%{days_str}. "
-                f"Confiança: {result.get('confidence_level', 'medium')}."
-            )
-        else:
-            result = await pipeline_prediction_service.get_company_overview(
-                company_id=company_id,
-            )
-            summary = result.get("summary", {})
-            vacancies = result.get("vacancies", [])
-            at_risk = [v for v in vacancies if v["closure_probability"] < 30]
-            near = [v for v in vacancies if v["closure_probability"] >= 80]
-            interpretation = (
-                f"{summary.get('total_active_vacancies', 0)} vagas ativas. "
-                f"{len(at_risk)} em risco de não fechar: "
-                + (", ".join(f"'{v['vacancy_title']}' ({v['closure_probability']}%)" for v in at_risk[:3]) or "nenhuma")
-                + f". {len(near)} prestes a fechar: "
-                + (", ".join(f"'{v['vacancy_title']}' ({v['closure_probability']}%)" for v in near[:3]) or "nenhuma")
-                + "."
-            )
-        result["success"] = True
-        result["interpretation"] = interpretation
-        return result
-    except Exception as e:
-        logger.warning(f"[jobs_mgmt_tools] get_pipeline_prediction error: {e}")
-        return {"success": False, "error": str(e)}
-
-
+    if vacancy_id:
+        result = await pipeline_prediction_service.get_vacancy_prediction(
+            vacancy_id=vacancy_id,
+            company_id=company_id,
+        )
+        prob = result.get("closure_probability", 0)
+        est = result.get("estimated_days_to_close")
+        days_str = f" em ~{est} dias" if est else ""
+        interpretation = (
+            f"Probabilidade de fechamento: {prob}%{days_str}. "
+            f"Confiança: {result.get('confidence_level', 'medium')}."
+        )
+    else:
+        result = await pipeline_prediction_service.get_company_overview(
+            company_id=company_id,
+        )
+        summary = result.get("summary", {})
+        vacancies = result.get("vacancies", [])
+        at_risk = [v for v in vacancies if v["closure_probability"] < 30]
+        near = [v for v in vacancies if v["closure_probability"] >= 80]
+        interpretation = (
+            f"{summary.get('total_active_vacancies', 0)} vagas ativas. "
+            f"{len(at_risk)} em risco de não fechar: "
+            + (", ".join(f"'{v['vacancy_title']}' ({v['closure_probability']}%)" for v in at_risk[:3]) or "nenhuma")
+            + f". {len(near)} prestes a fechar: "
+            + (", ".join(f"'{v['vacancy_title']}' ({v['closure_probability']}%)" for v in near[:3]) or "nenhuma")
+            + "."
+        )
+    result["success"] = True
+    result["interpretation"] = interpretation
+    return result
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="validate_job_action_fairness",

@@ -15,112 +15,106 @@ from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 
+from app.shared.tool_handler import tool_handler
+
 logger = logging.getLogger(__name__)
 
 _REFERRAL_TOOL_DEFINITIONS: list[ToolDefinition] = []
 
 
+@tool_handler("referral")
 async def _wrap_referral_identify_connectors(**kwargs: Any) -> dict[str, Any]:
     """
     Identifica colaboradores internos com perfil relevante para indicar candidatos.
     FairnessGuard: verifica query antes de executar busca.
     """
     logger.info("[referral_tools] referral_identify_connectors called: %s", list(kwargs.keys()))
+    from sqlalchemy import text
+    from app.core.database import AsyncSessionLocal
+
+    company_id = kwargs.get("company_id", "")
+    role = kwargs.get("role", "")
+    skills = kwargs.get("skills", [])
+    limit = min(int(kwargs.get("limit", 15)), 50)
+
+    # FairnessGuard: verificar query de busca
+    query_str = f"{role} {' '.join(str(s) for s in skills)}"
     try:
-        from sqlalchemy import text
-        from app.core.database import AsyncSessionLocal
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _fg_result = _fg.check(query_str)
+        if _fg_result.is_blocked:
+            return {
+                "success": False,
+                "data": {},
+                "message": _fg_result.educational_message or "Busca bloqueada por critério discriminatório.",
+            }
+    except Exception as _fg_exc:
+        logger.debug("[referral_tools] FairnessGuard check skipped: %s", _fg_exc)
 
-        company_id = kwargs.get("company_id", "")
-        role = kwargs.get("role", "")
-        skills = kwargs.get("skills", [])
-        limit = min(int(kwargs.get("limit", 15)), 50)
+    conditions = [
+        "c.status = 'hired'",
+        "c.company_id = :company_id",
+    ]
+    params: dict[str, Any] = {"company_id": company_id, "lim": limit}
 
-        if not company_id:
-            return {"success": False, "data": {}, "message": "Parâmetro 'company_id' é obrigatório."}
+    if role:
+        conditions.append("c.current_title ILIKE :role_pattern")
+        params["role_pattern"] = f"%{role}%"
 
-        # FairnessGuard: verificar query de busca
-        query_str = f"{role} {' '.join(str(s) for s in skills)}"
+    if skills and isinstance(skills, list) and len(skills) > 0:
+        conditions.append("c.technical_skills && :skills_arr")
+        params["skills_arr"] = skills
+
+    where_clause = " AND ".join(conditions)
+
+    async with AsyncSessionLocal() as session:
         try:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-            _fg = FairnessGuard()
-            _fg_result = _fg.check(query_str)
-            if _fg_result.is_blocked:
-                return {
-                    "success": False,
-                    "data": {},
-                    "message": _fg_result.educational_message or "Busca bloqueada por critério discriminatório.",
-                }
-        except Exception as _fg_exc:
-            logger.debug("[referral_tools] FairnessGuard check skipped: %s", _fg_exc)
+            result = await session.execute(
+                text(f"""
+                    SELECT c.id, c.name, c.email, c.current_title,
+                           c.technical_skills, c.years_of_experience,
+                           c.location_city, c.location_country
+                    FROM candidates c
+                    WHERE {where_clause}
+                    ORDER BY c.years_of_experience DESC NULLS LAST
+                    LIMIT :lim
+                """),
+                params,
+            )
+            rows = result.mappings().all()
+        except Exception as db_exc:
+            logger.warning("[referral_tools] DB query failed: %s — retornando vazio", db_exc)
+            rows = []
 
-        conditions = [
-            "c.status = 'hired'",
-            "c.company_id = :company_id",
-        ]
-        params: dict[str, Any] = {"company_id": company_id, "lim": limit}
-
-        if role:
-            conditions.append("c.current_title ILIKE :role_pattern")
-            params["role_pattern"] = f"%{role}%"
-
-        if skills and isinstance(skills, list) and len(skills) > 0:
-            conditions.append("c.technical_skills && :skills_arr")
-            params["skills_arr"] = skills
-
-        where_clause = " AND ".join(conditions)
-
-        async with AsyncSessionLocal() as session:
-            try:
-                result = await session.execute(
-                    text(f"""
-                        SELECT c.id, c.name, c.email, c.current_title,
-                               c.technical_skills, c.years_of_experience,
-                               c.location_city, c.location_country
-                        FROM candidates c
-                        WHERE {where_clause}
-                        ORDER BY c.years_of_experience DESC NULLS LAST
-                        LIMIT :lim
-                    """),
-                    params,
-                )
-                rows = result.mappings().all()
-            except Exception as db_exc:
-                logger.warning("[referral_tools] DB query failed: %s — retornando vazio", db_exc)
-                rows = []
-
-        connectors = []
-        for row in rows:
-            connectors.append({
-                "id": str(row["id"]),
-                "name": row["name"],
-                "email": row["email"],
-                "current_title": row["current_title"],
-                "technical_skills": row["technical_skills"] or [],
-                "years_of_experience": row["years_of_experience"],
-                "location": f"{row['location_city'] or ''}, {row['location_country'] or ''}".strip(", "),
-                "relevance_reason": (
-                    f"Trabalha como {row['current_title']} — pode indicar candidatos para '{role}'."
-                    if role else "Colaborador ativo da empresa."
-                ),
-            })
-
-        return {
-            "success": True,
-            "data": {
-                "connectors": connectors,
-                "count": len(connectors),
-                "company_id": company_id,
-            },
-            "message": (
-                f"{len(connectors)} colaborador(es) identificado(s) como potenciais conectores "
-                f"para indicações de '{role or 'qualquer vaga'}'."
+    connectors = []
+    for row in rows:
+        connectors.append({
+            "id": str(row["id"]),
+            "name": row["name"],
+            "email": row["email"],
+            "current_title": row["current_title"],
+            "technical_skills": row["technical_skills"] or [],
+            "years_of_experience": row["years_of_experience"],
+            "location": f"{row['location_city'] or ''}, {row['location_country'] or ''}".strip(", "),
+            "relevance_reason": (
+                f"Trabalha como {row['current_title']} — pode indicar candidatos para '{role}'."
+                if role else "Colaborador ativo da empresa."
             ),
-        }
-    except Exception as e:
-        logger.error("[referral_tools] referral_identify_connectors error: %s", e, exc_info=True)
-        return {"success": False, "data": {}, "message": str(e)}
+        })
 
-
+    return {
+        "success": True,
+        "data": {
+            "connectors": connectors,
+            "count": len(connectors),
+            "company_id": company_id,
+        },
+        "message": (
+            f"{len(connectors)} colaborador(es) identificado(s) como potenciais conectores "
+            f"para indicações de '{role or 'qualquer vaga'}'."
+        ),
+    }
 _REFERRAL_TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="referral_identify_connectors",
@@ -151,71 +145,66 @@ _REFERRAL_TOOL_DEFINITIONS.append(
 )
 
 
+@tool_handler("referral")
 async def _wrap_referral_prepare_request(**kwargs: Any) -> dict[str, Any]:
     """Prepara mensagem personalizada de solicitação de indicação."""
     logger.info("[referral_tools] referral_prepare_request called: %s", list(kwargs.keys()))
-    try:
-        connector_name = kwargs.get("connector_name", "")
-        role = kwargs.get("role", "")
-        company_name = kwargs.get("company_name", "")
-        vacancy_id = kwargs.get("vacancy_id", "")
-        channel = kwargs.get("channel", "email").lower()
-        custom_message = kwargs.get("custom_message", "")
+    connector_name = kwargs.get("connector_name", "")
+    role = kwargs.get("role", "")
+    company_name = kwargs.get("company_name", "")
+    vacancy_id = kwargs.get("vacancy_id", "")
+    channel = kwargs.get("channel", "email").lower()
+    custom_message = kwargs.get("custom_message", "")
 
-        if not connector_name or not role:
-            return {
-                "success": False,
-                "data": {},
-                "message": "Parâmetros 'connector_name' e 'role' são obrigatórios.",
-            }
-
-        if channel == "whatsapp":
-            message = (
-                f"Olá {connector_name.split()[0]}! 👋\n\n"
-                f"Estamos com uma vaga aberta de *{role}*"
-                + (f" na {company_name}" if company_name else "") + ".\n\n"
-                f"Você conhece alguém com esse perfil que possa ter interesse? "
-                f"Qualquer indicação é muito bem-vinda! 🙏\n\n"
-                f"Se quiser, posso compartilhar mais detalhes da vaga."
-            )
-        else:
-            message = (
-                f"Olá {connector_name.split()[0]},\n\n"
-                f"Espero que esteja bem! Estamos com uma vaga aberta de {role}"
-                + (f" em {company_name}" if company_name else "") + ".\n\n"
-                f"Sabe de alguém com esse perfil que possa ter interesse? "
-                f"Sua indicação pode fazer toda a diferença.\n\n"
-                f"Qualquer nome ou contato que você queira sugerir será muito apreciado!\n\n"
-                f"Obrigado(a) pela ajuda."
-            )
-
-        if custom_message:
-            message = custom_message
-
-        request_id = str(uuid.uuid4())
-
+    if not connector_name or not role:
         return {
-            "success": True,
-            "data": {
-                "request_id": request_id,
-                "connector_name": connector_name,
-                "role": role,
-                "channel": channel,
-                "message": message,
-                "vacancy_id": vacancy_id,
-                "requires_hitl": True,
-                "hitl_note": "HITL obrigatório — esta mensagem precisa de aprovação humana antes do envio.",
-            },
-            "message": (
-                f"Mensagem de indicação preparada para {connector_name} via {channel}. "
-                f"AGUARDANDO APROVAÇÃO HITL antes do envio."
-            ),
+            "success": False,
+            "data": {},
+            "message": "Parâmetros 'connector_name' e 'role' são obrigatórios.",
         }
-    except Exception as e:
-        logger.error("[referral_tools] referral_prepare_request error: %s", e, exc_info=True)
-        return {"success": False, "data": {}, "message": str(e)}
 
+    if channel == "whatsapp":
+        message = (
+            f"Olá {connector_name.split()[0]}! 👋\n\n"
+            f"Estamos com uma vaga aberta de *{role}*"
+            + (f" na {company_name}" if company_name else "") + ".\n\n"
+            f"Você conhece alguém com esse perfil que possa ter interesse? "
+            f"Qualquer indicação é muito bem-vinda! 🙏\n\n"
+            f"Se quiser, posso compartilhar mais detalhes da vaga."
+        )
+    else:
+        message = (
+            f"Olá {connector_name.split()[0]},\n\n"
+            f"Espero que esteja bem! Estamos com uma vaga aberta de {role}"
+            + (f" em {company_name}" if company_name else "") + ".\n\n"
+            f"Sabe de alguém com esse perfil que possa ter interesse? "
+            f"Sua indicação pode fazer toda a diferença.\n\n"
+            f"Qualquer nome ou contato que você queira sugerir será muito apreciado!\n\n"
+            f"Obrigado(a) pela ajuda."
+        )
 
+    if custom_message:
+        message = custom_message
+
+    request_id = str(uuid.uuid4())
+
+    return {
+        "success": True,
+        "data": {
+            "request_id": request_id,
+            "connector_name": connector_name,
+            "role": role,
+            "channel": channel,
+            "message": message,
+            "vacancy_id": vacancy_id,
+            "requires_hitl": True,
+            "hitl_note": "HITL obrigatório — esta mensagem precisa de aprovação humana antes do envio.",
+        },
+        "message": (
+            f"Mensagem de indicação preparada para {connector_name} via {channel}. "
+            f"AGUARDANDO APROVAÇÃO HITL antes do envio."
+        ),
+    }
 _REFERRAL_TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="referral_prepare_request",
@@ -355,6 +344,7 @@ async def _verify_referral_approval_in_db(request_key: str) -> tuple[bool | None
         return False, f"Erro DB: {db_exc}"
 
 
+@tool_handler("referral")
 async def _wrap_referral_send_request(**kwargs: Any) -> dict[str, Any]:
     """
     Envia solicitação de indicação via CommunicationMatrix.
@@ -365,96 +355,90 @@ async def _wrap_referral_send_request(**kwargs: Any) -> dict[str, Any]:
     não existe (graceful degradation).
     """
     logger.info("[referral_tools] referral_send_request called: %s", list(kwargs.keys()))
-    try:
-        hitl_approved_flag = kwargs.get("hitl_approved", False)  # Sinal do caller — não autoritativo
-        channel = kwargs.get("channel", "email").lower()
-        company_id = kwargs.get("company_id", "")
-        connector_email = kwargs.get("connector_email", "")
-        vacancy_id = kwargs.get("vacancy_id", "")
+    hitl_approved_flag = kwargs.get("hitl_approved", False)  # Sinal do caller — não autoritativo
+    channel = kwargs.get("channel", "email").lower()
+    company_id = kwargs.get("company_id", "")
+    connector_email = kwargs.get("connector_email", "")
+    vacancy_id = kwargs.get("vacancy_id", "")
 
-        # Verificar communication_matrix.requires_approval
-        matrix_requires_approval = await _check_referral_matrix_approval(channel, company_id)
+    # Verificar communication_matrix.requires_approval
+    matrix_requires_approval = await _check_referral_matrix_approval(channel, company_id)
 
-        if matrix_requires_approval:
-            # Chave de deduplicação para este pedido de referral
-            request_key = f"{connector_email}:{vacancy_id}:{channel}"
-            db_approved, db_reason = await _verify_referral_approval_in_db(request_key)
+    if matrix_requires_approval:
+        # Chave de deduplicação para este pedido de referral
+        request_key = f"{connector_email}:{vacancy_id}:{channel}"
+        db_approved, db_reason = await _verify_referral_approval_in_db(request_key)
 
-            if db_approved is None:
-                # Tabela ausente: degradar para o boolean do caller
-                if not hitl_approved_flag:
-                    return {
-                        "success": False,
-                        "data": {"hitl_required": True, "channel": channel},
-                        "message": (
-                            f"HITL obrigatório: canal '{channel}' requer aprovação humana. "
-                            "Por favor, confirme explicitamente antes de enviar o pedido."
-                        ),
-                    }
-            elif not db_approved:
+        if db_approved is None:
+            # Tabela ausente: degradar para o boolean do caller
+            if not hitl_approved_flag:
                 return {
                     "success": False,
-                    "data": {"hitl_required": True, "channel": channel, "db_reason": db_reason},
+                    "data": {"hitl_required": True, "channel": channel},
                     "message": (
-                        f"HITL obrigatório: {db_reason} "
-                        "Use referral_prepare_request e aguarde aprovação do recrutador."
+                        f"HITL obrigatório: canal '{channel}' requer aprovação humana. "
+                        "Por favor, confirme explicitamente antes de enviar o pedido."
                     ),
                 }
-
-        connector_email = kwargs.get("connector_email", "")
-        connector_name = kwargs.get("connector_name", "")
-        message = kwargs.get("message", "")
-        vacancy_id = kwargs.get("vacancy_id", "")
-
-        if not connector_email or not message:
+        elif not db_approved:
             return {
                 "success": False,
-                "data": {},
-                "message": "Parâmetros 'connector_email' e 'message' são obrigatórios.",
+                "data": {"hitl_required": True, "channel": channel, "db_reason": db_reason},
+                "message": (
+                    f"HITL obrigatório: {db_reason} "
+                    "Use referral_prepare_request e aguarde aprovação do recrutador."
+                ),
             }
 
-        referral_id = str(uuid.uuid4())
+    connector_email = kwargs.get("connector_email", "")
+    connector_name = kwargs.get("connector_name", "")
+    message = kwargs.get("message", "")
+    vacancy_id = kwargs.get("vacancy_id", "")
 
-        try:
-            from app.shared.messaging.rabbitmq_producer import rabbitmq_producer
-            await rabbitmq_producer.publish_chat_message(
-                message_data={
-                    "event": "referral_request_sent",
-                    "referral_id": referral_id,
-                    "connector_email": connector_email,
-                    "connector_name": connector_name,
-                    "channel": channel,
-                    "vacancy_id": vacancy_id,
-                    "company_id": company_id,
-                    "message_preview": message[:200],
-                    "hitl_approved": True,
-                },
-                routing_key="agent.referral",
-            )
-        except Exception as mq_exc:
-            logger.warning("[referral_tools] RabbitMQ publish failed (non-blocking): %s", mq_exc)
-
+    if not connector_email or not message:
         return {
-            "success": True,
-            "data": {
+            "success": False,
+            "data": {},
+            "message": "Parâmetros 'connector_email' e 'message' são obrigatórios.",
+        }
+
+    referral_id = str(uuid.uuid4())
+
+    try:
+        from app.shared.messaging.rabbitmq_producer import rabbitmq_producer
+        await rabbitmq_producer.publish_chat_message(
+            message_data={
+                "event": "referral_request_sent",
                 "referral_id": referral_id,
                 "connector_email": connector_email,
                 "connector_name": connector_name,
                 "channel": channel,
                 "vacancy_id": vacancy_id,
-                "status": "sent",
+                "company_id": company_id,
+                "message_preview": message[:200],
                 "hitl_approved": True,
             },
-            "message": (
-                f"Solicitação de indicação enviada para {connector_name or connector_email} "
-                f"via {channel}. ID: {referral_id}."
-            ),
-        }
-    except Exception as e:
-        logger.error("[referral_tools] referral_send_request error: %s", e, exc_info=True)
-        return {"success": False, "data": {}, "message": str(e)}
+            routing_key="agent.referral",
+        )
+    except Exception as mq_exc:
+        logger.warning("[referral_tools] RabbitMQ publish failed (non-blocking): %s", mq_exc)
 
-
+    return {
+        "success": True,
+        "data": {
+            "referral_id": referral_id,
+            "connector_email": connector_email,
+            "connector_name": connector_name,
+            "channel": channel,
+            "vacancy_id": vacancy_id,
+            "status": "sent",
+            "hitl_approved": True,
+        },
+        "message": (
+            f"Solicitação de indicação enviada para {connector_name or connector_email} "
+            f"via {channel}. ID: {referral_id}."
+        ),
+    }
 _REFERRAL_TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="referral_send_request",
@@ -489,6 +473,7 @@ _REFERRAL_TOOL_DEFINITIONS.append(
     )
 )
 
+@tool_handler("referral")
 async def _wrap_referral_approve_request(**kwargs: Any) -> dict[str, Any]:
     """
     Registra aprovação HITL para um pedido de referral antes do envio.
@@ -498,54 +483,48 @@ async def _wrap_referral_approve_request(**kwargs: Any) -> dict[str, Any]:
     no booleano hitl_approved do caller.
     """
     logger.info("[referral_tools] referral_approve_request called: %s", list(kwargs.keys()))
-    try:
-        connector_email = kwargs.get("connector_email", "")
-        vacancy_id = kwargs.get("vacancy_id", "")
-        channel = kwargs.get("channel", "email").lower()
-        company_id = kwargs.get("company_id", "")
-        approved_by = kwargs.get("approved_by", "")
-        notes = kwargs.get("notes", "")
+    connector_email = kwargs.get("connector_email", "")
+    vacancy_id = kwargs.get("vacancy_id", "")
+    channel = kwargs.get("channel", "email").lower()
+    company_id = kwargs.get("company_id", "")
+    approved_by = kwargs.get("approved_by", "")
+    notes = kwargs.get("notes", "")
 
-        if not connector_email:
-            return {"success": False, "data": {}, "message": "Parâmetro 'connector_email' é obrigatório."}
+    if not connector_email:
+        return {"success": False, "data": {}, "message": "Parâmetro 'connector_email' é obrigatório."}
 
-        # Chave de deduplicação — mesma usada no referral_send_request
-        request_key = f"{connector_email}:{vacancy_id}:{channel}"
+    # Chave de deduplicação — mesma usada no referral_send_request
+    request_key = f"{connector_email}:{vacancy_id}:{channel}"
 
-        approval_id, db_persisted = await _persist_referral_approval(
-            request_key=request_key,
-            approved_by=approved_by or "recruiter",
-            channel=channel,
-            vacancy_id=vacancy_id,
-            company_id=company_id,
-        )
+    approval_id, db_persisted = await _persist_referral_approval(
+        request_key=request_key,
+        approved_by=approved_by or "recruiter",
+        channel=channel,
+        vacancy_id=vacancy_id,
+        company_id=company_id,
+    )
 
-        return {
-            "success": True,
-            "data": {
-                "approval_id": approval_id,
-                "request_key": request_key,
-                "connector_email": connector_email,
-                "vacancy_id": vacancy_id,
-                "channel": channel,
-                "approved_by": approved_by,
-                "db_persisted": db_persisted,
-                "notes": notes,
-                "next_action": (
-                    "Aprovação registrada. Use referral_send_request para enviar o pedido."
-                ),
-            },
-            "message": (
-                f"Aprovação HITL registrada para referral a {connector_email} via {channel}. "
-                f"ID: {approval_id}."
-                + (" (DB persistido)" if db_persisted else " (sem DB — graceful degradation)")
+    return {
+        "success": True,
+        "data": {
+            "approval_id": approval_id,
+            "request_key": request_key,
+            "connector_email": connector_email,
+            "vacancy_id": vacancy_id,
+            "channel": channel,
+            "approved_by": approved_by,
+            "db_persisted": db_persisted,
+            "notes": notes,
+            "next_action": (
+                "Aprovação registrada. Use referral_send_request para enviar o pedido."
             ),
-        }
-    except Exception as e:
-        logger.error("[referral_tools] referral_approve_request error: %s", e, exc_info=True)
-        return {"success": False, "data": {}, "message": str(e)}
-
-
+        },
+        "message": (
+            f"Aprovação HITL registrada para referral a {connector_email} via {channel}. "
+            f"ID: {approval_id}."
+            + (" (DB persistido)" if db_persisted else " (sem DB — graceful degradation)")
+        ),
+    }
 _REFERRAL_TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="referral_approve_request",

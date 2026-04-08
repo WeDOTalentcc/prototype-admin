@@ -32,6 +32,8 @@ from app.domains.job_management.tools.job_wizard_tools import (
 )
 from app.shared.compliance.fairness_guard import FairnessGuard
 
+from app.shared.tool_handler import tool_handler
+
 logger = logging.getLogger(__name__)
 
 MARKET_SALARY_BENCHMARKS = {
@@ -57,6 +59,7 @@ MARKET_BENCHMARK_SOURCES = [
 _fairness_guard = FairnessGuard()
 
 
+@tool_handler("wizard")
 async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
     text = kwargs.get("text", "")
     field_name = kwargs.get("field_name", "requirements")
@@ -104,6 +107,7 @@ async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
         return {"is_compliant": True, "soft_warnings": [], "error": str(e)}
 
 
+@tool_handler("wizard")
 async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     job_title = kwargs.get("job_title", "")
     seniority = kwargs.get("seniority", "pleno")
@@ -183,66 +187,37 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("wizard")
 async def _wrap_search_salary_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for search_salary_benchmark that handles errors gracefully."""
     logger.info(f"[wizard_tools] search_salary_benchmark called with: {list(kwargs.keys())}")
-    try:
-        return await _search_salary_benchmark(**kwargs)
-    except Exception as e:
-        logger.error(f"[wizard_tools] search_salary_benchmark error: {e}", exc_info=True)
-        return {"error": str(e), "success": False}
-
-
+    return await _search_salary_benchmark(**kwargs)
+@tool_handler("wizard")
 async def _wrap_validate_job_fields(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for validate_job_fields that handles errors gracefully."""
     logger.info(f"[wizard_tools] validate_job_fields called with: {list(kwargs.keys())}")
-    try:
-        return await _validate_job_fields(**kwargs)
-    except Exception as e:
-        logger.error(f"[wizard_tools] validate_job_fields error: {e}", exc_info=True)
-        return {"error": str(e), "success": False}
-
-
+    return await _validate_job_fields(**kwargs)
+@tool_handler("wizard")
 async def _wrap_get_job_suggestions(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for get_job_suggestions that handles errors gracefully."""
     logger.info(f"[wizard_tools] get_job_suggestions called with: {list(kwargs.keys())}")
-    try:
-        return await _get_job_suggestions(**kwargs)
-    except Exception as e:
-        logger.error(f"[wizard_tools] get_job_suggestions error: {e}", exc_info=True)
-        return {"error": str(e), "success": False}
-
-
+    return await _get_job_suggestions(**kwargs)
+@tool_handler("wizard")
 async def _wrap_save_job_draft(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for save_job_draft that handles errors gracefully."""
     logger.info(f"[wizard_tools] save_job_draft called with: {list(kwargs.keys())}")
-    try:
-        return await _save_job_draft(**kwargs)
-    except Exception as e:
-        logger.error(f"[wizard_tools] save_job_draft error: {e}", exc_info=True)
-        return {"error": str(e), "success": False}
-
-
+    return await _save_job_draft(**kwargs)
+@tool_handler("wizard")
 async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for get_company_config that handles errors gracefully."""
     logger.info(f"[wizard_tools] get_company_config called with: {list(kwargs.keys())}")
-    try:
-        return await _get_company_config(**kwargs)
-    except Exception as e:
-        logger.error(f"[wizard_tools] get_company_config error: {e}", exc_info=True)
-        return {"error": str(e), "success": False}
-
-
+    return await _get_company_config(**kwargs)
+@tool_handler("wizard")
 async def _wrap_generate_enriched_jd(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for generate_enriched_jd that handles errors gracefully."""
     logger.info(f"[wizard_tools] generate_enriched_jd called with: {list(kwargs.keys())}")
-    try:
-        return await _generate_enriched_jd(**kwargs)
-    except Exception as e:
-        logger.error(f"[wizard_tools] generate_enriched_jd error: {e}", exc_info=True)
-        return {"error": str(e), "success": False}
-
-
+    return await _generate_enriched_jd(**kwargs)
+@tool_handler("wizard")
 async def _wrap_check_job_draft_health(**kwargs: Any) -> dict[str, Any]:
     title = kwargs.get("title", "")
     seniority = kwargs.get("seniority", "")
@@ -451,6 +426,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
 ]
 
 
+@tool_handler("wizard")
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")

@@ -11,6 +11,8 @@ from uuid import uuid4
 
 from lia_agents_core.react_loop import ToolDefinition
 
+from app.shared.tool_handler import tool_handler
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -82,6 +84,7 @@ PRIORITY_ANALYSIS_PROMPT = """Você é um especialista em priorização de taref
 Responda APENAS com JSON válido."""
 
 
+@tool_handler("automation")
 async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
     """Decompose a complex task into subtasks using LLM + PlannedTaskService."""
     from app.core.database import AsyncSessionLocal
@@ -191,6 +194,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "message": str(e)}
 
 
+@tool_handler("automation")
 async def _wrap_prioritize_tasks(**kwargs: Any) -> dict[str, Any]:
     """Recalculate priority scores for tasks."""
     from app.core.database import AsyncSessionLocal
@@ -199,37 +203,32 @@ async def _wrap_prioritize_tasks(**kwargs: Any) -> dict[str, Any]:
     task_ids = kwargs.get("task_ids", [])
     goal_id = kwargs.get("goal_id")
 
-    try:
-        svc = PlannedTaskService()
-        async with AsyncSessionLocal() as db:
-            if goal_id and not task_ids:
-                tasks = await svc.get_tasks_by_goal(db, goal_id)
-                task_ids = [t.id for t in tasks]
+    svc = PlannedTaskService()
+    async with AsyncSessionLocal() as db:
+        if goal_id and not task_ids:
+            tasks = await svc.get_tasks_by_goal(db, goal_id)
+            task_ids = [t.id for t in tasks]
 
-            if not task_ids:
-                return {"success": False, "message": "Forneça task_ids ou goal_id"}
+        if not task_ids:
+            return {"success": False, "message": "Forneça task_ids ou goal_id"}
 
-            prioritized = await svc.reprioritize_tasks(db, task_ids)
+        prioritized = await svc.reprioritize_tasks(db, task_ids)
 
-        return {
-            "success": True,
-            "prioritized_count": len(prioritized),
-            "tasks": [
-                {
-                    "id": t.id,
-                    "title": t.title,
-                    "priority": t.priority.value,
-                    "priority_score": t.priority_score,
-                    "status": t.status.value,
-                }
-                for t in prioritized
-            ],
-        }
-    except Exception as e:
-        logger.error(f"[automation_tools] prioritize_tasks error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    return {
+        "success": True,
+        "prioritized_count": len(prioritized),
+        "tasks": [
+            {
+                "id": t.id,
+                "title": t.title,
+                "priority": t.priority.value,
+                "priority_score": t.priority_score,
+                "status": t.status.value,
+            }
+            for t in prioritized
+        ],
+    }
+@tool_handler("automation")
 async def _wrap_get_execution_plan(**kwargs: Any) -> dict[str, Any]:
     """Generate an execution plan with parallel levels."""
     from app.core.database import AsyncSessionLocal
@@ -272,11 +271,7 @@ async def _wrap_get_execution_plan(**kwargs: Any) -> dict[str, Any]:
 
     except CycleDetectedError as e:
         return {"success": False, "has_cycle": True, "message": str(e)}
-    except Exception as e:
-        logger.error(f"[automation_tools] get_execution_plan error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+@tool_handler("automation")
 async def _wrap_build_dag(**kwargs: Any) -> dict[str, Any]:
     """Build and validate a DAG from task dependencies."""
     from app.core.database import AsyncSessionLocal
@@ -286,16 +281,11 @@ async def _wrap_build_dag(**kwargs: Any) -> dict[str, Any]:
     if not task_ids:
         return {"success": False, "message": "Forneça task_ids"}
 
-    try:
-        svc = PlannedTaskService()
-        async with AsyncSessionLocal() as db:
-            result = await svc.build_task_dag(db, task_ids)
-        return {"success": True, **result}
-    except Exception as e:
-        logger.error(f"[automation_tools] build_dag error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    svc = PlannedTaskService()
+    async with AsyncSessionLocal() as db:
+        result = await svc.build_task_dag(db, task_ids)
+    return {"success": True, **result}
+@tool_handler("automation")
 async def _wrap_check_dependencies(**kwargs: Any) -> dict[str, Any]:
     """Check dependency status for a task."""
     from app.core.database import AsyncSessionLocal
@@ -305,38 +295,27 @@ async def _wrap_check_dependencies(**kwargs: Any) -> dict[str, Any]:
     if not task_id:
         return {"success": False, "message": "Forneça task_id"}
 
-    try:
-        svc = PlannedTaskService()
-        async with AsyncSessionLocal() as db:
-            result = await svc.check_dependencies(db, task_id)
-        return {"success": True, **result}
-    except Exception as e:
-        logger.error(f"[automation_tools] check_dependencies error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    svc = PlannedTaskService()
+    async with AsyncSessionLocal() as db:
+        result = await svc.check_dependencies(db, task_id)
+    return {"success": True, **result}
+@tool_handler("automation")
 async def _wrap_get_next_tasks(**kwargs: Any) -> dict[str, Any]:
     """Get tasks ready for execution."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
 
-    try:
-        svc = PlannedTaskService()
-        async with AsyncSessionLocal() as db:
-            tasks = await svc.get_next_tasks(
-                db=db,
-                goal_id=kwargs.get("goal_id"),
-                parent_task_id=kwargs.get("parent_task_id"),
-                company_id=kwargs.get("company_id"),
-                agent_type=kwargs.get("agent_type"),
-                limit=kwargs.get("limit", 5),
-            )
-        return {"success": True, "tasks": [t.to_dict() for t in tasks], "count": len(tasks)}
-    except Exception as e:
-        logger.error(f"[automation_tools] get_next_tasks error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    svc = PlannedTaskService()
+    async with AsyncSessionLocal() as db:
+        tasks = await svc.get_next_tasks(
+            db=db,
+            goal_id=kwargs.get("goal_id"),
+            parent_task_id=kwargs.get("parent_task_id"),
+            company_id=kwargs.get("company_id"),
+            agent_type=kwargs.get("agent_type"),
+            limit=kwargs.get("limit", 5),
+        )
+    return {"success": True, "tasks": [t.to_dict() for t in tasks], "count": len(tasks)}
 # ---------------------------------------------------------------------------
 # Public registry
 # ---------------------------------------------------------------------------

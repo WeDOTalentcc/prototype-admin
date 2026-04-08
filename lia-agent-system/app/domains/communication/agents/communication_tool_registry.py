@@ -9,6 +9,8 @@ from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
 
+from app.shared.tool_handler import tool_handler
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
+@tool_handler("communication")
 async def _wrap_send_email(**kwargs: Any) -> dict[str, Any]:
     """Send an email to a candidate using EmailService / CommunicationService."""
     from app.core.database import AsyncSessionLocal
@@ -34,48 +37,41 @@ async def _wrap_send_email(**kwargs: Any) -> dict[str, Any]:
 
     if not candidate_id:
         return {"success": False, "message": "candidate_id é obrigatório"}
-    if not company_id:
-        return {"success": False, "message": "company_id é obrigatório"}
     if not subject:
         return {"success": False, "message": "subject é obrigatório"}
     if not body:
         return {"success": False, "message": "body é obrigatório"}
 
+    svc = CommunicationService()
+
+    # Derive message_type from template_type when supplied
     try:
-        svc = CommunicationService()
+        msg_type = MessageType(template_type) if template_type else MessageType.GENERAL
+    except ValueError:
+        msg_type = MessageType.GENERAL
 
-        # Derive message_type from template_type when supplied
-        try:
-            msg_type = MessageType(template_type) if template_type else MessageType.GENERAL
-        except ValueError:
-            msg_type = MessageType.GENERAL
+    async with AsyncSessionLocal() as db:
+        result = await svc.send_message(
+            company_id=str(company_id),
+            candidate_id=str(candidate_id),
+            candidate_email=None,  # resolved by service from candidate record
+            candidate_phone=None,
+            message_type=msg_type,
+            channel=MessageChannel.EMAIL,
+            subject=subject,
+            body=body,
+            db=db,
+        )
 
-        async with AsyncSessionLocal() as db:
-            result = await svc.send_message(
-                company_id=str(company_id),
-                candidate_id=str(candidate_id),
-                candidate_email=None,  # resolved by service from candidate record
-                candidate_phone=None,
-                message_type=msg_type,
-                channel=MessageChannel.EMAIL,
-                subject=subject,
-                body=body,
-                db=db,
-            )
-
-        return {
-            "success": result.get("success", True),
-            "message_id": result.get("message_id"),
-            "channel": "email",
-            "candidate_id": candidate_id,
-            "company_id": company_id,
-            "details": result,
-        }
-    except Exception as e:
-        logger.error(f"[communication_tools] send_email error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    return {
+        "success": result.get("success", True),
+        "message_id": result.get("message_id"),
+        "channel": "email",
+        "candidate_id": candidate_id,
+        "company_id": company_id,
+        "details": result,
+    }
+@tool_handler("communication")
 async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
     """Send a WhatsApp message to a candidate using WhatsAppService."""
     from app.domains.communication.services.whatsapp_service import WhatsAppService
@@ -89,32 +85,24 @@ async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "message": "candidate_phone é obrigatório"}
     if not message:
         return {"success": False, "message": "message é obrigatório"}
-    if not company_id:
-        return {"success": False, "message": "company_id é obrigatório"}
-
-    try:
-        svc = WhatsAppService()
-        result = await svc.send_message(
-            to_phone=candidate_phone,
-            message=message,
-            metadata={
-                "company_id": str(company_id),
-                "candidate_id": str(candidate_id) if candidate_id else None,
-            },
-        )
-        return {
-            "success": result.success,
-            "message_id": result.message_id,
-            "status": result.status.value if result.status else None,
-            "channel": "whatsapp",
-            "candidate_phone": candidate_phone,
-            "company_id": company_id,
-        }
-    except Exception as e:
-        logger.error(f"[communication_tools] send_whatsapp error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    svc = WhatsAppService()
+    result = await svc.send_message(
+        to_phone=candidate_phone,
+        message=message,
+        metadata={
+            "company_id": str(company_id),
+            "candidate_id": str(candidate_id) if candidate_id else None,
+        },
+    )
+    return {
+        "success": result.success,
+        "message_id": result.message_id,
+        "status": result.status.value if result.status else None,
+        "channel": "whatsapp",
+        "candidate_phone": candidate_phone,
+        "company_id": company_id,
+    }
+@tool_handler("communication")
 async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
     """Retrieve communication history for a candidate using CommunicationHistoryService."""
     from app.domains.communication.services.communication_history_service import (
@@ -127,30 +115,20 @@ async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
 
     if not candidate_id:
         return {"success": False, "message": "candidate_id é obrigatório"}
-    if not company_id:
-        return {"success": False, "message": "company_id é obrigatório"}
-
-    try:
-        svc = CommunicationHistoryService()
-        result = await svc.list_communications(
-            company_id=str(company_id),
-            candidate_id=str(candidate_id),
-            limit=limit,
-        )
-        return {
-            "success": True,
-            "candidate_id": candidate_id,
-            "company_id": company_id,
-            "total": result.get("total", 0),
-            "communications": result.get("communications", []),
-        }
-    except Exception as e:
-        logger.error(
-            f"[communication_tools] get_communication_history error: {e}", exc_info=True
-        )
-        return {"success": False, "message": str(e)}
-
-
+    svc = CommunicationHistoryService()
+    result = await svc.list_communications(
+        company_id=str(company_id),
+        candidate_id=str(candidate_id),
+        limit=limit,
+    )
+    return {
+        "success": True,
+        "candidate_id": candidate_id,
+        "company_id": company_id,
+        "total": result.get("total", 0),
+        "communications": result.get("communications", []),
+    }
+@tool_handler("communication")
 async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
     """Schedule a future message for a candidate using CommunicationService.
 
@@ -175,8 +153,6 @@ async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
 
     if not candidate_id:
         return {"success": False, "message": "candidate_id é obrigatório"}
-    if not company_id:
-        return {"success": False, "message": "company_id é obrigatório"}
     if not message:
         return {"success": False, "message": "message é obrigatório"}
     if not scheduled_at_str:
@@ -195,62 +171,57 @@ async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
     except ValueError as e:
         return {"success": False, "message": f"scheduled_at inválido: {e}"}
 
-    try:
-        if channel_normalized == "teams":
-            # Teams is webhook-based; record intent and notify via TeamsService
-            from app.domains.communication.services.teams_service import TeamsService
+    if channel_normalized == "teams":
+        # Teams is webhook-based; record intent and notify via TeamsService
+        from app.domains.communication.services.teams_service import TeamsService
 
-            svc_teams = TeamsService()
-            await svc_teams.send_message(
-                text=(
-                    f"[Agendado para {scheduled_at_str}] "
-                    f"Mensagem para candidato {candidate_id}: {message}"
-                )
+        svc_teams = TeamsService()
+        await svc_teams.send_message(
+            text=(
+                f"[Agendado para {scheduled_at_str}] "
+                f"Mensagem para candidato {candidate_id}: {message}"
             )
-            return {
-                "success": True,
-                "scheduled": True,
-                "channel": "teams",
-                "scheduled_at": scheduled_at_str,
-                "candidate_id": candidate_id,
-                "company_id": company_id,
-                "note": "Teams não suporta envio nativo agendado; notificação imediata registrada.",
-            }
-
-        # MessageChannel only defines EMAIL; WhatsApp uses its own service
-        channel_map = {
-            "email": MessageChannel.EMAIL,
-        }
-        channel = channel_map.get(channel_normalized, MessageChannel.EMAIL)
-
-        svc = CommunicationService()
-        async with AsyncSessionLocal() as db:
-            result = await svc.send_message(
-                company_id=str(company_id),
-                candidate_id=str(candidate_id),
-                candidate_email=None,
-                candidate_phone=None,
-                message_type=MessageType.GENERAL,
-                channel=channel,
-                subject=None,
-                body=message,
-                db=db,
-            )
-
+        )
         return {
             "success": True,
             "scheduled": True,
-            "channel": channel_str,
+            "channel": "teams",
             "scheduled_at": scheduled_at_str,
             "candidate_id": candidate_id,
             "company_id": company_id,
-            "details": result,
+            "note": "Teams não suporta envio nativo agendado; notificação imediata registrada.",
         }
-    except Exception as e:
-        logger.error(f"[communication_tools] schedule_message error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
 
+    # MessageChannel only defines EMAIL; WhatsApp uses its own service
+    channel_map = {
+        "email": MessageChannel.EMAIL,
+    }
+    channel = channel_map.get(channel_normalized, MessageChannel.EMAIL)
 
+    svc = CommunicationService()
+    async with AsyncSessionLocal() as db:
+        result = await svc.send_message(
+            company_id=str(company_id),
+            candidate_id=str(candidate_id),
+            candidate_email=None,
+            candidate_phone=None,
+            message_type=MessageType.GENERAL,
+            channel=channel,
+            subject=None,
+            body=message,
+            db=db,
+        )
+
+    return {
+        "success": True,
+        "scheduled": True,
+        "channel": channel_str,
+        "scheduled_at": scheduled_at_str,
+        "candidate_id": candidate_id,
+        "company_id": company_id,
+        "details": result,
+    }
+@tool_handler("communication")
 async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
     """Check the current rate limit status for a candidate/channel combination."""
     from app.core.database import AsyncSessionLocal
@@ -266,9 +237,6 @@ async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
 
     if not candidate_id:
         return {"success": False, "message": "candidate_id é obrigatório"}
-    if not company_id:
-        return {"success": False, "message": "company_id é obrigatório"}
-
     # Teams channel is not tracked in CommunicationService; validate via email proxy
     # MessageChannel only defines EMAIL; WhatsApp/Teams use email policy as proxy for rate-limit checks
     channel_map = {
@@ -283,32 +251,26 @@ async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
             "message": f"Canal inválido '{channel_str}'. Use: email, whatsapp, teams",
         }
 
-    try:
-        svc = CommunicationService()
-        async with AsyncSessionLocal() as db:
-            validation = await svc.validate_can_send(
-                candidate_id=str(candidate_id),
-                company_id=str(company_id),
-                channel=channel,
-                message_type=MessageType.GENERAL,
-                db=db,
-            )
+    svc = CommunicationService()
+    async with AsyncSessionLocal() as db:
+        validation = await svc.validate_can_send(
+            candidate_id=str(candidate_id),
+            company_id=str(company_id),
+            channel=channel,
+            message_type=MessageType.GENERAL,
+            db=db,
+        )
 
-        return {
-            "success": True,
-            "can_send": validation.get("can_send", False),
-            "requires_approval": validation.get("requires_approval", False),
-            "warnings": validation.get("warnings", []),
-            "blocks": validation.get("blocks", []),
-            "candidate_id": candidate_id,
-            "company_id": company_id,
-            "channel": channel_str,
-        }
-    except Exception as e:
-        logger.error(f"[communication_tools] check_rate_limit error: {e}", exc_info=True)
-        return {"success": False, "message": str(e)}
-
-
+    return {
+        "success": True,
+        "can_send": validation.get("can_send", False),
+        "requires_approval": validation.get("requires_approval", False),
+        "warnings": validation.get("warnings", []),
+        "blocks": validation.get("blocks", []),
+        "candidate_id": candidate_id,
+        "company_id": company_id,
+        "channel": channel_str,
+    }
 # ---------------------------------------------------------------------------
 # Public registry
 # ---------------------------------------------------------------------------

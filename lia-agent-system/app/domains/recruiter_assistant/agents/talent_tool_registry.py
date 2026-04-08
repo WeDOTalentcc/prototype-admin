@@ -15,11 +15,14 @@ from sqlalchemy import text
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
 
+from app.shared.tool_handler import tool_handler
+
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
 
+@tool_handler("talent")
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates by skills, experience, location."""
     query = kwargs.get("query", "")
@@ -103,6 +106,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in the funnel with optional filters."""
     status = kwargs.get("status", "all")
@@ -170,6 +174,7 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education and work history."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -262,26 +267,22 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare 2+ candidates side by side."""
     candidate_ids = kwargs.get("candidate_ids", [])
     logger.info(f"[talent_tools] compare_candidates called: candidates={len(candidate_ids)}")
-    try:
-        return {
-            "success": True,
-            "data": {
-                "candidate_ids": candidate_ids,
-                "comparison_count": len(candidate_ids),
-                "comparison_complete": True,
-                "dimensions": ["skills", "experience", "score", "fit"],
-            },
-            "message": f"Comparacao de {len(candidate_ids)} candidatos concluida.",
-        }
-    except Exception as e:
-        logger.error(f"[talent_tools] compare_candidates error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": "Erro ao comparar candidatos."}
-
-
+    return {
+        "success": True,
+        "data": {
+            "candidate_ids": candidate_ids,
+            "comparison_count": len(candidate_ids),
+            "comparison_complete": True,
+            "dimensions": ["skills", "experience", "score", "fit"],
+        },
+        "message": f"Comparacao de {len(candidate_ids)} candidatos concluida.",
+    }
+@tool_handler("talent")
 async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates by fit score for a job."""
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -290,38 +291,33 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
 
     order_col = "vc.match_percentage" if criteria == "skills" else "vc.lia_score"
     ranking = []
-    try:
-        async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text(f"""
-                    SELECT vc.candidate_id, vc.status, vc.stage,
-                           vc.lia_score, vc.match_percentage,
-                           c.name, c.current_title, c.technical_skills
-                    FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE vc.vacancy_id::text = :vid
-                      AND vc.status != 'rejected'
-                    ORDER BY {order_col} DESC NULLS LAST
-                    LIMIT 50
-                """),
-                {"vid": vacancy_id},
-            )
-            for position, row in enumerate(rows.mappings(), start=1):
-                ranking.append({
-                    "position": position,
-                    "candidate_id": str(row["candidate_id"]),
-                    "name": row["name"],
-                    "current_title": row["current_title"],
-                    "skills": row["technical_skills"] or [],
-                    "lia_score": row["lia_score"],
-                    "match_percentage": row["match_percentage"],
-                    "status": row["status"],
-                    "stage": row["stage"],
-                })
-    except Exception as e:
-        logger.error(f"[talent_tools] rank_candidates error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": f"Erro ao gerar ranking para vaga {vacancy_id}."}
-
+    async with AsyncSessionLocal() as session:
+        rows = await session.execute(
+            text(f"""
+                SELECT vc.candidate_id, vc.status, vc.stage,
+                       vc.lia_score, vc.match_percentage,
+                       c.name, c.current_title, c.technical_skills
+                FROM vacancy_candidates vc
+                JOIN candidates c ON c.id = vc.candidate_id
+                WHERE vc.vacancy_id::text = :vid
+                  AND vc.status != 'rejected'
+                ORDER BY {order_col} DESC NULLS LAST
+                LIMIT 50
+            """),
+            {"vid": vacancy_id},
+        )
+        for position, row in enumerate(rows.mappings(), start=1):
+            ranking.append({
+                "position": position,
+                "candidate_id": str(row["candidate_id"]),
+                "name": row["name"],
+                "current_title": row["current_title"],
+                "skills": row["technical_skills"] or [],
+                "lia_score": row["lia_score"],
+                "match_percentage": row["match_percentage"],
+                "status": row["status"],
+                "stage": row["stage"],
+            })
     return {
         "success": True,
         "data": {
@@ -335,6 +331,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     """Analyze skill match between candidate and job requirements."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -404,6 +401,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     """Generate action recommendations for candidates based on real scores and status."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -476,6 +474,7 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Create a shortlist (CandidateList) from selected candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -485,58 +484,49 @@ async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
     logger.info(
         f"[talent_tools] create_shortlist called: candidates={len(candidate_ids)} vacancy={vacancy_id}"
     )
-    try:
-        async with AsyncSessionLocal() as session:
-            shortlist_id = str(uuid.uuid4())
-            list_name = f"Shortlist vaga {vacancy_id}" if vacancy_id else "Shortlist LIA"
-            await session.execute(
-                text("""
-                    INSERT INTO candidate_lists (id, company_id, name, description, created_by, is_active)
-                    VALUES (:id, :cid, :name, :desc, :created_by, true)
-                """),
-                {
-                    "id": shortlist_id,
-                    "cid": company_id,
-                    "name": list_name,
-                    "desc": f"Criada automaticamente pelo agente LIA. Vaga: {vacancy_id}",
-                    "created_by": created_by,
-                },
-            )
-            added = 0
-            for cid in candidate_ids:
-                try:
-                    await session.execute(
-                        text("""
-                            INSERT INTO candidate_list_members (id, list_id, candidate_id, added_by, source)
-                            VALUES (:id, :lid, :cid, :added_by, 'agent')
-                            ON CONFLICT DO NOTHING
-                        """),
-                        {"id": str(uuid.uuid4()), "lid": shortlist_id, "cid": cid, "added_by": created_by},
-                    )
-                    added += 1
-                except Exception:
-                    pass
-            await session.commit()
-
-        return {
-            "success": True,
-            "data": {
-                "candidate_ids": candidate_ids,
-                "vacancy_id": vacancy_id,
-                "shortlist_id": shortlist_id,
-                "shortlist_count": added,
+    async with AsyncSessionLocal() as session:
+        shortlist_id = str(uuid.uuid4())
+        list_name = f"Shortlist vaga {vacancy_id}" if vacancy_id else "Shortlist LIA"
+        await session.execute(
+            text("""
+                INSERT INTO candidate_lists (id, company_id, name, description, created_by, is_active)
+                VALUES (:id, :cid, :name, :desc, :created_by, true)
+            """),
+            {
+                "id": shortlist_id,
+                "cid": company_id,
+                "name": list_name,
+                "desc": f"Criada automaticamente pelo agente LIA. Vaga: {vacancy_id}",
+                "created_by": created_by,
             },
-            "message": f"Shortlist criada com {added} candidatos (id: {shortlist_id}).",
-        }
-    except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
-        logger.error(f"[talent_tools] create_shortlist error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": "Erro ao criar shortlist."}
+        )
+        added = 0
+        for cid in candidate_ids:
+            try:
+                await session.execute(
+                    text("""
+                        INSERT INTO candidate_list_members (id, list_id, candidate_id, added_by, source)
+                        VALUES (:id, :lid, :cid, :added_by, 'agent')
+                        ON CONFLICT DO NOTHING
+                    """),
+                    {"id": str(uuid.uuid4()), "lid": shortlist_id, "cid": cid, "added_by": created_by},
+                )
+                added += 1
+            except Exception:
+                pass
+        await session.commit()
 
-
+    return {
+        "success": True,
+        "data": {
+            "candidate_ids": candidate_ids,
+            "vacancy_id": vacancy_id,
+            "shortlist_id": shortlist_id,
+            "shortlist_count": added,
+        },
+        "message": f"Shortlist criada com {added} candidatos (id: {shortlist_id}).",
+    }
+@tool_handler("talent")
 async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     """Export analysis report — generates a traceable report ID with candidate summary."""
     report_type = kwargs.get("report_type", "general")
@@ -584,6 +574,7 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
     search_criteria = kwargs.get("search_criteria", "")
     kwargs.get("context", "talent_search")
@@ -650,6 +641,7 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
         return {"success": True, "data": {"is_fair": True, "soft_warnings": []}, "error": str(e)}
 
 
+@tool_handler("talent")
 async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -716,6 +708,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("talent")
 async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -964,6 +957,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
 ]
 
+@tool_handler("talent")
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     """P3-B: Gera relatório de talentos com métricas do período."""
     report_type = kwargs.get("report_type", "summary")
