@@ -182,7 +182,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <div className="bg-wedo-cyan/[0.08] text-wedo-cyan rounded-lg p-1.5 transition-colors group-hover:bg-wedo-cyan/[0.15] flex-shrink-0">
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-medium text-lia-text-secondary group-hover:text-lia-text-primary">
+                <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-lia-text-secondary group-hover:text-lia-text-primary">
                   {suggestion.title}
                 </span>
               </button>
@@ -213,8 +213,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
-            className="text-xs font-medium"
-           
+            className="text-xs font-medium font-['Open_Sans',sans-serif] text-lia-text-primary"
           >
             Sugestões
           </span>
@@ -239,8 +238,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <h3
-                className="text-sm font-semibold"
-               
+                className="text-xs font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary"
               >
                 Tarefas Sugeridas
               </h3>
@@ -287,8 +285,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 
-                        className="font-medium text-xs leading-tight"
-                       
+                        className="font-medium text-xs leading-tight font-['Open_Sans',sans-serif] text-lia-text-primary"
                       >
                         {suggestion.title}
                       </h4>
