@@ -142,6 +142,7 @@ export function DailyBriefingCard({
   useEffect(() => {
     setMounted(true)
     fetchBriefing()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchBriefing = async () => {

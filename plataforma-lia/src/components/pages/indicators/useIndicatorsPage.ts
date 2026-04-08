@@ -46,6 +46,7 @@ export function useIndicatorsPage() {
       }
     }
     fetchMyMetrics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const recruiters = Object.values(recruitersData) as RecruiterData[]

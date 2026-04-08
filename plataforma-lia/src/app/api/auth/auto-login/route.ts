@@ -49,10 +49,11 @@ export async function GET(request: NextRequest) {
 
     const response = NextResponse.redirect(new URL(safeRedirect, baseUrl))
 
+    const isHttps = protocol === 'https'
     const cookieBase = {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
-      secure: IS_PRODUCTION,
+      secure: isHttps,
       sameSite: 'lax' as const,
     }
 

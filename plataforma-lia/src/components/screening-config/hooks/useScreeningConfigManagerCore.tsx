@@ -205,6 +205,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   useEffect(() => {
     const ids: string[] = (job?.disabled_eligibility_question_ids as string[] | undefined) || []
     setDisabledCompanyQIds(new Set(ids))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job?.id])
 
   const handleToggleCompanyDefault = async (questionId: string, enabled: boolean) => {

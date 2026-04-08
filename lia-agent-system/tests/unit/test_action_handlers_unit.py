@@ -43,7 +43,7 @@ FAKE_JOB_UUID = "00000000-0000-0000-0000-000000000002"
 
 class TestExecuteCandidateAction:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_unknown_action_returns_none(self):
         from app.orchestrator.action_handlers.candidate_actions import execute_candidate_action
@@ -94,7 +94,7 @@ class TestExecuteCandidateAction:
 
 class TestExecuteJobAction:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_unknown_action_returns_none(self):
         from app.orchestrator.action_handlers.job_actions import execute_job_action
@@ -144,7 +144,7 @@ class TestExecuteJobAction:
 
 class TestCommunicationActions:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_module_importable(self):
         from app.orchestrator.action_handlers import communication_actions
@@ -169,7 +169,7 @@ class TestCommunicationActions:
 
 class TestPipelineActions:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_module_importable(self):
         from app.orchestrator.action_handlers import pipeline_actions

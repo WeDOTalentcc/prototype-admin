@@ -205,6 +205,7 @@ Equipe de Recrutamento`
     if (flowType === 'reject_post_triage' && !feedbackMessage) {
       setFeedbackMessage(getDefaultFeedbackMessage())
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flowType, candidate.name])
 
   const getFlowConfig = () => {

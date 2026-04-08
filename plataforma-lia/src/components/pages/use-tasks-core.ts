@@ -319,6 +319,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   const currentUserId = user?.id || user?.email || 'default_user'
   useEffect(() => {
     fetchAllData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserId])
 
   const fetchAllData = async () => {
@@ -403,7 +404,8 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   }
 
   const tasks: Task[] = []
-  const jobRequests: JobRequest[] = []
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const jobRequests = React.useMemo<JobRequest[]>(() => [], [])
 
   const filteredPendingTasks = useMemo(() => {
     if (pendingTaskFilter === 'all') return pendingTasks

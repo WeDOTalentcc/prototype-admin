@@ -161,7 +161,7 @@ class TestCheckRejectionReason:
 
 class TestCheckFairnessAsync:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_async_clean_text(self):
         from app.shared.compliance.fairness_guard_middleware import check_fairness_async

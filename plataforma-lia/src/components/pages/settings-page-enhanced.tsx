@@ -280,6 +280,7 @@ export default function SettingsPageEnhanced() {
 
   useEffect(() => {
     fetchProgress()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSectionCompletionUpdate = useCallback((sectionId: string, completion: number) => {

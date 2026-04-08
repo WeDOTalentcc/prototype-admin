@@ -68,6 +68,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
       fetchTimeToFill(companyId, jobData)
       fetchSalary(companyId, jobData)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, job?.jobId, fetchReport, fetchTimeToFill, fetchSalary, user])
 
   if (!isOpen) return null

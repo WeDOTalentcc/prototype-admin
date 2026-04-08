@@ -104,7 +104,7 @@ class TestActionExecutorInstantiation:
     def test_try_execute_unknown_returns_not_actionable(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             executor.try_execute(
                 intent="totally_unknown_intent_xyz",
                 entities={},
@@ -116,7 +116,7 @@ class TestActionExecutorInstantiation:
     def test_try_execute_missing_required_params(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             executor.try_execute(
                 intent="mover_candidato",
                 entities={},  # missing candidate_id and to_stage
@@ -130,7 +130,7 @@ class TestActionExecutorInstantiation:
     def test_try_execute_partial_params(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             executor.try_execute(
                 intent="mover_candidato",
                 entities={"candidate_id": "123"},  # missing to_stage
@@ -143,7 +143,7 @@ class TestActionExecutorInstantiation:
     def test_try_execute_all_params_needs_confirmation(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             executor.try_execute(
                 intent="mover_candidato",
                 entities={

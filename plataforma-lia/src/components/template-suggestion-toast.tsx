@@ -52,6 +52,7 @@ export function TemplateSuggestionToast({
     } else {
       setIsVisible(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestion])
 
   // Handler para dismiss com animação

@@ -72,6 +72,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
 
   useEffect(() => {
     loadJobs()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter])
 
   const loadJobs = async () => {

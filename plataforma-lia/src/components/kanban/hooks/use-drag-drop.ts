@@ -140,7 +140,7 @@ export function useDragDrop({
       fromColumn: null,
       overColumn: null
     })
-  }, [dragState, setCandidatesData, onTransitionRequired, isDragEnabled, dynamicStages])
+  }, [dragState, setCandidatesData, onTransitionRequired, isDragEnabled])
 
   return {
     draggedCandidate: dragState.candidate,

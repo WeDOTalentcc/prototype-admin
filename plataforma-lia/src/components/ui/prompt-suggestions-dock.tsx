@@ -164,6 +164,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
         window.removeEventListener('mouseup', handleMouseUp)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, dragOffset])
 
   if (isEmpty) {

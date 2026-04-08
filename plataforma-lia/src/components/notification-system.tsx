@@ -37,7 +37,7 @@ const NotificationItem = React.memo(({
       onMarkAsRead(notification.id)
     }
     onClick?.(notification)
-  }, [notification.read, notification.id, notification, onMarkAsRead, onClick])
+  }, [notification, onMarkAsRead, onClick])
 
   const getIcon = useMemo(() => {
     switch (notification.type) {

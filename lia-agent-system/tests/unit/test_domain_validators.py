@@ -14,7 +14,7 @@ class TestValidateCvScoreClaim:
         self.validate = validate_cv_score_claim
 
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_no_score_in_text_returns_none(self):
         result = self._run(self.validate("Candidato excelente para a vaga", {}))
@@ -70,7 +70,7 @@ class TestValidateAnalyticsMetricClaim:
         self.validate = validate_analytics_metric_claim
 
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_no_metrics_returns_none(self):
         result = self._run(self.validate("O processo está bem encaminhado", {}))
@@ -98,7 +98,7 @@ class TestValidateAnalyticsMetricClaim:
 
 class TestValidatorsIntegration:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_both_validators_importable(self):
         from app.shared.compliance.domain_validators import (
@@ -113,4 +113,4 @@ class TestValidatorsIntegration:
         from app.shared.compliance.domain_validators import validate_cv_score_claim
         coro = validate_cv_score_claim("test", {})
         assert asyncio.iscoroutine(coro)
-        asyncio.get_event_loop().run_until_complete(coro)
+        asyncio.run(coro)

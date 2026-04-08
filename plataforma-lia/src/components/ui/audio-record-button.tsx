@@ -108,6 +108,7 @@ export function AudioRecordButton({
       setError("Não foi possível acessar o microfone")
       isRecordingRef.current = false
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxDuration, onRecordingStart, stopRecordingInternal])
 
   const stopRecording = useCallback(() => {

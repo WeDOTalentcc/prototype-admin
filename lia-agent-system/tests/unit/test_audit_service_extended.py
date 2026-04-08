@@ -39,7 +39,7 @@ class TestAuditServiceConstants:
 
 class TestLogDecision:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_log_decision_handles_db_error(self):
         from app.shared.compliance.audit_service import AuditService
@@ -69,7 +69,7 @@ class TestLogDecision:
 
 class TestGetCandidateDecisions:
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_returns_dict_structure(self):
         from app.shared.compliance.audit_service import AuditService

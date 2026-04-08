@@ -133,7 +133,6 @@ const nextConfig = {
         ],
       },
       {
-        // Páginas HTML — revalidar, mas usar cache se possível
         source: '/:path*',
         headers: [
           {
@@ -144,10 +143,12 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
+          ...(process.env.NODE_ENV === 'production' ? [
+            {
+              key: 'X-Frame-Options',
+              value: 'DENY',
+            },
+          ] : []),
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
@@ -161,7 +162,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://ext.same-assets.com https://ugc.same-assets.com https://upload.wikimedia.org https://cdn.prod.website-files.com https://ui-avatars.com",
               "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io wss: ws:",
-              "frame-ancestors 'none'",
+              process.env.NODE_ENV === 'production' ? "frame-ancestors 'none'" : "frame-ancestors *",
               "base-uri 'self'",
               "form-action 'self'",
             ].join('; '),
@@ -170,15 +171,17 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
+          ...(process.env.NODE_ENV === 'production' ? [
+            {
+              key: 'Strict-Transport-Security',
+              value: 'max-age=63072000; includeSubDomains; preload',
+            },
+          ] : []),
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
-        ],
+        ].filter(Boolean),
       },
     ]
   },

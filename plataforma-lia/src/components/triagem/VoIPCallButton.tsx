@@ -302,7 +302,7 @@ export function VoIPCallButton({
       onError?.(msg)
       stopAudio()
     }
-  }, [disabled, voipState, token, clearTimer, stopAudio, playAudioChunk, onCallStarted, onCallEnded, onError])
+  }, [disabled, voipState, token, clearTimer, stopAudio, playAudioChunk, onCallStarted, onCallEnded, onError, setVoIPState])
 
   const endCall = useCallback(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -317,12 +317,12 @@ export function VoIPCallButton({
     stopAudio()
     setVoIPState("ended")
     onCallEnded?.()
-  }, [clearTimer, stopAudio, onCallEnded])
+  }, [clearTimer, stopAudio, onCallEnded, setVoIPState])
 
   const toggleMute = useCallback(() => {
     isMutedRef.current = !isMutedRef.current
     setVoIPState(isMutedRef.current ? "muted" : "connected")
-  }, [])
+  }, [setVoIPState])
 
   const reset = useCallback(() => {
     clearTimer()
@@ -338,7 +338,7 @@ export function VoIPCallButton({
     setVoIPState("idle")
     setErrorMessage(null)
     setCallDuration(0)
-  }, [clearTimer, stopAudio])
+  }, [clearTimer, stopAudio, setVoIPState])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0")

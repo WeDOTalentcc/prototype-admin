@@ -59,6 +59,7 @@ export function InterviewSchedulingModal({
     if (open && !emailTemplate) {
       generateEmailTemplate()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const generateEmailTemplate = async () => {

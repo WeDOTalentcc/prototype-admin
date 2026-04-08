@@ -61,6 +61,7 @@ export function ProactiveActions({
 
   useEffect(() => {
     loadActions()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit])
 
   const loadActions = async () => {

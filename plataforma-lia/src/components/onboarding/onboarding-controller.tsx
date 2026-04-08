@@ -59,6 +59,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
     if (storedUserData && !userData) {
       setUserData(storedUserData as unknown as UserData)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

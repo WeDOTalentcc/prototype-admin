@@ -28,7 +28,7 @@ from app.shared.compliance.fact_checker import FactChecker, FactCheckResult
 # ---------------------------------------------------------------------------
 
 def run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 # ---------------------------------------------------------------------------

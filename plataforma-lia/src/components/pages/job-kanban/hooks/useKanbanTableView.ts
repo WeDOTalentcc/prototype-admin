@@ -192,7 +192,7 @@ export function useKanbanTableView({
       }
     })
     return allCandidates
-  }, [dynamicStages, candidatesData]) // eslint-disable-line react-hooks/exhaustive-deps -- candidatesData required for correct output but ESLint misreports
+  }, [dynamicStages, candidatesData])
 
   // Filter + sort for table view
   const getFilteredAndSortedCandidates = (searchQuery: string) => {

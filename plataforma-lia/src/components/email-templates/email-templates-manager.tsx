@@ -170,6 +170,7 @@ export function EmailTemplatesManager() {
 
   useEffect(() => {
     loadTemplates()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryFilter])
 
   const loadTemplates = async () => {

@@ -95,10 +95,11 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
   const bonusMax = job.bonusRange?.max ?? job.bonus_range?.max ?? job.bonusMax
   const hasBonus = bonusMin || bonusMax
 
-  const benefits = job.benefits || []
+  const benefits = job.benefits
 
   const normalizedBenefits: CompanyBenefit[] = React.useMemo(() => {
-    return benefits.map((b: string | { name?: string; category?: string; value_type?: string }) => {
+    const benefitsList = benefits || []
+    return benefitsList.map((b: string | { name?: string; category?: string; value_type?: string }) => {
       if (typeof b === 'string') return toCompanyBenefit(b)
       if (b.category && b.value_type) return b as CompanyBenefit
       return toCompanyBenefit(String(b.name || ''))

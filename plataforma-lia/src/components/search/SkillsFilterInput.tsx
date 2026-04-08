@@ -88,7 +88,7 @@ export function SkillsFilterInput({
     onChange([...value, { name: trimmed, isPinned }])
     setInputValue("")
     closeDropdown()
-  }, [value, onChange, existingSkillNames, closeDropdown, setInputValue, setIsDropdownOpen, setFocusedIndex])
+  }, [value, onChange, existingSkillNames, closeDropdown, setInputValue])
 
   const removeSkill = useCallback((name: string) => {
     onChange(value.filter(s => s.name !== name))

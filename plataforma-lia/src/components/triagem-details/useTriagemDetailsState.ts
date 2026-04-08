@@ -125,6 +125,7 @@ export function useTriagemDetailsState(
     if (isOpen && candidate?.id) {
       loadData()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, candidate?.id])
 
   const loadData = async () => {

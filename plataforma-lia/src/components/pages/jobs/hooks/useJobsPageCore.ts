@@ -154,9 +154,9 @@ export function useJobsPageCore(props: JobsPageProps) {
       }
     } catch {
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allJobs, onAddRecentItem, navigationStoreNavigateToCandidate, consumeNavigateToCandidate])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // Navigate to newly created job when it appears in allJobs (fallback)
   useEffect(() => {
     if (!previewState.pendingNavigateJobId || !allJobs.length) return
@@ -164,9 +164,9 @@ export function useJobsPageCore(props: JobsPageProps) {
     if (!matched) return
     previewActions.setPendingNavigateJobId(null)
     setSelectedJobAndOpenKanban(matched)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allJobs, previewState.pendingNavigateJobId])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // Open pending job from external navigation
   useEffect(() => {
     if (!pendingJobOpen) return

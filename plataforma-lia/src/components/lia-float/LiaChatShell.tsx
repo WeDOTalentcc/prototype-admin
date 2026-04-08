@@ -344,7 +344,7 @@ function FullPageShell({ className }: Pick<LiaChatShellProps, "className">) {
       timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
     })
     state.clearBackgroundTask(task.id)
-  }, [state.addMessage, state.clearBackgroundTask])
+  }, [state])
 
   const hasDynamicPanel = !!state.dynamicPanel
 

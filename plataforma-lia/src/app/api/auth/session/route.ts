@@ -10,34 +10,25 @@ const sessionBodySchema = z.object({
   auth_method: z.string().optional(),
 })
 
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
-}
-
-const SESSION_FLAG_OPTIONS = {
-  httpOnly: false,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
+function isSecureContext(request: NextRequest): boolean {
+  const proto = request.headers.get('x-forwarded-proto')
+  return proto === 'https' || process.env.NODE_ENV === 'production'
 }
 
 export async function POST(request: NextRequest) {
   try {
     const origin = request.headers.get('origin')
     const host = request.headers.get('host')
-    if (origin && host) {
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    const effectiveHost = forwardedHost || host
+    if (origin && effectiveHost) {
       let originHost: string
       try {
         originHost = new URL(origin).host
       } catch {
         return NextResponse.json({ error: 'Invalid origin' }, { status: 403 })
       }
-      if (originHost !== host) {
+      if (originHost !== effectiveHost) {
         return NextResponse.json({ error: 'Invalid origin' }, { status: 403 })
       }
     }
@@ -58,17 +49,27 @@ export async function POST(request: NextRequest) {
     }
     const { access_token, refresh_token, auth_method } = parsed.data
 
-    const cookieStore = await cookies()
-
-    cookieStore.set('lia_access_token', access_token, COOKIE_OPTIONS)
-
-    if (refresh_token) {
-      cookieStore.set('lia_refresh_token', refresh_token, COOKIE_OPTIONS)
+    const secure = isSecureContext(request)
+    const cookieOpts = {
+      httpOnly: true,
+      secure,
+      sameSite: 'lax' as const,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
     }
 
-    cookieStore.set('lia_auth_method', auth_method || 'jwt', SESSION_FLAG_OPTIONS)
+    const response = NextResponse.json({ success: true })
 
-    return NextResponse.json({ success: true })
+    response.cookies.set('lia_access_token', access_token, cookieOpts)
+    if (refresh_token) {
+      response.cookies.set('lia_refresh_token', refresh_token, cookieOpts)
+    }
+    response.cookies.set('lia_auth_method', auth_method || 'jwt', {
+      ...cookieOpts,
+      httpOnly: false,
+    })
+
+    return response
   } catch {
     return NextResponse.json(
       { error: 'Failed to create session' },
@@ -79,13 +80,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   try {
-    const cookieStore = await cookies()
-
-    cookieStore.delete('lia_access_token')
-    cookieStore.delete('lia_refresh_token')
-    cookieStore.delete('lia_auth_method')
-
-    return NextResponse.json({ success: true })
+    const response = NextResponse.json({ success: true })
+    response.cookies.delete('lia_access_token')
+    response.cookies.delete('lia_refresh_token')
+    response.cookies.delete('lia_auth_method')
+    return response
   } catch {
     return NextResponse.json(
       { error: 'Failed to clear session' },
