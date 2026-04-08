@@ -68,6 +68,10 @@ class RateLimiter:
             self._redis_last_attempt = now
             try:
                 import redis.asyncio as aioredis
+                # from_url() supports authenticated Redis URLs natively:
+                #   redis://:password@host:port/db        — password auth
+                #   rediss://:token@host:port/db          — TLS + auth (Cloud Memorystore)
+                #   redis://user:password@host:port/db    — user + password
                 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
                 client = aioredis.from_url(
                     redis_url,

@@ -155,6 +155,24 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Tool Registry initialization failed: {e}")
         logger.warning("   Function calling tools will not work until registry is initialized")
 
+    # Validate LLM circuit breaker configuration (timeouts, thresholds, fallbacks)
+    try:
+        from app.shared.resilience.circuit_breaker import validate_llm_circuit_configs
+        _cb_validation = validate_llm_circuit_configs()
+        if _cb_validation.get("_all_ok"):
+            logger.info(
+                "✅ LLM circuit breakers validated: anthropic=%.0fs/threshold=%d, "
+                "openai=%.0fs/threshold=%d, gemini=%.0fs/threshold=%d",
+                _cb_validation["anthropic"]["timeout_s"], _cb_validation["anthropic"]["failure_threshold"],
+                _cb_validation["openai"]["timeout_s"], _cb_validation["openai"]["failure_threshold"],
+                _cb_validation["gemini"]["timeout_s"], _cb_validation["gemini"]["failure_threshold"],
+            )
+        else:
+            _issues = {k: v["issues"] for k, v in _cb_validation.items() if isinstance(v, dict) and not v.get("ok")}
+            logger.error("❌ LLM circuit breaker validation failed: %s", _issues)
+    except Exception as e:
+        logger.warning("⚠️  LLM circuit breaker validation error (non-blocking): %s", e)
+
     # Seed PolicyEngine default rules (idempotente — skip-if-exists)
     try:
         from app.services.policy_engine_service import PolicyEngineService
@@ -209,6 +227,21 @@ async def lifespan(app: FastAPI):
             )
     except Exception as e:
         logger.warning(f"⚠️  A/B Testing seed failed (non-blocking): {e}")
+
+    # Validate OpenAPI schema generation (pre-flight check — catch Pydantic schema errors at startup)
+    try:
+        schema = app.openapi()
+        path_count = len(schema.get("paths", {}))
+        schema_count = len(schema.get("components", {}).get("schemas", {}))
+        logger.info(
+            "✅ OpenAPI schema generated successfully: %d endpoints, %d schemas",
+            path_count, schema_count,
+        )
+    except Exception as e:
+        logger.error(
+            "❌ OpenAPI schema generation failed — /openapi.json will return 500: %s", e,
+            exc_info=True,
+        )
 
     logger.info("🎯 LIA Agent System ready!")
 

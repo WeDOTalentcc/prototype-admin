@@ -144,6 +144,7 @@ class LearningPattern(Base):
         Index('ix_learning_patterns_key', 'company_id', 'pattern_key'),
         Index('ix_learning_patterns_active', 'company_id', 'is_active'),
         Index('ix_learning_patterns_role', 'company_id', 'role_filter'),
+        {"extend_existing": True},
     )
 
 

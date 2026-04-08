@@ -945,3 +945,49 @@ def reset_circuit(service_name: str) -> None:
         _circuits[service_name].state = CircuitState.CLOSED
         _circuits[service_name].failure_count = 0
         logger.info(f"[CIRCUIT-BREAKER] '{service_name}' manually reset to CLOSED")
+
+
+def validate_llm_circuit_configs() -> dict[str, Any]:
+    """Validate that LLM circuit breakers have safe timeout and fallback configuration.
+
+    Called at startup to assert that all LLM circuits (Anthropic, OpenAI, Gemini)
+    have appropriate timeouts so they don't block indefinitely and will trigger
+    fallback behaviour after the configured threshold.
+
+    Returns:
+        dict with validation results per LLM service.
+    """
+    _LLM_CIRCUITS = {
+        "anthropic": ANTHROPIC_CIRCUIT,
+        "openai": OPENAI_CIRCUIT,
+        "gemini": GEMINI_CIRCUIT,
+    }
+    _MIN_TIMEOUT = 30.0       # LLM calls must time out in <= 120s; require at least 30s
+    _MAX_TIMEOUT = 120.0
+    _MIN_THRESHOLD = 3        # Must open after at most 10 failures
+    _MAX_THRESHOLD = 10
+
+    results: dict[str, Any] = {}
+    all_ok = True
+    for name, cb in _LLM_CIRCUITS.items():
+        cfg = cb.config
+        issues = []
+        if not (_MIN_TIMEOUT <= cfg.timeout <= _MAX_TIMEOUT):
+            issues.append(f"timeout={cfg.timeout}s outside [{_MIN_TIMEOUT}, {_MAX_TIMEOUT}]s")
+        if not (_MIN_THRESHOLD <= cfg.failure_threshold <= _MAX_THRESHOLD):
+            issues.append(f"failure_threshold={cfg.failure_threshold} outside [{_MIN_THRESHOLD}, {_MAX_THRESHOLD}]")
+        if cfg.recovery_timeout <= 0:
+            issues.append(f"recovery_timeout={cfg.recovery_timeout}s must be > 0")
+        ok = len(issues) == 0
+        if not ok:
+            all_ok = False
+        results[name] = {
+            "ok": ok,
+            "timeout_s": cfg.timeout,
+            "failure_threshold": cfg.failure_threshold,
+            "recovery_timeout_s": cfg.recovery_timeout,
+            "success_threshold": cfg.success_threshold,
+            "issues": issues,
+        }
+    results["_all_ok"] = all_ok
+    return results
