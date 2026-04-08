@@ -1,13 +1,12 @@
 "use client"
 
 import React from "react"
-import { LiaChatShell } from "@/components/lia-float/LiaChatShell"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import {
-  Send, Loader2, FileText, Search, MapPin, X,
+  Send, FileText, Search, MapPin, X,
   ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain,
   Plus, Eraser
 } from "lucide-react"
@@ -232,10 +231,10 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
             <>
               {/* Notificação de campos vazios */}
               {emptyFieldNotifications.hasPendingNotifications && emptyFieldNotifications.currentNotification && (
-                <div className="flex justify-end">
-                  <div className="flex items-start gap-2 max-w-[80%] flex-row-reverse">
-                    <div className="flex-shrink-0 pt-4">
-                      <LIAIcon size="md" />
+                <div className="flex justify-start">
+                  <div className="flex items-start gap-2 max-w-[80%]">
+                    <div className="flex-shrink-0 pt-2">
+                      <LIAIcon size="sm" />
                     </div>
                     <div className="rounded-md p-5 flex-1 bg-lia-bg-tertiary">
                       <div className="flex items-center space-x-2 mb-2">
@@ -275,23 +274,6 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
             </>
           )}
 
-          {isLoading && (
-            <div className="flex justify-end">
-              <div className="flex items-start gap-2 max-w-[80%] flex-row-reverse" role="status" aria-live="polite" aria-label="Carregando...">
-                <div className="flex-shrink-0 pt-4" role="status" aria-live="polite" aria-label="Carregando...">
-                  <LIAIcon size="md" />
-                </div>
-                <div className="rounded-md p-5 flex-1 bg-lia-bg-tertiary" role="status" aria-live="polite" aria-label="Carregando...">
-                  <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
-                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-                    <span className="text-sm text-lia-text-tertiary">
-                      LIA está digitando...
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {chatHitlPending && (
             <div className="mt-3 px-4">

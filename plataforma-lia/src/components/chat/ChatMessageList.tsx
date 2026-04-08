@@ -96,7 +96,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               )}
 
               <div
-                className={`flex-1 ${isLia ? "py-0.5" : "px-3.5 py-2.5 bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl rounded-br-[4px]"}`}
+                className={`flex-1 ${isLia ? "px-3.5 py-2.5 bg-white border border-lia-border-subtle rounded-xl rounded-bl-[4px]" : "px-3.5 py-2.5 bg-lia-bg-tertiary border border-lia-border-subtle rounded-xl rounded-br-[4px]"}`}
               >
                 <div className="flex items-center space-x-2 mb-1">
                   <span

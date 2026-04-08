@@ -58,17 +58,15 @@ class CandidateRepository:
         )
         return result.scalar_one_or_none()
 
-    async def list_candidates(
+    def _build_list_filters(
         self,
+        query,
         search: str | None = None,
         status: str | None = None,
         source: str | None = None,
+        seniority: str | None = None,
         ids: list[str] | None = None,
-        skip: int = 0,
-        limit: int = 50,
-    ) -> list[Candidate]:
-        query = select(Candidate).where(Candidate.is_active)
-
+    ):
         if ids:
             query = query.where(Candidate.id.in_(ids))
 
@@ -92,7 +90,54 @@ class CandidateRepository:
         if source:
             query = query.where(Candidate.source == source)
 
-        query = query.offset(skip).limit(limit).order_by(Candidate.created_at.desc())
+        if seniority:
+            query = query.where(func.lower(Candidate.seniority_level) == seniority.lower())
+
+        return query
+
+    async def count_candidates(
+        self,
+        search: str | None = None,
+        status: str | None = None,
+        source: str | None = None,
+        seniority: str | None = None,
+        ids: list[str] | None = None,
+    ) -> int:
+        query = select(func.count(Candidate.id)).where(Candidate.is_active)
+        query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
+        result = await self.db.execute(query)
+        return result.scalar() or 0
+
+    async def list_candidates(
+        self,
+        search: str | None = None,
+        status: str | None = None,
+        source: str | None = None,
+        seniority: str | None = None,
+        ids: list[str] | None = None,
+        skip: int = 0,
+        limit: int = 50,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
+    ) -> list[Candidate]:
+        query = select(Candidate).where(Candidate.is_active)
+        query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
+
+        allowed_sort_fields = {
+            "created_at": Candidate.created_at,
+            "updated_at": Candidate.updated_at,
+            "name": Candidate.name,
+            "lia_score": Candidate.lia_score,
+            "current_title": Candidate.current_title,
+            "status": Candidate.status,
+        }
+        sort_col = allowed_sort_fields.get(sort_by, Candidate.created_at)
+        if sort_order == "asc":
+            query = query.order_by(sort_col.asc())
+        else:
+            query = query.order_by(sort_col.desc())
+
+        query = query.offset(skip).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 

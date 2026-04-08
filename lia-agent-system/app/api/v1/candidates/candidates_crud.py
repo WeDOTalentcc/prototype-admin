@@ -145,9 +145,13 @@ async def list_candidates(
     search: str | None = None,
     status: str | None = None,
     source: str | None = None,
+    seniority: str | None = None,
     ids: str | None = None,
-    skip: int = 0,
-    limit: int = 50,
+    offset: int = Query(default=0, ge=0),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, le=200),
+    sort_by: str | None = None,
+    sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """List all candidates from the proprietary database."""
@@ -166,13 +170,17 @@ async def list_candidates(
             if not id_list:
                 id_list = None
 
+        effective_skip = offset if offset > 0 else skip
+        total = await candidate_repo.count_candidates(
+            search=search, status=status, source=source, seniority=seniority, ids=id_list,
+        )
         candidates = await candidate_repo.list_candidates(
-            search=search, status=status, source=source, ids=id_list,
-            skip=skip, limit=limit,
+            search=search, status=status, source=source, seniority=seniority, ids=id_list,
+            skip=effective_skip, limit=limit, sort_by=sort_by, sort_order=sort_order,
         )
         return {
-            "total": len(candidates),
-            "skip": skip,
+            "total": total,
+            "skip": effective_skip,
             "limit": limit,
             "items": [_serialize_candidate(c) for c in candidates],
         }

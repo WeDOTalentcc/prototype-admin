@@ -16,6 +16,10 @@ export async function POST(request: NextRequest) {
     const refreshTokenCookie = cookieStore.get('lia_refresh_token')
 
     if (!refreshTokenCookie) {
+      const accessTokenCookie = cookieStore.get('lia_access_token')
+      if (accessTokenCookie?.value && accessTokenCookie.value !== '_sso_session_') {
+        return NextResponse.json({ success: true, skipped: true })
+      }
       return NextResponse.json(
         { error: 'No refresh token available' },
         { status: 401 }

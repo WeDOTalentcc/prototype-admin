@@ -65,7 +65,8 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
 
       try {
         const result = await liaApi.getCandidates(params)
-        setCandidates(result.candidates || (result as unknown as Record<string, unknown>).items as typeof result.candidates || [])
+        const items = result.candidates || (result as unknown as Record<string, unknown>).items as typeof result.candidates || []
+        setCandidates(items)
         setTotal(result.total ?? 0)
       } catch (err) {
         if ((err as Error)?.name !== "AbortError") {

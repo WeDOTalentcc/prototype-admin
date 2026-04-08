@@ -201,7 +201,6 @@ class AuthService {
     })
 
     if (!response.ok) {
-      await this.clearTokens()
       throw new Error('Token refresh failed')
     }
   }
