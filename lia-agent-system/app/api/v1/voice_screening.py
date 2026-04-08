@@ -10,6 +10,9 @@ Register: app.include_router(voice_screening_router)
 import json
 import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -42,7 +45,7 @@ class SessionResponse(BaseModel):
 @router.post("/sessions", response_model=SessionResponse)
 async def create_voice_session(
     body: CreateSessionRequest,
-    current_user=Depends(lambda: None),  # Replace with get_current_user
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Create a new voice screening session for a candidate in a talent pool.
@@ -50,7 +53,7 @@ async def create_voice_session(
     Loads screening questions from the pool's WSI compact config.
     Returns the initial greeting + first question.
     """
-    company_id = getattr(current_user, "company_id", "unknown")
+    company_id = current_user.get("company_id", "unknown")
 
     # Load pool's screening questions
     screening_questions = await _load_pool_questions(body.talent_pool_id)

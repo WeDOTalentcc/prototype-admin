@@ -8,6 +8,9 @@ Register: app.include_router(multi_strategy_router)
 """
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -50,7 +53,7 @@ class MultiStrategyResponse(BaseModel):
 @router.post("/multi-strategy", response_model=MultiStrategyResponse)
 async def multi_strategy_search(
     body: MultiStrategyRequest,
-    current_user=Depends(lambda: None),  # Replace with get_current_user
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Execute 4 search strategies in parallel, deduplicate and rank results.
@@ -63,7 +66,7 @@ async def multi_strategy_search(
     """
     from app.services.multi_strategy_search import multi_strategy_search
 
-    company_id = getattr(current_user, "company_id", "unknown")
+    company_id = current_user.get("company_id", "unknown")
 
     result = await multi_strategy_search.search(
         job_title=body.job_title,

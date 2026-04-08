@@ -6,6 +6,9 @@ Register: app.include_router(sourcing_agents_router)
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -30,13 +33,13 @@ class FeedbackRequest(BaseModel):
 @router.post("")
 async def create_sourcing_agent(
     body: CreateSourcingAgentRequest,
-    current_user=Depends(lambda: None),  # Replace with get_current_user
-    db=Depends(lambda: None),  # Replace with get_db
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Create a new persistent sourcing agent for a job or talent pool."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     result = await sourcing_agent_orchestrator.create_agent(
-        company_id=getattr(current_user, "company_id", "unknown"),
+        company_id=current_user.get("company_id", "unknown"),
         agent_name=body.agent_name,
         job_id=body.job_id,
         talent_pool_id=body.talent_pool_id,
@@ -53,15 +56,15 @@ async def list_sourcing_agents(
     job_id: Optional[str] = None,
     talent_pool_id: Optional[str] = None,
     status: Optional[str] = None,
-    current_user=Depends(lambda: None),
-    db=Depends(lambda: None),
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """List sourcing agents for the current company."""
     from app.models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
     query = select(SourcingAgent).where(
-        SourcingAgent.company_id == getattr(current_user, "company_id", "unknown")
+        SourcingAgent.company_id == current_user.get("company_id", "unknown")
     )
     if job_id:
         query = query.where(SourcingAgent.job_id == job_id)
@@ -94,7 +97,7 @@ async def list_sourcing_agents(
 
 
 @router.get("/{agent_id}")
-async def get_sourcing_agent(agent_id: str, db=Depends(lambda: None)):
+async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Get details of a specific sourcing agent."""
     from app.models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -121,7 +124,7 @@ async def get_sourcing_agent(agent_id: str, db=Depends(lambda: None)):
 async def submit_feedback(
     agent_id: str,
     body: FeedbackRequest,
-    db=Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Process recruiter feedback (approve/reject) on a candidate.
@@ -149,7 +152,7 @@ async def submit_feedback(
 async def get_calibration_candidates(
     agent_id: str,
     limit: int = 10,
-    db=Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get candidates for the Big Card calibration modal."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
@@ -163,7 +166,7 @@ async def get_calibration_candidates(
 async def get_agent_timeline(
     agent_id: str,
     limit: int = 20,
-    db=Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get activity timeline for the Agents tab."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
@@ -174,7 +177,7 @@ async def get_agent_timeline(
 
 
 @router.patch("/{agent_id}/pause")
-async def pause_agent(agent_id: str, db=Depends(lambda: None)):
+async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Pause a sourcing agent."""
     from app.models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -190,7 +193,7 @@ async def pause_agent(agent_id: str, db=Depends(lambda: None)):
 
 
 @router.patch("/{agent_id}/resume")
-async def resume_agent(agent_id: str, db=Depends(lambda: None)):
+async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Resume a paused sourcing agent."""
     from app.models.sourcing_agent import SourcingAgent
     from sqlalchemy import select

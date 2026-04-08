@@ -26,7 +26,9 @@ import {
   User,
   X,
   Trash2,
-  Search
+  Search,
+  Database,
+  Bot
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -42,6 +44,8 @@ const menuItems: MenuItemType[] = [
   { icon: MessageCircle, label: "Chat LIA", isCore: true },
   { icon: Users, label: "Funil de Talentos", isCore: true },
   { icon: Briefcase, label: "Vagas", isCore: true },
+  { icon: Database, label: "Bancos de Talentos", isCore: true },
+  { icon: Bot, label: "Agent Studio", isCore: true },
 ]
 
 

@@ -7,6 +7,9 @@ Register: app.include_router(digital_twins_router)
 
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -37,8 +40,8 @@ class ManualDecisionRequest(BaseModel):
 @router.post("")
 async def create_twin(
     body: CreateTwinRequest,
-    current_user=Depends(lambda: None),
-    db=Depends(lambda: None),
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Create a Digital Twin and optionally index ATS history.
@@ -47,7 +50,7 @@ async def create_twin(
     """
     from app.models.digital_twin import DigitalTwin
 
-    company_id = getattr(current_user, "company_id", "unknown")
+    company_id = current_user.get("company_id", "unknown")
 
     twin = DigitalTwin(
         id=str(uuid.uuid4()),
@@ -85,14 +88,14 @@ async def create_twin(
 
 @router.get("")
 async def list_twins(
-    current_user=Depends(lambda: None),
-    db=Depends(lambda: None),
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """List all Digital Twins for the current company."""
     from app.models.digital_twin import DigitalTwin
     from sqlalchemy import select
 
-    company_id = getattr(current_user, "company_id", "unknown")
+    company_id = current_user.get("company_id", "unknown")
     result = await db.execute(
         select(DigitalTwin)
         .where(DigitalTwin.company_id == company_id)
@@ -116,7 +119,7 @@ async def list_twins(
 
 
 @router.get("/{twin_id}")
-async def get_twin(twin_id: str, db=Depends(lambda: None)):
+async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db)):
     """Get details of a specific Digital Twin."""
     from app.models.digital_twin import DigitalTwin
     from sqlalchemy import select
@@ -142,7 +145,7 @@ async def get_twin(twin_id: str, db=Depends(lambda: None)):
 async def index_audio(
     twin_id: str,
     file: UploadFile = File(...),
-    db=Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
 ):
     """Upload and index an interview recording with the SME."""
     audio_bytes = await file.read()
@@ -162,7 +165,7 @@ async def index_audio(
 async def index_manual_decision(
     twin_id: str,
     body: ManualDecisionRequest,
-    db=Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
 ):
     """Manually index a single decision + reasoning."""
     from app.services.twin_knowledge_indexer import twin_knowledge_indexer
@@ -181,7 +184,7 @@ async def index_manual_decision(
 async def evaluate_candidate(
     twin_id: str,
     body: EvaluateRequest,
-    db=Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Evaluate a candidate using the Digital Twin's reasoning.

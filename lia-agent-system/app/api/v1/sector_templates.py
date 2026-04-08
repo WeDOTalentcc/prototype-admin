@@ -11,6 +11,9 @@ Register: app.include_router(sector_templates_router)
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.dependencies import get_current_user
+from app.core.database import get_db
 from pydantic import BaseModel
 from typing import Optional
 
@@ -49,8 +52,8 @@ async def list_sector_templates():
 async def apply_sector_template(
     sector: str,
     body: ApplySectorRequest = ApplySectorRequest(),
-    current_user=Depends(lambda: None),  # Replace with get_current_user
-    db=Depends(lambda: None),  # Replace with get_db
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Instantiate a sector template as an AgentTemplate for the current tenant.
@@ -78,13 +81,13 @@ async def apply_sector_template(
 
     agent_template = AgentTemplate(
         id=template_id,
-        company_id=getattr(current_user, "company_id", "unknown"),
+        company_id=current_user.get("company_id", "unknown"),
         name=name,
         domain=template["domain"],
         system_prompt_yaml=yaml_content,
         version=1,
         status="draft",
-        created_by=getattr(current_user, "id", "system"),
+        created_by=current_user.get("user_id", "system"),
         created_at=datetime.utcnow(),
     )
 
