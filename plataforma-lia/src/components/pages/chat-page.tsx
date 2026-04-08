@@ -309,21 +309,20 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
             {/* Empty State: Greeting + Suggestions + Prompt as one centered block */}
             {isEmptyChat && !isSmartSearchMode && (
               <div className="mb-6">
-                <div className="flex flex-col items-center text-center gap-3 mb-6">
+                <div className="flex flex-col items-center text-center gap-3 mb-8">
+                  <Brain className="w-10 h-10 text-wedo-cyan mb-2" strokeWidth={1.5} />
                   <div>
-                    <h1 className="text-xl text-lia-text-primary tracking-tight flex items-center justify-center gap-2">
-                      <Brain className="w-8 h-8 text-wedo-cyan" />
-                      <span className="font-semibold text-lia-text-primary">Oi, eu sou a</span>
-                      <span className="font-bold text-2xl text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
+                    <h1 className="text-3xl text-lia-text-primary tracking-tight">
+                      <span className="font-light">Oi, eu sou a </span>
+                      <span className="font-bold text-lia-text-primary tracking-normal font-source-serif-4">LIA.</span>
                     </h1>
-                    <p className="text-lia-text-primary mt-1 text-base-ui font-medium">Como posso ajudar você hoje?</p>
+                    <p className="text-lia-text-secondary mt-3 text-lg">Como posso ajudar você hoje?</p>
                   </div>
                 </div>
                 <PromptSuggestionsDock
                   onSelect={(command) => setInput(command)}
                   isEmpty={true}
                 />
-                <div className="mt-6" />
               </div>
             )}
 
@@ -549,15 +548,14 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
 
                 {/* Input com botões */}
                 <div className="w-full relative group">
-                  <div className="absolute -inset-0.5 bg-wedo-cyan/[0.15] rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-                  <div className="relative bg-lia-bg-primary border border-lia-border-subtle rounded-xl shadow-sm transition-colors duration-200 focus-within:border-wedo-cyan/40 focus-within:ring-2 focus-within:ring-wedo-cyan/[0.12] focus-within:shadow-md flex flex-col">
+                  <div className="relative bg-lia-bg-primary border border-lia-border-default rounded-2xl shadow-sm transition-colors duration-200 focus-within:border-wedo-cyan/40 flex flex-col">
                     <textarea
                       ref={inputRef}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[100px] text-base-ui rounded-xl"
+                      className="w-full bg-transparent resize-none p-4 pb-12 outline-none text-lia-text-primary placeholder-lia-text-disabled min-h-[56px] text-[15px] rounded-2xl"
                       spellCheck={false}
                     />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
@@ -594,10 +592,10 @@ export function LegacyChatPage({ initialConversationId }: { initialConversationI
                           onClick={() => handleSendMessage()}
                           disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
                           size="sm"
-                          className="p-2 bg-lia-btn-primary-hover text-white hover:bg-lia-btn-primary-bg rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                          className="p-2.5 bg-wedo-cyan text-white hover:bg-wedo-cyan/90 rounded-xl transition-colors disabled:opacity-50"
                           title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
                         >
-                          <Send className="w-4 h-4" />
+                          <Send className="w-[18px] h-[18px]" />
                         </Button>
                       </div>
                     </div>

@@ -17,25 +17,29 @@ interface PromptSuggestion {
 
 const CATEGORY_COLORS = {
   vagas: {
-    icon: 'var(--lia-text-secondary)',
+    icon: 'var(--wedo-cyan-dark, #4DA8BB)',
+    iconBg: 'var(--wedo-cyan-light, #B8E0EA)',
     bg: 'var(--lia-bg-secondary)',
     border: 'var(--lia-border-subtle)',
     hoverBg: 'var(--lia-bg-tertiary)'
   },
   candidatos: {
-    icon: 'var(--status-success)',
+    icon: 'var(--wedo-green, #5DA47A)',
+    iconBg: 'rgba(93, 164, 122, 0.15)',
     bg: 'var(--lia-bg-secondary)',
-    border: 'var(--status-success)',
+    border: 'var(--lia-border-subtle)',
     hoverBg: 'var(--lia-bg-tertiary)'
   },
   entrevistas: {
-    icon: 'var(--wedo-orange)',
+    icon: 'var(--wedo-orange, #D19960)',
+    iconBg: 'rgba(209, 153, 96, 0.15)',
     bg: 'var(--lia-bg-secondary)',
     border: 'var(--wedo-orange)',
     hoverBg: 'var(--lia-bg-tertiary)'
   },
   relatorios: {
-    icon: 'var(--wedo-purple)',
+    icon: 'var(--wedo-purple, #9860D1)',
+    iconBg: 'rgba(152, 96, 209, 0.15)',
     bg: 'var(--lia-bg-secondary)',
     border: 'var(--wedo-purple)',
     hoverBg: 'var(--lia-bg-tertiary)'
@@ -53,7 +57,7 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
     id: "create-job",
     icon: Plus,
     title: "Crie uma nova vaga",
-    description: "Configure requisitos do sistema com descrição detalhada",
+    description: "Configure requisitos com descrição detalhada",
     command: "Criar uma nova vaga",
     category: "vagas"
   },
@@ -61,7 +65,7 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
     id: "search-candidates",
     icon: Search,
     title: "Buscar candidatos",
-    description: "Encontre candidatos no banco de dados por perfil, skills ou experiência",
+    description: "Encontre candidatos por perfil, skills ou experiência",
     command: "Buscar candidatos",
     category: "candidatos"
   },
@@ -69,7 +73,7 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
     id: "candidate-info",
     icon: Search,
     title: "Consulte sobre candidato",
-    description: "Obtenha histórico específico e histórico completo",
+    description: "Obtenha histórico específico e completo",
     command: "Consulte informações sobre candidato",
     category: "candidatos"
   },
@@ -85,7 +89,7 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
     id: "reschedule-interview",
     icon: Calendar,
     title: "Reagende uma entrevista",
-    description: "Cancele horário e notifique automaticamente participantes",
+    description: "Cancele horário e notifique participantes",
     command: "Reagende uma entrevista",
     category: "entrevistas"
   },
@@ -93,7 +97,7 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
     id: "update-status",
     icon: RefreshCcw,
     title: "Atualize status do candidato",
-    description: "Modifique situação no processo e envie notificações",
+    description: "Modifique situação e envie notificações",
     command: "Atualize status do candidato",
     category: "candidatos"
   }
@@ -170,21 +174,30 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
   if (isEmpty) {
     return (
       <div className="w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon
+            const colors = CATEGORY_COLORS[suggestion.category]
             return (
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="flex items-center gap-3 p-3 text-left rounded-xl bg-[var(--lia-bg-primary)] border border-lia-border-subtle transition-[transform,border-color] duration-200 hover:scale-[1.02] hover:border-lia-border-default group"
+                className="flex items-start gap-4 p-5 text-left rounded-xl bg-[var(--lia-bg-primary)] border border-lia-border-subtle shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-lia-border-default group"
               >
-                <div className="bg-wedo-cyan/[0.08] text-wedo-cyan rounded-lg p-1.5 transition-colors group-hover:bg-wedo-cyan/[0.15] flex-shrink-0">
-                  <Icon className="w-4 h-4" />
+                <div
+                  className="rounded-lg p-3 flex-shrink-0 transition-colors"
+                  style={{ backgroundColor: colors.iconBg, color: colors.icon }}
+                >
+                  <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-base-ui font-medium text-lia-text-primary">
-                  {suggestion.title}
-                </span>
+                <div className="min-w-0">
+                  <span className="text-[15px] font-semibold text-lia-text-primary block mb-1">
+                    {suggestion.title}
+                  </span>
+                  <span className="text-[13px] leading-snug text-lia-text-secondary block">
+                    {suggestion.description}
+                  </span>
+                </div>
               </button>
             )
           })}
