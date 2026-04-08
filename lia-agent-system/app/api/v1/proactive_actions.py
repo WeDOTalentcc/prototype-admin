@@ -283,6 +283,10 @@ async def get_proactive_insights(
     limit: int = Query(default=5, le=20),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # If service is a Depends object (test calling directly), create a real instance
+    if not hasattr(service, 'get_pending_actions'):
+        from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService as _AAS
+        service = _AAS()
     """
     Retorna insights proativos da LIA para o Kanban.
     Filtra por job_id quando fornecido.

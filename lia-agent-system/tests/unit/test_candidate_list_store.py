@@ -27,7 +27,11 @@ CANDIDATES = [
 
 
 def make_store() -> CandidateListStore:
+    from unittest.mock import AsyncMock
     store = CandidateListStore()
+    # Force in-memory fallback to isolate tests from Redis state
+    store._get_redis = AsyncMock(return_value=None)
+    store._redis_available = False
     return store
 
 

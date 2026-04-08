@@ -18,7 +18,6 @@ def _map_question_type_to_category(question_type: str) -> str:
     }
     return mapping.get(question_type, "behavioral")
 
-
 def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Build WSI blocks structure from a question set snapshot.
@@ -88,7 +87,6 @@ def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]
 
     return blocks
 
-
 async def _load_or_generate_blocks(
     db,
     job_id: str,
@@ -111,9 +109,10 @@ async def _load_or_generate_blocks(
         if active_qs and active_qs.questions_snapshot:
             blocks = _build_wsi_blocks_from_question_set(active_qs.questions_snapshot)
             if blocks:
+                n_questions = sum(len(b["questions"]) for b in blocks)
                 logger.info(
                     f"[Triagem] Loaded question set v{active_qs.version} "
-                    f"with {sum(len(b[\questions\]) for b in blocks)} questions for job {job_id}"
+                    f"with {n_questions} questions for job {job_id}"
                 )
                 return blocks, str(active_qs.id), str(active_qs.version)
             logger.warning(f"[Triagem] Question set for job {job_id} produced empty blocks, trying wsi_service")

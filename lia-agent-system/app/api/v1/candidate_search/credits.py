@@ -1,0 +1,167 @@
+"""Credit estimate route: POST /candidates/estimate"""
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ._shared import (
+    CVParserService,
+    CandidateProfile,
+    CandidateSearchResultDTO,
+    CreditEstimateDTO,
+    EducationDTO,
+    EvaluateForJobRequest,
+    EvaluateForJobResponse,
+    EvaluateForJobResult,
+    ExperienceDTO,
+    HybridSearchRequest,
+    IdMapping,
+    ImportCandidateDTO,
+    ImportCandidateExperienceDTO,
+    ImportCandidatesRequest,
+    ImportCandidatesResponse,
+    ImportUser,
+    JobRequirement,
+    JobRequirementCreate,
+    LanguageDTO,
+    PearchService,
+    PearchSearchRequest,
+    RubricEvaluationService,
+    SearchRequestDTO,
+    SearchResponseDTO,
+    SearchType,
+    User,
+    _build_candidate_data_from_dto,
+    _evaluate_candidates_with_rubrics,
+    _generate_fingerprint,
+    _get_job_requirements,
+    _get_match_label,
+    _normalize_name,
+    _normalize_priority,
+    assert_resource_ownership,
+    get_current_user_or_demo,
+    get_cv_parser_service,
+    get_db,
+    get_pearch_service,
+    get_rubric_evaluation_service,
+    get_user_company_id,
+    logger,
+    rubric_evaluation_service,
+)
+from app.domains.credits.services.credit_service import CreditService, get_credit_service
+
+router = APIRouter()
+
+class CreditEstimateRequest(BaseModel):
+    """Request completo para estimativa de créditos."""
+    query: str = Field(..., description="Query de busca")
+    pearch_type: str = Field("fast", description="Tipo: fast ou pro")
+    limit: int = Field(15, ge=1, le=50)
+    
+    # Opções de qualidade
+    insights: bool = Field(True, description="Incluir insights (+1 crédito)")
+    high_freshness: bool = Field(False, description="Dados em tempo real (+2 créditos)")
+    profile_scoring: bool = Field(True, description="Scoring (+1 crédito)")
+    strict_filters: bool = Field(False, description="Filtros rigorosos")
+    
+    # Opções de contato
+    require_emails: bool = Field(False, description="Apenas com email (+1 crédito)")
+    show_emails: bool = Field(False, description="Mostrar emails (+2 créditos)")
+    require_phone_numbers: bool = Field(False, description="Apenas com telefone (+1 crédito)")
+    show_phone_numbers: bool = Field(False, description="Mostrar telefones (+14 créditos)")
+    require_phones_or_emails: bool = Field(False, description="Email OU telefone (+1 crédito)")
+
+
+class DetailedCreditEstimateDTO(BaseModel):
+    """Estimativa detalhada de créditos."""
+    query: str
+    pearch_type: str
+    limit: int
+    
+    # Custos individuais
+    base_cost: int
+    insights_cost: int
+    freshness_cost: int
+    email_cost: int
+    phone_cost: int
+    
+    # Totais
+    cost_per_candidate: int
+    total_estimated: int
+    
+    # Breakdown para UI
+    breakdown: dict = Field(default_factory=dict)
+    
+    # Mensagem formatada
+    confirmation_message: str
+    
+    # Alertas de custo
+    warnings: list[str] = Field(default_factory=list)
+
+
+@router.post("/candidates/estimate", response_model=DetailedCreditEstimateDTO)
+async def estimate_search_credits(request: CreditEstimateRequest,
+    pearch_svc: PearchService = Depends(get_pearch_service),
+):
+    """
+    Estima o custo em créditos ANTES de executar a busca.
+    
+    Use este endpoint para mostrar ao usuário quanto a busca irá custar.
+    Aceita todos os parâmetros Pearch para cálculo preciso.
+    """
+    if request.pearch_type not in ["fast", "pro"]:
+        raise HTTPException(status_code=400, detail="pearch_type must be 'fast' or 'pro'")
+    
+    pearch_request = PearchSearchRequest(
+        query=request.query,
+        type=SearchType(request.pearch_type),
+        insights=request.insights,
+        high_freshness=request.high_freshness,
+        profile_scoring=request.profile_scoring,
+        custom_filters=None,
+        strict_filters=request.strict_filters,
+        require_emails=request.require_emails,
+        show_emails=request.show_emails,
+        require_phone_numbers=request.require_phone_numbers,
+        require_phones_or_emails=request.require_phones_or_emails,
+        show_phone_numbers=request.show_phone_numbers,
+        limit=request.limit
+    )
+    
+    estimate = pearch_svc.estimate_credits(pearch_request)
+    confirmation = pearch_svc.create_confirmation_message(pearch_request)
+    
+    # Gerar alertas de custo
+    warnings = []
+    if request.show_phone_numbers:
+        warnings.append("Exibir telefones adiciona +14 créditos por candidato - custo significativo!")
+    if estimate.total_estimated > 100:
+        warnings.append(f"Custo total estimado alto: {estimate.total_estimated} créditos")
+    if request.pearch_type == "pro" and request.limit > 30:
+        warnings.append("Busca profissional com muitos resultados pode consumir créditos rapidamente")
+    
+    return DetailedCreditEstimateDTO(
+        query=request.query,
+        pearch_type=request.pearch_type,
+        limit=request.limit,
+        base_cost=estimate.base_cost,
+        insights_cost=estimate.insights_cost,
+        freshness_cost=estimate.freshness_cost,
+        email_cost=estimate.email_cost,
+        phone_cost=estimate.phone_cost,
+        cost_per_candidate=estimate.total_per_candidate,
+        total_estimated=estimate.total_estimated,
+        breakdown={
+            "base": estimate.base_cost,
+            "insights": estimate.insights_cost,
+            "emails": estimate.email_cost,
+            "phones": estimate.phone_cost,
+            "freshness": estimate.freshness_cost
+        },
+        confirmation_message=confirmation.confirmation_message,
+        warnings=warnings
+    )
+
+

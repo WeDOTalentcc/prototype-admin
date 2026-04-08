@@ -5,11 +5,10 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.shared.learning.ab_testing_service import ABTestingService
+from app.shared.learning.ab_testing_service import ab_testing_service as _service, ABTestingService
 
 router = APIRouter(prefix="/ab-tests", tags=["ab-testing"])
 
-_service = ABTestingService()
 
 
 class VariantCreate(BaseModel):

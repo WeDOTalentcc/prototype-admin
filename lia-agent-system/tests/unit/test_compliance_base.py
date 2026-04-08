@@ -180,7 +180,7 @@ class TestFairnessGuardIntegration:
         ) as mock_fairness:
             result = await compliance_domain.pre_process("quero candidatos python", domain_context)
 
-        mock_fairness.assert_called_once_with("quero candidatos python", domain_context)
+        mock_fairness.assert_called_once_with("quero candidatos python", domain_context, None)
         assert result is None  # Not blocked
 
     @pytest.mark.asyncio
