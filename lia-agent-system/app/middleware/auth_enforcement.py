@@ -13,6 +13,7 @@ This replaces per-endpoint auth and eliminates the X-Company-ID header
 trust vulnerability (where a user could forge a different company_id).
 """
 import logging
+import os
 from contextvars import ContextVar
 
 # ContextVar for tenant isolation — read by get_db to inject RLS context
@@ -74,6 +75,10 @@ PUBLIC_PATHS = {
 }
 
 # Path prefixes that are public (e.g. static files, docs)
+# Dev-mode flag: when True, unauthenticated requests get a synthetic dev-user context
+# instead of 401. This allows the Replit demo to work without full SSO/JWT setup.
+_DEV_MODE = os.environ.get("LIA_DEV_MODE", "").lower() in ("1", "true", "yes") or os.environ.get("REPL_ID", "")
+
 PUBLIC_PREFIXES = (
     "/api/v1/teams/",
     "/api/v1/auth/invitation-info/",
@@ -162,6 +167,15 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         # Extract Bearer token
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
+            if _DEV_MODE:
+                # Dev mode: inject synthetic user context for unauthenticated requests
+                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
+                request.state.user_id = "dev-user"
+                request.state.company_id = "demo_company"
+                _current_company_id.set("demo_company")
+                request.state.user_role = "admin"
+                logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for {request.method} {path}")
+                return await call_next(request)
             logger.warning(f"[AuthEnforcement] No Bearer token for {request.method} {path}")
             return JSONResponse(
                 {"detail": "Authentication required"},
@@ -173,6 +187,14 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         try:
             from app.auth.security import decode_token
             payload = decode_token(token)
+            if payload is None and _DEV_MODE:
+                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
+                request.state.user_id = "dev-user"
+                request.state.company_id = "demo_company"
+                _current_company_id.set("demo_company")
+                request.state.user_role = "admin"
+                logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for invalid token on {path}")
+                return await call_next(request)
 
             user_id = payload.get("sub")
             if not user_id:
