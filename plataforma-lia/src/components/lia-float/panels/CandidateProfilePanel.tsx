@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { User, MapPin, Briefcase, GraduationCap, Mail, Phone, Globe, Sparkles, MessageSquare, Calendar, UserPlus } from "lucide-react"
+import { User, MapPin, Briefcase, GraduationCap, Mail, Phone, Globe, Brain, MessageSquare, Calendar, UserPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ProfileData {
@@ -145,7 +145,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
         {profile.lia_insights && profile.lia_insights.length > 0 && (
           <div className="px-4 py-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
+              <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">Insights LIA</p>
             </div>
             <div className="space-y-1.5">

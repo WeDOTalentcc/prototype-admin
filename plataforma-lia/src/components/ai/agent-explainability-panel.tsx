@@ -9,7 +9,6 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible"
 import {
-  Sparkles,
   ChevronDown,
   Clock,
   Wrench,
@@ -155,7 +154,7 @@ export function AgentExplainabilityPanel({
     >
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-lia-btn-primary-bg px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-bg/80">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-wedo-cyan" />
+          <Brain className="h-4 w-4 text-wedo-cyan" />
           <span className="text-sm font-medium text-lia-text-disabled font-[Inter]">
             Raciocínio da LIA
           </span>

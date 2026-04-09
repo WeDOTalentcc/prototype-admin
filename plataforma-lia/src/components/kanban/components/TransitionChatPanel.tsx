@@ -15,7 +15,7 @@ import {
   Clock,
   RotateCcw,
   ShieldAlert,
-  Sparkles,
+  Brain as BrainIcon,
   XCircle,
   Send,
   User,
@@ -145,7 +145,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-status-warning/10 border border-status-warning/30 rounded-md text-micro text-status-warning hover:bg-status-warning/15 transition-colors motion-reduce:transition-none"
             
           >
-            <Sparkles className="w-2.5 h-2.5" />
+            <BrainIcon className="w-2.5 h-2.5 text-wedo-cyan" />
             {s.key}: {s.value}
           </button>
         ))}

@@ -5,7 +5,7 @@ import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studi
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import {
   Bot, Plus, Settings, Play, Pause, Briefcase, Database,
-  Factory, HeartPulse, ShoppingCart, Code, Truck, Sparkles,
+  Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
   ChevronRight
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -168,7 +168,7 @@ export default function AgentStudioPage({
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-3">
             {templates.map(t => {
-              const Icon = SECTOR_ICONS[t.icon] || Sparkles
+              const Icon = SECTOR_ICONS[t.icon] || Brain
               return (
                 <Card
                   key={t.id}
@@ -188,7 +188,7 @@ export default function AgentStudioPage({
               onClick={() => { setSelectedTemplate(null); setShowCreateModal(true) }}
             >
               <CardContent className="flex flex-col items-center py-6 px-4 text-center">
-                <Sparkles className="w-8 h-8 text-gray-400 mb-2" />
+                <Brain className="w-8 h-8 text-wedo-cyan mb-2" />
                 <p className={`${textStyles.subtitle} mb-1`}>Personalizado</p>
                 <p className={textStyles.caption}>Criar do zero</p>
               </CardContent>
@@ -420,7 +420,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: CreateAgentMo
             <label className={textStyles.label}>Vincular a</label>
             <div className="flex gap-2 mt-1">
               {[
-                { id: "none", label: "Nenhum", icon: Sparkles },
+                { id: "none", label: "Nenhum", icon: Brain },
                 { id: "job", label: "Vaga", icon: Briefcase },
                 { id: "pool", label: "Banco de Talentos", icon: Database },
               ].map(opt => (

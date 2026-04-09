@@ -258,7 +258,7 @@ class PermissionManager {
       gerar_relatorio: { label: 'Gerar Relatório', icon: 'file-text' },
       solicitar_referencias: { label: 'Solicitar Referências', icon: 'users' },
       sugestao_oferta: { label: 'Sugestão de Oferta', icon: 'dollar-sign' },
-      feedback_construtivo: { label: 'Feedback Construtivo', icon: 'sparkles' },
+      feedback_construtivo: { label: 'Feedback Construtivo', icon: 'brain' },
       transferir_candidato: { label: 'Transferir Candidato', icon: 'arrow-right' },
       criar_alerta: { label: 'Criar Alerta', icon: 'bell' },
       arquivar_perfil: { label: 'Arquivar Perfil', icon: 'archive' },

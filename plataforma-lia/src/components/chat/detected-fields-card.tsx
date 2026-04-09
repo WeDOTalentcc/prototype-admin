@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle2, Sparkles, Edit2 } from "lucide-react"
+import { CheckCircle2, Brain, Edit2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DetectedField {
@@ -35,7 +35,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
       className
     )}>
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-wedo-cyan" />
+        <Brain className="w-4 h-4 text-wedo-cyan" />
         <span className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">
           {title}
         </span>
