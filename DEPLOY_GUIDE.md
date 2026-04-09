@@ -25,25 +25,19 @@
 9. [Checklist Pré-Go-Live](#9-checklist-pré-go-live)
 10. [Troubleshooting](#10-troubleshooting)
 23. [Infraestrutura — Obrigatório vs Opcional para Deploy](#23-infraestrutura--obrigatório-vs-opcional-para-deploy)
-24. [AUDITORIA PROFUNDA — Production Readiness (9 Dimensões)](#24-auditoria-profunda--production-readiness-9-dimensões)
-    - 24.1 [LLM Factory / Vendor Lock-in](#241-llm-factory--vendor-lock-in)
-    - 24.2 [Arquitetura de IA — Domínios e Padrões](#242-arquitetura-de-ia--domínios-e-padrões)
-    - 24.3 [Fairness / Bias / Governança IA](#243-fairness--bias--governança-ia)
-    - 24.4 [Multi-tenancy / Segurança](#244-multi-tenancy--segurança)
-    - 24.5 [Production Readiness — Erros e Estado Atual](#245-production-readiness--erros-e-estado-atual)
-    - 24.6 [Arquitetura / Overengineering](#246-arquitetura--overengineering)
-    - 24.7 [Design / Frontend — Consistências](#247-design--frontend--consistências)
-    - 24.8 [Infraestrutura / Deploy](#248-infraestrutura--deploy)
-    - 24.9 [Repos Legados (GitHub)](#249-repos-legados-github--wedotalent-org)
-    - 24.10 [Roadmap de Correções Prioritizado](#2410-roadmap-de-correções-prioritizado)
-    - 24.11 [Cobertura de Testes](#2411-cobertura-de-testes)
-    - 24.12 [Observabilidade / Alertas](#2412-observabilidade--alertas)
-    - 24.13 [CI/CD Pipeline](#2413-cicd-pipeline)
-    - 24.14 [Performance / Carga](#2414-performance--carga)
-    - 24.15 [Backup / Disaster Recovery](#2415-backup--disaster-recovery)
-    - 24.16 [Repos Legados — Análise Profunda de Código](#2416-repos-legados--análise-profunda-de-código)
-    - 24.17 [Riscos Sistêmicos Transversais](#2417-riscos-sistêmicos-transversais)
-    - 24.18 [Roadmap Atualizado (Completo)](#2418-roadmap-atualizado-completo)
+24. [AUDITORIA PROFUNDA COMPARATIVA — Production Readiness](#24-auditoria-profunda-comparativa--production-readiness)
+    - 24.1 [Inventário Comparativo](#241-inventário-comparativo)
+    - 24.2 [Frontend — Comparativo](#242-frontend--comparativo)
+    - 24.3 [Backend/API — Comparativo](#243-backendapi--comparativo)
+    - 24.4 [Camada de IA — Comparativo](#244-camada-de-ia--comparativo)
+    - 24.5 [Segurança & Compliance — Comparativo](#245-segurança--compliance--comparativo)
+    - 24.6 [Infraestrutura & Deploy — Comparativo](#246-infraestrutura--deploy--comparativo)
+    - 24.7 [Testes & Qualidade — Comparativo](#247-testes--qualidade--comparativo)
+    - 24.8 [Observabilidade — Comparativo](#248-observabilidade--comparativo)
+    - 24.9 [Análise Detalhada — Repos wedocc2026](#249-análise-detalhada--repos-wedocc2026)
+    - 24.10 [Riscos Sistêmicos — Por Produto](#2410-riscos-sistêmicos--por-produto)
+    - 24.11 [Scorecard Comparativo](#2411-scorecard-comparativo)
+    - 24.12 [Roadmap Consolidado](#2412-roadmap-consolidado)
 
 ---
 
@@ -3158,946 +3152,411 @@ NÃO NECESSÁRIO:
 
 ---
 
-## 24. AUDITORIA PROFUNDA — PRODUCTION READINESS (9 Dimensões)
 
-> **Data:** Abril 2026
-> **Escopo:** Análise técnica do codebase Replit (plataforma-lia + lia-agent-system) + 7 repos GitHub (WeDOTalent org)
-> **Objetivo:** Mapear riscos, gaps e recomendações antes do go-live
+## 24. AUDITORIA PROFUNDA COMPARATIVA — PRODUCTION READINESS
 
-### Sumário Executivo
-
-| # | Dimensão | Severidade | Findings | Status |
-|---|----------|-----------|----------|--------|
-| 24.1 | LLM Factory / Vendor Lock-in | ALTO | Factory existe mas bypass direto em ~34 arquivos | Parcial |
-| 24.2 | Arquitetura de IA | CRITICO | 62 domínios, ~15 ativos, padrão inconsistente | Parcial |
-| 24.3 | Fairness / Governança IA | ALTO | FairnessGuard 3 camadas implementado, gaps em enforcement | Bom |
-| 24.4 | Multi-tenancy / Segurança | CRITICO | RLS + JWT + WorkOS implementados, gaps em dev fallbacks | Bom |
-| 24.5 | Production Readiness | ALTO | Health checks robustos, endpoints com bugs conhecidos | Parcial |
-| 24.6 | Arquitetura / Overengineering | MEDIO | Duplicação massiva em 3 camadas de serviços | Ruim |
-| 24.7 | Design / Frontend | MEDIO | DS v4.2.1 adotado em ~70% das páginas | Bom |
-| 24.8 | Infraestrutura / Deploy | MEDIO | Docker + Terraform existem, env vars documentadas | Bom |
-| 24.9 | Repos Legados (GitHub) | BAIXO | 7 repos, 3 com valor, 4 obsoletos | N/A |
+> **Data:** Abril 2026 (v3 — reescrita comparativa)
+> **Escopo:** Análise técnica comparativa de dois produtos independentes:
+> - **Produto Replit** = `plataforma-lia` (frontend) + `lia-agent-system` (backend) — produto principal ativo
+> - **Produto wedocc2026** = `ats_api` + `ats_front` + `recruiter_agent_v5` + `wedotalent-admin` + `data_collector` + `ats_mcp` + `wedo-nuxt` — repos GitHub (WeDOTalent org)
+>
+> **Objetivo:** Mapear riscos, gaps e recomendações para cada produto separadamente, com análise comparativa por dimensão.
+>
+> **NOTA IMPORTANTE:** A versão anterior (v2) desta seção misturava dados dos dois produtos sem separação clara e continha erros factuais significativos (`ats_front` listado como "Morto", `wedotalent-admin` como "Desconhecido", contagem de bypasses inflada). Esta versão corrige tudo com dados auditados diretamente no código via GitHub API e análise do filesystem Replit.
 
 ---
 
-### 24.1 LLM Factory / Vendor Lock-in
+### 24.1 Inventário Comparativo
 
-#### Estado Atual
+#### Produto Replit (Ativo — Plataforma LIA)
 
-A plataforma possui uma abstração bem projetada em `app/shared/providers/`:
+| Componente | Stack | Arquivos | Métricas-Chave |
+|-----------|-------|----------|---------------|
+| **plataforma-lia** (frontend) | Next.js 15, React 19, Tailwind, Shadcn/Radix, Zustand, SWR | 2.090 em `src/` | 32 páginas, 1.201 componentes, 152 hooks, 35 services, 20 stores |
+| **lia-agent-system** (backend) | Python 3.11+, FastAPI 0.115.5, SQLAlchemy 2.0.36, LangGraph 0.2.53, Celery 5.4.0 | 1.820 `.py` em `app/` + 169 em `libs/` | 362 endpoints, 57 domínios, 217 models, 59 migrations, 388 test files |
 
-| Componente | Arquivo | Status |
-|-----------|---------|--------|
-| Interface LLM | `llm_provider.py` (`LLMProviderABC`) | Implementado |
-| Provider Gemini | `llm_gemini.py` (`GeminiLLMProvider`) | Implementado |
-| Provider OpenAI | `llm_openai.py` (`OpenAILLMProvider`) | Implementado |
-| Provider Claude | `llm_claude.py` (`ClaudeLLMProvider`) | Implementado |
-| Factory LLM | `llm_factory.py` (`ProviderContainer`) | Implementado |
-| Interface Embedding | `embedding_provider.py` (`EmbeddingProviderABC`) | Implementado |
-| Embedding Gemini | `embedding_gemini.py` | Implementado |
-| Embedding OpenAI | `embedding_openai.py` | Implementado |
-| Factory Embedding | `embedding_factory.py` | Implementado |
-| Tenant Context | `tenant_llm_context.py` | Implementado |
-| Cost Cascade | `llm_cascade.py` (`LLMCascadeRouter`) | Implementado |
+**Total Replit:** ~4.079 arquivos de código (excl. node_modules, __pycache__)
 
-**Cascade de Custo (llm_cascade.py):**
-1. Tier 1: `preferred_model` (se fornecido)
-2. Tier 2: Gemini Flash (rápido/barato) — threshold 0.80 confidence
-3. Tier 3: Claude Sonnet (médio) — threshold 0.70 confidence
-4. Tier 4: Claude Opus (poderoso/caro) — fallback final
+#### Produto wedocc2026 (GitHub — WeDOTalent org)
 
-**Tenant Provider Registry:** `TenantProviderRegistry` mapeia `tenant_id` → `ProviderContainer`, permitindo API keys e modelos por tenant.
+| Repo | Stack | Arquivos | Branches | Último Push | Status |
+|------|-------|----------|----------|------------|--------|
+| **ats_api** | Ruby on Rails 7.1, PostgreSQL, Apartment, Elasticsearch, Sneakers (RabbitMQ) | 171 (main) | 44 | 2026-04-09 | Ativo (bridge para LIA) |
+| **ats_front** | Nuxt 3, Vue 3, Vuetify, Pinia, TipTap, ActionCable | 904 (branch `develop`) | 39 | 2026-04-09 | **Ativo** (branch `main` vazio — todo código em `develop`) |
+| **recruiter_agent_v5** | Python, LangGraph, Celery, RabbitMQ, 100% Gemini | 912 | 8 | 2026-04-08 | Referência / Parcialmente migrado para LIA |
+| **wedotalent-admin** | Next.js, React, TypeScript, Shadcn/Radix, Tailwind | 438 | 1 | 2026-04-03 | Painel admin/compliance |
+| **data_collector** | Python, FastAPI, Alembic, Docker | 146 (100 `.py`) | 2 | 2026-02-19 | Funcional (coleta de vagas) |
+| **ats_mcp** | TypeScript, MCP SDK, Zod | ~30 | 1 | 2026-03-07 | Funcional (dev tooling) |
+| **wedo-nuxt** | Nuxt 3, Vue 3, Vuetify, Histoire | 77 | 1 | 2026-02-19 | Protótipo de design |
+| **reembolsointeligente** | — | 0 | 0 | 2026-02-11 | Morto (vazio) |
 
-#### Problemas Encontrados
+**Total wedocc2026:** ~2.678 arquivos de código (nos branches ativos)
 
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Bypass direto do Gemini | ALTO | ~34 arquivos referenciam `gemini` diretamente; alguns importam `google.generativeai` ou chamam `provider="gemini"` hardcoded, bypassando a factory |
-| 2 | Voice hardcoded | ALTO | `gemini_voice_service.py` e `gemini_live_audio_service.py` usam `google.genai` direto, sem abstração via factory |
-| 3 | Semantic search hardcoded | ALTO | `semantic_search_service.py` importa `google.generativeai` diretamente |
-| 4 | Serviços de domínio bypassam factory | ALTO | `wsi_question_adjuster.py`, `job_qualification_service.py`, `llm_job_classification_service.py` chamam Gemini direto |
-| 5 | Feature parity entre providers | MEDIO | `generate_with_tools` tem implementações divergentes entre Gemini/Claude/OpenAI (tipos e formatos de retorno diferentes) |
-| 6 | UI de configuração de tenant | MEDIO | `tenant_llm_context.py` espera tabela `tenant_llm_configs` no DB, mas não há interface para gerenciar |
-
-#### Recomendação
-
-1. **[P2/G]** Migrar os ~34 arquivos com bypass direto para usar `LLMService` ou `llm_factory` — eliminar `import google.generativeai` diretos
-2. **[P1/M]** Criar `VoiceProviderABC` e abstrair voice services (seguindo o padrão do embedding)
-3. **[P2/M]** Normalizar output de `generate_with_tools` entre providers
-4. **[P3/P]** Criar tela de configuração de LLM por tenant no admin
+**CORREÇÃO v3:** A versão anterior listava `ats_front` como "Morto — 1 arquivo". **Isso era incorreto.** O branch `main` tem apenas o `.gitignore`, mas o branch `develop` (39 branches ativos, último push 2026-04-09) contém um frontend Nuxt completo com 904 arquivos, 537 componentes Vue, 34 páginas e 18 stores. O `wedotalent-admin` também era listado como "Desconhecido" — é um painel admin Next.js com 63 páginas e 103 componentes focado em compliance (LGPD, SOC-2, SOX, ISO-27001). Contagem de "~34 bypasses Gemini" era inflada — são ~5 arquivos app com bypass direto (o resto são testes, scripts e bootstrap).
 
 ---
 
-### 24.2 Arquitetura de IA — Domínios e Padrões
+### 24.2 Frontend — Comparativo
 
-#### Estado Atual
+| Dimensão | Replit: `plataforma-lia` | wedocc2026: `ats_front` (develop) + `wedotalent-admin` |
+|----------|--------------------------|-------------------------------------------------------|
+| **Framework** | Next.js 15 + React 19 | Nuxt 3 + Vue 3 + Vuetify (ats_front); Next.js + React (admin) |
+| **Linguagem** | TypeScript (strict: true) | TypeScript (107 `.ts`) + Vue SFC (537 `.vue`) |
+| **Design System** | DS LIA v4.2.1 — Shadcn/Radix + tokens CSS (`--lia-*`, `--wedo-*`) | Vuetify + `liaTheme` + `liaDefaults` customizados |
+| **Tipografia** | Open Sans 85% + Inter 10% + JetBrains Mono 5% | Material Design Icons (`@mdi/font`) |
+| **State Management** | Zustand (20 stores) + SWR + React Context | Pinia (18 stores) + composables (59) |
+| **Páginas** | 32 (`page.tsx` no App Router) | 34 Vue pages + 63 admin pages = **97 total** |
+| **Componentes** | 1.201 (incl. page-specific) | 147 (ats_front) + 103 (admin) = **250 total** |
+| **Features/Modules** | Hooks (152) + services (35) | Features (357) + composables (59) |
+| **Auth** | WorkOS SSO + Custom JWT (middleware.ts) | JWT + ActionCable WebSocket |
+| **Rich Text** | — | TipTap (13 extensions) — editor WYSIWYG completo |
+| **Charts** | Chart.js + Recharts | — |
+| **Comunicação API** | Backend Proxy (`/api/backend-proxy` → FastAPI :8001) | Axios direto para Rails (:8080) + WebSocket (ActionCable) + Python AI (:8001) |
+| **Testes** | Vitest + Playwright (~1.026 test files), Storybook + Chromatic | Playwright + axe-core (accessibility) + Histoire (component playground) |
+| **Sentry** | Integrado (client/server/edge) | Não evidenciado |
 
-**62 domínios** em `app/domains/`, categorizados em:
-
-| Categoria | Domínios | Exemplos |
-|-----------|---------|---------|
-| AI-Enhanced (com agents/tools/prompts) | ~15 | `cv_screening`, `job_management`, `recruiter_assistant`, `sourcing`, `analytics`, `communication` |
-| Infraestrutura/Base | ~10 | `admin`, `auth`, `billing`, `health_check`, `observability`, `saas_metrics` |
-| CRUD/Repositório | ~25 | `company`, `interview`, `candidate`, `opinions`, `credits` |
-| Empty/Stub | ~10 | `recruitment_campaign`, `talent_pool`, `journey_mapping`, `digital_twin` e outros |
-
-**Padrões de IA:**
-
-| Padrão | Onde | Exemplo |
-|--------|-----|---------|
-| LangGraph/StateGraph | Workflows complexos | `wsi_interview_graph.py`, `job_wizard_graph.py`, `interview_graph.py` |
-| ReAct Agents | Domínios com tools | `analytics_react_agent.py`, `sourcing_react_agent.py` |
-| Direct LLM Calls | Domínios simples | `Orchestrator._handle_directly`, `sourcing/prompts.py` |
-
-**Orchestrator:** Multi-tier routing (Tier 5 CascadedRouter → Tier 6 Autonomous → PlanDetector/Executor → Fallback direto).
-
-**Tool Registry:** ~35-45 tools registrados em categorias: `job_wizard`, `candidate`, `communication`, `job`, `export`, `query`, `pipeline`, `cv_match`.
-
-**Prompt Quality (por domínio amostrado):**
-
-| Domínio | Técnicas Usadas | Qualidade |
-|---------|----------------|----------|
-| `cv_screening` | YAML estruturado, Persona, Behavioral Rules, intent_examples | Alta |
-| `job_wizard` | Few-shot, Chain-of-Thought, Structured Output (JSON Schema) | Alta |
-| `sourcing` | Template strings com preenchimento | Média |
-| Domínios stub | Strings literais ou ausentes | Baixa |
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | ~10 domínios vazios/stub | ALTO | `recruitment_campaign`, `talent_pool`, `journey_mapping`, `digital_twin` etc. — existem na estrutura mas sem lógica real |
-| 2 | Domínios stub com estrutura completa | MEDIO | Domínios stub mantêm diretórios (repos/services/schemas/) com `__init__.py` vazio — ruído na navegação |
-| 3 | Padrão inconsistente entre domínios | MEDIO | Alguns seguem DDD completo (repo/service/schema/route), outros são ad-hoc |
-| 4 | Transição incompleta para LangGraph | MEDIO | Apenas 3 domínios usam StateGraph; maioria ainda é ReAct ou direto |
-| 5 | Prompts sem técnicas em domínios ativos | MEDIO | Serviços como `sourcing/prompts.py` usam strings sem few-shot ou CoT |
-
-#### Recomendação
-
-1. **[P1/P]** Deletar ou mover para `_deprecated/` os ~10 domínios stub (reduzir ruído)
-2. **[P3/P]** Verificar quais domínios stub têm referências ativas no Orchestrator e limpar
-3. **[P3/G]** Padronizar prompts: migrar strings soltas para PromptTemplate YAML com few-shot/CoT
-4. **[P4/GG]** Migrar domínios críticos restantes para LangGraph (avaliação case-a-case)
+**Observações:**
+- `ats_front` tem mais páginas (34+63=97) que `plataforma-lia` (32), mas `plataforma-lia` tem 4.8x mais componentes (1.201 vs 250)
+- `ats_front` conecta tanto ao Rails (porta 8080 via ActionCable) quanto ao Python AI (porta 8001) — arquitetura tri-camada
+- `wedotalent-admin` tem 63 páginas focadas em compliance/governance (LGPD, SOC-2, SOX, ISO-27001, bias audit, trust center, SoD)
+- `plataforma-lia` é mais maduro em observabilidade (Sentry, Storybook) e design system (tokens, variáveis CSS)
 
 ---
 
-### 24.3 Fairness / Bias / Governança IA
+### 24.3 Backend/API — Comparativo
 
-#### Estado Atual
+| Dimensão | Replit: `lia-agent-system` | wedocc2026: `ats_api` + `recruiter_agent_v5` |
+|----------|--------------------------|----------------------------------------------|
+| **Framework** | FastAPI 0.115.5 (Python 3.11+) | Rails 7.1 (Ruby) + FastAPI/Flask (Python) |
+| **Endpoints** | 362 (REST + WebSocket) | ~30 Rails routes + deploy docs mencionam endpoints |
+| **Domínios** | 57 diretórios de domínio em DDD | 8 domínios no v5 (applies, autonomous, evaluation, insights, jobs, messaging, scheduling, sourcing) |
+| **Models** | 217 SQLAlchemy (109 libs + 108 app) | 18 Rails models (Account, User, Job, Candidate, Apply, etc.) |
+| **Migrations** | 59 Alembic | 20 Rails migrations |
+| **Multi-tenant** | PostgreSQL RLS (`app.company_id`) + JWT + WorkOS SSO/SCIM | Apartment gem (schema-based) — elevator **comentado** |
+| **Auth** | JWT HS256 (30min access, 7d refresh) + WorkOS SSO + Cross-Tenant Guard + Prompt Injection Guard | JWT HS256 (24h token) — `authorize_request` duplicado |
+| **Search** | pgvector (768-dim HNSW/IVFFlat) | Elasticsearch via Searchkick |
+| **Queue/Workers** | Celery 5.4 (36 tasks, 4 queues prioritárias, 15 scheduled) | Sneakers (RabbitMQ) no Rails + Celery no v5 |
+| **Docker** | 3 Dockerfiles (dev, prod, worker) + 2 docker-compose | Dockerfile (Rails multi-stage) + docker-compose workers (v5) |
+| **CI/CD** | GitHub Actions (ruff, bandit, pytest, DeepEval) | Brakeman + RuboCop (Rails); **Nenhum CI** no v5 |
+| **Health Probes** | Kubernetes-ready (`/health/ready`, `/health/live`) + domain-specific | Não evidenciado |
+| **Connection Pool** | asyncpg: pool 20, overflow 10, pre_ping, recycle 3600s | db_pool: 10 dev / 30 prod — sem pooling externo |
+| **CORS** | Configurável via env vars (default localhost) | `http://localhost:3000` hardcoded |
+| **Rate Limiting** | Redis sliding window (600/min user, 3K/min company) | Não evidenciado |
+| **SSL** | Strip de `sslmode=` — precisa config manual | `sslmode: require` em production (OK) |
 
-A plataforma implementa uma arquitetura de governança IA de **3 pilares** (LGPD, SOX, EU AI Act) com os seguintes componentes:
-
-**FairnessGuard (3 Camadas) — `app/shared/compliance/fairness_guard.py`:**
-
-| Camada | Implementação | Status |
-|--------|--------------|--------|
-| Layer 1: Explicit Bias | Regex engine detectando 16+ categorias (gênero, raça, idade, religião, orientação sexual, deficiência, etc.) | Implementado |
-| Layer 2: Implicit Bias | Detecção de termos proxy (ex: "universidades de primeira linha" = viés socioeconômico) | Implementado |
-| Layer 3: Semantic Bias | `check_fairness_async` usando LLM para detectar viés sutil que regex não captura | Implementado |
-
-**Mensagens Educativas:** Quando violação é detectada, retorna explicação legal específica (ex: Art. 5, CLT).
-
-**Middleware:** `fairness_guard_middleware.py` aplica decorators em endpoints de alto impacto (geração de JD, motivos de rejeição).
-
-**WSI (Weighted Screening Index):**
-- Geração de questões usando CBI, Dreyfus (Skill Levels), Bloom's Taxonomy
-- `AuditService` lista `PROTECTED_CRITERIA` (idade, gênero, etnia, foto) forçosamente ignorados no scoring
-- Cálculo: `Σ(peso_i × score_i)` via `score_calculator.py`
-
-**Audit Service (`audit_service.py`):**
-- Loga toda decisão IA com reasoning completo, critérios usados e ignorados
-- Método `get_candidate_decisions` para "Right to Explanation"
-- Rastreamento de `human_review_required` e `human_override`
-- Retenção: 2-5 anos (730-1825 dias)
-
-**LGPD/GDPR:**
-- Domínios dedicados: `lgpd`, `consent`, `data_subject`
-- Data Subject Requests implementados no frontend
-- Migration `060` com criptografia para campos PII (email, CPF) e TTL indexes
-
-**Culture Analyzer:** Mapeia competências culturais para Big Five (OCEAN) em vez de "culture fit" vago.
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Enforcement seletivo | ALTO | FairnessGuard middleware aplica-se apenas em endpoints de JD e rejeição; outros endpoints de decisão (triagem, ranking) podem não estar cobertos |
-| 2 | Layer 3 depende de LLM | MEDIO | Checagem semântica de bias é async e depende de disponibilidade do LLM — pode falhar silenciosamente |
-| 3 | Audit storage | MEDIO | Logs de auditoria armazenados no mesmo banco — escala pode ser problema com volume alto |
-| 4 | 13 Crenças WeDO | BAIXO | Documentadas no Guide v3.3 mas não codificadas como regras no código — são referência filosófica, não enforcement |
-
-#### Recomendação
-
-1. **[P1/M]** Expandir FairnessGuard middleware para cobrir endpoints de triagem/ranking/sourcing
-2. **[P2/P]** Adicionar fallback para Layer 3 quando LLM estiver indisponível (ex: flag warnings em vez de fail-open)
-3. **[P3/M]** Mover audit logs para storage separado (S3/BigQuery) para escala
-4. **[P4/P]** Codificar Crenças WeDO como checklist de validação no pipeline de IA
+**Observações:**
+- `lia-agent-system` é 10x maior que `ats_api` em models (217 vs 18) e endpoints (362 vs ~30)
+- Multi-tenant no Replit é mais robusto (RLS + JWT guard + WorkOS), mas o Apartment do Rails é mais maduro em isolamento de schema
+- `recruiter_agent_v5` tem 912 arquivos de código Python mas **sem CI/CD** e **100% Gemini** (vendor lock-in crítico)
+- A Rails bridge (`ats_api`) está ativa — o Replit backend conecta a ele via `rails_adapter.py`
 
 ---
 
-### 24.4 Multi-tenancy / Segurança
+### 24.4 Camada de IA — Comparativo
 
-#### Estado Atual
+| Dimensão | Replit: `lia-agent-system` | wedocc2026: `recruiter_agent_v5` |
+|----------|--------------------------|----------------------------------|
+| **LLM Providers** | 3 providers (Gemini, Claude, OpenAI) com fallback automático + Cost Cascade | 100% Gemini — **sem abstração, sem fallback** |
+| **LLM Factory** | `LLMProviderFactory` + `ProviderContainer` + tenant config | Direto via `google-generativeai` e `langchain-google-genai` |
+| **Embedding** | Factory com 2 providers (Gemini + OpenAI), 768-dim | Gemini embeddings direto |
+| **LLM Safety Net** | `llm_bootstrap.py` monkey-patches imports diretos | Não existe |
+| **Agents** | 7 core ReAct + especializados (Diversity, GitHub, StackOverflow, Nurture) | 7 agents (intent, planner, validator, executor, processor, formatter, autonomous) |
+| **LangGraph** | 3 flows ativos (WSI Interview, Job Wizard, Interview Scheduling) | Presente mas com stack mista (LangChain + Flask + Streamlit) |
+| **Tool Registry** | 60+ tools em 12 categorias com metadata YAML | 21 tool files |
+| **Orchestrator** | Multi-tier: Fast Router → Orchestrator (LLM-based intent) → Agent delegation | Pipeline linear: Intent → Plan → Validate → Execute → Process → Format |
+| **Fairness** | FairnessGuard 3 camadas (regex, implicit, semantic LLM) + 16 categorias | Testes de fairness existem (70+ test files) mas sem guard middleware |
+| **PII** | 4 camadas (regex logs, LLM strip, Sentry scrub, Presidio NER) | Não evidenciado como camada |
+| **HITL** | 3 flows protegidos via LangGraph interrupts + Redis + DB | Não evidenciado |
+| **Voice** | Pipeline: Twilio → Gemini STT → LLM → OpenAI TTS → Twilio + Deepgram fallback | `interview_ai/` com Dockerfile — escopo menor |
+| **Tenant LLM Config** | Per-tenant provider/fallback + budget tracking em Redis | Não existe (single-tenant) |
+| **Circuit Breakers** | 18 serviços com SLOs calibrados e degraded mode | Não evidenciado |
+| **Policy Engine** | Regras por setor (ALPHA1_SECTOR_RULES) com ALLOW/DENY/REQUIRE_APPROVAL | Não evidenciado |
 
-**Isolamento de Tenant:**
-
-| Mecanismo | Implementação | Status |
-|-----------|--------------|--------|
-| PostgreSQL RLS | `set_config('app.company_id', :cid, true)` via `set_tenant_context` | Implementado |
-| JWT com company_id | Claims: `sub`, `role`, `company_id` no payload | Implementado |
-| Middleware de Auth | `AuthEnforcementMiddleware` valida JWT e injeta `company_id` em `request.state` + `ContextVar` | Implementado |
-| TenantGuard | `get_verified_company_id` valida X-Company-ID vs JWT claim | Implementado |
-| WorkOS SSO | Domain checking, user syncing, org → company_id mapping | Implementado |
-| WorkOS SCIM | Directory Sync completo (user CRUD, group membership, auto-provisioning) | Implementado |
-
-**Auth JWT:**
-- Algoritmo: HS256
-- Access token: 30 min TTL
-- Refresh token: 7 dias TTL
-- Cookies: `lia_access_token`, `workos_session`
-
-**Rate Limiting:**
-- Redis-backed sliding window (`app/middleware/rate_limiter.py`)
-- 600 req/min por usuário, 3000 req/min por company
-- Fallback: in-memory dict se Redis indisponível
-
-**CORS:**
-- `CORSMiddleware` com `settings.CORS_ORIGINS`
-- Defaults dev: `localhost:5000`, `localhost:3000`
-- `allow_credentials=True`, todos os métodos/headers
-
-**Frontend Auth (`middleware.ts`):**
-- Gatekeeper: verifica cookies `lia_access_token` ou `workos_session`
-- Auto-inject: `Authorization: Bearer <token>` em requests proxy
-- Public paths excluídos corretamente
-
-**Endpoints sem filtro de company_id (esperado):**
-- Auth: `login`, `register`, `forgot-password`, `reset-password`, `verify-email`
-- Health: `/health`, `/api/v1/health`, `/api/v1/health/langgraph`
-- Public: Páginas de vagas públicas
-- Webhooks: WhatsApp, Twilio, Mailgun (usam signature verification)
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Dev fallbacks com credenciais | MEDIO | `DEV_AUTO_LOGIN` existe no middleware.ts (provavelmente desabilitado via `NODE_ENV` guard em produção); `INTERNAL_API_SECRET` com default vazio — verificar se guards são efetivos |
-| 2 | Scripts com mock credentials | ALTO | Scripts em `/scripts` com credenciais hardcoded para Jira/Notion (mesmo que de teste) |
-| 3 | CORS wildcards em dev | MEDIO | `allow_methods=["*"]`, `allow_headers=["*"]` — precisa ser restrito em produção |
-| 4 | SSL strip no asyncpg | MEDIO | `database.py` strip `sslmode=` do DATABASE_URL — precisa configuração manual de SSL context para produção |
-| 5 | Rate limiter fallback | BAIXO | Se Redis cai, fallback é in-memory — sem proteção real em múltiplas instâncias |
-
-#### Recomendação
-
-1. **[P1/P]** Garantir que `DEV_AUTO_LOGIN` e demo fallbacks são desabilitados quando `APP_ENV=production`
-2. **[P1/P]** Limpar credenciais de scripts utilitários; usar env vars
-3. **[P2/P]** Configurar CORS restritivo para produção (ex: apenas `https://wedotalent.cc`)
-4. **[P2/M]** Implementar SSL context explícito para asyncpg em produção
-5. **[P3/P]** Documentar que rate limiter requer Redis para funcionar em multi-instance
+**Observações:**
+- O Replit é significativamente mais maduro em governança IA (FairnessGuard, PII, HITL, Policy Engine)
+- O v5 tem vendor lock-in **crítico** em Gemini — qualquer mudança de preço/API requer rewrite
+- O v5 tem valor como referência de capabilities (60+ queries documentadas) e patterns de testes (fairness, hallucination)
+- `llm_bootstrap.py` do Replit é um safety net único — não existe equivalente no v5
 
 ---
 
-### 24.5 Production Readiness — Erros e Estado Atual
+### 24.5 Segurança & Compliance — Comparativo
 
-#### Estado Atual
-
-**Health Checks (`system_health.py`):**
-
-| Categoria | Checks | Status |
-|-----------|--------|--------|
-| Critical | PostgreSQL connectivity, Redis ping | Implementado |
-| Infra | Celery workers (queue length), Broker, Rate Limiter | Implementado |
-| AI/Services | LLM providers (Anthropic, Gemini, OpenAI), Voice (Deepgram, OpenMic), Circuit Breakers (14 circuits) | Implementado |
-| Integrations | WhatsApp, Microsoft/Google Calendar, LinkedIn, Indeed, Slack | Implementado |
-| Probes | `/health/ready` (DB + Redis), `/health/live` (process check) | Implementado |
-
-**Error Handling:**
-- Padronizado via `@handle_agent_errors` decorator com `AgentErrorCode` (LLM_ERROR, DATABASE_ERROR, etc.)
-- `StructuredLoggingMiddleware` + PII masking global (`PIIMaskingFilter`)
-- Sentry integration (`init_sentry`)
-- LangSmith para LLM tracing
-- Pydantic validation errors retornam 422 com código `VALIDATION_ERROR`
-
-**Database Migrations:**
-- 59-60 migrations Alembic
-- Últimas: `060_encrypt_pii_fields_and_ttl_indexes.py` (PII encryption + TTL)
-
-**WebSocket:**
-- `WSManager` singleton com session storage e user mapping
-- Frontend com lógica de reconnection (testada em `use-agent-streaming-reconnect.test.ts`)
-- Async bridge: Celery → RabbitMQ response queue → WS push
-
-**Celery Tasks:**
-
-| Task | Queue | Função |
-|------|-------|--------|
-| `agents.sourcing.search` | sourcing_high | Busca async de candidatos (30-120s) |
-| `agents.triagem.run` | evaluation_normal | Triagem em batch de CVs |
-| `lgpd.run_cleanup_daily` | onboarding_low | Deleção de dados expirados (90-365 dias) |
-| `drift.run_batch` | evaluation_normal | Detecção de drift em modelos |
-| `audit.apply_lifecycle_policy` | onboarding_low | Rotação mensal de logs S3 |
-
-**Redis:**
-
-| Uso | TTL | Obrigatório? |
-|-----|-----|-------------|
-| Celery broker/backend | N/A | Sim |
-| Semantic cache (LLM) | 86400s (24h) | Sim (reduz custos LLM) |
-| Router cache | 3600s (1h) | Sim |
-| Rate limiter | Sliding window | Sim (multi-instance) |
-| Session data (HITL, WSI) | Variável | Sim |
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | `is_synced_to_calendar` None vs bool | ALTO | Campo pode ser `None` mas Pydantic espera `bool` — causa 500 em endpoints de entrevistas |
-| 2 | Talent pools com bugs | ALTO | Funcionalidade existe mas endpoints podem falhar (reportado em sessões anteriores) |
-| 3 | Rails fallback silencioso | MEDIO | Endpoints com padrão "Rails-first, Local-fallback" — se Rails está down, fallback pode mascarar problemas de dados |
-| 4 | Redis = degradação significativa sem ele | MEDIO | Redis necessário para Celery, cache semântico, rate limiting, sessões. Sem Redis: tarefas background falham, custos LLM aumentam, rate limiting perde eficácia multi-instance. `BROKER_BACKEND` suporta alternativas (RabbitMQ, PubSub) |
-| 5 | 60 migrations sem squash | BAIXO | 60 migrations Alembic — deploy inicial em banco novo leva tempo; squash reduziria |
-
-#### Recomendação
-
-1. **[P1/P]** Corrigir `is_synced_to_calendar`: `Optional[bool] = False` no modelo Pydantic
-2. **[P1/M]** Auditar e corrigir talent pools endpoints
-3. **[P2/P]** Garantir que `APP_ENV=production` desabilita Rails fallback (ou que Rails está operacional)
-4. **[P2/P]** Documentar Redis como dependência obrigatória no runbook
-5. **[P3/M]** Squash migrations para deploy clean
+| Dimensão | Replit | wedocc2026 |
+|----------|-------|-----------|
+| **Auth** | JWT HS256 + WorkOS SSO/SCIM + Cross-Tenant Guard | JWT HS256 (Rails) — `authorize_request` duplicado |
+| **Multi-tenant** | RLS + JWT company_id + TenantGuard + middleware | Apartment gem (schema-based) — elevator **comentado** |
+| **CORS** | Configurável via env (default: localhost:5000,3000) | Hardcoded `localhost:3000` (ats_api); não configurado (v5) |
+| **CSP** | Via Next.js headers | **Toda comentada** no Rails |
+| **Rate Limiting** | Redis sliding window (600/min user, 3K/min company) | Não implementado |
+| **PII Masking** | 4 camadas (regex, LLM strip, Sentry scrub, Presidio NER) | Não evidenciado |
+| **Prompt Injection** | `check_input_security` em POST/PUT agent-facing | Não evidenciado |
+| **Sentry PII** | `before_send` hook + `send_default_pii=False` | Não integrado |
+| **LGPD/Compliance** | 3 domínios dedicados (lgpd, consent, data_subject), Migration 060 (PII encryption + TTL) | Não evidenciado no código (admin tem 63 páginas de compliance UI sem backend) |
+| **Hardcoded Secrets** | Nenhum em app/ (scripts utilitários têm mocks) | `guest:guest` RabbitMQ default, `ALLOWED_BRANDS` hardcoded (data_collector) |
+| **RCE Risk** | Nenhum | `rails-exec` tool no ats_mcp — **RCE potencial** |
+| **CI Security Scan** | bandit (Python SAST) | Brakeman (Rails SAST) |
 
 ---
 
-### 24.6 Arquitetura / Overengineering
+### 24.6 Infraestrutura & Deploy — Comparativo
 
-#### Estado Atual
-
-**Tamanho do codebase:**
-- `lia-agent-system`: ~4.717 arquivos
-- `plataforma-lia`: ~130.834 arquivos (incluindo node_modules)
-
-**Duplicação em 3 camadas:**
-
-```
-app/services/           ← Shims (import * from shared/services/)
-app/shared/services/    ← Implementação real
-app/domains/*/services/ ← Implementação por domínio (parcial)
-```
-
-Exemplo: `voice_service.py` existe nas 3 camadas — `app/services/`, `app/shared/services/`, e `app/domains/voice/services/`.
-
-**Rails Integration Layer:**
-
-| Componente | Arquivo | Status |
-|-----------|---------|--------|
-| Rails Adapter | `rails_adapter.py` | Em uso ativo, marcado para remoção |
-| Rails JWT | `rails_jwt.py` | Autenticação cross-system |
-| WeDOTalent Rails | `wedotalent_rails.py` | Bridge para entidades Rails |
-
-Dezenas de arquivos contêm comentários: `"# Will be deleted after ats-api-rails handoff is complete"` e `"# Do NOT migrate to a domain"`.
-
-**ATS Factory:** `ats_factory.py` — factory para clientes ATS externos (Gupy, Pandape, Merge). Funcional mas com abstração excessiva para o número atual de providers.
-
-**Circuit Breaker:** Implementado e **ativo** em produção — usado em LLM providers, ATS clients, e sourcing services. Testado com chaos tests.
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | 3 camadas de serviços duplicados | ALTO | `app/services/` contém ~97 shims puros (import * from shared/) + ~61 arquivos com lógica. Migração faseada necessária — não deletar tudo de uma vez |
-| 2 | 62 domínios com estrutura redundante | MEDIO | Cada domínio tem `__init__.py` vazio em repositories/, services/, schemas/, models/ — centenas de arquivos vazios |
-| 3 | Rails layer em transição | MEDIO | ~30+ arquivos com "will be deleted" mas sem timeline definida |
-| 4 | Over-segmentação de domínios | MEDIO | Domínios como `consent`, `credits`, `opinions` poderiam ser sub-módulos de domínios maiores |
-| 5 | Centenas de `# noqa: F401` | BAIXO | `__init__.py` com imports não utilizados suprimidos — polui namespaces |
-
-#### Recomendação
-
-1. **[P2/G]** Migrar `app/services/` faseadamente — primeiro os 97 shims puros, depois os 61 com lógica (mover para domínios corretos)
-2. **[P2/M]** Limpar `__init__.py` vazios — manter apenas os necessários para package discovery
-3. **[P2/G]** Definir timeline para remoção da Rails layer — ou manter como "legacy adapter" com documentação clara
-4. **[P3/M]** Consolidar micro-domínios em domínios maiores (ex: `consent` + `data_subject` → `compliance`)
+| Dimensão | Replit | wedocc2026 |
+|----------|-------|-----------|
+| **Containers** | 3 Dockerfiles (API, prod multi-stage, worker) + 2 docker-compose | Dockerfile (Rails) + Dockerfile (v5 interview_ai) + docker-compose workers |
+| **Prod Config** | Multi-stage, non-root (`appuser`), healthcheck, `alembic upgrade head` no startup | Rails: multi-stage, non-root, bootsnap — bem configurado |
+| **Terraform/IaC** | `terraform/gcp/` — Cloud Run us-central1 | Deploy docs mencionam GCP Cloud Run + GKE Autopilot (v5) |
+| **Health Probes** | Kubernetes-ready: `/health` + `/health/ready` + `/health/live` | Não evidenciado |
+| **DB Pool** | asyncpg pool 20/10, pre_ping, recycle 3600s | Rails db_pool 10/30 sem pooling externo |
+| **Redis** | Cache semântico (24h), router (1h), rate limit, sessions, Celery broker | Sidekiq (Rails) |
+| **Env Vars** | Centralizadas via pydantic-settings, validação na startup | `os.getenv` + `python-dotenv` (v5), Rails credentials |
+| **Backup** | Não documentado (Cloud SQL managed?) | Não documentado |
+| **SSL** | Strip de `sslmode=` — precisa config manual | `sslmode: require` em prod (Rails OK) |
+| **Deps Pinning** | Pinned (pyproject.toml + package.json) | Rails Gemfile.lock OK; **data_collector sem pinning** |
 
 ---
 
-### 24.7 Design / Frontend — Consistências
+### 24.7 Testes & Qualidade — Comparativo
 
-#### Estado Atual
-
-**Design System LIA v4.2.1 — Tokens definidos em `src/lib/design-tokens.ts` + `src/styles/design-tokens.css`:**
-
-| Token | Valor | Uso |
-|-------|-------|-----|
-| `lia-text-primary` | Gray 900 (#111827) | Títulos, labels |
-| `lia-text-secondary` | Gray 600 (#4B5563) | Texto secundário |
-| `lia-text-muted` | Gray 500 (#6B7280) | Texto terciário |
-| `lia-border-subtle` | #E5E7EB | Bordas, separadores |
-| `lia-bg-primary` | White | Fundo principal |
-| WeDo Cyan | Brand | Elementos de IA/LIA |
-| WeDo Green | Brand | Sucesso |
-| WeDo Orange | Brand | Avisos |
-| WeDo Purple | Brand | Insights |
-
-**Tipografia:**
-- Open Sans (85%) — UI principal
-- Inter (10%) — dados, métricas, tabelas
-- JetBrains Mono (5%) — código, IDs técnicos
-
-**Escopo:**
-- 32 páginas em `src/app/`
-- 136 componentes compartilhados em `src/components/`
-- 169 componentes page-specific
-
-**Adoção:**
-- Páginas modernas (AgentStudio, Chat, Funil) — ~100% tokens
-- Páginas legadas (Login, Register) — hardcoded values
-- Responsividade: Mobile-first com `sm:`, `md:`, `lg:` consistentes
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Login/Register com cores hardcoded | MEDIO | `bg-white`, `border-gray-200`, `text-gray-950`, `text-gray-400` — não usam tokens |
-| 2 | Source Serif 4 residual | BAIXO | Referência em login page branding, marcada como "removida" no DS v4.1 mas ainda presente |
-| 3 | Layout files legados | BAIXO | Alguns layouts mais antigos ainda com classes Tailwind diretas em vez de tokens |
-| 4 | Componentes page-specific demais | BAIXO | 169 page-specific vs 136 shared — ratio poderia ser melhor com mais abstração |
-
-#### Recomendação
-
-1. **[P2/P]** Migrar Login/Register para usar tokens DS v4.2.1
-2. **[P3/P]** Remover referências residuais de Source Serif 4
-3. **[P3/M]** Auditar componentes page-specific e promover reusáveis para `src/components/`
+| Dimensão | Replit | wedocc2026 |
+|----------|-------|-----------|
+| **Backend Tests** | 388 files, pytest + pytest-asyncio, gate 45% | v5: 102 files (fairness, hallucination); Rails: 34 spec files; data_collector: **0 testes** |
+| **Frontend Tests** | 1.026 test files, Vitest + Playwright | ats_front: Playwright + Histoire; admin: não evidenciado |
+| **Coverage Gate** | Backend 45%, Frontend 35% | Não definido |
+| **Domínios com testes** | 11 de 57 (~19%) | v5: cobertura extensiva; Rails: ~5 model specs |
+| **AI/LLM Tests** | DeepEval, Ragas, golden datasets, LLM-as-judge | Fairness e hallucination patterns no v5 (valor como referência) |
+| **Load Tests** | Locust: 6 cenários, 4 perfis, SLAs definidos — **não no CI** | Não evidenciado |
+| **Security Tests** | Red teaming, PII, prompt injection suites | Brakeman (Rails SAST) |
+| **E2E** | Playwright (separado do CI) | Playwright disponível no ats_front |
+| **Storybook** | Ativo + Chromatic | Histoire (Vue component playground) |
 
 ---
 
-### 24.8 Infraestrutura / Deploy
+### 24.8 Observabilidade — Comparativo
 
-#### Estado Atual
-
-**Variáveis de Ambiente (centralizadas em `libs/config/lia_config/config.py` via `pydantic-settings`):**
-
-| Categoria | Variáveis | Obrigatório? |
-|-----------|----------|-------------|
-| Database | `DATABASE_URL`, `DATABASE_POOL_SIZE` (20), `DATABASE_MAX_OVERFLOW` (10) | Sim |
-| Cache/Messaging | `REDIS_URL`, `RABBITMQ_URL`, `BROKER_BACKEND` | Sim |
-| AI/LLM | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS` | Sim (min 1) |
-| LLM Models | `LLM_PRIMARY_MODEL` (claude-sonnet), `LLM_FAST_MODEL`, `LLM_POWERFUL_MODEL` | Defaults ok |
-| Auth | `SECRET_KEY`, `RAILS_JWT_SECRET_KEY`, `WORKOS_CLIENT_ID` | Sim |
-| Voice | `TWILIO_ACCOUNT_SID`, `DEEPGRAM_API_KEY` | Opcional |
-| Integrations | `STRIPE_SECRET_KEY`, `MAILGUN_API_KEY`, `MERGE_API_KEY` | Opcional |
-| Observability | `SENTRY_DSN`, `LANGCHAIN_API_KEY` | Recomendado |
-| App | `APP_ENV`, `DEBUG`, `CORS_ORIGINS` | Sim |
-
-**PostgreSQL:**
-- Driver: asyncpg
-- Pool: 20 connections, 10 overflow, pre_ping, recycle 3600s
-- RLS: `app.company_id` session variable
-- SSL: Precisa configuração manual (strip de `sslmode=` no código)
-
-**Docker:**
-
-| Arquivo | Função |
-|---------|--------|
-| `lia-agent-system/Dockerfile` | API |
-| `lia-agent-system/Dockerfile.prod` | Produção |
-| `lia-agent-system/Dockerfile.worker` | Celery workers |
-| `lia-agent-system/docker-compose.yml` | Dev |
-| `lia-agent-system/docker-compose.prod.yml` | Produção |
-| `plataforma-lia/Dockerfile` | Frontend |
-| `plataforma-lia/netlify.toml` | Deploy Netlify (alternativo) |
-
-**Terraform:** `lia-agent-system/terraform/gcp/` — Cloud Run na região `us-central1`.
-
-**Dependências Python:** `fastapi==0.115.5`, `sqlalchemy==2.0.36`, `langchain==0.3.9`, `celery==5.4.0` — versions pinned, sem conflitos detectados.
-
-**Dependências npm:** `next^15.3.2`, `react^19.0.0`, `tailwindcss^3.4.17` — versões recentes. `dompurify^3.3.3` para XSS protection.
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | SSL asyncpg manual | ALTO | Código strip `sslmode=` — produção GCP requer SSL explícito |
-| 2 | CORS dev-only defaults | MEDIO | `localhost:5000,3000` hardcoded como defaults — precisa override em produção |
-| 3 | Redis obrigatório sem docs | MEDIO | 5 funções dependem de Redis mas runbook não documenta como obrigatório |
-| 4 | langsmith dependency warnings | BAIXO | Conflito reportado em post-merge logs (não bloqueia mas gera warnings) |
-| 5 | npm audit 1 high severity | BAIXO | Vulnerabilidade reportada nas dependências npm |
-
-#### Recomendação
-
-1. **[P1/M]** Implementar SSL context para asyncpg em produção (GCP Cloud SQL requer)
-2. **[P1/P]** Configurar `CORS_ORIGINS` para produção no Terraform/Cloud Run env vars
-3. **[P2/P]** Documentar Redis como dependência obrigatória no DEPLOY_GUIDE
-4. **[P3/P]** Resolver conflito langsmith
-5. **[P3/P]** Executar e resolver `npm audit` findings
+| Dimensão | Replit | wedocc2026 |
+|----------|-------|-----------|
+| **Error Tracking** | Sentry (backend + frontend, PII scrubbing) | Não integrado |
+| **LLM Tracing** | LangSmith (input/output, tokens, latency, costs) | Não evidenciado |
+| **Metrics** | Prometheus endpoint `/metrics` (circuit_breaker_state, fairness_blocks, agent_duration) | Não evidenciado |
+| **Dashboards** | Definidos (Agent Latency, LLM Costs, Circuit Breakers, Drift) — Grafana **não deployed** | Não evidenciado |
+| **Alertas** | Teams webhook (circuit breaker open) | Não evidenciado |
+| **SLOs** | 18+ serviços com targets (ex: Anthropic 99.9%) | Não definidos |
+| **Drift Detection** | Serviço de detecção de variações em comportamento/custos | Não evidenciado |
+| **Agent Monitoring** | API dedicada com health scores (Gold/Silver/Bronze) | Não evidenciado |
+| **OpenTelemetry** | Setup básico em `app/observability/` | Não evidenciado |
 
 ---
 
-### 24.9 Repos Legados (GitHub — WeDOTalent org)
+### 24.9 Análise Detalhada — Repos wedocc2026
 
-#### Inventário
-
-| Repo | Stack | Tamanho | Última Atualização | Status |
-|------|-------|---------|-------------------|--------|
-| `ats_api` | Ruby on Rails 7.1 + PostgreSQL + Redis + Sidekiq + Elasticsearch | 4.412KB / 171 files | 2026-04-08 | Ativo (bridge) |
-| `recruiter_agent_v5` | Python + LangGraph + Celery + RabbitMQ | 3.693KB / 834 files | 2026-04-08 | Referência |
-| `ats_front` | Desconhecido (só `.gitignore`) | 4.695KB / 1 file | 2026-02-19 | Morto |
-| `wedo-nuxt` | Nuxt 3 + Vue 3 + Vuetify (via `vuetify-nuxt-module`) + Histoire | 178KB / 77 files | 2026-02-19 | Protótipo |
-| `ats_mcp` | TypeScript MCP Server | 51KB / 30 files | 2026-03-07 | Funcional |
-| `data_collector` | Python + Alembic + Docker + Workers | 582KB / 317 files | 2026-02-18 | Funcional |
-| `wedotalent-admin` | TypeScript | 687KB | 2026-04-03 | Desconhecido |
-| `reembolsointeligente` | Vazio | 0KB | 2026-02-11 | Morto |
-
-#### Análise de Valor
-
-**ats_api (Rails) — VALOR: MEDIO**
-- Stack completa: Rails 7.1 + Apartment (multi-tenant schema-based) + Searchkick/Elasticsearch + Sneakers (RabbitMQ)
-- Contém modelos de dados legados que a plataforma LIA ainda consulta via bridge
-- **Veredicto:** Manter como bridge até migração completa de dados para FastAPI. Não investir em novas features.
-
-**recruiter_agent_v5 — VALOR: ALTO (como referência)**
-- 834 arquivos, 60+ scripts utilitários, 7 agents, 8 domínios
-- Documentação extensiva: `PRODUCT_CAPABILITIES.md` cataloga 60+ tipos de queries que o agente suporta
-- Celery com 4 queues prioritárias + RabbitMQ + Supervisor
-- **Veredicto:** Base de conhecimento para catálogo de capabilities da LIA. Código já parcialmente migrado. Manter como referência read-only.
-
-**ats_front — VALOR: NULO**
-- Apenas `.gitignore` (1 arquivo). Conteúdo deletado ou nunca comitado.
-- **Veredicto:** Deletar ou arquivar.
-
-**wedo-nuxt — VALOR: BAIXO**
-- Nuxt 3 + Vue 3 + Vuetify com Histoire (component playground)
-- 77 arquivos, muito inicial
-- **Veredicto:** Referência para futura migração Vue. Sem urgência.
-
-**ats_mcp — VALOR: MEDIO**
-- TypeScript MCP Server (Model Context Protocol) para integração com LLMs
-- Funcional, bem estruturado (30 files)
-- **Veredicto:** Pode ser útil para integrações de IA com ferramentas externas. Avaliar integração.
-
-**data_collector — VALOR: MEDIO**
-- Python workers para coleta de dados de plataformas de emprego
-- Docker + Alembic + Workers + API
-- Documentação operacional (`QUAL_SCRIPT_USAR.md`, `PLANO_CARGA_COMPLETA.md`)
-- **Veredicto:** Operacional para alimentação de dados. Manter se sourcing externo for prioridade.
-
----
-
-### 24.10 Roadmap de Correções Prioritizado
-
-#### Fase 1 — Críticos (antes do go-live) — Esforço: 2-3 sprints
-
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 1 | Corrigir `is_synced_to_calendar` Optional[bool] | 24.5 | P |
-| 2 | Verificar que `DEV_AUTO_LOGIN` guard funciona em produção | 24.4 | P |
-| 3 | Limpar credenciais hardcoded em scripts | 24.4 | P |
-| 4 | Configurar CORS para produção | 24.4 / 24.8 | P |
-| 5 | Implementar SSL context para asyncpg | 24.8 | M |
-| 6 | Documentar Redis como dependência obrigatória | 24.5 / 24.8 | P |
-
-#### Fase 2 — Altos (primeiros 30 dias pós-launch) — Esforço: 3-4 sprints
-
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 7 | Migrar ~34 arquivos com Gemini bypass para usar factory | 24.1 | G |
-| 8 | Expandir FairnessGuard para endpoints de triagem/ranking | 24.3 | M |
-| 9 | Corrigir talent pools endpoints | 24.5 | M |
-| 10 | Migrar `app/services/` faseadamente (97 shims + 61 com lógica) | 24.6 | G |
-| 11 | Migrar Login/Register para DS tokens | 24.7 | P |
-| 12 | Criar VoiceProviderABC para abstração de voice | 24.1 | M |
-
-#### Fase 3 — Médios (60-90 dias pós-launch) — Esforço: 4-6 sprints
-
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 13 | Deletar/deprecar ~10 domínios stub | 24.2 | P |
-| 14 | Normalizar feature parity entre LLM providers | 24.1 | M |
-| 15 | Definir timeline para remoção da Rails layer | 24.6 | G |
-| 16 | Squash Alembic migrations | 24.5 | M |
-| 17 | Mover audit logs para storage separado | 24.3 | M |
-| 18 | Padronizar prompts com YAML templates | 24.2 | G |
-
-#### Fase 4 — Baixos (backlog) — Esforço: ongoing
-
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 19 | Criar UI de configuração LLM por tenant | 24.1 | M |
-| 20 | Consolidar micro-domínios | 24.6 | M |
-| 21 | Arquivar repos mortos (ats_front, reembolsointeligente) | 24.9 | P |
-| 22 | Resolver npm audit findings | 24.8 | P |
-| 23 | Migrar domínios críticos para LangGraph | 24.2 | GG |
-
----
-
-### 24.11 Cobertura de Testes
-
-#### Estado Atual
-
-**Backend (lia-agent-system):**
-
-| Métrica | Valor |
-|---------|-------|
-| Framework | pytest + pytest-asyncio |
-| Arquivos de teste | 368 |
-| Gate de coverage | 45% (meta: 80%) |
-| Coverage reporting | pytest-cov (term-missing) |
-| Domínios com testes diretos | 11 de 62 (~18%) |
-
-**Estrutura de testes:**
-
-| Diretório | Foco |
-|-----------|------|
-| `tests/unit/` | Testes unitários |
-| `tests/integration/` | Integração entre serviços |
-| `tests/e2e/` | Fluxos completos |
-| `tests/test_agents/` | LangGraph workflows |
-| `tests/fairness/` | Bias detection, four-fifths rule |
-| `tests/security/` | Red teaming, PII, prompt injection |
-| `tests/deepeval/`, `tests/ragas/` | Avaliação de qualidade LLM |
-| `tests/llm_eval/` | Golden datasets para regressão |
-
-**Frontend (plataforma-lia):**
-
-| Métrica | Valor |
-|---------|-------|
-| Framework | Vitest + Playwright |
-| Arquivos de teste | ~84 |
-| Gate de coverage | 35% (statements, branches, functions, lines) |
-| Coverage reporting | v8 provider (text, json, html) |
-| Foco principal | Job Wizard, Chat, Hooks de estado |
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Coverage gate baixo (45%/35%) | ALTO | Meta de 45% backend e 35% frontend está muito abaixo do recomendado para produção (>80%) |
-| 2 | 82% dos domínios sem testes diretos | ALTO | Apenas 11 de 62 domínios têm testes dedicados; cobertura indireta via agent tests não é suficiente |
-| 3 | Load tests existem mas não integrados ao CI | MEDIO | `tests/load/locustfile.py` com 6 cenários e 4 perfis (smoke/load/stress/soak), mas sem execução automatizada no pipeline |
-| 4 | Testes de AI dependem de LLM | MEDIO | DeepEval/Ragas requerem chamadas a LLMs reais — custos e flakiness em CI |
-
-#### Recomendação
-
-1. **[P1/G]** Subir gate de coverage para 60% (backend) e 50% (frontend) no curto prazo
-2. **[P2/G]** Criar testes para os 51 domínios sem cobertura direta
-3. **[P2/P]** Integrar Locust existente (`tests/load/locustfile.py`) ao CI pipeline (smoke profile)
-4. **[P3/M]** Criar mock LLM para testes de AI em CI sem custos
-
----
-
-### 24.12 Observabilidade / Alertas
-
-#### Estado Atual
-
-| Componente | Status | Detalhes |
-|-----------|--------|---------|
-| Sentry (Backend) | Implementado | FastAPI + Starlette integration, PII scrubbing (email, CPF, phone) antes de enviar |
-| Sentry (Frontend) | Implementado | Next.js client/server/edge, Error Boundaries, só em produção |
-| LangSmith | Implementado | Tracing completo de LLM (input/output, token costs, latency) |
-| Prometheus/Grafana | Parcial | Endpoint `/metrics` pronto, métricas definidas (`circuit_breaker_state`, `fairness_blocks_total`, `agent_request_duration`) |
-| Agent Monitoring | Implementado | API dedicada (`agent_monitoring.py`), health scores (Gold/Silver/Bronze) |
-| Drift Detection | Implementado | Serviço especializado detecta variações em comportamento/custos de IA |
-| Alertas (Teams) | Implementado | Webhook para alertas críticos (circuit breaker open) |
-| OpenTelemetry | Inicial | Setup básico em `app/observability/` para distributed tracing |
-| PagerDuty/OpsGenie | Documentado | Mencionado no RUNBOOK_DEGRADATION.md mas sem integração direta no código |
-
-**Dashboards documentados:** Agent Latency, LLM Costs, Circuit Breakers, Drift Detection.
-
-**SLOs definidos:** `CIRCUIT_BREAKER_SLOS` para 18+ serviços externos (ex: Anthropic 99.9% availability).
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Prometheus/Grafana não deployed | ALTO | Métricas definidas no código mas sem evidência de Grafana rodando em produção |
-| 2 | Alertas limitados a Teams | MEDIO | Sem PagerDuty/OpsGenie integrado — incidentes P0/P1 dependem de webhook Teams |
-| 3 | OpenTelemetry incompleto | MEDIO | Setup inicial mas sem distributed tracing end-to-end (frontend → API → LLM) |
-
-#### Recomendação
-
-1. **[P1/M]** Deployar Grafana e conectar ao Prometheus scrape do `/metrics`
-2. **[P2/M]** Integrar PagerDuty ou OpsGenie para alertas P0/P1 com on-call rotation
-3. **[P3/G]** Completar OpenTelemetry para tracing end-to-end
-
----
-
-### 24.13 CI/CD Pipeline
-
-#### Estado Atual
-
-**Backend (lia-agent-system) — `.github/workflows/ci.yml`:**
-
-| Step | Ferramenta |
-|------|-----------|
-| Lint | ruff |
-| Security scan | bandit |
-| Unit/Integration tests | pytest (com Docker Postgres 16 + Redis 7) |
-| LLM Quality Gates | DeepEval |
-
-**Frontend (plataforma-lia) — `.github/workflows/ci.yml`:**
-
-| Step | Ferramenta |
-|------|-----------|
-| Lint | ESLint |
-| Type check | tsc |
-| Tests | Vitest suites |
-| Build check | Next.js build |
-
-**Repos legados:**
-- `ats_api`: CI com Brakeman (security scan Rails), importmap audit (JS deps), RuboCop (lint)
-- `recruiter_agent_v5`: Sem GitHub Actions
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Sem CD automatizado | ALTO | CI existe mas deploy para GCP/Cloud Run é manual |
-| 2 | recruiter_agent_v5 sem CI | MEDIO | 834 arquivos sem pipeline de qualidade — risco se código migrar para LIA |
-| 3 | Sem integration tests em CI frontend | MEDIO | Playwright E2E não roda no CI (apenas Vitest unit) |
-
-#### Recomendação
-
-1. **[P1/G]** Implementar CD automatizado (GitHub Actions → Cloud Run deploy com approval gate)
-2. **[P2/M]** Adicionar Playwright ao CI do frontend
-3. **[P3/P]** Adicionar CI ao recruiter_agent_v5 se for mantido como referência ativa
-
----
-
-### 24.14 Performance / Carga
-
-#### Estado Atual
-
-| Aspecto | Status | Detalhes |
-|---------|--------|---------|
-| Database indexes | Bom | Indexes em `company_id`, `status`, `stage`, `email`, `created_at`; compostos e unique; pgvector HNSW/IVFFlat |
-| Eager loading | Ruim | Sem uso de `joinedload`/`selectinload` — default lazy loading em todos os relationships |
-| Rate limiting | Bom | 600/min por usuário, 3000/min por company, 20K/hr e 60K/hr respectivamente |
-| Circuit breakers | Excelente | 18+ serviços com timeouts calibrados (LLM: 60s, ATS: 30s, Auth: 15s) |
-| Load testing | Implementado | Locust com 6 cenários, 4 perfis (smoke/load/stress/soak), SLAs definidos por endpoint em `tests/load/` |
-| SLOs | Definidos | `CIRCUIT_BREAKER_SLOS` com targets de disponibilidade e p95 latência |
-| API docs (OpenAPI) | Habilitado | `/docs` (Swagger), `/docs/redoc`, `/openapi.json` — 362+ endpoints documentados |
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | N+1 queries provável | ALTO | Nenhum uso de eager loading (joinedload/selectinload) — relationships em lazy loading padrão |
-| 2 | Load tests não integrados ao CI | MEDIO | Locust existe em `tests/load/` com 6 cenários e SLAs, mas não roda automaticamente no pipeline |
-| 3 | Degraded mode responses | MEDIO | Circuit breaker tem fallbacks mas precisa validação com cenários reais |
-
-#### Recomendação
-
-1. **[P1/M]** Adicionar `selectinload`/`joinedload` nos queries de listagem (candidates, jobs, applies)
-2. **[P2/P]** Integrar Locust smoke profile ao CI para validação contínua de SLAs
-3. **[P2/P]** Validar degraded mode responses com chaos testing manual
-
----
-
-### 24.15 Backup / Disaster Recovery
-
-#### Estado Atual
-
-| Aspecto | Status |
-|---------|--------|
-| Backup automatizado | Não encontrado no código (depende de Cloud SQL managed backups via Terraform) |
-| pg_dump scripts | Inexistente |
-| RTO/RPO documentação | Inexistente |
-| Data retention | Implementado via `retention_policy.py` (LGPD compliance) |
-| Health probes | `/health/ready` (DB+Redis), `/health/live` (process) |
-| Runbook | `RUNBOOK_DEGRADATION.md` com plano de resposta P0-P3 |
-
-#### Problemas Encontrados
-
-| # | Problema | Severidade | Detalhes |
-|---|---------|-----------|---------|
-| 1 | Sem backup explícito | CRITICO | Nenhum script de backup ou referência a Cloud SQL automated backups no Terraform — se existe, não está documentado |
-| 2 | Sem RTO/RPO definido | ALTO | Sem targets documentados de tempo de recuperação ou ponto de recuperação |
-| 3 | Single region | MEDIO | Deploy em `us-central1` apenas — sem failover multi-região |
-
-#### Recomendação
-
-1. **[P1/P]** Documentar e verificar backup do Cloud SQL (PITR, automated backups, retention)
-2. **[P1/P]** Definir RTO/RPO targets (sugestão: RTO=4h, RPO=1h para MVP)
-3. **[P3/G]** Planejar failover multi-região para fase de escala
-
----
-
-### 24.16 Repos Legados — Análise Profunda de Código
-
-Complemento da seção 24.9 com análise real do código-fonte de cada repo.
-
-#### ats_api (Rails 7.1)
-
-**Segurança:**
+#### ats_api (Rails 7.1) — Bridge Ativo
 
 | Aspecto | Finding | Severidade |
 |---------|---------|-----------|
-| Multi-tenancy | Apartment gem com schema-based isolation (`config.use_schemas = true`). `Account` e `User` excluídos (global). Elevator para routing de tenant **comentado** — sem routing automático | ALTO |
-| JWT Auth | HS256 com `Rails.application.secret_key_base`. Token 24h. `authorize_request` duplicado em `ApplicationController` e `SessionsController` | MEDIO |
-| CORS | Apenas `http://localhost:3000` — sem configuração para produção | ALTO |
-| SSL | `sslmode: disable` em development, `sslmode: require` em production | OK |
-| CSP | Content Security Policy **toda comentada** — nenhuma proteção | ALTO |
-| RabbitMQ | Sneakers com `guest:guest` default do ENV, retry 5x, timeout 60s | MEDIO |
-| CI | Brakeman (security), importmap audit (JS), RuboCop (lint) — sem testes no CI | MEDIO |
-| Testes | 5 model specs, request specs existem mas poucos | ALTO |
-| Migrations | 20 migrations, estrutura básica (Users, Accounts, Jobs, Candidates, Applies) | OK |
-| Dockerfile | Multi-stage build, non-root user, bootsnap — bem configurado | OK |
+| Multi-tenancy | Apartment gem (schema-based), `Account`/`User` excluídos (global). Elevator **comentado** | ALTO |
+| Auth | JWT HS256 24h, `authorize_request` duplicado em 2 controllers | MEDIO |
+| CORS | Hardcoded `http://localhost:3000` | ALTO |
+| CSP | **Toda comentada** | ALTO |
+| RabbitMQ | Sneakers `guest:guest` default | MEDIO |
+| Models | 18 (Account, User, Job, Candidate, Apply, SelectiveProcess, etc.) | OK |
+| Migrations | 20 | OK |
+| Specs | 34 files (5 model, rest request specs) | MEDIO |
+| CI | Brakeman + importmap audit + RuboCop — **sem testes no CI** | MEDIO |
+| Docker | Multi-stage, non-root, bootsnap — bem configurado | OK |
+| Branches | 44 branches (muitos develop-* ativos: felipe, giovanni, victhor) | INFO |
 
-**Vulnerabilidades Específicas:**
-1. Tenant elevator comentado — `Apartment` está configurado mas não há middleware para rotear requests para o tenant correto automaticamente
-2. `authorize_request` duplicado — código de auth copiado em vez de extraído para concern
-3. Nenhum campo `name` no User model (comentado no payload) — funcionalidade quebrada
-4. `db_pool: 10` em dev, `30` em production — sem connection pooling externo
-
-#### recruiter_agent_v5 (Python/LangGraph)
-
-**Segurança:**
+#### ats_front (Nuxt 3 + Vue 3 + Vuetify) — Frontend Ativo
 
 | Aspecto | Finding | Severidade |
 |---------|---------|-----------|
-| Secrets | Todas via `os.getenv` + `python-dotenv`, sem .env no repo | OK |
-| Required vars | `GEMINI_API_KEY`, `API_BASE_URL`, `ATS_USERNAME`, `ATS_PASSWORD`, `POSTGRES_*` validados no startup | OK |
-| ATS credentials | `ATS_USERNAME`/`ATS_PASSWORD` para API — credenciais de serviço, não OAuth | MEDIO |
-| Vendor lock-in | 100% Gemini (`google-generativeai==0.8.3`, `langchain-google-genai==2.0.8`) — sem abstração | CRITICO |
-| Tests | 70+ arquivos de teste, cobertura extensiva incluindo fairness, hallucination prevention, security | BOM |
-| CI | Sem GitHub Actions | ALTO |
-| Deps | `langchain>=0.3.0`, `celery[redis]>=5.3.0`, `streamlit>=1.28.0`, `flask==3.0.0` — stack mista | MEDIO |
+| Branch | **Todo código em `develop`** — `main` tem só `.gitignore` | ALTO (workflow) |
+| Stack | Nuxt 3, Vue 3, Vuetify, Pinia, TipTap WYSIWYG, ActionCable, vuelidate | OK |
+| Tamanho | 904 files: 537 Vue, 107 TS, 42 docs | OK |
+| Páginas | 34 (auth, dashboard, candidates, jobs, evaluations, interviews, settings, admin) | OK |
+| Componentes | 147 | OK |
+| Composables | 59 | OK |
+| Stores | 18 Pinia | OK |
+| Features | 357 feature files | OK |
+| Backend | Rails (:8080) + Python AI (:8001) via `runtimeConfig` | OK |
+| Testing | Playwright + axe-core (accessibility) | BOM |
 
-**Arquitetura:**
-- 7 agents: `intent_analyzer`, `api_planner`, `plan_validator`, `api_executor`, `data_processor`, `answer_formatter` + autonomous
-- 8 domínios: `applies`, `autonomous`, `evaluation`, `insights`, `jobs`, `messaging`, `scheduling`, `sourced_profile_sourcing`
-- Comunicação: RabbitMQ (pika) + Celery, callbacks para Rails
-- Deploy doc: GCP com Cloud Run + GKE Autopilot + Cloud Load Balancer
+**CORREÇÃO v3:** Este frontend era listado como "Morto" na versão anterior. **Incorreto.** O branch `develop` é o branch de trabalho principal com 39 branches feature ativas (WT-1592, WT-1598, etc.) e último push em 2026-04-09.
 
-**Valor para LIA:** Catálogo de 60+ capabilities documentado em `PRODUCT_CAPABILITIES.md`. 70+ testes com patterns de fairness e hallucination prevention que valem como referência.
-
-#### data_collector (Python)
-
-**Segurança:**
+#### recruiter_agent_v5 (Python/LangGraph) — Referência
 
 | Aspecto | Finding | Severidade |
 |---------|---------|-----------|
-| Config | `config.py` com `ALLOWED_BRANDS` hardcoded (`["land", "talenses"]`) | MEDIO |
-| Deps | `requirements.txt` sem version pinning (ex: `requests`, `pydantic`, `fastapi`) — builds não reproduzíveis | ALTO |
-| Tests | Diretório `tests/` existe mas está **vazio** | CRITICO |
-| Docker | `Dockerfile` e `Dockerfile.api` existem | OK |
-| Workers | 3 workers: `apply_sender`, `job_sender`, `selective_process_sender` — enviam dados para Rails ATS | OK |
-| Providers | Integrações com Gupy (público), Questt, WeDOTalent — scraping/API | MEDIO |
+| Vendor Lock-in | 100% Gemini (`google-generativeai==0.8.3`, `langchain-google-genai==2.0.8`) | CRITICO |
+| CI/CD | **Nenhum GitHub Actions** (tem `.github/instructions/` para Copilot) | ALTO |
+| Tests | 102 files (fairness, hallucination prevention, security patterns) | BOM |
+| Agents | 7 (intent, planner, validator, executor, processor, formatter, autonomous) | OK |
+| Tools | 21 tool files | OK |
+| Deps | Stack mista: LangChain + Celery + Streamlit + Flask | MEDIO |
+| Files | 912 arquivos (CORREÇÃO: v2 dizia 834) | OK |
 
-**Vulnerabilidades Específicas:**
-1. Zero testes — pipeline de dados sem nenhuma cobertura de testes
-2. Dependências sem pinning — risco de breaking changes silenciosas
-3. 317 arquivos com scripts de manutenção misturados na raiz (40+ scripts shell)
-4. `ALLOWED_BRANDS` hardcoded — deveria ser env var ou config dinâmica
+**Valor para LIA:** Catálogo de capabilities (60+ queries em `PRODUCT_CAPABILITIES.md`), patterns de testes de fairness/hallucination.
 
-#### ats_mcp (TypeScript MCP Server)
+#### wedotalent-admin (Next.js) — Painel Admin/Compliance
 
 | Aspecto | Finding | Severidade |
 |---------|---------|-----------|
-| Stack | Model Context Protocol SDK + Zod + TypeScript | OK |
-| Tools | 8 tools: Jira (get/search), Analyze Project, Find Related Files, Get Conventions, Read Replit, Map Replit, Check ATS Health, Rails Exec | OK |
-| Security | `rails-exec` tool permite execução de comandos Rails remotamente | CRITICO |
-| Secrets | `.env.example` documenta vars (Jira URL/email/token, project paths) | OK |
-| Config | `config.json` referencia `ats_api` (Rails) e `ats_front` (Nuxt) paths | OK |
+| Stack | Next.js + React + Shadcn/Radix + Tailwind (mesma stack do Replit) | OK |
+| Tamanho | 438 files (177 TSX, 168 TS, 2 CSS) | OK |
+| Páginas | **63 páginas**: clientes (18 sub-pages), compliance (30+ sub-pages), monitoring | OK |
+| Componentes | 103 | OK |
+| Compliance | LGPD, SOC-2, SOX, ISO-27001, bias audit, trust center, DPO, portal titular, SoD audit | OK |
+| Reuso | Mesmo stack Shadcn/Radix/Tailwind do Replit — possibilidade de merge | INFO |
 
-**Vulnerabilidades Específicas:**
-1. `rails-exec` tool — permite execução remota de comandos Rails; se exposto, é equivalente a RCE (Remote Code Execution)
-2. Paths de projeto em `config.json` sem validação — path traversal possível
+**CORREÇÃO v3:** Anteriormente listado como "Desconhecido". É um painel admin de compliance/governance com escopo extenso cobrindo áreas ainda não implementadas no Replit (SOC-2, SOX, ISO-27001, SoD audit, trust center).
 
-#### wedo-nuxt (Nuxt 3 + Vue 3 + Vuetify)
+#### data_collector (Python) — Pipeline de Dados
 
 | Aspecto | Finding | Severidade |
 |---------|---------|-----------|
-| Stack | Nuxt 3.16, Vue 3.5, Vuetify (via vuetify-nuxt-module 0.19) | OK |
-| Completude | 77 arquivos, muito inicial — `app/` tem só `app.vue` + components + theme | BAIXO |
-| Theme | `liaTheme` + `liaDefaults` customizados em `vuetify-options.ts` | OK |
-| Histoire | Component playground configurado (dev stories) | BOM |
-| Security | Sem auth, sem API calls, sem dados — protótipo puro | N/A |
+| Testes | **0 testes funcionais** | CRITICO |
+| Deps | `requirements.txt` **sem version pinning** | ALTO |
+| Config | `ALLOWED_BRANDS` hardcoded | MEDIO |
+| Workers | 3 (apply_sender, job_sender, selective_process_sender) → enviam para Rails | OK |
 
-**Valor:** Referência de theme Vuetify para futura migração Vue. Sem riscos de segurança por ser protótipo sem backend.
+#### ats_mcp (TypeScript MCP Server) — Dev Tooling
+
+| Aspecto | Finding | Severidade |
+|---------|---------|-----------|
+| RCE | `rails-exec` tool permite execução remota — **RCE potencial** | CRITICO |
+| Tools | 8: Jira, Analyze Project, Find Files, Read Replit, Map Replit, ATS Health, Rails Exec | OK |
+| Path traversal | `config.json` com paths sem validação | ALTO |
+
+#### wedo-nuxt — Protótipo (77 files, Nuxt 3 + Vuetify, `liaTheme` customizado, nenhum risco)
+#### reembolsointeligente — Morto (0 files, repo vazio)
 
 ---
 
-### 24.17 Riscos Sistêmicos Transversais
+### 24.10 Riscos Sistêmicos — Por Produto
 
-Riscos que emergem do cruzamento entre dimensões e não pertencem a uma seção isolada.
+#### Riscos do Produto Replit
 
-| # | Risco | Severidades Cruzadas | Detalhes |
-|---|-------|---------------------|---------|
-| 1 | **Rails bridge sem timeline de remoção** | 24.6 + 24.9 + 24.16 | ~30+ arquivos marcados "will be deleted" sem data. Frontend com `backendTarget: "rails"`. ats_api com CORS só para localhost. Se Rails cai, fallback silencioso pode mascarar perda de dados. | 
-| 2 | **Gap entre WeDO Guide e código** | 24.3 + 24.2 | Guide v3.3 documenta 13 Crenças, 8 Inegociáveis, 18 Production Readiness checks. FairnessGuard implementa bem bias, mas Crenças e Inegociáveis são referência filosófica sem enforcement no código. |
-| 3 | **Voice sem abstração = risco de vendor** | 24.1 + 24.14 | LLM e embedding têm factory, mas voice (crítico para entrevistas) é 100% hardcoded em Gemini. Mudança de preço ou API do Google = rewrite forçado. |
-| 4 | **Custo de LLM sem controles hard** | 24.1 + 24.12 | `tenant_budget` tracking existe no cascade, mas sem limites hard (circuit breaker por gasto, alertas de budget). Tenant pode gerar custos descontrolados. |
-| 5 | **Mapa funcional incompleto** | 24.5 + 24.7 | 32 páginas no frontend, mas sem mapa de "página → status funcional". Talent pools e interviews têm bugs conhecidos; quantas outras páginas estão parcialmente quebradas? |
-| 6 | **ats_mcp tem RCE potencial** | 24.16 | Tool `rails-exec` permite execução remota de comandos Rails. Se o MCP server for exposto a um LLM não confiável, é vetor de ataque crítico. |
-| 7 | **data_collector sem testes** | 24.16 + 24.11 | Pipeline de dados com zero testes + deps sem pinning. Dados que alimentam a plataforma podem ter problemas silenciosos. |
-| 8 | **Backup não documentado** | 24.15 | Se Cloud SQL managed backups existem, não estão documentados. Se não existem, dados de produção estão em risco. |
+| # | Risco | Severidade | Detalhes |
+|---|-------|-----------|---------|
+| R1 | **Rails bridge sem timeline** | ALTO | ~30+ arquivos marcados "will be deleted" sem data. Se Rails cai, fallback silencioso pode mascarar perda de dados |
+| R2 | **Voice sem abstração** | ALTO | LLM e embedding têm factory, mas voice é Gemini-hardcoded. Mudança de preço/API = rewrite forçado |
+| R3 | **LLM costs sem hard limit** | MEDIO | `tenant_budget` tracking existe mas sem circuit breaker por gasto |
+| R4 | **Backup não documentado** | CRITICO | Nenhum script/referência a Cloud SQL automated backups |
+| R5 | **Coverage baixo** | ALTO | 45%/35% muito abaixo do recomendado (>80%). 81% dos domínios sem testes diretos |
+| R6 | **Prometheus/Grafana não deployed** | ALTO | Métricas definidas no código mas sem dashboard/alertas funcionais |
+| R7 | **FairnessGuard enforcement seletivo** | ALTO | Cobre JD e rejeição, mas triagem/ranking/sourcing podem não estar protegidos |
+| R8 | **Mapa funcional incompleto** | MEDIO | 32 páginas sem mapa de "página → status funcional". Bugs em talent pools e interviews |
+| R9 | **N+1 queries** | ALTO | Nenhum uso de eager loading (joinedload/selectinload) em relationships |
+| R10 | **SSL asyncpg manual** | ALTO | Strip de `sslmode=` — produção GCP requer SSL explícito |
+
+#### Riscos do Produto wedocc2026
+
+| # | Risco | Severidade | Detalhes |
+|---|-------|-----------|---------|
+| W1 | **ats_front em branch errado** | ALTO | Todo código em `develop`, `main` vazio. Deploy/CI pode mirar no branch errado |
+| W2 | **v5 vendor lock-in Gemini** | CRITICO | 100% Gemini sem abstração. Inviável como base para produção multi-provider |
+| W3 | **v5 sem CI/CD** | ALTO | 912 arquivos sem pipeline de qualidade |
+| W4 | **data_collector sem testes** | CRITICO | Pipeline de dados com 0 testes + deps sem pinning |
+| W5 | **ats_mcp RCE** | CRITICO | `rails-exec` tool = Remote Code Execution se exposto |
+| W6 | **Rails CSP desabilitada** | ALTO | Content Security Policy toda comentada |
+| W7 | **Rails tenant elevator comentado** | ALTO | Apartment configurado mas sem middleware de routing automático |
+| W8 | **Rails CORS localhost-only** | ALTO | Sem configuração para produção |
+
+#### Riscos Cruzados (ambos produtos)
+
+| # | Risco | Detalhes |
+|---|-------|---------|
+| C1 | **Gap Guide vs código** | WeDO Guide v3.3 documenta 13 Crenças, 8 Inegociáveis. FairnessGuard implementa bias, mas Crenças são referência filosófica sem enforcement |
+| C2 | **Dependência Rails como bridge** | Replit depende de `ats_api` (Rails) para dados legados, mas Rails tem gaps de segurança (CSP, CORS, tenant) |
+| C3 | **Admin duplicado** | `wedotalent-admin` tem 63 páginas admin com a mesma stack Shadcn/Radix do Replit — potencial de reuso/merge |
 
 ---
 
-### 24.18 Roadmap Atualizado (Completo)
+### 24.11 Scorecard Comparativo
 
-Incorpora items das novas dimensões (24.11-24.17) ao roadmap original.
+| Dimensão | Replit | wedocc2026 | Vencedor |
+|----------|--------|-----------|----------|
+| **Escala de código** | 4.079 files | 2.678 files | Replit (1.5x) |
+| **Maturidade de IA** | Factory multi-provider, fallback, budget, bootstrap, 60+ tools | 100% Gemini, 21 tools, sem abstração | **Replit** |
+| **Governança IA** | FairnessGuard 3 camadas, PII 4 camadas, HITL, Policy Engine | Testes de fairness (referência), sem middleware | **Replit** |
+| **Segurança** | RLS + JWT + WorkOS + Rate Limiting + Prompt Injection Guard | Apartment (comentado), JWT duplicado, CSP off, RCE no MCP | **Replit** |
+| **Observabilidade** | Sentry + LangSmith + Prometheus (parcial) + SLOs + Drift Detection | Não implementado | **Replit** |
+| **Testes** | 1.414 test files, Locust, DeepEval, Ragas | 149 test files, data_collector com 0 | **Replit** |
+| **CI/CD** | GitHub Actions (CI completo, CD manual) | Brakeman (Rails), 0 CI no v5 | **Replit** |
+| **Frontend UX** | 32 páginas, DS v4.2.1, 1.201 componentes | 97 páginas (34+63), Vuetify, TipTap WYSIWYG, Histoire | Complementar |
+| **Admin/Compliance** | Parcial (domínios lgpd, consent, data_subject) | 63 páginas admin (SOC-2, SOX, ISO-27001, LGPD completo) | **wedocc2026** |
+| **Docker/Deploy** | Prod-ready (multi-stage, non-root, healthcheck, Terraform) | Prod-ready (Rails), parcial (v5) | Replit |
+
+---
+
+### 24.12 Roadmap Consolidado
 
 #### Fase 1 — Críticos (antes do go-live) — Esforço: 3-4 sprints
 
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 1 | Corrigir `is_synced_to_calendar` Optional[bool] | 24.5 | P |
-| 2 | Verificar que `DEV_AUTO_LOGIN` guard funciona em produção | 24.4 | P |
-| 3 | Limpar credenciais hardcoded em scripts | 24.4 | P |
-| 4 | Configurar CORS para produção | 24.4 / 24.8 | P |
-| 5 | Implementar SSL context para asyncpg | 24.8 | M |
-| 6 | Documentar e verificar backup do Cloud SQL | 24.15 | P |
-| 7 | Definir RTO/RPO targets | 24.15 | P |
-| 8 | Corrigir N+1 queries com eager loading | 24.14 | M |
-| 9 | Implementar CD automatizado (GitHub Actions → Cloud Run) | 24.13 | G |
-| 10 | Deployar Grafana + conectar Prometheus | 24.12 | M |
+| # | Item | Produto | Dimensão | Esforço |
+|---|------|---------|---------|--------|
+| 1 | Corrigir `is_synced_to_calendar` Optional[bool] | Replit | Backend | P |
+| 2 | Verificar `DEV_AUTO_LOGIN` guard em produção | Replit | Segurança | P |
+| 3 | Limpar credenciais hardcoded em scripts | Replit | Segurança | P |
+| 4 | Configurar CORS para produção | Ambos | Segurança | P |
+| 5 | Implementar SSL context para asyncpg | Replit | Infra | M |
+| 6 | Documentar e verificar backup Cloud SQL | Replit | DR | P |
+| 7 | Definir RTO/RPO targets | Replit | DR | P |
+| 8 | Corrigir N+1 queries com eager loading | Replit | Performance | M |
+| 9 | Implementar CD automatizado | Replit | CI/CD | G |
+| 10 | Deployar Grafana + conectar Prometheus | Replit | Observabilidade | M |
 
-#### Fase 2 — Altos (primeiros 30 dias pós-launch) — Esforço: 4-5 sprints
+#### Fase 2 — Altos (primeiros 30 dias) — Esforço: 4-5 sprints
 
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 11 | Migrar ~34 arquivos com Gemini bypass para usar factory | 24.1 | G |
-| 12 | Expandir FairnessGuard para endpoints de triagem/ranking | 24.3 | M |
-| 13 | Corrigir talent pools endpoints | 24.5 | M |
-| 14 | Migrar Login/Register para DS tokens | 24.7 | P |
-| 15 | Criar VoiceProviderABC para abstração de voice | 24.1 | M |
-| 16 | Subir coverage gate para 60% backend / 50% frontend | 24.11 | G |
-| 17 | Integrar Locust smoke ao CI | 24.14 | P |
-| 18 | Adicionar Playwright ao CI do frontend | 24.13 | M |
-| 19 | Integrar PagerDuty/OpsGenie para alertas P0/P1 | 24.12 | M |
-| 20 | Implementar budget limits por tenant (LLM costs) | 24.17 | M |
+| # | Item | Produto | Dimensão | Esforço |
+|---|------|---------|---------|--------|
+| 11 | Migrar ~5 arquivos com LLM bypass direto para factory | Replit | IA | M |
+| 12 | Expandir FairnessGuard para triagem/ranking/sourcing | Replit | Governança | M |
+| 13 | Corrigir talent pools endpoints | Replit | Backend | M |
+| 14 | Criar VoiceProviderABC | Replit | IA | M |
+| 15 | Subir coverage gate para 60%/50% | Replit | Testes | G |
+| 16 | Integrar Locust smoke ao CI | Replit | Performance | P |
+| 17 | Adicionar Playwright ao CI | Replit | Testes | M |
+| 18 | Integrar PagerDuty/OpsGenie | Replit | Observabilidade | M |
+| 19 | Implementar budget hard limits por tenant | Replit | IA | M |
+| 20 | Merge `ats_front` develop → main | wedocc2026 | Workflow | P |
 
-#### Fase 3 — Médios (60-90 dias pós-launch) — Esforço: 5-7 sprints
+#### Fase 3 — Médios (60-90 dias) — Esforço: 5-7 sprints
 
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 21 | Deletar/deprecar ~10 domínios stub | 24.2 | P |
-| 22 | Normalizar feature parity entre LLM providers | 24.1 | M |
-| 23 | Definir timeline para remoção da Rails layer | 24.6 | G |
-| 24 | Squash Alembic migrations | 24.5 | M |
-| 25 | Mover audit logs para storage separado | 24.3 | M |
-| 26 | Padronizar prompts com YAML templates | 24.2 | G |
-| 27 | Migrar `app/services/` faseadamente | 24.6 | G |
-| 28 | Criar testes para os 51 domínios sem cobertura | 24.11 | GG |
-| 29 | Completar OpenTelemetry end-to-end | 24.12 | G |
-| 30 | Criar mapa funcional de todas as 32 páginas | 24.17 | M |
+| # | Item | Produto | Dimensão | Esforço |
+|---|------|---------|---------|--------|
+| 21 | Deprecar ~10 domínios stub | Replit | Arquitetura | P |
+| 22 | Normalizar feature parity LLM providers | Replit | IA | M |
+| 23 | Definir timeline remoção Rails layer | Ambos | Arquitetura | G |
+| 24 | Squash Alembic migrations | Replit | Backend | M |
+| 25 | Mover audit logs para storage separado | Replit | Governança | M |
+| 26 | Padronizar prompts com YAML templates | Replit | IA | G |
+| 27 | Migrar `app/services/` (shims → domínios) | Replit | Arquitetura | G |
+| 28 | Criar testes para domínios sem cobertura | Replit | Testes | GG |
+| 29 | Completar OpenTelemetry end-to-end | Replit | Observabilidade | G |
+| 30 | Avaliar merge de `wedotalent-admin` páginas no Replit | Ambos | Frontend | G |
 
-#### Fase 4 — Baixos (backlog) — Esforço: ongoing
+#### Fase 4 — Backlog — Esforço: ongoing
 
-| # | Item | Dimensão | Esforço |
-|---|------|---------|--------|
-| 31 | Criar UI de configuração LLM por tenant | 24.1 | M |
-| 32 | Consolidar micro-domínios | 24.6 | M |
-| 33 | Arquivar repos mortos (ats_front, reembolsointeligente) | 24.9 | P |
-| 34 | Resolver npm audit findings | 24.8 | P |
-| 35 | Migrar domínios críticos para LangGraph | 24.2 | GG |
-| 36 | Revisar segurança do `rails-exec` no ats_mcp | 24.16 | P |
-| 37 | Pinar dependências do data_collector | 24.16 | P |
-| 38 | Planejar failover multi-região | 24.15 | GG |
+| # | Item | Produto | Dimensão | Esforço |
+|---|------|---------|---------|--------|
+| 31 | UI de configuração LLM por tenant | Replit | IA | M |
+| 32 | Consolidar micro-domínios | Replit | Arquitetura | M |
+| 33 | Habilitar CSP no Rails | wedocc2026 | Segurança | P |
+| 34 | Pinar deps do data_collector + adicionar testes | wedocc2026 | Qualidade | M |
+| 35 | Revisar segurança do `rails-exec` no ats_mcp | wedocc2026 | Segurança | P |
+| 36 | Migrar domínios críticos para LangGraph | Replit | IA | GG |
+| 37 | Resolver npm audit findings | Replit | Segurança | P |
+| 38 | Planejar failover multi-região | Replit | DR | GG |
+| 39 | Arquivar repos mortos (reembolsointeligente) | wedocc2026 | Limpeza | P |
+| 40 | Adicionar CI ao recruiter_agent_v5 | wedocc2026 | CI/CD | M |
 
 ---
 
-*Última atualização: Abril 2026 (auditoria profunda v2 — 18 dimensões + riscos sistêmicos + análise de código GitHub)*
-*Domínio: wedotalent.cc · Região GCP: us-central1 · Stack: Next.js 15 + FastAPI + Rails 7 (opcional)*
-*Integrações mapeadas: Claude, Gemini, OpenAI, WorkOS, Twilio Voice, Google STT/TTS, Teams, WhatsApp, Resend, HubSpot, PEARCH, Redis, RabbitMQ, Celery, Sentry, LangSmith*
-*Decisão arquitetural: FastAPI é a fonte de verdade. Rails é opt-in para dados legados. Ver Seção 2F.*
-*Repos GitHub auditados: WeDOTalent/ats_api, recruiter_agent_v5, data_collector, ats_mcp, wedo-nuxt (análise de código profunda)*
+*Última atualização: Abril 2026 (auditoria profunda v3 — análise comparativa Replit vs wedocc2026)*
+*Fonte de dados: Código Replit (filesystem direto) + GitHub API (WeDOTalent org, 8 repos auditados)*
+*Domínio: wedotalent.cc · Região GCP: us-central1*
+*Produto Replit: Next.js 15 + FastAPI 0.115.5 + LangGraph 0.2.53 (4.079 files)*
+*Produto wedocc2026: Rails 7.1 + Nuxt 3 + Python LangGraph (2.678 files em 8 repos)*
+*Integrações: Claude, Gemini, OpenAI, WorkOS, Twilio, Deepgram, Teams, WhatsApp, Resend, Mailgun, Redis, Celery, Sentry, LangSmith, Prometheus*
+*Decisão arquitetural: FastAPI (Replit) é a fonte de verdade. Rails é opt-in para dados legados. Ver Seção 2F.*
