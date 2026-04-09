@@ -23,7 +23,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
-      router.replace('/')
+      const hasLoggedOut = document.cookie.includes('lia_logged_out=1')
+      if (!hasLoggedOut) {
+        router.replace('/')
+      }
     }
   }, [router])
 

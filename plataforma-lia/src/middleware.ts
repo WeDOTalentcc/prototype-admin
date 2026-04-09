@@ -133,29 +133,32 @@ export async function middleware(request: NextRequest) {
   }
 
   if (DEV_AUTO_LOGIN) {
-    const token = await getDevToken()
-    if (token) {
-      const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('Authorization', `Bearer ${token}`)
+    const loggedOut = request.cookies.get('lia_logged_out')
+    if (!loggedOut) {
+      const token = await getDevToken()
+      if (token) {
+        const requestHeaders = new Headers(request.headers)
+        requestHeaders.set('Authorization', `Bearer ${token}`)
 
-      const response = NextResponse.next({ request: { headers: requestHeaders } })
+        const response = NextResponse.next({ request: { headers: requestHeaders } })
 
-      response.cookies.set('lia_access_token', token, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-        secure: true,
-        sameSite: 'none' as const,
-        httpOnly: true,
-      })
-      response.cookies.set('lia_auth_method', 'dev-auto-login', {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-        secure: true,
-        sameSite: 'none' as const,
-        httpOnly: false,
-      })
+        response.cookies.set('lia_access_token', token, {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          secure: true,
+          sameSite: 'none' as const,
+          httpOnly: true,
+        })
+        response.cookies.set('lia_auth_method', 'dev-auto-login', {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          secure: true,
+          sameSite: 'none' as const,
+          httpOnly: false,
+        })
 
-      return response
+        return response
+      }
     }
   }
 

@@ -172,6 +172,9 @@ class AuthService {
 
     const data: TokenResponse = await response.json()
     await this.setTokens(data.access_token, data.refresh_token)
+    if (typeof document !== 'undefined') {
+      document.cookie = 'lia_logged_out=; path=/; max-age=0; SameSite=None; Secure'
+    }
     return data
   }
 
@@ -235,6 +238,9 @@ class AuthService {
       await this.logoutSSO()
     } else {
       await this.clearTokens()
+    }
+    if (typeof document !== 'undefined') {
+      document.cookie = 'lia_logged_out=1; path=/; max-age=86400; SameSite=None; Secure'
     }
   }
 }
