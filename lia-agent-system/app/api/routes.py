@@ -174,6 +174,7 @@ from app.api.v1 import (
     suggestion_feedback,
     system_health,
     talent_funnel,
+    talent_pools,
     task_lifecycle,
     task_monitoring,
     task_planner,
@@ -318,6 +319,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(sourcing.router, prefix="/api/v1", tags=["sourcing"])
     app.include_router(sourcing_orchestrator_router, prefix="/api/v1")
     app.include_router(talent_funnel.router, prefix="/api/v1", tags=["talent-funnel"])
+    app.include_router(talent_pools.router, prefix="/api/v1", tags=["talent-pools"])
 
     # ── Interviews & Scheduling ───────────────────────────────────────────────
     app.include_router(interviews.router, prefix="/api/v1", tags=["interviews"])
