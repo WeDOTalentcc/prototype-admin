@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
     const secure = isSecureContext(request)
     const cookieOpts = {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none' as const,
+      secure: false,
+      sameSite: 'lax' as const,
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
     }
