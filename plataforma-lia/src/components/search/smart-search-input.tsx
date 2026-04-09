@@ -160,7 +160,7 @@ interface AutocompleteResponse {
   context_hint?: string
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+const API_BASE = ""
 
 // Sugestões cobrindo os 5 critérios: Location, Job Title, Experience, Industry, Skills
 export const SEARCH_SUGGESTIONS = [

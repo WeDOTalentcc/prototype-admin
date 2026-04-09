@@ -25,7 +25,7 @@ export interface CandidateDataRequestsResponse {
   hasActiveRequest: boolean
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+const API_BASE = ""
 
 const fetcher = async (url: string): Promise<CandidateDataRequestsResponse> => {
   try {
@@ -68,7 +68,7 @@ export function useCandidateDataRequests({
   const queryString = queryParams.toString()
 
   const endpoint = shouldFetch
-    ? `${API_BASE}/api/v1/data-requests/candidate/${candidateId}${queryString ? `?${queryString}` : ''}`
+    ? `/api/backend-proxy/data-requests/candidate/${candidateId}${queryString ? `?${queryString}` : ''}`
     : null
 
   const { data, error, isLoading, mutate } = useSWR<CandidateDataRequestsResponse>(
@@ -83,7 +83,7 @@ export function useCandidateDataRequests({
 
   const resendRequest = async (requestId: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/data-requests/${requestId}/resend`, {
+      const res = await fetch(`/api/backend-proxy/data-requests/${requestId}/resend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       })
@@ -99,7 +99,7 @@ export function useCandidateDataRequests({
 
   const cancelRequest = async (requestId: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/data-requests/${requestId}/cancel`, {
+      const res = await fetch(`/api/backend-proxy/data-requests/${requestId}/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       })

@@ -120,8 +120,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
 
   const handleInlineRename = useCallback(async (stageId: string, newName: string) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      await fetch(`${baseUrl}/api/v1/recruitment-stages/stages/${stageId}/inline-edit`, {
+      await fetch(`/api/backend-proxy/recruitment-stages/stages/${stageId}/inline-edit`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ display_name: newName }),
@@ -135,8 +134,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
 
   const handleInlineToggleActive = useCallback(async (stageId: string, isActive: boolean) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      await fetch(`${baseUrl}/api/v1/recruitment-stages/stages/${stageId}/inline-edit`, {
+      await fetch(`/api/backend-proxy/recruitment-stages/stages/${stageId}/inline-edit`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: isActive }),
@@ -154,8 +152,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
 
   const handleInlineRemove = useCallback(async (stageId: string) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      await fetch(`${baseUrl}/api/v1/recruitment-stages/stages/${stageId}/remove`, {
+      await fetch(`/api/backend-proxy/recruitment-stages/stages/${stageId}/remove`, {
         method: 'DELETE',
       })
       setDynamicStages(prev => prev.filter(s => s.id !== stageId))
@@ -175,8 +172,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
       newStages[idx] = newStages[targetIdx]
       newStages[targetIdx] = temp
       const reordered = newStages.map((s, i) => ({ ...s, order: i }))
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      fetch(`${baseUrl}/api/v1/recruitment-stages/stages/reorder`, {
+      fetch(`/api/backend-proxy/recruitment-stages/stages/reorder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stages: reordered.map(s => ({ stage_id: s.id, new_order: s.order })) }),
@@ -190,8 +186,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
 
   const handleInlineUpdateSLA = useCallback(async (stageId: string, slaHours: number) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      await fetch(`${baseUrl}/api/v1/recruitment-stages/stages/${stageId}/inline-edit`, {
+      await fetch(`/api/backend-proxy/recruitment-stages/stages/${stageId}/inline-edit`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sla_hours: slaHours }),

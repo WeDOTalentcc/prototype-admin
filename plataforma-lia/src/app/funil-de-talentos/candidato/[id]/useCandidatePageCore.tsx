@@ -62,7 +62,6 @@ const candidateId = params.id as string
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
   const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
   
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
 
   useEffect(() => {
     async function loadCandidate() {
@@ -163,7 +162,7 @@ const candidateId = params.id as string
     
     setIsLoadingFiles(true)
     try {
-      const url = `${BACKEND_URL}/api/v1/candidates/${candidateId}/files?company_id=${companyId || ''}`
+      const url = `/api/backend-proxy/candidates/${candidateId}/files?company_id=${companyId || ''}`
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
@@ -174,7 +173,7 @@ const candidateId = params.id as string
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [candidateId, BACKEND_URL, companyId])
+  }, [candidateId, companyId])
 
   const handleFileUpload = async (files: File[]) => {
     if (!candidateId || files.length === 0) return
@@ -202,7 +201,7 @@ const candidateId = params.id as string
       formData.append('uploaded_by_name', 'Recrutador')
       
       try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/candidates/${candidateId}/files`, {
+        const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/files`, {
           method: 'POST',
           body: formData,
         })
@@ -235,7 +234,7 @@ const candidateId = params.id as string
     if (!candidateId) return
     
     try {
-      const response = await fetch(`${BACKEND_URL}/api/v1/candidates/${candidateId}/files/${attachmentId}`, {
+      const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/files/${attachmentId}`, {
         method: 'DELETE',
       })
       
@@ -253,7 +252,7 @@ const candidateId = params.id as string
   }
 
   const handleDownloadFile = (fileUrl: string, fileName: string) => {
-    const downloadUrl = `${BACKEND_URL}${fileUrl}`
+    const downloadUrl = `/api/backend-proxy${fileUrl.startsWith('/api/v1') ? fileUrl.replace('/api/v1', '') : fileUrl}`
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = fileName

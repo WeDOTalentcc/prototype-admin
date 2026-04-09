@@ -121,14 +121,13 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
 
     setIsPolling(true)
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
       const params = new URLSearchParams({
         since: lastPollTimestamp.current,
       })
       if (jobId) params.append('job_id', jobId)
       if (companyId) params.append('company_id', companyId)
 
-      const response = await fetch(`${baseUrl}/api/v1/recruitment-stages/transition/return-event/recent?${params}`)
+      const response = await fetch(`/api/backend-proxy/recruitment-stages/transition/return-event/recent?${params}`)
 
       if (response.ok) {
         const data = await response.json()
@@ -171,8 +170,7 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
         if (jobId) params.append('job_id', jobId)
         if (companyId) params.append('company_id', companyId)
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-        const url = `${baseUrl}/api/v1/recruitment-stages/transition/return-event/stream?${params}`
+        const url = `/api/backend-proxy/recruitment-stages/transition/return-event/stream?${params}`
 
         eventSource = new EventSource(url)
 

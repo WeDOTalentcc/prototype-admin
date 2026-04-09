@@ -43,14 +43,12 @@ export function useCandidateFiles(candidate: Record<string, any>) {
   const [showPreview, setShowPreview] = useState(false)
   const [previewType, setPreviewType] = useState<'pdf' | 'image' | 'video' | 'audio' | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
-
   const fetchCandidateFiles = useCallback(async () => {
     if (!candidate?.id) return
 
     setIsLoadingFiles(true)
     try {
-      const url = `${BACKEND_URL}/api/v1/candidates/${candidate.id}/files?company_id=${companyId || ''}`
+      const url = `/api/backend-proxy/candidates/${candidate.id}/files?company_id=${companyId || ''}`
       const response = await fetch(url)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({})) as { error?: string }
@@ -66,7 +64,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [candidate?.id, BACKEND_URL, companyId])
+  }, [candidate?.id, companyId])
 
   useEffect(() => {
     if (candidate?.id) {
@@ -100,7 +98,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
       formData.append('uploaded_by_name', 'Recrutador')
 
       try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/candidates/${candidate.id}/files`, {
+        const response = await fetch(`/api/backend-proxy/candidates/${candidate.id}/files`, {
           method: 'POST',
           body: formData,
         })
@@ -143,7 +141,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
     if (!candidate?.id) return
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/v1/candidates/${candidate.id}/files/${attachmentId}`, {
+      const response = await fetch(`/api/backend-proxy/candidates/${candidate.id}/files/${attachmentId}`, {
         method: 'DELETE',
       })
 
@@ -167,7 +165,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
   }
 
   const handleDownloadFile = (fileUrl: string, fileName: string) => {
-    const downloadUrl = `${BACKEND_URL}${fileUrl}`
+    const downloadUrl = `/api/backend-proxy${fileUrl.startsWith('/api/v1') ? fileUrl.replace('/api/v1', '') : fileUrl}`
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = fileName

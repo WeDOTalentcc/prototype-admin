@@ -114,7 +114,7 @@ export interface AutocompleteResponse {
   context_hint?: string
 }
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+export const API_BASE = ""
 
 export const SEARCH_SUGGESTIONS = [
   'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',

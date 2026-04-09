@@ -17,8 +17,7 @@ export function usePipelineInheritance(jobId?: string) {
     if (!jobId) return
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      const response = await fetch(`${baseUrl}/api/v1/recruitment-stages/pipeline/job/${jobId}/inheritance-status`)
+      const response = await fetch(`/api/backend-proxy/recruitment-stages/pipeline/job/${jobId}/inheritance-status`)
       if (response.ok) {
         const data = await response.json()
         setState({ isCustomized: data.is_customized, isLoading: false, error: null })
@@ -32,8 +31,7 @@ export function usePipelineInheritance(jobId?: string) {
     if (!jobId) return false
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      const response = await fetch(`${baseUrl}/api/v1/recruitment-stages/pipeline/job/${jobId}/copy-from-company`, {
+      const response = await fetch(`/api/backend-proxy/recruitment-stages/pipeline/job/${jobId}/copy-from-company`, {
         method: 'POST',
       })
       if (response.ok) {
@@ -50,8 +48,7 @@ export function usePipelineInheritance(jobId?: string) {
   const markAsCustomized = useCallback(async (): Promise<boolean> => {
     if (!jobId) return false
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      const response = await fetch(`${baseUrl}/api/v1/recruitment-stages/pipeline/job/${jobId}/mark-customized`, {
+      const response = await fetch(`/api/backend-proxy/recruitment-stages/pipeline/job/${jobId}/mark-customized`, {
         method: 'POST',
       })
       if (response.ok) {
