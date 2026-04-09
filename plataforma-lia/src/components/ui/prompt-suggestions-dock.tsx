@@ -1,50 +1,11 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { Plus, Search, UserCheck, Calendar, RefreshCcw, Brain, X, Move } from "lucide-react"
+import { Brain, X, Move } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
-
-interface PromptSuggestion {
-  id: string
-  icon: React.ElementType
-  title: string
-  description: string
-  command: string
-  category: "vagas" | "candidatos" | "entrevistas" | "relatorios"
-}
-
-const CATEGORY_COLORS = {
-  vagas: {
-    icon: 'var(--wedo-cyan-dark, #4DA8BB)',
-    iconBg: 'var(--wedo-cyan-light, #B8E0EA)',
-    bg: 'var(--lia-bg-secondary)',
-    border: 'var(--lia-border-subtle)',
-    hoverBg: 'var(--lia-bg-tertiary)'
-  },
-  candidatos: {
-    icon: 'var(--wedo-green, #5DA47A)',
-    iconBg: 'rgba(93, 164, 122, 0.15)',
-    bg: 'var(--lia-bg-secondary)',
-    border: 'var(--lia-border-subtle)',
-    hoverBg: 'var(--lia-bg-tertiary)'
-  },
-  entrevistas: {
-    icon: 'var(--wedo-orange, #D19960)',
-    iconBg: 'rgba(209, 153, 96, 0.15)',
-    bg: 'var(--lia-bg-secondary)',
-    border: 'var(--wedo-orange)',
-    hoverBg: 'var(--lia-bg-tertiary)'
-  },
-  relatorios: {
-    icon: 'var(--wedo-purple, #9860D1)',
-    iconBg: 'rgba(152, 96, 209, 0.15)',
-    bg: 'var(--lia-bg-secondary)',
-    border: 'var(--wedo-purple)',
-    hoverBg: 'var(--lia-bg-tertiary)'
-  }
-}
+import { ChatWorkflowReels } from "@/components/ui/chat-workflow-reels"
 
 interface PromptSuggestionsDockProps {
   onSelect: (command: string) => void
@@ -52,60 +13,9 @@ interface PromptSuggestionsDockProps {
   onClose?: () => void
 }
 
-const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
-  {
-    id: "create-job",
-    icon: Plus,
-    title: "Crie uma nova vaga",
-    description: "Configure requisitos com descrição detalhada",
-    command: "Criar uma nova vaga",
-    category: "vagas"
-  },
-  {
-    id: "search-candidates",
-    icon: Search,
-    title: "Buscar candidatos",
-    description: "Encontre candidatos por perfil, skills ou experiência",
-    command: "Buscar candidatos",
-    category: "candidatos"
-  },
-  {
-    id: "candidate-info",
-    icon: Search,
-    title: "Consulte sobre candidato",
-    description: "Obtenha histórico específico e completo",
-    command: "Consulte informações sobre candidato",
-    category: "candidatos"
-  },
-  {
-    id: "add-candidate",
-    icon: UserCheck,
-    title: "Adicione novo candidato",
-    description: "Cadastre perfil com talentos",
-    command: "Adicione novo candidato",
-    category: "candidatos"
-  },
-  {
-    id: "reschedule-interview",
-    icon: Calendar,
-    title: "Reagende uma entrevista",
-    description: "Cancele horário e notifique participantes",
-    command: "Reagende uma entrevista",
-    category: "entrevistas"
-  },
-  {
-    id: "update-status",
-    icon: RefreshCcw,
-    title: "Atualize status do candidato",
-    description: "Modifique situação e envie notificações",
-    command: "Atualize status do candidato",
-    category: "candidatos"
-  }
-]
-
 export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSuggestionsDockProps) {
   const [isExpanded, setIsExpanded] = useState(isEmpty)
-  
+
   const storePosition = useUIPreferencesStore((s) => s.promptSuggestionsPosition)
   const setStorePosition = useUIPreferencesStore((s) => s.setPromptSuggestionsPosition)
   const [position, setPositionLocal] = useState(storePosition)
@@ -145,9 +55,9 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
     if (isDragging) {
       const newTop = e.clientY - dragOffset.y
       const newLeft = e.clientX - dragOffset.x
-      
+
       const newRight = window.innerWidth - newLeft - (cardRef.current?.offsetWidth || 384)
-      
+
       setPosition({
         top: Math.max(0, Math.min(newTop, window.innerHeight - 100)),
         right: Math.max(0, Math.min(newRight, window.innerWidth - 100))
@@ -174,34 +84,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
   if (isEmpty) {
     return (
       <div className="w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {DASHBOARD_SUGGESTIONS.map((suggestion) => {
-            const Icon = suggestion.icon
-            const colors = CATEGORY_COLORS[suggestion.category]
-            return (
-              <button
-                key={suggestion.id}
-                onClick={() => onSelect(suggestion.command)}
-                className="flex items-start gap-4 p-5 text-left rounded-xl bg-[var(--lia-bg-primary)] border border-lia-border-subtle shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-lia-border-default group"
-              >
-                <div
-                  className="rounded-lg p-3 flex-shrink-0 transition-colors"
-                  style={{ backgroundColor: colors.iconBg, color: colors.icon }}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[15px] font-semibold text-lia-text-primary block mb-1">
-                    {suggestion.title}
-                  </span>
-                  <span className="text-[13px] leading-snug text-lia-text-secondary block">
-                    {suggestion.description}
-                  </span>
-                </div>
-              </button>
-            )
-          })}
-        </div>
+        <ChatWorkflowReels onSelect={onSelect} />
       </div>
     )
   }
@@ -216,18 +99,18 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           onClick={() => setIsExpanded(true)}
           onMouseDown={handleMouseDown}
           className="fixed h-9 px-4 rounded-md transition-transform motion-reduce:transition-none hover:scale-105 z-50 select-none opacity-80 hover:opacity-100"
-          style={{top: `${position.top}px`,
+          style={{
+            top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--lia-bg-secondary)',
             border: '1px solid var(--lia-border-subtle)',
-            cursor: isDragging ? 'grabbing' : 'grab'}}
+            cursor: isDragging ? 'grabbing' : 'grab'
+          }}
         >
           <div className="p-1 rounded-md mr-2 bg-lia-btn-primary-bg/[0.08]">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
-          <span 
-            className="text-base-ui font-medium text-lia-text-primary"
-          >
+          <span className="text-base-ui font-medium text-lia-text-primary">
             Sugestões
           </span>
         </Button>
@@ -236,13 +119,14 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
       {isExpanded && (
         <Card
           ref={cardRef}
-          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
-          style={{top: `${position.top}px`,
-            right: `${position.right}px`}}
+          className="fixed w-96 max-h-[520px] overflow-hidden z-50 select-none rounded-xl border border-lia-border-subtle bg-lia-bg-secondary"
+          style={{
+            top: `${position.top}px`,
+            right: `${position.right}px`
+          }}
         >
-          {/* Header - Draggable */}
           <div
-            className={`px-4 py-3 flex items-center justify-between border-b border-lia-border-subtle rounded-t-md bg-lia-bg-secondary ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`px-4 py-3 flex items-center justify-between border-b border-lia-border-subtle rounded-t-xl bg-lia-bg-secondary ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             onMouseDown={handleMouseDown}
           >
             <div className="flex items-center gap-2">
@@ -250,10 +134,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <div className="p-1.5 rounded-md bg-lia-btn-primary-bg/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
-              <h3
-                className="text-base-ui font-semibold text-lia-text-primary"
-              >
-                Tarefas Sugeridas
+              <h3 className="text-base-ui font-semibold text-lia-text-primary">
+                Fluxo de Recrutamento
               </h3>
             </div>
             <Button
@@ -266,47 +148,11 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             </Button>
           </div>
 
-          {/* Suggestions List */}
-          <div className="p-3 space-y-2 overflow-y-auto max-h-content-lg">
-            {DASHBOARD_SUGGESTIONS.map((suggestion) => {
-              const Icon = suggestion.icon
-              const colors = CATEGORY_COLORS[suggestion.category]
-              return (
-                <button
-                  key={suggestion.id}
-                  onClick={() => {
-                    onSelect(suggestion.command)
-                    setIsExpanded(false)
-                  }}
-                  className="w-full p-2.5 rounded-md transition-colors motion-reduce:transition-none text-left group bg-lia-bg-primary"
-                  style={{border: `1px solid ${colors.bg}`}}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.hoverBg
-                    e.currentTarget.style.borderColor = colors.border
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--lia-bg-primary)'
-                    e.currentTarget.style.borderColor = colors.bg
-                  }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div 
-                      className="p-1.5 rounded-md flex-shrink-0"
-                      style={{backgroundColor: colors.bg}}
-                    >
-                      <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 
-                        className="font-medium text-base-ui leading-tight text-lia-text-primary"
-                      >
-                        {suggestion.title}
-                      </h4>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+          <div className="p-4 overflow-y-auto max-h-content-lg">
+            <ChatWorkflowReels onSelect={(command) => {
+              onSelect(command)
+              setIsExpanded(false)
+            }} compact />
           </div>
         </Card>
       )}
