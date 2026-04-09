@@ -21,7 +21,7 @@
 
 ## 1. Inventário
 
-### 1.1 Páginas Principais (13)
+### 1.1 Páginas Principais (17)
 
 | # | Página | Arquivo | Complexidade | Linhas | Screenshot |
 |---|--------|---------|--------------|--------|------------|
@@ -38,8 +38,12 @@
 | 11 | Biblioteca LIA | `pages/lia-library-page.tsx` | MÉDIA | ~392 | (command cards) |
 | 12 | Templates | `pages/templates-page.tsx` | MÉDIA | ~408 | (grid/list + create modal) |
 | 13 | Central Comunicação | `settings/CommunicationHub.tsx` | MÉDIA | ~141 + 5 sub-tabs | (gated por licença) |
+| 14 | Créditos IA | `pages/ai-credits-page.tsx` | MÉDIA | ~277 | (rota: `/configuracoes/ai-credits`) |
+| 15 | Integrações ATS | `pages/ats-integrations-page.tsx` | ALTA | ~419 | (via Settings hub) |
+| 16 | Integrações Externas | `pages/integrations-page.tsx` | MÉDIA | ~124 + sub-componentes | (webhooks/notificações) |
+| 17 | Onboarding | `pages/onboarding-page.tsx` + sub-views | MÉDIA | ~107 + 3 sub-views | (gestão de integração RH) |
 
-**Nota sobre screenshots:** O screenshot do Chat LIA está salvo em `docs/screenshots/chat-page.jpg`. As demais páginas são acessíveis via sidebar navigation ou sub-rotas — o screenshot principal captura o layout completo com sidebar visível.
+**Nota sobre screenshots:** O screenshot do Chat LIA (visão principal com sidebar) está salvo em `docs/screenshots/chat-page.jpg`. As demais páginas são acessíveis via sidebar navigation ou sub-rotas do Settings. A captura do Chat inclui a sidebar completa visível, servindo como referência do layout shell (sidebar + header + conteúdo) compartilhado por todas as páginas. Páginas como Créditos IA, Integrações ATS, Integrações Externas e Onboarding são acessadas via sub-rotas (`/configuracoes/ai-credits`) ou via Settings hubs e não estão no menu principal do sidebar.
 
 ### 1.2 Componentes Compartilhados Críticos
 
@@ -694,6 +698,135 @@ Hub de comunicação com 5 sub-tabs. Gated por licença (`hasModuleAccess('commu
 
 ---
 
+### 3.14 Créditos IA
+
+**Classificação: MANTER**
+
+**Análise:**
+Dashboard de consumo de tokens IA com gráficos (Recharts/BarChart) e alertas de limite. Acessado via rota `/configuracoes/ai-credits`.
+
+**Estrutura:**
+- Usage Alert: banner com gradação (100% = error, 80% = warning)
+- Metrics cards: saldo, uso, custo estimado, trending
+- Chart: BarChart de consumo diário (últimos 30 dias) via Recharts
+- Breakdown por agente: tabela de consumo por agent type
+- Loading/Error states com mensagens claras
+
+**Pontos positivos:**
+- Alertas com tokens semânticos corretos (`status-error`, `status-warning`)
+- Chart com Recharts (ResponsiveContainer) — boa responsividade
+- Formatação inteligente de tokens (K, M)
+- Error boundary com mensagem clara
+
+**Problemas menores:**
+1. Sem padding padrão explícito no root — herda do layout pai
+2. Cards usam `p-6` — consistente com Indicadores mas maior que o padrão geral
+
+**Recomendações:**
+- Sem mudanças visuais necessárias — página de nicho bem implementada
+- Considerar alinhar padding com padrão global quando definido
+
+---
+
+### 3.15 Integrações ATS
+
+**Classificação: MANTER**
+
+**Análise:**
+Página complexa de gestão de integrações com ATS (Applicant Tracking Systems). Usa design tokens exemplarmente (`textStyles`, `cardStyles`). Acessada via Settings hub.
+
+**Estrutura:**
+- Overview: 4 metric cards (Sistemas Conectados, Registros Sincronizados, Integrações Ativas, Tempo Médio Sync)
+- ATS Systems list: cards por sistema com status (connected, connecting, error, disabled)
+- Sync logs: histórico de sincronizações
+- Configuration modal: `SystemConfigurationModal` para setup de cada ATS
+- View tabs: Overview, Systems, Integrations, Logs
+
+**Pontos positivos:**
+- Uso exemplar de design tokens (`textStyles.label`, `textStyles.titleXl`, `textStyles.caption`)
+- Status icons com cores semânticas corretas
+- Cards com `p-6` e grid responsivo
+- Hook separado `useAtsIntegrations` — boa separação de concerns
+
+**Problemas menores:**
+1. `text-2xl` hardcoded em metric values — poderia usar `textStyles.titleXl`
+2. Metric cards poderiam ser componente reutilizável (padrão repetido com Indicadores)
+
+**Recomendações:**
+- Extrair metric card como componente compartilhado `<MetricCard>`
+- Usar como referência para padronização de design tokens
+
+---
+
+### 3.16 Integrações Externas
+
+**Classificação: AJUSTAR**
+
+**Análise:**
+Página de integrações com webhooks e notificações externas (Teams, etc.). Layout com sidebar + conteúdo.
+
+**Estrutura:**
+- Header: Settings icon `w-8 h-8` + "Integrações Externas" `text-2xl font-bold`
+- Stats cards: `IntegrationsStatsCards`
+- Grid 12 colunas: sidebar + lista + templates
+- Webhook logs toggle
+- New Integration modal
+- CTA: "Nova Integração" com dark mode tokens explícitos
+
+**Pontos positivos:**
+- 12-column grid para layout flexível
+- Dark mode tokens explícitos no botão primário
+- Modal de criação integrado
+- Webhook event logs
+
+**Problemas:**
+1. Título `text-2xl font-bold` (24px) — inconsistente com padrão proposto (`text-lg`)
+2. Settings icon `w-8 h-8` (32px) — muito grande vs padrão `w-5 h-5` (20px)
+3. `min-h-screen` no container — deveria ser `h-full` para integração com shell
+4. `mb-8` entre header e conteúdo — excessivo vs padrão `mb-2` a `mb-4`
+5. `font-sans` inline — desnecessário (já é default global)
+
+**Recomendações:**
+- Título → `text-lg font-semibold`
+- Icon → `w-5 h-5`
+- Container → `h-full` em vez de `min-h-screen`
+- Remover `font-sans` inline
+
+---
+
+### 3.17 Onboarding
+
+**Classificação: AJUSTAR**
+
+**Análise:**
+Módulo de onboarding para integração de novos colaboradores. Tabs com pill/chip style, 4 sub-views.
+
+**Estrutura:**
+- Header: "Onboarding Automatizado" `text-sm font-semibold` + Export/Settings CTAs
+- Tabs: pill style em `bg-lia-bg-tertiary` container (segmented control pattern)
+- Views: Overview (`OnboardingOverview`), Candidates (`OnboardingCandidates`), Templates, Analytics
+- Candidate detail modal: `CandidateDetailModal`
+- `max-w-7xl mx-auto` — centrado com largura máxima
+
+**Pontos positivos:**
+- Tab style (segmented control) é limpo e moderno — 5º padrão de tab mas visualmente coerente
+- Tokens corretos para cores (`text-lia-text-primary`, `bg-lia-bg-tertiary`)
+- `max-w-7xl` centra o conteúdo para telas grandes
+- Padding `p-6` generoso
+
+**Problemas:**
+1. Título `text-sm font-semibold` (14px) — menor que todas as outras páginas
+2. Padding `p-6` + `max-w-7xl mx-auto` — padrão diferente de todas as outras páginas
+3. Mais um padrão de tab (segmented control) — total de 5 padrões na plataforma
+4. `motion-reduce:transition-none` corretamente aplicado ✓
+
+**Recomendações:**
+- Título → `text-lg font-semibold` para consistência
+- Avaliar se segmented control pode substituir chip tabs como padrão unificado
+- Manter `max-w-7xl mx-auto` como exceção para páginas standalone
+
+---
+
 ## 4. Impacto dos Tokens Globais
 
 ### 4.1 Análise de `text-base-ui` (11px)
@@ -802,6 +935,10 @@ O design deve suportar ambos sem forçar um único nível de density.
 | Biblioteca LIA | Exploração | MÉDIA | MÉDIA ✓ |
 | Templates | Exploração | MÉDIA | MÉDIA ✓ |
 | Central Comunicação | Exploração | MÉDIA | MÉDIA ✓ |
+| Créditos IA | Exploração | BAIXA | BAIXA ✓ |
+| Integrações ATS | Exploração/Execução | MÉDIA | MÉDIA ✓ |
+| Integrações Externas | Exploração | MÉDIA | MÉDIA ✓ (com ajustes spacing) |
+| Onboarding | Exploração | MÉDIA | MÉDIA ✓ (com ajustes título) |
 
 ### 5.3 Tipografia: 3 Escalas
 
@@ -903,6 +1040,10 @@ Em vez de alterar `text-base-ui` globalmente, definir 3 escalas de tipografia:
 | Biblioteca LIA | AJUSTAR | P3 | 3 |
 | Templates | AJUSTAR | P3 | 4 |
 | Central Comunicação | MANTER | P4 | — |
+| Créditos IA | MANTER | P4 | — |
+| Integrações ATS | MANTER | P4 | — |
+| Integrações Externas | AJUSTAR | P3 | 1 |
+| Onboarding | AJUSTAR | P3 | 1 |
 | **COMPONENTES** | | | |
 | Sidebar | AJUSTAR | P1 | 2 |
 | Header Bar | AJUSTAR | P2 | 1 |
