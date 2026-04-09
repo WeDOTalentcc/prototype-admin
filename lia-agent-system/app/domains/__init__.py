@@ -20,3 +20,9 @@ from app.domains.registry import DomainRegistry, register_domain
 # --- Domain auto-discovery ---
 # Importing domain modules triggers @register_domain decorators
 from app.domains.sourcing.domain import SourcingDomain  # noqa: F401
+
+# --- Phase 6 domains (Agent Studio, Talent Pool, Digital Twin, Campaign) ---
+from app.domains.talent_pool.domain import TalentPoolDomain  # noqa: F401
+from app.domains.agent_studio.domain import AgentStudioDomain  # noqa: F401
+from app.domains.digital_twin.domain import DigitalTwinDomain  # noqa: F401
+from app.domains.recruitment_campaign.domain import RecruitmentCampaignDomain  # noqa: F401

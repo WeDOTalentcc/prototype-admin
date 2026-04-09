@@ -316,6 +316,30 @@ DOMAIN_PATTERNS: dict[str, list[str]] = {
         r"compromisso\s+no\s+calend[aá]rio",
         r"reuni[aã]o\s+no\s+calend[aá]rio",
     ],
+
+    # --- Phase 6 domains ---
+    "talent_pool": [
+        r"talent\s+pool", r"pool\s+de\s+talentos?", r"banco\s+de\s+talentos?",
+        r"banco\s+vivo", r"bancos?\s+vivos?", r"criar\s+\w*\s*pool",
+        r"mover\s+\w*\s*pool\s+\w*\s*vaga", r"candidatos?\s+do\s+pool",
+    ],
+    "agent_studio": [
+        r"agent\s+studio", r"studio\s+de\s+agentes?", r"criar\s+\w*\s*agente",
+        r"novo\s+agente", r"ativar\s+\w*\s*agente", r"calibra[rç]",
+        r"recalibra[rç]", r"busca\s+inteligente", r"multi.?estrat[eé]gia",
+        r"4\s+estrat[eé]gias?", r"templates?\s+setor",
+    ],
+    "digital_twin": [
+        r"digital\s+twin", r"g[eê]meo\s+digital", r"twin\s+\w*\s*especialista",
+        r"avaliar?\s+com\s+twin", r"segunda\s+opini[aã]o",
+        r"clon[ae]r?\s+\w*\s*racioc[ií]nio", r"criar\s+\w*\s*twin",
+    ],
+    "recruitment_campaign": [
+        r"campanha\s+\w*\s*recrutamento", r"criar\s+\w*\s*campanha",
+        r"nova\s+campanha", r"fluxo\s+completo", r"avan[cç]ar\s+\w*\s*campanha",
+        r"progresso\s+\w*\s*campanha", r"workflow\s+rail",
+    ],
+
 }
 
 _DOMAIN_ID_NORMALIZE: dict[str, str] = {
