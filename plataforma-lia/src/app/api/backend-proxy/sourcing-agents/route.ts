@@ -13,14 +13,22 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const params = searchParams.toString()
-  const res = await fetch(`${BACKEND_URL}/api/v1/sourcing-agents${params ? `?${params}` : ""}`, { headers: getAuthHeaders(req) })
-  return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
+  try {
+    const { searchParams } = new URL(req.url)
+    const params = searchParams.toString()
+    const res = await fetch(`${BACKEND_URL}/api/v1/sourcing-agents${params ? `?${params}` : ""}`, { headers: getAuthHeaders(req) })
+    return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
+  } catch {
+    return NextResponse.json({ error: "Backend unavailable" }, { status: 502 })
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.text()
-  const res = await fetch(`${BACKEND_URL}/api/v1/sourcing-agents`, { method: "POST", headers: getAuthHeaders(req), body })
-  return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
+  try {
+    const body = await req.text()
+    const res = await fetch(`${BACKEND_URL}/api/v1/sourcing-agents`, { method: "POST", headers: getAuthHeaders(req), body })
+    return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
+  } catch {
+    return NextResponse.json({ error: "Backend unavailable" }, { status: 502 })
+  }
 }

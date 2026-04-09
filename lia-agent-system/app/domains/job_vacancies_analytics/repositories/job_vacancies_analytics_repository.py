@@ -228,7 +228,7 @@ class JobVacanciesAnalyticsRepository:
                     COUNT(*) as total,
                     AVG(CASE WHEN salary_max > 0 THEN salary_max ELSE NULL END)::int as avg_salary
                 FROM job_vacancies
-                WHERE company_id = CAST(:co AS uuid)
+                WHERE company_id = :co
                   AND created_at >= NOW() - (:days || ' days')::interval
                 GROUP BY COALESCE(work_model, 'Não informado')
                 ORDER BY total DESC
@@ -247,7 +247,7 @@ class JobVacanciesAnalyticsRepository:
                     COALESCE(work_model, 'Não informado') as work_model,
                     COUNT(*) as total
                 FROM job_vacancies
-                WHERE company_id = CAST(:co AS uuid)
+                WHERE company_id = :co
                   AND created_at >= NOW() - (:days || ' days')::interval
                 GROUP BY title, work_model
                 ORDER BY total DESC
@@ -267,7 +267,7 @@ class JobVacanciesAnalyticsRepository:
                     COALESCE(work_model, 'Não informado') as work_model,
                     COUNT(*) as total
                 FROM job_vacancies
-                WHERE company_id = CAST(:co AS uuid)
+                WHERE company_id = :co
                   AND created_at >= NOW() - (:days || ' days')::interval
                 GROUP BY location, work_model
                 ORDER BY total DESC
@@ -294,7 +294,7 @@ class JobVacanciesAnalyticsRepository:
                 FROM vacancy_candidates vc
                 JOIN job_vacancies jv ON jv.id = vc.vacancy_id
                 JOIN candidates c ON c.id = vc.candidate_id
-                WHERE jv.company_id = CAST(:co AS uuid)
+                WHERE jv.company_id = :co
                   AND LOWER(jv.status) IN ('ativa', 'active', 'open', 'published', 'publicada', 'em andamento')
                   AND vc.stage IS NOT NULL
                   AND vc.stage NOT IN ('rejected', 'declined', 'withdrawn', 'cancelado', 'reprovado')
