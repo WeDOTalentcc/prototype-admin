@@ -35,6 +35,14 @@ export interface MenuItemType {
   isPremium?: boolean
   /** Nested navigation items */
   subItems?: MenuItemType[]
+  /** If true, clicking navigates to the parent page AND expands sub-items */
+  navigateOnClick?: boolean
+  /** Maximum visible sub-items before "ver todos" link (default: unlimited) */
+  maxVisibleSubItems?: number
+  /** Label for "see all" link when sub-items exceed maxVisibleSubItems */
+  seeAllLabel?: string
+  /** Navigation target for the "see all" link */
+  seeAllTarget?: string
 }
 
 // ─── Job Filter Item ────────────────────────────────────────────────────────

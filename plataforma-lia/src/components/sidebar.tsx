@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback, useEffect, useMemo } from "react"
 import type { MenuItemType, JobFilterItemType, SidebarProps } from "@/lib/sidebar/sidebar.types"
 import { useSidebarState } from "@/lib/sidebar/useSidebarState"
 import { cn } from "@/lib/utils"
@@ -29,6 +29,8 @@ import {
   Search,
   Bot,
   GitBranch,
+  Database,
+  MoreHorizontal,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -37,18 +39,25 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LIATipsModal } from "@/components/lia-tips-modal"
 import Image from "next/image"
 
-// Menu principal estruturado em seções lógicas de recrutamento
 interface MenuSection {
   label: string
   items: MenuItemType[]
 }
 
-const menuSections: MenuSection[] = [
+const BASE_MENU_SECTIONS: MenuSection[] = [
   {
     label: "Recrutamento",
     items: [
       { icon: Briefcase, label: "Vagas", isCore: true },
-      { icon: Users, label: "Funil de Talentos", isCore: true },
+      {
+        icon: Users,
+        label: "Funil de Talentos",
+        isCore: true,
+        navigateOnClick: true,
+        maxVisibleSubItems: 3,
+        seeAllLabel: "Ver todos os bancos",
+        seeAllTarget: "Funil de Talentos",
+      },
       { icon: GitBranch, label: "Visão do Pipeline", isCore: true },
     ],
   },
@@ -62,10 +71,71 @@ const menuSections: MenuSection[] = [
   {
     label: "Configuração",
     items: [
-      { icon: Bot, label: "Agent Studio", isCore: true },
+      {
+        icon: Bot,
+        label: "Agent Studio",
+        isCore: true,
+        navigateOnClick: true,
+        maxVisibleSubItems: 3,
+        seeAllLabel: "Ver todos os agentes",
+        seeAllTarget: "Agent Studio",
+      },
     ],
   },
 ]
+
+interface DynamicSubItem {
+  id: string
+  name: string
+  status: string
+}
+
+function useSidebarDynamicItems() {
+  const [talentPools, setTalentPools] = useState<DynamicSubItem[]>([])
+  const [agents, setAgents] = useState<DynamicSubItem[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadPools() {
+      try {
+        const res = await fetch("/api/backend-proxy/talent-pools")
+        if (!res.ok) return
+        const data = await res.json()
+        const mapped = (data?.data || [])
+          .map((d: { id: string; attributes: { name: string; status: string } }) => ({
+            id: d.id,
+            name: d.attributes.name,
+            status: d.attributes.status,
+          }))
+          .filter((p: DynamicSubItem) => p.status === "active")
+        if (!cancelled) setTalentPools(mapped)
+      } catch { /* silent */ }
+    }
+
+    async function loadAgents() {
+      try {
+        const res = await fetch("/api/backend-proxy/sourcing-agents")
+        if (!res.ok) return
+        const data = await res.json()
+        const mapped = (data?.agents || [])
+          .filter((a: { status: string }) => a.status === "active" || a.status === "paused")
+          .map((a: { id: string; agent_name: string; status: string }) => ({
+            id: a.id,
+            name: a.agent_name,
+            status: a.status,
+          }))
+        if (!cancelled) setAgents(mapped)
+      } catch { /* silent */ }
+    }
+
+    loadPools()
+    loadAgents()
+    return () => { cancelled = true }
+  }, [])
+
+  return { talentPools, agents }
+}
 
 
 const jobFilterItems: JobFilterItemType[] = [
@@ -105,14 +175,17 @@ const MenuItem = React.memo(({
   }, [currentPage, hasSubItems, item.subItems])
 
   const handleClick = useCallback(() => {
-    if (hasSubItems) {
+    if (hasSubItems && item.navigateOnClick) {
+      if (canAccess) onNavigate(item.label)
+      setIsExpanded(prev => !prev)
+    } else if (hasSubItems) {
       setIsExpanded(prev => !prev)
     } else if (canAccess) {
       onNavigate(item.label)
     } else {
       onNavigate(`upgrade-${item.moduleId}`)
     }
-  }, [hasSubItems, canAccess, onNavigate, item.label, item.moduleId])
+  }, [hasSubItems, canAccess, onNavigate, item.label, item.moduleId, item.navigateOnClick])
 
   const isActive = currentPage === item.label || (hasSubItems && item.subItems?.some(sub => sub.label === currentPage))
 
@@ -161,40 +234,44 @@ const MenuItem = React.memo(({
 
       {/* SubItems */}
       {hasSubItems && isExpanded && shouldShowContent && (
-        <div className="ml-4 mt-1 space-y-1">
-          {item.subItems?.map((subItem) => {
+        <div className="ml-4 mt-1 space-y-0.5">
+          {(item.maxVisibleSubItems
+            ? item.subItems!.slice(0, item.maxVisibleSubItems)
+            : item.subItems!
+          ).map((subItem) => {
             const subIsLocked = subItem.moduleId && !hasModuleAccess(subItem.moduleId)
             const subCanAccess = subItem.isCore || (subItem.moduleId && hasModuleAccess(subItem.moduleId))
+            const navKey = (subItem as any)._navKey || subItem.label
 
             return (
               <button
-                key={subItem.label}
+                key={navKey}
                 onClick={() => {
                   if (subCanAccess) {
-                    onNavigate(subItem.label)
+                    onNavigate(navKey)
                   } else {
                     onNavigate(`upgrade-${subItem.moduleId}`)
                   }
                 }}
                 className={cn(
- "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
+ "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 text-sm-ui leading-tight min-h-8",
                   subIsLocked
-                    ? "text-lia-text-primary cursor-default opacity-60"
+                    ? "text-lia-text-secondary cursor-default opacity-60"
                     : "hover:bg-lia-interactive-hover",
                   currentPage === subItem.label && subCanAccess
                     ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
                     : subCanAccess
-                    ? "text-lia-text-primary font-normal"
-                    : "text-lia-text-primary font-normal"
+                    ? "text-lia-text-secondary font-normal"
+                    : "text-lia-text-secondary font-normal"
                 )}
                 disabled={subIsLocked || false}
               >
                 <div className="flex items-center gap-1.5">
-                  <subItem.icon className="w-4 h-4 flex-shrink-0" />
+                  <subItem.icon className="w-3.5 h-3.5 flex-shrink-0" />
                   {subIsLocked && <Lock className="w-2 h-2" />}
                 </div>
-                <div className="flex items-center justify-between flex-1">
-                  <span className="text-base-ui">{subItem.label}</span>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <span className="text-sm-ui truncate">{subItem.label}</span>
                   {subItem.isPremium && !subIsLocked && (
                     <Crown className="w-2 h-2 text-lia-text-primary" />
                   )}
@@ -207,6 +284,17 @@ const MenuItem = React.memo(({
               </button>
             )
           })}
+          {item.maxVisibleSubItems && item.subItems!.length > item.maxVisibleSubItems && item.seeAllTarget && (
+            <button
+              onClick={() => onNavigate(item.seeAllTarget!)}
+              className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover min-h-7"
+            >
+              <MoreHorizontal className="w-3 h-3 flex-shrink-0 text-lia-text-disabled" />
+              <span className="text-xs text-lia-text-disabled hover:text-lia-text-secondary">
+                {item.seeAllLabel || "Ver todos"} ({item.subItems!.length})
+              </span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -310,9 +398,51 @@ const RecentItemRow = React.memo(({
 RecentItemRow.displayName = 'RecentItemRow'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
-  // State, persistence, resize, keyboard shortcut and computed values
-  // extracted to useSidebarState (src/lib/sidebar/useSidebarState.ts).
-  // Vue 3 migration: replace with the equivalent composable — same return shape.
+  const { talentPools, agents } = useSidebarDynamicItems()
+
+  const menuSections = useMemo(() => {
+    return BASE_MENU_SECTIONS.map(section => ({
+      ...section,
+      items: section.items.map(item => {
+        if (item.label === "Funil de Talentos" && talentPools.length > 0) {
+          return {
+            ...item,
+            subItems: talentPools.map(p => ({
+              icon: Database,
+              label: p.name,
+              isCore: true,
+              _navKey: `pool:${p.id}`,
+            })),
+          }
+        }
+        if (item.label === "Agent Studio" && agents.length > 0) {
+          return {
+            ...item,
+            subItems: agents.map(a => ({
+              icon: Bot,
+              label: a.name,
+              isCore: true,
+              _navKey: `agent:${a.id}`,
+            })),
+          }
+        }
+        return item
+      }),
+    }))
+  }, [talentPools, agents])
+
+  const handleDynamicNavigate = useCallback((page: string) => {
+    if (page.startsWith("pool:")) {
+      onNavigate("Funil de Talentos")
+      return
+    }
+    if (page.startsWith("agent:")) {
+      onNavigate("Agent Studio")
+      return
+    }
+    onNavigate(page)
+  }, [onNavigate])
+
   const {
     isMounted,
     showTipsModal,
@@ -402,7 +532,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
                     key={item.label}
                     item={item}
                     currentPage={currentPage}
-                    onNavigate={onNavigate}
+                    onNavigate={handleDynamicNavigate}
                     isCollapsed={isCollapsed}
                     shouldShowContent={shouldShowContent}
                   />
