@@ -3,7 +3,6 @@
 import React, { useEffect } from "react"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { UnifiedChat } from "./UnifiedChat"
-import { UnifiedChatBubble } from "./UnifiedChatBubble"
 
 /**
  * DashboardChatPanel — Renders UnifiedChat inline in the dashboard flex layout.
@@ -12,7 +11,7 @@ import { UnifiedChatBubble } from "./UnifiedChatBubble"
  * causing the main content to shrink when the chat opens (Replit-style).
  *
  * - When open: renders UnifiedChat with renderMode="inline" (flex child, 380px)
- * - When closed: renders the bubble button
+ * - When closed: returns null (bubble is rendered by UnifiedChatConditional)
  * - When ChatPage is active (hasInlineChat=true): hides completely
  */
 export function DashboardChatPanel() {
@@ -34,12 +33,8 @@ export function DashboardChatPanel() {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [isOpen, open, close])
 
-  // Hide when ChatPage is active (it has its own chat)
-  if (hasInlineChat) return null
-
-  if (!isOpen) {
-    return <UnifiedChatBubble onOpen={() => open()} />
-  }
+  // Hide when ChatPage is active or chat is closed
+  if (hasInlineChat || !isOpen) return null
 
   return (
     <UnifiedChat renderMode="inline" />

@@ -10,14 +10,13 @@ const HIDDEN_PATHS = ["/login", "/login/welcome", "/forgot-password", "/reset-pa
 /**
  * UnifiedChatConditional — Global wrapper in layout.tsx.
  *
- * In the new architecture, the sidebar UnifiedChat is rendered
- * INSIDE dashboard-app.tsx (as flex child). This conditional
- * only handles:
- * - The bubble button (when chat is closed outside dashboard)
- * - LiaSuperPrompt
- * - Path-based visibility
+ * Responsibilities:
+ * - Render bubble button when chat is closed (single source of truth)
+ * - Render LiaSuperPrompt outside split view
+ * - Hide on auth pages
  *
  * The inline sidebar is rendered by DashboardChatPanel in dashboard-app.
+ * The bubble is always rendered here (fixed position, outside flex layout).
  */
 export function UnifiedChatConditional() {
   const pathname = usePathname()
@@ -26,15 +25,10 @@ export function UnifiedChatConditional() {
   const isHidden = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
   if (isHidden) return null
 
-  // Check if we're inside the dashboard shell
-  const isDashboard = typeof document !== "undefined"
-    ? !!document.querySelector("[data-dashboard-shell]")
-    : false
-
   return (
     <>
-      {/* Bubble: show when chat closed and not on ChatPage */}
-      {!hasInlineChat && !isOpen && !isDashboard && (
+      {/* Bubble: single source — show when chat closed and not on ChatPage */}
+      {!hasInlineChat && !isOpen && (
         <UnifiedChatBubble onOpen={() => open()} />
       )}
 
