@@ -237,6 +237,7 @@ from app.api.v1.user_agent_preferences import router as user_prefs_router
 from app.api.v1.wsi import router as wsi_router
 from app.api.v1.rails_health import router as rails_health_router
 from app.api.v1.rails_sync import router as rails_sync_router
+from app.api.v1.llm_config import router as llm_config_router
 
 
 def register_all_routes(app: FastAPI) -> None:
@@ -394,6 +395,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(ab_testing.router, prefix="/api/v1", tags=["ab-testing"])
     app.include_router(finetuning_export.router, prefix="/api/v1", tags=["finetuning-export"])
     app.include_router(wizard_analytics.router, prefix="/api/v1", tags=["wizard-analytics"])
+
+    # ── LLM Config (Choose Your AI) ──────────────────────────────────────────
+    app.include_router(llm_config_router, prefix="/api/v1", tags=["llm-config"])
 
     # ── Reports & Dashboard ───────────────────────────────────────────────────
     app.include_router(reports.router, prefix="/api/v1", tags=["reports"])

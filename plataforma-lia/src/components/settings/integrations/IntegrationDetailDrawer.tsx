@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useCallback, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +23,9 @@ import {
   Chrome,
 } from "lucide-react"
 import type { Integration } from "./integration-data"
+import { ApiKeyConfigForm } from "./ApiKeyConfigForm"
+
+const AI_PROVIDER_IDS = ["gemini", "claude", "openai"]
 
 interface IntegrationDetailDrawerProps {
   integration: Integration | null
@@ -32,6 +36,11 @@ interface IntegrationDetailDrawerProps {
   teamsStatus?: "loading" | "configured" | "not_configured"
   onConnectGoogle?: () => void
   errorMsg?: string | null
+  llmConfig?: {
+    providers: Record<string, { api_key?: string; model?: string; is_active?: boolean }>
+    primary_provider?: string
+  } | null
+  onLlmConfigChange?: () => void
 }
 
 export function IntegrationDetailDrawer({
@@ -43,12 +52,20 @@ export function IntegrationDetailDrawer({
   teamsStatus = "not_configured",
   onConnectGoogle,
   errorMsg,
+  llmConfig,
+  onLlmConfigChange,
 }: IntegrationDetailDrawerProps) {
   if (!integration) return null
 
   const isComingSoon = integration.status === "coming_soon"
+  const isAiProvider = AI_PROVIDER_IDS.includes(integration.id)
 
   const resolvedStatus = (() => {
+    if (isAiProvider && llmConfig) {
+      const providerData = llmConfig.providers?.[integration.id]
+      if (providerData?.api_key) return "connected"
+      return "not_configured"
+    }
     if (integration.id === "google-calendar") {
       return googleStatus === "connected" ? "connected" : "not_configured"
     }
@@ -60,6 +77,59 @@ export function IntegrationDetailDrawer({
     }
     return integration.status
   })()
+
+  const isActivePrimary = isAiProvider && llmConfig?.primary_provider === integration.id
+
+  const savedKeyMasked = isAiProvider
+    ? llmConfig?.providers?.[integration.id]?.api_key || undefined
+    : undefined
+
+  const handleSaveApiKey = useCallback(async (apiKey: string) => {
+    try {
+      const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
+
+      const res = await fetch("/api/backend-proxy/llm-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          primary_provider: currentConfig.primary_provider || "gemini",
+          fallback_order: currentConfig.fallback_order || ["gemini", "claude", "openai"],
+          providers: {
+            [integration!.id]: { provider: integration!.id, api_key: apiKey, is_active: true },
+          },
+          routing: currentConfig.routing || { chat: "gemini", embedding: "gemini", screening: "gemini", voice: "gemini" },
+        }),
+      })
+
+      if (!res.ok) {
+        return { success: false, message: "Erro ao salvar configuração" }
+      }
+
+      onLlmConfigChange?.()
+      return { success: true, message: `${integration!.name} configurado com sucesso` }
+    } catch {
+      return { success: false, message: "Erro de conexão" }
+    }
+  }, [integration, onLlmConfigChange])
+
+  const handleRemoveApiKey = useCallback(async () => {
+    const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
+
+    await fetch("/api/backend-proxy/llm-config", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        primary_provider: currentConfig.primary_provider || "gemini",
+        fallback_order: currentConfig.fallback_order || ["gemini", "claude", "openai"],
+        providers: {
+          [integration!.id]: { _remove: true },
+        },
+        routing: currentConfig.routing || {},
+      }),
+    })
+
+    onLlmConfigChange?.()
+  }, [integration, onLlmConfigChange])
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -103,10 +173,15 @@ export function IntegrationDetailDrawer({
                     Não configurado
                   </Badge>
                 )}
-                {integration.isActiveProvider && (
+                {isActivePrimary && (
                   <Badge variant="info" className="text-[10px] gap-1 px-2 py-0.5 ml-2">
                     <Zap className="w-3 h-3" />
                     Provedor ativo
+                  </Badge>
+                )}
+                {isAiProvider && !isActivePrimary && resolvedStatus === "connected" && (
+                  <Badge variant="secondary" className="text-[10px] gap-1 px-2 py-0.5 ml-2">
+                    Fallback
                   </Badge>
                 )}
               </div>
@@ -148,7 +223,18 @@ export function IntegrationDetailDrawer({
             </div>
           </div>
 
-          {integration.configFields && integration.configFields.length > 0 && !isComingSoon && (
+          {isAiProvider && !isComingSoon && (
+            <ApiKeyConfigForm
+              providerId={integration.id}
+              providerName={integration.name}
+              configFieldName={integration.configFields?.[0] || "API_KEY"}
+              savedKeyMasked={savedKeyMasked}
+              onSave={handleSaveApiKey}
+              onRemove={handleRemoveApiKey}
+            />
+          )}
+
+          {!isAiProvider && integration.configFields && integration.configFields.length > 0 && !isComingSoon && (
             <div>
               <h4 className={cn(textStyles.label, "mb-2")}>
                 Configuração Necessária
@@ -232,7 +318,7 @@ export function IntegrationDetailDrawer({
             </div>
           )}
 
-          {!isComingSoon && integration.id !== "google-calendar" && resolvedStatus !== "connected" && (
+          {!isComingSoon && !isAiProvider && integration.id !== "google-calendar" && resolvedStatus !== "connected" && (
             integration.category === "ats" ? (
               <Button
                 size="sm"

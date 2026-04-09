@@ -29,10 +29,14 @@ router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
 # === Schemas ===
 
 class ProviderConfig(BaseModel):
-    provider: str  # gemini, claude, openai
-    api_key: str
+    provider: str | None = None
+    api_key: str | None = None
     model: str | None = None
     is_active: bool = True
+    remove: bool = Field(False, alias="_remove")
+
+    class Config:
+        populate_by_name = True
 
 class RoutingConfig(BaseModel):
     chat: str = "gemini"
@@ -93,13 +97,21 @@ async def get_llm_config(
                 is_active=True,
             )
 
-        # Mask API keys
         masked_providers = {}
         for name, prov in (config.providers or {}).items():
             masked = dict(prov) if isinstance(prov, dict) else {}
-            if "api_key" in masked:
-                key = masked["api_key"]
-                masked["api_key"] = key[:8] + "..." + key[-4:] if len(key) > 12 else "***"
+            if "api_key" in masked and masked["api_key"]:
+                raw = masked["api_key"]
+                try:
+                    decrypted = repo.decrypt_provider_key(raw)
+                    if decrypted.startswith("gAAAAA"):
+                        masked["api_key"] = "••••••••" + "..." + raw[-4:]
+                    elif len(decrypted) > 12:
+                        masked["api_key"] = decrypted[:8] + "..." + decrypted[-4:]
+                    else:
+                        masked["api_key"] = "••••••••"
+                except Exception:
+                    masked["api_key"] = "••••••••"
             masked_providers[name] = masked
 
         return LLMConfigResponse(
@@ -132,10 +144,12 @@ async def update_llm_config(
     company_id = current_user.company_id
 
     try:
-        providers_dict = {
-            name: {"api_key": prov.api_key, "model": prov.model, "is_active": prov.is_active}
-            for name, prov in request.providers.items()
-        }
+        providers_dict = {}
+        for name, prov in request.providers.items():
+            if prov.remove:
+                providers_dict[name] = {"_remove": True}
+            else:
+                providers_dict[name] = {"api_key": prov.api_key, "model": prov.model, "is_active": prov.is_active}
 
         repo = LlmConfigRepository(db)
         await repo.upsert(

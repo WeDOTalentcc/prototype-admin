@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { tabStyles, textStyles } from "@/lib/design-tokens"
@@ -59,6 +59,11 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [activeProvider, setActiveProvider] = useState<string>("gemini")
   const [atsConnections, setAtsConnections] = useState<Array<{ provider: string; is_active: boolean }>>([])
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [llmConfig, setLlmConfig] = useState<{
+    providers: Record<string, { api_key?: string; model?: string; is_active?: boolean }>
+    primary_provider?: string
+  } | null>(null)
+  const [llmConfigVersion, setLlmConfigVersion] = useState(0)
 
   useEffect(() => {
     setActiveTab(activeSubsection || "all")
@@ -98,6 +103,10 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         if (data.primary_provider) {
           setActiveProvider(data.primary_provider)
         }
+        setLlmConfig({
+          providers: data.providers || {},
+          primary_provider: data.primary_provider || "gemini",
+        })
       })
       .catch(() => {})
 
@@ -110,6 +119,24 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         setAtsConnections(data)
       })
       .catch(() => setAtsConnections([]))
+  }, [])
+
+  useEffect(() => {
+    if (llmConfigVersion === 0) return
+    fetch("/api/backend-proxy/llm-config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.primary_provider) setActiveProvider(data.primary_provider)
+        setLlmConfig({
+          providers: data.providers || {},
+          primary_provider: data.primary_provider || "gemini",
+        })
+      })
+      .catch(() => {})
+  }, [llmConfigVersion])
+
+  const handleLlmConfigChange = useCallback(() => {
+    setLlmConfigVersion((v) => v + 1)
   }, [])
 
   const handleConnectGoogle = async () => {
@@ -156,14 +183,11 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         }
       }
       if (integration.category === "ai_models") {
-        const providerMap: Record<string, string> = {
-          gemini: "gemini",
-          claude: "claude",
-          openai: "openai",
-        }
+        const hasKey = !!llmConfig?.providers?.[integration.id]?.api_key
         return {
           ...integration,
-          isActiveProvider: providerMap[integration.id] === activeProvider,
+          status: hasKey ? ("connected" as const) : integration.status,
+          isActiveProvider: integration.id === activeProvider,
         }
       }
       if (integration.category === "ats" && atsProviderMap[integration.id]) {
@@ -179,7 +203,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       }
       return integration
     })
-  }, [googleStatus, microsoftStatus, teamsStatus, activeProvider, atsConnections])
+  }, [googleStatus, microsoftStatus, teamsStatus, activeProvider, atsConnections, llmConfig])
 
   const activeCategory = tabToCategoryMap[activeTab] ?? "all"
 
@@ -318,6 +342,8 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         teamsStatus={teamsStatus}
         onConnectGoogle={handleConnectGoogle}
         errorMsg={errorMsg}
+        llmConfig={llmConfig}
+        onLlmConfigChange={handleLlmConfigChange}
       />
     </div>
   )
