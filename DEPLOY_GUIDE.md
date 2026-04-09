@@ -295,7 +295,7 @@ Para testar features do Replit contra o banco de staging (sem subir código):
 ```bash
 # No Replit, mudar temporariamente as variáveis de ambiente:
 DATABASE_URL=<staging-cloud-sql-url>
-NEXT_PUBLIC_BACKEND_URL=https://api-staging.wedotalent.cc
+BACKEND_URL=https://api-staging.wedotalent.cc
 
 # Reiniciar os serviços localmente
 ```
@@ -366,9 +366,13 @@ output: 'standalone'  // necessário para Docker otimizado
 Criar `plataforma-lia/.env.production.example`:
 
 ```bash
-# Frontend (Next.js)
-NEXT_PUBLIC_BACKEND_URL=https://api.wedotalent.cc
+# Backend URL — server-side only (rewrites + proxy routes)
+BACKEND_URL=https://api.wedotalent.cc
 NEXT_PUBLIC_APP_URL=https://wedotalent.cc
+NEXT_PUBLIC_WS_URL=wss://api.wedotalent.cc
+
+# Rails (para rotas com backendTarget: "rails" no proxy-handler.ts)
+RAILS_BACKEND_URL=https://api.wedotalent.cc
 
 # Auth (Microsoft/Azure AD)
 MICROSOFT_APP_ID=246eb1e7-a437-4cb2-a231-0325b567be5f
@@ -382,27 +386,34 @@ NEXT_PUBLIC_SENTRY_DSN=<sentry-dsn>
 Criar `lia-agent-system/.env.production.example`:
 
 ```bash
-# Database (Cloud SQL compartilhado com Rails)
-DATABASE_URL=postgresql://lia_user:<password>@<cloud-sql-ip>/lia_db
+# Database (Cloud SQL)
+DATABASE_URL=postgresql+asyncpg://lia_user:<password>@<cloud-sql-ip>/lia_db
 
 # AI Models
 ANTHROPIC_API_KEY=<secret>
-GEMINI_API_KEY=<secret>
+OPENAI_API_KEY=<secret>              # fallback opcional
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json  # ou Workload Identity
+GOOGLE_CLOUD_PROJECT=wedotalent-prod
 
 # Microsoft Teams Bot
 MICROSOFT_APP_ID=246eb1e7-a437-4cb2-a231-0325b567be5f
 MICROSOFT_APP_PASSWORD=<secret>
 AZURE_TENANT_ID=bd25f438-71ab-4f63-a88f-abc8da37a1f6
 
-# Cache
-REDIS_URL=redis://<cloud-redis-ip>:6379
+# Cache e filas
+REDIS_URL=redis://<cloud-redis-ip>:6379/0
+RABBITMQ_URL=amqp://<user>:<pass>@<host>:5672/
 
-# Rails API (para chamadas entre serviços, se necessário)
+# Rails API (backend→backend: FastAPI chama Rails)
 RAILS_API_URL=https://api.wedotalent.cc
-RAILS_API_KEY=<secret>
+
+# Segurança
+SECRET_KEY=<mesma-do-frontend>
+API_PORT=8001
 
 # Observability
 SENTRY_DSN=<sentry-dsn>
+LANGCHAIN_API_KEY=<langsmith-secret>  # opcional
 ```
 
 #### 1.3 Configuração do banco compartilhado
@@ -540,7 +551,7 @@ gcloud run deploy lia-frontend \
   --cpu 2 \
   --port 3000 \
   --set-secrets MICROSOFT_APP_ID=MICROSOFT_APP_ID:latest \
-  --set-env-vars NEXT_PUBLIC_BACKEND_URL=https://api.wedotalent.cc
+  --set-env-vars BACKEND_URL=https://api.wedotalent.cc
 ```
 
 #### 3.4 Cloud Run — AI Agent
@@ -603,7 +614,7 @@ gcloud run deploy lia-frontend-staging \
   --region us-central1 \
   --min-instances 0 \   # pode escalar para zero (economiza custo)
   --max-instances 3 \
-  --set-env-vars NEXT_PUBLIC_BACKEND_URL=https://api-staging.wedotalent.cc
+  --set-env-vars BACKEND_URL=https://api-staging.wedotalent.cc
 
 # Cloud Run staging — agent
 gcloud run deploy lia-agent-staging \
@@ -663,7 +674,7 @@ Se Rails apresentar problemas em produção, reverter para FastAPI é feito em s
 gcloud run services update lia-frontend \
   --update-env-vars CANDIDATES_BACKEND=fastapi \
   --region us-central1
-# A nova revisão entra em serviço em ~15-30 segundos
+# A nova revisão entra em serviço em ~15-30 segundos (sem redeploy de imagem)
 ```
 
 **Ordem sugerida de migração por domínio:**
@@ -891,8 +902,8 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 
 | Variável | Dev (Replit) | Staging | Produção | Notas |
 |---|---|---|---|---|
-| `BACKEND_URL` | `http://127.0.0.1:8001` | URL interna Cloud Run | URL interna Cloud Run | Usada pelo `next.config.js` nos rewrites — NÃO exposta ao browser |
-| `NEXT_PUBLIC_BACKEND_URL` | `http://127.0.0.1:8001` | `https://api-staging.wedotalent.cc` | `https://api.wedotalent.cc` | Usada por código client-side |
+| `BACKEND_URL` | `http://127.0.0.1:8001` | URL interna Cloud Run | URL interna Cloud Run | Usada pelo `next.config.js` nos rewrites e proxy routes — NÃO exposta ao browser |
+| `RAILS_BACKEND_URL` | `http://localhost:3000` (ou vazio) | URL interna Cloud Run do Rails | URL interna Cloud Run do Rails | Usada por `proxy-handler.ts` (frontend) para rotas `backendTarget: "rails"`. Diferente de `RAILS_API_URL` (usada pelo FastAPI) |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:5000` | `https://staging.wedotalent.cc` | `https://wedotalent.cc` | |
 | `NEXT_PUBLIC_WS_URL` | `ws://127.0.0.1:8001` | `wss://api-staging.wedotalent.cc` | `wss://api.wedotalent.cc` | WebSocket para chat real-time |
 | `WORKOS_API_KEY` | Replit Secret | Secret Manager | Secret Manager | **Obrigatório** — auth SSO |
@@ -923,16 +934,21 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 
 | Variável | Dev (Replit) | Staging | Produção | Notas |
 |---|---|---|---|---|
-| `DATABASE_URL` | `postgresql://localhost/lia_db` | Cloud SQL staging | Cloud SQL prod | |
-| `ANTHROPIC_API_KEY` | via Replit integração | Secret Manager | Secret Manager | |
-| `GEMINI_API_KEY` | via Replit integração | Secret Manager | Secret Manager | |
-| `REDIS_URL` | `redis://localhost:6379` | Cloud Redis staging | Cloud Redis prod | |
-| `RAILS_API_URL` | `http://localhost:3000` | URL interna Cloud Run | URL interna Cloud Run | Core de dados (vagas, candidatos) |
+| `DATABASE_URL` | `postgresql+asyncpg://lia_user:lia_password@localhost:5432/lia_db` | Cloud SQL staging | Cloud SQL prod | Driver asyncpg obrigatório |
+| `ANTHROPIC_API_KEY` | via Replit integração | Secret Manager | Secret Manager | LLM primário (Claude) |
+| `OPENAI_API_KEY` | (opcional) | Secret Manager (se ativo) | Secret Manager (se ativo) | Fallback LLM |
+| `GOOGLE_APPLICATION_CREDENTIALS` | `/path/to/service-account.json` | Workload Identity (Cloud Run) | Workload Identity (Cloud Run) | Google Speech/TTS/Gemini |
+| `GOOGLE_CLOUD_PROJECT` | `seu-projeto-gcp` | `wedotalent-staging` | `wedotalent-prod` | |
+| `REDIS_URL` | `redis://localhost:6379/0` | Cloud Memorystore staging | Cloud Memorystore prod | Cache, token budget, HITL, Celery results |
+| `RABBITMQ_URL` | `amqp://guest:guest@localhost:5672/` | CloudAMQP ou VM | CloudAMQP ou VM | Message broker Celery |
+| `RAILS_API_URL` | `http://localhost:3000` | URL interna Cloud Run do Rails | URL interna Cloud Run do Rails | Usado pelo FastAPI para chamar Rails (backend→backend). Diferente de `RAILS_BACKEND_URL` (usado pelo frontend) |
 | `SECRET_KEY` | string aleatória | Secret Manager | Secret Manager | **Mesma do frontend** — JWT signing |
-| `API_PORT` | `8001` | `8001` | `8001` | Anteriormente era 8000 no .env.example (corrigido) |
+| `API_HOST` | `0.0.0.0` | `0.0.0.0` | `0.0.0.0` | |
+| `API_PORT` | `8001` | `8001` | `8001` | |
 | `MICROSOFT_APP_ID` | `246eb1e7-...` | `246eb1e7-...` | `246eb1e7-...` | |
 | `MICROSOFT_APP_PASSWORD` | Replit Secrets | Secret Manager | Secret Manager | |
 | `AZURE_TENANT_ID` | `bd25f438-...` | `bd25f438-...` | `bd25f438-...` | |
+| `LANGCHAIN_API_KEY` | (opcional) | Secret Manager (se ativo) | Secret Manager (se ativo) | LangSmith tracing |
 | `SENTRY_DSN` | (opcional) | obrigatório | obrigatório | |
 
 ---
@@ -1308,18 +1324,32 @@ Usuário acessa wedotalent.cc
 
 **Resultado:** Todas as rotas apontam para componentes válidos. Nenhum import quebrado encontrado.
 
-#### P1 — ✅ RESOLVIDO (07/04/2026): 423 arquivos de proxy padronizados
+#### P1 — ⚠️ PARCIALMENTE RESOLVIDO (07/04/2026): proxy routes padronizados, 11 arquivos frontend pendentes
 
 ```
 CORREÇÃO APLICADA:
-  Todos os 423 arquivos em /api/backend-proxy/* agora usam:
-    const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-
-  - Zero ocorrências de porta 8000
-  - Zero ocorrências de NEXT_PUBLIC_BACKEND_URL nos proxy routes
-  - Zero ocorrências de LIA_BACKEND_URL ou NEXT_PUBLIC_API_URL
+  Os arquivos em /api/backend-proxy/* agora usam BACKEND_URL (server-side).
 
   .env.local atualizado: BACKEND_URL=http://127.0.0.1:8001 (sem NEXT_PUBLIC_)
+
+PENDENTE — 11 arquivos no frontend ainda usam NEXT_PUBLIC_BACKEND_URL ou
+NEXT_PUBLIC_API_URL diretamente (fora dos proxy routes):
+
+  1. plataforma-lia/src/components/search/smart-search-input.tsx
+  2. plataforma-lia/src/components/pages/job-kanban/hooks/useKanbanJobEditing.ts
+  3. plataforma-lia/src/hooks/use-pipeline-inheritance.ts
+  4. plataforma-lia/src/hooks/use-return-events.ts
+  5. plataforma-lia/src/hooks/use-proactive-alerts.ts
+  6. plataforma-lia/src/hooks/use-candidate-data-requests.ts
+  7. plataforma-lia/src/lib/api/candidate-search.ts
+  8. plataforma-lia/src/lib/api/global-search-settings.ts
+  9. plataforma-lia/src/app/funil-de-talentos/candidato/[id]/useCandidatePageCore.tsx
+  10. plataforma-lia/src/components/candidate-preview/useCandidateFiles.tsx
+  11. plataforma-lia/src/components/search/hooks/smartSearchConstants.ts
+
+AÇÃO (task separada de código — fora do escopo desta documentação):
+  Substituir NEXT_PUBLIC_BACKEND_URL/NEXT_PUBLIC_API_URL nestes arquivos por
+  chamadas via /api/backend-proxy/* ou por BACKEND_URL (server-side only).
 ```
 
 #### P2 — ✅ RESOLVIDO (07/04/2026): `next build` — página de Créditos de IA
@@ -1350,12 +1380,16 @@ AÇÃO NO DEPLOY (GCP):
   (lia_db) e acessará dados do Rails via API REST (RAILS_API_URL).
 ```
 
-#### P4 — ✅ RESOLVIDO (07/04/2026): `NEXT_PUBLIC_BACKEND_URL` removido
+#### P4 — ⚠️ PARCIALMENTE RESOLVIDO (07/04/2026): `NEXT_PUBLIC_BACKEND_URL` nos proxy routes
 
 ```
 CORREÇÃO APLICADA:
-  Resolvido junto com P1 — todos os proxy routes agora usam BACKEND_URL
-  (sem NEXT_PUBLIC_). A URL do backend não é mais exposta ao browser.
+  Os arquivos em /api/backend-proxy/* agora usam BACKEND_URL (sem NEXT_PUBLIC_).
+
+PENDENTE:
+  11 arquivos fora dos proxy routes ainda expõem NEXT_PUBLIC_BACKEND_URL
+  ou NEXT_PUBLIC_API_URL ao browser. Listados em P1 acima.
+  Resolução como task separada de código.
 ```
 
 #### P5 — IMPORTANTE: Variáveis exclusivas do Replit no código
@@ -1449,10 +1483,10 @@ Auditoria de chaves API:
 
 | Área | Severidade | Problema | Ação | Quando |
 |---|---|---|---|---|
-| **P1: Porta do proxy** | 🔴 Crítico | Arquivos com fallback `8000` em vez de `8001` + 2 nomes de env var misturados | Padronizar para `BACKEND_URL` + porta `8001` (find-and-replace) | **Agora** |
+| **P1: NEXT_PUBLIC leak no frontend** | 🟡 Importante | 11 arquivos fora dos proxy routes ainda usam `NEXT_PUBLIC_BACKEND_URL` ou `NEXT_PUBLIC_API_URL` diretamente | Substituir por chamadas via proxy routes ou env var server-side (task separada de código) | Antes do deploy |
 | **P2: Build falha** | 🔴 Crítico | `ai-credits/page.tsx` usa `dynamic(ssr:false)` em Server Component | Adicionar `"use client"`, remover `metadata` export | **Agora** |
 | **P3: DATABASE_URL** | 🔴 Crítico | Backend aponta para `localhost:5432/lia_db` — banco não existe no Replit | Corrigir para `helium/heliumdb` (banco real) | **Agora** |
-| **P4: NEXT_PUBLIC leak** | 🟡 Importante | URL do backend exposta no browser via `NEXT_PUBLIC_*` | Resolver junto com P1 | **Agora** |
+| **P4: NEXT_PUBLIC leak** | 🟡 Importante | URL do backend exposta no browser via `NEXT_PUBLIC_*` nos 11 arquivos listados em P1 | Resolver junto com P1 (task separada de código) | Antes do deploy |
 | **P5: Replit vars** | 🟡 Importante | `REPLIT_DEV_DOMAIN`, `REPL_IDENTITY` → undefined no Cloud Run | Adicionar fallbacks com `APP_DOMAIN` | Antes do deploy |
 | **P6: WebSockets** | 🟡 Importante | URLs WS hardcoded em 2 componentes | Parametrizar com `NEXT_PUBLIC_WS_URL` | Antes do deploy |
 | **Mockups pendentes** | 🟡 Importante | 6 grupos de componentes no mockup sandbox | Revisar, aprovar ou descartar, integrar | Antes do deploy |
@@ -1887,7 +1921,7 @@ Configurações obrigatórias no WorkOS dashboard:
 - [x] Testes E2E rodando no Replit (24/26 passando, auth via cookie bypass)
 - [x] Integrações IA confirmadas como server-side only (sem leak de chaves)
 - [x] Autenticação WorkOS SSO + JWT auditada — totalmente implementada
-- [ ] 🔴 **P1:** 442 proxy routes padronizados para `BACKEND_URL` + porta `8001`
+- [ ] 🟡 **P1:** 11 arquivos frontend substituídos (NEXT_PUBLIC_BACKEND_URL/NEXT_PUBLIC_API_URL → chamadas via proxy routes — task separada)
 - [ ] 🔴 **P2:** `next build` sem erros (`ai-credits/page.tsx` corrigido)
 - [ ] 🟡 **P4:** Nenhuma `NEXT_PUBLIC_*` expondo URLs internas (resolver com P1)
 - [ ] 🟡 **P5:** Variáveis Replit (`REPLIT_DEV_DOMAIN`) com fallbacks para Cloud Run
@@ -2205,12 +2239,16 @@ FASE 5: Homologação e go-live
 ## 21. Qualidade de IA — Gates Pós-Deploy
 
 > Estes itens não bloqueiam o go-live, mas devem ser implementados nas semanas seguintes ao deploy estável em produção. São os controles que garantem que os agentes IA da LIA mantêm qualidade, equidade e performance ao longo do tempo.
+>
+> ⚠️ **IMPORTANTE:** Os scripts e datasets desta seção **não existem ainda no repositório**. Estão descritos como especificação — devem ser implementados como tasks separadas após o go-live inicial.
 
 ### 21.1 Golden Datasets e Eval Framework
 
+> **STATUS: A IMPLEMENTAR** — Nenhum golden dataset existe no repositório. O diretório `lia-agent-system/evals/` ainda não foi criado.
+
 **Objetivo:** garantir que mudanças no código dos agentes não degradam a qualidade das respostas de triagem.
 
-**Golden dataset — composição mínima:**
+**Golden dataset — composição mínima (a criar):**
 
 ```
 50 inputs de screening com outputs esperados:
@@ -2232,15 +2270,17 @@ Cada input inclui:
 | **Relevancy** | A justificativa é relevante para a vaga analisada? | > 0.80 |
 | **Consistency** | Mesma entrada produz scores similares em chamadas repetidas? | variância < 10% |
 
-**Quando rodar:**
+**Quando rodar (após implementar):**
 
 - Antes de qualquer deploy que toque código em `app/domains/cv_screening/`, `app/domains/wsi/` ou `app/orchestrator/`
 - Após mudança de modelo LLM (Claude → Gemini ou vice-versa)
 - Mensalmente como verificação de drift
 
-**Localização sugerida:** `lia-agent-system/evals/golden_datasets/screening/`
+**Localização a criar:** `lia-agent-system/evals/golden_datasets/screening/`
 
 ### 21.2 Auditoria de Viés (Bias Audit Automation)
+
+> **STATUS: A IMPLEMENTAR** — O script `lia-agent-system/scripts/bias_audit.py` **não existe**. O `FairnessGuard` está implementado em `app/domains/bias_detection/`, mas o script de cron de auditoria automatizada ainda precisa ser criado.
 
 **Objetivo:** garantir que o sistema de triagem não discrimina candidatos com base em características protegidas (gênero, etnia, idade, etc.).
 
@@ -2254,11 +2294,11 @@ Regra dos Quatro Quintos (Four-Fifths Rule):
   AIR ≥ 0.80 → dentro do limite aceitável
 ```
 
-**Configuração do cron:**
+**Configuração do cron (a implementar):**
 
 ```bash
 # Rodar semanalmente (ex: domingo 02:00 UTC)
-# Script: lia-agent-system/scripts/bias_audit.py
+# Script a criar: lia-agent-system/scripts/bias_audit.py
 
 0 2 * * 0 python lia-agent-system/scripts/bias_audit.py \
   --period=7d \
@@ -2276,9 +2316,11 @@ Regra dos Quatro Quintos (Four-Fifths Rule):
 
 **Relatório mensal:** consolidar AIR por vaga, por empresa-cliente e por grupo demográfico. Armazenar em Cloud Storage. Revisão obrigatória pelo time de AI e compliance.
 
-**Referência:** `FairnessGuard` está implementado em `lia-agent-system/app/domains/bias_detection/`. Validar que continua funcional após cada deploy.
+**Referência:** `FairnessGuard` está implementado em `lia-agent-system/app/domains/bias_detection/`. O script de cron (`bias_audit.py`) deve ser criado como task separada.
 
 ### 21.3 Load Testing — Baseline de Performance (Locust)
+
+> **STATUS: A IMPLEMENTAR** — O arquivo `lia-agent-system/load_tests/locustfile.py` **não existe**. O diretório `load_tests/` ainda não foi criado. O código abaixo é a especificação do que deve ser implementado.
 
 **Objetivo:** validar que a infraestrutura GCP suporta a carga esperada antes do go-live e após mudanças de infra.
 
@@ -2291,10 +2333,10 @@ Regra dos Quatro Quintos (Four-Fifths Rule):
 | Triagem de CV (screening) | < 5s | < 10s |
 | Upload de CV + parse | < 3s | < 7s |
 
-**Configuração do teste Locust:**
+**Configuração do teste Locust (a criar em `lia-agent-system/load_tests/locustfile.py`):**
 
 ```python
-# lia-agent-system/load_tests/locustfile.py (referência)
+# A IMPLEMENTAR — este arquivo não existe ainda
 from locust import HttpUser, task, between
 
 class LIAUser(HttpUser):
@@ -2313,7 +2355,7 @@ class LIAUser(HttpUser):
         self.client.post("/api/agent/chat", json={"content": "Liste as vagas abertas"})
 ```
 
-**Executar contra staging:**
+**Executar contra staging (após implementar):**
 
 ```bash
 # 50 usuários simultâneos, ramp-up de 10/segundo, duração 5 minutos
