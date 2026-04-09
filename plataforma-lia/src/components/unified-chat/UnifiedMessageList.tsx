@@ -3,11 +3,11 @@
 import React, { useRef, useEffect } from "react"
 import { Copy, Plus, ThumbsUp, ThumbsDown, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { renderMarkdown } from "@/lib/render-markdown"
+import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/use-lia-chat-connection"
 import type { ChatMode } from "./unified-chat-types"
 
@@ -19,15 +19,27 @@ interface Props {
   isThinking: boolean
   thinkingSteps: string[]
   userName: string
+  conversationId?: string | null
 }
 
-function MessageActions({ messageId }: { messageId: string }) {
+function MessageActions({
+  messageId,
+  content,
+  conversationId,
+}: {
+  messageId: string
+  content: string
+  conversationId?: string | null
+}) {
   return (
     <div className="flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
       <button
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
         title="Copiar"
         aria-label="Copiar resposta"
+        onClick={() => {
+          navigator.clipboard.writeText(content)
+        }}
       >
         <Copy className="w-3.5 h-3.5" />
       </button>
@@ -35,6 +47,13 @@ function MessageActions({ messageId }: { messageId: string }) {
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
         title="Inserir"
         aria-label="Inserir na conversa"
+        onClick={() => {
+          window.dispatchEvent(
+            new CustomEvent("lia:prefill-message", {
+              detail: { message: content },
+            })
+          )
+        }}
       >
         <Plus className="w-3.5 h-3.5" />
       </button>
@@ -42,6 +61,11 @@ function MessageActions({ messageId }: { messageId: string }) {
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
         title="Útil"
         aria-label="Marcar como útil"
+        onClick={() => {
+          if (conversationId) {
+            submitThumbsFeedback(conversationId, messageId, "up")
+          }
+        }}
       >
         <ThumbsUp className="w-3.5 h-3.5" />
       </button>
@@ -49,6 +73,11 @@ function MessageActions({ messageId }: { messageId: string }) {
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
         title="Não útil"
         aria-label="Marcar como não útil"
+        onClick={() => {
+          if (conversationId) {
+            submitThumbsFeedback(conversationId, messageId, "down")
+          }
+        }}
       >
         <ThumbsDown className="w-3.5 h-3.5" />
       </button>
@@ -64,6 +93,7 @@ export function UnifiedMessageList({
   isThinking,
   thinkingSteps,
   userName,
+  conversationId,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -99,7 +129,7 @@ export function UnifiedMessageList({
               /* LIA message — Notion style: plain text, no bubble bg, left-aligned */
               <div className="max-w-[90%]">
                 <div
-                  className="text-sm leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
+                  className="text-sm leading-relaxed text-lia-text-primary font-[Open_Sans,sans-serif] lia-markdown-content"
                   dangerouslySetInnerHTML={{
                     __html: renderMarkdown(message.content),
                   }}
@@ -122,13 +152,17 @@ export function UnifiedMessageList({
                 )}
 
                 {/* Notion-style action icons */}
-                <MessageActions messageId={message.id} />
+                <MessageActions
+                  messageId={message.id}
+                  content={message.content}
+                  conversationId={conversationId}
+                />
               </div>
             ) : (
               /* User message — Notion style: dark pill, right-aligned */
               <div className="max-w-[80%]">
                 <div className="inline-block px-4 py-2.5 rounded-xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
-                  <p className="text-sm font-['Open_Sans',sans-serif]">
+                  <p className="text-sm font-[Open_Sans,sans-serif]">
                     {message.content}
                   </p>
                 </div>
@@ -143,7 +177,7 @@ export function UnifiedMessageList({
         <div className="group">
           <div className="max-w-[90%]">
             <div
-              className="text-sm leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
+              className="text-sm leading-relaxed text-lia-text-primary font-[Open_Sans,sans-serif] lia-markdown-content"
               dangerouslySetInnerHTML={{
                 __html: renderMarkdown(streamingContent),
               }}

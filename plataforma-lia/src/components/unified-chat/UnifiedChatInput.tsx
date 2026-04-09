@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useRef, useCallback, useEffect, useState } from "react"
-import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Briefcase, Users } from "lucide-react"
+import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Globe, FileSearch } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import type { ChatMode } from "./unified-chat-types"
@@ -20,6 +20,8 @@ interface Props {
   fileInputRef: React.RefObject<HTMLInputElement | null>
   onFileButtonClick: () => void
   onFileAttach: (e: React.ChangeEvent<HTMLInputElement>) => void
+  currentScope?: "page" | "universal"
+  onScopeChange?: (scope: "page" | "universal") => void
 }
 
 export function UnifiedChatInput({
@@ -36,9 +38,12 @@ export function UnifiedChatInput({
   fileInputRef,
   onFileButtonClick,
   onFileAttach,
+  currentScope = "page",
+  onScopeChange,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const isBusy = isStreaming || isCreating
 
   // Auto-resize textarea
@@ -47,7 +52,7 @@ export function UnifiedChatInput({
     if (!el) return
     el.style.height = "auto"
     const maxH = mode === "floating" ? 120 : 160
-    el.style.height = `${Math.min(el.scrollHeight, maxH)}px`
+    el.style.height = Math.min(el.scrollHeight, maxH) + "px"
   }, [mode])
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export function UnifiedChatInput({
         </div>
       )}
 
-      {/* Input container — Notion-style with cyan focus ring */}
+      {/* Input container */}
       <div className={cn(
         "rounded-xl border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
         "focus-within:border-wedo-cyan focus-within:ring-1 focus-within:ring-wedo-cyan/30",
@@ -159,7 +164,7 @@ export function UnifiedChatInput({
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
                     >
                       <AtSign className="w-4 h-4" />
-                      Mencionar vaga ou candidato
+                      Inserir @menção
                     </button>
                   </div>
                 </>
@@ -175,16 +180,64 @@ export function UnifiedChatInput({
               aria-hidden="true"
             />
 
-            {/* Settings/filter */}
-            <button
-              type="button"
-              disabled={isBusy}
-              className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
-              title="Configurações de contexto"
-              aria-label="Configurações de conversa"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
+            {/* Settings/scope popover */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSettings(!showSettings)}
+                disabled={isBusy}
+                className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
+                title="Configurações de contexto"
+                aria-label="Configurações de conversa"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+
+              {showSettings && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
+                  <div className="absolute left-0 bottom-full mb-1 z-50 w-52 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
+                    <div className="px-3 py-1.5 text-xs text-lia-text-disabled font-['Open_Sans',sans-serif]">
+                      Escopo do contexto
+                    </div>
+                    <button
+                      onClick={() => {
+                        onScopeChange?.("page")
+                        setShowSettings(false)
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-2.5 px-3 py-2 text-sm font-['Open_Sans',sans-serif]",
+                        "hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                        currentScope === "page" ? "text-lia-text-primary" : "text-lia-text-secondary"
+                      )}
+                    >
+                      <FileSearch className="w-4 h-4" />
+                      <span className="flex-1 text-left">Contexto da página</span>
+                      {currentScope === "page" && (
+                        <span className="text-wedo-cyan text-xs">✓</span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        onScopeChange?.("universal")
+                        setShowSettings(false)
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-2.5 px-3 py-2 text-sm font-['Open_Sans',sans-serif]",
+                        "hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                        currentScope === "universal" ? "text-lia-text-primary" : "text-lia-text-secondary"
+                      )}
+                    >
+                      <Globe className="w-4 h-4" />
+                      <span className="flex-1 text-left">Universal</span>
+                      {currentScope === "universal" && (
+                        <span className="text-wedo-cyan text-xs">✓</span>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-1">
@@ -195,7 +248,7 @@ export function UnifiedChatInput({
 
             {/* Voice */}
             <AudioRecordButton
-              onTranscription={(text) => setInputText(prev => prev ? `${prev} ${text}` : text)}
+              onTranscription={(text) => setInputText(prev => prev ? prev + " " + text : text)}
               className="p-1.5"
             />
 

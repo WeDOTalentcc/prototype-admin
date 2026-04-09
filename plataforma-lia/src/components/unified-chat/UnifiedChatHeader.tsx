@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import {
-  Brain, X, Maximize2, Minimize2, PanelRight, MessageSquare,
-  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, Image, ArrowRightLeft
+  Brain, X, Maximize2, PanelRight, MessageSquare,
+  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatMode } from "./unified-chat-types"
@@ -16,6 +16,8 @@ interface Props {
   onSwitchTask?: () => void
   conversationTitle?: string | null
   isConnected: boolean
+  onRename?: (newTitle: string) => void
+  onDelete?: () => void
 }
 
 const MODE_OPTIONS: { mode: ChatMode; icon: React.ElementType; label: string }[] = [
@@ -32,11 +34,71 @@ export function UnifiedChatHeader({
   onSwitchTask,
   conversationTitle,
   isConnected,
+  onRename,
+  onDelete,
 }: Props) {
   const [showModeMenu, setShowModeMenu] = useState(false)
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState("")
+  const renameInputRef = useRef<HTMLInputElement>(null)
 
   const title = conversationTitle || "Nova conversa"
+
+  useEffect(() => {
+    if (isRenaming && renameInputRef.current) {
+      renameInputRef.current.focus()
+      renameInputRef.current.select()
+    }
+  }, [isRenaming])
+
+  const handleStartRename = () => {
+    setRenameValue(title)
+    setIsRenaming(true)
+    setShowOptionsMenu(false)
+  }
+
+  const handleFinishRename = () => {
+    const trimmed = renameValue.trim()
+    if (trimmed && trimmed !== title && onRename) {
+      onRename(trimmed)
+    }
+    setIsRenaming(false)
+  }
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleFinishRename()
+    }
+    if (e.key === "Escape") {
+      setIsRenaming(false)
+    }
+  }
+
+  const handleDelete = () => {
+    setShowOptionsMenu(false)
+    if (window.confirm("Tem certeza que deseja excluir esta conversa?")) {
+      onDelete?.()
+    }
+  }
+
+  const renderTitle = () => {
+    if (isRenaming) {
+      return (
+        <input
+          ref={renameInputRef}
+          value={renameValue}
+          onChange={(e) => setRenameValue(e.target.value)}
+          onBlur={handleFinishRename}
+          onKeyDown={handleRenameKeyDown}
+          className="text-sm font-medium text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded px-1.5 py-0.5 max-w-[200px] outline-none focus:border-wedo-cyan font-['Open_Sans',sans-serif]"
+          aria-label="Renomear conversa"
+        />
+      )
+    }
+    return null
+  }
 
   return (
     <div className="flex items-center justify-between px-4 py-2.5 border-b border-lia-border-subtle flex-shrink-0 bg-lia-bg-primary">
@@ -51,27 +113,35 @@ export function UnifiedChatHeader({
               LIA
             </span>
             <span className="text-sm text-lia-text-disabled">/</span>
+            {isRenaming ? (
+              renderTitle()
+            ) : (
+              <button
+                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                className="flex items-center gap-1 min-w-0 group"
+              >
+                <span className="text-sm text-lia-text-primary font-medium truncate max-w-[200px] font-['Open_Sans',sans-serif]">
+                  {title}
+                </span>
+                <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
+              </button>
+            )}
+          </div>
+        ) : (
+          /* Sidebar/Floating: compact title */
+          isRenaming ? (
+            renderTitle()
+          ) : (
             <button
               onClick={() => setShowOptionsMenu(!showOptionsMenu)}
               className="flex items-center gap-1 min-w-0 group"
             >
-              <span className="text-sm text-lia-text-primary font-medium truncate max-w-[200px] font-['Open_Sans',sans-serif]">
+              <span className="text-sm font-medium text-lia-text-primary truncate max-w-[160px] font-['Open_Sans',sans-serif]">
                 {title}
               </span>
               <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
             </button>
-          </div>
-        ) : (
-          /* Sidebar/Floating: compact title */
-          <button
-            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-            className="flex items-center gap-1 min-w-0 group"
-          >
-            <span className="text-sm font-medium text-lia-text-primary truncate max-w-[160px] font-['Open_Sans',sans-serif]">
-              {title}
-            </span>
-            <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
-          </button>
+          )
         )}
 
         {/* Connection indicator */}
@@ -92,7 +162,7 @@ export function UnifiedChatHeader({
           <Plus className="w-4 h-4" />
         </button>
 
-        {/* Switch Task (⌘K) */}
+        {/* Switch Task */}
         {onSwitchTask && (
           <button
             onClick={onSwitchTask}
@@ -175,16 +245,18 @@ export function UnifiedChatHeader({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowOptionsMenu(false)} />
               <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
-                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]">
+                <button
+                  onClick={handleStartRename}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                >
                   <Pencil className="w-3.5 h-3.5" />
                   Renomear
                 </button>
-                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]">
-                  <Image className="w-3.5 h-3.5" />
-                  Mudar ícone
-                </button>
                 <div className="my-1 border-t border-lia-border-subtle" />
-                <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]">
+                <button
+                  onClick={handleDelete}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-error hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                >
                   <Trash2 className="w-3.5 h-3.5" />
                   Excluir
                 </button>
