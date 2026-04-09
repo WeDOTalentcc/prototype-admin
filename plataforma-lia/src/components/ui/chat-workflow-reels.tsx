@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from "react"
 import {
   Briefcase, Search, UserCheck, Calendar, FileText,
-  TrendingUp, ChevronRight, ChevronLeft
+  TrendingUp, ChevronRight, ChevronLeft, BarChart3,
+  Sparkles, Settings
 } from "lucide-react"
 
 export interface WorkflowReelSuggestion {
@@ -46,6 +47,12 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
         description: "Configure requisitos com descrição detalhada",
         command: "Criar uma nova vaga",
       },
+      {
+        id: "job-template",
+        title: "Usar template de vaga",
+        description: "Comece a partir de um modelo existente",
+        command: "Criar vaga a partir de template",
+      },
     ],
   },
   {
@@ -71,6 +78,12 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
         title: "Adicionar candidato",
         description: "Cadastre novo perfil no banco de talentos",
         command: "Adicione novo candidato",
+      },
+      {
+        id: "talent-pool",
+        title: "Banco de talentos",
+        description: "Gerencie pools e short lists de candidatos",
+        command: "Mostrar meus bancos de talentos",
       },
     ],
   },
@@ -113,9 +126,15 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
     },
     suggestions: [
       {
+        id: "schedule-interview",
+        title: "Agendar entrevista",
+        description: "Marque horário e notifique participantes",
+        command: "Agendar uma entrevista",
+      },
+      {
         id: "reschedule-interview",
         title: "Reagendar entrevista",
-        description: "Cancele horário e notifique participantes",
+        description: "Altere horário de entrevista existente",
         command: "Reagende uma entrevista",
       },
     ],
@@ -131,7 +150,20 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
       nodeBorder: "var(--wedo-purple, #9860D1)",
       cardBorder: "rgba(152, 96, 209, 0.25)",
     },
-    suggestions: [],
+    suggestions: [
+      {
+        id: "send-offer",
+        title: "Enviar proposta",
+        description: "Gere e envie proposta salarial ao candidato",
+        command: "Enviar proposta para candidato",
+      },
+      {
+        id: "compare-candidates",
+        title: "Comparar finalistas",
+        description: "Análise lado a lado dos candidatos finais",
+        command: "Comparar candidatos finalistas",
+      },
+    ],
   },
   {
     id: "contratacao",
@@ -144,7 +176,119 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
       nodeBorder: "var(--wedo-purple, #9860D1)",
       cardBorder: "rgba(152, 96, 209, 0.25)",
     },
-    suggestions: [],
+    suggestions: [
+      {
+        id: "register-hire",
+        title: "Registrar contratação",
+        description: "Finalize o processo e atualize o status",
+        command: "Registrar contratação de candidato",
+      },
+      {
+        id: "close-vacancy",
+        title: "Encerrar vaga",
+        description: "Feche a vaga e notifique candidatos",
+        command: "Encerrar vaga",
+      },
+    ],
+  },
+]
+
+const UTILITY_NODES: WorkflowReelStage[] = [
+  {
+    id: "analytics",
+    label: "Analytics",
+    shortLabel: "Analytics",
+    icon: BarChart3,
+    color: {
+      accent: "var(--wedo-amber, #D1A960)",
+      accentBg: "rgba(209, 169, 96, 0.10)",
+      nodeBorder: "var(--wedo-amber, #D1A960)",
+      cardBorder: "rgba(209, 169, 96, 0.25)",
+    },
+    suggestions: [
+      {
+        id: "job-report",
+        title: "Relatório da vaga",
+        description: "Métricas e status do processo seletivo",
+        command: "Gerar relatório da vaga",
+      },
+      {
+        id: "daily-briefing",
+        title: "Briefing diário",
+        description: "Resumo do dia com alertas e pendências",
+        command: "Me dê o briefing de hoje",
+      },
+      {
+        id: "hiring-predictions",
+        title: "Previsões",
+        description: "Estimativas de prazo e conversão do funil",
+        command: "Mostrar previsões de contratação",
+      },
+    ],
+  },
+  {
+    id: "ia-automacoes",
+    label: "IA & Automações",
+    shortLabel: "IA",
+    icon: Sparkles,
+    color: {
+      accent: "var(--wedo-cyan, #60BED1)",
+      accentBg: "rgba(96, 190, 209, 0.10)",
+      nodeBorder: "var(--wedo-cyan, #60BED1)",
+      cardBorder: "rgba(96, 190, 209, 0.25)",
+    },
+    suggestions: [
+      {
+        id: "configure-automations",
+        title: "Configurar automações",
+        description: "Regras automáticas de triagem e transição",
+        command: "Configurar automações de recrutamento",
+      },
+      {
+        id: "wsi-screening",
+        title: "Triagem WSI",
+        description: "Avaliação inteligente com metodologia WSI",
+        command: "Iniciar triagem WSI para candidatos",
+      },
+      {
+        id: "ai-suggestions",
+        title: "Sugestões da LIA",
+        description: "Recomendações baseadas no histórico",
+        command: "O que você sugere para minhas vagas?",
+      },
+    ],
+  },
+  {
+    id: "configuracoes",
+    label: "Configurações",
+    shortLabel: "Config",
+    icon: Settings,
+    color: {
+      accent: "var(--lia-text-secondary, #8A8F98)",
+      accentBg: "rgba(138, 143, 152, 0.10)",
+      nodeBorder: "var(--lia-text-secondary, #8A8F98)",
+      cardBorder: "rgba(138, 143, 152, 0.25)",
+    },
+    suggestions: [
+      {
+        id: "ai-credits",
+        title: "Créditos IA",
+        description: "Consulte saldo e consumo de créditos",
+        command: "Verificar meus créditos de IA",
+      },
+      {
+        id: "hiring-policy",
+        title: "Política de contratação",
+        description: "Ajuste regras e nível de automação",
+        command: "Configurar política de contratação",
+      },
+      {
+        id: "email-templates",
+        title: "Templates de email",
+        description: "Gerencie modelos de comunicação",
+        command: "Gerenciar templates de email",
+      },
+    ],
   },
 ]
 
@@ -152,22 +296,30 @@ interface ChatWorkflowReelsProps {
   onSelect: (command: string) => void
   compact?: boolean
   stages?: WorkflowReelStage[]
+  utilityNodes?: WorkflowReelStage[]
 }
 
 export function ChatWorkflowReels({
   onSelect,
   compact = false,
   stages = RECRUITMENT_STAGES,
+  utilityNodes = UTILITY_NODES,
 }: ChatWorkflowReelsProps) {
-  const stagesWithSuggestions = stages.filter((s) => s.suggestions.length > 0)
-  const firstWithSuggestions = stagesWithSuggestions[0]?.id ?? null
+  const allNodes = [...stages, ...utilityNodes]
+  const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
+  const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null
 
   const [activeStageId, setActiveStageId] = useState<string | null>(firstWithSuggestions)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  const activeStage = stages.find((s) => s.id === activeStageId) ?? null
+  const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null
+
+  const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
+    if (!hasSuggestions) return
+    setActiveStageId(activeStageId === nodeId ? null : nodeId)
+  }
 
   const updateScrollState = () => {
     const el = scrollRef.current
@@ -199,7 +351,7 @@ export function ChatWorkflowReels({
     return (
       <CompactReels
         stages={stages}
-        stagesWithSuggestions={stagesWithSuggestions}
+        utilityNodes={utilityNodes}
         onSelect={onSelect}
       />
     )
@@ -233,90 +385,43 @@ export function ChatWorkflowReels({
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <div className="flex items-center gap-0 min-w-max px-1 py-2">
-            {stages.map((stage, idx) => {
-              const Icon = stage.icon
-              const hasSuggestions = stage.suggestions.length > 0
-              const isActive = activeStageId === stage.id
+            {stages.map((stage, idx) => (
+              <React.Fragment key={stage.id}>
+                <StageNode
+                  stage={stage}
+                  isActive={activeStageId === stage.id}
+                  onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
+                />
+                {idx < stages.length - 1 && (
+                  <div
+                    className="h-px w-6 flex-shrink-0 transition-colors"
+                    style={{
+                      backgroundColor: stage.suggestions.length > 0 && stages[idx + 1].suggestions.length > 0
+                        ? "var(--lia-border-default)"
+                        : "var(--lia-border-subtle)",
+                    }}
+                  />
+                )}
+              </React.Fragment>
+            ))}
 
-              return (
-                <React.Fragment key={stage.id}>
-                  <button
-                    onClick={() =>
-                      setActiveStageId(isActive ? null : hasSuggestions ? stage.id : null)
-                    }
-                    disabled={!hasSuggestions}
-                    className="flex flex-col items-center gap-1.5 group transition-all duration-150 px-2 disabled:cursor-default"
-                    title={hasSuggestions ? `${stage.label} — ${stage.suggestions.length} sugestão` : stage.label}
-                  >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
-                      style={{
-                        backgroundColor: isActive
-                          ? stage.color.accent
-                          : hasSuggestions
-                          ? stage.color.accentBg
-                          : "var(--lia-bg-tertiary)",
-                        borderColor: isActive
-                          ? stage.color.accent
-                          : hasSuggestions
-                          ? stage.color.nodeBorder
-                          : "var(--lia-border-subtle)",
-                        boxShadow: isActive
-                          ? `0 0 0 3px ${stage.color.accentBg}`
-                          : undefined,
-                      }}
-                    >
-                      <Icon
-                        className="w-4 h-4 transition-colors"
-                        style={{
-                          color: isActive
-                            ? "#fff"
-                            : hasSuggestions
-                            ? stage.color.accent
-                            : "var(--lia-text-disabled)",
-                        }}
-                      />
-                    </div>
-                    <span
-                      className="text-micro font-medium transition-colors whitespace-nowrap"
-                      style={{
-                        color: isActive
-                          ? stage.color.accent
-                          : hasSuggestions
-                          ? "var(--lia-text-primary)"
-                          : "var(--lia-text-disabled)",
-                      }}
-                    >
-                      {stage.shortLabel}
-                    </span>
-                    {hasSuggestions && (
-                      <span
-                        className="w-1 h-1 rounded-full transition-colors"
-                        style={{
-                          backgroundColor: isActive
-                            ? stage.color.accent
-                            : stage.color.accent,
-                          opacity: isActive ? 1 : 0.5,
-                        }}
-                      />
-                    )}
-                  </button>
-
-                  {idx < stages.length - 1 && (
-                    <div
-                      className="h-px w-6 flex-shrink-0 transition-colors"
-                      style={{
-                        backgroundColor:
-                          stagesWithSuggestions.indexOf(stage) >= 0 &&
-                          stagesWithSuggestions.indexOf(stages[idx + 1]) >= 0
-                            ? "var(--lia-border-default)"
-                            : "var(--lia-border-subtle)",
-                      }}
+            {utilityNodes.length > 0 && (
+              <>
+                <div className="flex-shrink-0 w-px h-8 mx-3 bg-lia-border-subtle" />
+                {utilityNodes.map((node, idx) => (
+                  <React.Fragment key={node.id}>
+                    <StageNode
+                      stage={node}
+                      isActive={activeStageId === node.id}
+                      onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
                     />
-                  )}
-                </React.Fragment>
-              )
-            })}
+                    {idx < utilityNodes.length - 1 && (
+                      <div className="w-3 flex-shrink-0" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -368,74 +473,132 @@ export function ChatWorkflowReels({
   )
 }
 
+function StageNode({
+  stage,
+  isActive,
+  onClick,
+}: {
+  stage: WorkflowReelStage
+  isActive: boolean
+  onClick: () => void
+}) {
+  const Icon = stage.icon
+  const hasSuggestions = stage.suggestions.length > 0
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={!hasSuggestions}
+      className="flex flex-col items-center gap-1.5 group transition-all duration-150 px-2 disabled:cursor-default"
+      title={hasSuggestions ? `${stage.label} — ${stage.suggestions.length} sugestão` : stage.label}
+    >
+      <div
+        className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
+        style={{
+          backgroundColor: isActive
+            ? stage.color.accent
+            : hasSuggestions
+            ? stage.color.accentBg
+            : "var(--lia-bg-tertiary)",
+          borderColor: isActive
+            ? stage.color.accent
+            : hasSuggestions
+            ? stage.color.nodeBorder
+            : "var(--lia-border-subtle)",
+          boxShadow: isActive
+            ? `0 0 0 3px ${stage.color.accentBg}`
+            : undefined,
+        }}
+      >
+        <Icon
+          className="w-4 h-4 transition-colors"
+          style={{
+            color: isActive
+              ? "var(--lia-text-on-accent, #fff)"
+              : hasSuggestions
+              ? stage.color.accent
+              : "var(--lia-text-disabled)",
+          }}
+        />
+      </div>
+      <span
+        className="text-micro font-medium transition-colors whitespace-nowrap"
+        style={{
+          color: isActive
+            ? stage.color.accent
+            : hasSuggestions
+            ? "var(--lia-text-primary)"
+            : "var(--lia-text-disabled)",
+        }}
+      >
+        {stage.shortLabel}
+      </span>
+      {hasSuggestions && (
+        <span
+          className="w-1 h-1 rounded-full transition-colors"
+          style={{
+            backgroundColor: stage.color.accent,
+            opacity: isActive ? 1 : 0.5,
+          }}
+        />
+      )}
+    </button>
+  )
+}
+
 function CompactReels({
   stages,
-  stagesWithSuggestions,
+  utilityNodes,
   onSelect,
 }: {
   stages: WorkflowReelStage[]
-  stagesWithSuggestions: WorkflowReelStage[]
+  utilityNodes: WorkflowReelStage[]
   onSelect: (command: string) => void
 }) {
-  const firstWithSuggestions = stagesWithSuggestions[0]?.id ?? null
+  const allNodes = [...stages, ...utilityNodes]
+  const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
+  const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null
   const [activeStageId, setActiveStageId] = useState<string | null>(firstWithSuggestions)
-  const activeStage = stages.find((s) => s.id === activeStageId) ?? null
+  const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null
+
+  const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
+    if (!hasSuggestions) return
+    setActiveStageId(activeStageId === nodeId ? null : nodeId)
+  }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1" style={{ scrollbarWidth: "none" }}>
-        {stages.map((stage, idx) => {
-          const Icon = stage.icon
-          const hasSuggestions = stage.suggestions.length > 0
-          const isActive = activeStageId === stage.id
+        {stages.map((stage, idx) => (
+          <React.Fragment key={stage.id}>
+            <CompactNode
+              stage={stage}
+              isActive={activeStageId === stage.id}
+              onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
+            />
+            {idx < stages.length - 1 && (
+              <div className="h-px w-4 flex-shrink-0 bg-lia-border-subtle" />
+            )}
+          </React.Fragment>
+        ))}
 
-          return (
-            <React.Fragment key={stage.id}>
-              <button
-                onClick={() => setActiveStageId(isActive ? null : hasSuggestions ? stage.id : null)}
-                disabled={!hasSuggestions}
-                className="flex-shrink-0 flex flex-col items-center gap-1 px-1 disabled:cursor-default"
-                title={stage.label}
-              >
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center border transition-colors"
-                  style={{
-                    backgroundColor: isActive
-                      ? stage.color.accent
-                      : hasSuggestions
-                      ? stage.color.accentBg
-                      : "var(--lia-bg-tertiary)",
-                    borderColor: isActive
-                      ? stage.color.accent
-                      : hasSuggestions
-                      ? stage.color.nodeBorder
-                      : "var(--lia-border-subtle)",
-                  }}
-                >
-                  <Icon
-                    className="w-3 h-3"
-                    style={{
-                      color: isActive
-                        ? "#fff"
-                        : hasSuggestions
-                        ? stage.color.accent
-                        : "var(--lia-text-disabled)",
-                    }}
-                  />
-                </div>
-                <span
-                  className="text-micro font-medium whitespace-nowrap"
-                  style={{ color: hasSuggestions ? "var(--lia-text-secondary)" : "var(--lia-text-disabled)" }}
-                >
-                  {stage.shortLabel}
-                </span>
-              </button>
-              {idx < stages.length - 1 && (
-                <div className="h-px w-4 flex-shrink-0 bg-lia-border-subtle" />
-              )}
-            </React.Fragment>
-          )
-        })}
+        {utilityNodes.length > 0 && (
+          <>
+            <div className="flex-shrink-0 w-px h-5 mx-1.5 bg-lia-border-subtle" />
+            {utilityNodes.map((node, idx) => (
+              <React.Fragment key={node.id}>
+                <CompactNode
+                  stage={node}
+                  isActive={activeStageId === node.id}
+                  onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
+                />
+                {idx < utilityNodes.length - 1 && (
+                  <div className="w-1 flex-shrink-0" />
+                )}
+              </React.Fragment>
+            ))}
+          </>
+        )}
       </div>
 
       {activeStage && activeStage.suggestions.length > 0 && (
@@ -469,5 +632,60 @@ function CompactReels({
       )}
 
     </div>
+  )
+}
+
+function CompactNode({
+  stage,
+  isActive,
+  onClick,
+}: {
+  stage: WorkflowReelStage
+  isActive: boolean
+  onClick: () => void
+}) {
+  const Icon = stage.icon
+  const hasSuggestions = stage.suggestions.length > 0
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={!hasSuggestions}
+      className="flex-shrink-0 flex flex-col items-center gap-1 px-1 disabled:cursor-default"
+      title={stage.label}
+    >
+      <div
+        className="w-7 h-7 rounded-full flex items-center justify-center border transition-colors"
+        style={{
+          backgroundColor: isActive
+            ? stage.color.accent
+            : hasSuggestions
+            ? stage.color.accentBg
+            : "var(--lia-bg-tertiary)",
+          borderColor: isActive
+            ? stage.color.accent
+            : hasSuggestions
+            ? stage.color.nodeBorder
+            : "var(--lia-border-subtle)",
+        }}
+      >
+        <Icon
+          className="w-3 h-3"
+          style={{
+            color: isActive
+              ? "var(--lia-text-on-accent, #fff)"
+              : hasSuggestions
+              ? stage.color.accent
+              : "var(--lia-text-disabled)",
+          }}
+        />
+      </div>
+      <span
+        className="text-micro font-medium whitespace-nowrap"
+        style={{ color: hasSuggestions ? "var(--lia-text-secondary)" : "var(--lia-text-disabled)" }}
+      >
+        {stage.shortLabel}
+      </span>
+    </button>
   )
 }
