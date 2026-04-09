@@ -49,6 +49,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
 
   const {
     isOpen,
+    open,
     close,
     contextPage,
   } = useLiaFloat()
@@ -97,13 +98,21 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     setAttachedFile(null)
   }, [switchChatContext, setChatMessages])
 
+  const currentModeRef = React.useRef(mode)
+  currentModeRef.current = mode
+
   const handleModeChange = useCallback((newMode: ChatMode) => {
+    const prevMode = currentModeRef.current
     setMode(newMode)
     if (newMode === "fullscreen") {
       close()
       window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: {} }))
+    } else if (prevMode === "fullscreen") {
+      // Leaving fullscreen: navigate away from ChatPage and open sidebar
+      open()
+      window.dispatchEvent(new CustomEvent("lia:leave-fullscreen-chat", { detail: { targetMode: newMode } }))
     }
-  }, [close])
+  }, [close, open])
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click()

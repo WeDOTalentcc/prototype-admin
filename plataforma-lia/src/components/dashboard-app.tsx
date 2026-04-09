@@ -77,6 +77,17 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     }
   }, [])
 
+  // Handle leaving fullscreen chat → navigate to previous page and open sidebar
+  useEffect(() => {
+    const handler = () => {
+      if (currentPage === "Chat LIA") {
+        setCurrentPage("Tarefas")
+      }
+    }
+    window.addEventListener("lia:leave-fullscreen-chat", handler)
+    return () => window.removeEventListener("lia:leave-fullscreen-chat", handler)
+  }, [currentPage])
+
   const handleNavigate = (page: string) => {
     if (page === "Ajuda") {
       router.push("/ajuda")

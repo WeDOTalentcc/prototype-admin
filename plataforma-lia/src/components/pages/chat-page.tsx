@@ -1,3 +1,4 @@
+// Phase 2: ChatPage now uses UnifiedChat fullscreen
 "use client"
 
 import React from "react"
@@ -35,9 +36,10 @@ import { ChatMessageList } from "@/components/chat/ChatMessageList"
 import type { Message } from "./chat-page/types"
 import { useChatPageCore } from "./chat-page/useChatPageCore"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
+import { ChatPageFullscreen } from "@/components/unified-chat/ChatPageFullscreen"
 
 export function ChatPage({ initialConversationId }: { initialConversationId?: string | null }) {
-  return <LegacyChatPage initialConversationId={initialConversationId} />
+  return <ChatPageFullscreen initialConversationId={initialConversationId} />
 }
 
 export function LegacyChatPage({ initialConversationId }: { initialConversationId?: string | null }) {
