@@ -36,6 +36,14 @@
     - 24.8 [Infraestrutura / Deploy](#248-infraestrutura--deploy)
     - 24.9 [Repos Legados (GitHub)](#249-repos-legados-github--wedotalent-org)
     - 24.10 [Roadmap de Correções Prioritizado](#2410-roadmap-de-correções-prioritizado)
+    - 24.11 [Cobertura de Testes](#2411-cobertura-de-testes)
+    - 24.12 [Observabilidade / Alertas](#2412-observabilidade--alertas)
+    - 24.13 [CI/CD Pipeline](#2413-cicd-pipeline)
+    - 24.14 [Performance / Carga](#2414-performance--carga)
+    - 24.15 [Backup / Disaster Recovery](#2415-backup--disaster-recovery)
+    - 24.16 [Repos Legados — Análise Profunda de Código](#2416-repos-legados--análise-profunda-de-código)
+    - 24.17 [Riscos Sistêmicos Transversais](#2417-riscos-sistêmicos-transversais)
+    - 24.18 [Roadmap Atualizado (Completo)](#2418-roadmap-atualizado-completo)
 
 ---
 
@@ -3507,7 +3515,377 @@ Dezenas de arquivos contêm comentários: `"# Will be deleted after ats-api-rail
 
 ---
 
-*Última atualização: Abril 2026 (pós-auditoria completa do ecossistema wedocc2026 + auditoria profunda production readiness)*
+### 24.11 Cobertura de Testes
+
+#### Estado Atual
+
+**Backend (lia-agent-system):**
+
+| Métrica | Valor |
+|---------|-------|
+| Framework | pytest + pytest-asyncio |
+| Arquivos de teste | 368 |
+| Gate de coverage | 45% (meta: 80%) |
+| Coverage reporting | pytest-cov (term-missing) |
+| Domínios com testes diretos | 11 de 62 (~18%) |
+
+**Estrutura de testes:**
+
+| Diretório | Foco |
+|-----------|------|
+| `tests/unit/` | Testes unitários |
+| `tests/integration/` | Integração entre serviços |
+| `tests/e2e/` | Fluxos completos |
+| `tests/test_agents/` | LangGraph workflows |
+| `tests/fairness/` | Bias detection, four-fifths rule |
+| `tests/security/` | Red teaming, PII, prompt injection |
+| `tests/deepeval/`, `tests/ragas/` | Avaliação de qualidade LLM |
+| `tests/llm_eval/` | Golden datasets para regressão |
+
+**Frontend (plataforma-lia):**
+
+| Métrica | Valor |
+|---------|-------|
+| Framework | Vitest + Playwright |
+| Arquivos de teste | ~84 |
+| Gate de coverage | 35% (statements, branches, functions, lines) |
+| Coverage reporting | v8 provider (text, json, html) |
+| Foco principal | Job Wizard, Chat, Hooks de estado |
+
+#### Problemas Encontrados
+
+| # | Problema | Severidade | Detalhes |
+|---|---------|-----------|---------|
+| 1 | Coverage gate baixo (45%/35%) | ALTO | Meta de 45% backend e 35% frontend está muito abaixo do recomendado para produção (>80%) |
+| 2 | 82% dos domínios sem testes diretos | ALTO | Apenas 11 de 62 domínios têm testes dedicados; cobertura indireta via agent tests não é suficiente |
+| 3 | Sem load/stress testing | MEDIO | Não existe configuração de Locust, k6 ou Artillery para testes de carga |
+| 4 | Testes de AI dependem de LLM | MEDIO | DeepEval/Ragas requerem chamadas a LLMs reais — custos e flakiness em CI |
+
+#### Recomendação
+
+1. **[P1/G]** Subir gate de coverage para 60% (backend) e 50% (frontend) no curto prazo
+2. **[P2/G]** Criar testes para os 51 domínios sem cobertura direta
+3. **[P2/M]** Implementar load testing com k6 ou Locust para endpoints críticos
+4. **[P3/M]** Criar mock LLM para testes de AI em CI sem custos
+
+---
+
+### 24.12 Observabilidade / Alertas
+
+#### Estado Atual
+
+| Componente | Status | Detalhes |
+|-----------|--------|---------|
+| Sentry (Backend) | Implementado | FastAPI + Starlette integration, PII scrubbing (email, CPF, phone) antes de enviar |
+| Sentry (Frontend) | Implementado | Next.js client/server/edge, Error Boundaries, só em produção |
+| LangSmith | Implementado | Tracing completo de LLM (input/output, token costs, latency) |
+| Prometheus/Grafana | Parcial | Endpoint `/metrics` pronto, métricas definidas (`circuit_breaker_state`, `fairness_blocks_total`, `agent_request_duration`) |
+| Agent Monitoring | Implementado | API dedicada (`agent_monitoring.py`), health scores (Gold/Silver/Bronze) |
+| Drift Detection | Implementado | Serviço especializado detecta variações em comportamento/custos de IA |
+| Alertas (Teams) | Implementado | Webhook para alertas críticos (circuit breaker open) |
+| OpenTelemetry | Inicial | Setup básico em `app/observability/` para distributed tracing |
+| PagerDuty/OpsGenie | Documentado | Mencionado no RUNBOOK_DEGRADATION.md mas sem integração direta no código |
+
+**Dashboards documentados:** Agent Latency, LLM Costs, Circuit Breakers, Drift Detection.
+
+**SLOs definidos:** `CIRCUIT_BREAKER_SLOS` para 18+ serviços externos (ex: Anthropic 99.9% availability).
+
+#### Problemas Encontrados
+
+| # | Problema | Severidade | Detalhes |
+|---|---------|-----------|---------|
+| 1 | Prometheus/Grafana não deployed | ALTO | Métricas definidas no código mas sem evidência de Grafana rodando em produção |
+| 2 | Alertas limitados a Teams | MEDIO | Sem PagerDuty/OpsGenie integrado — incidentes P0/P1 dependem de webhook Teams |
+| 3 | OpenTelemetry incompleto | MEDIO | Setup inicial mas sem distributed tracing end-to-end (frontend → API → LLM) |
+
+#### Recomendação
+
+1. **[P1/M]** Deployar Grafana e conectar ao Prometheus scrape do `/metrics`
+2. **[P2/M]** Integrar PagerDuty ou OpsGenie para alertas P0/P1 com on-call rotation
+3. **[P3/G]** Completar OpenTelemetry para tracing end-to-end
+
+---
+
+### 24.13 CI/CD Pipeline
+
+#### Estado Atual
+
+**Backend (lia-agent-system) — `.github/workflows/ci.yml`:**
+
+| Step | Ferramenta |
+|------|-----------|
+| Lint | ruff |
+| Security scan | bandit |
+| Unit/Integration tests | pytest (com Docker Postgres 16 + Redis 7) |
+| LLM Quality Gates | DeepEval |
+
+**Frontend (plataforma-lia) — `.github/workflows/ci.yml`:**
+
+| Step | Ferramenta |
+|------|-----------|
+| Lint | ESLint |
+| Type check | tsc |
+| Tests | Vitest suites |
+| Build check | Next.js build |
+
+**Repos legados:**
+- `ats_api`: CI com Brakeman (security scan Rails), importmap audit (JS deps), RuboCop (lint)
+- `recruiter_agent_v5`: Sem GitHub Actions
+
+#### Problemas Encontrados
+
+| # | Problema | Severidade | Detalhes |
+|---|---------|-----------|---------|
+| 1 | Sem CD automatizado | ALTO | CI existe mas deploy para GCP/Cloud Run é manual |
+| 2 | recruiter_agent_v5 sem CI | MEDIO | 834 arquivos sem pipeline de qualidade — risco se código migrar para LIA |
+| 3 | Sem integration tests em CI frontend | MEDIO | Playwright E2E não roda no CI (apenas Vitest unit) |
+
+#### Recomendação
+
+1. **[P1/G]** Implementar CD automatizado (GitHub Actions → Cloud Run deploy com approval gate)
+2. **[P2/M]** Adicionar Playwright ao CI do frontend
+3. **[P3/P]** Adicionar CI ao recruiter_agent_v5 se for mantido como referência ativa
+
+---
+
+### 24.14 Performance / Carga
+
+#### Estado Atual
+
+| Aspecto | Status | Detalhes |
+|---------|--------|---------|
+| Database indexes | Bom | Indexes em `company_id`, `status`, `stage`, `email`, `created_at`; compostos e unique; pgvector HNSW/IVFFlat |
+| Eager loading | Ruim | Sem uso de `joinedload`/`selectinload` — default lazy loading em todos os relationships |
+| Rate limiting | Bom | 600/min por usuário, 3000/min por company, 20K/hr e 60K/hr respectivamente |
+| Circuit breakers | Excelente | 18+ serviços com timeouts calibrados (LLM: 60s, ATS: 30s, Auth: 15s) |
+| Load testing | Inexistente | Sem Locust, k6 ou Artillery |
+| SLOs | Definidos | `CIRCUIT_BREAKER_SLOS` com targets de disponibilidade e p95 latência |
+| API docs (OpenAPI) | Habilitado | `/docs` (Swagger), `/docs/redoc`, `/openapi.json` — 362+ endpoints documentados |
+
+#### Problemas Encontrados
+
+| # | Problema | Severidade | Detalhes |
+|---|---------|-----------|---------|
+| 1 | N+1 queries provável | ALTO | Nenhum uso de eager loading (joinedload/selectinload) — relationships em lazy loading padrão |
+| 2 | Sem load testing | ALTO | Sem dados sobre capacidade do sistema sob carga real |
+| 3 | Degraded mode responses | MEDIO | Circuit breaker tem fallbacks mas precisa validação com cenários reais |
+
+#### Recomendação
+
+1. **[P1/M]** Adicionar `selectinload`/`joinedload` nos queries de listagem (candidates, jobs, applies)
+2. **[P1/M]** Implementar load testing com k6 para endpoints críticos (candidates, chat, sourcing)
+3. **[P2/P]** Validar degraded mode responses com chaos testing manual
+
+---
+
+### 24.15 Backup / Disaster Recovery
+
+#### Estado Atual
+
+| Aspecto | Status |
+|---------|--------|
+| Backup automatizado | Não encontrado no código (depende de Cloud SQL managed backups via Terraform) |
+| pg_dump scripts | Inexistente |
+| RTO/RPO documentação | Inexistente |
+| Data retention | Implementado via `retention_policy.py` (LGPD compliance) |
+| Health probes | `/health/ready` (DB+Redis), `/health/live` (process) |
+| Runbook | `RUNBOOK_DEGRADATION.md` com plano de resposta P0-P3 |
+
+#### Problemas Encontrados
+
+| # | Problema | Severidade | Detalhes |
+|---|---------|-----------|---------|
+| 1 | Sem backup explícito | CRITICO | Nenhum script de backup ou referência a Cloud SQL automated backups no Terraform — se existe, não está documentado |
+| 2 | Sem RTO/RPO definido | ALTO | Sem targets documentados de tempo de recuperação ou ponto de recuperação |
+| 3 | Single region | MEDIO | Deploy em `us-central1` apenas — sem failover multi-região |
+
+#### Recomendação
+
+1. **[P1/P]** Documentar e verificar backup do Cloud SQL (PITR, automated backups, retention)
+2. **[P1/P]** Definir RTO/RPO targets (sugestão: RTO=4h, RPO=1h para MVP)
+3. **[P3/G]** Planejar failover multi-região para fase de escala
+
+---
+
+### 24.16 Repos Legados — Análise Profunda de Código
+
+Complemento da seção 24.9 com análise real do código-fonte de cada repo.
+
+#### ats_api (Rails 7.1)
+
+**Segurança:**
+
+| Aspecto | Finding | Severidade |
+|---------|---------|-----------|
+| Multi-tenancy | Apartment gem com schema-based isolation (`config.use_schemas = true`). `Account` e `User` excluídos (global). Elevator para routing de tenant **comentado** — sem routing automático | ALTO |
+| JWT Auth | HS256 com `Rails.application.secret_key_base`. Token 24h. `authorize_request` duplicado em `ApplicationController` e `SessionsController` | MEDIO |
+| CORS | Apenas `http://localhost:3000` — sem configuração para produção | ALTO |
+| SSL | `sslmode: disable` em development, `sslmode: require` em production | OK |
+| CSP | Content Security Policy **toda comentada** — nenhuma proteção | ALTO |
+| RabbitMQ | Sneakers com `guest:guest` default do ENV, retry 5x, timeout 60s | MEDIO |
+| CI | Brakeman (security), importmap audit (JS), RuboCop (lint) — sem testes no CI | MEDIO |
+| Testes | 5 model specs, request specs existem mas poucos | ALTO |
+| Migrations | 20 migrations, estrutura básica (Users, Accounts, Jobs, Candidates, Applies) | OK |
+| Dockerfile | Multi-stage build, non-root user, bootsnap — bem configurado | OK |
+
+**Vulnerabilidades Específicas:**
+1. Tenant elevator comentado — `Apartment` está configurado mas não há middleware para rotear requests para o tenant correto automaticamente
+2. `authorize_request` duplicado — código de auth copiado em vez de extraído para concern
+3. Nenhum campo `name` no User model (comentado no payload) — funcionalidade quebrada
+4. `db_pool: 10` em dev, `30` em production — sem connection pooling externo
+
+#### recruiter_agent_v5 (Python/LangGraph)
+
+**Segurança:**
+
+| Aspecto | Finding | Severidade |
+|---------|---------|-----------|
+| Secrets | Todas via `os.getenv` + `python-dotenv`, sem .env no repo | OK |
+| Required vars | `GEMINI_API_KEY`, `API_BASE_URL`, `ATS_USERNAME`, `ATS_PASSWORD`, `POSTGRES_*` validados no startup | OK |
+| ATS credentials | `ATS_USERNAME`/`ATS_PASSWORD` para API — credenciais de serviço, não OAuth | MEDIO |
+| Vendor lock-in | 100% Gemini (`google-generativeai==0.8.3`, `langchain-google-genai==2.0.8`) — sem abstração | CRITICO |
+| Tests | 70+ arquivos de teste, cobertura extensiva incluindo fairness, hallucination prevention, security | BOM |
+| CI | Sem GitHub Actions | ALTO |
+| Deps | `langchain>=0.3.0`, `celery[redis]>=5.3.0`, `streamlit>=1.28.0`, `flask==3.0.0` — stack mista | MEDIO |
+
+**Arquitetura:**
+- 7 agents: `intent_analyzer`, `api_planner`, `plan_validator`, `api_executor`, `data_processor`, `answer_formatter` + autonomous
+- 8 domínios: `applies`, `autonomous`, `evaluation`, `insights`, `jobs`, `messaging`, `scheduling`, `sourced_profile_sourcing`
+- Comunicação: RabbitMQ (pika) + Celery, callbacks para Rails
+- Deploy doc: GCP com Cloud Run + GKE Autopilot + Cloud Load Balancer
+
+**Valor para LIA:** Catálogo de 60+ capabilities documentado em `PRODUCT_CAPABILITIES.md`. 70+ testes com patterns de fairness e hallucination prevention que valem como referência.
+
+#### data_collector (Python)
+
+**Segurança:**
+
+| Aspecto | Finding | Severidade |
+|---------|---------|-----------|
+| Config | `config.py` com `ALLOWED_BRANDS` hardcoded (`["land", "talenses"]`) | MEDIO |
+| Deps | `requirements.txt` sem version pinning (ex: `requests`, `pydantic`, `fastapi`) — builds não reproduzíveis | ALTO |
+| Tests | Diretório `tests/` existe mas está **vazio** | CRITICO |
+| Docker | `Dockerfile` e `Dockerfile.api` existem | OK |
+| Workers | 3 workers: `apply_sender`, `job_sender`, `selective_process_sender` — enviam dados para Rails ATS | OK |
+| Providers | Integrações com Gupy (público), Questt, WeDOTalent — scraping/API | MEDIO |
+
+**Vulnerabilidades Específicas:**
+1. Zero testes — pipeline de dados sem nenhuma cobertura de testes
+2. Dependências sem pinning — risco de breaking changes silenciosas
+3. 317 arquivos com scripts de manutenção misturados na raiz (40+ scripts shell)
+4. `ALLOWED_BRANDS` hardcoded — deveria ser env var ou config dinâmica
+
+#### ats_mcp (TypeScript MCP Server)
+
+| Aspecto | Finding | Severidade |
+|---------|---------|-----------|
+| Stack | Model Context Protocol SDK + Zod + TypeScript | OK |
+| Tools | 8 tools: Jira (get/search), Analyze Project, Find Related Files, Get Conventions, Read Replit, Map Replit, Check ATS Health, Rails Exec | OK |
+| Security | `rails-exec` tool permite execução de comandos Rails remotamente | CRITICO |
+| Secrets | `.env.example` documenta vars (Jira URL/email/token, project paths) | OK |
+| Config | `config.json` referencia `ats_api` (Rails) e `ats_front` (Nuxt) paths | OK |
+
+**Vulnerabilidades Específicas:**
+1. `rails-exec` tool — permite execução remota de comandos Rails; se exposto, é equivalente a RCE (Remote Code Execution)
+2. Paths de projeto em `config.json` sem validação — path traversal possível
+
+#### wedo-nuxt (Nuxt 3 + Vue 3 + Vuetify)
+
+| Aspecto | Finding | Severidade |
+|---------|---------|-----------|
+| Stack | Nuxt 3.16, Vue 3.5, Vuetify (via vuetify-nuxt-module 0.19) | OK |
+| Completude | 77 arquivos, muito inicial — `app/` tem só `app.vue` + components + theme | BAIXO |
+| Theme | `liaTheme` + `liaDefaults` customizados em `vuetify-options.ts` | OK |
+| Histoire | Component playground configurado (dev stories) | BOM |
+| Security | Sem auth, sem API calls, sem dados — protótipo puro | N/A |
+
+**Valor:** Referência de theme Vuetify para futura migração Vue. Sem riscos de segurança por ser protótipo sem backend.
+
+---
+
+### 24.17 Riscos Sistêmicos Transversais
+
+Riscos que emergem do cruzamento entre dimensões e não pertencem a uma seção isolada.
+
+| # | Risco | Severidades Cruzadas | Detalhes |
+|---|-------|---------------------|---------|
+| 1 | **Rails bridge sem timeline de remoção** | 24.6 + 24.9 + 24.16 | ~30+ arquivos marcados "will be deleted" sem data. Frontend com `backendTarget: "rails"`. ats_api com CORS só para localhost. Se Rails cai, fallback silencioso pode mascarar perda de dados. | 
+| 2 | **Gap entre WeDO Guide e código** | 24.3 + 24.2 | Guide v3.3 documenta 13 Crenças, 8 Inegociáveis, 18 Production Readiness checks. FairnessGuard implementa bem bias, mas Crenças e Inegociáveis são referência filosófica sem enforcement no código. |
+| 3 | **Voice sem abstração = risco de vendor** | 24.1 + 24.14 | LLM e embedding têm factory, mas voice (crítico para entrevistas) é 100% hardcoded em Gemini. Mudança de preço ou API do Google = rewrite forçado. |
+| 4 | **Custo de LLM sem controles hard** | 24.1 + 24.12 | `tenant_budget` tracking existe no cascade, mas sem limites hard (circuit breaker por gasto, alertas de budget). Tenant pode gerar custos descontrolados. |
+| 5 | **Mapa funcional incompleto** | 24.5 + 24.7 | 32 páginas no frontend, mas sem mapa de "página → status funcional". Talent pools e interviews têm bugs conhecidos; quantas outras páginas estão parcialmente quebradas? |
+| 6 | **ats_mcp tem RCE potencial** | 24.16 | Tool `rails-exec` permite execução remota de comandos Rails. Se o MCP server for exposto a um LLM não confiável, é vetor de ataque crítico. |
+| 7 | **data_collector sem testes** | 24.16 + 24.11 | Pipeline de dados com zero testes + deps sem pinning. Dados que alimentam a plataforma podem ter problemas silenciosos. |
+| 8 | **Backup não documentado** | 24.15 | Se Cloud SQL managed backups existem, não estão documentados. Se não existem, dados de produção estão em risco. |
+
+---
+
+### 24.18 Roadmap Atualizado (Completo)
+
+Incorpora items das novas dimensões (24.11-24.17) ao roadmap original.
+
+#### Fase 1 — Críticos (antes do go-live) — Esforço: 3-4 sprints
+
+| # | Item | Dimensão | Esforço |
+|---|------|---------|--------|
+| 1 | Corrigir `is_synced_to_calendar` Optional[bool] | 24.5 | P |
+| 2 | Verificar que `DEV_AUTO_LOGIN` guard funciona em produção | 24.4 | P |
+| 3 | Limpar credenciais hardcoded em scripts | 24.4 | P |
+| 4 | Configurar CORS para produção | 24.4 / 24.8 | P |
+| 5 | Implementar SSL context para asyncpg | 24.8 | M |
+| 6 | Documentar e verificar backup do Cloud SQL | 24.15 | P |
+| 7 | Definir RTO/RPO targets | 24.15 | P |
+| 8 | Corrigir N+1 queries com eager loading | 24.14 | M |
+| 9 | Implementar CD automatizado (GitHub Actions → Cloud Run) | 24.13 | G |
+| 10 | Deployar Grafana + conectar Prometheus | 24.12 | M |
+
+#### Fase 2 — Altos (primeiros 30 dias pós-launch) — Esforço: 4-5 sprints
+
+| # | Item | Dimensão | Esforço |
+|---|------|---------|--------|
+| 11 | Migrar ~34 arquivos com Gemini bypass para usar factory | 24.1 | G |
+| 12 | Expandir FairnessGuard para endpoints de triagem/ranking | 24.3 | M |
+| 13 | Corrigir talent pools endpoints | 24.5 | M |
+| 14 | Migrar Login/Register para DS tokens | 24.7 | P |
+| 15 | Criar VoiceProviderABC para abstração de voice | 24.1 | M |
+| 16 | Subir coverage gate para 60% backend / 50% frontend | 24.11 | G |
+| 17 | Implementar load testing com k6 | 24.14 | M |
+| 18 | Adicionar Playwright ao CI do frontend | 24.13 | M |
+| 19 | Integrar PagerDuty/OpsGenie para alertas P0/P1 | 24.12 | M |
+| 20 | Implementar budget limits por tenant (LLM costs) | 24.17 | M |
+
+#### Fase 3 — Médios (60-90 dias pós-launch) — Esforço: 5-7 sprints
+
+| # | Item | Dimensão | Esforço |
+|---|------|---------|--------|
+| 21 | Deletar/deprecar ~10 domínios stub | 24.2 | P |
+| 22 | Normalizar feature parity entre LLM providers | 24.1 | M |
+| 23 | Definir timeline para remoção da Rails layer | 24.6 | G |
+| 24 | Squash Alembic migrations | 24.5 | M |
+| 25 | Mover audit logs para storage separado | 24.3 | M |
+| 26 | Padronizar prompts com YAML templates | 24.2 | G |
+| 27 | Migrar `app/services/` faseadamente | 24.6 | G |
+| 28 | Criar testes para os 51 domínios sem cobertura | 24.11 | GG |
+| 29 | Completar OpenTelemetry end-to-end | 24.12 | G |
+| 30 | Criar mapa funcional de todas as 32 páginas | 24.17 | M |
+
+#### Fase 4 — Baixos (backlog) — Esforço: ongoing
+
+| # | Item | Dimensão | Esforço |
+|---|------|---------|--------|
+| 31 | Criar UI de configuração LLM por tenant | 24.1 | M |
+| 32 | Consolidar micro-domínios | 24.6 | M |
+| 33 | Arquivar repos mortos (ats_front, reembolsointeligente) | 24.9 | P |
+| 34 | Resolver npm audit findings | 24.8 | P |
+| 35 | Migrar domínios críticos para LangGraph | 24.2 | GG |
+| 36 | Revisar segurança do `rails-exec` no ats_mcp | 24.16 | P |
+| 37 | Pinar dependências do data_collector | 24.16 | P |
+| 38 | Planejar failover multi-região | 24.15 | GG |
+
+---
+
+*Última atualização: Abril 2026 (auditoria profunda v2 — 18 dimensões + riscos sistêmicos + análise de código GitHub)*
 *Domínio: wedotalent.cc · Região GCP: us-central1 · Stack: Next.js 15 + FastAPI + Rails 7 (opcional)*
 *Integrações mapeadas: Claude, Gemini, OpenAI, WorkOS, Twilio Voice, Google STT/TTS, Teams, WhatsApp, Resend, HubSpot, PEARCH, Redis, RabbitMQ, Celery, Sentry, LangSmith*
 *Decisão arquitetural: FastAPI é a fonte de verdade. Rails é opt-in para dados legados. Ver Seção 2F.*
+*Repos GitHub auditados: WeDOTalent/ats_api, recruiter_agent_v5, data_collector, ats_mcp, wedo-nuxt (análise de código profunda)*
