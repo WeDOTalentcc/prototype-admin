@@ -136,8 +136,7 @@ async def lifespan(app: FastAPI):
         automation_scheduler.start()
         logger.info("✅ Automation Scheduler started")
     except Exception as e:
-        logger.error(f"❌ Automation Scheduler failed to start: {e}")
-        logger.warning("   Scheduled automation jobs will not run until scheduler is fixed")
+        logger.warning(f"⚠️ Automation Scheduler não iniciou: {e} — jobs periódicos inativos")
     
     # Initialize Stage Automation Engine and register handlers
     try:

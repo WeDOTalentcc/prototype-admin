@@ -109,7 +109,7 @@ A Plataforma LIA é composta por dois serviços core obrigatórios e um backend 
 - Agente Python com LangGraph implementado, porém aquém das capacidades esperadas — cobertura de domínios e robustez limitadas em relação à nova LIA
 - Deploy: status a confirmar com o time — possivelmente manual ou com CI/CD parcial
 - Ambiente de staging já existe (criado pelo time) — nível de integração e automação a verificar
-- Observabilidade: status a levantar com o time — logs centralizados, traces e alertas podem ou não estar configurados
+- Observabilidade: Sentry ativo (org `talensesgroup-wedotalent`, 4 issues rastreadas) + LangSmith ativo (projeto `lia-agent-system`, 301+ traces). Cloud Logging e APM automáticos no GCP pós-deploy
 
 ---
 
@@ -1626,12 +1626,12 @@ Usuário acessa wedotalent.cc
 
 ### 11.8 Observabilidade
 
-| Ferramenta | Camada | Arquivo | Config |
-|---|---|---|---|
-| **Sentry** | Frontend + Backend | `sentry.client.config.ts`, `sentry-sdk[fastapi]` | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` |
-| **Cloud Logging** | Backend | automático no Cloud Run | sem config adicional |
-| **LangSmith** | Agentes LLM | `app/config/langsmith.py` | `LANGSMITH_API_KEY` (opcional) |
-| **APM Cloud Monitoring** | GCP | via dashboards GCP | alertas configurados manualmente |
+| Ferramenta | Camada | Arquivo | Config | Status |
+|---|---|---|---|---|
+| **Sentry** | Frontend + Backend | `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `app/core/sentry.py` | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` | ✅ **ATIVO** — org `talensesgroup-wedotalent`, capturando eventos (4 issues rastreadas). PII scrubbing ativo (CPF, email, telefone). Frontend: client + server + edge configs. Backend: FastAPI + Starlette integrations com `send_default_pii=False` |
+| **LangSmith** | Agentes LLM | `app/config/langsmith.py` | `LANGSMITH_API_KEY` | ✅ **ATIVO** — projeto `lia-agent-system`, 301+ traces capturados. Rastreia grafos LangGraph (orchestrator, wizard, screening, interview, job wizard). Error rate 67% em dev (LLM unavailable, serialização) — esperado em ambiente de desenvolvimento |
+| **Cloud Logging** | Backend | automático no Cloud Run | sem config adicional | ⏳ Automático ao fazer deploy no GCP Cloud Run — stdout/stderr roteado automaticamente. Sem integração custom no código |
+| **APM Cloud Monitoring** | GCP | via dashboards GCP | alertas configurados manualmente | ⏳ Configuração manual no GCP pós-deploy — sem código necessário na aplicação |
 
 ---
 
@@ -1649,10 +1649,10 @@ Usuário acessa wedotalent.cc
 | 🟡 Importante | Microsoft Teams Bot | Funciona (dev mode) | Registrar webhook URL de produção no Azure Bot Service |
 | 🟡 Importante | Resend (email) | Código pronto | `RESEND_API_KEY` no Secret Manager |
 | 🟡 Importante | RabbitMQ | Código pronto | Provisionar CloudAMQP ou VM e2-small |
-| 🟡 Importante | Sentry | Código pronto | Criar projeto Sentry, adicionar DSN |
+| ✅ Ativo | Sentry | **Integrado e ativo** — org `talensesgroup-wedotalent` | DSNs já configurados, eventos sendo capturados |
 | 🟢 Desejável | HubSpot | Código pronto, config pendente | `HUBSPOT_ACCESS_TOKEN` quando necessário |
 | 🟢 Desejável | PEARCH | Código pronto, config pendente | `PEARCH_API_KEY` (contato com PEARCH) |
-| 🟢 Desejável | LangSmith | Código pronto | `LANGSMITH_API_KEY` quando quiser observabilidade de agentes |
+| ✅ Ativo | LangSmith | **Integrado e ativo** — projeto `lia-agent-system`, 301+ traces | API key configurada, rastreando todos os grafos LangGraph |
 | 🟢 Desejável | OpenAI | Fallback implementado | `OPENAI_API_KEY` se quiser usar GPT como fallback |
 
 ---
@@ -1670,7 +1670,7 @@ Usuário acessa wedotalent.cc
 | **Tipagem** | TypeScript strict mode ativo, tipos bem definidos |
 | **Auth** | WorkOS SSO integrado, `workos_session` cookie, middleware de proteção de rotas |
 | **Proxy de API** | `/api/backend-proxy/*` centraliza todas as chamadas ao backend (boa separação) |
-| **Observabilidade** | Sentry integrado no frontend |
+| **Observabilidade** | Sentry ativo (org `talensesgroup-wedotalent`) + LangSmith ativo (301+ traces) |
 | **Teams** | `@microsoft/teams-js` integrado, rotas de tab e auth criadas |
 | **WebSockets** | Chat em tempo real via WS implementado |
 | **Testes E2E** | Pasta `e2e/` com 20 arquivos Playwright — auth fixture via cookie bypass (dev mode) |
@@ -1924,7 +1924,7 @@ Auditoria de chaves API:
 **Configuração de produção (infra + produto):**
 - [ ] `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` de produção configurados
 - [ ] Redirect URIs do WorkOS registrados para `wedotalent.cc`
-- [ ] Sentry DSN de produção configurado (`NEXT_PUBLIC_SENTRY_DSN`)
+- [x] Sentry DSN configurado — org `talensesgroup-wedotalent` ativo, capturando eventos
 - [ ] Testes E2E completos com WorkOS real em CI
 - [ ] Teams Tab URL atualizada para domínio de produção
 
@@ -2232,9 +2232,9 @@ PII Masking → Transcript → wsi_deterministic_scorer
 
 - [x] Health probes Kubernetes-ready (ready/live/unified)
 - [x] Circuit Breakers com SLOs para 18 serviços
-- [x] LangSmith tracing para LLM calls
+- [x] LangSmith tracing ativo — projeto `lia-agent-system`, 301+ traces capturados
 - [x] Prometheus metrics endpoint (`/metrics`)
-- [ ] `LANGSMITH_API_KEY` no Secret Manager
+- [x] `LANGSMITH_API_KEY` configurado e ativo
 - [ ] Grafana conectado ao Prometheus scrape
 
 ---

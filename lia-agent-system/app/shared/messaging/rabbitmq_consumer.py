@@ -44,18 +44,23 @@ class RabbitMQConsumer:
         """Conecta ao RabbitMQ e inicia o consumer."""
         rabbitmq_url = getattr(settings, "RABBITMQ_URL", None)
         if not rabbitmq_url:
-            logger.warning("[RabbitMQConsumer] RABBITMQ_URL não configurado — consumer inativo")
+            logger.info("[RabbitMQConsumer] RABBITMQ_URL não configurado — consumer inativo")
             return
 
         try:
             import aio_pika
+        except ImportError:
+            logger.info("[RabbitMQConsumer] aio_pika não instalado — consumer inativo (instale com: pip install aio-pika)")
+            return
+
+        try:
             self._connection = await aio_pika.connect_robust(rabbitmq_url)
             self._channel = await self._connection.channel()
             await self._channel.set_qos(prefetch_count=50)
             self._running = True
             logger.info("[RabbitMQConsumer] Iniciado e conectado ao RabbitMQ")
         except Exception as exc:
-            logger.error("[RabbitMQConsumer] Falha ao iniciar: %s", exc)
+            logger.warning("[RabbitMQConsumer] Falha ao conectar ao RabbitMQ: %s — consumer inativo", exc)
 
     async def subscribe_session(self, session_id: str) -> str:
         """

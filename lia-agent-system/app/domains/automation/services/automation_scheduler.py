@@ -55,31 +55,37 @@ class AutomationScheduler:
         self._pipeline_monitor = None
         self._learning_automation = None
 
-    def _build_scheduler(self) -> AsyncIOScheduler:
-        """Constrói scheduler com Redis jobstore (se disponível) ou in-memory."""
+    @staticmethod
+    def _check_redis_available() -> bool:
+        """Verifica se o Redis está acessível antes de tentar usar como jobstore."""
         try:
             import os
-
-            from apscheduler.jobstores.redis import RedisJobStore
-            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-            # Parseia host/port/db do URL
+            import socket
             import urllib.parse
+            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
             parsed = urllib.parse.urlparse(redis_url)
-            jobstores = {
-                "default": RedisJobStore(
-                    host=parsed.hostname or "localhost",
-                    port=parsed.port or 6379,
-                    db=int((parsed.path or "/0").lstrip("/") or 0),
-                    password=parsed.password,
-                )
-            }
-            logger.info("[AutomationScheduler] Usando Redis jobstore: %s", redis_url)
-        except Exception as exc:
-            from apscheduler.jobstores.memory import MemoryJobStore
-            jobstores = {"default": MemoryJobStore()}
-            logger.warning(
-                "[AutomationScheduler] Redis jobstore indisponível, usando MemoryJobStore: %s", exc
-            )
+            host = parsed.hostname or "localhost"
+            port = parsed.port or 6379
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            result = sock.connect_ex((host, port))
+            sock.close()
+            return result == 0
+        except Exception:
+            return False
+
+    def _build_scheduler(self) -> AsyncIOScheduler:
+        """Constrói scheduler com MemoryJobStore.
+
+        Redis jobstore desativado por incompatibilidade de pickle com ZoneInfo
+        nos triggers CronTrigger/IntervalTrigger do APScheduler. Em ambiente
+        single-instance (Replit / Cloud Run com 1 réplica), MemoryJobStore é
+        suficiente. Para multi-instância, usar solução externa (Cloud Scheduler,
+        Celery Beat com Redis backend, ou APScheduler 4.x quando estável).
+        """
+        from apscheduler.jobstores.memory import MemoryJobStore
+        jobstores = {"default": MemoryJobStore()}
+        logger.info("[AutomationScheduler] Usando MemoryJobStore")
         job_defaults = {"coalesce": True, "max_instances": 1, "misfire_grace_time": 60}
         return AsyncIOScheduler(jobstores=jobstores, job_defaults=job_defaults)
     
@@ -148,6 +154,9 @@ class AutomationScheduler:
         if self._is_running:
             logger.info("Automation Scheduler already running")
             return
+
+        if not self._check_redis_available():
+            logger.warning("[AutomationScheduler] Redis indisponível — scheduler usando MemoryJobStore (jobs não persistem entre restarts)")
         
         try:
             self.scheduler.add_job(
