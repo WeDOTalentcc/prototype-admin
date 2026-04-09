@@ -16,7 +16,8 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
   tabStyles, actionButtonStyles
 } from "@/lib/design-tokens"
-import CandidateOriginBadge from "../pages-agent-studio/CandidateOriginBadge"
+import CandidateOriginBadge from "@/components/pages-agent-studio/CandidateOriginBadge"
+import VoiceScreeningButton from "@/components/pages-agent-studio/VoiceScreeningButton"
 
 // ---------- Types ----------
 
@@ -269,7 +270,15 @@ export default function TalentPoolPage({
       <div className="flex-shrink-0 px-6 pt-3">
         <div className={tabStyles.pillContainer}>
           {TABS.map(tab => (
-            <button
+            {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
+                        <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={activeTab === tab.id ? tabStyles.pillActive : tabStyles.pill}
@@ -350,14 +359,30 @@ function CandidatesTab({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-500" />
-          <button
+          {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
+                        <button
             onClick={() => setStageFilter(null)}
             className={`text-sm px-2 py-1 rounded ${!stageFilter ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
           >
             Todos
           </button>
           {STAGES.map(s => (
-            <button
+            {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
+                        <button
               key={s.id}
               onClick={() => setStageFilter(s.id)}
               className={`text-sm px-2 py-1 rounded ${stageFilter === s.id ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}
@@ -430,7 +455,15 @@ function CandidatesTab({
                           <AvatarFallback>{c.name?.charAt(0) || "?"}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <button
+                          {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
+                        <button
                             onClick={() => onOpenCandidate?.(c.id)}
                             className={`${textStyles.body} font-medium hover:underline cursor-pointer`}
                           >
@@ -470,7 +503,15 @@ function CandidatesTab({
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-1">
                         {tpc.stage === "ready" && (
-                          <button
+                          {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
+                        <button
                             className={actionButtonStyles.smPrimary}
                             title="Mover para Vaga"
                             onClick={() => {/* handled via selection + batch move */}}
@@ -478,12 +519,28 @@ function CandidatesTab({
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         )}
+                        {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
                         <button
                           className={actionButtonStyles.smOutline}
                           title="Enviar mensagem"
                         >
                           <Mail className="w-3.5 h-3.5" />
                         </button>
+                        {tpc.stage === "contacted" && (
+                          <VoiceScreeningButton
+                            talentPoolId={poolId}
+                            candidateId={String(c.id)}
+                            candidateName={c.name}
+                            onScreeningComplete={() => loadCandidates()}
+                          />
+                        )}
                         <button
                           className={actionButtonStyles.smOutline}
                           title="Ver perfil"
@@ -507,8 +564,8 @@ function CandidatesTab({
 // ---------- Agents Tab — delegates to real AgentsTab from 6.2 ----------
 
 // Import the real AgentsTab component created in Phase 6.2
-import RealAgentsTab from "../pages-agent-studio/AgentsTab"
-import CalibrationCardModal from "../pages-agent-studio/CalibrationCardModal"
+import RealAgentsTab from "@/components/pages-agent-studio/AgentsTab"
+import CalibrationCardModal from "@/components/pages-agent-studio/CalibrationCardModal"
 
 function AgentsTabWrapper({ pool }: { pool: TalentPool }) {
   const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)

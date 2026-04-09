@@ -69,7 +69,7 @@ async def apply_sector_template(
         raise HTTPException(status_code=400, detail=f"Sector '{sector}' não encontrado")
 
     # Build the AgentTemplate record using the Stage 8 model
-    from app.models.agent_template import AgentTemplate
+    from libs.models.lia_models.agent_template import AgentTemplate
 
     template_id = str(uuid.uuid4())
     name = body.agent_name or f"Agente {template['display_name']}"

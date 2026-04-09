@@ -537,7 +537,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Agent Studio / Retention (Etapa 4 & 8) ───────────────────────────────
     app.include_router(company_retention_router, prefix="/api/v1", tags=["company-retention"])
     app.include_router(agent_templates_router, prefix="/api/v1", tags=["agent-templates"])
-    # — Agent Studio Phase 6
+    # — Phase 6: Agent Studio, Sourcing, Digital Twins, Voice Screening
     app.include_router(sector_templates_router, prefix="/api/v1", tags=["sector-templates"])
     app.include_router(sourcing_agents_router, prefix="/api/v1", tags=["sourcing-agents"])
     app.include_router(multi_strategy_router, prefix="/api/v1", tags=["multi-strategy"])

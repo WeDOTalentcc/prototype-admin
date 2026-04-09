@@ -11,7 +11,7 @@ import { headers } from "next/headers"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { LiaFloatConditional } from "@/components/lia-float/LiaFloatConditional"
-import { WorkflowRailWrapper } from "@/components/workflow-rail/WorkflowRailWrapper"
+import WorkflowRailWrapper from "@/components/workflow-rail/WorkflowRailWrapper"
 
 async function getServerUser(): Promise<Record<string, unknown> | null> {
   try {

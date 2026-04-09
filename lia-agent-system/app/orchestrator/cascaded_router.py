@@ -79,6 +79,14 @@ AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
     "sourcing_search": "sourcing_search",
     "sourcing_enrich": "sourcing_enrich",
     "sourcing_engagement": "sourcing_engagement",
+    # Phase 6 domains
+    "talent_pool": "talent_pool",
+    "agent_studio": "agent_studio",
+    "digital_twin": "digital_twin",
+    "recruitment_campaign": "recruitment_campaign",
+    "multi_strategy": "agent_studio",
+    "voice_screening": "talent_pool",
+
 }
 
 # Opções padrão de clarificação quando o router não sabe o domínio

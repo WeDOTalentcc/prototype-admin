@@ -156,6 +156,39 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
             "lia_score": row["lia_score"],
         })
 
+    # --- Phase 8.1.5: Pearch hybrid search support ---
+    include_pearch = kwargs.get("include_pearch", False)
+    pearch_candidates = []
+    pearch_count = 0
+    if include_pearch:
+        try:
+            from app.domains.sourcing.services.pearch_service import PearchService
+            pearch_svc = PearchService()
+            pearch_query = f"{role} {' '.join(skills) if isinstance(skills, list) else ''} {location}".strip()
+            pearch_result = await pearch_svc.search_candidates(
+                query=pearch_query,
+                search_type="fast",
+                limit=min(limit, 15),
+            )
+            if pearch_result and pearch_result.get("candidates"):
+                for pc in pearch_result["candidates"]:
+                    pc["source"] = "pearch"
+                    pearch_candidates.append(pc)
+                pearch_count = len(pearch_candidates)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning("[SearchCandidates] Pearch fallback: %s", e)
+
+    # Combine local + pearch, dedup by email/linkedin
+    if pearch_candidates:
+        seen = {c.get("email") or c.get("id") for c in candidates}
+        for pc in pearch_candidates:
+            uid = pc.get("email") or pc.get("linkedin_url") or pc.get("id")
+            if uid and uid not in seen:
+                seen.add(uid)
+                candidates.append(pc)
+        total = total + pearch_count
+
     return {
         "success": True,
         "data": {

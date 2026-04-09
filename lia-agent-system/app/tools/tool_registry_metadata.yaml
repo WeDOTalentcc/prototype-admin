@@ -444,3 +444,283 @@ tools:
         recipients:
           type: array
           items: {type: string}
+
+  # === Phase 6/8: New tools ===
+
+  # Talent Pool (5)
+  - name: create_talent_pool
+    description: Create a new live talent pool with optional archetype
+    allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string}
+        archetype_id: {type: string}
+        description: {type: string}
+
+  - name: list_talent_pools
+    description: List active talent pools for the current company
+    allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        status: {type: string, enum: [active, paused, archived]}
+
+  - name: add_to_talent_pool
+    description: Add candidates to a talent pool
+    allowed_agents: [talent_pool, sourcing, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [pool_id, candidate_ids]
+      properties:
+        pool_id: {type: string}
+        candidate_ids: {type: array, items: {type: string}}
+
+  - name: move_pool_to_job
+    description: Move candidates from talent pool to a job vacancy
+    allowed_agents: [talent_pool, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [pool_id, job_id, candidate_ids, target_stage]
+      properties:
+        pool_id: {type: string}
+        job_id: {type: string}
+        candidate_ids: {type: array, items: {type: string}}
+        target_stage: {type: string}
+
+  - name: get_pool_candidates
+    description: List candidates in a talent pool with stage filtering
+    allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [pool_id]
+      properties:
+        pool_id: {type: string}
+        stage: {type: string, enum: [discovered, contacted, screening, screened, ready]}
+
+  # Agent Studio (4)
+  - name: create_sourcing_agent
+    description: Create a persistent sourcing agent for a job or talent pool
+    allowed_agents: [agent_studio, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [agent_name]
+      properties:
+        agent_name: {type: string}
+        sector_template: {type: string}
+        job_id: {type: string}
+        talent_pool_id: {type: string}
+
+  - name: calibrate_sourcing_agent
+    description: Start calibration for a sourcing agent (trigger Big Card modal)
+    allowed_agents: [agent_studio, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [agent_id]
+      properties:
+        agent_id: {type: string}
+
+  - name: get_agent_status
+    description: Get status, strategy, and metrics of a sourcing agent
+    allowed_agents: [agent_studio, recruiter_assistant, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [agent_id]
+      properties:
+        agent_id: {type: string}
+
+  - name: run_multi_strategy_search
+    description: Execute 4 parallel search strategies (direct, adjacent, silver medalists, reengagement)
+    allowed_agents: [agent_studio, sourcing, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_title]
+      properties:
+        job_title: {type: string}
+        skills: {type: array, items: {type: string}}
+        location: {type: string}
+        seniority: {type: string}
+
+  # Digital Twins (3)
+  - name: create_digital_twin
+    description: Create a Digital Twin from a Subject Matter Expert
+    allowed_agents: [digital_twin, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [twin_name]
+      properties:
+        twin_name: {type: string}
+        sme_user_id: {type: string}
+        specialties: {type: array, items: {type: string}}
+
+  - name: evaluate_with_twin
+    description: Evaluate a candidate using a Digital Twin's reasoning (RAG few-shot)
+    allowed_agents: [digital_twin, cv_screening, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [twin_id, candidate_id]
+      properties:
+        twin_id: {type: string}
+        candidate_id: {type: string}
+        job_id: {type: string}
+
+  - name: list_digital_twins
+    description: List available Digital Twins for the current company
+    allowed_agents: [digital_twin, recruiter_assistant, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      properties: {}
+
+  # Campaigns (3)
+  - name: create_recruitment_campaign
+    description: Create an end-to-end recruitment campaign for a job or pool
+    allowed_agents: [recruitment_campaign, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string}
+        job_id: {type: string}
+        talent_pool_id: {type: string}
+        automation_level: {type: string, enum: [auto, semi, assisted]}
+
+  - name: get_campaign_progress
+    description: Get current stage and progress of a recruitment campaign
+    allowed_agents: [recruitment_campaign, recruiter_assistant, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [campaign_id]
+      properties:
+        campaign_id: {type: string}
+
+  - name: advance_campaign_stage
+    description: Advance a recruitment campaign to the next stage
+    allowed_agents: [recruitment_campaign, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [campaign_id]
+      properties:
+        campaign_id: {type: string}
+
+  # Job Flow Completion (4)
+  - name: create_offer_letter
+    description: Generate an offer letter for a selected candidate
+    allowed_agents: [pipeline_action, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [candidate_id, job_id]
+      properties:
+        candidate_id: {type: string}
+        job_id: {type: string}
+        salary: {type: number}
+        start_date: {type: string}
+
+  - name: confirm_placement
+    description: Confirm a candidate has been hired and close the position
+    allowed_agents: [pipeline_action, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [candidate_id, job_id]
+      properties:
+        candidate_id: {type: string}
+        job_id: {type: string}
+        start_date: {type: string}
+
+  - name: cancel_vacancy
+    description: Cancel a job vacancy with a structured reason
+    allowed_agents: [job_planner, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id, reason]
+      properties:
+        job_id: {type: string}
+        reason: {type: string, enum: [budget_cut, position_eliminated, internal_hire, other]}
+
+  - name: pause_vacancy
+    description: Pause a job vacancy with reason and expected resume date
+    allowed_agents: [job_planner, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id, reason]
+      properties:
+        job_id: {type: string}
+        reason: {type: string}
+        resume_date: {type: string}
+
+  # Marketplace (3)
+  - name: publish_to_job_board
+    description: Publish a job vacancy to external job boards (LinkedIn, Indeed)
+    allowed_agents: [job_planner, communication, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id, board]
+      properties:
+        job_id: {type: string}
+        board: {type: string, enum: [linkedin, indeed, gupy, glassdoor]}
+
+  - name: get_external_applications
+    description: Import applications from external job boards
+    allowed_agents: [sourcing, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id]
+      properties:
+        job_id: {type: string}
+        board: {type: string}
+
+  - name: search_candidates_pearch
+    description: Search candidates using Pearch AI (800M+ profiles, consumes credits)
+    allowed_agents: [sourcing, sourcing_search, agent_studio, orchestrator]
+    scope: TALENT_FUNNEL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [query]
+      properties:
+        query: {type: string}
+        search_type: {type: string, enum: [fast, pro]}
+        limit: {type: integer, maximum: 50}
+        show_emails: {type: boolean}

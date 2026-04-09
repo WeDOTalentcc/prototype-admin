@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
+import { useRouter } from "next/navigation"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
 import { CandidatesTable } from "@/components/pages/candidates/CandidatesTable"
 import { ShareSearchModal } from "@/components/modals/share-search-modal"
@@ -196,6 +198,7 @@ export default function FunilDeTalentosPage() {
             <TabsTrigger value="favoritos" className="rounded-md text-xs">Favoritos</TabsTrigger>
             <TabsTrigger value="listas" className="rounded-md text-xs">Listas</TabsTrigger>
             <TabsTrigger value="buscas" className="rounded-md text-xs">Buscas Salvas</TabsTrigger>
+            <TabsTrigger value="bancos-vivos" className="rounded-md text-xs">Bancos Vivos</TabsTrigger>
           </TabsList>
 
           {/* Tab: Todos */}
@@ -373,6 +376,10 @@ export default function FunilDeTalentosPage() {
               onToggleFavorite={toggleSavedSearchFavorite}
               onNavigateToSearch={() => setActiveTab("todos")}
             />
+          </TabsContent>
+
+          <TabsContent value="bancos-vivos" className="mt-4">
+            <TalentPoolsTab onSelectPool={(id) => { window.location.href = `/bancos-de-talentos/${id}` }} />
           </TabsContent>
         </Tabs>
       </div>
