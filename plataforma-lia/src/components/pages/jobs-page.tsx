@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Briefcase, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { JobKanbanPage } from "./job-kanban-page"
 import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
@@ -132,8 +132,7 @@ export function JobsPage(props: JobsPageProps) {
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-lia-text-secondary" />
+              <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary">
                 Gestão de Vagas
               </h1>
             </div>

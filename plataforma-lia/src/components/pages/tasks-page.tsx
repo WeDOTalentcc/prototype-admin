@@ -5,7 +5,7 @@ import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Target, Activity, Loader2, AlertCircle, RefreshCw } from "lucide-react"
+import { Plus, Activity, Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { DailyBriefingCard } from "@/components/daily-briefing-card"
 import { ActivityFeed } from "@/components/activity-feed"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
@@ -62,8 +62,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
         <div className="flex items-center justify-between mb-1.5">
           <div>
-            <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary mb-0.5 flex items-center gap-2">
-              <Target className="w-4 h-4 text-lia-text-primary" />
+            <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary mb-0.5">
               Tarefas
             </h1>
             <p className={`${textStyles.bodySmall} text-lia-text-secondary`}>
