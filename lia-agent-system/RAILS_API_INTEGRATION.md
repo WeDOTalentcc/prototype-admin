@@ -1,8 +1,10 @@
 # Rails API Integration Reference
 
-> **Updated:** 2026-04-08
-> **Strategy:** Option A (REST) — FastAPI → Rails via HTTP
-> **Auth:** Bearer token (user JWT forwarded) + RAILS_API_TOKEN (service-to-service fallback)
+> **Updated:** 2026-04-09
+> **Strategy:** Decision C — FastAPI is source of truth; Rails is opt-in bridge
+> **Auth:** Bearer token (user JWT forwarded) + RAILS_API_TOKEN (service-to-service, bidirectional)
+> **GitHub Org:** `WeDOTalentcc` (migrated from `WeDOTalent`)
+> **Rails Repo:** `ats-api-copia`
 
 ---
 
@@ -160,9 +162,102 @@ FastAPI (lia-agent-system)
 
 ---
 
+## Reverse Direction — Rails → FastAPI (Sync API)
+
+Rails can consume FastAPI-sourced data (AI insights, WSI scores, compliance) via the `/api/v1/rails-sync/` router.
+
+### Authentication for Rails Callers
+
+```
+Authorization: Bearer <RAILS_API_TOKEN>
+```
+
+The same `RAILS_API_TOKEN` is used bidirectionally. Rails sets it as a Bearer token when calling FastAPI sync endpoints.
+
+### Rails Sync Endpoints
+
+| FastAPI Endpoint | Method | Description | Response |
+|---|---|---|---|
+| `/api/v1/rails-sync/candidates/{id}/enrichment` | `GET` | AI insights, WSI scores, screening results | `{candidate_id, wsi, ai_insights}` |
+| `/api/v1/rails-sync/jobs/{id}/intelligence` | `GET` | Sourcing data, saturation, analytics | `{job_id, sourcing_data, saturation}` |
+| `/api/v1/rails-sync/compliance/status` | `GET` | LGPD status, platform stats, audit summary | `{lgpd, platform_stats, audit}` |
+| `/api/v1/rails-sync/bulk-sync/candidates` | `POST` | Batch enrichment (max 50 per request) | `{enrichments[], missing_ids[]}` |
+
+### Rate Limits
+
+- 120 requests per 60-second window (shared across all rails-sync callers per process)
+- Bulk sync limited to 50 candidates per batch
+- All requests are audit-logged
+- Note: rate limiting is in-memory per worker process; for distributed rate limiting across instances, integrate Redis-based rate limiting
+
+### Example: Rails Calling FastAPI
+
+```ruby
+# In Rails controller or service
+response = HTTParty.get(
+  "#{ENV['FASTAPI_URL']}/api/v1/rails-sync/candidates/#{candidate_id}/enrichment",
+  headers: { "Authorization" => "Bearer #{ENV['RAILS_API_TOKEN']}" }
+)
+enrichment = JSON.parse(response.body)
+candidate.update(wsi_score: enrichment.dig("wsi", "wsi_score"))
+```
+
+---
+
+## Model Gap Analysis — Rails vs FastAPI
+
+### Rails Models NOT in FastAPI (15 gaps)
+
+| # | Rails Model | Domain | Priority | Notes |
+|---|---|---|---|---|
+| 1 | `recruitment_sla` | SLA | P2 | SLA tracking for recruitment stages |
+| 2 | `sla_violation` | SLA | P2 | Violation events |
+| 3 | `campaign_stage_event` | Campaigns | P3 | Event tracking for campaigns |
+| 4 | `big_five_question` | Assessment | P3 | Big Five personality questions |
+| 5 | `big_five_role_profile` | Assessment | P3 | Big Five role profiles |
+| 6 | `technical_question` | Assessment | P2 | Technical test questions |
+| 7 | `technical_test_template` | Assessment | P2 | Technical test templates |
+| 8 | `planned_headcount` | Workforce | P3 | Workforce planning headcount |
+| 9 | `workforce_entry` | Workforce | P3 | Workforce entries |
+| 10 | `hiring_plan` | Workforce | P3 | Hiring plans |
+| 11 | `import_job` | Import | P2 | Bulk import tracking |
+| 12 | `template_category` | Templates | P3 | Already covered by email_templates.category |
+| 13 | `template_usage_log` | Templates | P3 | Usage analytics |
+| 14 | `shared_search_access` | Search | P3 | Shared search collaboration |
+| 15 | `shared_search_feedback` | Search | P3 | Search feedback |
+| 16 | `approval_request` | Workflow | P2 | Approval workflow |
+| 17 | `pending_approval` | Workflow | P2 | Pending approvals |
+| 18 | `automated_decision_explanation` | AI | P1 | AI decision transparency (EU AI Act) |
+| 19 | `webhook_delivery_log` | Integration | P2 | Webhook delivery audit |
+| 20 | `reschedule_history` | Interviews | P2 | Reschedule audit trail |
+
+### Rails Reality Check
+
+- **97 Ruby model files** but only **12 tables** in `schema.rb`
+- 31 out of 49 migrations were never applied
+- ~85 models are "orphans" with no database tables
+
+---
+
+## GitHub Repository Information
+
+| Repo | Description | Org |
+|---|---|---|
+| `ats-api-copia` | Rails API (legacy) | `WeDOTalentcc` |
+| `ats-front-copia` | Rails frontend (legacy) | `WeDOTalentcc` |
+| `recruiter-agent-v5-copia` | Agent system v5 | `WeDOTalentcc` |
+| `data-collector-copia` | Data collector | `WeDOTalentcc` |
+| `ats-mcp-copia` | MCP integration | `WeDOTalentcc` |
+| `wedo-nuxt-copia` | Nuxt frontend | `WeDOTalentcc` |
+
+> **Note:** Org was migrated from `WeDOTalent` to `WeDOTalentcc`. Use secret `GITHUBWEDOCC2026` for API access (the Replit GitHub integration token is expired).
+
+---
+
 ## Security Notes
 
 - **Never log** `RAILS_API_TOKEN` or user JWTs
-- The token is forwarded as `Authorization: Bearer <token>` — Rails validates it server-side
+- The token is forwarded as `Authorization: Bearer <token>` — both directions validate server-side
 - For tenant isolation: Rails uses the Apartment gem (schema per account). The user's JWT encodes the tenant — no tenant header needed from FastAPI
 - `RAILS_API_TOKEN` should be set in GCP Secret Manager and injected at deploy time
+- Rails sync endpoints are rate-limited and audit-logged

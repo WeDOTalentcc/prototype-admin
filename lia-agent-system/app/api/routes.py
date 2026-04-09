@@ -236,6 +236,7 @@ from app.api.v1.traces import router as traces_router
 from app.api.v1.user_agent_preferences import router as user_prefs_router
 from app.api.v1.wsi import router as wsi_router
 from app.api.v1.rails_health import router as rails_health_router
+from app.api.v1.rails_sync import router as rails_sync_router
 
 
 def register_all_routes(app: FastAPI) -> None:
@@ -246,6 +247,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(health_langgraph_router, prefix="/api/v1")
     app.include_router(health_check.router, prefix="/api/v1", tags=["health-check"])
     app.include_router(rails_health_router, prefix="/api/v1", tags=["rails-integration"])
+    app.include_router(rails_sync_router, prefix="/api/v1", tags=["rails-sync"])
 
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")

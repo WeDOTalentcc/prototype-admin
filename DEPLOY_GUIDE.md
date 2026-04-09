@@ -433,6 +433,31 @@ Ativação gradual (plug-and-play):
 
 > **Nota:** Esse esforço ocorre no servidor Rails (fora do Replit), não impacta o desenvolvimento contínuo da plataforma LIA.
 
+### Route Migration Status (Task #91 — Completed)
+
+All **104 frontend proxy route files** have been migrated from Rails-dependent patterns to FastAPI:
+
+- **94 routes** using `createProxyHandlers` (auto-fallback via `proxy-handler.ts`)
+- **10 manual-fetch routes** (recruitment-campaigns and talent-pools) rewritten to call FastAPI directly
+- **Zero Rails references remain** in proxy routes — `backendTarget: "rails"` fully eliminated
+
+When `RAILS_BACKEND_URL` is empty (default), all requests go to FastAPI. No manual route flipping needed.
+
+### Rails Consumption API (Task #92 — rails_sync.py)
+
+FastAPI now exposes reverse-direction endpoints for Rails to consume AI/enrichment data:
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/rails-sync/candidates/{id}/enrichment` | GET | WSI scores, AI insights, screening |
+| `/api/v1/rails-sync/jobs/{id}/intelligence` | GET | Sourcing data, market saturation |
+| `/api/v1/rails-sync/compliance/status` | GET | LGPD, audit, platform stats |
+| `/api/v1/rails-sync/bulk-sync/candidates` | POST | Batch enrichment (max 50) |
+
+Auth: `Authorization: Bearer <RAILS_API_TOKEN>` (same token, bidirectional). Rate limit: 120 req/60s.
+
+See `lia-agent-system/RAILS_API_INTEGRATION.md` for full endpoint docs, Ruby examples, and model gap analysis.
+
 ---
 
 ## 2G. recruiter-agent-v5-copia — Análise e Comparação com LIA
