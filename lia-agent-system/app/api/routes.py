@@ -14,6 +14,8 @@ from app.api.public import shared_searches as public_shared_searches
 # ── Bulk import from app.api.v1 ──────────────────────────────────────────────
 # ── Individual imports ────────────────────────────────────────────────────────
 # ── Lazy imports (originally inline in main.py) ───────────────────────────────
+from app.api.v1 import llm_config as llm_config_router_mod
+
 from app.api.v1 import (
     ab_testing,
     activities,
@@ -479,6 +481,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(global_policies.router, prefix="/api/v1", tags=["global-policies"])
     app.include_router(default_templates.router, prefix="/api/v1", tags=["default-templates"])
     app.include_router(hiring_policy.router, prefix="/api/v1", tags=["hiring-policy"])
+
+    # ── LLM Config (Choose Your AI) ──────────────────────────────────────────
+    app.include_router(llm_config_router_mod.router, prefix="/api/v1", tags=["llm-config"])
 
     # ── ATS / Integrations ────────────────────────────────────────────────────
     app.include_router(ats.router, prefix="/api/v1", tags=["ats"])

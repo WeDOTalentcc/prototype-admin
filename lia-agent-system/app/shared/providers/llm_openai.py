@@ -14,8 +14,9 @@ class OpenAILLMProvider(LLMProviderABC):
     _provider_name = "openai"
     _default_model = "gpt-4o"
     
-    def __init__(self):
+    def __init__(self, api_key: str | None = None):
         self._client = None
+        self._custom_api_key = api_key
     
     @property
     def provider_name(self) -> str:
@@ -28,7 +29,7 @@ class OpenAILLMProvider(LLMProviderABC):
     def _get_client(self):
         if not self._client:
             from openai import OpenAI
-            api_key = os.environ.get("OPENAI_API_KEY")
+            api_key = self._custom_api_key or os.environ.get("OPENAI_API_KEY")
             if not api_key:
                 raise ValueError("No OpenAI API key configured")
             self._client = OpenAI(api_key=api_key)

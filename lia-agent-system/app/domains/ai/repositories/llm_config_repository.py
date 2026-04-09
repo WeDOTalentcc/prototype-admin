@@ -1,6 +1,7 @@
 """
 LlmConfigRepository — data access for per-tenant LLM configuration.
 Extracted from app/api/v1/llm_config.py as part of Phase 2 refactor.
+API keys are encrypted at-rest using Fernet symmetric encryption.
 """
 from __future__ import annotations
 
@@ -13,43 +14,81 @@ from app.shared.encryption import encrypt_value, decrypt_value
 
 logger = logging.getLogger(__name__)
 
+def _encrypt_provider_keys(providers: dict) -> dict:
+    encrypted = {}
+    for name, prov in providers.items():
+        if prov.get("_remove"):
+            continue
+        p = dict(prov) if isinstance(prov, dict) else {}
+        if "api_key" in p and p["api_key"] and not p["api_key"].startswith("gAAAAA"):
+            p["api_key"] = encrypt_value(p["api_key"])
+        encrypted[name] = p
+    return encrypted
+
+
+def _decrypt_provider_keys(providers: dict) -> dict:
+    decrypted = {}
+    for name, prov in (providers or {}).items():
+        p = dict(prov) if isinstance(prov, dict) else {}
+        if "api_key" in p and p["api_key"]:
+            p["api_key"] = decrypt_value(p["api_key"])
+        decrypted[name] = p
+    return decrypted
+
+
+class _Snapshot:
+    """Detached snapshot of TenantLLMConfig to prevent ORM dirty-flush of decrypted keys."""
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
 
 class LlmConfigRepository:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def get_by_company_id(self, company_id: str):
-        """Return TenantLLMConfig for company, or None."""
+        """Return a detached snapshot of TenantLLMConfig for company, or None.
+        API keys are decrypted for internal use.
+        Returns a detached snapshot to avoid ORM dirty-flush of decrypted keys."""
         from app.models.tenant_llm_config import TenantLLMConfig
 
         result = await self.db.execute(
             select(TenantLLMConfig).where(TenantLLMConfig.company_id == company_id)
         )
-        return result.scalar_one_or_none()
+        config = result.scalar_one_or_none()
+        if not config:
+            return None
 
-    def _encrypt_providers(self, providers_dict: dict) -> dict:
-        encrypted = {}
-        for name, prov in providers_dict.items():
-            p = dict(prov)
-            if "api_key" in p and p["api_key"]:
-                raw_key = p["api_key"]
-                if not raw_key.startswith("gAAAAA"):
-                    p["api_key"] = encrypt_value(raw_key)
-            encrypted[name] = p
-        return encrypted
+        return _Snapshot(
+            id=config.id,
+            company_id=config.company_id,
+            primary_provider=config.primary_provider,
+            fallback_order=list(config.fallback_order) if config.fallback_order else [],
+            providers=_decrypt_provider_keys(config.providers) if config.providers else {},
+            routing=dict(config.routing) if config.routing else {},
+            config=dict(config.config) if hasattr(config, 'config') and config.config else {},
+            is_active=config.is_active,
+            created_at=config.created_at,
+            updated_at=config.updated_at,
+            created_by=getattr(config, 'created_by', None),
+        )
 
-    def decrypt_provider_key(self, encrypted_key: str) -> str:
-        if not encrypted_key:
-            return encrypted_key
-        return decrypt_value(encrypted_key)
+    @staticmethod
+    def decrypt_provider_key(value: str) -> str:
+        """Decrypt a single provider key value."""
+        return decrypt_value(value)
 
     def _merge_providers(self, existing: dict | None, incoming: dict) -> dict:
+        """Merge incoming providers into existing ones, handling _remove flag."""
         merged = dict(existing or {})
         for name, prov in incoming.items():
             if prov.get("_remove"):
                 merged.pop(name, None)
             else:
-                merged[name] = prov
+                p = dict(prov)
+                if "api_key" in p and p["api_key"] and not p["api_key"].startswith("gAAAAA"):
+                    p["api_key"] = encrypt_value(p["api_key"])
+                merged[name] = p
         return merged
 
     async def upsert(
@@ -61,18 +100,22 @@ class LlmConfigRepository:
         routing: dict,
         created_by: str,
     ):
+        """Create or update TenantLLMConfig; return instance (no flush — caller commits).
+        API keys are encrypted before persisting. Handles provider removal."""
         from app.models.tenant_llm_config import TenantLLMConfig
 
-        config = await self.get_by_company_id(company_id)
+        result = await self.db.execute(
+            select(TenantLLMConfig).where(TenantLLMConfig.company_id == company_id)
+        )
+        config = result.scalar_one_or_none()
 
         if config:
-            merged = self._merge_providers(config.providers, self._encrypt_providers(providers_dict))
+            config.providers = self._merge_providers(config.providers, providers_dict)
             config.primary_provider = primary_provider
             config.fallback_order = fallback_order
-            config.providers = merged
             config.routing = routing
         else:
-            encrypted_providers = self._encrypt_providers(providers_dict)
+            encrypted_providers = _encrypt_provider_keys(providers_dict)
             config = TenantLLMConfig(
                 company_id=company_id,
                 primary_provider=primary_provider,
@@ -82,4 +125,9 @@ class LlmConfigRepository:
                 created_by=created_by,
             )
             self.db.add(config)
+
+        logger.info(
+            "[LlmConfigRepo] upsert company_id=%s by=%s provider=%s",
+            company_id, created_by, primary_provider,
+        )
         return config

@@ -55,19 +55,19 @@ async def get_tenant_llm_config(company_id: str) -> dict | None:
     if company_id in _tenant_configs:
         return _tenant_configs[company_id]
 
-    # Try loading from DB
     try:
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import text
+        from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
         async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("SELECT config FROM tenant_llm_configs WHERE company_id = :cid AND is_active = true"),
-                {"cid": company_id}
-            )
-            row = result.fetchone()
-            if row:
-                import json
-                config = json.loads(row[0]) if isinstance(row[0], str) else row[0]
+            repo = LlmConfigRepository(session)
+            row = await repo.get_by_company_id(company_id)
+            if row and row.is_active:
+                config = {
+                    "primary_provider": row.primary_provider or "gemini",
+                    "fallback_order": row.fallback_order or ["gemini", "claude", "openai"],
+                    "providers": row.providers or {},
+                    "routing": row.routing or {},
+                }
                 _tenant_configs[company_id] = config
                 return config
     except Exception as e:

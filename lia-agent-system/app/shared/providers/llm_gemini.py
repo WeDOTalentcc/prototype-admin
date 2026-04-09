@@ -22,8 +22,9 @@ class GeminiLLMProvider(LLMProviderABC):
     _provider_name = "gemini"
     _default_model = "gemini-2.5-flash"
     
-    def __init__(self):
+    def __init__(self, api_key: str | None = None):
         self._client = None
+        self._custom_api_key = api_key
     
     @property
     def provider_name(self) -> str:
@@ -36,11 +37,14 @@ class GeminiLLMProvider(LLMProviderABC):
     def _get_client(self):
         if not self._client:
             from google import genai
-            api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+            api_key = self._custom_api_key or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
             base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
-            if not api_key or not base_url:
+            if not api_key:
                 raise ValueError("Gemini API not configured")
-            self._client = genai.Client(api_key=api_key, http_options={'api_version': '', 'base_url': base_url})
+            client_kwargs = {"api_key": api_key}
+            if base_url:
+                client_kwargs["http_options"] = {'api_version': '', 'base_url': base_url}
+            self._client = genai.Client(**client_kwargs)
         return self._client
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)

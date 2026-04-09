@@ -493,11 +493,23 @@ class MainOrchestrator:
             try:
                 _tenant_config = await get_tenant_llm_config(_tenant_id)
                 if _tenant_config:
-                    _container = get_provider_for_tenant(
+                    _providers_cfg = _tenant_config.get("providers", {})
+                    _api_keys = {
+                        name: prov.get("api_key")
+                        for name, prov in _providers_cfg.items()
+                        if prov.get("api_key")
+                    }
+                    from app.shared.providers.llm_factory import TenantProviderRegistry
+                    _registry = TenantProviderRegistry.get_instance()
+                    _registry.remove_container(_tenant_id)
+                    from app.shared.providers.llm_factory import ProviderContainer
+                    _container = ProviderContainer(
                         tenant_id=_tenant_id,
                         primary_provider=_tenant_config.get("primary_provider"),
                         fallback_order=_tenant_config.get("fallback_order"),
+                        provider_api_keys=_api_keys if _api_keys else None,
                     )
+                    _registry.register_container(_tenant_id, _container)
                     _llm_svc._tenant_container = _container
                     _llm_svc._current_tenant = _tenant_id
                     logger.info(

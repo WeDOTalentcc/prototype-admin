@@ -23,6 +23,15 @@ import {
 import { IntegrationCard } from "./integrations/IntegrationCard"
 import { IntegrationDetailDrawer } from "./integrations/IntegrationDetailDrawer"
 
+interface LLMConfigData {
+  company_id: string
+  primary_provider: string
+  fallback_order: string[]
+  providers: Record<string, { api_key?: string; model?: string; is_active?: boolean }>
+  routing: Record<string, string>
+  is_active: boolean
+}
+
 const categoryIcons: Record<string, React.ReactNode> = {
   all: <Plug className="w-3.5 h-3.5" />,
   ai_models: <Brain className="w-3.5 h-3.5" />,
@@ -57,13 +66,9 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [microsoftStatus, setMicrosoftStatus] = useState<"loading" | "connected" | "not_configured">("loading")
   const [teamsStatus, setTeamsStatus] = useState<"loading" | "configured" | "not_configured">("loading")
   const [activeProvider, setActiveProvider] = useState<string>("gemini")
+  const [llmConfig, setLlmConfig] = useState<LLMConfigData | null>(null)
   const [atsConnections, setAtsConnections] = useState<Array<{ provider: string; is_active: boolean }>>([])
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [llmConfig, setLlmConfig] = useState<{
-    providers: Record<string, { api_key?: string; model?: string; is_active?: boolean }>
-    primary_provider?: string
-  } | null>(null)
-  const [llmConfigVersion, setLlmConfigVersion] = useState(0)
 
   useEffect(() => {
     setActiveTab(activeSubsection || "all")
@@ -94,21 +99,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       })
       .catch(() => setTeamsStatus("not_configured"))
 
-    fetch("/api/backend-proxy/llm-config")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch LLM config")
-        return r.json()
-      })
-      .then((data) => {
-        if (data.primary_provider) {
-          setActiveProvider(data.primary_provider)
-        }
-        setLlmConfig({
-          providers: data.providers || {},
-          primary_provider: data.primary_provider || "gemini",
-        })
-      })
-      .catch(() => {})
+    fetchLlmConfig()
 
     fetch("/api/backend-proxy/ats/connections")
       .then((r) => {
@@ -121,22 +112,19 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       .catch(() => setAtsConnections([]))
   }, [])
 
-  useEffect(() => {
-    if (llmConfigVersion === 0) return
+  const fetchLlmConfig = useCallback(() => {
     fetch("/api/backend-proxy/llm-config")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.primary_provider) setActiveProvider(data.primary_provider)
-        setLlmConfig({
-          providers: data.providers || {},
-          primary_provider: data.primary_provider || "gemini",
-        })
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch LLM config")
+        return r.json()
+      })
+      .then((data: LLMConfigData) => {
+        setLlmConfig(data)
+        if (data.primary_provider) {
+          setActiveProvider(data.primary_provider)
+        }
       })
       .catch(() => {})
-  }, [llmConfigVersion])
-
-  const handleLlmConfigChange = useCallback(() => {
-    setLlmConfigVersion((v) => v + 1)
   }, [])
 
   const handleConnectGoogle = async () => {
@@ -183,11 +171,17 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         }
       }
       if (integration.category === "ai_models") {
-        const hasKey = !!llmConfig?.providers?.[integration.id]?.api_key
+        const providerMap: Record<string, string> = {
+          gemini: "gemini",
+          claude: "claude",
+          openai: "openai",
+        }
+        const provKey = providerMap[integration.id]
+        const hasOwnKey = !!(llmConfig?.providers?.[provKey]?.api_key)
         return {
           ...integration,
-          status: hasKey ? ("connected" as const) : integration.status,
-          isActiveProvider: integration.id === activeProvider,
+          isActiveProvider: provKey === activeProvider,
+          status: (hasOwnKey ? "connected" : integration.status) as "connected" | "not_configured" | "coming_soon",
         }
       }
       if (integration.category === "ats" && atsProviderMap[integration.id]) {
@@ -343,7 +337,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         onConnectGoogle={handleConnectGoogle}
         errorMsg={errorMsg}
         llmConfig={llmConfig}
-        onLlmConfigChange={handleLlmConfigChange}
+        onConfigSaved={fetchLlmConfig}
       />
     </div>
   )

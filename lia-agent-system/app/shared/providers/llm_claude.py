@@ -28,8 +28,9 @@ class ClaudeLLMProvider(LLMProviderABC):
     _provider_name = "claude"
     _default_model = "claude-sonnet-4-6"
 
-    def __init__(self):
+    def __init__(self, api_key: str | None = None):
         self._client = None
+        self._custom_api_key = api_key
 
     @property
     def provider_name(self) -> str:
@@ -42,7 +43,7 @@ class ClaudeLLMProvider(LLMProviderABC):
     def _get_client(self):
         if not self._client:
             from anthropic import Anthropic
-            api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+            api_key = self._custom_api_key or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
             base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
             if not api_key:
                 raise ValueError("No Claude API key configured")

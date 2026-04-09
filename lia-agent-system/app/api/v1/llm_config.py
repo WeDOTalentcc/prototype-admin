@@ -21,6 +21,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.tenant_llm_context import clear_tenant_config_cache
 from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
+from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
@@ -29,8 +30,8 @@ router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
 # === Schemas ===
 
 class ProviderConfig(BaseModel):
-    provider: str | None = None
-    api_key: str | None = None
+    provider: str = ""
+    api_key: str = ""
     model: str | None = None
     is_active: bool = True
     remove: bool = Field(False, alias="_remove")
@@ -101,16 +102,10 @@ async def get_llm_config(
         for name, prov in (config.providers or {}).items():
             masked = dict(prov) if isinstance(prov, dict) else {}
             if "api_key" in masked and masked["api_key"]:
-                raw = masked["api_key"]
-                try:
-                    decrypted = repo.decrypt_provider_key(raw)
-                    if decrypted.startswith("gAAAAA"):
-                        masked["api_key"] = "••••••••" + "..." + raw[-4:]
-                    elif len(decrypted) > 12:
-                        masked["api_key"] = decrypted[:8] + "..." + decrypted[-4:]
-                    else:
-                        masked["api_key"] = "••••••••"
-                except Exception:
+                key = masked["api_key"]
+                if len(key) > 12:
+                    masked["api_key"] = key[:8] + "..." + key[-4:]
+                else:
                     masked["api_key"] = "••••••••"
             masked_providers[name] = masked
 
@@ -140,18 +135,45 @@ async def update_llm_config(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update LLM configuration for the tenant."""
+    """Update LLM configuration for the tenant.
+    Uses merge semantics: only keys with real (non-masked) values are updated.
+    If a provider's api_key contains '...' it is treated as masked and the
+    existing encrypted key is preserved."""
     company_id = current_user.company_id
 
     try:
-        providers_dict = {}
+        repo = LlmConfigRepository(db)
+
+        existing = await repo.get_by_company_id(company_id)
+        existing_providers = existing.providers if existing else {}
+
+        providers_dict = dict(existing_providers)
+        changed_providers = []
+
         for name, prov in request.providers.items():
             if prov.remove:
                 providers_dict[name] = {"_remove": True}
-            else:
-                providers_dict[name] = {"api_key": prov.api_key, "model": prov.model, "is_active": prov.is_active}
+                changed_providers.append(name)
+                continue
 
-        repo = LlmConfigRepository(db)
+            key_val = prov.api_key
+            is_masked = "..." in key_val if key_val else True
+            is_empty = not key_val
+
+            if (is_masked or is_empty) and name in existing_providers:
+                providers_dict[name] = {
+                    **existing_providers[name],
+                    "model": prov.model or existing_providers[name].get("model"),
+                    "is_active": prov.is_active,
+                }
+            else:
+                providers_dict[name] = {
+                    "api_key": key_val,
+                    "model": prov.model,
+                    "is_active": prov.is_active,
+                }
+            changed_providers.append(name)
+
         await repo.upsert(
             company_id=company_id,
             primary_provider=request.primary_provider,
@@ -161,9 +183,55 @@ async def update_llm_config(
             created_by=str(current_user.id),
         )
 
+        # Audit log
+        audit_repo = AuditLogRepository(db)
+        await audit_repo.create_log({
+            "action": "llm_config_update",
+            "action_category": "security",
+            "client_id": company_id,
+            "user_id": str(current_user.id),
+            "user_email": current_user.email,
+            "resource_type": "llm_config",
+            "resource_id": company_id,
+            "status": "success",
+            "evidence": {
+                "primary": request.primary_provider,
+                "changed_providers": changed_providers
+            }
+        })
 
-        # Clear cache so next LLM call picks up new config
         clear_tenant_config_cache(company_id)
+
+        changed_providers = list(request.providers.keys())
+        logger.info(
+            "[LLMConfig] Config updated by user=%s company=%s primary=%s providers=%s",
+            current_user.id,
+            company_id,
+            request.primary_provider,
+            changed_providers,
+        )
+
+        try:
+            from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
+            audit_repo = AuditLogRepository(db)
+            await audit_repo.create_log({
+                "user_id": str(current_user.id),
+                "user_email": getattr(current_user, "email", "unknown"),
+                "client_id": company_id,
+                "client_name": getattr(current_user, "company_name", company_id),
+                "action": "llm_config.update",
+                "action_category": "configuration",
+                "resource_type": "tenant_llm_config",
+                "resource_id": company_id,
+                "status": "success",
+                "details": {
+                    "primary_provider": request.primary_provider,
+                    "changed_providers": changed_providers,
+                    "fallback_order": request.fallback_order,
+                },
+            })
+        except Exception as audit_err:
+            logger.warning("[LLMConfig] Audit log write failed (non-blocking): %s", audit_err)
 
         return {"status": "updated", "company_id": company_id}
     except Exception as e:

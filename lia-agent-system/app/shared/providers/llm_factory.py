@@ -163,16 +163,16 @@ class ProviderContainer:
         tenant_id: str | None = None,
         primary_provider: str | None = None,
         fallback_order: list[str] | None = None,
+        provider_api_keys: dict[str, str] | None = None,
     ) -> None:
         self._tenant_id = tenant_id
         self._primary = primary_provider or os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
         raw_order = fallback_order or list(FALLBACK_ORDER)
-        # Enforce primary-first: primary provider is always tried first,
-        # regardless of its position in the configured fallback list.
         self._fallback_order = [self._primary] + [
             p for p in raw_order if p != self._primary
         ]
         self._instances: dict[str, LLMProviderABC] = {}
+        self._api_keys: dict[str, str] = provider_api_keys or {}
 
     @property
     def tenant_id(self) -> str | None:
@@ -186,8 +186,13 @@ class ProviderContainer:
     def fallback_order(self) -> list[str]:
         return list(self._fallback_order)
 
+    @property
+    def has_custom_keys(self) -> bool:
+        return bool(self._api_keys)
+
     def get(self, provider_name: str) -> LLMProviderABC:
-        """Get (or lazily create) a provider instance within this container."""
+        """Get (or lazily create) a provider instance within this container.
+        If tenant API keys are available, creates a provider with the tenant key."""
         if provider_name not in self._instances:
             global_providers = LLMProviderFactory._providers
             if provider_name not in global_providers:
@@ -195,12 +200,21 @@ class ProviderContainer:
                     f"Unknown LLM provider: {provider_name}. "
                     f"Available: {list(global_providers.keys())}"
                 )
-            self._instances[provider_name] = global_providers[provider_name]()
-            logger.debug(
-                "[ProviderContainer] tenant=%s created provider=%s",
-                self._tenant_id,
-                provider_name,
-            )
+            tenant_key = self._api_keys.get(provider_name)
+            if tenant_key:
+                self._instances[provider_name] = global_providers[provider_name](
+                    api_key=tenant_key
+                )
+                logger.info(
+                    "[ProviderContainer] tenant=%s created provider=%s with tenant key",
+                    self._tenant_id, provider_name,
+                )
+            else:
+                self._instances[provider_name] = global_providers[provider_name]()
+                logger.debug(
+                    "[ProviderContainer] tenant=%s created provider=%s with system key",
+                    self._tenant_id, provider_name,
+                )
         return self._instances[provider_name]
 
     def get_primary(self) -> LLMProviderABC:
@@ -211,20 +225,25 @@ class ProviderContainer:
         """Release cached instances (for testing / hot-reload)."""
         self._instances.clear()
 
+    async def _try_generate(
+        self, provider: LLMProviderABC, prompt: str, system: str | None, **kwargs
+    ):
+        if system:
+            return await provider.generate_with_system(system, prompt, **kwargs)
+        return await provider.generate(prompt, **kwargs)
+
     async def generate_with_fallback(
         self, prompt: str, system: str | None = None, **kwargs
     ) -> str:
-        """Try providers in tenant fallback order; return first success."""
+        """Try providers in tenant fallback order with per-provider credential fallback.
+        For each provider: tenant key → system key → next provider."""
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
         errors: list[str] = []
         for provider_name in self._fallback_order:
             try:
                 provider = self.get(provider_name)
-                if system:
-                    result = await provider.generate_with_system(system, prompt, **kwargs)
-                else:
-                    result = await provider.generate(prompt, **kwargs)
+                result = await self._try_generate(provider, prompt, system, **kwargs)
                 if provider_name != self._primary:
                     logger.warning(
                         "[ProviderContainer] tenant=%s used fallback '%s'",
@@ -242,13 +261,33 @@ class ProviderContainer:
                     provider_name,
                 )
             except Exception as e:
-                errors.append(f"{provider_name}: {type(e).__name__}: {e}")
-                logger.warning(
-                    "[ProviderContainer] tenant=%s provider '%s' failed: %s",
-                    self._tenant_id,
-                    provider_name,
-                    e,
-                )
+                errors.append(f"{provider_name}(tenant-key): {type(e).__name__}: {e}")
+                tenant_key = self._api_keys.get(provider_name)
+                if tenant_key:
+                    logger.warning(
+                        "[ProviderContainer] tenant=%s provider '%s' tenant-key failed, retrying with system key: %s",
+                        self._tenant_id, provider_name, e,
+                    )
+                    try:
+                        global_providers = LLMProviderFactory._providers
+                        system_provider = global_providers[provider_name]()
+                        result = await self._try_generate(system_provider, prompt, system, **kwargs)
+                        logger.info(
+                            "[ProviderContainer] tenant=%s provider '%s' succeeded with system key (tenant key failed)",
+                            self._tenant_id, provider_name,
+                        )
+                        return result.text
+                    except Exception as e2:
+                        errors.append(f"{provider_name}(system-key): {type(e2).__name__}: {e2}")
+                        logger.warning(
+                            "[ProviderContainer] tenant=%s provider '%s' system-key also failed: %s",
+                            self._tenant_id, provider_name, e2,
+                        )
+                else:
+                    logger.warning(
+                        "[ProviderContainer] tenant=%s provider '%s' failed: %s",
+                        self._tenant_id, provider_name, e,
+                    )
 
         raise Exception(
             f"All LLM providers failed for tenant={self._tenant_id}: {errors}"
@@ -364,6 +403,45 @@ class TenantProviderRegistry:
             default = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
             return primary_override or default, fallback_override or list(FALLBACK_ORDER)
 
+    async def load_from_db(self, tenant_id: str) -> ProviderContainer | None:
+        """Load tenant config from DB and create a container with tenant API keys.
+        Falls back to system keys if tenant key fails."""
+        try:
+            from app.shared.tenant_llm_context import get_tenant_llm_config
+            config = await get_tenant_llm_config(tenant_id)
+            if not config:
+                return None
+
+            primary = config.get("primary_provider", "gemini")
+            fallback = config.get("fallback_order", list(FALLBACK_ORDER))
+            providers_cfg = config.get("providers", {})
+
+            self.remove_container(tenant_id)
+
+            container = ProviderContainer(
+                tenant_id=tenant_id,
+                primary_provider=primary,
+                fallback_order=fallback,
+                provider_api_keys={
+                    name: prov.get("api_key")
+                    for name, prov in providers_cfg.items()
+                    if prov.get("api_key")
+                },
+            )
+            key = tenant_id or "__global__"
+            self._containers[key] = container
+            logger.info(
+                "[TenantProviderRegistry] Loaded DB config for tenant=%s provider=%s",
+                tenant_id, primary,
+            )
+            return container
+        except Exception as exc:
+            logger.warning(
+                "[TenantProviderRegistry] DB load failed for tenant=%s: %s",
+                tenant_id, exc,
+            )
+            return None
+
     def register_container(
         self, tenant_id: str, container: ProviderContainer
     ) -> None:
@@ -423,3 +501,17 @@ def get_provider_for_tenant(
         primary_provider=primary_provider,
         fallback_order=fallback_order,
     )
+
+
+async def get_provider_for_tenant_from_db(
+    tenant_id: str,
+) -> ProviderContainer:
+    """
+    Get a ProviderContainer for the given tenant, loading from DB if available.
+    Falls back to system defaults if no DB config exists.
+    """
+    registry = TenantProviderRegistry.get_instance()
+    container = await registry.load_from_db(tenant_id)
+    if container:
+        return container
+    return registry.get_container(tenant_id=tenant_id)

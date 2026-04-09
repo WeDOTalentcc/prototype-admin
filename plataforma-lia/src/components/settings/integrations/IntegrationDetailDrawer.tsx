@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,11 +21,28 @@ import {
   Loader2,
   AlertCircle,
   Chrome,
+  ShieldCheck,
+  Key,
 } from "lucide-react"
 import type { Integration } from "./integration-data"
 import { ApiKeyConfigForm } from "./ApiKeyConfigForm"
 
 const AI_PROVIDER_IDS = ["gemini", "claude", "openai"]
+
+interface ProviderConfigData {
+  api_key?: string
+  model?: string
+  is_active?: boolean
+}
+
+interface LLMConfigData {
+  company_id: string
+  primary_provider: string
+  fallback_order: string[]
+  providers: Record<string, ProviderConfigData>
+  routing: Record<string, string>
+  is_active: boolean
+}
 
 interface IntegrationDetailDrawerProps {
   integration: Integration | null
@@ -36,11 +53,8 @@ interface IntegrationDetailDrawerProps {
   teamsStatus?: "loading" | "configured" | "not_configured"
   onConnectGoogle?: () => void
   errorMsg?: string | null
-  llmConfig?: {
-    providers: Record<string, { api_key?: string; model?: string; is_active?: boolean }>
-    primary_provider?: string
-  } | null
-  onLlmConfigChange?: () => void
+  llmConfig?: LLMConfigData | null
+  onConfigSaved?: () => void
 }
 
 export function IntegrationDetailDrawer({
@@ -53,12 +67,20 @@ export function IntegrationDetailDrawer({
   onConnectGoogle,
   errorMsg,
   llmConfig,
-  onLlmConfigChange,
+  onConfigSaved,
 }: IntegrationDetailDrawerProps) {
   if (!integration) return null
 
   const isComingSoon = integration.status === "coming_soon"
   const isAiProvider = AI_PROVIDER_IDS.includes(integration.id)
+
+  const existingProviderConfig = isAiProvider && llmConfig?.providers?.[integration.id]
+  const hasExistingKey = !!(existingProviderConfig && (existingProviderConfig as ProviderConfigData).api_key)
+  const maskedExistingKey = hasExistingKey
+    ? (existingProviderConfig as ProviderConfigData).api_key || ""
+    : ""
+  const isUsingOwnKey = hasExistingKey && maskedExistingKey.length > 3
+  const isPrimaryProvider = llmConfig?.primary_provider === integration.id
 
   const resolvedStatus = (() => {
     if (isAiProvider && llmConfig) {
@@ -105,12 +127,12 @@ export function IntegrationDetailDrawer({
         return { success: false, message: "Erro ao salvar configuração" }
       }
 
-      onLlmConfigChange?.()
+      onConfigSaved?.()
       return { success: true, message: `${integration!.name} configurado com sucesso` }
     } catch {
       return { success: false, message: "Erro de conexão" }
     }
-  }, [integration, onLlmConfigChange])
+  }, [integration, onConfigSaved])
 
   const handleRemoveApiKey = useCallback(async () => {
     const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
@@ -128,8 +150,8 @@ export function IntegrationDetailDrawer({
       }),
     })
 
-    onLlmConfigChange?.()
-  }, [integration, onLlmConfigChange])
+    onConfigSaved?.()
+  }, [integration, onConfigSaved])
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -156,7 +178,7 @@ export function IntegrationDetailDrawer({
               <SheetDescription className={cn(textStyles.description, "mt-1")}>
                 {integration.shortDescription}
               </SheetDescription>
-              <div className="mt-2">
+              <div className="mt-2 flex flex-wrap gap-1.5">
                 {resolvedStatus === "connected" ? (
                   <Badge variant="success" className="text-[10px] gap-1 px-2 py-0.5">
                     <CheckCircle2 className="w-3 h-3" />
@@ -173,15 +195,22 @@ export function IntegrationDetailDrawer({
                     Não configurado
                   </Badge>
                 )}
-                {isActivePrimary && (
-                  <Badge variant="info" className="text-[10px] gap-1 px-2 py-0.5 ml-2">
+                {(isActivePrimary || isPrimaryProvider) && (
+                  <Badge variant="info" className="text-[10px] gap-1 px-2 py-0.5">
                     <Zap className="w-3 h-3" />
                     Provedor ativo
                   </Badge>
                 )}
-                {isAiProvider && !isActivePrimary && resolvedStatus === "connected" && (
-                  <Badge variant="secondary" className="text-[10px] gap-1 px-2 py-0.5 ml-2">
-                    Fallback
+                {isAiProvider && isUsingOwnKey && (
+                  <Badge variant="default" className="text-[10px] gap-1 px-2 py-0.5">
+                    <Key className="w-3 h-3" />
+                    Chave própria
+                  </Badge>
+                )}
+                {isAiProvider && !isUsingOwnKey && (
+                  <Badge variant="outline" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-tertiary">
+                    <ShieldCheck className="w-3 h-3" />
+                    Chave do sistema
                   </Badge>
                 )}
               </div>
@@ -205,14 +234,8 @@ export function IntegrationDetailDrawer({
             </h4>
             <div className="flex flex-wrap gap-2">
               {integration.capabilities.map((cap) => (
-                <div
-                  key={cap.name}
-                  className="group relative"
-                >
-                  <Badge
-                    variant="default"
-                    className="text-[10px] px-2.5 py-1 cursor-default"
-                  >
+                <div key={cap.name} className="group relative">
+                  <Badge variant="default" className="text-[10px] px-2.5 py-1 cursor-default">
                     {cap.name}
                   </Badge>
                   <div className="invisible group-hover:visible absolute bottom-full left-0 mb-1 px-2 py-1 bg-lia-bg-inverse dark:bg-lia-bg-primary text-lia-text-inverse dark:text-lia-text-primary text-[10px] rounded-md whitespace-nowrap z-10 shadow-md">
