@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import {
   Brain, X, Maximize2, Minimize2, PanelRight, MessageSquare,
-  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, Image
+  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, Image, ArrowRightLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatMode } from "./unified-chat-types"
@@ -13,6 +13,7 @@ interface Props {
   onModeChange: (mode: ChatMode) => void
   onClose: () => void
   onNewChat: () => void
+  onSwitchTask?: () => void
   conversationTitle?: string | null
   isConnected: boolean
 }
@@ -28,6 +29,7 @@ export function UnifiedChatHeader({
   onModeChange,
   onClose,
   onNewChat,
+  onSwitchTask,
   conversationTitle,
   isConnected,
 }: Props) {
@@ -89,6 +91,18 @@ export function UnifiedChatHeader({
         >
           <Plus className="w-4 h-4" />
         </button>
+
+        {/* Switch Task (⌘K) */}
+        {onSwitchTask && (
+          <button
+            onClick={onSwitchTask}
+            className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            title="Trocar conversa (⌘K)"
+            aria-label="Trocar conversa"
+          >
+            <ArrowRightLeft className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Mode switcher */}
         <div className="relative">

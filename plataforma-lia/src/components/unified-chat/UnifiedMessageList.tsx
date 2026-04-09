@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
+import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { sanitizeHtml } from "@/lib/sanitize"
 import type { LiaChatMessage } from "@/hooks/use-lia-chat-connection"
 import type { ChatMode } from "./unified-chat-types"
@@ -83,6 +84,8 @@ export function UnifiedMessageList({
       {messages.map((message) => {
         const isLia = message.sender === "lia"
         const meta = message.metadata
+        const hasPlan = message.executionPlan != null
+        const hasFlowSteps = meta?.flowSteps != null
 
         return (
           <div
@@ -103,9 +106,18 @@ export function UnifiedMessageList({
                 />
 
                 {/* Execution plan */}
-                {message.executionPlan && (
+                {hasPlan && (
                   <PlanProgressCard
                     plan={message.executionPlan as unknown as ExecutionPlanData}
+                  />
+                )}
+
+                {/* Flow steps (workflow visual) */}
+                {hasFlowSteps && (
+                  <FlowStepMessage
+                    steps={meta!.flowSteps as unknown as import("@/components/workflow-rail/FlowStepMessage").FlowStep[]}
+                    question={meta!.flowQuestion as string | undefined}
+                    compact
                   />
                 )}
 

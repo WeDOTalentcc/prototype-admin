@@ -6,6 +6,7 @@ import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { DynamicContextPanel } from "@/components/lia-float/panels"
+import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
@@ -40,6 +41,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode())
   const [inputText, setInputText] = useState("")
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
+  const [showSwitchTask, setShowSwitchTask] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const authUser = useAuthStore((s) => s.user)
@@ -57,9 +59,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const {
     chatMessages,
     setChatMessages,
+    chatConversationId,
+    setChatConversationId,
     switchChatContext,
     sendChatMessage,
     sendApproval,
+    loadChatHistory,
     chatIsConnected,
     chatIsStreaming,
     chatStreamingContent,
@@ -96,6 +101,13 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     setInputText("")
     setAttachedFile(null)
   }, [switchChatContext, setChatMessages])
+
+  // Switch to a different conversation
+  const handleSelectSession = useCallback(async (sessionId: string) => {
+    setChatConversationId(sessionId)
+    await loadChatHistory(sessionId)
+    setShowSwitchTask(false)
+  }, [setChatConversationId, loadChatHistory])
 
   const currentModeRef = useRef(mode)
   currentModeRef.current = mode
@@ -161,6 +173,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           onModeChange={handleModeChange}
           onClose={close}
           onNewChat={handleNewChat}
+          onSwitchTask={() => setShowSwitchTask(true)}
           conversationTitle={conversationTitle}
           isConnected={chatIsConnected}
         />
@@ -219,6 +232,14 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           <DynamicContextPanel panel={dynamicPanel} />
         </div>
       )}
+
+      {/* Switch Task Modal (⌘K) */}
+      <SwitchTaskModal
+        isOpen={showSwitchTask}
+        onClose={() => setShowSwitchTask(false)}
+        onSelectSession={handleSelectSession}
+        currentSessionId={chatConversationId}
+      />
     </div>
   )
 }
