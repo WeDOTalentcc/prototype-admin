@@ -66,7 +66,11 @@ vi.mock('../../utils/badge-utils', () => ({
 }))
 
 vi.mock('lucide-react', () => {
-  const icon = (name: string) => () => <span data-testid={`icon-${name}`} />
+  const icon = (name: string) => {
+    const IconComponent = () => <span data-testid={`icon-${name}`} />
+    IconComponent.displayName = name
+    return IconComponent
+  }
   return {
     MoreVertical: icon('more'),
     Eye: icon('eye'),
