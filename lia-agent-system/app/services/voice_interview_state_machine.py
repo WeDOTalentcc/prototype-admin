@@ -284,6 +284,7 @@ class VoiceInterviewStateMachine:
         """Notify recruiter that voice screening is complete."""
         try:
             from lia_messaging.notification_service import NotificationService
+            notification_service = NotificationService()
             await notification_service.send(
                 company_id=session.company_id,
                 event_type="voice_screening_completed",
