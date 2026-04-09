@@ -6,6 +6,9 @@ import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
 const DEV_AUTO_LOGIN = process.env.NODE_ENV !== 'production'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+const COOKIE_SECURE = IS_PRODUCTION
+const COOKIE_SAMESITE: 'lax' | 'none' = IS_PRODUCTION ? 'none' : 'lax'
 
 const PUBLIC_PATHS = [
   '/login',
@@ -145,15 +148,15 @@ export async function middleware(request: NextRequest) {
         response.cookies.set('lia_access_token', token, {
           path: '/',
           maxAge: 60 * 60 * 24 * 7,
-          secure: true,
-          sameSite: 'none' as const,
+          secure: COOKIE_SECURE,
+          sameSite: COOKIE_SAMESITE,
           httpOnly: true,
         })
         response.cookies.set('lia_auth_method', 'dev-auto-login', {
           path: '/',
           maxAge: 60 * 60 * 24 * 7,
-          secure: true,
-          sameSite: 'none' as const,
+          secure: COOKIE_SECURE,
+          sameSite: COOKIE_SAMESITE,
           httpOnly: false,
         })
 

@@ -45,10 +45,11 @@ export async function POST(request: NextRequest) {
 
     const data = await backendResponse.json()
 
+    const isProd = process.env.NODE_ENV === 'production'
     const cookieOpts = {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none' as const,
+      secure: isProd,
+      sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
     }

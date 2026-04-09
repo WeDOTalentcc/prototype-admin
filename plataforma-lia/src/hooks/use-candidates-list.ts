@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef } from "react"
-import { liaApi } from "@/services/lia-api"
-import type { CandidateLocal, CandidateListParams, CandidatePaginatedResponse } from "@/services/lia-api"
+import { useState, useCallback, useEffect } from "react"
+import type { CandidateLocal } from "@/services/lia-api"
+
+const BACKEND_URL = '/api/backend-proxy'
+const PER_PAGE = 20
 
 export interface CandidatesListFilters {
   search?: string
@@ -28,107 +30,89 @@ export interface UseCandidatesListReturn {
   refresh: () => void
 }
 
-const PER_PAGE = 20
-
 export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCandidatesListReturn {
   const [candidates, setCandidates] = useState<CandidateLocal[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFiltersState] = useState<CandidatesListFilters>(initialFilters ?? {})
+  const [fetchTrigger, setFetchTrigger] = useState(0)
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+  useEffect(() => {
+    let cancelled = false
 
-  const fetchCandidates = useCallback(
-    async (f: CandidatesListFilters, page: number) => {
-      // Cancel previous in-flight request
-      if (abortRef.current) {
-        abortRef.current.abort()
-      }
-      abortRef.current = new AbortController()
-
+    async function doFetch() {
       setLoading(true)
       setError(null)
 
-      const params: CandidateListParams = {
-        limit: PER_PAGE,
-        offset: (page - 1) * PER_PAGE,
-        ...(f.search ? { search: f.search } : {}),
-        ...(f.status ? { status: f.status } : {}),
-        ...(f.tags ? { tags: f.tags } : {}),
-        ...(f.seniority ? { seniority: f.seniority } : {}),
-        ...(f.sort_by ? { sort_by: f.sort_by } : {}),
-        ...(f.sort_order ? { sort_order: f.sort_order } : {}),
-      }
+      const query = new URLSearchParams()
+      if (filters.search) query.set('search', filters.search)
+      if (filters.status) query.set('status', filters.status)
+      if (filters.tags) query.set('tags', filters.tags)
+      if (filters.seniority) query.set('seniority', filters.seniority)
+      if (filters.sort_by) query.set('sort_by', filters.sort_by)
+      if (filters.sort_order) query.set('sort_order', filters.sort_order)
+      query.set('limit', String(PER_PAGE))
+      query.set('offset', String((currentPage - 1) * PER_PAGE))
+
+      const qs = query.toString()
 
       try {
-        const result = await liaApi.getCandidates(params)
-        const items = result.candidates || (result as unknown as Record<string, unknown>).items as typeof result.candidates || []
-        setCandidates(items)
-        setTotal(result.total ?? 0)
-      } catch (err) {
-        if ((err as Error)?.name !== "AbortError") {
-          setError("Erro ao carregar candidatos. Tente novamente.")
+        const response = await fetch(
+          `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`,
+          { headers: { 'Content-Type': 'application/json' } }
+        )
+
+        if (!response.ok) {
+          throw new Error(`Backend retornou ${response.status}`)
         }
-      } finally {
-        setLoading(false)
+
+        const data = await response.json()
+
+        if (!cancelled) {
+          setCandidates(data.candidates || data.items || [])
+          setTotal(data.total ?? 0)
+          setLoading(false)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError("Erro ao carregar candidatos. Tente novamente.")
+          setLoading(false)
+        }
       }
-    },
-    []
-  )
+    }
 
-  // Debounce search, immediate for other filter changes
-  const scheduleSearch = useCallback(
-    (f: CandidatesListFilters, page: number, isTextSearch: boolean) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      const delay = isTextSearch ? 300 : 0
-      debounceRef.current = setTimeout(() => fetchCandidates(f, page), delay)
-    },
-    [fetchCandidates]
-  )
-
-  // Initial load
-  useEffect(() => {
-    fetchCandidates(filters, 1)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    doFetch()
+    return () => { cancelled = true }
+  }, [filters, currentPage, fetchTrigger])
 
   const setFilters = useCallback(
     (newFilters: CandidatesListFilters) => {
       setFiltersState(newFilters)
       setCurrentPage(1)
-      const isTextSearch = newFilters.search !== filters.search
-      scheduleSearch(newFilters, 1, isTextSearch)
     },
-    [filters.search, scheduleSearch]
+    []
   )
 
   const updateFilter = useCallback(
     <K extends keyof CandidatesListFilters>(key: K, value: CandidatesListFilters[K]) => {
-      setFiltersState(prev => {
-        const updated = { ...prev, [key]: value }
-        setCurrentPage(1)
-        const isTextSearch = key === "search"
-        scheduleSearch(updated, 1, isTextSearch)
-        return updated
-      })
+      setFiltersState(prev => ({ ...prev, [key]: value }))
+      setCurrentPage(1)
     },
-    [scheduleSearch]
+    []
   )
 
   const goToPage = useCallback(
     (page: number) => {
       setCurrentPage(page)
-      fetchCandidates(filters, page)
     },
-    [filters, fetchCandidates]
+    []
   )
 
   const refresh = useCallback(() => {
-    fetchCandidates(filters, currentPage)
-  }, [filters, currentPage, fetchCandidates])
+    setFetchTrigger(prev => prev + 1)
+  }, [])
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
 

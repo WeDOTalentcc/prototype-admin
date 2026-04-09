@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -98,6 +98,11 @@ export default function FunilDeTalentosPage() {
   const [activeTab, setActiveTab] = useState("todos")
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareBulkOpen, setShareBulkOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const candidates = useMemo(() => rawCandidates.map(toCandidateTableRow), [rawCandidates])
   const selectedIds = useMemo(() => selectedCandidates, [selectedCandidates])
@@ -137,6 +142,27 @@ export default function FunilDeTalentosPage() {
   // Filtros rápidos
   const STATUS_OPTIONS = ["Novo", "Em triagem", "Aprovado", "Reprovado"]
   const SENIORITY_OPTIONS = ["Júnior", "Pleno", "Sênior", "Especialista"]
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+          <div>
+            <h1 className={cn(textStyles.title, "text-xl font-semibold")}>
+              Funil de Talentos
+            </h1>
+            <p className={cn(textStyles.description, "text-xs mt-0.5")}>
+              Busque candidatos na base
+            </p>
+          </div>
+          <div className="bg-lia-bg-card dark:bg-lia-bg-elevated rounded-lg border border-lia-border-default dark:border-lia-border-subtle p-8 flex items-center justify-center gap-2 text-lia-text-secondary">
+            <div className="animate-spin h-5 w-5 border-2 border-lia-border-default border-t-wedo-cyan rounded-full" />
+            Carregando candidatos...
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">

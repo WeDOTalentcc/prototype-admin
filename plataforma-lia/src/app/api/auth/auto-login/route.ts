@@ -49,12 +49,11 @@ export async function GET(request: NextRequest) {
 
     const response = NextResponse.redirect(new URL(safeRedirect, baseUrl))
 
-    const isHttps = protocol === 'https'
     const cookieBase = {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
-      secure: isHttps || !IS_PRODUCTION,
-      sameSite: 'none' as const,
+      secure: IS_PRODUCTION,
+      sameSite: (IS_PRODUCTION ? 'none' : 'lax') as 'none' | 'lax',
     }
 
     response.cookies.set('lia_access_token', accessToken, { ...cookieBase, httpOnly: true })

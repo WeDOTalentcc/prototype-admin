@@ -73,6 +73,19 @@ class User(EncryptedFieldMixin, Base):
     is_scim_managed = Column(Boolean, default=False, nullable=False)
     last_sso_login_at = Column(DateTime, nullable=True)
     
+    def get(self, key: str, default=None):
+        """Dict-compatible accessor so endpoints using current_user.get() work."""
+        attr_map = {
+            "user_id": "id",
+            "sub": "id",
+            "id": "id",
+        }
+        attr = attr_map.get(key, key)
+        val = getattr(self, attr, default)
+        if val is None:
+            return default
+        return val
+
     def can_access_company(self, company_id: str) -> bool:
         """Check if user can access the given company."""
         if self.role == UserRole.admin:

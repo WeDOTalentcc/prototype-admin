@@ -343,10 +343,8 @@ export async function getCandidates(params: CandidateListParams): Promise<Candid
   if (params.sort_by) query.set('sort_by', params.sort_by)
   if (params.sort_order) query.set('sort_order', params.sort_order)
   const qs = query.toString()
-  const response = await fetch(
-    `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`,
-    { headers: getAuthHeaders() }
-  )
+  const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
+  const response = await fetch(url, { headers: getAuthHeaders() })
   if (!response.ok) {
     throw new Error(`Backend retornou ${response.status}: ${response.statusText}`)
   }
