@@ -100,3 +100,68 @@
 .lia-markdown-content p {
   margin: 4px 0;
 }
+
+.lia-markdown-content h1 {
+  font-weight: 700;
+  font-size: 1.15em;
+  margin: 12px 0 6px 0;
+}
+
+.lia-markdown-content h2 {
+  font-weight: 600;
+  font-size: 1.05em;
+  margin: 10px 0 5px 0;
+}
+
+.lia-markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+
+.lia-markdown-content th,
+.lia-markdown-content td {
+  padding: 6px 10px;
+  border: 1px solid rgba(107, 114, 128, 0.25);
+  text-align: left;
+}
+
+.lia-markdown-content th {
+  font-weight: 600;
+  background-color: rgba(107, 114, 128, 0.08);
+}
+
+.dark .lia-markdown-content th {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .lia-markdown-content th,
+.dark .lia-markdown-content td {
+  border-color: rgba(107, 114, 128, 0.35);
+}
+
+.lia-markdown-content blockquote {
+  border-left: 3px solid rgba(107, 114, 128, 0.3);
+  padding-left: 12px;
+  margin: 8px 0;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.lia-markdown-content hr {
+  border: none;
+  border-top: 1px solid rgba(107, 114, 128, 0.2);
+  margin: 10px 0;
+}
+
+.lia-markdown-content a {
+  color: #0ea5e9;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.lia-markdown-content a:hover {
+  opacity: 0.8;
+}

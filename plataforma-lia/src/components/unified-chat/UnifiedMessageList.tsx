@@ -7,7 +7,7 @@ import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
-import { sanitizeHtml } from "@/lib/sanitize"
+import { renderMarkdown } from "@/lib/render-markdown"
 import type { LiaChatMessage } from "@/hooks/use-lia-chat-connection"
 import type { ChatMode } from "./unified-chat-types"
 
@@ -101,7 +101,7 @@ export function UnifiedMessageList({
                 <div
                   className="text-sm leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
                   dangerouslySetInnerHTML={{
-                    __html: sanitizeHtml(message.content),
+                    __html: renderMarkdown(message.content),
                   }}
                 />
 
@@ -145,7 +145,7 @@ export function UnifiedMessageList({
             <div
               className="text-sm leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
               dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(streamingContent),
+                __html: renderMarkdown(streamingContent),
               }}
             />
           </div>

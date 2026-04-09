@@ -20,7 +20,7 @@ import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import { Message } from "@/types/chat"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
-import { sanitizeHtml } from "@/lib/sanitize"
+import { renderMarkdown } from "@/lib/render-markdown"
 
 interface Props {
   messages: Message[]
@@ -93,10 +93,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <div
                       className="text-xs leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif] lia-markdown-content"
                       dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(onHighlightSearchTerm(
-                          message.content,
+                        __html: onHighlightSearchTerm(
+                          renderMarkdown(message.content),
                           searchTerm
-                        )),
+                        ),
                       }}
                     />
                   )}
@@ -375,10 +375,10 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <div
                       className="text-xs text-lia-text-primary mb-4 font-['Open_Sans',sans-serif]"
                       dangerouslySetInnerHTML={{
-                        __html: sanitizeHtml(onHighlightSearchTerm(
-                          message.content,
+                        __html: onHighlightSearchTerm(
+                          renderMarkdown(message.content),
                           searchTerm
-                        )),
+                        ),
                       }}
                     />
                     <CompletionMessage

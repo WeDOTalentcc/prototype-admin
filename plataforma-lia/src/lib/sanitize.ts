@@ -10,8 +10,10 @@ export function sanitizeHtml(dirty: string): string {
     return dirty.replace(/<[^>]*>/g, "")
   }
   return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS: ["b", "i", "em", "strong", "a", "br", "p", "ul", "ol", "li", "span", "code", "pre"],
-    ALLOWED_ATTR: ["href", "target", "rel", "class"],
+    ALLOWED_TAGS: ["b", "i", "em", "strong", "a", "br", "p", "ul", "ol", "li", "span", "code", "pre",
+                   "h1", "h2", "h3", "h4", "h5", "h6", "table", "thead", "tbody", "tr", "th", "td",
+                   "blockquote", "hr", "del", "input"],
+    ALLOWED_ATTR: ["href", "target", "rel", "class", "type", "checked", "disabled"],
     ADD_ATTR: ["target"],
   })
 }
