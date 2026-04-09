@@ -1923,88 +1923,300 @@ Auditoria de chaves API:
 ## 13. Avaliação — Camada de IA (Python / FastAPI / LangGraph)
 
 > Status atual do `lia-agent-system/` para production readiness.
+> Última auditoria: Abril 2026.
 
-### Arquitetura de agentes
+### 13.1 Arquitetura de Agentes
 
 ```
 Requisição do usuário
         │
         ▼
-┌───────────────────┐
-│  FastAPI Router   │  ← 70+ endpoints organizados por domínio
-│  (Port 8001)      │
-└────────┬──────────┘
+┌───────────────────────┐
+│  FastAPI Router       │  ← 362 endpoints (REST + WebSocket)
+│  (Port 8001)          │     organizados em 56 domínios
+└────────┬──────────────┘
          │
-         ▼
-┌───────────────────┐
-│  Intent Classifier │  ← Claude classifica a intenção da mensagem
-│  (fast_router.py) │     antes de invocar o agente correto
-└────────┬──────────┘
-         │
-    ┌────┴────────────────────────────┐
-    │           DOMÍNIOS (40+)        │
-    │                                 │
-    │  ┌─────────────┐ ┌──────────┐  │
-    │  │ CV Screening│ │ Sourcing │  │
-    │  │  (LangGraph)│ │ (Graph)  │  │
-    │  └─────────────┘ └──────────┘  │
-    │  ┌─────────────┐ ┌──────────┐  │
-    │  │Job Management│ │Analytics │  │
-    │  └─────────────┘ └──────────┘  │
-    │  ┌─────────────────────────┐   │
-    │  │ Communication (Teams/WA)│   │
-    │  └─────────────────────────┘   │
-    └─────────────────────────────────┘
-         │
-         ▼
-┌───────────────────┐
-│  PostgreSQL       │  ← 69 ferramentas registradas
-│  + pgvector       │     (candidate_tools, job_tools, analytics...)
-│  Redis + RabbitMQ │
-└───────────────────┘
+    ┌────┴─────────────────────────────────────────────┐
+    │                                                   │
+    ▼                                                   ▼
+┌──────────────────────┐                ┌──────────────────────┐
+│  Fast Router         │                │  Orchestrator        │
+│  (navigation_intent) │                │  (Multi-Agent ReAct) │
+│  keyword-based,      │                │  LLM-based intent    │
+│  sem LLM (rápido)    │                │  classification      │
+│  → mapeia p/ páginas │                │  → delega p/ agentes │
+└──────────────────────┘                └────────┬─────────────┘
+                                                 │
+                        ┌────────────────────────┼──────────────────────┐
+                        │                        │                      │
+                        ▼                        ▼                      ▼
+               ┌─────────────────┐    ┌──────────────────┐   ┌─────────────────┐
+               │  7 Core Agents  │    │  LangGraph Flows │   │  Specialized    │
+               │  (ReAct)        │    │  (StateGraph)    │   │  Agents         │
+               │                 │    │                  │   │                 │
+               │  • Wizard       │    │  • WSI Interview │   │  • Diversity    │
+               │  • Pipeline     │    │  • Job Wizard    │   │  • GitHub       │
+               │  • Sourcing     │    │  • Interview     │   │  • StackOverflow│
+               │  • Talent       │    │    Scheduling    │   │  • Nurture      │
+               │  • JobsMgmt     │    │                  │   │  • Action       │
+               │  • Kanban       │    │                  │   │  • Decision     │
+               │  • Policy       │    │                  │   │  • Context      │
+               └────────┬────────┘    └────────┬─────────┘   └────────┬────────┘
+                        │                      │                      │
+                        └──────────────────────┼──────────────────────┘
+                                               │
+                                               ▼
+                              ┌────────────────────────────────┐
+                              │  Tool Registry (60+ tools)     │
+                              │  Organizado por categoria:     │
+                              │  Job Wizard (9), Candidates (9)│
+                              │  Query/Analytics (8), Talent   │
+                              │  Pool (5), Agent Studio (4),   │
+                              │  Digital Twins (3), Campaigns  │
+                              │  (3), Communication (2), etc.  │
+                              └────────────────────────────────┘
+                                               │
+                                               ▼
+                              ┌────────────────────────────────┐
+                              │  PostgreSQL (217 models)       │
+                              │  + pgvector (768-dim, HNSW)    │
+                              │  Redis (cache + rate limit)    │
+                              │  Celery (36 tasks, 4 queues)   │
+                              └────────────────────────────────┘
 ```
 
-### O que está sólido
+### 13.2 Domínios (56)
 
-| Área | Situação |
-|---|---|
-| **LangGraph** | Grafos de agentes implementados por domínio (cv_screening, sourcing, interview_scheduling) |
-| **Tool Registry** | 69 ferramentas registradas e organizadas por domínio |
-| **Policy Engine** | Controle de acesso e regras de negócio centralizadas |
-| **Circuit Breakers** | Resiliência implementada para chamadas LLM e serviços externos |
-| **PII Masking** | LGPD: mascaramento de dados pessoais no logger ativo |
-| **HITL** | Human-in-the-loop implementado (aprovações antes de ações críticas) |
-| **Alembic** | Migrations versionadas para o banco |
-| **Dockerfile** | `Dockerfile` e `Dockerfile.prod` já existem |
-| **Sentry** | `sentry-sdk[fastapi]` integrado |
-| **WSI** | Voice Screening Interface implementado (triagem por voz) |
+| Categoria | Domínios |
+|-----------|----------|
+| **Core Recrutamento** | `candidates`, `cv_screening`, `sourcing`, `triagem`, `talent_pool`, `pipeline`, `recruitment`, `recruitment_campaign`, `recruitment_journey` |
+| **Vagas** | `job_management`, `job_vacancies_analytics`, `hiring_policy` |
+| **Entrevistas & Voz** | `interview_scheduling`, `voice` |
+| **Comunicação** | `communication`, `email_templates`, `notifications` |
+| **Analytics & IA** | `analytics`, `ai`, `agent_memory`, `agent_studio`, `digital_twin`, `opinions`, `goals` |
+| **Compliance & Segurança** | `compliance`, `consent`, `data_subject`, `lgpd`, `policy`, `trust_center` |
+| **Administração** | `admin`, `admin_settings`, `auth`, `billing`, `credits`, `company`, `company_culture`, `clients`, `client_users` |
+| **Automação** | `automation`, `autonomous`, `bulk_actions`, `tasks`, `approvals` |
+| **Integrações** | `ats_integration`, `integrations_hub`, `shared_searches`, `technical_tests` |
+| **Observabilidade** | `observability`, `health_check`, `saas_metrics` |
+| **Outros** | `chat`, `journey_mapping`, `recruiter_assistant`, `workforce` |
 
-### O que precisa de atenção antes do deploy
+**LangGraph ativo em:** `cv_screening` (WSI Interview Graph), `job_management` (Job Wizard Graph), `interview_scheduling` (Interview Graph).
 
-| Área | Problema | Ação |
-|---|---|---|
-| **Shims de compatibilidade** | Shims usam `import *` que não exporta funções privadas (`_prefixo`) | ✅ Corrigido para os que encontramos — rodar `python3 -c "from app.main import app"` para validar todos. Padrão sistêmico: cada novo shim deve ser verificado |
-| **Bug `wsi_repository.py`** | ✅ CORRIGIDO (07/04/2026) — Linhas 594 e 603 tinham SQL sem aspas e dicts com sintaxe JavaScript (`{call_sid: val}` em vez de `{"call_sid": val}`). Impedia o startup total do backend. | Corrigido e validado — backend rodando normalmente |
-| **GOOGLE_APPLICATION_CREDENTIALS** | Speech/TTS precisam de service account | Configurar Workload Identity no Cloud Run |
-| **RabbitMQ** | Sem serviço gerenciado no GCP | Provisionar (ver Seção 11.5) |
-| 🔴 **P3: DATABASE_URL errado** | Backend `.env` aponta para `localhost:5432/lia_db` mas banco real do Replit está em `helium/heliumdb` com ~60 tabelas já migradas. Endpoints que fazem queries vão falhar com "connection refused" | **Agora:** Corrigir DATABASE_URL para `postgresql+asyncpg://postgres:password@helium/heliumdb`. **Deploy:** Cloud SQL com banco próprio (`lia_db`) + acesso ao Rails via REST (`RAILS_API_URL`) |
-| **Redis prod** | Sem autenticação configurada no código | Adicionar `REDIS_URL` com senha para Memorystore |
-| **Celery workers** | Não configurado para Cloud Run | Adicionar segundo serviço Cloud Run para workers Celery |
-| **LANGSMITH** | Opcional mas recomendado para debug em prod | Adicionar `LANGSMITH_API_KEY` |
-| **Secrets hardcoded** | Verificar se há chaves hardcoded em algum arquivo | Auditar com `grep -r "sk-ant\|AIza\|ghp_" app/` |
+### 13.3 LLM Provider Layer
 
-### Checklist de production readiness — IA
+#### Factory Multi-Provider
 
-- [ ] `python3 -c "from app.main import app"` passa sem erros
-- [ ] `alembic upgrade head` roda clean no banco de produção
-- [ ] Todas as variáveis LLM (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`) no Secret Manager
-- [ ] Service Account com permissão para Speech API e TTS configurado
-- [ ] RabbitMQ provisionado e `CELERY_BROKER_URL` configurado
+```
+┌─────────────────────────────────────────────────────────────┐
+│  LLMProviderFactory + ProviderContainer                     │
+│                                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                 │
+│  │  Gemini  │  │  Claude  │  │  OpenAI  │                 │
+│  │ (primary)│→ │(fallback)│→ │(fallback)│                 │
+│  └──────────┘  └──────────┘  └──────────┘                 │
+│                                                             │
+│  Fallback automático: se primary falha (CircuitBreaker),   │
+│  tenta o próximo na sequência configurada por tenant.       │
+│                                                             │
+│  TenantProviderRegistry: tenant_id → ProviderContainer     │
+│  Fonte de config: tool_permissions.yaml                     │
+│  Budget tracking: tenant_budget.py (Redis, mensal)          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+| Componente | Arquivo | Status |
+|-----------|---------|--------|
+| LLM Factory | `app/shared/providers/llm_factory.py` | Implementado — Gemini, Claude, OpenAI com fallback |
+| Embedding Factory | `app/shared/providers/embedding_factory.py` | Implementado — Gemini (`text-embedding-004`) e OpenAI (`text-embedding-3-small`), 768-dim, fallback |
+| Voice Provider ABC | `app/shared/providers/voice_provider.py` | ABC existe mas não universalmente enforced |
+| Tenant Config | `app/tools/tool_permissions.yaml` + `tenant_llm_context.py` | Implementado — provider e fallback por tenant |
+| Tenant Budget | `app/orchestrator/tenant_budget.py` | Implementado — tracking mensal de tokens em Redis |
+| LLM Bootstrap | `app/shared/llm_bootstrap.py` | Safety net — monkey-patches imports diretos para injetar API key, PII strip e audit log |
+
+#### Bypasses da Factory (arquivos que instanciam providers diretamente)
+
+| Provider | Arquivos com bypass | Risco |
+|----------|-------------------|-------|
+| Gemini (`google.genai.Client`) | `gemini_voice_service.py`, `gemini_voice.py` (API), `llm.py` (AI domain) | Médio — bootstrap mitiga com monkey-patch |
+| Claude (`anthropic.Anthropic`) | `experience_highlights.py`, `archetypes.py`, scripts Jira | Médio — bootstrap mitiga |
+| OpenAI (`openai.OpenAI`) | Menos frequente em app code, patches via bootstrap | Baixo |
+
+**Mitigação:** `llm_bootstrap.py` intercepta construtores diretos de `anthropic.Anthropic`, `openai.OpenAI` e `genai.Client` e injeta API key, PII stripping e audit logging automaticamente, mesmo sem usar a factory.
+
+### 13.4 Comunicação & Voice
+
+| Canal | Serviço | Arquivo | Status |
+|-------|---------|---------|--------|
+| **Voice (WSI)** | Twilio PSTN + VoIP | `twilio_voice_service.py` | Implementado — chamadas outbound e browser-based |
+| **Voice STT** | Gemini Flash 2.5 | `gemini_voice_service.py` | Implementado — via Replit AI Integrations |
+| **Voice TTS** | OpenAI TTS | Via voice orchestrator | Implementado — transcoded para μ-law (Twilio) |
+| **Voice Fallback STT** | Deepgram `nova-2` | `deepgram_service.py` | Implementado — fallback se transcrição primária for curta/baixa confiança |
+| **WhatsApp** | Twilio Content API | `whatsapp_twilio_service.py` | Implementado — texto, mídia, botões interativos nativos |
+| **Teams** | Incoming Webhooks + Bot Framework | `teams_service.py` | Implementado — Adaptive Cards, alertas por severidade |
+| **Email** | Resend + Mailgun (fallback) | `email_service.py` | Implementado — factory com FallbackProvider, circuit breaker |
+| **WebSocket** | WSManager singleton | `ws_manager.py` | Implementado — audio stream, chat real-time, job monitoring |
+
+**Pipeline de voz WSI completo:**
+
+```
+Twilio (μ-law audio)
+    ↕ WebSocket /audio-stream
+Gemini Flash 2.5 (STT)
+    ↓
+LIA LLM (processamento)
+    ↓
+OpenAI (TTS)
+    ↓ transcode → μ-law
+Twilio (audio para candidato)
+    ↓
+PII Masking → Transcript → wsi_deterministic_scorer
+```
+
+### 13.5 Resiliência & Segurança
+
+| Componente | Implementação | Detalhes |
+|-----------|--------------|---------|
+| **Circuit Breakers** | 18 serviços monitorados | Anthropic, OpenAI, Gemini, Pearch, WorkOS, Merge, Google Calendar, Gupy, Pandapé, Mailgun, Resend, Twilio, Deepgram, iugu, vindi, etc. Config: 5 falhas → open, 30s recovery, 2 sucessos → close |
+| **SLOs** | Definidos por serviço | Ex: Anthropic 99.9% availability, p95 8s. Degraded mode com respostas amigáveis |
+| **FairnessGuard** | 16 categorias de discriminação | Gender, Race, Age, Religion, Disability, Socioeconomic, etc. Regex (Layer 1) + implicit bias (Layer 3). Bloqueia e retorna mensagem educativa (CLT Art. 5, Lei 10.741/03) |
+| **PII Masking** | 4 camadas | Layer 1: regex (CPF, email, phone) nos logs. Layer 2: `strip_pii_for_llm_prompt` antes de enviar a LLMs. Layer 3: Sentry `before_send`. Layer 4: Microsoft Presidio NER para nomes/locais |
+| **Rate Limiting** | Redis sliding window | Per-user: 600/min, 20K/hr. Per-company: 3K/min, 60K/hr. Fallback in-memory se Redis cai |
+| **HITL** | LangGraph interrupts + Redis + DB | Flows protegidos: WizardGraph (criação de vaga), PipelineTransition (mudança de estágio), WSI Interview (scores). Redis para fast-path (24h TTL), DB para audit trail. Opt-in `auto_confirm` por domínio |
+| **Policy Engine** | Regras por setor | `ALPHA1_SECTOR_RULES` com autonomy levels e HITL thresholds por indústria. Rules: ALLOW, DENY, REQUIRE_APPROVAL |
+| **Auth Middleware** | JWT + Cross-Tenant Guard | Extrai `company_id` do JWT, compara com header `X-Company-ID`, rejeita mismatches com 403 |
+| **Prompt Injection Guard** | `check_input_security` | Roda em todos POST/PUT agent-facing |
+| **Sentry** | PII scrubbing + `send_default_pii=False` | `before_send` hook com `_scrub_pii` em exceptions e breadcrumbs |
+
+### 13.6 Infraestrutura de Dados
+
+| Componente | Quantidade | Detalhes |
+|-----------|-----------|---------|
+| **Alembic migrations** | 59 | Versionadas em `alembic/versions/` |
+| **SQLAlchemy models** | 217 | 109 em `libs/models/` + 108 em `app/models/` |
+| **pgvector** | 768-dim | Embeddings com índice HNSW para RAG search |
+| **Redis** | 6 categorias de cache | Pipeline stats (60s), search (120s), job insights (180s), analytics (90s), semantic cache router (86400s) |
+| **Celery tasks** | 36 implementações | 15 agendadas no beat_schedule (drift checks, LGPD cleanup, daily briefings) |
+| **Celery queues** | 4 prioridades | `sourcing_high` (P8), `evaluation_normal` (P5), `vagas_normal` (P5), `onboarding_low` (P3) |
+| **Broker** | Configurável | Default Redis, suporta RabbitMQ e PubSub via `BROKER_BACKEND` |
+
+**Docker:**
+
+| Arquivo | Propósito |
+|---------|----------|
+| `Dockerfile` | Dev — python:3.11-slim, deps + libs editáveis |
+| `Dockerfile.prod` | Multi-stage (builder + runtime), non-root user (`appuser`), healthcheck, `alembic upgrade head` no startup + gunicorn |
+| `Dockerfile.worker` | Celery workers dedicados |
+
+**Health Checks:**
+
+| Endpoint | Propósito |
+|----------|----------|
+| `/health` | Unificado — DB, Redis, Celery, LLM providers |
+| `/health/ready` | Kubernetes readiness — falha se DB ou Redis estiver down |
+| `/health/live` | Kubernetes liveness — 200 se processo vivo |
+| `/api/v1/sourcing/health` | Health do domínio sourcing |
+| `/api/v1/calendar/health` | Health do domínio calendar |
+
+### 13.7 Variáveis de Ambiente Obrigatórias
+
+| Categoria | Variáveis |
+|-----------|----------|
+| **Infra** | `DATABASE_URL`, `REDIS_URL`, `RABBITMQ_URL`, `BROKER_BACKEND` |
+| **Segurança** | `SECRET_KEY` (obrigatório em prod), `ADMIN_API_KEY` |
+| **LLM** | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` (ou `GOOGLE_API_KEY`) |
+| **Integrações** | `WORKOS_API_KEY`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `STRIPE_SECRET_KEY` |
+| **Voice** | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` |
+| **Observabilidade** | `SENTRY_DSN` (recomendado), `LANGSMITH_API_KEY` (recomendado) |
+
+### 13.8 O que está sólido
+
+| Área | Estado | Evidência |
+|------|--------|----------|
+| **Multi-Agent Orchestration** | Robusto | 7 core agents + specialized, Orchestrator com intent routing, LangGraph para flows complexos |
+| **LLM Factory + Fallback** | Robusto | 3 providers com fallback automático, tenant config, budget tracking, bootstrap safety net |
+| **Tool Registry** | Robusto | 60+ tools organizadas por 12 categorias com metadata YAML |
+| **Circuit Breakers + SLOs** | Robusto | 18 serviços com thresholds calibrados, degraded mode, alertas Teams |
+| **FairnessGuard + PII** | Robusto | 16 categorias de bias, 4 camadas de PII masking incluindo Presidio NER |
+| **HITL** | Robusto | LangGraph interrupts em 3 flows críticos, Redis + DB dual-write, audit trail |
+| **Policy Engine** | Robusto | Regras por setor, ALLOW/DENY/REQUIRE_APPROVAL |
+| **WSI Voice Pipeline** | Robusto | Pipeline completo Twilio→Gemini STT→LLM→OpenAI TTS→Twilio, fallback Deepgram |
+| **Auth + Cross-Tenant** | Robusto | JWT + company_id guard + prompt injection check |
+| **Comunicação Multi-Canal** | Robusto | Voice, WhatsApp (botões nativos), Teams (Adaptive Cards), Email (Resend+Mailgun fallback) |
+| **Infraestrutura** | Robusto | 217 models, 59 migrations, 36 Celery tasks, Redis caching semântico, Docker multi-stage prod |
+| **Health Probes** | Robusto | Kubernetes-ready (ready/live), domain-specific health endpoints |
+
+### 13.9 O que precisa de atenção antes do deploy
+
+| # | Área | Problema | Severidade | Ação |
+|---|------|---------|-----------|------|
+| 1 | **DATABASE_URL** | ✅ CORRIGIDO — Backend agora conecta ao banco Replit (`helium/heliumdb`). Para deploy: Cloud SQL com `lia_db` | Resolvido (dev) | Deploy: configurar `DATABASE_URL` no Secret Manager apontando para Cloud SQL |
+| 2 | **Shims de compatibilidade** | ✅ CORRIGIDO — Shims que usavam `import *` sem exportar funções `_prefixo` foram ajustados | Resolvido | Validar com `python3 -c "from app.main import app"` após cada novo shim |
+| 3 | **Bug wsi_repository.py** | ✅ CORRIGIDO (07/04/2026) — SQL sem aspas e dicts com sintaxe JS | Resolvido | Backend rodando normalmente |
+| 4 | **Voice provider abstraction** | `VoiceProvider` ABC existe mas `gemini_voice_service.py` e `voice_screening_orchestrator.py` importam `genai` diretamente | MEDIO | Migrar para usar ABC consistently (não bloqueia deploy) |
+| 5 | **GOOGLE_APPLICATION_CREDENTIALS** | Speech/TTS precisam de service account em prod | ALTO | Configurar Workload Identity no Cloud Run |
+| 6 | **Redis prod** | Sem autenticação configurada no código para prod | ALTO | Configurar `REDIS_URL` com senha para Cloud Memorystore |
+| 7 | **Celery workers** | Configurados mas sem deploy separado para Cloud Run | ALTO | Provisionar segundo serviço Cloud Run usando `Dockerfile.worker` |
+| 8 | **RabbitMQ** | Sem serviço gerenciado provisionado no GCP. Broker default é Redis — funciona mas RabbitMQ é preferível para durabilidade | MEDIO | Provisionar Cloud Pub/Sub ou RabbitMQ gerenciado (ver Seção 11.5), ou manter Redis como broker |
+| 9 | **Factory bypasses** | ~5 arquivos app instanciam LLM providers diretamente (voz, experience highlights, archetypes) | BAIXO | `llm_bootstrap.py` mitiga com monkey-patch; migrar gradualmente para factory |
+| 10 | **Tenant budget hard limits** | Tracking existe mas sem circuit breaker por gasto — tenant pode exceder orçamento | MEDIO | Implementar bloqueio automático quando budget mensal atingir threshold |
+
+### 13.10 Checklist de Production Readiness — IA
+
+**Infraestrutura:**
+
+- [x] `python3 -c "from app.main import app"` passa sem erros
+- [x] 59 Alembic migrations versionadas
+- [x] `Dockerfile.prod` multi-stage com non-root user e healthcheck
+- [ ] `alembic upgrade head` validado no banco de produção (Cloud SQL)
+- [ ] `DATABASE_URL` no Secret Manager apontando para Cloud SQL
 - [ ] `REDIS_URL` apontando para Cloud Memorystore (com senha)
-- [ ] Celery worker rodando como serviço separado no Cloud Run
-- [ ] Circuit breakers validados para cada LLM (Claude, Gemini, OpenAI)
-- [ ] Sentry DSN backend configurado (`SENTRY_DSN`)
-- [ ] Teams webhook URL atualizada para URL de produção do Cloud Run
+- [ ] `SECRET_KEY` em Secret Manager (obrigatório em prod)
+- [ ] Celery worker rodando como serviço separado (`Dockerfile.worker`)
+- [ ] Broker configurado (Redis ou RabbitMQ/Pub/Sub)
+
+**LLM & IA:**
+
+- [x] LLM Factory com 3 providers (Gemini, Claude, OpenAI) e fallback automático
+- [x] Embedding Factory com 2 providers (Gemini, OpenAI) e 768-dim consistente
+- [x] LLM Bootstrap safety net ativo (monkey-patch de imports diretos)
+- [x] Tenant provider config via `tool_permissions.yaml`
+- [x] Tenant budget tracking em Redis
+- [ ] `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY` no Secret Manager
+- [ ] Budget hard limits implementados por tenant
+- [ ] Validar fallback chain com circuit breaker aberto em staging
+
+**Segurança & Compliance:**
+
+- [x] FairnessGuard com 16 categorias de discriminação
+- [x] PII Masking em 4 camadas (regex, LLM strip, Sentry scrub, Presidio NER)
+- [x] HITL em 3 flows críticos (Wizard, Pipeline, WSI)
+- [x] Auth JWT + Cross-Tenant Guard + Prompt Injection Check
+- [x] Rate limiting per-user e per-company com Redis sliding window
+- [x] Policy Engine com regras por setor
+- [x] Sentry com PII scrubbing e `send_default_pii=False`
+- [ ] `SENTRY_DSN` configurado para produção
+- [ ] Workload Identity para Google APIs (Speech, Calendar)
+
+**Comunicação:**
+
+- [x] WSI Voice Pipeline completo (Twilio→Gemini→LLM→OpenAI TTS→Twilio)
+- [x] WhatsApp com botões interativos nativos (Twilio Content API)
+- [x] Teams com Adaptive Cards e alertas por severidade
+- [x] Email com fallback Resend→Mailgun
+- [x] WebSocket para audio stream, chat, job monitoring
+- [ ] `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` no Secret Manager
+- [ ] Teams webhook URL atualizada para URL de produção
+- [ ] `MAILGUN_API_KEY`, `MAILGUN_DOMAIN` no Secret Manager
+
+**Observabilidade:**
+
+- [x] Health probes Kubernetes-ready (ready/live/unified)
+- [x] Circuit Breakers com SLOs para 18 serviços
+- [x] LangSmith tracing para LLM calls
+- [x] Prometheus metrics endpoint (`/metrics`)
+- [ ] `LANGSMITH_API_KEY` no Secret Manager
+- [ ] Grafana conectado ao Prometheus scrape
 
 ---
 
