@@ -116,6 +116,33 @@ export interface ConversationalRequest {
   message: string
   context?: string
   mode?: string
+  conversation_id?: string
+  user_id?: string
+}
+
+export interface ActiveDraftInfo {
+  id: string
+  conversation_id?: string
+  status: string
+  current_step?: string
+  job_title?: string
+  department?: string
+  seniority?: string
+  location?: string
+  work_model?: string
+  employment_type?: string
+  salary_min?: number
+  salary_max?: number
+  skills?: string[]
+  behavioral_competencies?: unknown[]
+  benefits?: string[]
+  is_affirmative?: boolean
+  affirmative_criteria_primary?: string
+  affirmative_criteria_secondary?: string
+  manager?: string
+  manager_email?: string
+  updated_at?: string
+  created_at?: string
 }
 
 export interface ConversationalResponse {
@@ -123,6 +150,8 @@ export interface ConversationalResponse {
   understood_intent: string
   suggested_action?: string
   can_help: boolean
+  active_draft?: ActiveDraftInfo | null
+  conversation_id?: string | null
 }
 
 export type WizardOrchestratorAction = 

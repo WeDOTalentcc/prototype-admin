@@ -44,9 +44,6 @@ USE_ENHANCED_CLASSIFIER = True
 # Shared service instances (imported from canonical singletons)
 # ---------------------------------------------------------------------------
 
-# In-memory store for job drafts used by conversational routes
-_job_drafts: dict[str, Any] = {}
-
 # ---------------------------------------------------------------------------
 # Wizard stage metadata
 # ---------------------------------------------------------------------------
@@ -316,6 +313,8 @@ class ConversationalRequest(BaseModel):
     message: str
     context: str | None = None
     mode: str | None = "job_creation"
+    conversation_id: str | None = None
+    user_id: str | None = None
 
 
 class ConversationalResponse(BaseModel):
@@ -323,6 +322,8 @@ class ConversationalResponse(BaseModel):
     understood_intent: str
     suggested_action: str | None = None
     can_help: bool = True
+    active_draft: dict[str, Any] | None = None
+    conversation_id: str | None = None
 
 
 class WizardOrchestratorRequest(BaseModel):

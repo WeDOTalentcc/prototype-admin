@@ -11,6 +11,7 @@ import type {
   ConversationalResponse,
   WizardOrchestratorRequest,
   WizardOrchestratorResponse,
+  ActiveDraftInfo,
 } from './types'
 
 export async function sendMessage(data: ChatMessage): Promise<ChatResponse> {
@@ -111,9 +112,7 @@ export async function interpretMessage(request: InterpretMessageRequest): Promis
   try {
     const response = await fetch(`${BACKEND_URL}/lia/job-wizard/interpret`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(request),
     })
 
@@ -143,9 +142,7 @@ export async function getConversationalResponse(request: ConversationalRequest):
   try {
     const response = await fetch(`${BACKEND_URL}/lia/conversational`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(request),
     })
 
@@ -164,6 +161,27 @@ export async function getConversationalResponse(request: ConversationalRequest):
       understood_intent: "fallback",
       can_help: true
     }
+  }
+}
+
+export async function getActiveDraft(): Promise<ActiveDraftInfo | null> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/lia/active-draft`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const data = await response.json()
+    if (data.success && data.job_draft) {
+      return data.job_draft as ActiveDraftInfo
+    }
+    return null
+  } catch {
+    return null
   }
 }
 

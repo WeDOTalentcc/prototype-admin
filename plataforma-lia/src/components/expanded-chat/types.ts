@@ -81,9 +81,27 @@ export interface CalibrationCandidate {
   totalExperience: string
 }
 
+/**
+ * Flexible shape for basicInfoFields when coming from the backend draft mapping.
+ * applyPendingDraft reads English keys (jobTitle, locality, etc.) from this shape
+ * even though BasicInfoFields uses Portuguese keys — both are accepted here.
+ */
+export type WizardBasicInfoDraftFields = BasicInfoFields | {
+  jobTitle?: string
+  department?: string
+  area?: string
+  seniority?: string
+  locality?: string
+  workModel?: string
+  employmentType?: string
+  manager?: string
+  managerEmail?: string
+  isAffirmative?: boolean
+}
+
 export interface WizardDraftData {
   currentStage?: string
-  basicInfoFields?: BasicInfoFields
+  basicInfoFields?: WizardBasicInfoDraftFields
   technicalSkills?: TechnicalSkill[]
   behavioralCompetencies?: BehavioralCompetency[]
   salaryInfo?: SalaryInfo

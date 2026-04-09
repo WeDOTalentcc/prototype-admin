@@ -273,11 +273,15 @@ export function useExpandedChatEffects(ctx) {
   // State to track if we're awaiting user choice about existing draft
   const [awaitingDraftChoice, setAwaitingDraftChoice] = useState(false)
   const [pendingDraftData, setPendingDraftData] = useState<typeof loadedDraft | null>(null)
+
+  // Ref to ensure backend draft check runs only once per job-creation-mode session
+  const _backendDraftCheckedRef = useRef(false)
   
-  // Reset restoration flag when wizard mode changes (for re-entry scenarios)
+  // Reset restoration flags when wizard mode changes (for re-entry scenarios)
   useEffect(() => {
     if (!isJobCreationMode) {
       setHasAppliedRestoredDraft(false)
+      _backendDraftCheckedRef.current = false
     }
   }, [isJobCreationMode])
   
@@ -394,7 +398,44 @@ export function useExpandedChatEffects(ctx) {
       setHasAppliedRestoredDraft(true)
     }
   }, [hasRestoredDraft, loadedDraft, hasAppliedRestoredDraft, isJobCreationMode, hasAttemptedRestore, awaitingDraftChoice, INITIAL_STAGES, STAGE_DISPLAY_NAMES, pendingDraftData, setMessages])
-  
+
+  // Backend draft check on initialization — runs once when job creation mode activates
+  // Recovers cross-session drafts that local storage doesn't have, and restores conversation_id
+  useEffect(() => {
+    const checkBackend = ctx.checkForExistingDraftFromBackend
+    const setCid = ctx.setConversationId
+    const currentCid = ctx.conversationId
+
+    if (!isJobCreationMode || awaitingDraftChoice || _backendDraftCheckedRef.current) return
+    if (typeof checkBackend !== 'function') return
+
+    _backendDraftCheckedRef.current = true
+
+    checkBackend().then((result) => {
+      if (!result.hasDraft || !result.draftData) return
+      // Recover conversation_id from backend draft metadata
+      const backendCid = (result.draftData as Record<string, unknown>)._backendConversationId
+      if (backendCid && !currentCid && typeof setCid === 'function') {
+        setCid(backendCid as string)
+      }
+      // Only show draft choice if local draft check hasn't already done so
+      if (!awaitingDraftChoice && result.stageName) {
+        setPendingDraftData(result.draftData as typeof loadedDraft)
+        setAwaitingDraftChoice(true)
+        const draftChoiceMessage: Message = {
+          id: `draft-choice-backend-${Date.now()}`,
+          role: 'assistant' as const,
+          content: DRAFT_DETECTED_MESSAGE(result.stageName),
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, draftChoiceMessage])
+      }
+    }).catch(() => {
+      // silently ignore — local check is the fallback
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isJobCreationMode])
+
   // Helper function to apply pending draft data
   const applyPendingDraft = useCallback(() => {
     if (!pendingDraftData) return

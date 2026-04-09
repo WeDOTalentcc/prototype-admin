@@ -110,7 +110,7 @@ export function useExpandedChatCoreState(mode: string = 'general') {
   })
 
   const { STAGE_DISPLAY_NAMES, INITIAL_STAGES } = useWizardStageConstants()
-  const { checkForExistingDraftSync } = useCheckForExistingDraftSync({ STAGE_DISPLAY_NAMES, INITIAL_STAGES })
+  const { checkForExistingDraftSync, checkForExistingDraftFromBackend } = useCheckForExistingDraftSync({ STAGE_DISPLAY_NAMES, INITIAL_STAGES })
 
   const [basicInfoFields, setBasicInfoFields] = useState<BasicInfoFields>({
     cargo: '', area: '', gestor: '', localidade: '', modeloTrabalho: '', tipoContrato: ''
@@ -206,7 +206,7 @@ export function useExpandedChatCoreState(mode: string = 'general') {
     isFullscreen, setIsFullscreen,
     activeToolConfirmationMessageId, setActiveToolConfirmationMessageId,
     currentStage, setCurrentStage, currentStageConfig, currentStageIndex,
-    wizardDraftId, STAGE_DISPLAY_NAMES, INITIAL_STAGES, checkForExistingDraftSync,
+    wizardDraftId, STAGE_DISPLAY_NAMES, INITIAL_STAGES, checkForExistingDraftSync, checkForExistingDraftFromBackend,
     basicInfoFields, setBasicInfoFields,
     technicalSkills, setTechnicalSkills,
     behavioralCompetencies, setBehavioralCompetencies,

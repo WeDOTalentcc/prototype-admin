@@ -95,6 +95,9 @@ export function useExpandedChatWiring({
     isLoadingEligibilityQuestions: state.isLoadingEligibilityQuestions,
     companyEligibilityQuestions: state.companyEligibilityQuestions,
     isLoadingStages: state.isLoadingStages,
+    checkForExistingDraftFromBackend: state.checkForExistingDraftFromBackend,
+    conversationId: state.conversationId,
+    setConversationId: state.setConversationId,
   })
 
   const {
@@ -305,6 +308,7 @@ export function useExpandedChatWiring({
     canAdvanceToNextStage,
     candidateProfileTab: state.candidateProfileTab,
     checkForExistingDraftSync: state.checkForExistingDraftSync,
+    checkForExistingDraftFromBackend: state.checkForExistingDraftFromBackend,
     companyConfig: state.companyConfig,
     companyDefaultQuestions: state.companyDefaultQuestions,
     competenciesPanelExpanded: state.competenciesPanelExpanded,

@@ -7,8 +7,10 @@ Conversational AI, job-draft management, and context-suggestions routes:
 """
 from datetime import datetime
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
@@ -16,6 +18,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.dependencies.token_budget import require_token_budget
 from app.domains.ai.services.llm import LLMService, get_llm_service
+from app.domains.recruiter_assistant.services.conversation_memory import ConversationMemory
 
 from ._shared import (
     # data tables
@@ -27,11 +30,13 @@ from ._shared import (
     # models
     ConversationalRequest,
     ConversationalResponse,
-    _job_drafts,
+    JobDraft,
     logger,
 )
 
 router = APIRouter()
+
+_conversation_memory = ConversationMemory()
 
 LIA_CAPABILITIES_PROMPT = """Você é a LIA, assistente inteligente de recrutamento da plataforma WeDoTalent.
 
@@ -54,6 +59,9 @@ IMPORTANTE:
 - Se o usuário pedir algo de outro módulo (como mover candidato, alterar status, agendar entrevista), informe que a funcionalidade existe na plataforma e oriente a usar o chat principal da LIA para essas ações
 - Nunca diga que a LIA "não possui" ou "não tem" funcionalidades de pipeline, status ou gestão de candidatos — essas capacidades existem em outros módulos
 
+CONTEXTO DA CONVERSA:
+{conversation_context}
+
 INSTRUÇÕES:
 - Responda sempre em português brasileiro
 - Seja natural e conversacional, não robótica
@@ -66,11 +74,62 @@ Mensagem do usuário: {message}
 Responda de forma natural e útil:"""
 
 
+async def _get_active_draft_for_user(db: AsyncSession, user_id: str) -> JobDraft | None:
+    """Fetch the most recent active (DRAFT status) JobDraft for a user."""
+    try:
+        from app.models.job_draft import JobDraftStatus
+        result = await db.execute(
+            select(JobDraft)
+            .where(
+                and_(
+                    JobDraft.recruiter_id == user_id,
+                    JobDraft.status == JobDraftStatus.DRAFT,
+                )
+            )
+            .order_by(JobDraft.updated_at.desc())
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+    except Exception as e:
+        logger.warning(f"Failed to fetch active draft for user {user_id}: {e}")
+        return None
+
+
+def _draft_to_dict(draft: JobDraft) -> dict[str, Any]:
+    """Serialize a JobDraft to a dict suitable for API responses."""
+    return {
+        "id": str(draft.id),
+        "conversation_id": str(draft.conversation_id) if draft.conversation_id else None,
+        "status": draft.status.value if hasattr(draft.status, "value") else draft.status,
+        "current_step": draft.current_step,
+        "job_title": draft.job_title,
+        "department": draft.department,
+        "seniority": draft.seniority,
+        "location": draft.location,
+        "work_model": draft.work_model,
+        "employment_type": draft.employment_type,
+        "salary_min": draft.salary_min,
+        "salary_max": draft.salary_max,
+        "skills": draft.skills or [],
+        "behavioral_competencies": draft.behavioral_competencies or [],
+        "benefits": draft.benefits or [],
+        "is_affirmative": draft.is_affirmative,
+        "affirmative_criteria_primary": draft.affirmative_criteria_primary,
+        "affirmative_criteria_secondary": draft.affirmative_criteria_secondary,
+        "manager": draft.manager,
+        "manager_email": draft.manager_email,
+        "updated_at": draft.updated_at.isoformat() if draft.updated_at else None,
+        "created_at": draft.created_at.isoformat() if draft.created_at else None,
+    }
+
+
 @router.post("/conversational", response_model=ConversationalResponse)
 async def handle_conversational_message(
     request: ConversationalRequest,
     _budget: None = Depends(require_token_budget),
     llm_svc: LLMService = Depends(get_llm_service),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Handle general conversational messages using LLM for natural responses.
@@ -79,6 +138,8 @@ async def handle_conversational_message(
     questions about capabilities and responding intelligently.
     """
     try:
+        user_id = str(current_user.id)
+
         # Mode: salary_benchmark — use structured salary analysis (fix C-06)
         if request.mode == "salary_benchmark":
             salary_prompt = f"""Você é especialista em remuneração do mercado brasileiro de tecnologia.
@@ -104,33 +165,174 @@ Solicitação: {request.message}"""
                 can_help=True
             )
 
-        prompt = LIA_CAPABILITIES_PROMPT.format(message=request.message)
+        # Fetch active draft early so its conversation_id can be used as fallback
+        active_draft = await _get_active_draft_for_user(db, user_id)
+        active_draft_dict: dict[str, Any] | None = None
+        if active_draft:
+            active_draft_dict = _draft_to_dict(active_draft)
+
+        # Resolve conversation_id — priority order:
+        # 1. Client-supplied & owned by user
+        # 2. Active draft's conversation_id (resume flow continuity)
+        # 3. Auto-create a new conversation so memory is always seeded
+        resolved_conversation_id: str | None = None
+        _conversation_is_owned: bool = False
+
+        if request.conversation_id:
+            try:
+                existing_conv = await _conversation_memory.get_conversation(
+                    db=db,
+                    conversation_id=request.conversation_id,
+                )
+                if existing_conv is not None and str(existing_conv.user_id) == user_id:
+                    resolved_conversation_id = request.conversation_id
+                    _conversation_is_owned = True
+                else:
+                    logger.warning(
+                        f"Conversation {request.conversation_id} not owned by user {user_id}, "
+                        "ignoring — will prefer active draft conversation_id or auto-create"
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to verify conversation ownership: {e}")
+
+        if not resolved_conversation_id and active_draft and active_draft.conversation_id:
+            # Prefer the draft's existing conversation to preserve prior message history
+            draft_conv_id = str(active_draft.conversation_id)
+            try:
+                draft_conv = await _conversation_memory.get_conversation(
+                    db=db,
+                    conversation_id=draft_conv_id,
+                )
+                if draft_conv is not None and str(draft_conv.user_id) == user_id:
+                    resolved_conversation_id = draft_conv_id
+                    _conversation_is_owned = True
+                    logger.info(f"Using active draft conversation_id {draft_conv_id} for history continuity")
+            except Exception as e:
+                logger.warning(f"Failed to verify draft conversation ownership: {e}")
+
+        if not resolved_conversation_id:
+            try:
+                auto_conv = await _conversation_memory.get_or_create_conversation(
+                    db=db,
+                    user_id=user_id,
+                    context_type="lia_chat",
+                    title="Conversa com LIA",
+                )
+                resolved_conversation_id = str(auto_conv.id)
+                _conversation_is_owned = True
+            except Exception as e:
+                logger.warning(f"Failed to auto-create conversation: {e}")
+
+        # Load conversation history for owned conversations
+        conversation_context_text = "Início da conversa"
+        if resolved_conversation_id and _conversation_is_owned:
+            try:
+                context = await _conversation_memory.get_context_for_llm(
+                    db=db,
+                    conversation_id=resolved_conversation_id,
+                    max_messages=10,
+                    include_summary=True,
+                )
+                messages_hist = context.get("messages", [])
+                summary = context.get("summary")
+
+                if summary:
+                    conversation_context_text = f"Resumo da conversa anterior: {summary}"
+                    if messages_hist:
+                        recent = "\n".join([
+                            f"{m['role'].upper()}: {m['content'][:200]}"
+                            for m in messages_hist[-5:]
+                        ])
+                        conversation_context_text += f"\n\nMensagens recentes:\n{recent}"
+                elif messages_hist:
+                    conversation_context_text = "\n".join([
+                        f"{m['role'].upper()}: {m['content'][:200]}"
+                        for m in messages_hist[-10:]
+                    ])
+            except Exception as e:
+                logger.warning(f"Failed to load conversation history: {e}")
+
+        prompt = LIA_CAPABILITIES_PROMPT.format(
+            message=request.message,
+            conversation_context=conversation_context_text,
+        )
         response_text = await llm_svc.generate(prompt, provider="gemini")
 
         lower_msg = request.message.lower()
 
+        # Detect intent — check resume_draft first
+        intent = "other"
         if any(word in lower_msg for word in ['oi', 'olá', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'hello']):
             intent = "greeting"
-        elif '?' in request.message or any(word in lower_msg for word in ['como', 'o que', 'pode', 'consegue', 'faz', 'ajuda']):
-            intent = "question"
+        elif any(word in lower_msg for word in ['continuar', 'retomar', 'voltar', 'onde parei', 'em andamento', 'vaga que estava', 'rascunho', 'draft']):
+            intent = "resume_draft"
         elif any(word in lower_msg for word in ['criar', 'nova vaga', 'do zero', 'começar']):
             intent = "create_job"
         elif any(word in lower_msg for word in ['reutilizar', 'anterior', 'fast track', 'aproveitar']):
             intent = "fast_track"
-        else:
-            intent = "other"
+        elif '?' in request.message or any(word in lower_msg for word in ['como', 'o que', 'pode', 'consegue', 'faz', 'ajuda']):
+            intent = "question"
 
         suggested_action = None
-        if intent == "create_job":
+        if intent == "resume_draft" and active_draft:
+            suggested_action = "resume_draft"
+            # Override response to include draft context
+            draft_title = active_draft.job_title or "vaga sem título"
+            draft_step = active_draft.current_step or "início"
+            response_text = (
+                f"Encontrei sua vaga em andamento: **{draft_title}**! "
+                f"Você estava na etapa de **{draft_step}**. "
+                f"Deseja continuar de onde parou ou começar uma nova vaga do zero?"
+            )
+        elif intent in ("create_job", "fast_track") and active_draft:
+            # When user wants to create/fast-track but has a draft, offer to resume first
+            draft_title = active_draft.job_title or "uma vaga"
+            suggested_action = "offer_resume_draft"
+            response_text = (
+                f"Você tem uma vaga em andamento (**{draft_title}**). "
+                f"Deseja continuar de onde parou ou prefere começar do zero?"
+            )
+        elif intent == "create_job":
             suggested_action = "from_scratch"
         elif intent == "fast_track":
             suggested_action = "fast_track"
+        elif intent == "greeting" and active_draft and not request.context:
+            # Proactively mention draft on greeting if user has one
+            draft_title = active_draft.job_title or "uma vaga"
+            suggested_action = "offer_resume_draft"
+            response_text += (
+                f"\n\n💡 **Nota:** Você tem uma vaga em andamento (**{draft_title}**). "
+                f"Quer continuar de onde parou?"
+            )
+
+        # Store message in conversation history only if conversation is verified owned
+        if resolved_conversation_id and _conversation_is_owned:
+            try:
+                await _conversation_memory.add_message(
+                    db=db,
+                    conversation_id=resolved_conversation_id,
+                    role="user",
+                    content=request.message,
+                    intent=intent,
+                )
+                await _conversation_memory.add_message(
+                    db=db,
+                    conversation_id=resolved_conversation_id,
+                    role="assistant",
+                    content=response_text,
+                    intent=intent,
+                )
+                await db.commit()
+            except Exception as e:
+                logger.warning(f"Failed to store conversation messages: {e}")
 
         return ConversationalResponse(
             response=response_text,
             understood_intent=intent,
             suggested_action=suggested_action,
-            can_help=True
+            can_help=True,
+            active_draft=active_draft_dict,
+            conversation_id=resolved_conversation_id,
         )
 
     except Exception as e:
@@ -145,14 +347,44 @@ Solicitação: {request.message}"""
 @router.get("/job-draft/{conversation_id}", response_model=None)
 async def get_job_draft(
     conversation_id: str,
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    """Get the current job draft for a conversation."""
-    if conversation_id in _job_drafts:
-        return {
-            "success": True,
-            "job_draft": _job_drafts[conversation_id]
-        }
+    """Get the current job draft for a conversation, reading from the database."""
+    try:
+        try:
+            conv_uuid = UUID(conversation_id)
+        except (ValueError, TypeError):
+            return {
+                "success": False,
+                "message": "Invalid conversation_id format",
+                "job_draft": None
+            }
+
+        from app.models.job_draft import JobDraftStatus
+        user_id = str(current_user.id)
+        result = await db.execute(
+            select(JobDraft)
+            .where(
+                and_(
+                    JobDraft.conversation_id == conv_uuid,
+                    JobDraft.recruiter_id == user_id,
+                    JobDraft.status == JobDraftStatus.DRAFT,
+                )
+            )
+            .order_by(JobDraft.updated_at.desc())
+            .limit(1)
+        )
+        draft = result.scalar_one_or_none()
+
+        if draft:
+            return {
+                "success": True,
+                "job_draft": _draft_to_dict(draft),
+            }
+    except Exception as e:
+        logger.warning(f"Error fetching job draft from DB: {e}")
+
     return {
         "success": False,
         "message": "Job draft not found",
@@ -160,16 +392,61 @@ async def get_job_draft(
     }
 
 
+@router.get("/active-draft", response_model=None)
+async def get_active_draft(
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Get the most recent active draft for the current user."""
+    user_id = str(current_user.id)
+    draft = await _get_active_draft_for_user(db, user_id)
+    if draft:
+        return {
+            "success": True,
+            "job_draft": _draft_to_dict(draft),
+        }
+    return {
+        "success": False,
+        "message": "No active draft found",
+        "job_draft": None
+    }
+
+
 @router.delete("/job-draft/{conversation_id}", response_model=None)
 async def clear_job_draft(
     conversation_id: str,
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    """Clear a job draft from memory."""
-    if conversation_id in _job_drafts:
-        del _job_drafts[conversation_id]
-        return {"success": True, "message": "Job draft cleared"}
-    return {"success": False, "message": "Job draft not found"}
+    """Clear (cancel) a job draft linked to a conversation."""
+    try:
+        try:
+            conv_uuid = UUID(conversation_id)
+        except (ValueError, TypeError):
+            return {"success": False, "message": "Invalid conversation_id format"}
+
+        from app.models.job_draft import JobDraftStatus
+        user_id = str(current_user.id)
+        result = await db.execute(
+            select(JobDraft).where(
+                and_(
+                    JobDraft.conversation_id == conv_uuid,
+                    JobDraft.recruiter_id == user_id,
+                )
+            )
+        )
+        draft = result.scalar_one_or_none()
+
+        if draft:
+            draft.status = JobDraftStatus.CANCELLED
+            draft.updated_at = datetime.utcnow()
+            await db.commit()
+            return {"success": True, "message": "Job draft cancelled"}
+
+        return {"success": False, "message": "Job draft not found"}
+    except Exception as e:
+        logger.error(f"Error clearing job draft: {e}")
+        return {"success": False, "message": f"Error: {e}"}
 
 
 @router.get("/context-suggestions", response_model=ContextSuggestionsResponse)

@@ -46,6 +46,7 @@ export interface ExpandedChatInputProps {
   // Functions
   extractCriteriaFromText: (text: string) => void
   checkForExistingDraftSync: () => { hasDraft: boolean; stageName: string | null; draftData: Partial<WizardDraftData> | null }
+  checkForExistingDraftFromBackend?: () => Promise<{ hasDraft: boolean; stageName: string | null; draftData: Partial<WizardDraftData> | null }>
   typeText: (text: string, messageId: string) => void
 
   // Callbacks (on* naming — Bridge React→Vue)
@@ -82,6 +83,7 @@ export function ExpandedChatInput({
   extractCriteriaDebounceRef,
   extractCriteriaFromText,
   checkForExistingDraftSync,
+  checkForExistingDraftFromBackend,
   typeText,
   onInputValueChange,
   onKeyDown,
@@ -251,12 +253,34 @@ export function ExpandedChatInput({
                 return (
                   <button
                     key={tag.action}
-                    onClick={() => {
+                    onClick={async () => {
                       if (tag.action === 'criar_vaga') {
                         onSetInternalJobCreationMode(true)
 
-                        // Check for existing draft BEFORE showing any message
-                        const { hasDraft, stageName, draftData } = checkForExistingDraftSync()
+                        // Check for existing draft: prefer backend (cross-session), fallback to local sync
+                        let hasDraft = false
+                        let stageName: string | null = null
+                        let draftData: Partial<WizardDraftData> | null = null
+
+                        if (checkForExistingDraftFromBackend) {
+                          try {
+                            const backendResult = await checkForExistingDraftFromBackend()
+                            hasDraft = backendResult.hasDraft
+                            stageName = backendResult.stageName
+                            draftData = backendResult.draftData
+                          } catch {
+                            // fallback to local check on backend failure
+                            const syncResult = checkForExistingDraftSync()
+                            hasDraft = syncResult.hasDraft
+                            stageName = syncResult.stageName
+                            draftData = syncResult.draftData
+                          }
+                        } else {
+                          const syncResult = checkForExistingDraftSync()
+                          hasDraft = syncResult.hasDraft
+                          stageName = syncResult.stageName
+                          draftData = syncResult.draftData
+                        }
 
                         if (hasDraft && stageName && draftData) {
                           // Store draft data for restoration BEFORE showing message
@@ -274,7 +298,7 @@ export function ExpandedChatInput({
                           onSetMessages([draftChoiceMsg])
                           onSetDisplayedText("")
                           setTimeout(() => {
-                            typeText(DRAFT_DETECTED_MESSAGE(stageName), 'draft-choice-intro')
+                            typeText(DRAFT_DETECTED_MESSAGE(stageName!), 'draft-choice-intro')
                           }, 300)
                         } else {
                           // No draft - show welcome message

@@ -47,7 +47,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
     const {
       activeInputTab, addCalibrationCriterion, addCustomQuestion, addNewBenefit, addNewCompetency, addNewSkill, analytics, approvedCandidates,
     autoSaveLastSaved, basicInfoFields, behavioralCompetencies, calibrationCandidates, calibrationComment, calibrationComplete, calibrationCriteria, canAdvanceToNextStage,
-    candidateProfileTab, checkForExistingDraftSync, companyConfig, companyDefaultQuestions, competenciesPanelExpanded, configLoaded, containerClasses, contentClasses,
+    candidateProfileTab, checkForExistingDraftSync, checkForExistingDraftFromBackend, companyConfig, companyDefaultQuestions, competenciesPanelExpanded, configLoaded, containerClasses, contentClasses,
     conversationId, criteriaItems, currentCalibrationIndex, currentStage, currentStageConfig, currentStageIndex, customQuestionRequired, customQuestionText,
     customQuestionType, deleteWSIQuestion, detectedCriteria, displayedText, enrichedJDData, extractCriteriaDebounceRef, extractCriteriaFromText, fastTrack,
     fastTrackSuggestionsShownTracked, fileInputRef, generateCalibrationCandidates, generateJobDescription, generateWSIQuestions, getBehavioralCompetencies, getLastSavedText, globalCandidateCount,
@@ -296,6 +296,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
               extractCriteriaDebounceRef={extractCriteriaDebounceRef}
               extractCriteriaFromText={extractCriteriaFromText}
               checkForExistingDraftSync={checkForExistingDraftSync}
+              checkForExistingDraftFromBackend={checkForExistingDraftFromBackend}
               typeText={typeText}
               onInputValueChange={setInputValue}
               onKeyDown={handleKeyDown}

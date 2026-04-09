@@ -213,8 +213,14 @@ export async function handleFastTrackFlow(
       const conversationalResponse = await getConversationalResponse({
         message: content,
         mode: 'job_creation',
-        context: 'pre_wizard'
+        context: 'pre_wizard',
+        conversation_id: ctx.conversationId || undefined,
       })
+
+      // Persist the conversation_id returned by the backend (auto-created if absent)
+      if (conversationalResponse.conversation_id && !ctx.conversationId) {
+        ctx.setConversationId(conversationalResponse.conversation_id)
+      }
       if (conversationalResponse.suggested_action === 'from_scratch') {
         ctx.setWizardMode('create_from_scratch')
         ctx.setIsPanelOpen(true)
@@ -240,6 +246,73 @@ export async function handleFastTrackFlow(
           timestamp: new Date()
         }
         ctx.setMessages(prev => [...prev, liaMessage])
+        ctx.setIsLoading(false)
+        return true
+      }
+      if (
+        conversationalResponse.suggested_action === 'resume_draft' ||
+        conversationalResponse.suggested_action === 'offer_resume_draft'
+      ) {
+        const liaMessage: Message = {
+          id: `lia-resume-draft-${Date.now()}`,
+          role: 'assistant',
+          content: conversationalResponse.response,
+          timestamp: new Date()
+        }
+        ctx.setMessages(prev => [...prev, liaMessage])
+
+        // Hydrate pending draft state from the response's active_draft so user can continue
+        const activeDraft = conversationalResponse.active_draft
+        if (activeDraft) {
+          const ts = Date.now()
+          const mappedDraftData = {
+            currentStage: activeDraft.current_step || 'input-evaluation',
+            basicInfoFields: {
+              jobTitle: activeDraft.job_title || '',
+              department: activeDraft.department || '',
+              seniority: activeDraft.seniority || '',
+              locality: activeDraft.location || '',
+              workModel: activeDraft.work_model || '',
+              employmentType: activeDraft.employment_type || '',
+              manager: activeDraft.manager || '',
+              isAffirmative: activeDraft.is_affirmative || false,
+            },
+            technicalSkills: (activeDraft.skills || []).map((name: string, idx: number) => ({
+              id: `skill-${ts}-${idx}`,
+              name,
+              level: 'Avançado' as const,
+              required: idx < 3,
+              category: 'tool' as const,
+              weight: idx < 3 ? 3 : 2,
+            })),
+            behavioralCompetencies: (activeDraft.behavioral_competencies || []).map((bc: unknown, idx: number) => {
+              const b = bc as Record<string, unknown>
+              return {
+                id: (b.id as string) || `comp-${ts}-${idx}`,
+                name: (b.name as string) || '',
+                weight: (b.weight as number) ?? 2,
+                justification: (b.justification as string) || '',
+                enabled: b.enabled !== false,
+              }
+            }),
+            salaryInfo: {
+              minSalary: String(activeDraft.salary_min ?? ''),
+              maxSalary: String(activeDraft.salary_max ?? ''),
+              minBonus: '',
+              maxBonus: '',
+              bonusCriteria: '',
+              benefits: (activeDraft.benefits || []).map((b: unknown, i: number) =>
+                typeof b === 'string'
+                  ? { id: `benefit-${ts}-${i}`, name: b, enabled: true }
+                  : { id: `benefit-${ts}-${i}`, name: String(b), enabled: true }
+              ),
+            },
+          }
+          ctx.setPendingDraftData(mappedDraftData)
+          ctx.setAwaitingDraftChoice(true)
+          ctx.setInternalJobCreationMode(true)
+        }
+
         ctx.setIsLoading(false)
         return true
       }
