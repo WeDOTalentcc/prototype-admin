@@ -103,26 +103,7 @@ global:
         - parse_and_create_candidate
         - add_to_vacancy
 
-  llm_provider: gemini
-  llm_fallback_order:
-    - gemini
-    - claude
-    - openai
 
-# Per-tenant overrides — each entry is optional and additive/subtractive.
-# Tenants not listed here inherit the global defaults.
-tenants: {}
-# Example per-tenant override:
-#   acme_corp:
-#     llm_provider: claude
-#     llm_fallback_order: [claude, openai, gemini]
-#     overrides:
-#       talent_funnel:
-#         remove:
-#           - send_bulk_email
-#       in_job:
-#         add_action:
-#           - custom_acme_action
 
     # Universal scope — all tools available (Unified Chat, Phase 5)
     # Used when context_type is "general" from the unified chat.
@@ -190,3 +171,24 @@ tenants: {}
         - parse_and_create_candidate
         - add_to_vacancy
         - wsi_screening
+  llm_provider: gemini
+  llm_fallback_order:
+    - gemini
+    - claude
+    - openai
+
+# Per-tenant overrides — each entry is optional and additive/subtractive.
+# Tenants not listed here inherit the global defaults.
+tenants: {}
+# Example per-tenant override:
+#   acme_corp:
+#     llm_provider: claude
+#     llm_fallback_order: [claude, openai, gemini]
+#     overrides:
+#       talent_funnel:
+#         remove:
+#           - send_bulk_email
+#       in_job:
+#         add_action:
+#           - custom_acme_action
+

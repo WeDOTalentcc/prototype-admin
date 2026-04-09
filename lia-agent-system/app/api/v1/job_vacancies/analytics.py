@@ -9,6 +9,7 @@ archetypes (already in crud.py), job report.
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import *
+from ._shared import _is_job_at_risk, _calculate_days_between
 from app.domains.job_vacancies_analytics.dependencies import get_job_vacancies_analytics_repo
 from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,

@@ -82,7 +82,7 @@ def _jsonapi_candidate(c: TalentPoolCandidate) -> dict:
 
 
 async def _get_pool_or_404(
-    pool_id: UUID, account_id: int, db: AsyncSession
+    pool_id: UUID, account_id: str | int, db: AsyncSession
 ) -> TalentPool:
     result = await db.execute(
         select(TalentPool).where(
@@ -137,7 +137,7 @@ async def list_pools(
     """List talent pools for the current account."""
     company_id = get_user_company_id(current_user)
     stmt = select(TalentPool).where(
-        TalentPool.account_id == int(company_id),
+        TalentPool.account_id == company_id,
     ).order_by(TalentPool.created_at.desc())
     if status:
         stmt = stmt.where(TalentPool.status == status)
@@ -158,8 +158,8 @@ async def create_pool(
     data = TalentPoolCreate(**body)
 
     pool = TalentPool(
-        account_id=int(company_id),
-        created_by_user_id=int(current_user.id) if current_user.id else None,
+        account_id=company_id,
+        created_by_user_id=str(current_user.id) if current_user.id else None,
         name=data.name,
         description=data.description,
         screening_questions=data.screening_questions or [],
@@ -181,7 +181,7 @@ async def get_pool(
 ):
     """Get a single talent pool."""
     company_id = get_user_company_id(current_user)
-    pool = await _get_pool_or_404(pool_id, int(company_id), db)
+    pool = await _get_pool_or_404(pool_id, company_id, db)
     return {"data": _jsonapi_pool(pool)}
 
 
@@ -194,7 +194,7 @@ async def update_pool(
 ):
     """Update a talent pool."""
     company_id = get_user_company_id(current_user)
-    pool = await _get_pool_or_404(pool_id, int(company_id), db)
+    pool = await _get_pool_or_404(pool_id, company_id, db)
     body = payload.get("talent_pool", payload)
     updates = TalentPoolUpdate(**body)
 
@@ -214,7 +214,7 @@ async def delete_pool(
 ):
     """Soft-delete (archive) a talent pool."""
     company_id = get_user_company_id(current_user)
-    pool = await _get_pool_or_404(pool_id, int(company_id), db)
+    pool = await _get_pool_or_404(pool_id, company_id, db)
     pool.status = "archived"
     await db.commit()
     return {"data": _jsonapi_pool(pool)}
@@ -233,7 +233,7 @@ async def list_candidates(
 ):
     """List candidates in a talent pool."""
     company_id = get_user_company_id(current_user)
-    await _get_pool_or_404(pool_id, int(company_id), db)
+    await _get_pool_or_404(pool_id, company_id, db)
 
     stmt = select(TalentPoolCandidate).where(
         TalentPoolCandidate.talent_pool_id == pool_id,
@@ -255,7 +255,7 @@ async def add_candidates(
 ):
     """Add candidates to a talent pool."""
     company_id = get_user_company_id(current_user)
-    await _get_pool_or_404(pool_id, int(company_id), db)
+    await _get_pool_or_404(pool_id, company_id, db)
 
     added = []
     skipped = []
@@ -296,7 +296,7 @@ async def move_to_job(
 ):
     """Move candidates from pool to a job vacancy."""
     company_id = get_user_company_id(current_user)
-    await _get_pool_or_404(pool_id, int(company_id), db)
+    await _get_pool_or_404(pool_id, company_id, db)
 
     moved = []
     now = datetime.utcnow()
@@ -333,7 +333,7 @@ async def create_job_from_pool(
 ):
     """Placeholder — job creation requires Rails integration."""
     company_id = get_user_company_id(current_user)
-    await _get_pool_or_404(pool_id, int(company_id), db)
+    await _get_pool_or_404(pool_id, company_id, db)
     return {
         "job_id": None,
         "message": "Job creation requires Rails integration",
