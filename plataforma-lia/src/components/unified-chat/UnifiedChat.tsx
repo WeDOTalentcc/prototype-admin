@@ -11,6 +11,7 @@ import { BackgroundAgentsStatus } from "@/components/lia-float/BackgroundAgentsS
 import { BackgroundTaskNotification } from "@/components/lia-float/BackgroundTaskNotification"
 import { FairnessWarningBanner } from "@/components/fairness-warning-banner"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
+import { useCvScreening } from "@/hooks/use-cv-screening"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
@@ -86,6 +87,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   } = useLiaChatContext()
 
   const { detect: detectNavIntent } = useNavigationIntent()
+  const { screenCv, isScreening } = useCvScreening()
 
   // Persist mode preference
   useEffect(() => {
@@ -104,9 +106,33 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     return () => window.removeEventListener("lia:prefill-message", handler)
   }, [])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const text = inputText.trim()
     if (!text) return
+
+    // If file is attached, screen it via CV upload API
+    if (attachedFile) {
+      const result = await screenCv({
+        file: attachedFile,
+        onProgress: (step) => {
+          addChatMessage({
+            id: "progress-" + Date.now(),
+            sender: "lia",
+            content: step,
+            timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          })
+        },
+      })
+      if (result.message) {
+        addChatMessage({
+          id: "cv-result-" + Date.now(),
+          sender: "lia",
+          content: result.message,
+          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        })
+      }
+    }
+
     sendChatMessage(text)
     setInputText("")
     setAttachedFile(null)
@@ -120,7 +146,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         }))
       }
     })
-  }, [inputText, sendChatMessage, detectNavIntent])
+  }, [inputText, sendChatMessage, detectNavIntent, attachedFile, screenCv, addChatMessage])
 
   const handleSuggestionClick = useCallback((prompt: string) => {
     setInputText(prompt)
