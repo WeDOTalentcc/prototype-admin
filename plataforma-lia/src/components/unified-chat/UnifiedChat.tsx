@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/auth-store"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { DynamicContextPanel } from "@/components/lia-float/panels"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
+import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
@@ -74,6 +75,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     chatHitlPending,
   } = useLiaChatContext()
 
+  const { detect: detectNavIntent } = useNavigationIntent()
+
   // Persist mode preference
   useEffect(() => {
     localStorage.setItem(MODE_STORAGE_KEY, mode)
@@ -85,7 +88,17 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     sendChatMessage(text)
     setInputText("")
     setAttachedFile(null)
-  }, [inputText, sendChatMessage])
+
+    // Detect navigation intent and auto-navigate if confident
+    detectNavIntent(text).then((result) => {
+      if (result?.page) {
+        // Dispatch navigation event for dashboard-app to handle
+        window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
+          detail: { page: result.page, hint: result.hint },
+        }))
+      }
+    })
+  }, [inputText, sendChatMessage, detectNavIntent])
 
   const handleSuggestionClick = useCallback((prompt: string) => {
     setInputText(prompt)

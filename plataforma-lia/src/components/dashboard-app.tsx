@@ -88,6 +88,21 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     return () => window.removeEventListener("lia:leave-fullscreen-chat", handler)
   }, [currentPage])
 
+  // Handle navigation hints from UnifiedChat (auto-navigate when LIA detects intent)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { page } = (e as CustomEvent<{ page: string; hint: string }>).detail
+      if (page) {
+        const normalized = page === "Painel de Controle" ? "Tarefas" : page
+        setCurrentPage(normalized)
+        // Open sidebar if not already open
+        openFloat()
+      }
+    }
+    window.addEventListener("lia:navigation-hint", handler)
+    return () => window.removeEventListener("lia:navigation-hint", handler)
+  }, [openFloat])
+
   const handleNavigate = (page: string) => {
     if (page === "Ajuda") {
       router.push("/ajuda")
