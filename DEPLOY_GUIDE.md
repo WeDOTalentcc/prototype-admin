@@ -620,6 +620,63 @@ staging.wedotalent.cc       → Cloud Run: lia-frontend-staging
 api-staging.wedotalent.cc   → Cloud Run: lia-agent-staging
 ```
 
+### Fase 5 — Feature Flags para Rollout Gradual
+
+> Permite migrar domínios do FastAPI para o Rails de forma incremental, com rollback instantâneo sem redeploy, apenas alterando variáveis de ambiente.
+
+**Padrão de variável por domínio:**
+
+```bash
+# Formato: <DOMINIO>_BACKEND=rails|fastapi
+# "fastapi" é o default implícito — só precisa setar quando migrando para Rails
+
+CANDIDATES_BACKEND=rails
+JOBS_BACKEND=rails
+INTERVIEWS_BACKEND=fastapi   # ainda não migrado
+NOTIFICATIONS_BACKEND=fastapi
+EMAIL_TEMPLATES_BACKEND=fastapi
+```
+
+**Como funciona no proxy-handler.ts:**
+
+O `proxy-handler.ts` já suporta a opção `backendTarget: "rails"` por rota. A feature flag por domínio é um controle em nível de ambiente — o valor da variável determina qual `backendTarget` usar para cada grupo de rotas. **Requisito de adoção:** as rotas de cada domínio precisam ser adaptadas para ler a variável de ambiente e passar o valor ao `createProxyHandlers` — o padrão abaixo deve ser adotado em cada arquivo de rota do domínio:
+
+```typescript
+// Exemplo de uso com flag de ambiente (padrão recomendado para rollout)
+const candidatesBackend = process.env.CANDIDATES_BACKEND === "rails" ? "rails" : "fastapi"
+
+export const { dynamic, GET, POST } = createProxyHandlers({
+  backendPath: "/api/v1/candidates",
+  methods: ["GET", "POST"],
+  backendTarget: candidatesBackend,
+})
+```
+
+**Estado atual (snapshot abril 2026):** 442 rotas no total, 94 já apontando para `backendTarget: "rails"` com o valor fixo. Este número deve ser recontado antes de cada marco de migração.
+
+**Rollback rápido via nova revisão Cloud Run:**
+
+Se Rails apresentar problemas em produção, reverter para FastAPI é feito em segundos — Cloud Run cria uma nova revisão com a variável atualizada (sem mudança de código, sem novo build de imagem):
+
+```bash
+# Cloud Run aplica a nova variável criando nova revisão rapidamente:
+gcloud run services update lia-frontend \
+  --update-env-vars CANDIDATES_BACKEND=fastapi \
+  --region us-central1
+# A nova revisão entra em serviço em ~15-30 segundos
+```
+
+**Ordem sugerida de migração por domínio:**
+
+| Domínio | Variável | Prioridade | Status |
+|---|---|---|---|
+| Candidatos | `CANDIDATES_BACKEND` | Alta | Migrar primeiro |
+| Vagas | `JOBS_BACKEND` | Alta | Migrar segundo |
+| Aplicações | `APPLIES_BACKEND` | Alta | Migrar junto com vagas |
+| Entrevistas | `INTERVIEWS_BACKEND` | Média | Após candidatos/vagas estáveis |
+| Notificações | `NOTIFICATIONS_BACKEND` | Média | — |
+| Email templates | `EMAIL_TEMPLATES_BACKEND` | Baixa | — |
+
 ---
 
 ## 7. Fluxo de Trabalho do Time
@@ -916,6 +973,51 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 - [ ] Funil de candidatos (kanban)
 - [ ] Geração de relatórios
 - [ ] Envio de notificações
+
+### 9.1 Scanning de Segurança no CI (SAST/SCA)
+
+> O `Cloud Armor (WAF)` cobre proteção em runtime (Seção 6). Esta subseção cobre a camada de análise estática e de dependências — deve rodar no CI antes de qualquer deploy para staging ou produção.
+
+**Análise estática de código (SAST):**
+
+| Ferramenta | Alvo | Comando | O que detecta |
+|---|---|---|---|
+| **Bandit** | Python (FastAPI) | `bandit -r lia-agent-system/app/ -ll` | Injeções SQL, uso inseguro de `eval`, segredos hardcoded, criptografia fraca |
+| **Brakeman** | Ruby (Rails) | `brakeman ats-api-copia/ --no-pager` | SQL injection, XSS, CSRF, exposição de massa de parâmetros |
+
+**Análise de dependências (SCA):**
+
+| Ferramenta | Alvo | Comando |
+|---|---|---|
+| **pip-audit** | Python | `pip-audit -r lia-agent-system/requirements.txt` |
+| **bundle-audit** | Ruby/Gems | `bundle-audit check --update` (dentro de `ats-api-copia/`) |
+| **npm audit** | Node.js | `npm audit --audit-level=high` (dentro de `plataforma-lia/`) |
+
+**Teste de penetração pré-go-live:**
+
+```bash
+# OWASP ZAP contra o ambiente de staging
+docker run -t owasp/zap2docker-stable zap-baseline.py \
+  -t https://staging.wedotalent.cc \
+  -r zap_report.html
+```
+
+**Integração no GitHub Actions:**
+
+```yaml
+# Adicionar ao workflow de CI (roda em todo PR para develop e main)
+security-scan:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - name: Bandit (Python SAST)
+      run: pip install bandit && bandit -r lia-agent-system/app/ -ll
+    - name: npm audit (Node SCA)
+      working-directory: plataforma-lia
+      run: npm audit --audit-level=high
+```
+
+**Critério de bloqueio:** Zero findings com severity HIGH ou CRITICAL antes do go-live. Findings de severity LOW/MEDIUM devem ser documentados com plano de remediação.
 
 ---
 
@@ -1347,7 +1449,7 @@ Auditoria de chaves API:
 
 | Área | Severidade | Problema | Ação | Quando |
 |---|---|---|---|---|
-| **P1: Porta do proxy** | 🔴 Crítico | 373 arquivos com fallback `8000` em vez de `8001` + 2 nomes de env var misturados | Padronizar para `BACKEND_URL` + porta `8001` (find-and-replace) | **Agora** |
+| **P1: Porta do proxy** | 🔴 Crítico | Arquivos com fallback `8000` em vez de `8001` + 2 nomes de env var misturados | Padronizar para `BACKEND_URL` + porta `8001` (find-and-replace) | **Agora** |
 | **P2: Build falha** | 🔴 Crítico | `ai-credits/page.tsx` usa `dynamic(ssr:false)` em Server Component | Adicionar `"use client"`, remover `metadata` export | **Agora** |
 | **P3: DATABASE_URL** | 🔴 Crítico | Backend aponta para `localhost:5432/lia_db` — banco não existe no Replit | Corrigir para `helium/heliumdb` (banco real) | **Agora** |
 | **P4: NEXT_PUBLIC leak** | 🟡 Importante | URL do backend exposta no browser via `NEXT_PUBLIC_*` | Resolver junto com P1 | **Agora** |
@@ -1364,7 +1466,7 @@ Auditoria de chaves API:
 ### Checklist de production readiness — Frontend
 
 **Correções críticas (bloqueiam deploy):**
-- [ ] P1: Todos os 413 proxy routes padronizados para `BACKEND_URL` + porta `8001`
+- [ ] P1: Todos os 442 proxy routes padronizados para `BACKEND_URL` + porta `8001`
 - [ ] P2: `next build` passa sem erros (`ai-credits/page.tsx` corrigido)
 - [ ] P3: `DATABASE_URL` do backend corrigido para banco real
 
@@ -1516,6 +1618,65 @@ OPÇÃO B (banco compartilhado — mais performático):
 
 **Recomendação:** usar Opção A para o MVP de produção (REST). A Opção B pode ser adotada progressivamente para queries de leitura pesada (analytics, busca de candidatos).
 
+### 14.1 Compatibilidade de Dados: Formato JSON e Serialização
+
+> Esta subseção é crítica durante a migração Frontend ↔ Rails. O frontend foi originalmente escrito para consumir respostas do FastAPI (dicts planos). O Rails usa `JSONAPI::Serializer` que produz formato aninhado.
+
+**Diferença de formato:**
+
+```json
+// FastAPI — flat dict (formato atual que o frontend espera)
+{
+  "id": 42,
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "status": "active"
+}
+
+// Rails com JSONAPI::Serializer — formato aninhado
+{
+  "data": {
+    "id": "42",
+    "type": "candidate",
+    "attributes": {
+      "name": "João Silva",
+      "email": "joao@example.com",
+      "status": "active"
+    }
+  }
+}
+```
+
+**Decisão de arquitetura (escolher uma abordagem antes de migrar cada domínio):**
+
+| Abordagem | Descrição | Quando usar |
+|---|---|---|
+| **Adapter no proxy** | O Next.js proxy transforma a resposta Rails para o formato flat antes de entregar ao frontend | Quando há muitos componentes consumindo o dado e seria difícil mudar todos |
+| **Serializer customizado no Rails** | Configurar o Rails para retornar flat JSON em vez de JSONAPI padrão | Preferido — mais simples, evita lógica no proxy |
+| **Adapter no frontend** | Componentes React entendem os dois formatos | Não recomendado — espalha lógica de parsing |
+
+**Recomendação:** usar o serializer customizado no Rails (opção B). Configurar `JSONAPI::Serializer` com `include_root: false` ou usar serializers que retornem flat JSON por padrão — equivalente ao que FastAPI produz.
+
+**Convenções de naming:**
+
+| Aspecto | FastAPI | Rails | Ação |
+|---|---|---|---|
+| Nomes de campos | `snake_case` | `snake_case` | Compatível — sem mudança |
+| IDs | integer (`42`) | string (`"42"`) | Converter no serializer Rails: `id.to_i` |
+| Datas/timestamps | ISO 8601 UTC (`2026-04-08T10:00:00Z`) | ISO 8601 UTC | Compatível — sem mudança |
+| Booleanos | `true`/`false` | `true`/`false` | Compatível |
+| Arrays vazios | `[]` | `[]` | Compatível |
+| Campos nulos | `null` | `null` | Compatível |
+
+**Timezone:** ambos os serviços devem usar UTC. Verificar `config.time_zone = "UTC"` no `application.rb` do Rails e `PGTZ=UTC` na variável de ambiente do banco.
+
+**Checklist de compatibilidade por domínio migrado:**
+
+- [ ] Formato de resposta verificado (flat vs. JSONAPI aninhado) antes de conectar ao frontend
+- [ ] IDs tipados como integer no contrato da API (Rails retorna string por padrão no JSONAPI)
+- [ ] Timestamps em UTC nos dois lados
+- [ ] Campos com nomes diferentes mapeados explicitamente no serializer
+
 ### Checklist de production readiness — Rails + Banco
 
 - [ ] Cloud SQL provisionado (PostgreSQL 16)
@@ -1527,6 +1688,59 @@ OPÇÃO B (banco compartilhado — mais performático):
 - [ ] IP do Cloud Run autorizado a conectar no Cloud SQL
 - [ ] Connection pooling configurado (pgBouncer ou Cloud SQL Proxy)
 - [ ] URL do Rails API configurada em `RAILS_API_URL` no Secret Manager
+- [ ] Formato JSON de resposta Rails validado (flat ou JSONAPI) e compatível com o frontend
+
+---
+
+## 14.3 Estratégia de Ownership de Migração (Database)
+
+> Define qual serviço é o "dono" de cada tabela do PostgreSQL — quem faz CRUD, quem roda migrations, quem é a fonte de verdade. Essencial para evitar conflitos de schema durante a coexistência Rails + FastAPI.
+
+**Regra geral:**
+
+```
+Rails owns:   Tabelas de CRUD de negócio (candidatos, vagas, clientes, etc.)
+              → Migrations via `rails db:migrate` (ActiveRecord)
+              → Rails é a única aplicação que faz INSERT/UPDATE/DELETE
+
+Alembic owns: Tabelas de IA (embeddings, screening sessions, estado de agentes, etc.)
+              → Migrations via `alembic upgrade head`
+              → FastAPI é a única aplicação que faz INSERT/UPDATE/DELETE
+
+Leitura cruzada é permitida: FastAPI pode ler tabelas Rails via SQL direto ou REST.
+```
+
+**Mapeamento de domínios por owner:**
+
+| Domínio | Owner | Tabelas principais | Migration tool |
+|---|---|---|---|
+| Candidatos | Rails | `candidates`, `candidate_lists`, `candidate_list_items` | ActiveRecord |
+| Vagas | Rails | `jobs`, `selective_processes` | ActiveRecord |
+| Aplicações | Rails | `applies`, `apply_statuses` | ActiveRecord |
+| Clientes / Empresas | Rails | `client_accounts`, `client_users`, `company_profiles` | ActiveRecord |
+| Usuários | Rails | `users`, `departments` | ActiveRecord |
+| Entrevistas | Rails | `interviews`, `interview_notes` | ActiveRecord |
+| Mensagens | Rails | `messages` | ActiveRecord |
+| Email templates | Rails | `email_templates` | ActiveRecord |
+| Notificações | Rails | `notifications` | ActiveRecord |
+| Embeddings / Vetores | FastAPI | `candidate_embeddings`, `job_embeddings` | Alembic |
+| Sessões de triagem | FastAPI | `screening_sessions`, `triagem_sessions` | Alembic |
+| Estado de agentes | FastAPI | `agent_state`, `conversation_history` | Alembic |
+| WSI / Perguntas | FastAPI | `wsi_sessions`, `wsi_questions` | Alembic |
+| Audit logs IA | FastAPI | `ai_audit_logs`, `bias_reports` | Alembic |
+| LGPD / Retenção | FastAPI | `lgpd_retention`, `dsr_requests` | Alembic |
+
+**Regra para novas tabelas:**
+
+> Se a tabela armazena dados de negócio acessíveis pelo recrutador via CRUD → **Rails owns**.
+> Se a tabela armazena estado, resultado ou contexto de agentes IA → **FastAPI/Alembic owns**.
+> Em caso de dúvida: perguntar "quem cria/edita esse dado — o usuário via UI ou o agente IA automaticamente?"
+
+**Conflitos a evitar:**
+
+- Nunca rodar `alembic` em tabelas que Rails criou (e vice-versa)
+- Em banco compartilhado, prefixar tabelas IA com `lia_` para distinguir visualmente
+- Migrations do Rails e Alembic devem ser executadas em sequência definida no CI: `rails db:migrate` primeiro, `alembic upgrade head` depois
 
 ---
 
@@ -1673,7 +1887,7 @@ Configurações obrigatórias no WorkOS dashboard:
 - [x] Testes E2E rodando no Replit (24/26 passando, auth via cookie bypass)
 - [x] Integrações IA confirmadas como server-side only (sem leak de chaves)
 - [x] Autenticação WorkOS SSO + JWT auditada — totalmente implementada
-- [ ] 🔴 **P1:** 413 proxy routes padronizados para `BACKEND_URL` + porta `8001`
+- [ ] 🔴 **P1:** 442 proxy routes padronizados para `BACKEND_URL` + porta `8001`
 - [ ] 🔴 **P2:** `next build` sem erros (`ai-credits/page.tsx` corrigido)
 - [ ] 🟡 **P4:** Nenhuma `NEXT_PUBLIC_*` expondo URLs internas (resolver com P1)
 - [ ] 🟡 **P5:** Variáveis Replit (`REPLIT_DEV_DOMAIN`) com fallbacks para Cloud Run
@@ -1985,6 +2199,177 @@ FASE 5: Homologação e go-live
 - [ ] Cliente aprova o comportamento da LIA (tom, qualidade das respostas)
 - [ ] Monitoramento ativo nas primeiras 48h (Sentry, logs)
 - [ ] Contato de suporte do cliente definido para escalonamento
+
+---
+
+## 21. Qualidade de IA — Gates Pós-Deploy
+
+> Estes itens não bloqueiam o go-live, mas devem ser implementados nas semanas seguintes ao deploy estável em produção. São os controles que garantem que os agentes IA da LIA mantêm qualidade, equidade e performance ao longo do tempo.
+
+### 21.1 Golden Datasets e Eval Framework
+
+**Objetivo:** garantir que mudanças no código dos agentes não degradam a qualidade das respostas de triagem.
+
+**Golden dataset — composição mínima:**
+
+```
+50 inputs de screening com outputs esperados:
+  - 20 perfis de candidato claramente qualificados (devem ter score alto)
+  - 20 perfis claramente desqualificados (devem ter score baixo)
+  - 10 perfis borderline (teste de calibração)
+
+Cada input inclui:
+  - Texto do CV (ou dados estruturados)
+  - Descrição da vaga
+  - Output esperado: { score: float, classificacao: str, justificativa: str }
+```
+
+**Métricas de qualidade (LLM-as-judge):**
+
+| Métrica | Definição | Threshold mínimo |
+|---|---|---|
+| **Faithfulness** | O output é fiel às informações do CV (sem alucinações)? | > 0.85 |
+| **Relevancy** | A justificativa é relevante para a vaga analisada? | > 0.80 |
+| **Consistency** | Mesma entrada produz scores similares em chamadas repetidas? | variância < 10% |
+
+**Quando rodar:**
+
+- Antes de qualquer deploy que toque código em `app/domains/cv_screening/`, `app/domains/wsi/` ou `app/orchestrator/`
+- Após mudança de modelo LLM (Claude → Gemini ou vice-versa)
+- Mensalmente como verificação de drift
+
+**Localização sugerida:** `lia-agent-system/evals/golden_datasets/screening/`
+
+### 21.2 Auditoria de Viés (Bias Audit Automation)
+
+**Objetivo:** garantir que o sistema de triagem não discrimina candidatos com base em características protegidas (gênero, etnia, idade, etc.).
+
+**Métrica central — Adverse Impact Ratio (AIR):**
+
+```
+AIR = taxa de aprovação do grupo minoritário / taxa de aprovação do grupo majoritário
+
+Regra dos Quatro Quintos (Four-Fifths Rule):
+  AIR < 0.80 → ALERTA — possível viés adverso — investigar imediatamente
+  AIR ≥ 0.80 → dentro do limite aceitável
+```
+
+**Configuração do cron:**
+
+```bash
+# Rodar semanalmente (ex: domingo 02:00 UTC)
+# Script: lia-agent-system/scripts/bias_audit.py
+
+0 2 * * 0 python lia-agent-system/scripts/bias_audit.py \
+  --period=7d \
+  --alert-threshold=0.80 \
+  --output=gs://lia-uploads-prod/bias-reports/
+```
+
+**Ações por resultado:**
+
+| AIR | Ação |
+|---|---|
+| ≥ 0.80 | Registrar no relatório mensal — nenhuma ação imediata |
+| 0.70 – 0.79 | Notificar time de AI + revisar prompts de triagem |
+| < 0.70 | Alertar imediatamente + pausar triagens automáticas até investigação |
+
+**Relatório mensal:** consolidar AIR por vaga, por empresa-cliente e por grupo demográfico. Armazenar em Cloud Storage. Revisão obrigatória pelo time de AI e compliance.
+
+**Referência:** `FairnessGuard` está implementado em `lia-agent-system/app/domains/bias_detection/`. Validar que continua funcional após cada deploy.
+
+### 21.3 Load Testing — Baseline de Performance (Locust)
+
+**Objetivo:** validar que a infraestrutura GCP suporta a carga esperada antes do go-live e após mudanças de infra.
+
+**SLAs de referência:**
+
+| Operação | P95 | P99 |
+|---|---|---|
+| CRUD (listar candidatos, vagas) | < 200ms | < 500ms |
+| Chat com LIA (streaming) | < 5s para primeira resposta | < 10s |
+| Triagem de CV (screening) | < 5s | < 10s |
+| Upload de CV + parse | < 3s | < 7s |
+
+**Configuração do teste Locust:**
+
+```python
+# lia-agent-system/load_tests/locustfile.py (referência)
+from locust import HttpUser, task, between
+
+class LIAUser(HttpUser):
+    wait_time = between(1, 3)
+
+    @task(3)
+    def list_candidates(self):
+        self.client.get("/api/v1/users/candidates", headers={"Authorization": f"Bearer {TOKEN}"})
+
+    @task(2)
+    def list_jobs(self):
+        self.client.get("/api/v1/users/jobs")
+
+    @task(1)
+    def send_chat_message(self):
+        self.client.post("/api/agent/chat", json={"content": "Liste as vagas abertas"})
+```
+
+**Executar contra staging:**
+
+```bash
+# 50 usuários simultâneos, ramp-up de 10/segundo, duração 5 minutos
+locust -f load_tests/locustfile.py \
+  --host=https://staging.wedotalent.cc \
+  --users=50 \
+  --spawn-rate=10 \
+  --run-time=5m \
+  --headless \
+  --html=load_test_report.html
+```
+
+**Gate de aprovação:** P95 dentro dos SLAs acima para pelo menos 95% das requisições. Se algum endpoint falhar, não avançar para produção sem investigação.
+
+---
+
+## 22. Plano de Limpeza de Código Pós-Migração
+
+> Executar **somente após** o Rails estar estável em produção para cada domínio, com monitoring ativo e baseline de regressão confirmado.
+
+### 22.1 Código Python (FastAPI) a remover por domínio
+
+Quando Rails passar a servir um domínio, o código Python equivalente pode ser removido. **Nunca remover sem primeiro confirmar que Rails está operacional e monitorado.**
+
+| Domínio | Arquivos / Módulos | Aprox. linhas | Pré-requisito para remover |
+|---|---|---|---|
+| Candidatos | `app/api/v1/candidates/` (splitado em 5 módulos) | ~1.739L | Rails serving candidates estável por 2+ semanas |
+| Clientes | `app/api/v1/clients/` (splitado em 7 módulos) | ~1.271L | Rails serving clients estável |
+| Billing | `app/api/v1/billing.py` | ~1.713L | Rails serving billing estável |
+| Teams/Usuários | `app/api/v1/teams.py` | ~1.451L | Rails serving teams estável |
+| WorkOS | `app/api/v1/workos.py` | ~1.382L | Somente se auth migrar 100% para Rails |
+| Recruitment stages | `app/api/v1/recruitment_stages/` (7 módulos) | — | Rails serving stages estável |
+
+**Após cada domínio removido:**
+- Atualizar `app/main.py` para não registrar o router removido
+- Remover migrations Alembic das tabelas que Rails passou a gerenciar
+- Remover models Python que eram stubs das tabelas Rails
+
+### 22.2 Stubs e código morto (prioritário)
+
+| Item | Localização | Volume | Ação |
+|---|---|---|---|
+| Stub services | `app/services/` | ~120 arquivos de 2 linhas | Remover após confirmar que nenhum router os importa |
+| Stub models | `app/models/` | Variável | Remover modelos que Rails substituiu |
+| Frontend routes mortas | `plataforma-lia/src/app/api/` | ~186 rotas custom | Remover se `createProxyHandlers` cobrir o equivalente |
+
+### 22.3 Serviços IA sensíveis — remoção com cautela especial
+
+> Estes dois arquivos requerem um baseline de regressão IA **antes** de qualquer remoção, porque afetam diretamente a qualidade dos agentes de triagem.
+
+| Arquivo | Linhas | Pré-requisito OBRIGATÓRIO |
+|---|---|---|
+| `triagem_session_service.py` | ~370L | Golden dataset (Seção 21.1) rodando em produção + baseline documentado + 50 inputs comparados pré/pós |
+| `wsi_service.py` | ~320L | Idem acima + validação do WSI pipeline end-to-end em staging |
+
+**Regra:** estes dois arquivos só podem ser removidos após produção estável com monitoring, com o eval framework ativo, e após o time de AI validar que as métricas de faithfulness e relevancy se mantêm ≥ threshold.
 
 ---
 
