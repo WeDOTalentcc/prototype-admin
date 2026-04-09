@@ -31,6 +31,7 @@ class PromptScope(StrEnum):
     JOB_TABLE = "job_table"
     IN_JOB = "in_job"
     GLOBAL = "global"
+    UNIVERSAL = "universal"
 
 
 # ---------------------------------------------------------------------------
@@ -52,6 +53,8 @@ VACANCY_ACTION_TOOLS: set[str] = _load_global_set("job_table", "action")
 IN_JOB_QUERY_TOOLS: set[str] = _load_global_set("in_job", "query")
 IN_JOB_ACTION_TOOLS: set[str] = _load_global_set("in_job", "action")
 GLOBAL_TOOLS: set[str] = _load_global_set("global", "action")
+UNIVERSAL_QUERY_TOOLS: set[str] = _load_global_set("universal", "query")
+UNIVERSAL_ACTION_TOOLS: set[str] = _load_global_set("universal", "action")
 
 
 SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
@@ -74,6 +77,11 @@ SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
         "query": set(),
         "action": GLOBAL_TOOLS,
         "all": GLOBAL_TOOLS,
+    },
+    PromptScope.UNIVERSAL: {
+        "query": UNIVERSAL_QUERY_TOOLS,
+        "action": UNIVERSAL_ACTION_TOOLS,
+        "all": UNIVERSAL_QUERY_TOOLS | UNIVERSAL_ACTION_TOOLS,
     },
 }
 

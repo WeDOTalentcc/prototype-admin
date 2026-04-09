@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 _DEFAULT_PERMISSIONS_PATH = Path(__file__).parent / "tool_permissions.yaml"
 
-VALID_SCOPES = {"talent_funnel", "job_table", "in_job", "global"}
+VALID_SCOPES = {"talent_funnel", "job_table", "in_job", "global", "universal"}
 VALID_TOOL_TYPES = {"query", "action", "all"}
 
 
