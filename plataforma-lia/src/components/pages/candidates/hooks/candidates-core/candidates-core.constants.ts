@@ -9,6 +9,7 @@ export const CANDIDATES_TABS = [
   { id: 'search', label: 'Busca' },
   { id: 'favorites', label: 'Favoritos' },
   { id: 'lists', label: 'Listas' },
+  { id: 'talent-pools', label: 'Bancos de Talentos' },
   { id: 'saved-searches', label: 'Buscas Salvas' },
   { id: 'history', label: 'Histórico' },
 ] as const

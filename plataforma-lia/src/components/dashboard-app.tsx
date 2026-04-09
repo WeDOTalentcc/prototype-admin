@@ -16,7 +16,6 @@ import { CommunicationHub } from "@/components/settings/CommunicationHub"
 import { TemplatesPage } from "@/components/pages/templates-page"
 import LiaLibraryPage from "@/components/pages/lia-library-page"
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
-import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
 import AgentStudioPage from "@/components/pages-agent-studio/AgentStudioPage"
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -165,8 +164,6 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         return <TemplatesPage />
       case "Tarefas":
         return <TasksPage onNavigate={handleNavigate} />
-      case "Bancos de Talentos":
-        return <TalentPoolsTab onSelectPool={(id) => handleNavigate("Bancos de Talentos")} />
       case "Agent Studio":
         return <AgentStudioPage />
       case "Visão do Pipeline":

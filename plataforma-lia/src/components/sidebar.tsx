@@ -27,7 +27,6 @@ import {
   X,
   Trash2,
   Search,
-  Database,
   Bot,
   GitBranch,
 } from "lucide-react"
@@ -49,7 +48,6 @@ const menuSections: MenuSection[] = [
     label: "Recrutamento",
     items: [
       { icon: Briefcase, label: "Vagas", isCore: true },
-      { icon: Database, label: "Bancos de Talentos", isCore: true },
       { icon: Users, label: "Funil de Talentos", isCore: true },
       { icon: GitBranch, label: "Visão do Pipeline", isCore: true },
     ],

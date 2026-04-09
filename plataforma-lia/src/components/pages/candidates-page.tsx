@@ -4,6 +4,7 @@ import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
 import { HistoryTab } from "@/components/talent-funnel-tabs/history-tab"
 import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
 import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
+import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
 import { CandidateSearchResultsView } from "@/components/pages/candidates/CandidateSearchResultsView"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { CandidatesPageModalsProps } from "@/components/pages/candidates/CandidatesPageModals.types"
@@ -496,6 +497,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               talentFunnel.clearHistory()
             }}
           />
+        )}
+
+        {activeTab === 'talent-pools' && (
+          <TalentPoolsTab onSelectPool={(id) => {}} />
         )}
 
         {/* Aba Buscas Salvas */}
