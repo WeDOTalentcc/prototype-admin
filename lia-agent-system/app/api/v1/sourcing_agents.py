@@ -39,7 +39,7 @@ async def create_sourcing_agent(
     """Create a new persistent sourcing agent for a job or talent pool."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     result = await sourcing_agent_orchestrator.create_agent(
-        company_id=getattr(current_user, "company_id", "unknown"),
+        company_id=current_user.company_id,
         agent_name=body.agent_name,
         job_id=body.job_id,
         talent_pool_id=body.talent_pool_id,
@@ -64,7 +64,7 @@ async def list_sourcing_agents(
     from sqlalchemy import select
 
     query = select(SourcingAgent).where(
-        SourcingAgent.company_id == getattr(current_user, "company_id", "unknown")
+        SourcingAgent.company_id == current_user.company_id
     )
     if job_id:
         query = query.where(SourcingAgent.job_id == job_id)
