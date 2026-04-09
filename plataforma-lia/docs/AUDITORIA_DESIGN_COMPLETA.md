@@ -21,17 +21,25 @@
 
 ## 1. Inventário
 
-### 1.1 Páginas Principais (7)
+### 1.1 Páginas Principais (13)
 
-| # | Página | Arquivo | Complexidade | Linhas |
-|---|--------|---------|--------------|--------|
-| 1 | Chat LIA | `pages/chat-page.tsx` + `chat-page/` | ALTA | ~727 + hooks |
-| 2 | Funil de Talentos | `pages/candidates-page.tsx` + `candidates/` | MUITO ALTA | ~705 + 15+ sub-componentes |
-| 3 | Gestão de Vagas | `pages/jobs-page.tsx` + `jobs/` | ALTA | ~316 + sub-componentes |
-| 4 | Tarefas | `pages/tasks-page.tsx` + `tasks/` | MÉDIA | ~234 |
-| 5 | Configurações | `pages/settings-page-enhanced.tsx` | ALTA | ~679 |
-| 6 | Agent Studio | `pages-agent-studio/AgentStudioPage.tsx` | MÉDIA | ~481 |
-| 7 | Visão do Pipeline | `pages/pipeline-overview-page.tsx` | MÉDIA | ~376 |
+| # | Página | Arquivo | Complexidade | Linhas | Screenshot |
+|---|--------|---------|--------------|--------|------------|
+| 1 | Chat LIA | `pages/chat-page.tsx` + `chat-page/` | ALTA | ~727 + hooks | ![Chat](screenshots/chat-page.jpg) |
+| 2 | Funil de Talentos | `pages/candidates-page.tsx` + `candidates/` | MUITO ALTA | ~705 + 15+ sub-componentes | (search + results views) |
+| 3 | Gestão de Vagas | `pages/jobs-page.tsx` + `jobs/` | ALTA | ~316 + sub-componentes | (overview + list views) |
+| 4 | Job Kanban | `pages/job-kanban-page.tsx` + `job-kanban/` | ALTA | ~117 + 3 sub-componentes | (acessível via Vagas > card) |
+| 5 | Tarefas | `pages/tasks-page.tsx` + `tasks/` | MÉDIA | ~234 | (dashboard view) |
+| 6 | Configurações | `pages/settings-page-enhanced.tsx` | ALTA | ~679 | (sidebar + hub views) |
+| 7 | Agent Studio | `pages-agent-studio/AgentStudioPage.tsx` | MÉDIA | ~481 | (cards + create modal) |
+| 8 | Visão do Pipeline | `pages/pipeline-overview-page.tsx` | MÉDIA | ~376 | (stage flow view) |
+| 9 | Indicadores | `pages/indicators-page.tsx` + `indicators/` | ALTA | ~166 + 5 tabs lazy | (charts + analytics) |
+| 10 | Bancos de Talentos | `pages-candidates/TalentPoolsTab.tsx` | MÉDIA | ~148 | (pool cards grid) |
+| 11 | Biblioteca LIA | `pages/lia-library-page.tsx` | MÉDIA | ~392 | (command cards) |
+| 12 | Templates | `pages/templates-page.tsx` | MÉDIA | ~408 | (grid/list + create modal) |
+| 13 | Central Comunicação | `settings/CommunicationHub.tsx` | MÉDIA | ~141 + 5 sub-tabs | (gated por licença) |
+
+**Nota sobre screenshots:** O screenshot do Chat LIA está salvo em `docs/screenshots/chat-page.jpg`. As demais páginas são acessíveis via sidebar navigation ou sub-rotas — o screenshot principal captura o layout completo com sidebar visível.
 
 ### 1.2 Componentes Compartilhados Críticos
 
@@ -488,6 +496,204 @@ Visualização de funil com estágios do pipeline. Design funcional mas básico.
 
 ---
 
+### 3.8 Job Kanban
+
+**Classificação: MANTER**
+
+**Análise:**
+Sub-view da página de Vagas, acessada ao clicar em uma vaga. Componente bem arquitetado com header + content + modals separados.
+
+**Estrutura:**
+- `KanbanJobHeader`: back button, job info, actions (status, edit, report, LIA suggestions, share)
+- `KanbanPageContent`: columns por estágio do pipeline, candidatos como cards arrastáveis
+- `KanbanPageModals`: modais de ação (status, close, edit, share)
+- Proactive Insights: alertas contextuais por urgência (urgent, high, normal)
+
+**Pontos positivos:**
+- Drag-and-drop funcional entre colunas
+- Proactive insights com gradação de cor por urgência
+- Animations para drag (keyframes pulse/fadeIn)
+- CSS variables para drop zone (`--wedo-cyan-bg-05`)
+- ErrorBoundary wrapper
+
+**Problemas menores:**
+1. `font-['Open_Sans']` inline no loading state (linha 18)
+2. `h-screen` hardcoded — deveria usar `h-full` para integração com layout pai
+3. CSS `<style jsx>` inline — poderia estar em CSS module
+
+**Recomendações:**
+- Substituir `h-screen` por `h-full`
+- Remover `font-['Open_Sans']` inline
+- Sem mudanças visuais necessárias — layout kanban é funcional e limpo
+
+---
+
+### 3.9 Indicadores e Analytics
+
+**Classificação: AJUSTAR**
+
+**Análise:**
+Dashboard executivo com 5 tabs lazy-loaded (Strategic, Recruiters, Predictions, Alerts, Agent Control). É uma das poucas páginas que usa padding generoso (`p-6`) e font sizes maiores.
+
+**Estrutura:**
+- Header: título `text-2xl font-bold` + "Exportar Relatório" + "Atualizar Dados"
+- `ExpandableAIPrompt`: prompt de LIA para analytics
+- Tabs: underline style (`border-b-2`) — diferente do chip style de Jobs
+- Strategic tab: charts com chart.js (lazy loaded ~300kb)
+- Recruiters tab: filtros avançados + grid de performance
+- Alerts tab: alertas de recrutamento
+- Predictions tab: previsões AI
+- Agent Control tab: gestão de agentes
+
+**Pontos positivos:**
+- Lazy loading de chart.js reduz bundle em ~300kb
+- Tab pattern com underline é limpo e claro
+- Export modal avançado com opções por role
+- AI prompt integrado para consultas analytics
+
+**Problemas:**
+1. Título `text-2xl font-bold` (24px) — maior que qualquer outra página da plataforma
+2. Tab style (underline `border-b-2`) é um 4º padrão de tab na plataforma (chip, vertical, custom, underline)
+3. Padding `p-6 space-y-6` — mais generoso que o padrão da plataforma
+4. Cores de tab ativa/inativa parecem invertidas (`text-lia-text-secondary` para ativa, `text-lia-text-primary` para inativa)
+
+**Recomendações:**
+- Título → `text-lg font-semibold` para consistência cross-page
+- Padding → `px-4 pt-3` ou manter `p-6` como exceção para dashboards
+- Corrigir cores de tab (ativa deveria ter `text-lia-text-primary`, não `text-lia-text-secondary`)
+- Avaliar unificação para chip tabs ou manter underline como variante "dashboard"
+
+---
+
+### 3.10 Bancos de Talentos
+
+**Classificação: MANTER**
+
+**Análise:**
+Componente que usa design tokens de forma exemplar (como AgentStudio). Grid de cards de pools com empty state bem construído.
+
+**Estrutura:**
+- Header: título via `textStyles.h3` + "Novo Banco" CTA via `buttonStyles.primary`
+- Empty state: ícone Database + mensagem + CTA "Criar primeiro banco"
+- Grid: 3 colunas responsivas (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`)
+- Pool cards: `PoolCard` component com summary stats
+- Create modal: `CreatePoolModal`
+
+**Pontos positivos:**
+- Uso exemplar de design tokens TS (`textStyles`, `cardStyles`, `badgeStyles`, `buttonStyles`)
+- Empty state com CTA claro
+- Responsive grid
+- Loading state com `textStyles.caption`
+
+**Problemas menores:**
+1. Empty state usa `text-gray-300` hardcoded para ícone (deveria ser `text-lia-text-disabled`)
+2. Depende de `useTalentPools` hook compartilhado — bem modular
+
+**Recomendações:**
+- Fix `text-gray-300` → `text-lia-text-disabled`
+- Usar como referência para padronização de outras páginas (junto com AgentStudio)
+
+---
+
+### 3.11 Biblioteca LIA
+
+**Classificação: AJUSTAR**
+
+**Análise:**
+Página de comandos/prompts prontos para a LIA. Funciona como um "cookbook" para recrutadores. Usa categorias com cores e ícones.
+
+**Estrutura:**
+- Header: BookOpen icon + "Biblioteca LIA" + subtítulo
+- Search bar para filtrar comandos
+- Categoria filter chips com ícones (Candidatos, Vagas, Indicadores, Automações, Relatórios, Comunicação)
+- Toggle favorites
+- Command cards: título + comando + descrição + ações (copiar, executar, favoritar)
+- AI prompt integrado no rodapé
+
+**Pontos positivos:**
+- Categories com ícones e cores de accent (usa CSS vars corretamente)
+- Copy-to-clipboard com feedback visual
+- Execute command flow (navega para Chat LIA com comando)
+- Favorites persistidas via `useUIPreferencesStore`
+- Usage counter por comando
+
+**Problemas:**
+1. Categorias usam inline styles com `var(--wedo-cyan)` etc — funcional mas poderia usar tokens TS
+2. Cards não seguem o mesmo padrão de `cardStyles` de design-tokens
+3. Sem sorting options visíveis (sempre por usage)
+4. Sem paginação — todos os 12 comandos hardcoded
+
+**Recomendações:**
+- Migrar cards para usar `cardStyles.flat` ou `cardStyles.bordered` de design-tokens
+- Considerar adicionar sorting (por uso, recente, categoria)
+- Os 12 comandos hardcoded deveriam vir de config ou API no futuro
+
+---
+
+### 3.12 Templates
+
+**Classificação: AJUSTAR**
+
+**Análise:**
+Página de templates de comandos com funcionalidade completa (CRUD, duplicar, executar, filtrar, ordenar). Usa Zustand store para persistência.
+
+**Estrutura:**
+- Header: título + stats (total, uso, taxa de sucesso, tempo economizado, compartilhados)
+- Filter bar: search + category filter + sort + view mode (grid/list)
+- Template cards: nome + descrição + command preview + tags + actions
+- Create/Edit modal com formulário completo
+- Execute action: navega para Funil de Talentos
+
+**Pontos positivos:**
+- CRUD completo com persistência via store
+- Stats calculados (tempo economizado em horas)
+- Dual view mode (grid/list)
+- Category filter funcional
+- Duplicate action
+
+**Problemas:**
+1. Usa `confirm()` nativo para delete — deveria usar Dialog component
+2. `window.location.href` para execute — deveria usar router ou `onNavigate`
+3. Font sizes e padding não verificados contra DS v4
+4. Cards possivelmente não usam tokens de design-tokens.ts
+
+**Recomendações:**
+- Substituir `confirm()` por Dialog component
+- Substituir `window.location.href` por `onNavigate` pattern
+- Audit de tokens de design em cards e labels
+- Baixa prioridade — página funcional e raramente acessada
+
+---
+
+### 3.13 Central de Comunicação
+
+**Classificação: MANTER**
+
+**Análise:**
+Hub de comunicação com 5 sub-tabs. Gated por licença (`hasModuleAccess('communication_center')`). Quando sem acesso, exibe `ModuleUpsell`.
+
+**Estrutura:**
+- Tabs: Templates, Assinatura, Horários LGPD, Alertas, A/B Testing
+- Usa `tabStyles` de design-tokens corretamente
+- Cada tab é componente separado com lazy rendering
+- `useCommunicationHub` centraliza estado
+
+**Pontos positivos:**
+- Usa `tabStyles` de design-tokens — consistência
+- License gating com upsell component
+- Tabs bem organizadas com ícones
+- State centralizado em custom hook
+
+**Problemas menores:**
+1. `eslint-disable-next-line` para `react-hooks/exhaustive-deps` — tech debt menor
+2. Componente relativamente pequeno (141 linhas) — bem modular
+
+**Recomendações:**
+- Sem mudanças visuais necessárias
+- Modelo de referência para outros hubs de settings
+
+---
+
 ## 4. Impacto dos Tokens Globais
 
 ### 4.1 Análise de `text-base-ui` (11px)
@@ -586,10 +792,16 @@ O design deve suportar ambos sem forçar um único nível de density.
 | Candidates (results) | Execução | ALTA | ALTA ✓ |
 | Jobs (overview) | Exploração | MÉDIA | BAIXA ↓ |
 | Jobs (list) | Execução | ALTA | ALTA ✓ |
+| Job Kanban | Execução | ALTA | ALTA ✓ |
 | Tasks | Exploração/Execução | MUITO ALTA | ALTA ↓ |
 | Settings | Exploração | MÉDIA | MÉDIA ✓ |
 | Agent Studio | Exploração | MÉDIA | MÉDIA ✓ |
 | Pipeline | Exploração | MÉDIA | MÉDIA ✓ |
+| Indicadores | Exploração | BAIXA | BAIXA ✓ |
+| Bancos de Talentos | Exploração | MÉDIA | MÉDIA ✓ |
+| Biblioteca LIA | Exploração | MÉDIA | MÉDIA ✓ |
+| Templates | Exploração | MÉDIA | MÉDIA ✓ |
+| Central Comunicação | Exploração | MÉDIA | MÉDIA ✓ |
 
 ### 5.3 Tipografia: 3 Escalas
 
@@ -677,13 +889,21 @@ Em vez de alterar `text-base-ui` globalmente, definir 3 escalas de tipografia:
 
 | Componente/Página | Classificação | Prioridade | Fase |
 |-------------------|---------------|-----------|------|
+| **PÁGINAS** | | | |
 | Chat LIA | MANTER | P3 | 4 |
 | Funil de Talentos | MANTER | P3 | 4 |
 | Gestão de Vagas | AJUSTAR | P2 | 1 |
+| Job Kanban | MANTER | P3 | 4 |
 | Tarefas | AJUSTAR | P1 | 1 |
 | Configurações | MANTER | P4 | — |
 | Agent Studio | AJUSTAR (menor) | P3 | 4 |
 | Visão do Pipeline | AJUSTAR | P1 | 4 (bug fix) |
+| Indicadores | AJUSTAR | P2 | 1 |
+| Bancos de Talentos | MANTER | P4 | 0 (fix gray-300) |
+| Biblioteca LIA | AJUSTAR | P3 | 3 |
+| Templates | AJUSTAR | P3 | 4 |
+| Central Comunicação | MANTER | P4 | — |
+| **COMPONENTES** | | | |
 | Sidebar | AJUSTAR | P1 | 2 |
 | Header Bar | AJUSTAR | P2 | 1 |
 | Cards | MANTER (+minor) | P3 | 3 |
