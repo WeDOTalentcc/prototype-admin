@@ -127,32 +127,15 @@ class VectorSemanticCache:
 
     async def _generate_embedding(self, text: str) -> list[float] | None:
         """Gera embedding via OpenAI (primário) ou Gemini (fallback)."""
-        # Tentativa 1: OpenAI text-embedding-3-small
+        # Tentativa 1: EmbeddingProviderFactory (OpenAI / fallback)
         try:
-            from app.core.config import settings
+            from app.shared.providers.embedding_factory import EmbeddingProviderFactory
 
-            api_key = (
-                getattr(settings, "AI_INTEGRATIONS_OPENAI_API_KEY", None)
-                or getattr(settings, "OPENAI_API_KEY", None)
-            )
-            base_url = getattr(settings, "AI_INTEGRATIONS_OPENAI_BASE_URL", None)
-
-            if api_key:
-                import openai
-
-                client_kwargs: dict[str, Any] = {"api_key": api_key}
-                if base_url:
-                    client_kwargs["base_url"] = base_url
-
-                client = openai.AsyncOpenAI(**client_kwargs)
-                response = await client.embeddings.create(
-                    model="text-embedding-3-small",
-                    input=text[:8000],
-                )
-                self.embedding_model = _EMBED_MODEL_OPENAI
-                return response.data[0].embedding
+            vector, provider_name, _ = await EmbeddingProviderFactory.embed_with_fallback(text[:8000])
+            self.embedding_model = _EMBED_MODEL_OPENAI if "openai" in provider_name.lower() else _EMBED_MODEL_GEMINI
+            return vector
         except Exception as exc:
-            logger.debug("[VectorSemanticCache] OpenAI embedding falhou: %s", exc)
+            logger.debug("[VectorSemanticCache] EmbeddingProviderFactory falhou: %s", exc)
 
         # Tentativa 2: Gemini text-embedding-004 (fallback)
         try:

@@ -249,6 +249,10 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(rails_health_router, prefix="/api/v1", tags=["rails-integration"])
     app.include_router(rails_sync_router, prefix="/api/v1", tags=["rails-sync"])
 
+    # ── Internal LLM (used by Next.js frontend routes) ────────────────────────
+    from app.api.v1 import internal_llm
+    app.include_router(internal_llm.router, prefix="/api/v1")
+
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")
     app.include_router(chat.router, prefix="/api/v1")

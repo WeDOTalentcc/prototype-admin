@@ -1,14 +1,12 @@
 """
 LIA Jobs Management Assistant Service - AI-powered analysis for job portfolio management.
-Uses Replit AI Integrations for Anthropic access.
+Uses LLMProviderFactory for all LLM calls (Task #93 migration).
 """
 import json
 import logging
-import os
 import re
 from typing import Any
 
-from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.domains.recruiter_assistant.prompts.jobs_management_prompts import (
@@ -18,31 +16,13 @@ from app.domains.recruiter_assistant.prompts.jobs_management_prompts import (
     get_jobs_management_system_prompt,
     resolve_jobs_ui_action,
 )
+from app.shared.providers.llm_factory import get_provider_for_tenant
 
 logger = logging.getLogger(__name__)
 
-AI_INTEGRATIONS_ANTHROPIC_API_KEY = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-
 
 class JobsManagementAssistantService:
-    """Service for AI-powered job portfolio analysis using Claude."""
-
-    def __init__(self):
-        self._client: Anthropic | None = None
-
-    @property
-    def client(self) -> Anthropic:
-        if self._client is None:
-            if not AI_INTEGRATIONS_ANTHROPIC_API_KEY or not AI_INTEGRATIONS_ANTHROPIC_BASE_URL:
-                raise ValueError(
-                    "AI_INTEGRATIONS_ANTHROPIC_API_KEY or AI_INTEGRATIONS_ANTHROPIC_BASE_URL not configured"
-                )
-            self._client = Anthropic(
-                api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-                base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
-            )
-        return self._client
+    """Service for AI-powered job portfolio analysis via LLMProviderFactory."""
 
     @retry(
         stop=stop_after_attempt(3),
@@ -82,14 +62,17 @@ class JobsManagementAssistantService:
         messages.append({"role": "user", "content": full_prompt})
 
         try:
-            message = self.client.messages.create(
-                model="claude-haiku-4-5",
-                max_tokens=2048,
-                system=get_jobs_management_system_prompt(),
-                messages=messages,
+            container = get_provider_for_tenant()
+            user_content = messages[-1]["content"] if messages else full_prompt
+            system_prompt = get_jobs_management_system_prompt()
+            if len(messages) > 1:
+                history_text = "\n".join(
+                    f"{m['role'].upper()}: {m['content']}" for m in messages[:-1]
+                )
+                user_content = history_text + "\n\nUSER: " + user_content
+            response_text = await container.generate_with_fallback(
+                user_content, system=system_prompt
             )
-
-            response_text = message.content[0].text
             structured_data = self._parse_json_response(response_text)
             content = self._extract_content(response_text, structured_data)
             suggestions = self._extract_suggestions(structured_data, final_type)

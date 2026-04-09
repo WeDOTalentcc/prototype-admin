@@ -23,18 +23,7 @@ MAX_ITERATIONS_PER_BLOCK = 5
 
 class WSIQuestionAdjusterService:
     def __init__(self):
-        self._model = None
         self._iteration_counts: dict[str, int] = {}
-
-    def _get_model(self):
-        if self._model is None:
-            import google.generativeai as genai
-            api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
-            if not api_key:
-                raise ValueError("GOOGLE_API_KEY or GEMINI_API_KEY not configured")
-            genai.configure(api_key=api_key)
-            self._model = genai.GenerativeModel("gemini-2.0-flash")
-        return self._model
 
     def _get_iteration_key(self, job_id: str, block_id: str) -> str:
         return f"{job_id}_{block_id}"
@@ -125,16 +114,13 @@ Gere as perguntas ajustadas conforme o pedido, sem comprometer a integridade met
 Responda APENAS com JSON válido, sem markdown."""
 
         try:
-            model = self._get_model()
-            response = model.generate_content(
-                [{"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}],
-                generation_config={
-                    "temperature": 0.7,
-                    "max_output_tokens": 4096,
-                }
-            )
+            from app.shared.providers.llm_factory import get_provider_for_tenant
 
-            response_text = response.text.strip()
+            container = get_provider_for_tenant()
+            response_text = await container.generate_with_fallback(
+                system_prompt + "\n\n" + user_prompt
+            )
+            response_text = response_text.strip()
             if response_text.startswith("```"):
                 response_text = response_text.split("\n", 1)[1] if "\n" in response_text else response_text[3:]
             if response_text.endswith("```"):

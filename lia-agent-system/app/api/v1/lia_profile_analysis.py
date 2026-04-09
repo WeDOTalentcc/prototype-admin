@@ -4,7 +4,6 @@ import logging
 import os
 from typing import Any
 
-from anthropic import Anthropic
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 # sqlalchemy ORM imports moved to ProfileAnalysisRepository
@@ -22,14 +21,6 @@ from app.schemas.lia_profile_analysis import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/lia/profile-analysis", tags=["LIA Profile Analysis"])
-
-AI_INTEGRATIONS_ANTHROPIC_API_KEY = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-
-client = Anthropic(
-    api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-    base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL
-)
 
 class CandidateData(BaseModel):
     name: str | None = None
@@ -154,23 +145,14 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest):
         raise HTTPException(status_code=400, detail="Insufficient candidate data to generate analysis")
     
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1024,
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+
+        container = get_provider_for_tenant()
+        analysis_text = await container.generate_with_fallback(
+            f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}",
             system=get_system_prompt(request.analysis_type),
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}"
-                }
-            ]
         )
-        
-        analysis_text = ""
-        for block in response.content:
-            if hasattr(block, 'text'):
-                analysis_text = block.text.strip()
-                break
+        analysis_text = analysis_text.strip()
         
         return ProfileAnalysisResponse(
             analysis=analysis_text,

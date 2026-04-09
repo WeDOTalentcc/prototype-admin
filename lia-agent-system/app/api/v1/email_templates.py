@@ -701,25 +701,10 @@ async def generate_template_with_ai(
     - recruiter_name: Recruiter name (optional)
     """
     import json
-    import os
 
-    from anthropic import Anthropic
+    from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
-        AI_INTEGRATIONS_ANTHROPIC_API_KEY = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-        AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-
-        if not AI_INTEGRATIONS_ANTHROPIC_API_KEY or not AI_INTEGRATIONS_ANTHROPIC_BASE_URL:
-            raise HTTPException(
-                status_code=500,
-                detail="Anthropic AI integration not configured",
-            )
-
-        client = Anthropic(
-            api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-            base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
-        )
-
         template_type = request.template_type
         context = request.context
         language = request.language
@@ -780,22 +765,8 @@ Gere um template de email para recrutamento com as seguintes características:
 
 Responda APENAS com o JSON, sem texto adicional."""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=2048,
-            messages=[{
-                "role": "user",
-                "content": prompt,
-            }],
-        )
-
-        content_block = message.content[0]
-        response_text = getattr(content_block, "text", None)
-        if response_text is None:
-            raise HTTPException(
-                status_code=500,
-                detail="AI response did not contain expected text content",
-            )
+        container = get_provider_for_tenant()
+        response_text = await container.generate_with_fallback(prompt)
         response_text = response_text.strip()
 
         if response_text.startswith("```json"):
@@ -848,25 +819,10 @@ async def adjust_template_with_ai(
     - "Traduza para inglês mantendo as variáveis"
     """
     import json
-    import os
 
-    from anthropic import Anthropic
+    from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
-        AI_INTEGRATIONS_ANTHROPIC_API_KEY = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-        AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-
-        if not AI_INTEGRATIONS_ANTHROPIC_API_KEY or not AI_INTEGRATIONS_ANTHROPIC_BASE_URL:
-            raise HTTPException(
-                status_code=500,
-                detail="Anthropic AI integration not configured. Please configure the AI integration.",
-            )
-
-        client = Anthropic(
-            api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-            base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
-        )
-
         channel_type = "WhatsApp" if request.channel == "whatsapp" else "email"
 
         prompt = f"""Você é um especialista em comunicação corporativa de RH no Brasil.
@@ -898,22 +854,8 @@ Corpo:
 
 Responda APENAS com o JSON, sem texto adicional."""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=2048,
-            messages=[{
-                "role": "user",
-                "content": prompt,
-            }],
-        )
-
-        content_block = message.content[0]
-        response_text = getattr(content_block, "text", None)
-        if response_text is None:
-            raise HTTPException(
-                status_code=500,
-                detail="AI response did not contain expected text content",
-            )
+        container = get_provider_for_tenant()
+        response_text = await container.generate_with_fallback(prompt)
         response_text = response_text.strip()
 
         if response_text.startswith("```json"):

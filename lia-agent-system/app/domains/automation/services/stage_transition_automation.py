@@ -302,8 +302,8 @@ class MessageGenerator:
             return cls._generate_fallback(candidate_context, to_stage, substatus, job_context, channel)
         
         try:
-            client = get_anthropic_client()
-            
+            container = get_anthropic_client()
+
             channel_config = cls.CHANNEL_LIMITS.get(channel, cls.CHANNEL_LIMITS['email'])
             message_config = cls.MESSAGE_TYPES.get(message_type, cls.MESSAGE_TYPES['feedback_construtivo'])
             substatus_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(substatus, 'Feedback geral construtivo')
@@ -346,13 +346,7 @@ REGRAS DO QUE NÃO FAZER:
 
 Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email' else ''}"body" (texto da mensagem)."""
             
-            response = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=1000,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            response_text = response.content[0].text
+            response_text = await container.generate_with_fallback(prompt)
             
             import json
             import re
@@ -479,8 +473,8 @@ Equipe WeDoTalent"""
             )
         
         try:
-            client = get_anthropic_client()
-            
+            container = get_anthropic_client()
+
             old_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(old_substatus, 'Feedback geral')
             new_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(new_substatus, 'Feedback geral')
             
@@ -510,13 +504,8 @@ REGRAS:
 
 Responda APENAS com a mensagem ajustada, sem explicações."""
 
-            response = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=800,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            adjusted_body = response.content[0].text.strip()
+            adjusted_body = await container.generate_with_fallback(prompt)
+            adjusted_body = adjusted_body.strip()
             
             return {
                 'subject': None,
@@ -567,8 +556,8 @@ class StageTransitionAutomationService:
         to_stage: str
     ) -> dict[str, Any]:
         try:
-            client = get_anthropic_client()
-            
+            container = get_anthropic_client()
+
             from lia_models.recruitment_stages import DEFAULT_SUB_STATUSES
             
             stage_subs = DEFAULT_SUB_STATUSES.get(to_stage, [])
@@ -602,13 +591,8 @@ Sub-statuses válidos: {', '.join(valid_options)}
 Responda APENAS com JSON válido:
 {{"predicted_substatus": "<um dos válidos>", "confidence": <0.0-1.0>, "reasoning": "<explicação breve>"}}"""
 
-            response = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=200,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            result_text = response.content[0].text.strip()
+            result_text = await container.generate_with_fallback(prompt)
+            result_text = result_text.strip()
             if '{' in result_text:
                 json_str = result_text[result_text.index('{'):result_text.rindex('}') + 1]
                 result = json.loads(json_str)

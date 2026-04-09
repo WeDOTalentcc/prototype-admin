@@ -1136,17 +1136,19 @@ async def _sse_event_generator(
 ) -> AsyncGenerator[str, None]:
     """Streams Claude tokens as SSE events and persists the full response."""
     from anthropic import AsyncAnthropic
+    from app.shared.providers.llm_factory import LLMProviderFactory
 
-    api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
-    base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-    if not api_key:
+    try:
+        _provider = LLMProviderFactory.get("claude")
+        _sync_client = _provider._get_client()
+        client = AsyncAnthropic(
+            api_key=_sync_client.api_key,
+            base_url=str(_sync_client.base_url) if hasattr(_sync_client, "base_url") and _sync_client.base_url else None,
+        )
+    except Exception as _e:
         yield f"data: {json.dumps({'error': 'LLM not configured'})}\n\n"
         return
 
-    client_kwargs: dict = {"api_key": api_key}
-    if base_url:
-        client_kwargs["base_url"] = base_url
-    client = AsyncAnthropic(**client_kwargs)
     full_response = ""
 
     try:

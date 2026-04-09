@@ -1102,15 +1102,14 @@ async def generate_archetype_from_job(
     - Tags relevantes
     """
     import json
-    import os
     import uuid as uuid_lib
 
-    import anthropic
     from sqlalchemy import select
 
     from app.models.archetype import SearchArchetype
     from app.models.job_vacancy import JobVacancy
-    
+    from app.shared.providers.llm_factory import get_provider_for_tenant
+
     try:
         result = await db.execute(
             select(JobVacancy).where(JobVacancy.id == request.job_id)
@@ -1153,11 +1152,7 @@ async def generate_archetype_from_job(
                 "seniority": hired_data.get("seniority"),
             }
         
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="Anthropic API key not configured")
-        
-        client = anthropic.Anthropic(api_key=api_key)
+        container = get_provider_for_tenant()
         
         prompt = f"""Você é um especialista em recrutamento. Analise a vaga e o perfil do candidato contratado para criar um arquétipo de busca.
 
@@ -1181,15 +1176,8 @@ Gere um arquétipo de busca no formato JSON com:
 
 Responda APENAS com o JSON, sem explicações adicionais."""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-        response_text = message.content[0].text.strip()
+        response_text = await container.generate_with_fallback(prompt)
+        response_text = response_text.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]
             if response_text.startswith("json"):
@@ -1276,19 +1264,13 @@ async def generate_archetype_from_description(
     Útil quando o usuário descreve o perfil ideal em linguagem natural.
     """
     import json
-    import os
     import uuid as uuid_lib
 
-    import anthropic
-
     from app.models.archetype import SearchArchetype
-    
+    from app.shared.providers.llm_factory import get_provider_for_tenant
+
     try:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="Anthropic API key not configured")
-        
-        client = anthropic.Anthropic(api_key=api_key)
+        container = get_provider_for_tenant()
         
         prompt = f"""Você é um especialista em recrutamento. Analise a descrição do perfil ideal e crie um arquétipo de busca.
 
@@ -1309,15 +1291,8 @@ Gere um arquétipo de busca no formato JSON com:
 
 Responda APENAS com o JSON, sem explicações adicionais."""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-        response_text = message.content[0].text.strip()
+        response_text = await container.generate_with_fallback(prompt)
+        response_text = response_text.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("```")[1]
             if response_text.startswith("json"):

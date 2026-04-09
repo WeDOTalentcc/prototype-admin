@@ -6,9 +6,8 @@ import logging
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from anthropic import AsyncAnthropic
-
 from app.core.database import get_db
+from app.shared.providers.llm_factory import get_provider_for_tenant
 from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.models.interview import Interview
@@ -206,8 +205,6 @@ async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
         logger.debug("[interview_details_collector] FairnessGuard check skipped: %s", _fg_exc)
 
     # Use LLM to extract interview details — prompt centralizado em interview_system_prompt.py
-    anthropic = AsyncAnthropic()
-
     extraction_prompt = get_extraction_prompt(
         last_message=last_message,
         current_state=json.dumps(interview_state.model_dump(), indent=2, default=str),
@@ -215,13 +212,8 @@ async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
     )
     
     try:
-        response = await anthropic.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2000,
-            messages=[{"role": "user", "content": extraction_prompt}]
-        )
-        
-        extracted_json = response.content[0].text
+        container = get_provider_for_tenant()
+        extracted_json = await container.generate_with_fallback(extraction_prompt)
         # Clean JSON
         if "```json" in extracted_json:
             extracted_json = extracted_json.split("```json")[1].split("```")[0]

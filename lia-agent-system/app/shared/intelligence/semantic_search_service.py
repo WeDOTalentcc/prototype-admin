@@ -22,12 +22,6 @@ import json
 import os
 from enum import Enum, StrEnum
 
-try:
-    import google.generativeai as genai
-    GENAI_AVAILABLE = True
-except ImportError:
-    genai = None
-    GENAI_AVAILABLE = False
 from pydantic import BaseModel
 
 try:
@@ -207,24 +201,8 @@ class SemanticSearchService:
     def __init__(self):
         self.redis_client: redis.Redis | None = None
         self.cache_ttl = 600  # 10 minutes
-        self._init_gemini()
         self._init_redis()
-    
-    def _init_gemini(self):
-        if not GENAI_AVAILABLE:
-            self.model = None
-            logger.warning("google-generativeai not installed, semantic search will use fallback")
-            return
-            
-        api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
-            logger.info("Gemini initialized for semantic search")
-        else:
-            self.model = None
-            logger.warning("No Gemini API key found, semantic search will use fallback")
-    
+
     def _init_redis(self):
         if not REDIS_AVAILABLE:
             logger.info("redis not installed, using in-memory fallback")
@@ -358,43 +336,36 @@ class SemanticSearchService:
         
         suggestions = []
         
-        if self.model:
-            try:
-                prompt = DOMAIN_PROMPTS.get(domain, DOMAIN_PROMPTS[SemanticDomain.SKILLS])
-                formatted_prompt = prompt.format(
-                    query=query,
-                    existing=json.dumps(existing) if existing else "[]"
-                )
-                
-                response = await self.model.generate_content_async(
-                    formatted_prompt,
-                    generation_config=genai.GenerationConfig(
-                        temperature=0.3,
-                        max_output_tokens=1024,
-                    )
-                )
-                
-                text = response.text.strip()
-                if text.startswith("```"):
-                    text = text.split("```")[1]
-                    if text.startswith("json"):
-                        text = text[4:]
-                
-                parsed = json.loads(text)
-                for item in parsed:
-                    if isinstance(item, dict):
-                        suggestions.append(SemanticSuggestion(
-                            term=item.get("term", ""),
-                            confidence=float(item.get("confidence", 0.5)),
-                            is_synonym=item.get("is_synonym", False),
-                            is_related=item.get("is_related", False),
-                            is_broader=item.get("is_broader", False),
-                            is_narrower=item.get("is_narrower", False),
-                        ))
-            except Exception as e:
-                logger.warning(f"Gemini expansion failed: {e}, using taxonomy fallback")
-                suggestions = self._get_taxonomy_suggestions(domain, query, existing)
-        else:
+        try:
+            from app.shared.providers.llm_factory import get_provider_for_tenant
+
+            prompt = DOMAIN_PROMPTS.get(domain, DOMAIN_PROMPTS[SemanticDomain.SKILLS])
+            formatted_prompt = prompt.format(
+                query=query,
+                existing=json.dumps(existing) if existing else "[]"
+            )
+
+            container = get_provider_for_tenant()
+            text = await container.generate_with_fallback(formatted_prompt)
+            text = text.strip()
+            if text.startswith("```"):
+                text = text.split("```")[1]
+                if text.startswith("json"):
+                    text = text[4:]
+
+            parsed = json.loads(text)
+            for item in parsed:
+                if isinstance(item, dict):
+                    suggestions.append(SemanticSuggestion(
+                        term=item.get("term", ""),
+                        confidence=float(item.get("confidence", 0.5)),
+                        is_synonym=item.get("is_synonym", False),
+                        is_related=item.get("is_related", False),
+                        is_broader=item.get("is_broader", False),
+                        is_narrower=item.get("is_narrower", False),
+                    ))
+        except Exception as e:
+            logger.warning(f"LLM expansion failed: {e}, using taxonomy fallback")
             suggestions = self._get_taxonomy_suggestions(domain, query, existing)
         
         existing_lower = [e.lower() for e in existing]

@@ -100,31 +100,19 @@ async def generate_embedding(text: str) -> list[float] | None:
     except Exception as exc:
         logger.debug("[RAGPipeline] embedding_cache.get_embedding falhou: %s", exc)
 
-    # Tentativa OpenAI
+    # Tentativa EmbeddingProviderFactory
     try:
-        from app.core.config import settings  # type: ignore
+        from app.shared.providers.embedding_factory import EmbeddingProviderFactory
 
-        api_key = (
-            getattr(settings, "AI_INTEGRATIONS_OPENAI_API_KEY", None)
-            or getattr(settings, "OPENAI_API_KEY", None)
-        )
-        if api_key:
-            import openai
-
-            client = openai.AsyncOpenAI(api_key=api_key)
-            response = await client.embeddings.create(
-                model="text-embedding-3-small",
-                input=text,
-            )
-            vector = response.data[0].embedding
-            try:
-                from app.services.embedding_cache_service import embedding_cache  # type: ignore
-                await embedding_cache.cache_embedding(text, vector, "text-embedding-3-small")
-            except Exception:
-                pass
-            return vector
+        vector, _, embed_model = await EmbeddingProviderFactory.embed_with_fallback(text)
+        try:
+            from app.services.embedding_cache_service import embedding_cache  # type: ignore
+            await embedding_cache.cache_embedding(text, vector, embed_model)
+        except Exception:
+            pass
+        return vector
     except Exception as exc:
-        logger.debug("[RAGPipeline] OpenAI embedding falhou: %s", exc)
+        logger.debug("[RAGPipeline] EmbeddingProviderFactory falhou: %s", exc)
 
     logger.debug("[RAGPipeline] Embedding indisponível — degradando para BM25")
     return None

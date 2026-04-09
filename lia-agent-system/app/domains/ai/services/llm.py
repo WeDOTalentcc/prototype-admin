@@ -296,24 +296,10 @@ class LLMService:
         max_tokens: int = 4096
     ) -> ToolCallResponse:
         """Generate with Claude's tool_use via anthropic SDK."""
-        from anthropic import Anthropic
-        
-        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-        
-        if not api_key:
-            api_key = settings.ANTHROPIC_API_KEY
-            base_url = None
-        
-        if not api_key:
-            raise ValueError("No Claude API key configured")
-        
-        client_kwargs = {"api_key": api_key}
-        if base_url:
-            client_kwargs["base_url"] = base_url
-        
-        client = Anthropic(**client_kwargs)
-        
+        from app.shared.providers.llm_factory import LLMProviderFactory
+        _claude_provider = LLMProviderFactory.get("claude")
+        client = _claude_provider._get_client()
+
         try:
             request_kwargs = {
                 "model": settings.LLM_PRIMARY_MODEL,
@@ -649,29 +635,14 @@ class LLMService:
         max_tokens: int = 4096
     ) -> T:
         """Generate structured output using Claude's tool calling."""
-        from anthropic import Anthropic
-
         from app.services.structured_output import (
             parse_claude_tool_response,
             parse_json_from_text,
             structured_output_service,
         )
-        
-        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-        
-        if not api_key:
-            api_key = settings.ANTHROPIC_API_KEY
-            base_url = None
-        
-        if not api_key:
-            raise ValueError("No Claude API key configured")
-        
-        client_kwargs = {"api_key": api_key}
-        if base_url:
-            client_kwargs["base_url"] = base_url
-        
-        client = Anthropic(**client_kwargs)
+        from app.shared.providers.llm_factory import LLMProviderFactory
+        _claude_provider = LLMProviderFactory.get("claude")
+        client = _claude_provider._get_client()
         
         tool = structured_output_service.get_claude_tool(output_model, "respond")
         
@@ -1052,29 +1023,7 @@ async def get_claude_response(
     Returns:
         Claude's text response
     """
-    import os
+    from app.shared.providers.llm_factory import get_provider_for_tenant
 
-    from anthropic import Anthropic
-    
-    api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-    base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-    
-    if not api_key or not base_url:
-        raise ValueError("Claude API not configured")
-    
-    client = Anthropic(
-        api_key=api_key,
-        base_url=base_url
-    )
-    
-    message = client.messages.create(
-        model=settings.LLM_PRIMARY_MODEL,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        messages=[{
-            "role": "user",
-            "content": user_message
-        }]
-    )
-    
-    return message.content[0].text
+    container = get_provider_for_tenant()
+    return await container.generate_with_fallback(user_message, system=system_prompt)

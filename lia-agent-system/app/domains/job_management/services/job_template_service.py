@@ -443,17 +443,6 @@ async def enrich_template_with_ai(
     Returns:
         Enriched template data
     """
-    try:
-        from anthropic import Anthropic
-    except ImportError:
-        return template_data
-    
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        return template_data
-    
-    client = Anthropic(api_key=api_key)
-    
     title = template_data.get("title", "")
     seniority = template_data.get("seniority", "pleno")
     category = template_data.get("category", "")
@@ -485,14 +474,11 @@ Para description, escreva 2-3 parágrafos descrevendo a vaga.
 """
     
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+
+        container = get_provider_for_tenant()
+        content = await container.generate_with_fallback(prompt)
         import json
-        content = response.content[0].text
         
         start = content.find("{")
         end = content.rfind("}") + 1

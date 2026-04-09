@@ -244,45 +244,20 @@ def _jd_get_band(score: int):
 
 
 # ---------------------------------------------------------------------------
-# Anthropic client helpers
+# LLM factory helpers (Task #93 migration)
 # ---------------------------------------------------------------------------
 
 async def get_anthropic_client():
-    """Get Anthropic client for AI analysis.
+    """DEPRECATED: Returns a ProviderContainer via LLMProviderFactory (Task #93).
 
-    Choose Your AI: Uses tenant API key if configured.
-    PII stripping applied on all prompts.
+    Callers should migrate to using generate_with_llm() directly.
+    Returns None only on critical init failure.
     """
     try:
-        from anthropic import Anthropic
-
-        # Check tenant config first
-        api_key = AI_INTEGRATIONS_ANTHROPIC_API_KEY
-        base_url = AI_INTEGRATIONS_ANTHROPIC_BASE_URL
-
-        try:
-            from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
-            cid = get_current_llm_tenant()
-            if cid:
-                from app.shared.tenant_llm_context import _tenant_configs
-                config = _tenant_configs.get(cid)
-                if config and "claude" in config.get("providers", {}):
-                    tenant_key = config["providers"]["claude"].get("api_key")
-                    if tenant_key:
-                        api_key = tenant_key
-                        base_url = None  # Use direct API with tenant key
-        except ImportError:
-            pass
-
-        if not api_key:
-            logger.warning("Anthropic API not configured, using fallback responses")
-            return None
-        kwargs = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        return Anthropic(**kwargs)
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+        return get_provider_for_tenant()
     except Exception as e:
-        logger.error(f"Failed to create Anthropic client: {e}")
+        logger.error(f"Failed to get LLM provider: {e}")
         return None
 
 
@@ -306,29 +281,27 @@ def parse_json_response(content: str, fallback: dict) -> dict:
         return fallback
 
 
+class _FakeResponse:
+    """Shim so callers can do response.content[0].text without refactoring."""
+    def __init__(self, text: str):
+        self.content = [type("Block", (), {"text": text})()]
+
+
 async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: list, timeout: float = 30.0):
     """
-    Wraps synchronous Anthropic client.messages.create() in a thread pool executor
-    to avoid blocking the FastAPI async event loop.
-    Applies a hard timeout to prevent indefinite hangs.
+    MIGRATED: Now uses LLMProviderFactory instead of direct Anthropic SDK (Task #93).
+    Returns a _FakeResponse shim so callers can still access response.content[0].text.
     """
-    loop = asyncio.get_event_loop()
     try:
-        response = await asyncio.wait_for(
-            loop.run_in_executor(
-                None,
-                lambda: client.messages.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    messages=messages
-                )
-            ),
-            timeout=timeout
+        prompt = "\n".join(m.get("content", "") for m in messages if m.get("role") == "user")
+        text = await asyncio.wait_for(
+            client.generate_with_fallback(prompt),
+            timeout=timeout,
         )
-        return response
+        return _FakeResponse(text)
     except TimeoutError:
-        logger.warning(f"Anthropic call timed out after {timeout}s (model={model})")
+        logger.warning(f"LLM call timed out after {timeout}s")
         return None
     except Exception as e:
-        logger.error(f"Anthropic call failed: {type(e).__name__}: {e}")
+        logger.error(f"LLM call failed: {type(e).__name__}: {e}")
         return None

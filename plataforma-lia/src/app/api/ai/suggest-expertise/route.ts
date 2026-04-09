@@ -1,10 +1,8 @@
 export const dynamic = "force-dynamic"
-import Anthropic from "@anthropic-ai/sdk"
 import { NextRequest, NextResponse } from "next/server"
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
-
-const client = new Anthropic()
+import { callLLMBackend } from '@/lib/api/llm-backend'
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -48,19 +46,9 @@ Focus on professional expertise areas like:
 - Industry specializations (FinTech, HealthTech, SaaS)
 - Methodologies (Agile, DevOps, Lean Startup)`
 
-    const response = await client.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 256,
-      messages: [{ role: "user", content: prompt }]
-    })
-
-    const content = response.content[0]
-    if (content.type !== 'text') {
-      return NextResponse.json({ suggestions: [] })
-    }
-
-    const text = content.text.trim()
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    const text = await callLLMBackend({ prompt, maxTokens: 256 })
+    const trimmed = text.trim()
+    const jsonMatch = trimmed.match(/\[[\s\S]*\]/)
     
     if (jsonMatch) {
       try {

@@ -1,33 +1,22 @@
 """
-Unified LLM Client — LEGACY WRAPPER.
+Unified LLM Client — LEGACY WRAPPER (Task #93 migration).
 
-This module now redirects ALL calls through LLMService.safe_invoke()
-to ensure tenant routing, PII stripping, and audit logging.
-
-Original direct Anthropic client preserved as _get_raw_client() for
-cases that truly need the raw SDK (e.g., migrations, admin tools).
+All calls now route through LLMProviderFactory for tenant routing,
+PII stripping, and audit logging. No direct SDK imports.
 """
 import logging
-import os
 
 logger = logging.getLogger(__name__)
 
 
 def get_anthropic_client():
-    """LEGACY — Returns raw Anthropic client. Prefer LLMService.safe_invoke()."""
-    try:
-        from anthropic import Anthropic
-        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
-        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-        if not api_key:
-            raise ValueError("No Anthropic API key configured")
-        kwargs = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        return Anthropic(**kwargs)
-    except Exception as e:
-        logger.error(f"[LLM] Client creation failed: {e}")
-        raise
+    """LEGACY — Returns a ProviderContainer via LLMProviderFactory (Task #93).
+    
+    Maintained for backward compatibility. Callers should migrate to
+    get_provider_for_tenant() directly.
+    """
+    from app.shared.providers.llm_factory import get_provider_for_tenant
+    return get_provider_for_tenant()
 
 
 def is_llm_available() -> bool:
@@ -47,35 +36,12 @@ async def llm_complete(
     temperature: float = 0.3,
 ) -> str | None:
     """
-    Completion wrapper — NOW routes through LLMService for PII + audit.
-    Falls back to direct client if LLMService unavailable.
+    Completion wrapper — routes through LLMProviderFactory (Task #93).
     """
-    # Route through LLMService (PII + audit + tenant)
     try:
-        from app.services.llm import llm_service
-        result = await llm_service.safe_invoke(prompt, provider="claude")
-        if result:
-            return result
-    except Exception as e:
-        logger.debug("[llm_client] LLMService fallback: %s", e)
-
-    # Direct fallback (preserves backward compat)
-    try:
-        from app.shared.pii_masking import strip_pii_for_llm_prompt
-        prompt = strip_pii_for_llm_prompt(prompt)
-
-        client = get_anthropic_client()
-        messages = [{"role": "user", "content": prompt}]
-        kwargs = {
-            "model": model,
-            "max_tokens": max_tokens,
-            "messages": messages,
-            "temperature": temperature,
-        }
-        if system:
-            kwargs["system"] = system
-        response = client.messages.create(**kwargs)
-        return response.content[0].text
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+        container = get_provider_for_tenant()
+        return await container.generate_with_fallback(prompt, system=system)
     except Exception as e:
         logger.error(f"[LLM] Completion failed: {e}")
         return None

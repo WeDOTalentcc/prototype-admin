@@ -537,10 +537,7 @@ class SearchAnalyticsService:
         Falls back to rule-based narrative on any error.
         """
         try:
-            import anthropic
-
-            from app.core.config import settings as _settings
-            client = anthropic.AsyncAnthropic()
+            from app.shared.providers.llm_factory import get_provider_for_tenant
 
             summary = analytics.get("summary", {})
             top_skills = [s["skill"] for s in analytics.get("top_skills", [])[:5]]
@@ -560,20 +557,14 @@ class SearchAnalyticsService:
             if search_criteria:
                 context += f" | Critérios buscados: {search_criteria}"
 
-            message = await client.messages.create(
-                model=_settings.LLM_PRIMARY_MODEL,
-                max_tokens=300,
-                messages=[{
-                    "role": "user",
-                    "content": (
-                        "Você é LIA, assistente de recrutamento da WeDOTalent. "
-                        "Em 2-3 frases, descreva de forma natural e objetiva os resultados desta busca de candidatos. "
-                        "Seja direta, profissional e destaque os pontos mais relevantes para o recrutador.\n\n"
-                        f"Dados da busca: {context}"
-                    )
-                }]
+            container = get_provider_for_tenant()
+            result = await container.generate_with_fallback(
+                "Você é LIA, assistente de recrutamento da WeDOTalent. "
+                "Em 2-3 frases, descreva de forma natural e objetiva os resultados desta busca de candidatos. "
+                "Seja direta, profissional e destaque os pontos mais relevantes para o recrutador.\n\n"
+                f"Dados da busca: {context}"
             )
-            return message.content[0].text.strip()
+            return result.strip()
         except Exception as e:
             logger.warning(f"LLM narrative failed, using rule-based fallback: {e}")
             return self.generate_proactive_narrative(analytics)

@@ -2,12 +2,7 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL
-})
+import { callLLMBackend } from '@/lib/api/llm-backend'
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -35,24 +30,10 @@ Generate 8-10 similar or related job titles that a recruiter might also want to 
 Return ONLY a JSON array of strings with the suggested titles, no explanations.
 Example format: ["Senior Software Engineer", "Staff Engineer", "Principal Developer"]`
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 500,
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
-    })
-
-    const textContent = response.content.find((block: { type: string }) => block.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      return NextResponse.json({ suggestions: [] })
-    }
+    const text = await callLLMBackend({ prompt, maxTokens: 500 })
 
     try {
-      const jsonMatch = textContent.text.match(/\[[\s\S]*\]/)
+      const jsonMatch = text.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
         const suggestions = JSON.parse(jsonMatch[0])
         const filteredSuggestions = suggestions.filter(

@@ -2,9 +2,7 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
-import Anthropic from '@anthropic-ai/sdk'
-
-const client = new Anthropic()
+import { callLLMBackend } from '@/lib/api/llm-backend'
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -22,13 +20,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-5-20250514",
-      max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: `Analise a seguinte descrição de perfil profissional e extraia as informações estruturadas para criar um arquétipo de busca de candidatos.
+    const prompt = `Analise a seguinte descrição de perfil profissional e extraia as informações estruturadas para criar um arquétipo de busca de candidatos.
 
 Descrição: "${description}"
 
@@ -45,16 +37,10 @@ Retorne APENAS um JSON válido (sem markdown, sem código) com os seguintes camp
 }
 
 Extraia informações reais da descrição. Se algum campo não puder ser inferido, use valores vazios ou null.`
-        }
-      ]
-    })
 
-    const textContent = message.content.find(block => block.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content in response')
-    }
+    const responseText = await callLLMBackend({ prompt, maxTokens: 1024 })
 
-    let cleanedText = textContent.text.trim()
+    let cleanedText = responseText.trim()
     if (cleanedText.startsWith('```json')) {
       cleanedText = cleanedText.slice(7)
     } else if (cleanedText.startsWith('```')) {

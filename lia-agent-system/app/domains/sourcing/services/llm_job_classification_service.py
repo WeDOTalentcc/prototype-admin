@@ -105,23 +105,6 @@ def _cache_put(key: str, result: dict[str, Any]) -> None:
 
 
 class LLMJobClassificationService:
-    def __init__(self):
-        self._model = None
-
-    def _get_model(self):
-        if self._model is None:
-            try:
-                import google.generativeai as genai
-                api_key = os.environ.get("GEMINI_API_KEY")
-                if not api_key:
-                    return None
-                genai.configure(api_key=api_key)
-                self._model = genai.GenerativeModel("gemini-2.0-flash")
-            except Exception as e:
-                logger.error("[LLMJobClassification] Gemini init error: %s", e)
-                return None
-        return self._model
-
     def _heuristic_check(
         self,
         job_info: dict[str, Any],
@@ -154,17 +137,9 @@ class LLMJobClassificationService:
             logger.debug("[LLMJobClassification] Cache hit: %s", ck[:8])
             return {**cached, "method": cached.get("method", "cached") + "_cached"}
 
-        model = self._get_model()
-        if not model:
-            compatible, confidence, reason = self._heuristic_check(job_info, candidate)
-            return {
-                "compatible": compatible,
-                "confidence": confidence,
-                "reason": reason,
-                "method": "heuristic",
-            }
-
         try:
+            from app.shared.providers.llm_factory import get_provider_for_tenant
+
             prompt = COMPATIBILITY_PROMPT.format(
                 job_title=job_info.get("title", "N/A"),
                 job_area=job_info.get("area", "N/A"),
@@ -175,8 +150,9 @@ class LLMJobClassificationService:
                 candidate_skills=str(candidate.get("skills", "N/A"))[:300],
             )
 
-            response = model.generate_content(prompt)
-            text = response.text.strip()
+            container = get_provider_for_tenant()
+            text = await container.generate_with_fallback(prompt)
+            text = text.strip()
             if text.startswith("```"):
                 text = text.split("```")[1]
                 if text.startswith("json"):

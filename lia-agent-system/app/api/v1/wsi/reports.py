@@ -229,7 +229,7 @@ async def _generate_cbi_questions_llm(
     job_title: str,
 ) -> list[CBIQuestion]:
     """Gera 2 perguntas CBI via LLM (temp=0.6, max_tokens=600, retry≤3). Spec 11.5."""
-    import anthropic as _anthropic
+    from app.shared.providers.llm_factory import get_provider_for_tenant
 
     gaps_formatted = "\n".join(
         f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/5 — sinais ausentes: {g.get('missing_signals','n/a')}"
@@ -303,26 +303,15 @@ Retorne JSON:
   ]
 }}"""
 
-    api_key = AI_INTEGRATIONS_ANTHROPIC_API_KEY
-    base_url = AI_INTEGRATIONS_ANTHROPIC_BASE_URL
-
-    if not api_key:
-        logger.warning("F11: No Anthropic key — returning deterministic fallback questions")
-        return _f11_fallback_questions(gaps)
-
-    client = _anthropic.AsyncAnthropic(api_key=api_key, base_url=base_url)
+    container = get_provider_for_tenant()
     last_err = None
 
     for attempt in range(1, 4):
         try:
-            msg = await client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=600,
-                temperature=0.6,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_prompt}],
+            raw = await container.generate_with_fallback(
+                system_prompt + "\n\n" + user_prompt
             )
-            raw = msg.content[0].text.strip()
+            raw = raw.strip()
             if raw.startswith("```"):
                 raw = raw.split("```")[1]
                 if raw.startswith("json"):

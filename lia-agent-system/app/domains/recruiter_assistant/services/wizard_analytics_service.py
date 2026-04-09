@@ -6,18 +6,14 @@ Handles wizard-specific analytical queries:
 - "O que falta preencher?" (missing fields)
 - "Quanto falta para publicar?" (completion percentage)
 - "Resume o que já coletamos" (collected data summary)
+
+Uses LLMProviderFactory for all LLM calls (Task #93 migration).
 """
 import json
 import logging
-import os
 from typing import Any
 
-from anthropic import Anthropic
-
 logger = logging.getLogger(__name__)
-
-AI_INTEGRATIONS_ANTHROPIC_API_KEY = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
 
 WIZARD_STAGE_NAMES = {
     "input-evaluation": "Informações Básicas",
@@ -79,22 +75,6 @@ def detect_wizard_analytics_command(message: str) -> tuple[str, float] | None:
 
 class WizardAnalyticsService:
     """Service for analytical queries about the job being created in the wizard."""
-
-    def __init__(self):
-        self._client: Anthropic | None = None
-
-    @property
-    def client(self) -> Anthropic:
-        if self._client is None:
-            if not AI_INTEGRATIONS_ANTHROPIC_API_KEY or not AI_INTEGRATIONS_ANTHROPIC_BASE_URL:
-                raise ValueError(
-                    "AI_INTEGRATIONS_ANTHROPIC_API_KEY or AI_INTEGRATIONS_ANTHROPIC_BASE_URL not configured"
-                )
-            self._client = Anthropic(
-                api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-                base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
-            )
-        return self._client
 
     def analyze_completion(
         self,

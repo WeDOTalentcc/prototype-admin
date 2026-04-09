@@ -55,24 +55,6 @@ Tipo de Contrato: {employment_type}
 
 
 class JobQualificationService:
-    def __init__(self):
-        self._model = None
-
-    def _get_model(self):
-        if self._model is None:
-            try:
-                import google.generativeai as genai
-                api_key = os.environ.get("GEMINI_API_KEY")
-                if not api_key:
-                    logger.warning("GEMINI_API_KEY not found, classification will use heuristic fallback")
-                    return None
-                genai.configure(api_key=api_key)
-                self._model = genai.GenerativeModel("gemini-2.0-flash")
-            except Exception as e:
-                logger.error(f"Failed to initialize Gemini model: {e}")
-                return None
-        return self._model
-
     def _heuristic_classify(self, title: str, seniority: str | None = None, salary_min: float | None = None) -> dict[str, Any]:
         """Fallback heuristic classification when LLM is unavailable."""
         title_lower = (title or "").lower()
@@ -116,11 +98,8 @@ class JobQualificationService:
         
         reqs_text = ", ".join(requirements) if requirements else "Não informado"
         
-        model = self._get_model()
-        if not model:
-            logger.info("Using heuristic classification (no Gemini available)")
-            return self._heuristic_classify(title, seniority_level, salary_min)
-        
+        from app.shared.providers.llm_factory import get_provider_for_tenant
+
         prompt = CLASSIFICATION_PROMPT.format(
             title=title or "Não informado",
             department=department or "Não informado",
@@ -133,8 +112,9 @@ class JobQualificationService:
         )
         
         try:
-            response = await model.generate_content_async(prompt)
-            text = response.text.strip()
+            container = get_provider_for_tenant()
+            text = await container.generate_with_fallback(prompt)
+            text = text.strip()
             
             if text.startswith("```"):
                 text = text.split("\n", 1)[1] if "\n" in text else text[3:]

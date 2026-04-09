@@ -5,8 +5,8 @@ import json
 import uuid
 from datetime import datetime, timedelta
 
-from anthropic import AsyncAnthropic
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from app.shared.providers.llm_factory import get_provider_for_tenant
 from pydantic import BaseModel, EmailStr
 
 from app.domains.interview_scheduling.dependencies import get_interview_repo
@@ -553,7 +553,7 @@ async def generate_email_template(request: GenerateEmailTemplateRequest):
     AI-first approach for email generation.
     """
     try:
-        anthropic = AsyncAnthropic()
+        container = get_provider_for_tenant()
 
         prompt = f"""Gere um email profissional de convite para entrevista.
 
@@ -574,13 +574,7 @@ REQUISITOS:
 Retorne APENAS o corpo do email (sem assunto), formatado em HTML simples.
 """
 
-        response = await anthropic.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1000,
-            messages=[{"role": "user", "content": prompt}],
-        )
-
-        email_body = response.content[0].text
+        email_body = await container.generate_with_fallback(prompt)
 
         # Generate subject
         subject = f"Convite para Entrevista {request.interview_type.capitalize()} - {request.job_title}"
@@ -610,7 +604,7 @@ async def schedule_from_prompt(
     Parses: "Agendar para amanhã às 14h comigo"
     """
     try:
-        anthropic = AsyncAnthropic()
+        container = get_provider_for_tenant()
 
         # Parse natural language prompt using LIA
         parse_prompt = f"""Extraia informações de agendamento de entrevista do prompt em linguagem natural.
@@ -641,13 +635,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
 }}
 """
 
-        response = await anthropic.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=800,
-            messages=[{"role": "user", "content": parse_prompt}],
-        )
-
-        extracted_text = response.content[0].text
+        extracted_text = await container.generate_with_fallback(parse_prompt)
 
         # Clean JSON
         if "```json" in extracted_text:

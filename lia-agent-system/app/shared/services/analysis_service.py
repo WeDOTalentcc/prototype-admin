@@ -1,6 +1,6 @@
 """
 LIA Analysis Service - AI-powered candidate analysis using Claude.
-Uses Replit AI Integrations for Anthropic access.
+Uses LLMProviderFactory for all LLM calls (Task #93 migration).
 
 Enhanced with BARS rubric evaluation and WSI inferential trait extraction
 for unified profile analysis (Task #35).
@@ -11,10 +11,8 @@ for unified profile analysis (Task #35).
 # Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
 import json
 import logging
-import os
 from typing import Any
 
-from anthropic import Anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.schemas.analysis import (
@@ -26,11 +24,9 @@ from app.schemas.analysis import (
     ScoreBreakdown,
 )
 from app.shared.prompts.loader import PromptLoader
+from app.shared.providers.llm_factory import get_provider_for_tenant
 
 logger = logging.getLogger(__name__)
-
-AI_INTEGRATIONS_ANTHROPIC_API_KEY = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-AI_INTEGRATIONS_ANTHROPIC_BASE_URL = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
 
 ARCHETYPES = [
     "Catalisador Visionário",
@@ -88,24 +84,8 @@ LIA_ANALYSIS_PROMPT = PromptLoader.get_domain_prompt("analysis")
 
 
 class AnalysisService:
-    """Service for AI-powered candidate analysis using Claude via Replit AI Integrations."""
-    
-    def __init__(self):
-        self._client: Anthropic | None = None
-    
-    @property
-    def client(self) -> Anthropic:
-        """Get Anthropic client with retry capability."""
-        if self._client is None:
-            if not AI_INTEGRATIONS_ANTHROPIC_API_KEY or not AI_INTEGRATIONS_ANTHROPIC_BASE_URL:
-                raise ValueError("AI_INTEGRATIONS_ANTHROPIC_API_KEY or AI_INTEGRATIONS_ANTHROPIC_BASE_URL not configured")
-            
-            self._client = Anthropic(
-                api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-                base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL
-            )
-        return self._client
-    
+    """Service for AI-powered candidate analysis via LLMProviderFactory."""
+
     def _is_rate_limit_error(self, exception: BaseException) -> bool:
         """Check if the exception is a rate limit error."""
         error_msg = str(exception)
@@ -147,16 +127,8 @@ class AnalysisService:
         )
         
         try:
-            message = self.client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=2048,
-                messages=[{
-                    "role": "user",
-                    "content": prompt
-                }]
-            )
-            
-            response_text = message.content[0].text
+            container = get_provider_for_tenant()
+            response_text = await container.generate_with_fallback(prompt)
             
             json_start = response_text.find('{')
             json_end = response_text.rfind('}') + 1
@@ -334,12 +306,8 @@ Avalie o potencial geral do candidato, identificando seu arquétipo, pontos fort
         )
 
         try:
-            message = self.client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            response_text = message.content[0].text
+            container = get_provider_for_tenant()
+            response_text = await container.generate_with_fallback(prompt)
             json_start = response_text.find("{")
             json_end = response_text.rfind("}") + 1
             if json_start != -1 and json_end > json_start:

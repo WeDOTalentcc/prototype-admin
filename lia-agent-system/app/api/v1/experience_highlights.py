@@ -10,7 +10,6 @@ import os
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-import anthropic
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -108,27 +107,13 @@ Rafael Iga é um Engenheiro de Software com expertise em Ruby on Rails, atuando 
 
 
 async def generate_highlight_with_ai(data: GenerateHighlightRequest) -> str:
-    """Generate experience highlight using Claude AI."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        logger.warning("ANTHROPIC_API_KEY not found, using fallback highlight")
-        return generate_fallback_highlight(data)
-
+    """Generate experience highlight using LLMProviderFactory (Task #93 migration)."""
     try:
-        client = anthropic.Anthropic(api_key=api_key)
+        from app.shared.providers.llm_factory import get_provider_for_tenant
 
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=200,
-            messages=[
-                {
-                    "role": "user",
-                    "content": generate_highlight_prompt(data)
-                }
-            ]
-        )
-
-        highlight_text = message.content[0].text.strip()
+        container = get_provider_for_tenant()
+        highlight_text = await container.generate_with_fallback(generate_highlight_prompt(data))
+        highlight_text = highlight_text.strip()
 
         if highlight_text.startswith('"') and highlight_text.endswith('"'):
             highlight_text = highlight_text[1:-1]
