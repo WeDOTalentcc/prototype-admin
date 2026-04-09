@@ -3558,14 +3558,14 @@ Dezenas de arquivos contêm comentários: `"# Will be deleted after ats-api-rail
 |---|---------|-----------|---------|
 | 1 | Coverage gate baixo (45%/35%) | ALTO | Meta de 45% backend e 35% frontend está muito abaixo do recomendado para produção (>80%) |
 | 2 | 82% dos domínios sem testes diretos | ALTO | Apenas 11 de 62 domínios têm testes dedicados; cobertura indireta via agent tests não é suficiente |
-| 3 | Sem load/stress testing | MEDIO | Não existe configuração de Locust, k6 ou Artillery para testes de carga |
+| 3 | Load tests existem mas não integrados ao CI | MEDIO | `tests/load/locustfile.py` com 6 cenários e 4 perfis (smoke/load/stress/soak), mas sem execução automatizada no pipeline |
 | 4 | Testes de AI dependem de LLM | MEDIO | DeepEval/Ragas requerem chamadas a LLMs reais — custos e flakiness em CI |
 
 #### Recomendação
 
 1. **[P1/G]** Subir gate de coverage para 60% (backend) e 50% (frontend) no curto prazo
 2. **[P2/G]** Criar testes para os 51 domínios sem cobertura direta
-3. **[P2/M]** Implementar load testing com k6 ou Locust para endpoints críticos
+3. **[P2/P]** Integrar Locust existente (`tests/load/locustfile.py`) ao CI pipeline (smoke profile)
 4. **[P3/M]** Criar mock LLM para testes de AI em CI sem custos
 
 ---
@@ -3658,7 +3658,7 @@ Dezenas de arquivos contêm comentários: `"# Will be deleted after ats-api-rail
 | Eager loading | Ruim | Sem uso de `joinedload`/`selectinload` — default lazy loading em todos os relationships |
 | Rate limiting | Bom | 600/min por usuário, 3000/min por company, 20K/hr e 60K/hr respectivamente |
 | Circuit breakers | Excelente | 18+ serviços com timeouts calibrados (LLM: 60s, ATS: 30s, Auth: 15s) |
-| Load testing | Inexistente | Sem Locust, k6 ou Artillery |
+| Load testing | Implementado | Locust com 6 cenários, 4 perfis (smoke/load/stress/soak), SLAs definidos por endpoint em `tests/load/` |
 | SLOs | Definidos | `CIRCUIT_BREAKER_SLOS` com targets de disponibilidade e p95 latência |
 | API docs (OpenAPI) | Habilitado | `/docs` (Swagger), `/docs/redoc`, `/openapi.json` — 362+ endpoints documentados |
 
@@ -3667,13 +3667,13 @@ Dezenas de arquivos contêm comentários: `"# Will be deleted after ats-api-rail
 | # | Problema | Severidade | Detalhes |
 |---|---------|-----------|---------|
 | 1 | N+1 queries provável | ALTO | Nenhum uso de eager loading (joinedload/selectinload) — relationships em lazy loading padrão |
-| 2 | Sem load testing | ALTO | Sem dados sobre capacidade do sistema sob carga real |
+| 2 | Load tests não integrados ao CI | MEDIO | Locust existe em `tests/load/` com 6 cenários e SLAs, mas não roda automaticamente no pipeline |
 | 3 | Degraded mode responses | MEDIO | Circuit breaker tem fallbacks mas precisa validação com cenários reais |
 
 #### Recomendação
 
 1. **[P1/M]** Adicionar `selectinload`/`joinedload` nos queries de listagem (candidates, jobs, applies)
-2. **[P1/M]** Implementar load testing com k6 para endpoints críticos (candidates, chat, sourcing)
+2. **[P2/P]** Integrar Locust smoke profile ao CI para validação contínua de SLAs
 3. **[P2/P]** Validar degraded mode responses com chaos testing manual
 
 ---
@@ -3849,7 +3849,7 @@ Incorpora items das novas dimensões (24.11-24.17) ao roadmap original.
 | 14 | Migrar Login/Register para DS tokens | 24.7 | P |
 | 15 | Criar VoiceProviderABC para abstração de voice | 24.1 | M |
 | 16 | Subir coverage gate para 60% backend / 50% frontend | 24.11 | G |
-| 17 | Implementar load testing com k6 | 24.14 | M |
+| 17 | Integrar Locust smoke ao CI | 24.14 | P |
 | 18 | Adicionar Playwright ao CI do frontend | 24.13 | M |
 | 19 | Integrar PagerDuty/OpsGenie para alertas P0/P1 | 24.12 | M |
 | 20 | Implementar budget limits por tenant (LLM costs) | 24.17 | M |
