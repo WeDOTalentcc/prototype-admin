@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { formatMessageTime, type LiaChatMessage } from "@/hooks/use-lia-chat-connection"
+import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 
 
 const MAX_INPUT_CHARS = 2000
@@ -306,42 +307,25 @@ function SplitEmptyState({ page }: { page: string | null }) {
 function SplitMessageBubble({ msg }: { msg: LiaChatMessage }) {
   const isUser = msg.sender === "user"
   return (
-    <div className={cn("flex gap-2", isUser ? "flex-row-reverse" : "flex-row")}>
-      {!isUser && (
-        <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-        </div>
-      )}
-      <div
-        className={cn(
- "max-w-[85%] px-3 py-2 rounded-md text-sm-ui leading-relaxed",
-          isUser
-            ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-            : "bg-lia-bg-secondary text-lia-text-primary"
-        )}
-      >
-        <p className="whitespace-pre-wrap">{msg.content}</p>
-        <span className="text-micro opacity-50 mt-1 block">{msg.timestamp}</span>
-      </div>
-    </div>
+    <ChatBubbleBase
+      sender={isUser ? "user" : "lia"}
+      timestamp={msg.timestamp}
+    >
+      <p className="text-xs leading-relaxed font-['Open_Sans',sans-serif] text-lia-text-primary whitespace-pre-wrap">{msg.content}</p>
+    </ChatBubbleBase>
   )
 }
 
 function SplitStreamingBubble({ content }: { content: string }) {
   return (
-    <div className="flex gap-2">
-      <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-      </div>
-      <div className="max-w-[85%] px-3 py-2 rounded-md text-sm-ui leading-relaxed bg-lia-bg-secondary text-lia-text-primary">
-        {content === "..." ? (
-          <span className="flex gap-1 items-center h-5">
-            <ThinkingDots dotClassName="bg-lia-border-medium" size="md" />
-          </span>
-        ) : (
-          <p className="whitespace-pre-wrap">{content}</p>
-        )}
-      </div>
-    </div>
+    <ChatBubbleBase sender="lia">
+      {content === "..." ? (
+        <span className="flex gap-1 items-center h-5">
+          <ThinkingDots dotClassName="bg-lia-border-medium" size="md" />
+        </span>
+      ) : (
+        <p className="text-xs leading-relaxed font-['Open_Sans',sans-serif] text-lia-text-primary whitespace-pre-wrap">{content}</p>
+      )}
+    </ChatBubbleBase>
   )
 }

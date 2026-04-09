@@ -245,7 +245,7 @@ function StreamingBubble({ content }: { content: string }) {
     >
       <RichContent
         html={html}
-        className="text-base-ui text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+        className="text-xs text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
       />
       <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
     </ChatBubbleBase>
@@ -281,7 +281,7 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
     >
       <RichContent
         html={renderedHtml}
-        className="text-base-ui text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
+        className="text-xs text-lia-text-primary leading-relaxed font-['Open_Sans',sans-serif]"
       />
       {!isUser && msg.executionPlan && (
         <PlanProgressCard plan={msg.executionPlan as unknown as ExecutionPlanData} />
