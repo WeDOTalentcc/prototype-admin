@@ -18,15 +18,15 @@
   --lia-bg-tertiary: #F3F4F6;          /* Cinza claro - hover, disabled */
   --lia-bg-elevated: #FFFFFF;          /* Cards elevados (com shadow) */
   
-  /* Borders & Dividers - Sutileza máxima */
-  --lia-border-subtle: #E5E7EB;        /* Borders quase invisíveis */
-  --lia-border-default: #D1D5DB;       /* Borders padrão */
-  --lia-border-medium: #9CA3AF;        /* Borders com destaque */
+  /* Borders & Dividers - Tom único (ElevenLabs-style) */
+  --lia-border-subtle: #E5E7EB;        /* Borders sutis - padrão para tudo */
+  --lia-border-default: #E5E7EB;       /* Unificado com subtle */
+  --lia-border-medium: #E5E7EB;        /* Unificado com subtle */
   
-  /* Textos - Hierarquia tipográfica clara */
-  --lia-text-primary: #111827;         /* Quase preto - títulos, texto principal */
-  --lia-text-secondary: #6B7280;       /* Cinza médio - texto corpo */
-  --lia-text-tertiary: #9CA3AF;        /* Cinza claro - labels, hints */
+  /* Textos - Hierarquia tipográfica clara (ElevenLabs-style) */
+  --lia-text-primary: #000000;         /* Preto puro - títulos, texto principal */
+  --lia-text-secondary: #6B7280;       /* Cinza médio - texto corpo, descrições */
+  --lia-text-tertiary: #9CA3AF;        /* Cinza claro - placeholders, hints */
   --lia-text-disabled: #D1D5DB;        /* Cinza muito claro - desabilitado */
   --lia-text-inverse: #FFFFFF;         /* Branco - texto em fundo escuro */
   --lia-text-inverted: var(--lia-text-inverse); /* Alias para compatibilidade retroativa */
@@ -669,8 +669,8 @@
   --lia-border:             #E8E8E8;                 /* border principal prompt */
   --lia-border-light:       #F0F0F0;                 /* border sutil prompt */
 
-  /* Textos — alinhados ao DS (fix 2026-03-29, era #2D2D2D / #666666 / #999999) */
-  --lia-text-primary:       #111827;                 /* gray-900 Tailwind — DS canônico */
+  /* Textos — alinhados ao DS (ElevenLabs-style) */
+  --lia-text-primary:       #000000;                 /* Preto puro — ElevenLabs */
   --lia-text-secondary:     #6B7280;                 /* gray-500 Tailwind — DS canônico */
   --lia-text-tertiary:      #9CA3AF;                 /* gray-400 Tailwind — DS canônico */
 
