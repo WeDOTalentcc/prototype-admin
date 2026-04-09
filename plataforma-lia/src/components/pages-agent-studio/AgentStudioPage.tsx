@@ -6,9 +6,9 @@ import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrat
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
   Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
-  ChevronRight, Zap, Target, Sparkles, ArrowRight,
+  ChevronRight, Zap, Target, ArrowRight,
   Activity, Eye, ThumbsUp, ThumbsDown, RefreshCw,
-  Loader2, Users, Cpu, Wand2, Search,
+  Loader2, Users, Wand2, Search,
   GraduationCap, BarChart3, Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -129,9 +129,7 @@ export default function AgentStudioPage({
       <div className="px-6 py-5 border-b border-lia-border-subtle flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 dark:from-cyan-400/20 dark:to-violet-400/20 flex items-center justify-center">
-              <Cpu className="w-5 h-5 text-wedo-cyan" />
-            </div>
+            <Brain className="w-5 h-5 text-wedo-cyan" />
             <div>
               <h1 className="text-lg font-semibold text-lia-text-primary">
                 Agent Studio
@@ -241,7 +239,7 @@ export default function AgentStudioPage({
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/4" />
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="w-4 h-4 text-wedo-cyan" />
+                    <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">
                       O que é um Agente?
                     </span>
@@ -322,9 +320,7 @@ export default function AgentStudioPage({
                     "hover:border-wedo-cyan/40 transition-all duration-200 cursor-pointer"
                   )}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center transition-transform group-hover:scale-110">
-                    <Brain className="w-6 h-6 text-wedo-cyan" />
-                  </div>
+                  <Brain className="w-6 h-6 text-wedo-cyan transition-transform group-hover:scale-110" />
                   <div className="text-center">
                     <p className="text-xs font-semibold text-lia-text-primary">Personalizado</p>
                     <p className="text-[10px] text-lia-text-secondary mt-0.5">Criar do zero</p>
@@ -393,7 +389,7 @@ export default function AgentStudioPage({
             {agents.length > 0 && (
               <section className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="w-4 h-4 text-wedo-cyan" />
+                  <Brain className="w-4 h-4 text-wedo-cyan" />
                   <h2 className="text-sm font-semibold text-lia-text-primary">Como funciona</h2>
                 </div>
                 <div className="flex items-start gap-2">
