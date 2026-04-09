@@ -344,10 +344,40 @@ borderRadius: {
 
 ---
 
-## 6. Conclusão
+## 6. Aplicações Realizadas (09/04/2026)
 
-A plataforma LIA já tem uma boa base monocromática alinhada com a filosofia ElevenLabs (90% grayscale, botões pretos, clean). Os principais gaps estão em **densidade** e **tipografia** — a LIA foi construída para recruiter power users que querem ver muita informação de uma vez, enquanto ElevenLabs opta por menos informação com mais clareza visual.
+### 6.1 Cores — Padrão ElevenLabs aplicado globalmente
 
-A transição pode ser feita gradualmente: começar pelos tokens globais (font size, spacing, radius) que impactam toda a plataforma de uma vez, e depois refinar página por página.
+**Textos (3 tons):**
+| Token | Antes | Depois | Referência ElevenLabs |
+|---|---|---|---|
+| `--lia-text-primary` | `#111827` (cinza-azulado) | `#000000` (preto puro) | Títulos, texto principal |
+| `--lia-text-secondary` | `#6B7280` | `#6B7280` (mantido) | Descrições, corpo |
+| `--lia-text-tertiary` | `#9CA3AF` | `#9CA3AF` (mantido) | Placeholders, hints |
 
-**Risco principal:** Aumentar espaçamento e fonts pode quebrar layouts existentes (overflow, scroll inesperado). Recomendo fazer um preview em mockup antes de aplicar globalmente.
+**Bordas (1 tom unificado):**
+| Token | Antes | Depois |
+|---|---|---|
+| `--lia-border-subtle` | `#E5E7EB` | `#E5E7EB` (mantido) |
+| `--lia-border-default` | `#D1D5DB` | `#E5E7EB` (unificado) |
+| `--lia-border-medium` | `#9CA3AF` | `#E5E7EB` (unificado) |
+
+### 6.2 Tipografia — Escala aumentada globalmente
+
+| Token | Antes | Depois |
+|---|---|---|
+| `--font-size-base-ui` | 11px (0.6875rem) | 13px (0.8125rem) |
+| `--font-size-xs` | 12px (0.75rem) | 13px (0.8125rem) |
+| `--font-size-sm-ui` | 12px (0.75rem) | 13px (0.8125rem) |
+| `--font-size-micro` | 10px (0.625rem) | 11px (0.6875rem) |
+
+---
+
+## 7. Conclusão
+
+A plataforma LIA agora segue o padrão de cores ElevenLabs (preto puro para texto, 1 tom de borda) e teve a escala tipográfica aumentada em +1-2px globalmente. A base monocromática (90% grayscale, botões pretos, clean) está alinhada.
+
+**Próximos passos potenciais:**
+- Avaliar se badges/pills precisam de ajuste fino de padding após aumento de font
+- Considerar aumento de padding de página (`px-4` → `px-6`) nas páginas que ainda não foram redesenhadas
+- Sidebar: avaliar aumento de padding vertical dos itens de menu
