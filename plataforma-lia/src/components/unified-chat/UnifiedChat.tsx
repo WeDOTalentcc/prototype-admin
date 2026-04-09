@@ -4,6 +4,8 @@ import React, { useState, useCallback, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
+import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
+import { DynamicContextPanel } from "@/components/lia-float/panels"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
@@ -20,8 +22,7 @@ function getStoredMode(): ChatMode {
 }
 
 interface Props {
-  /** When "inline", renders as a flex child (no fixed positioning).
-   *  When "overlay", renders with fixed positioning (floating/fullscreen). */
+  /** "inline" = flex child in dashboard, "overlay" = fixed position */
   renderMode?: "inline" | "overlay"
   initialMode?: ChatMode
   className?: string
@@ -30,13 +31,10 @@ interface Props {
 /**
  * UnifiedChat — Single chat component with 3 visual modes (Notion AI-inspired).
  *
- * Modes:
- * - fullscreen: Full page, centered content (Chat LIA menu page)
- * - sidebar: Right panel persistent across navigation (Replit-style)
- * - floating: Overlay panel positioned over content
- *
- * renderMode="inline" is used when embedded in the dashboard flex layout.
- * renderMode="overlay" is used for floating/fullscreen fixed positioning.
+ * Includes:
+ * - HITL confirmation cards (all modes)
+ * - DynamicContextPanel split view (sidebar expands, fullscreen adds panel)
+ * - Auto-scroll, streaming, thinking indicators
  */
 export function UnifiedChat({ renderMode = "overlay", initialMode, className }: Props) {
   const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode())
@@ -52,15 +50,16 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     open,
     close,
     contextPage,
+    dynamicPanel,
+    closeDynamicPanel,
   } = useLiaFloat()
 
   const {
     chatMessages,
     setChatMessages,
-    chatConversationId,
-    setChatConversationId,
     switchChatContext,
     sendChatMessage,
+    sendApproval,
     chatIsConnected,
     chatIsStreaming,
     chatStreamingContent,
@@ -98,7 +97,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     setAttachedFile(null)
   }, [switchChatContext, setChatMessages])
 
-  const currentModeRef = React.useRef(mode)
+  const currentModeRef = useRef(mode)
   currentModeRef.current = mode
 
   const handleModeChange = useCallback((newMode: ChatMode) => {
@@ -108,7 +107,6 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       close()
       window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: {} }))
     } else if (prevMode === "fullscreen") {
-      // Leaving fullscreen: navigate away from ChatPage and open sidebar
       open()
       window.dispatchEvent(new CustomEvent("lia:leave-fullscreen-chat", { detail: { targetMode: newMode } }))
     }
@@ -126,74 +124,101 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     if (e.target) e.target.value = ""
   }, [])
 
-  // Derive conversation title from first user message
   const conversationTitle = chatMessages.find(m => m.sender === "user")?.content?.slice(0, 40) || null
-
   const hasMessages = chatMessages.length > 0
+  const hasDynamicPanel = !!dynamicPanel
 
   // For overlay mode, don't render if closed
   if (renderMode === "overlay" && !isOpen) return null
 
   const isInline = renderMode === "inline"
+  const effectiveMode: ChatMode = isInline ? "sidebar" : mode
+
+  // Sidebar width: wider when split view is active
+  const sidebarWidth = isInline
+    ? hasDynamicPanel ? "w-[720px]" : "w-[380px]"
+    : ""
 
   return (
     <div
       className={cn(
-        "flex flex-col bg-lia-bg-primary",
+        "flex bg-lia-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
         isInline
-          ? "w-[380px] flex-shrink-0 border-l border-lia-border-subtle h-full"
+          ? `${sidebarWidth} flex-shrink-0 border-l border-lia-border-subtle h-full`
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
             : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
         className
       )}
-      data-chat-mode={mode}
+      data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
     >
-      {/* Header */}
-      <UnifiedChatHeader
-        mode={isInline ? "sidebar" : mode}
-        onModeChange={handleModeChange}
-        onClose={close}
-        onNewChat={handleNewChat}
-        conversationTitle={conversationTitle}
-        isConnected={chatIsConnected}
-      />
+      {/* Chat column */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Header */}
+        <UnifiedChatHeader
+          mode={effectiveMode}
+          onModeChange={handleModeChange}
+          onClose={close}
+          onNewChat={handleNewChat}
+          conversationTitle={conversationTitle}
+          isConnected={chatIsConnected}
+        />
 
-      {/* Content area */}
-      {hasMessages ? (
-        <UnifiedMessageList
-          mode={isInline ? "sidebar" : mode}
-          messages={chatMessages}
+        {/* Content area */}
+        {hasMessages ? (
+          <UnifiedMessageList
+            mode={effectiveMode}
+            messages={chatMessages}
+            isStreaming={chatIsStreaming}
+            streamingContent={chatStreamingContent}
+            isThinking={chatIsThinking}
+            thinkingSteps={chatThinkingSteps}
+            userName={userName}
+          />
+        ) : (
+          <UnifiedChatEmptyState
+            mode={effectiveMode}
+            onSuggestionClick={handleSuggestionClick}
+          />
+        )}
+
+        {/* HITL Confirmation — inline above input (all modes) */}
+        {chatHitlPending && (
+          <div className="px-4 pb-2">
+            <HITLConfirmCard
+              action={chatHitlPending.action}
+              description={chatHitlPending.description}
+              onConfirm={() => sendApproval(true)}
+              onCancel={() => sendApproval(false)}
+            />
+          </div>
+        )}
+
+        {/* Input */}
+        <UnifiedChatInput
+          mode={effectiveMode}
+          inputText={inputText}
+          setInputText={setInputText}
+          onSend={handleSend}
           isStreaming={chatIsStreaming}
-          streamingContent={chatStreamingContent}
-          isThinking={chatIsThinking}
-          thinkingSteps={chatThinkingSteps}
-          userName={userName}
+          isCreating={chatIsCreating}
+          isDisabled={!!chatHitlPending}
+          contextPage={contextPage}
+          attachedFile={attachedFile}
+          setAttachedFile={setAttachedFile}
+          fileInputRef={fileInputRef}
+          onFileButtonClick={handleFileButtonClick}
+          onFileAttach={handleFileAttach}
         />
-      ) : (
-        <UnifiedChatEmptyState
-          mode={isInline ? "sidebar" : mode}
-          onSuggestionClick={handleSuggestionClick}
-        />
-      )}
+      </div>
 
-      {/* Input */}
-      <UnifiedChatInput
-        mode={isInline ? "sidebar" : mode}
-        inputText={inputText}
-        setInputText={setInputText}
-        onSend={handleSend}
-        isStreaming={chatIsStreaming}
-        isCreating={chatIsCreating}
-        isDisabled={!!chatHitlPending}
-        contextPage={contextPage}
-        attachedFile={attachedFile}
-        setAttachedFile={setAttachedFile}
-        fileInputRef={fileInputRef}
-        onFileButtonClick={handleFileButtonClick}
-        onFileAttach={handleFileAttach}
-      />
+      {/* Split View: DynamicContextPanel (sidebar + fullscreen) */}
+      {hasDynamicPanel && (
+        <div className="w-[340px] flex-shrink-0 border-l border-lia-border-subtle overflow-y-auto">
+          <DynamicContextPanel panel={dynamicPanel} />
+        </div>
+      )}
     </div>
   )
 }
