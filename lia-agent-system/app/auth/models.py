@@ -74,7 +74,8 @@ class User(EncryptedFieldMixin, Base):
     last_sso_login_at = Column(DateTime, nullable=True)
     
     def get(self, key: str, default=None):
-        """Dict-compatible accessor so endpoints using current_user.get() work."""
+        """Compatibility bridge: 100+ endpoints use current_user.get() expecting dict-like access.
+        Provides attribute lookup with key aliasing (user_id/sub → id)."""
         attr_map = {
             "user_id": "id",
             "sub": "id",

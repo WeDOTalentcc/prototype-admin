@@ -33,13 +33,13 @@ class FeedbackRequest(BaseModel):
 @router.post("")
 async def create_sourcing_agent(
     body: CreateSourcingAgentRequest,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new persistent sourcing agent for a job or talent pool."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     result = await sourcing_agent_orchestrator.create_agent(
-        company_id=current_user.get("company_id", "unknown"),
+        company_id=getattr(current_user, "company_id", "unknown"),
         agent_name=body.agent_name,
         job_id=body.job_id,
         talent_pool_id=body.talent_pool_id,
@@ -56,7 +56,7 @@ async def list_sourcing_agents(
     job_id: Optional[str] = None,
     talent_pool_id: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """List sourcing agents for the current company."""
@@ -64,7 +64,7 @@ async def list_sourcing_agents(
     from sqlalchemy import select
 
     query = select(SourcingAgent).where(
-        SourcingAgent.company_id == current_user.get("company_id", "unknown")
+        SourcingAgent.company_id == getattr(current_user, "company_id", "unknown")
     )
     if job_id:
         query = query.where(SourcingAgent.job_id == job_id)
