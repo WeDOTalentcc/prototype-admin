@@ -241,7 +241,7 @@ const MenuItem = React.memo(({
           ).map((subItem) => {
             const subIsLocked = subItem.moduleId && !hasModuleAccess(subItem.moduleId)
             const subCanAccess = subItem.isCore || (subItem.moduleId && hasModuleAccess(subItem.moduleId))
-            const navKey = (subItem as any)._navKey || subItem.label
+            const navKey = subItem.navKey || subItem.label
 
             return (
               <button
@@ -411,7 +411,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               icon: Database,
               label: p.name,
               isCore: true,
-              _navKey: `pool:${p.id}`,
+              navKey: `pool:${p.id}`,
             })),
           }
         }
@@ -422,7 +422,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               icon: Bot,
               label: a.name,
               isCore: true,
-              _navKey: `agent:${a.id}`,
+              navKey: `agent:${a.id}`,
             })),
           }
         }

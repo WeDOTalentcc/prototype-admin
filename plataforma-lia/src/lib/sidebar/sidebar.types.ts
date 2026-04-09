@@ -35,6 +35,8 @@ export interface MenuItemType {
   isPremium?: boolean
   /** Nested navigation items */
   subItems?: MenuItemType[]
+  /** Custom navigation key (used instead of label when set) */
+  navKey?: string
   /** If true, clicking navigates to the parent page AND expands sub-items */
   navigateOnClick?: boolean
   /** Maximum visible sub-items before "ver todos" link (default: unlimited) */
