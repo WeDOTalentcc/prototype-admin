@@ -84,9 +84,11 @@ export default function AgentStudioPage({
         fetch("/api/backend-proxy/sourcing-agents"),
         fetch("/api/backend-proxy/agent-templates/sectors"),
       ])
-      const agentsData = await agentsRes.json()
-      const templatesData = await templatesRes.json()
-      setAgents(agentsData?.agents || [])
+      let agentsData: Record<string, unknown> = {}
+      let templatesData: unknown = []
+      try { agentsData = await agentsRes.json() } catch { /* non-JSON response */ }
+      try { templatesData = await templatesRes.json() } catch { /* non-JSON response */ }
+      setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents : [])
       setTemplates(Array.isArray(templatesData) ? templatesData : [])
     } catch (err) {
       console.error("Failed to load agent studio data:", err)

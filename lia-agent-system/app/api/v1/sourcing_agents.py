@@ -12,7 +12,7 @@ from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
-router = APIRouter(prefix="/api/v1/sourcing-agents", tags=["Sourcing Agents"])
+router = APIRouter(prefix="/sourcing-agents", tags=["Sourcing Agents"])
 
 
 class CreateSourcingAgentRequest(BaseModel):
