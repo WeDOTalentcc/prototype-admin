@@ -9,6 +9,13 @@
 
 1. [Visão Geral da Arquitetura](#1-visão-geral-da-arquitetura)
 2. [Estado Atual (ANTES)](#2-estado-atual-antes)
+2A. [Auditoria do Ecossistema Legado (wedocc2026)](#2a-auditoria-do-ecossistema-legado-wedocc2026)
+2B. [Auditoria Real do Rails (ats-api-copia)](#2b-auditoria-real-do-rails-ats-api-copia)
+2C. [Comparação Completa — Plataforma LIA vs Ecossistema WeDO](#2c-comparação-completa--plataforma-lia-vs-ecossistema-wedo-6-repos)
+2D. [O que a Plataforma LIA já Cobre](#2d-o-que-a-plataforma-lia-já-cobre-correção-de-comparação)
+2E. [Valor do ats-front-copia (Vue) para Migração Futura](#2e-valor-do-ats-front-copia-vue-para-migração-futura)
+2F. [Decisão Arquitetural — Rails como Opt-in](#2f-decisão-arquitetural--rails-como-opt-in)
+2G. [recruiter-agent-v5-copia — Análise e Comparação com LIA](#2g-recruiter-agent-v5-copia--análise-e-comparação-com-lia)
 3. [Estado Alvo (DEPOIS)](#3-estado-alvo-depois)
 4. [Fluxo de Desenvolvimento ao Cliente](#4-fluxo-de-desenvolvimento-ao-cliente)
 5. [Ambientes](#5-ambientes)
@@ -17,12 +24,13 @@
 8. [Variáveis de Ambiente](#8-variáveis-de-ambiente)
 9. [Checklist Pré-Go-Live](#9-checklist-pré-go-live)
 10. [Troubleshooting](#10-troubleshooting)
+23. [Infraestrutura — Obrigatório vs Opcional para Deploy](#23-infraestrutura--obrigatório-vs-opcional-para-deploy)
 
 ---
 
 ## 1. Visão Geral da Arquitetura
 
-A Plataforma LIA é composta por três serviços independentes que se comunicam:
+A Plataforma LIA é composta por dois serviços core obrigatórios e um backend legado opcional:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -35,21 +43,23 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 │   │  Porta: 5000    │    │  Porta: 8001     │                  │
 │   └────────┬────────┘    └────────┬─────────┘                  │
 │            │                      │                             │
-│            └──────────┬───────────┘                             │
-│                       ▼                                         │
-│            ┌─────────────────────┐                             │
-│            │    ats-api-copia    │                             │
-│            │   (Rails 7 / REST)  │                             │
-│            │   PostgreSQL (DB)   │                             │
-│            └─────────────────────┘                             │
+│            │              ┌───────┘                             │
+│            │              │  (PostgreSQL — fonte de verdade)   │
+│            │              │                                     │
+│            │         ╔════╧════════════════╗                   │
+│            └────────►║   ats-api-copia     ║  ← OPCIONAL       │
+│          (opcional)  ║  (Rails 7 / REST)   ║     dados legados │
+│                      ╚════════════════════╝                   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+> **Nota pós-auditoria (abril 2026):** O diagrama acima reflete a realidade descoberta na auditoria profunda do ecossistema wedocc2026. O Rails é um componente **opcional** — a plataforma funciona 100% sem ele. Quando `RAILS_BACKEND_URL` está vazia (situação atual), todas as rotas caem automaticamente no FastAPI. Ver Seção 2F para a decisão arquitetural completa.
+
 | Serviço | Repositório | Tecnologia | Responsabilidade |
 |---|---|---|---|
-| Frontend | `ats-front-copia` | Next.js 15 + React + Tailwind | Interface do usuário, pages, componentes |
-| AI Agent | `lia-agent-system` | FastAPI + Python + LangGraph | Agentes IA, orquestração, integrações |
-| Rails API | `ats-api-copia` | Rails 7 + PostgreSQL | Core de dados, autenticação, business logic |
+| Frontend | `plataforma-lia` | Next.js 15 + React + Tailwind | Interface do usuário, pages, componentes |
+| AI Agent | `lia-agent-system` | FastAPI + Python + LangGraph | Agentes IA, orquestração, integrações, **fonte de verdade** |
+| Rails API | `ats-api-copia` | Rails 7 + PostgreSQL | **Opcional** — dados legados de clientes reais do ATS antigo |
 
 ---
 
@@ -87,6 +97,361 @@ A Plataforma LIA é composta por três serviços independentes que se comunicam:
 - Deploy: status a confirmar com o time — possivelmente manual ou com CI/CD parcial
 - Ambiente de staging já existe (criado pelo time) — nível de integração e automação a verificar
 - Observabilidade: status a levantar com o time — logs centralizados, traces e alertas podem ou não estar configurados
+
+---
+
+## 2A. Auditoria do Ecossistema Legado (wedocc2026)
+
+> Auditoria realizada em abril 2026 com dados verificados diretamente nos repositórios da organização wedocc2026 no GitHub.
+
+### Mapa dos 6 Repos do Ecossistema WeDO
+
+> **Nota:** O `wedotalent-admin-copia` (TypeScript/Next.js — Painel Admin) foi identificado mas **não faz parte do ecossistema Rails/ATS**. O mapa abaixo cobre apenas os 6 repos relevantes.
+
+| Repositório | Stack | Tamanho | Papel no Ecossistema |
+|---|---|---|---|
+| `ats-api-copia` | Ruby on Rails 7 + PostgreSQL | Backend principal | API REST para CRUD de dados do ATS (candidatos, vagas, aplicações) |
+| `ats-front-copia` | Nuxt 3 + Vue 3 + Vuetify | Frontend principal | ATS Frontend com 28 features, 336+ arquivos, ActionCable (WebSocket Rails) |
+| `recruiter-agent-v5-copia` | Python + Celery + RabbitMQ | Agentes IA | Agentes IA v5: 8 domains, 7 agents especializados, LangGraph workflow |
+| `wedo-nuxt-copia` | Vue 3 + Nuxt | Frontend v5 | Novo frontend (early stage — ~178 KB, em desenvolvimento) |
+| `ats-mcp-copia` | TypeScript | MCP server | Integração de tools via Model Context Protocol — ~51 KB |
+| `data-collector-copia` | Python | Sincronização | Scripts de sync/migração de dados entre sistemas ATS |
+
+### Relação entre os repos
+
+```
+ats-front-copia (Nuxt/Vue)
+    │
+    ├── ActionCable → ats-api-copia (Rails) ← fonte de dados legada
+    │
+    └── Via API REST → ats-api-copia
+
+recruiter-agent-v5-copia (Python)
+    │
+    └── Acessa dados via ats-api-copia (Rails REST API)
+
+data-collector-copia (Python)
+    └── Scripts de sincronização com ats-api-copia
+```
+
+---
+
+## 2B. Auditoria Real do Rails (ats-api-copia)
+
+> Auditoria de dados verificados linha a linha no repositório `wedocc2026/ats-api-copia`. Esta seção corrige informações incorretas presentes em versões anteriores deste documento.
+
+### Os 6 Claims Verificados
+
+#### Claim 1: Controllers
+
+| Controller | Existe? | Funcional? |
+|---|---|---|
+| `CandidatesController` | ✅ Sim | CRUD completo, 2073 bytes |
+| `JobsController` | ✅ Sim | CRUD com owner check, 2586 bytes |
+| `AppliesController` | ✅ Sim | CRUD com soft delete |
+| `SelectiveProcessesController` | ✅ Sim | — |
+| `MessagesController` | ✅ Sim | — |
+| `UsersController` | ✅ Sim | — |
+| `ClientAccountsController` | ✅ Sim | via resources |
+| `ClientUsersController` | ✅ Sim | via resources |
+| `CompanyProfilesController` | ✅ Sim | via resources |
+| `DepartmentsController` | ✅ Sim | via resources |
+| `EmailTemplatesController` | ✅ Sim | via resources |
+| `InterviewsController` | ✅ Sim | 2197 bytes |
+| `NotificationsController` | ✅ Sim | via resources |
+| `TalentPoolsController` | ✅ Sim | com ações custom (add_candidates, move_to_job) |
+| `RecruitmentCampaignsController` | ✅ Sim | com ações custom (advance_stage, complete_stage) |
+| `SessionsController` | ✅ Sim | JWT auth funcional |
+| `CandidateListsController` | ❌ NÃO EXISTE | Faltante — frontend tem rotas backendTarget: "rails" que darão 404 |
+| `InterviewNotesController` | ❌ NÃO EXISTE | Faltante — idem acima |
+| `FeedbackController` | ❌ NÃO EXISTE | Faltante — idem acima |
+
+**Veredicto:** São **16 controllers** (não 14). Os 3 faltantes estão confirmados.
+
+#### Claim 2: Models vs Tabelas Reais no Banco
+
+| O que existe | Quantidade | Detalhe |
+|---|---|---|
+| Arquivos `.rb` em `app/models/` | 97 arquivos | Existem como código Ruby |
+| Tabelas **reais no banco** (schema.rb) | **12 tabelas** | accounts, applies, candidates, jobs, messages, permissions, role_permissions, roles, selective_processes, user_permissions, user_roles, users |
+| Models "órfãos" (sem tabela) | ~85 arquivos | Existem como código mas sem tabela correspondente no banco |
+
+**Veredicto:** Os 85 models sem tabela vão crashar qualquer feature que os use. As migrações que criariam client_accounts, departments, email_templates, interviews, etc. nunca foram aplicadas ao banco.
+
+#### Claim 3: Migrações
+
+| Item | Valor Real |
+|---|---|
+| Total de migrações no repo | **49** (não 47) |
+| Versão do schema.rb | `2025_07_14_142059` |
+| Migrações **aplicadas** ao banco | ~18 (anteriores a 20250715) |
+| Migrações **NÃO aplicadas** | **31** (de 20250715 em diante) |
+
+**Veredicto:** 31 migrações foram adicionadas ao repo mas nunca executadas contra o banco.
+
+#### Claim 4: Routes CRUD Funcionais
+
+**Veredicto:** Rotas CRUD existem para candidates, jobs, applies, selective_processes, messages, users, client_accounts, client_users, company_profiles, departments, email_templates, interviews, notifications, talent_pools, recruitment_campaigns, sessions. **MAS:** como apenas 12 tabelas existem no banco, as routes para departments, email_templates, interviews, etc. vão retornar erro de banco — os models Ruby existem mas as tabelas não.
+
+#### Claim 5: RBAC enforcement
+
+**Veredicto: CONFIRMADO que está faltando.** O `ApplicationController` tem apenas:
+- `authorize_request` — verifica JWT válido
+- `only_admin` — check simples `@current_user.is_admin`
+- `ensure_owner` no `JobsController` — verifica se o user é dono do job
+
+As tabelas `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permissions` existem no schema, mas **nenhum controller usa esses dados para autorização**. O RBAC está montado no banco mas completamente desconectado da aplicação. Não existe Pundit, CanCanCan, Rolify, ou qualquer sistema de RBAC granular.
+
+#### Claim 6: Auth unificada (JWT)
+
+**Veredicto: PARCIALMENTE FEITO.**
+- ✅ Rails gera JWT com `Rails.application.secret_key_base` e payload `{user_id, exp}`
+- ✅ FastAPI tem `rails_jwt.py` que decodifica JWT com `RAILS_JWT_SECRET_KEY`
+- ❌ Falta: configurar o mesmo secret nos dois lados e testar end-to-end
+- ❌ Falta: Refresh token — o JWT expira em 24h e não há mecanismo de renovação
+
+### Tabela Resumo: O que o Documento Dizia vs Realidade
+
+| O que o documento anterior dizia | Realidade verificada na auditoria |
+|---|---|
+| 14 controllers existem | 16 existem, 3 faltam — número estava errado |
+| 93 models existem | 97 arquivos, mas **só 12 têm tabelas** no banco — muito enganoso |
+| 47 migrações | 49 migrações, mas **31 não foram aplicadas** |
+| Schema completo | Schema tem 12 tabelas, não 97 — banco incompleto |
+| Rails "quase pronto" | Esqueleto existe, banco incompleto, RBAC decorativo, sem infra (Redis, Elasticsearch) |
+| "~2 semanas de trabalho" para integrar | Subestimado — migrações faltantes + conflitos + debug pode levar 3-4 semanas |
+
+### Problemas Críticos Identificados (Não Documentados Anteriormente)
+
+1. **Gap massivo models/tabelas:** 97 models vs 12 tabelas — qualquer feature que use os 85 models sem tabela vai crashar
+2. **Apartment (multi-tenancy):** configurado no Gemfile mas schema.rb mostra tabelas compartilhadas — sem evidência que schemas por tenant existam
+3. **Searchkick sem Elasticsearch:** no Gemfile mas sem Elasticsearch configurado — `perform_search` vai falhar
+4. **Sidekiq sem Redis:** no Gemfile mas sem Redis e workers configurados — background jobs não funcionam
+5. **90+ rotas frontend com `backendTarget: "rails"`:** como `RAILS_BACKEND_URL` está vazia, tudo cai no FastAPI hoje — correto. Se alguém configurar essa variável sem o Rails estar pronto, quebra tudo de uma vez
+6. **31 migrações não executadas:** schema.rb em `2025_07_14_142059` mas 31 migrações posteriores no repo — podem ter conflitos
+
+---
+
+## 2C. Comparação Completa — Plataforma LIA vs Ecossistema WeDO (6 repos)
+
+> Comparação justa considerando **todos os 6 repos** do ecossistema WeDO, não apenas o Rails.
+
+| Capacidade | WeDO (6 repos combinados) | Plataforma LIA (Replit — 2 repos) |
+|---|---|---|
+| **Backend API** | Rails: 16 controllers, **12 tabelas reais** | FastAPI: **229 endpoints**, **110 models**, 59 migrações aplicadas |
+| **Frontend** | Vue/Nuxt/Vuetify: 28 features, 58 composables, 18 stores Pinia | Next.js/React/Tailwind: **36+ páginas**, Design System completo |
+| **Agentes IA** | recruiter-agent-v5: 8 domains, 7 agents, Celery + RabbitMQ | LangGraph: **53 domains**, **147 services**, WSI, voice, bias audit |
+| **Auth** | JWT básico (sem RBAC funcional) + WorkOS no Rails | JWT + WorkOS no FastAPI + TenantGuard |
+| **WebSocket** | ActionCable (depende do Rails) | WebSocket nativo FastAPI — sem dependência extra |
+| **Multi-tenancy** | Apartment gem (não testado, schemas não encontrados) | `company_id` + `tenant_guard` + `auth_enforcement` |
+| **Busca** | Searchkick/Elasticsearch (precisa infra extra) | SQL + embeddings semânticos + busca híbrida |
+| **Background jobs** | Sidekiq + Celery + RabbitMQ (3 sistemas) | Celery com 12+ tasks + async nativo Python |
+| **Compliance** | Não encontrado | LGPD, Bias Audit, Governance completos |
+| **Voice/Audio** | Composables de audio no Vue (frontend) | Voice screening completo (Gemini Live Audio) |
+| **Observabilidade** | Básica | Circuit breakers, audit logs, tracing, Sentry |
+| **Deploy infra obrigatória** | Docker + Redis + Elasticsearch + RabbitMQ + ActionCable | Apenas PostgreSQL — zero dependências extras obrigatórias |
+| **Services (camada de negócio)** | 0 (lógica inline nos controllers) | **147 services** cobrindo toda a plataforma |
+| **Domínios de negócio** | ~5 funcionais | **53 domínios** estruturados |
+| **Migrações aplicadas** | 18 de 49 | 59 migrações aplicadas, banco completo |
+
+---
+
+## 2D. O que a Plataforma LIA já Cobre (Correção de Comparação)
+
+> Esta seção documenta capacidades que existem na plataforma LIA e foram inicialmente subestimadas ou incorretamente comparadas como "ausentes".
+
+### Google Calendar e Agendamento
+
+A plataforma LIA tem agendamento completo — mais profundo que o `smart-calendar` do Vue (4 arquivos):
+
+- **`zero_touch_scheduling_service.py`** (351 linhas) — scheduling zero-touch: candidato recebe link, escolhe horário, entrevista é criada automaticamente
+- **`google_calendar_client.py`** — integração Google Calendar (shim apontando para `integrations_hub`)
+- **Frontend:** rotas prontas em `/api/backend-proxy/calendar/google/auth-url`, `/calendar/health`, `/calendar/reschedule-interview`, `/scheduling/link`
+
+### Kanban / Pipeline (Visualização de Workflow)
+
+34 arquivos só no Kanban board (`plataforma-lia/src/components/kanban/`):
+- `KanbanBoard.tsx`, `KanbanColumn.tsx`, `CandidateCard.tsx`
+- Drag & drop, filtros, transições universais, context menu por coluna, badges de saturação
+- Hooks: `use-drag-drop`, `use-kanban-filters`, `use-universal-transition`, `use-column-config`
+- Testes automatizados inclusos
+
+> O `Vue Flow` (editor visual de fluxos tipo draw.io) que o ecossistema WeDO tem é diferente do kanban — esse sim não existe na LIA.
+
+### WebSocket Nativo
+
+A LIA tem WebSocket nativo — sem dependência de Rails (ActionCable):
+- **`ws_manager.py`** — gerenciador de conexões WebSocket
+- **`agent_chat_ws.py`** — chat em tempo real
+- **`jobs_ws.py`** — atualizações de vagas
+- **`gemini_voice.py`** — voice streaming via WebSocket
+- **Frontend:** `useChatSocket.ts`, `use-agent-streaming.ts`, `use-float-streaming.ts`
+
+### Multi-tenancy
+
+Enforcement completo via:
+- **`tenant_guard.py`** — enforça isolamento por tenant (rejeita cross-tenant em produção)
+- **`tenant_llm_context.py`** — contexto LLM por tenant
+- **`auth_enforcement.py`** — middleware de autenticação por empresa
+- `company_id` em todas as queries e models
+
+### Background Jobs (Celery)
+
+Celery configurado com 12+ tasks (`celery_tasks.py` — 1692 linhas):
+- drift check em batch, triagem curricular em lote, sourcing via Pearch
+- email em massa, briefing diário, follow-up automático
+- WSI abandonados, feedback automático, avaliação RAGAS, weekly digest
+- Broker pode ser Redis ou RabbitMQ (configurável no deploy)
+
+### Busca Semântica + Híbrida
+
+Mais avançada que Elasticsearch/Searchkick:
+- **`semantic_search_service.py`** — busca por embeddings (entende significado, não só keywords)
+- **`hybrid_search_service.py`** — combina busca semântica (pgvector) + FTS (tsvector) com score híbrido configurável
+- **`domain_embedding_service.py`** — embeddings por domínio
+- RAG pipeline para contexto dos agentes
+
+---
+
+## 2E. Valor do ats-front-copia (Vue) para Migração Futura
+
+> O `ats-front-copia` é um frontend Vue/Nuxt/Vuetify substancial — mais maduro que o React em algumas features específicas. Esta seção documenta o que tem valor e o que a LIA já cobre.
+
+### Inventário do ats-front-copia
+
+| Feature Vue | Arquivos | Valor |
+|---|---|---|
+| `messages` | 101 arquivos | Alta — UI de mensagens mais desenvolvida, chat, áudio, streaming |
+| `candidates` | 55 arquivos | Média — a LIA já tem equivalente mas com menos profundidade de UI |
+| `jobs` | 43 arquivos | Média — a LIA já tem equivalente |
+| `composables` | 58 composables | Alta — cobrindo audio, sourcing, calendar, interviews, voice, LLM quota |
+| `stores (Pinia)` | 18 stores | Média — state management estruturado |
+| `smart-calendar` | 4 arquivos | Baixa — a LIA tem equivalente mais profundo no backend |
+
+### Features Vue que a LIA já cobre
+
+| Feature Vue | Status na LIA |
+|---|---|
+| Kanban/Pipeline | ✅ 34 arquivos, drag & drop, filtros, transições |
+| Google Calendar / agendamento | ✅ zero_touch_scheduling_service.py (351 linhas) |
+| WebSocket real-time | ✅ nativo FastAPI, sem ActionCable |
+| Multi-tenancy | ✅ tenant_guard + company_id |
+| Background jobs | ✅ Celery 12+ tasks |
+| Auth | ✅ JWT + WorkOS |
+| Voice/Audio | ✅ Gemini Live Audio + voice screening completo |
+| Busca | ✅ semântica + híbrida (mais avançada que Searchkick) |
+| WorkOS | ✅ integrado no Next.js |
+
+### Features Vue que teriam valor real para migrar para o React
+
+| Feature Vue | Existe na LIA? | Valor de migrar |
+|---|---|---|
+| **Messaging UI** (101 arquivos) | Parcialmente | **Alta** — UI mais madura com chat, áudio, streaming de mensagens |
+| **TipTap editor** | Não (editor mais simples) | Alta — editor rich text para templates de email |
+| **Vue Flow** | Não | Média — editor visual de fluxos (type draw.io para processos) |
+| `ActionCable` WebSocket | Substituído por WS nativo | Não precisa migrar |
+
+> **Recomendação:** O que vale considerar é **migrar as features boas do Vue para o React** (especialmente a UI de messages e o TipTap), não manter o Rails como backend.
+
+---
+
+## 2F. Decisão Arquitetural — Rails como Opt-in
+
+> Esta seção documenta a decisão estratégica resultante da auditoria de abril 2026.
+
+### Decisão
+
+**FastAPI é a fonte de verdade. Rails NÃO é necessário para o funcionamento da plataforma.**
+
+### Fundamentos da Decisão
+
+1. **O app funciona 100% sem Rails.** Quando `RAILS_BACKEND_URL` está vazia (situação atual), todas as 94 rotas com `backendTarget: "rails"` caem automaticamente no FastAPI via `proxy-handler.ts`. Nada quebra.
+
+2. **O FastAPI já faz tudo que o Rails faz — e mais.** O Rails provê CRUD para ~5 entidades. O FastAPI tem 229 endpoints, 53 domínios, 147 services, toda a camada de IA, compliance e um frontend completo.
+
+3. **A camada de integração Rails já está pronta.** Se e quando Rails for ativado, o código já existe:
+   - `wedotalent_rails.py` — 588 linhas, HTTP client completo com retry e backoff
+   - `rails_adapter.py` — 939 linhas, field mapping completo Fork ↔ Rails
+   - Circuit breaker com fallback automático para FastAPI
+   - `rails_jwt.py` — JWT validator para tokens Rails
+   - Health check endpoint para Rails
+   - ~94 rotas frontend marcadas com `backendTarget: "rails"`
+
+4. **O banco Rails tem gaps significativos.** 12 tabelas reais vs 97 models, 31 migrações não aplicadas, RBAC desconectado. Integrar "agora" exigiria 3-4 semanas de trabalho no Rails.
+
+### As 3 Opções Avaliadas
+
+| Opção | Descrição | Decisão |
+|---|---|---|
+| **A. Clonar Rails no Replit** | Instalar Ruby/Rails, apontar para banco Neon, rodar migrações | **Rejeitada** — adiciona infra (Ruby, Redis, Elasticsearch) que pode desestabilizar o que já funciona. Banco compartilhado é risco. |
+| **B. Criar tabelas via SQL/Alembic** | Traduzir 31 migrações Rails para SQL puro ou Alembic | **Rejeitada** — cria tabelas sem aplicação para populá-las. Trabalho desperdiçado se Rails não estiver rodando. |
+| **C. Replicar no FastAPI (status quo)** | FastAPI já tem equivalentes para tudo — continuar construindo aqui | **✅ Adotada** — FastAPI é a fonte de verdade. Rails entra como upgrade opt-in para dados legados, rota por rota, quando houver servidor dedicado. |
+
+### Como ativar o Rails (quando chegar o momento)
+
+```
+Pré-requisitos para ativar Rails:
+  1. Servidor dedicado para Rails (GCP, Replit separado, etc.)
+  2. Dados reais de clientes no banco Rails que precisam ser acessados
+  3. Infra completa: Redis (Sidekiq), Elasticsearch (Searchkick)
+  4. 31 migrações faltantes rodadas e conflitos resolvidos
+  5. 3 controllers faltantes criados (CandidateLists, InterviewNotes, Feedback)
+  6. RBAC conectado (usar tabelas roles/permissions que já existem)
+
+Ativação gradual (plug-and-play):
+  1. Configurar RAILS_BACKEND_URL e RAILS_API_URL no ambiente
+  2. Rodar health check: GET /health/rails
+  3. Flipar uma rota de cada vez (domínio por domínio)
+  4. Monitorar circuit breaker — fallback automático para FastAPI se Rails falhar
+```
+
+### Esforço estimado para ativar Rails (no servidor dedicado)
+
+| Item | Esforço |
+|---|---|
+| Rodar 31 migrações faltantes e resolver conflitos | 1-2 dias |
+| Criar 3 controllers faltantes | 1 dia |
+| Conectar RBAC real | 2-3 dias |
+| Configurar Searchkick (Elasticsearch) | 1 dia |
+| Configurar Sidekiq (Redis) | 1 dia |
+| Refresh token JWT | 4 horas |
+| Testar end-to-end | 1-2 dias |
+| **Total estimado** | **~2-3 semanas** |
+
+> **Nota:** Esse esforço ocorre no servidor Rails (fora do Replit), não impacta o desenvolvimento contínuo da plataforma LIA.
+
+---
+
+## 2G. recruiter-agent-v5-copia — Análise e Comparação com LIA
+
+> O `recruiter-agent-v5-copia` é o agente Python legado do ecossistema WeDO. Esta seção documenta o que ele tem e como a LIA o supera.
+
+### O que o recruiter-agent-v5 tem
+
+| Componente | Detalhe |
+|---|---|
+| **Domains** | 8: applies, autonomous, evaluation, insights, jobs, messaging, scheduling, sourcing |
+| **Agents** | 7 especializados: intent_analyzer, api_planner, api_executor, data_processor, answer_formatter, plan_validator |
+| **Infraestrutura** | Celery + RabbitMQ para processamento assíncrono |
+| **Orquestração** | LangGraph workflow e orchestrator |
+
+### Comparação com a LIA
+
+| Dimensão | recruiter-agent-v5 | Plataforma LIA |
+|---|---|---|
+| **Domains** | 8 | **53** |
+| **Agents** | 7 | Múltiplos por domínio (LangGraph) |
+| **Services** | 0 (lógica nos agents) | **147 services** |
+| **WSI (triagem por voz)** | Não | ✅ Completo |
+| **Bias Audit** | Não | ✅ FairnessGuard, Four-Fifths Rule |
+| **LGPD/Compliance** | Não | ✅ Completo (PII masking, DSR, retenção) |
+| **RAG / Embeddings** | Não | ✅ pgvector, busca semântica, hybrid search |
+| **Voice screening** | Não | ✅ Gemini Live Audio |
+| **Explicabilidade** | Não | ✅ Explainability nos decisions |
+| **Multi-tenant enforcement** | Não | ✅ TenantGuard + company_id |
+| **Observabilidade** | Básica | ✅ Circuit breakers, audit logs, Sentry |
+
+> **Veredicto:** A LIA supera o recruiter-agent-v5 em todas as dimensões. O v5 pode ser descontinuado assim que a migração para a LIA estiver completa.
 
 ---
 
@@ -634,18 +999,22 @@ api-staging.wedotalent.cc   → Cloud Run: lia-agent-staging
 ### Fase 5 — Feature Flags para Rollout Gradual
 
 > Permite migrar domínios do FastAPI para o Rails de forma incremental, com rollback instantâneo sem redeploy, apenas alterando variáveis de ambiente.
+>
+> **⚠️ Pós-auditoria (abril 2026):** As 94 rotas com `backendTarget: "rails"` **funcionam normalmente sem Rails** — com `RAILS_BACKEND_URL` vazia, o proxy-handler.ts usa fallback automático para FastAPI. A migração domínio por domínio só é necessária **se e quando Rails for ativado** como opt-in (ver Seção 2F). Não é necessário fazer nada agora para o deploy funcionar.
 
 **Padrão de variável por domínio:**
 
 ```bash
 # Formato: <DOMINIO>_BACKEND=rails|fastapi
 # "fastapi" é o default implícito — só precisa setar quando migrando para Rails
+# Se RAILS_BACKEND_URL estiver vazia (situação atual), mesmo com _BACKEND=rails,
+# o proxy cai no FastAPI automaticamente — zero impacto.
 
-CANDIDATES_BACKEND=rails
-JOBS_BACKEND=rails
-INTERVIEWS_BACKEND=fastapi   # ainda não migrado
-NOTIFICATIONS_BACKEND=fastapi
-EMAIL_TEMPLATES_BACKEND=fastapi
+CANDIDATES_BACKEND=rails      # opcional — apenas se Rails estiver ativo
+JOBS_BACKEND=rails            # opcional — apenas se Rails estiver ativo
+INTERVIEWS_BACKEND=fastapi    # FastAPI já serve — não requer migração
+NOTIFICATIONS_BACKEND=fastapi # FastAPI já serve — não requer migração
+EMAIL_TEMPLATES_BACKEND=fastapi # FastAPI já serve — não requer migração
 ```
 
 **Como funciona no proxy-handler.ts:**
@@ -663,7 +1032,7 @@ export const { dynamic, GET, POST } = createProxyHandlers({
 })
 ```
 
-**Estado atual (snapshot abril 2026):** 442 rotas no total, 94 já apontando para `backendTarget: "rails"` com o valor fixo. Este número deve ser recontado antes de cada marco de migração.
+**Estado atual (snapshot abril 2026):** 442 rotas no total, 94 já apontando para `backendTarget: "rails"` com o valor fixo. Essas 94 rotas **funcionam com FastAPI** enquanto `RAILS_BACKEND_URL` estiver vazia. Este número deve ser recontado antes de cada marco de migração.
 
 **Rollback rápido via nova revisão Cloud Run:**
 
@@ -677,16 +1046,16 @@ gcloud run services update lia-frontend \
 # A nova revisão entra em serviço em ~15-30 segundos (sem redeploy de imagem)
 ```
 
-**Ordem sugerida de migração por domínio:**
+**Ordem sugerida de migração por domínio (apenas se/quando Rails for ativado):**
 
 | Domínio | Variável | Prioridade | Status |
 |---|---|---|---|
-| Candidatos | `CANDIDATES_BACKEND` | Alta | Migrar primeiro |
-| Vagas | `JOBS_BACKEND` | Alta | Migrar segundo |
-| Aplicações | `APPLIES_BACKEND` | Alta | Migrar junto com vagas |
-| Entrevistas | `INTERVIEWS_BACKEND` | Média | Após candidatos/vagas estáveis |
-| Notificações | `NOTIFICATIONS_BACKEND` | Média | — |
-| Email templates | `EMAIL_TEMPLATES_BACKEND` | Baixa | — |
+| Candidatos | `CANDIDATES_BACKEND` | Alta | Opcional — FastAPI já serve |
+| Vagas | `JOBS_BACKEND` | Alta | Opcional — FastAPI já serve |
+| Aplicações | `APPLIES_BACKEND` | Alta | Opcional — FastAPI já serve |
+| Entrevistas | `INTERVIEWS_BACKEND` | Média | Opcional — FastAPI já serve |
+| Notificações | `NOTIFICATIONS_BACKEND` | Média | Opcional — FastAPI já serve |
+| Email templates | `EMAIL_TEMPLATES_BACKEND` | Baixa | Opcional — FastAPI já serve |
 
 ---
 
@@ -903,7 +1272,7 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 | Variável | Dev (Replit) | Staging | Produção | Notas |
 |---|---|---|---|---|
 | `BACKEND_URL` | `http://127.0.0.1:8001` | URL interna Cloud Run | URL interna Cloud Run | Usada pelo `next.config.js` nos rewrites e proxy routes — NÃO exposta ao browser |
-| `RAILS_BACKEND_URL` | `http://localhost:3000` (ou vazio) | URL interna Cloud Run do Rails | URL interna Cloud Run do Rails | Usada por `proxy-handler.ts` (frontend) para rotas `backendTarget: "rails"`. Diferente de `RAILS_API_URL` (usada pelo FastAPI) |
+| `RAILS_BACKEND_URL` | **vazio** (recomendado) | URL interna Cloud Run do Rails | URL interna Cloud Run do Rails | **Opcional** — Deixar vazio = FastAPI serve tudo. Usada por `proxy-handler.ts` para rotas `backendTarget: "rails"`. Preencher apenas se Rails for ativado como opt-in. Diferente de `RAILS_API_URL` (usada pelo FastAPI) |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:5000` | `https://staging.wedotalent.cc` | `https://wedotalent.cc` | |
 | `NEXT_PUBLIC_WS_URL` | `ws://127.0.0.1:8001` | `wss://api-staging.wedotalent.cc` | `wss://api.wedotalent.cc` | WebSocket para chat real-time |
 | `WORKOS_API_KEY` | Replit Secret | Secret Manager | Secret Manager | **Obrigatório** — auth SSO |
@@ -941,7 +1310,7 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 | `GOOGLE_CLOUD_PROJECT` | `seu-projeto-gcp` | `wedotalent-staging` | `wedotalent-prod` | |
 | `REDIS_URL` | `redis://localhost:6379/0` | Cloud Memorystore staging | Cloud Memorystore prod | Cache, token budget, HITL, Celery results |
 | `RABBITMQ_URL` | `amqp://guest:guest@localhost:5672/` | CloudAMQP ou VM | CloudAMQP ou VM | Message broker Celery |
-| `RAILS_API_URL` | `http://localhost:3000` | URL interna Cloud Run do Rails | URL interna Cloud Run do Rails | Usado pelo FastAPI para chamar Rails (backend→backend). Diferente de `RAILS_BACKEND_URL` (usado pelo frontend) |
+| `RAILS_API_URL` | **vazio** (recomendado) | URL interna Cloud Run do Rails | URL interna Cloud Run do Rails | **Opcional** — Deixar vazio = FastAPI serve tudo. Usado pelo FastAPI para chamar Rails (backend→backend). O `RailsAdapter` só tenta Rails se esta variável estiver preenchida. Diferente de `RAILS_BACKEND_URL` (usado pelo frontend) |
 | `SECRET_KEY` | string aleatória | Secret Manager | Secret Manager | **Mesma do frontend** — JWT signing |
 | `API_HOST` | `0.0.0.0` | `0.0.0.0` | `0.0.0.0` | |
 | `API_PORT` | `8001` | `8001` | `8001` | |
@@ -969,7 +1338,8 @@ Quando um bug reportado pelo cliente é corrigido, ou uma feature sugerida é en
 ### Infraestrutura (time infra)
 
 - [ ] Cloud SQL provisionado e com backup automático configurado
-- [ ] Migrations rodadas (Rails + Alembic)
+- [ ] Migrations Alembic rodadas (`alembic upgrade head`) — **obrigatório**
+- [ ] ~~Migrations Rails rodadas (`rails db:migrate`)~~ — **condicional, apenas se Rails for ativado como opt-in** (ver Seção 2F)
 - [ ] Secret Manager populado com todas as variáveis
 - [ ] Cloud Run (frontend + agent) deployado em staging
 - [ ] Cloud Run (frontend + agent) deployado em produção
@@ -1621,36 +1991,76 @@ Requisição do usuário
 
 ## 14. Avaliação — Rails API e Banco de Dados
 
-> `ats-api-copia` — o core de dados que permanece inalterado.
+> `ats-api-copia` — componente **opcional** de dados legados. Auditado em profundidade em abril 2026.
+>
+> **Mudança fundamental pós-auditoria:** O Rails NÃO é o "core de dados" — o FastAPI/Alembic já é a fonte de verdade. O Rails é um backend opt-in para dados legados, ativado apenas quando necessário.
 
-### O que o Rails API provê
+> **Nota sobre dados quantitativos:** Os números de controllers, rotas, tabelas e linhas de código abaixo foram verificados no audit de abril 2026. São dados pontuais — podem mudar se houver commits nos repos legados. Para dados voláteis como "contagem de rotas frontend com backendTarget:rails", revalidar antes de cada marco de deploy.
 
-| Recurso | Endpoint | Notas |
+### O que o Rails API realmente provê (dados verificados na auditoria)
+
+**Controllers — 16 controllers no código fonte, 3 ausentes (não implementados). Classificação por estado real:**
+
+**Controllers implementados com tabelas reais no banco (11 funcionais):**
+
+| Controller | Rotas principais | Status |
 |---|---|---|
-| Autenticação | `POST /v1/sessions` | Cria sessão (token JWT ou cookie) |
-| Perfil | `GET /v1/me` | Dados do usuário logado |
-| Candidatos | `GET/POST /v1/users/candidates` | CRUD de candidatos |
-| Vagas | `GET/POST /v1/users/jobs` | CRUD de vagas |
-| Aplicações | `GET /v1/users/applies` | Candidatos × Vagas |
-| Processos seletivos | `GET /v1/users/selective_processes` | Funil por vaga |
-| Mensagens | `GET/POST /v1/users/messages` | Histórico de comunicação |
+| `SessionsController` | `POST /v1/sessions` | ✅ Funcional — JWT auth |
+| `UsersController` | `GET/PUT /v1/me`, `/v1/users/users` | ✅ Funcional |
+| `CandidatesController` | `GET/POST/PUT/DELETE /v1/users/candidates` | ✅ Funcional — CRUD completo |
+| `JobsController` | `GET/POST/PUT/DELETE /v1/users/jobs` | ✅ Funcional — com owner check |
+| `AppliesController` | `GET/POST/PUT/DELETE /v1/users/applies` | ✅ Funcional — com soft delete |
+| `SelectiveProcessesController` | `GET /v1/users/selective_processes` | ✅ Funcional |
+| `MessagesController` | `GET/POST /v1/users/messages` | ✅ Funcional |
+| `ClientAccountsController` | `GET/POST/PUT /v1/users/client_accounts` | ✅ Funcional (via resources) |
+| `ClientUsersController` | `GET/POST/PUT /v1/users/client_users` | ✅ Funcional (via resources) |
+| `CompanyProfilesController` | `GET/POST/PUT /v1/users/company_profiles` | ✅ Funcional (via resources) |
+| `TalentPoolsController` | `GET/POST /v1/users/talent_pools` + custom actions | ✅ Controller existe; tabela criada só após rodar 31 migrações faltantes |
+| `RecruitmentCampaignsController` | `GET/POST /v1/users/recruitment_campaigns` + custom actions | ✅ Controller existe; tabela criada só após rodar 31 migrações faltantes |
 
-### Estratégia de integração LIA ↔ Rails
+**Controllers com rotas definidas mas tabelas faltantes (requerem 31 migrações não aplicadas):**
+
+| Controller | Rotas | Status |
+|---|---|---|
+| `DepartmentsController` | `GET/POST/PUT /v1/users/departments` | ⚠️ Controller existe, tabela NÃO existe no banco — erro de banco se chamado |
+| `EmailTemplatesController` | `GET/POST/PUT /v1/users/email_templates` | ⚠️ Idem — erro de banco |
+| `InterviewsController` | `GET/POST/PUT /v1/users/interviews` | ⚠️ Idem — erro de banco |
+| `NotificationsController` | `GET/POST/PUT /v1/users/notifications` | ⚠️ Idem — erro de banco |
+
+**Controllers completamente ausentes (3 — causarão 404 se Rails for ativado sem criá-los):**
+
+| Controller faltante | Impacto |
+|---|---|
+| `CandidateListsController` | 3 rotas frontend com `backendTarget: "rails"` darão 404 |
+| `InterviewNotesController` | Idem |
+| `FeedbackController` | Idem |
+
+> **Nota crítica:** As tabelas de departments, email_templates, interviews e notifications não existem no banco real do Rails (schema.rb versão 2025_07_14_142059). As 31 migrações que as criariam nunca foram aplicadas. Ativar esses controllers sem rodar as migrações resulta em erros de banco.
+
+### Estratégia de integração LIA ↔ Rails (apenas se Rails for ativado)
 
 ```
-OPÇÃO A (atual — mais simples):
+OPÇÃO A (REST — mais simples, pós-auditoria recomendado):
   lia-agent-system ──REST──► ats-api-copia (Rails)
   Simples, mantém fronteira clara entre serviços.
   Latência adicional de ~5-20ms por request.
+  Usar apenas para os 5 recursos com tabelas reais:
+  candidates, jobs, applies, messages, selective_processes
 
 OPÇÃO B (banco compartilhado — mais performático):
   lia-agent-system ──SQL──► PostgreSQL (mesma instância que o Rails)
   Zero latência de rede interna.
   Requer acesso read/write direto às tabelas Rails.
   Risco: quebrar integridade se escrita não seguir convenções Rails.
+
+OPÇÃO C (status quo — sem Rails):
+  lia-agent-system serve tudo via FastAPI
+  RAILS_API_URL vazia = RailsAdapter usa local DB diretamente
+  Zero latência de rede, zero dependências extras
+  ✅ ADOTADA — ver Seção 2F
 ```
 
-**Recomendação:** usar Opção A para o MVP de produção (REST). A Opção B pode ser adotada progressivamente para queries de leitura pesada (analytics, busca de candidatos).
+**Recomendação:** manter Opção C (status quo — FastAPI serve tudo) até que haja dados reais de clientes no banco Rails que precisem ser acessados. As Opções A e B são relevantes **apenas se/quando Rails for ativado** como opt-in.
 
 ### 14.1 Compatibilidade de Dados: Formato JSON e Serialização
 
@@ -1713,50 +2123,56 @@ OPÇÃO B (banco compartilhado — mais performático):
 
 ### Checklist de production readiness — Rails + Banco
 
-- [ ] Cloud SQL provisionado (PostgreSQL 16)
-- [ ] Banco Rails migrado para Cloud SQL (`rails db:migrate`)
-- [ ] Banco LIA criado na mesma instância (`lia_db`)
-- [ ] Migrations Alembic do FastAPI rodadas (`alembic upgrade head`)
+- [ ] Cloud SQL provisionado (PostgreSQL 16 com pgvector habilitado)
+- [ ] ~~Banco Rails migrado para Cloud SQL (`rails db:migrate`)~~ — **condicional, apenas se Rails for ativado como opt-in** (ver Seção 2F)
+- [ ] Banco LIA criado (`lia_db`) — **FastAPI é a fonte de verdade**
+- [ ] Migrations Alembic do FastAPI rodadas (`alembic upgrade head`) — **obrigatório**
 - [ ] Backups automáticos habilitados no Cloud SQL (retenção 7 dias)
 - [ ] Point-in-time recovery habilitado
 - [ ] IP do Cloud Run autorizado a conectar no Cloud SQL
 - [ ] Connection pooling configurado (pgBouncer ou Cloud SQL Proxy)
-- [ ] URL do Rails API configurada em `RAILS_API_URL` no Secret Manager
-- [ ] Formato JSON de resposta Rails validado (flat ou JSONAPI) e compatível com o frontend
+- [ ] `RAILS_API_URL` deixada **vazia** (FastAPI serve tudo) — preencher apenas se Rails for ativado
+- [ ] ~~Formato JSON de resposta Rails validado~~ — não necessário enquanto Rails estiver inativo
 
 ---
 
 ## 14.3 Estratégia de Ownership de Migração (Database)
 
-> Define qual serviço é o "dono" de cada tabela do PostgreSQL — quem faz CRUD, quem roda migrations, quem é a fonte de verdade. Essencial para evitar conflitos de schema durante a coexistência Rails + FastAPI.
+> Define qual serviço é o "dono" de cada tabela do PostgreSQL — quem faz CRUD, quem roda migrations, quem é a fonte de verdade. Atualizado pós-auditoria de abril 2026.
 
-**Regra geral:**
+**Regra geral (revisada pós-auditoria):**
 
 ```
-Rails owns:   Tabelas de CRUD de negócio (candidatos, vagas, clientes, etc.)
-              → Migrations via `rails db:migrate` (ActiveRecord)
-              → Rails é a única aplicação que faz INSERT/UPDATE/DELETE
-
-Alembic owns: Tabelas de IA (embeddings, screening sessions, estado de agentes, etc.)
+FastAPI/Alembic owns: TUDO — todas as tabelas ativas existem via Alembic.
               → Migrations via `alembic upgrade head`
-              → FastAPI é a única aplicação que faz INSERT/UPDATE/DELETE
+              → FastAPI é a fonte de verdade para todos os domínios
+              → 59 migrações aplicadas, banco completo
 
-Leitura cruzada é permitida: FastAPI pode ler tabelas Rails via SQL direto ou REST.
+Rails owns (opt-in futuro): apenas tabelas com dados legados de clientes reais.
+              → Migrations via `rails db:migrate` (ActiveRecord)
+              → Apenas as 12 tabelas que REALMENTE existem no schema Rails:
+                accounts, applies, candidates, jobs, messages, permissions,
+                role_permissions, roles, selective_processes, user_permissions,
+                user_roles, users
+              → AS OUTRAS TABELAS (departments, email_templates, interviews, etc.)
+                NÃO existem no banco Rails — as 31 migrações pendentes nunca rodaram
+
+Coexistência (quando Rails ativado): FastAPI pode ler tabelas Rails via SQL ou REST.
 ```
 
-**Mapeamento de domínios por owner:**
+**Mapeamento de domínios por owner (estado atual):**
 
-| Domínio | Owner | Tabelas principais | Migration tool |
+| Domínio | Owner ATUAL | Tabelas principais | Migration tool |
 |---|---|---|---|
-| Candidatos | Rails | `candidates`, `candidate_lists`, `candidate_list_items` | ActiveRecord |
-| Vagas | Rails | `jobs`, `selective_processes` | ActiveRecord |
-| Aplicações | Rails | `applies`, `apply_statuses` | ActiveRecord |
-| Clientes / Empresas | Rails | `client_accounts`, `client_users`, `company_profiles` | ActiveRecord |
-| Usuários | Rails | `users`, `departments` | ActiveRecord |
-| Entrevistas | Rails | `interviews`, `interview_notes` | ActiveRecord |
-| Mensagens | Rails | `messages` | ActiveRecord |
-| Email templates | Rails | `email_templates` | ActiveRecord |
-| Notificações | Rails | `notifications` | ActiveRecord |
+| Candidatos | **FastAPI** | `candidates` (Alembic) | Alembic |
+| Vagas | **FastAPI** | `jobs`, `selective_processes` (Alembic) | Alembic |
+| Aplicações | **FastAPI** | `applies` (Alembic) | Alembic |
+| Clientes / Empresas | **FastAPI** | `client_accounts`, `client_users`, `company_profiles` (Alembic) | Alembic |
+| Usuários | **FastAPI** | `users` (Alembic) | Alembic |
+| Entrevistas | **FastAPI** | `interviews` (Alembic) | Alembic |
+| Mensagens | **FastAPI** | `messages` (Alembic) | Alembic |
+| Email templates | **FastAPI** | `email_templates` (Alembic) | Alembic |
+| Notificações | **FastAPI** | `notifications` (Alembic) | Alembic |
 | Embeddings / Vetores | FastAPI | `candidate_embeddings`, `job_embeddings` | Alembic |
 | Sessões de triagem | FastAPI | `screening_sessions`, `triagem_sessions` | Alembic |
 | Estado de agentes | FastAPI | `agent_state`, `conversation_history` | Alembic |
@@ -1764,17 +2180,25 @@ Leitura cruzada é permitida: FastAPI pode ler tabelas Rails via SQL direto ou R
 | Audit logs IA | FastAPI | `ai_audit_logs`, `bias_reports` | Alembic |
 | LGPD / Retenção | FastAPI | `lgpd_retention`, `dsr_requests` | Alembic |
 
+**O que muda quando Rails for ativado (opt-in futuro):**
+
+| Domínio | Owner após Rails ativado | Condição |
+|---|---|---|
+| Candidatos | Rails (dados legados) | Apenas as 12 tabelas com dados reais no banco Rails |
+| Vagas | Rails (dados legados) | Idem |
+| Mensagens | Rails (dados legados) | Idem |
+| Demais domínios | FastAPI/Alembic | Continuam no FastAPI mesmo com Rails ativo |
+
 **Regra para novas tabelas:**
 
-> Se a tabela armazena dados de negócio acessíveis pelo recrutador via CRUD → **Rails owns**.
-> Se a tabela armazena estado, resultado ou contexto de agentes IA → **FastAPI/Alembic owns**.
-> Em caso de dúvida: perguntar "quem cria/edita esse dado — o usuário via UI ou o agente IA automaticamente?"
+> **Estado atual:** toda nova tabela → **FastAPI/Alembic**.
+> **Após Rails ativado:** se a tabela armazena dados de negócio legados já existentes no banco Rails → Rails owns. Se é dado novo ou de IA → FastAPI/Alembic owns.
 
 **Conflitos a evitar:**
 
-- Nunca rodar `alembic` em tabelas que Rails criou (e vice-versa)
+- Nunca rodar `alembic` em tabelas que Rails criou (quando Rails ativado)
 - Em banco compartilhado, prefixar tabelas IA com `lia_` para distinguir visualmente
-- Migrations do Rails e Alembic devem ser executadas em sequência definida no CI: `rails db:migrate` primeiro, `alembic upgrade head` depois
+- Se Rails for ativado: migrations Alembic primeiro, depois testar conectividade Rails → banco antes de rodar `rails db:migrate`
 
 ---
 
@@ -1910,6 +2334,8 @@ Configurações obrigatórias no WorkOS dashboard:
 ## 16. Checklist Final — Go-Live
 
 > Lista consolidada de todos os itens deste documento. Use como board de acompanhamento antes do go-live.
+>
+> **Nota pós-auditoria (abril 2026):** Rails NÃO é pré-requisito para o go-live. FastAPI é a fonte de verdade. Deixar `RAILS_API_URL` e `RAILS_BACKEND_URL` **vazias** para o primeiro deploy — FastAPI serve tudo automaticamente. Ver Seção 2F e Seção 23.
 
 ### Código (Replit + time dev)
 
@@ -2372,37 +2798,52 @@ locust -f load_tests/locustfile.py \
 
 ---
 
-## 22. Plano de Limpeza de Código Pós-Migração
+## 22. Plano de Limpeza de Código — Cenários Pós-Decisão Arquitetural
+
+> Esta seção foi atualizada pós-auditoria de abril 2026. O contexto mudou: não é mais "migração para Rails" mas sim dois cenários de limpeza distintos.
+>
+> **Cenário A:** Rails é ativado como opt-in (dados legados são necessários)
+> **Cenário B:** Rails nunca é ativado (plataforma segue 100% FastAPI)
+
+### 22.1 Cenário A — Limpeza após ativação do Rails (opt-in)
 
 > Executar **somente após** o Rails estar estável em produção para cada domínio, com monitoring ativo e baseline de regressão confirmado.
 
-### 22.1 Código Python (FastAPI) a remover por domínio
+Quando Rails passar a servir um domínio com dados legados, o código FastAPI equivalente pode ser marcado como deprecated:
 
-Quando Rails passar a servir um domínio, o código Python equivalente pode ser removido. **Nunca remover sem primeiro confirmar que Rails está operacional e monitorado.**
-
-| Domínio | Arquivos / Módulos | Aprox. linhas | Pré-requisito para remover |
+| Domínio | Arquivos / Módulos | Aprox. linhas | Pré-requisito para deprecar |
 |---|---|---|---|
-| Candidatos | `app/api/v1/candidates/` (splitado em 5 módulos) | ~1.739L | Rails serving candidates estável por 2+ semanas |
-| Clientes | `app/api/v1/clients/` (splitado em 7 módulos) | ~1.271L | Rails serving clients estável |
-| Billing | `app/api/v1/billing.py` | ~1.713L | Rails serving billing estável |
-| Teams/Usuários | `app/api/v1/teams.py` | ~1.451L | Rails serving teams estável |
-| WorkOS | `app/api/v1/workos.py` | ~1.382L | Somente se auth migrar 100% para Rails |
-| Recruitment stages | `app/api/v1/recruitment_stages/` (7 módulos) | — | Rails serving stages estável |
+| Candidatos (legados) | `app/api/v1/candidates/` (splitado em 5 módulos) | ~1.739L | Rails serving candidates estável por 2+ semanas **com dados reais** |
+| Clientes (legados) | `app/api/v1/clients/` (splitado em 7 módulos) | ~1.271L | Rails serving clients estável |
+| Teams/Usuários (legados) | `app/api/v1/teams.py` | ~1.451L | Rails serving teams estável |
 
-**Após cada domínio removido:**
-- Atualizar `app/main.py` para não registrar o router removido
-- Remover migrations Alembic das tabelas que Rails passou a gerenciar
-- Remover models Python que eram stubs das tabelas Rails
+> **Nota:** Billing, WorkOS e recruitment stages são domínios onde o FastAPI tem implementações mais completas que o Rails — NÃO migrar esses domínios para o Rails.
 
-### 22.2 Stubs e código morto (prioritário)
+**Após cada domínio transferido para Rails:**
+- Não remover o código FastAPI imediatamente — manter como fallback por 2+ semanas
+- Atualizar `backendTarget` nas rotas correspondentes para `"rails"` explicitamente
+- Monitorar circuit breaker — fallback automático está ativo
+
+### 22.2 Cenário B — Remoção de código de integração Rails (Rails nunca ativado)
+
+> Se a decisão for nunca ativar o Rails, o código de integração pode ser removido progressivamente.
+
+| Item | Localização | Volume | Condição |
+|---|---|---|---|
+| RailsAdapter | `app/domains/integrations_hub/services/rails_adapter.py` | 939L | Rails confirmado como nunca necessário |
+| Client Rails | `app/services/ats_clients/wedotalent_rails.py` | 588L | Idem |
+| JWT validator | `app/auth/rails_jwt.py` | — | Idem |
+| Frontend flags | `backendTarget: "rails"` em 94 rotas | — | Remover flag, deixar só FastAPI |
+
+### 22.3 Stubs e código morto (prioritário — independente do cenário)
 
 | Item | Localização | Volume | Ação |
 |---|---|---|---|
 | Stub services | `app/services/` | ~120 arquivos de 2 linhas | Remover após confirmar que nenhum router os importa |
-| Stub models | `app/models/` | Variável | Remover modelos que Rails substituiu |
+| Stub models | `app/models/` | Variável | Remover modelos que não têm tabela no banco |
 | Frontend routes mortas | `plataforma-lia/src/app/api/` | ~186 rotas custom | Remover se `createProxyHandlers` cobrir o equivalente |
 
-### 22.3 Serviços IA sensíveis — remoção com cautela especial
+### 22.4 Serviços IA sensíveis — remoção com cautela especial
 
 > Estes dois arquivos requerem um baseline de regressão IA **antes** de qualquer remoção, porque afetam diretamente a qualidade dos agentes de triagem.
 
@@ -2412,6 +2853,64 @@ Quando Rails passar a servir um domínio, o código Python equivalente pode ser 
 | `wsi_service.py` | ~320L | Idem acima + validação do WSI pipeline end-to-end em staging |
 
 **Regra:** estes dois arquivos só podem ser removidos após produção estável com monitoring, com o eval framework ativo, e após o time de AI validar que as métricas de faithfulness e relevancy se mantêm ≥ threshold.
+
+---
+
+## 23. Infraestrutura — Obrigatório vs Opcional para Deploy
+
+> Esta seção clarifica quais componentes de infraestrutura são necessários para o deploy da Plataforma LIA e quais são opcionais. Atualizado pós-auditoria de abril 2026.
+
+### Tabela de Infraestrutura
+
+| Componente | Status | Detalhes |
+|---|---|---|
+| **PostgreSQL** | 🟢 **Obrigatório** | Banco de dados principal. Alembic roda 59 migrações. Cloud SQL no GCP. |
+| **pgvector** | 🟢 **Obrigatório** | Extensão PostgreSQL para embeddings semânticos. Habilitar no Cloud SQL. |
+| **Redis** | 🟡 **Recomendado** | Cache, token budget, HITL, Celery results. Sem Redis: Celery usa backend alternativo, HITL pode ter problemas. Cloud Memorystore no GCP. |
+| **Celery workers** | 🟡 **Recomendado** | Background jobs (12+ tasks). Sem Celery: operações assíncronas ficam pendentes. Segundo Cloud Run service. |
+| **RabbitMQ** | 🟡 **Opcional** (pode usar Redis) | Message broker para Celery. Redis também serve como broker — RabbitMQ só necessário se escala exigir. CloudAMQP ou VM dedicada. |
+| **Docker** | 🟢 **Transparente** | Dockerfiles já existem para frontend e backend. Cloud Run usa Docker nativamente. |
+| **Elasticsearch** | ❌ **Desnecessário** | O ecossistema WeDO legado usa Searchkick + Elasticsearch. A LIA usa busca semântica + FTS (pgvector + tsvector) — **não precisa de Elasticsearch**. |
+| **Rails (ats-api-copia)** | 🔵 **Opcional (opt-in)** | Ver Seção 2F. Só necessário se houver dados legados de clientes que precisem ser acessados. RAILS_API_URL e RAILS_BACKEND_URL vazias = FastAPI serve tudo. |
+| **Ruby / Rails runtime** | 🔵 **Opcional (opt-in)** | Necessário apenas se Rails for ativado. Não instalar no ambiente Replit atual. |
+| **Sidekiq** | 🔵 **Opcional (opt-in)** | Background jobs do Rails. Só necessário se Rails for ativado. |
+| **ActionCable** | ❌ **Desnecessário** | WebSocket via Rails. A LIA usa WebSocket nativo FastAPI — ActionCable não é necessário. |
+| **Terraform** | 🟡 **Recomendado** | IaC em `lia-agent-system/terraform/gcp/`. Não obrigatório, mas recomendado para reproducibilidade do infra. |
+| **Cloud Armor (WAF)** | 🟡 **Recomendado** | Proteção DDoS e WAF. Não obrigatório para MVP, mas recomendado para produção. |
+
+### Resumo: o que é realmente necessário para o primeiro deploy
+
+```
+OBRIGATÓRIO para o deploy funcionar:
+  1. PostgreSQL (Cloud SQL) com pgvector
+  2. Alembic migrations rodadas (alembic upgrade head)
+  3. Cloud Run para frontend (Next.js — porta 5000)
+  4. Cloud Run para backend (FastAPI — porta 8001)
+  5. Secret Manager com variáveis obrigatórias (WorkOS, LLMs, etc.)
+
+RECOMENDADO (adicionar antes de go-live):
+  6. Redis (Cloud Memorystore) — para Celery e cache
+  7. Celery worker (segundo Cloud Run service)
+
+NÃO NECESSÁRIO:
+  - Elasticsearch
+  - Rails runtime
+  - ActionCable
+  - RabbitMQ (pode usar Redis como broker)
+  - Sidekiq
+```
+
+### Comparação: custo de infra LIA vs Ecossistema WeDO Legado
+
+| Item de infra | WeDO legado | Plataforma LIA |
+|---|---|---|
+| Banco de dados | PostgreSQL | PostgreSQL (mesmo) |
+| Cache | Redis (Sidekiq) | Redis (Celery) |
+| Busca | Elasticsearch (extra custo) | pgvector + FTS (zero custo extra) |
+| WebSocket | ActionCable (dentro do Rails) | FastAPI nativo |
+| Background jobs | Sidekiq + Celery + RabbitMQ (3 sistemas) | Celery (1 sistema) |
+| Language runtimes | Ruby + Python + Node | Python + Node |
+| **Complexidade operacional** | **Alta** | **Baixa** |
 
 ---
 
@@ -2426,6 +2925,7 @@ Quando Rails passar a servir um domínio, o código Python equivalente pode ser 
 
 ---
 
-*Última atualização: Abril 2026*
-*Domínio: wedotalent.cc · Região GCP: us-central1 · Stack: Next.js 15 + FastAPI + Rails 7*
+*Última atualização: Abril 2026 (pós-auditoria completa do ecossistema wedocc2026)*
+*Domínio: wedotalent.cc · Região GCP: us-central1 · Stack: Next.js 15 + FastAPI + Rails 7 (opcional)*
 *Integrações mapeadas: Claude, Gemini, OpenAI, WorkOS, Twilio Voice, Google STT/TTS, Teams, WhatsApp, Resend, HubSpot, PEARCH, Redis, RabbitMQ, Celery, Sentry, LangSmith*
+*Decisão arquitetural: FastAPI é a fonte de verdade. Rails é opt-in para dados legados. Ver Seção 2F.*
