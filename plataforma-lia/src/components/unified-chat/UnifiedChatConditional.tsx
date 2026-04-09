@@ -32,8 +32,8 @@ export function UnifiedChatConditional() {
         <UnifiedChatBubble onOpen={() => open()} />
       )}
 
-      {/* LiaSuperPrompt: preserved from original */}
-      {!splitView.active && <LiaSuperPrompt />}
+      {/* LiaSuperPrompt: preserved from original — hidden when ChatPage owns the chat */}
+      {!splitView.active && !hasInlineChat && <LiaSuperPrompt />}
     </>
   )
 }

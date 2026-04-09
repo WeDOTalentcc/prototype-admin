@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, useLayoutEffect } from "react"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { UnifiedChat } from "./UnifiedChat"
 
@@ -20,8 +20,8 @@ export function ChatPageFullscreen({ initialConversationId }: Props) {
   const { setHasInlineChat } = useLiaFloat()
   const { setChatConversationId, loadChatHistory } = useLiaChatContext()
 
-  // Signal that this page has its own chat (hide sidebar)
-  useEffect(() => {
+  // Signal that this page has its own chat (hide sidebar + bubble before paint)
+  useLayoutEffect(() => {
     setHasInlineChat(true)
     return () => { setHasInlineChat(false) }
   }, [setHasInlineChat])
@@ -38,7 +38,7 @@ export function ChatPageFullscreen({ initialConversationId }: Props) {
     <UnifiedChat
       renderMode="overlay"
       initialMode="fullscreen"
-      className="relative inset-auto z-auto h-full"
+      className="relative inset-auto z-auto h-full overflow-hidden"
     />
   )
 }

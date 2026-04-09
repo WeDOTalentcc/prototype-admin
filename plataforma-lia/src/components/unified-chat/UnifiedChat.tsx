@@ -228,7 +228,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       data-render-mode={renderMode}
     >
       {/* Chat column */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
         {/* Header */}
         <UnifiedChatHeader
           mode={effectiveMode}
