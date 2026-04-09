@@ -3,7 +3,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 
-const RAILS_URL = process.env.RAILS_BACKEND_URL || process.env.BACKEND_URL || ""
+const FASTAPI_URL = process.env.BACKEND_URL || ""
 
 function getAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" }
@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const status = searchParams.get("status")
-    const path = `/v1/users/talent_pools${status ? `?status=${status}` : ""}`
-    const res = await fetch(`${RAILS_URL}${path}`, { headers: getAuthHeaders(req) })
+    const path = `/api/v1/talent_pools${status ? `?status=${status}` : ""}`
+    const res = await fetch(`${FASTAPI_URL}${path}`, { headers: getAuthHeaders(req) })
     const data = await res.text()
     return new NextResponse(data, { status: res.status, headers: { "Content-Type": "application/json" } })
   } catch {
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
-    const res = await fetch(`${RAILS_URL}/v1/users/talent_pools`, {
+    const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools`, {
       method: "POST",
       headers: getAuthHeaders(req),
       body,

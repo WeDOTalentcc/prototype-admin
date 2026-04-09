@@ -7,7 +7,7 @@ import uuid as uuid_module
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.candidate import Candidate
@@ -88,6 +88,40 @@ class EmailTemplatesRepository:
         templates = list(result.scalars().all())
 
         return templates, total
+
+    async def list_distinct_categories(
+        self,
+        company_id: str | None = None,
+        visibility: str | None = None,
+    ) -> list[str]:
+        query = select(distinct(EmailTemplate.category)).where(
+            EmailTemplate.category.isnot(None)
+        )
+        if company_id:
+            query = query.where(
+                or_(
+                    EmailTemplate.company_id == company_id,
+                    EmailTemplate.company_id.is_(None),
+                )
+            )
+        if visibility == "recruiter":
+            query = query.where(
+                or_(
+                    EmailTemplate.visibility == "recruiter",
+                    EmailTemplate.visibility == "all",
+                )
+            )
+            query = query.where(~EmailTemplate.channel.in_(["bell", "teams"]))
+        elif visibility == "admin":
+            query = query.where(
+                or_(
+                    EmailTemplate.visibility == "admin",
+                    EmailTemplate.visibility == "all",
+                )
+            )
+        query = query.order_by(EmailTemplate.category)
+        result = await self.db.execute(query)
+        return [row[0] for row in result.all()]
 
     async def get_by_id(self, template_id: uuid_module.UUID) -> EmailTemplate | None:
         result = await self.db.execute(

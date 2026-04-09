@@ -158,6 +158,23 @@ async def list_email_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/categories/list", response_model=None)
+async def list_email_template_categories(
+    company_id: str | None = Query(None),
+    visibility: str | None = Query("recruiter"),
+    repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
+):
+    try:
+        categories = await repo.list_distinct_categories(
+            company_id=company_id,
+            visibility=visibility,
+        )
+        return {"categories": categories, "total": len(categories)}
+    except Exception as e:
+        logger.error(f"Error listing email template categories: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{template_id}", response_model=EmailTemplateResponse)
 async def get_email_template(
     template_id: str,
@@ -600,55 +617,6 @@ async def seed_default_templates(
         await repo.rollback()
         logger.error(f"Error seeding default templates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/categories/list", response_model=None)
-async def list_categories():
-    """
-    List available email template categories, channels, and situations.
-    """
-    return {
-        "categories": [
-            {"value": "interview", "label": "Entrevistas", "description": "Templates para convites e lembretes de entrevista"},
-            {"value": "rejection", "label": "Feedback Negativo", "description": "Templates para comunicar rejeições de forma humanizada"},
-            {"value": "offer", "label": "Propostas", "description": "Templates para envio de ofertas de trabalho"},
-            {"value": "followup", "label": "Acompanhamento", "description": "Templates para acompanhamento do processo seletivo"},
-            {"value": "alerts", "label": "Alertas", "description": "Templates para alertas e notificações"},
-            {"value": "reports", "label": "Relatórios", "description": "Templates para relatórios periódicos"},
-            {"value": "workflow", "label": "Fluxos de Trabalho", "description": "Templates para aprovações e fluxos"},
-            {"value": "integrations", "label": "Integrações", "description": "Templates para notificações de integração"},
-            {"value": "billing", "label": "Faturamento", "description": "Templates para créditos e faturamento"},
-            {"value": "jobs", "label": "Vagas", "description": "Templates sobre status de vagas"},
-            {"value": "workforce", "label": "Workforce", "description": "Templates de planejamento de workforce"},
-            {"value": "onboarding", "label": "Onboarding", "description": "Templates de boas-vindas"},
-            {"value": "screening", "label": "Triagem", "description": "Templates de triagem de candidatos"},
-            {"value": "briefings", "label": "Briefings", "description": "Templates de briefings diários"},
-            {"value": "parecer", "label": "Pareceres", "description": "Templates de pareceres da LIA"},
-        ],
-        "channels": [
-            {"value": channel, "label": CHANNEL_LABELS.get(channel, channel), "description": CHANNEL_DESCRIPTIONS.get(channel, "")}
-            for channel in ALL_CHANNELS
-        ],
-        "situations": [
-            {"value": "triagem", "label": "Triagem", "description": "Primeira abordagem e triagem inicial"},
-            {"value": "wsi_screening", "label": "Triagem WSI", "description": "Avaliação prática Work Sample Interview"},
-            {"value": "entrevista", "label": "Entrevista", "description": "Convites e lembretes de entrevista"},
-            {"value": "agendamento", "label": "Agendamento", "description": "Confirmação e lembretes de agenda"},
-            {"value": "follow_up", "label": "Follow-up", "description": "Acompanhamento do processo"},
-            {"value": "rejeicao", "label": "Rejeição", "description": "Feedback negativo humanizado"},
-            {"value": "proposta", "label": "Proposta", "description": "Envio de ofertas de trabalho"},
-            {"value": "feedback", "label": "Feedback", "description": "Solicitação de feedback sobre o processo"},
-            {"value": "goal_at_risk", "label": "Meta em Risco", "description": "Alerta de meta em risco"},
-            {"value": "goal_missed", "label": "Meta Não Atingida", "description": "Notificação de meta não atingida"},
-            {"value": "sla_violated", "label": "SLA Violado", "description": "Alerta de SLA violado"},
-            {"value": "approval_pending", "label": "Aprovação Pendente", "description": "Solicitação de aprovação"},
-            {"value": "offer_accepted", "label": "Proposta Aceita", "description": "Notificação de proposta aceita"},
-            {"value": "offer_rejected", "label": "Proposta Recusada", "description": "Notificação de proposta recusada"},
-            {"value": "screening_completed", "label": "Triagem Concluída", "description": "Notificação de triagem finalizada"},
-            {"value": "daily_briefing", "label": "Briefing Diário", "description": "Briefing matinal"},
-            {"value": "end_of_day_summary", "label": "Resumo de Fim de Dia", "description": "Resumo do dia de trabalho"},
-        ],
-    }
 
 
 @router.post("/clone-for-client/{client_id}", response_model=None)

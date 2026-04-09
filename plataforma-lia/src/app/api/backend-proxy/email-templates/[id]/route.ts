@@ -4,5 +4,5 @@ export const { dynamic, GET, PUT, DELETE } = createProxyHandlers({
   backendPath: "/api/v1/email-templates/:id",
   methods: ["GET", "PUT", "DELETE"],
   auth: true,
-  backendTarget: "rails",
+  backendTarget: "fastapi",
 })

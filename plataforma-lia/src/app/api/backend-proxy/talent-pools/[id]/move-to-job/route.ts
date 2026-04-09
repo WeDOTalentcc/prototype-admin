@@ -3,7 +3,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 
-const RAILS_URL = process.env.RAILS_BACKEND_URL || process.env.BACKEND_URL || ""
+const FASTAPI_URL = process.env.BACKEND_URL || ""
 
 function getAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" }
@@ -17,7 +17,7 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 // POST /api/backend-proxy/talent-pools/:id/move-to-job
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const body = await req.text()
-  const res = await fetch(`${RAILS_URL}/v1/users/talent_pools/${params.id}/move_to_job`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}/move_to_job`, {
     method: "POST",
     headers: getAuthHeaders(req),
     body,

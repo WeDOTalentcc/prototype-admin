@@ -4,5 +4,5 @@ export const { dynamic, GET, PATCH } = createProxyHandlers({
   backendPath: "/api/v1/company/retention-policy",
   methods: ["GET", "PATCH"],
   auth: true,
-  backendTarget: "rails",
+  backendTarget: "fastapi",
 })

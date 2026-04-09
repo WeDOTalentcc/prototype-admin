@@ -55,6 +55,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **ATS Integration**: Full ATS integration with Gupy, Pandapé, and Merge.dev.
 - **Credits Infrastructure**: `CreditAccount` and `CreditTransaction` models with `CreditService` for managing credit balance and transactions.
 - **Interview Flow with Company Stages**: Added `recruitment_stage_id` FK to Interview model, allowing scheduling based on company-configured stages.
+- **Rails→FastAPI Frontend Migration (Task #91)**: All 94 frontend proxy route files migrated from `backendTarget: "rails"` to `"fastapi"`. Zero Rails references remain. New endpoint `GET /api/v1/email-templates/categories/list` created (returns 14 distinct categories). FastAPI is now the sole backend for all frontend routes. Rails (`ats-api-copia`) remains available as opt-in bridge for legacy data (Decision C).
 
 # External Dependencies
 - Anthropic (Claude API)

@@ -4,5 +4,5 @@ export const { dynamic, GET, POST } = createProxyHandlers({
   backendPath: "/api/v1/automations",
   methods: ["GET", "POST"],
   auth: true,
-  backendTarget: "rails",
+  backendTarget: "fastapi",
 })

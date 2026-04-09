@@ -3,7 +3,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 
-const RAILS_URL = process.env.RAILS_BACKEND_URL || process.env.BACKEND_URL || ""
+const FASTAPI_URL = process.env.BACKEND_URL || ""
 
 function getAuthHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" }
@@ -18,8 +18,8 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const { searchParams } = new URL(req.url)
   const stage = searchParams.get("stage")
-  const path = `/v1/users/talent_pools/${params.id}/candidates${stage ? `?stage=${stage}` : ""}`
-  const res = await fetch(`${RAILS_URL}${path}`, { headers: getAuthHeaders(req) })
+  const path = `/api/v1/talent_pools/${params.id}/candidates${stage ? `?stage=${stage}` : ""}`
+  const res = await fetch(`${FASTAPI_URL}${path}`, { headers: getAuthHeaders(req) })
   const data = await res.text()
   return new NextResponse(data, { status: res.status, headers: { "Content-Type": "application/json" } })
 }
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 // POST /api/backend-proxy/talent-pools/:id/candidates — add candidates
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const body = await req.text()
-  const res = await fetch(`${RAILS_URL}/v1/users/talent_pools/${params.id}/add_candidates`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}/add_candidates`, {
     method: "POST",
     headers: getAuthHeaders(req),
     body,
