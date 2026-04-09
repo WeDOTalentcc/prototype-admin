@@ -19,7 +19,7 @@ class SourcingAgent(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(64), nullable=False, index=True)
     job_id = Column(String(64), nullable=True)
-    talent_pool_id = Column(UUID(as_uuid=True), ForeignKey("talent_pools.id", ondelete="SET NULL"), nullable=True)
+    talent_pool_id = Column(UUID(as_uuid=True), nullable=True)
     agent_template_id = Column(String(255), ForeignKey("agent_templates.id", ondelete="SET NULL"), nullable=True)
 
     agent_name = Column(String(256), nullable=False)

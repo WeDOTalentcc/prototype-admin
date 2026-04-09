@@ -83,7 +83,7 @@ class InterviewResponse(BaseModel):
     status: str
     confirmation_status: str
     notes: str | None
-    is_synced_to_calendar: bool
+    is_synced_to_calendar: bool | None = False
     created_at: datetime
     updated_at: datetime
 
