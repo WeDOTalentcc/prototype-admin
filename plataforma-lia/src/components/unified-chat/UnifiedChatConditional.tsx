@@ -3,45 +3,42 @@
 import { usePathname } from "next/navigation"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSuperPrompt } from "@/components/lia-float/LiaSuperPrompt"
-import { UnifiedChat } from "./UnifiedChat"
 import { UnifiedChatBubble } from "./UnifiedChatBubble"
-import { useState } from "react"
-import type { ChatMode } from "./unified-chat-types"
 
 const HIDDEN_PATHS = ["/login", "/login/welcome", "/forgot-password", "/reset-password"]
 
 /**
- * UnifiedChatConditional — Global wrapper that replaces LiaFloatConditional.
+ * UnifiedChatConditional — Global wrapper in layout.tsx.
  *
- * Renders the UnifiedChat in sidebar/floating mode when open,
- * or the bubble button when closed. Fullscreen mode is handled
- * by the ChatPage integration.
+ * In the new architecture, the sidebar UnifiedChat is rendered
+ * INSIDE dashboard-app.tsx (as flex child). This conditional
+ * only handles:
+ * - The bubble button (when chat is closed outside dashboard)
+ * - LiaSuperPrompt
+ * - Path-based visibility
  *
- * Preserves:
- * - hasInlineChat check (hide when ChatPage is active)
- * - LiaSuperPrompt rendering (outside split view)
- * - HIDDEN_PATHS exclusion (login, etc.)
+ * The inline sidebar is rendered by DashboardChatPanel in dashboard-app.
  */
 export function UnifiedChatConditional() {
   const pathname = usePathname()
   const { isOpen, open, splitView, hasInlineChat } = useLiaFloat()
-  const [mode] = useState<ChatMode>("sidebar")
 
   const isHidden = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
   if (isHidden) return null
 
+  // Check if we're inside the dashboard shell
+  const isDashboard = typeof document !== "undefined"
+    ? !!document.querySelector("[data-dashboard-shell]")
+    : false
+
   return (
     <>
-      {/* UnifiedChat: only when no inline chat (ChatPage sets hasInlineChat=true) */}
-      {!hasInlineChat && (
-        isOpen ? (
-          <UnifiedChat initialMode={mode} />
-        ) : (
-          <UnifiedChatBubble onOpen={() => open()} />
-        )
+      {/* Bubble: show when chat closed and not on ChatPage */}
+      {!hasInlineChat && !isOpen && !isDashboard && (
+        <UnifiedChatBubble onOpen={() => open()} />
       )}
 
-      {/* LiaSuperPrompt: preserved from original LiaFloatConditional */}
+      {/* LiaSuperPrompt: preserved from original */}
       {!splitView.active && <LiaSuperPrompt />}
     </>
   )

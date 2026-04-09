@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRecentItems, type RecentItem } from "@/hooks/use-recent-items"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
+import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 
@@ -202,6 +203,8 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
               setCurrentPage(page)
             }} />
           )}
+          {/* UnifiedChat sidebar — inline flex child, pushes content (Replit-style) */}
+          <DashboardChatPanel />
         </div>
       </div>
 

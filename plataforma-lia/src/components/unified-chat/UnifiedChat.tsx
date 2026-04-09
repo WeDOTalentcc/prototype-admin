@@ -20,6 +20,9 @@ function getStoredMode(): ChatMode {
 }
 
 interface Props {
+  /** When "inline", renders as a flex child (no fixed positioning).
+   *  When "overlay", renders with fixed positioning (floating/fullscreen). */
+  renderMode?: "inline" | "overlay"
   initialMode?: ChatMode
   className?: string
 }
@@ -28,13 +31,14 @@ interface Props {
  * UnifiedChat — Single chat component with 3 visual modes (Notion AI-inspired).
  *
  * Modes:
- * - fullscreen: Full page, centered content (like Chat LIA menu page)
- * - sidebar: Fixed right panel persistent across navigation
+ * - fullscreen: Full page, centered content (Chat LIA menu page)
+ * - sidebar: Right panel persistent across navigation (Replit-style)
  * - floating: Overlay panel positioned over content
  *
- * Connects to existing LiaFloatContext for WebSocket, messages, and state.
+ * renderMode="inline" is used when embedded in the dashboard flex layout.
+ * renderMode="overlay" is used for floating/fullscreen fixed positioning.
  */
-export function UnifiedChat({ initialMode, className }: Props) {
+export function UnifiedChat({ renderMode = "overlay", initialMode, className }: Props) {
   const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode())
   const [inputText, setInputText] = useState("")
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
@@ -80,7 +84,6 @@ export function UnifiedChat({ initialMode, className }: Props) {
 
   const handleSuggestionClick = useCallback((prompt: string) => {
     setInputText(prompt)
-    // Auto-send after small delay for UX feel
     setTimeout(() => {
       sendChatMessage(prompt)
       setInputText("")
@@ -97,10 +100,10 @@ export function UnifiedChat({ initialMode, className }: Props) {
   const handleModeChange = useCallback((newMode: ChatMode) => {
     setMode(newMode)
     if (newMode === "fullscreen") {
-      // Navigate to fullscreen chat page
+      close()
       window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: {} }))
     }
-  }, [])
+  }, [close])
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -119,24 +122,28 @@ export function UnifiedChat({ initialMode, className }: Props) {
 
   const hasMessages = chatMessages.length > 0
 
-  // Don't render if closed (sidebar/floating modes)
-  if (mode !== "fullscreen" && !isOpen) return null
+  // For overlay mode, don't render if closed
+  if (renderMode === "overlay" && !isOpen) return null
+
+  const isInline = renderMode === "inline"
 
   return (
     <div
       className={cn(
         "flex flex-col bg-lia-bg-primary",
-        // Mode-specific layouts
-        mode === "fullscreen" && "fixed inset-0 z-50",
-        mode === "sidebar" && "fixed top-0 right-0 bottom-0 w-[380px] z-30 border-l border-lia-border-subtle",
-        mode === "floating" && "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
+        isInline
+          ? "w-[380px] flex-shrink-0 border-l border-lia-border-subtle h-full"
+          : mode === "fullscreen"
+            ? "fixed inset-0 z-50"
+            : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
         className
       )}
       data-chat-mode={mode}
+      data-render-mode={renderMode}
     >
       {/* Header */}
       <UnifiedChatHeader
-        mode={mode}
+        mode={isInline ? "sidebar" : mode}
         onModeChange={handleModeChange}
         onClose={close}
         onNewChat={handleNewChat}
@@ -147,7 +154,7 @@ export function UnifiedChat({ initialMode, className }: Props) {
       {/* Content area */}
       {hasMessages ? (
         <UnifiedMessageList
-          mode={mode}
+          mode={isInline ? "sidebar" : mode}
           messages={chatMessages}
           isStreaming={chatIsStreaming}
           streamingContent={chatStreamingContent}
@@ -157,14 +164,14 @@ export function UnifiedChat({ initialMode, className }: Props) {
         />
       ) : (
         <UnifiedChatEmptyState
-          mode={mode}
+          mode={isInline ? "sidebar" : mode}
           onSuggestionClick={handleSuggestionClick}
         />
       )}
 
       {/* Input */}
       <UnifiedChatInput
-        mode={mode}
+        mode={isInline ? "sidebar" : mode}
         inputText={inputText}
         setInputText={setInputText}
         onSend={handleSend}
