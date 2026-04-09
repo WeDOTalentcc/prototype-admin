@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use UnifiedChat (sidebar mode) via InlineChatBridge instead.
+ * This component is replaced by the unified chat architecture (Phase 6).
+ * Migration: import { InlineChatBridge } from "@/components/unified-chat"
+ */
 "use client"
 
 import React, { useMemo, useCallback } from "react"
