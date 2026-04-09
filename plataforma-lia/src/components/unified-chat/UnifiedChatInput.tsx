@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useRef, useCallback, useEffect } from "react"
-import { Send, Plus, Mic, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle } from "lucide-react"
+import React, { useRef, useCallback, useEffect, useState } from "react"
+import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Briefcase, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import type { ChatMode } from "./unified-chat-types"
@@ -38,6 +38,7 @@ export function UnifiedChatInput({
   onFileAttach,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [showPlusMenu, setShowPlusMenu] = useState(false)
   const isBusy = isStreaming || isCreating
 
   // Auto-resize textarea
@@ -85,7 +86,7 @@ export function UnifiedChatInput({
         </div>
       )}
 
-      {/* Input container — Notion-style with blue focus ring */}
+      {/* Input container — Notion-style with cyan focus ring */}
       <div className={cn(
         "rounded-xl border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
         "focus-within:border-wedo-cyan focus-within:ring-1 focus-within:ring-wedo-cyan/30",
@@ -122,21 +123,53 @@ export function UnifiedChatInput({
         {/* Bottom toolbar */}
         <div className="flex items-center justify-between px-3 pb-2.5">
           <div className="flex items-center gap-1">
-            {/* Attach button */}
-            <button
-              type="button"
-              onClick={onFileButtonClick}
-              disabled={isBusy}
-              className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
-              title="Anexar arquivo"
-              aria-label="Anexar arquivo"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            {/* Plus menu (Notion-style) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowPlusMenu(!showPlusMenu)}
+                disabled={isBusy}
+                className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
+                title="Adicionar"
+                aria-label="Menu de adição"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+
+              {showPlusMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowPlusMenu(false)} />
+                  <div className="absolute left-0 bottom-full mb-1 z-50 w-56 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
+                    <button
+                      onClick={() => {
+                        onFileButtonClick()
+                        setShowPlusMenu(false)
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                      Anexar PDF, DOCX ou CSV
+                    </button>
+                    <button
+                      onClick={() => {
+                        setInputText(prev => prev + "@")
+                        textareaRef.current?.focus()
+                        setShowPlusMenu(false)
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary font-['Open_Sans',sans-serif]"
+                    >
+                      <AtSign className="w-4 h-4" />
+                      Mencionar vaga ou candidato
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.docx,.doc,.txt,.xls,.xlsx"
+              accept=".pdf,.docx,.doc,.txt,.xls,.xlsx,.csv"
               onChange={onFileAttach}
               className="hidden"
               aria-hidden="true"
@@ -147,7 +180,7 @@ export function UnifiedChatInput({
               type="button"
               disabled={isBusy}
               className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
-              title="Configurações"
+              title="Configurações de contexto"
               aria-label="Configurações de conversa"
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -155,6 +188,11 @@ export function UnifiedChatInput({
           </div>
 
           <div className="flex items-center gap-1">
+            {/* Auto label (like Notion) */}
+            <span className="text-xs text-lia-text-disabled font-['Open_Sans',sans-serif] mr-1">
+              Auto
+            </span>
+
             {/* Voice */}
             <AudioRecordButton
               onTranscription={(text) => setInputText(prev => prev ? `${prev} ${text}` : text)}

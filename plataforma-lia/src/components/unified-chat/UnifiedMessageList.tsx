@@ -115,7 +115,7 @@ export function UnifiedMessageList({
             ) : (
               /* User message — Notion style: dark pill, right-aligned */
               <div className="max-w-[80%]">
-                <div className="inline-block px-4 py-2.5 rounded-2xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
+                <div className="inline-block px-4 py-2.5 rounded-xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900">
                   <p className="text-sm font-['Open_Sans',sans-serif]">
                     {message.content}
                   </p>

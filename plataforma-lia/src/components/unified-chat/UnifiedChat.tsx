@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useRef } from "react"
+import React, { useState, useCallback, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
@@ -9,6 +9,15 @@ import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
 import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
+
+const MODE_STORAGE_KEY = "lia-chat-mode"
+
+function getStoredMode(): ChatMode {
+  if (typeof window === "undefined") return "sidebar"
+  const stored = localStorage.getItem(MODE_STORAGE_KEY)
+  if (stored === "sidebar" || stored === "floating" || stored === "fullscreen") return stored
+  return "sidebar"
+}
 
 interface Props {
   initialMode?: ChatMode
@@ -25,8 +34,8 @@ interface Props {
  *
  * Connects to existing LiaFloatContext for WebSocket, messages, and state.
  */
-export function UnifiedChat({ initialMode = "sidebar", className }: Props) {
-  const [mode, setMode] = useState<ChatMode>(initialMode)
+export function UnifiedChat({ initialMode, className }: Props) {
+  const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode())
   const [inputText, setInputText] = useState("")
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -42,7 +51,10 @@ export function UnifiedChat({ initialMode = "sidebar", className }: Props) {
 
   const {
     chatMessages,
+    setChatMessages,
     chatConversationId,
+    setChatConversationId,
+    switchChatContext,
     sendChatMessage,
     chatIsConnected,
     chatIsStreaming,
@@ -52,6 +64,11 @@ export function UnifiedChat({ initialMode = "sidebar", className }: Props) {
     chatThinkingSteps,
     chatHitlPending,
   } = useLiaChatContext()
+
+  // Persist mode preference
+  useEffect(() => {
+    localStorage.setItem(MODE_STORAGE_KEY, mode)
+  }, [mode])
 
   const handleSend = useCallback(() => {
     const text = inputText.trim()
@@ -71,9 +88,11 @@ export function UnifiedChat({ initialMode = "sidebar", className }: Props) {
   }, [sendChatMessage])
 
   const handleNewChat = useCallback(() => {
-    // Reset messages and conversation
-    // This will be wired to switchChatContext in full integration
-  }, [])
+    switchChatContext("general", { conversationId: null })
+    setChatMessages([])
+    setInputText("")
+    setAttachedFile(null)
+  }, [switchChatContext, setChatMessages])
 
   const handleModeChange = useCallback((newMode: ChatMode) => {
     setMode(newMode)
