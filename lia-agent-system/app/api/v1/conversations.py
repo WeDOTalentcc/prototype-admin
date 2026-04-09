@@ -92,6 +92,10 @@ class UpdateSummaryRequest(BaseModel):
     """Request to update conversation summary."""
     force: bool = False
 
+class RenameConversationRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=500)
+
+
 
 @router.get("", response_model=ConversationListResponse)
 async def list_conversations(
@@ -327,6 +331,37 @@ async def update_summary(
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+@router.patch("/{conversation_id}")
+async def rename_conversation(
+    conversation_id: str,
+    request: RenameConversationRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    from libs.models.lia_models.conversation import Conversation
+    from sqlalchemy import select
+    result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
+    conversation = result.scalar_one_or_none()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    conversation.title = request.title
+    await db.commit()
+    await db.refresh(conversation)
+    return ConversationResponse(
+        id=str(conversation.id),
+        user_id=conversation.user_id,
+        context_type=conversation.context_type or "general",
+        context_id=conversation.context_id,
+        title=conversation.title,
+        summary=conversation.summary,
+        intent=conversation.intent,
+        status=conversation.status or "active",
+        is_active=conversation.is_active if conversation.is_active is not None else True,
+        message_count=conversation.message_count or 0,
+        created_at=conversation.created_at.isoformat() if conversation.created_at else None,
+        updated_at=conversation.updated_at.isoformat() if conversation.updated_at else None,
+    )
 
 @router.delete("/{conversation_id}", response_model=None)
 async def delete_conversation(

@@ -264,7 +264,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           onSwitchTask={() => setShowSwitchTask(true)}
           conversationTitle={conversationTitle}
           isConnected={chatIsConnected}
-          onRename={(newTitle) => { /* TODO: PATCH /conversations/{id} when endpoint exists */ }}
+          onRename={(newTitle) => { if (chatConversationId) { fetch("/api/backend-proxy/conversations/" + chatConversationId, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ title: newTitle }) }) } }}
           onDelete={() => { if (chatConversationId) { fetch("/api/backend-proxy/conversations/" + chatConversationId, { method: "DELETE", credentials: "include" }).then(() => { handleNewChat() }) } }}
         />
 
