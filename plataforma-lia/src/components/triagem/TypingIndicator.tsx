@@ -16,7 +16,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
         className
       )}
       aria-live="polite"
-      aria-label="LIA está digitando"
+      aria-label="Analisando"
     >
       <div className="flex-shrink-0">
         <LIAIcon size="sm" className="bg-wedo-cyan/10" />
@@ -34,7 +34,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
           ))}
         </div>
         <span className="text-xs font-['Open_Sans',sans-serif] text-lia-text-secondary">
-          LIA está digitando...
+          Analisando...
         </span>
       </div>
 

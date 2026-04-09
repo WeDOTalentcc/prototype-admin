@@ -245,7 +245,7 @@ export function ExpandedChatInput({
           {/* Badges de sugestão abaixo das tabs (só quando IA Natural selecionado) */}
           {!hideModeButtons && activeInputTab === 'ia-natural' && (
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
-              <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
+              <span className="text-xs font-medium text-lia-text-tertiary">Sugestões:</span>
               {suggestionTags.map((tag) => {
                 const IconComponent = tag.icon
                 return (
@@ -299,13 +299,13 @@ export function ExpandedChatInput({
                     }}
                     disabled={isTypingEffect || isLoading}
                     className={cn(
- "inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full transition-[width,height]",
+ "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full transition-[width,height]",
                       isTypingEffect || isLoading
                         ? "opacity-50 cursor-not-allowed"
                         : "hover:bg-lia-interactive-active hover:bg-lia-interactive-hover"
                     )}
                   >
-                    <IconComponent className="w-2.5 h-2.5 text-lia-text-tertiary" />
+                    <IconComponent className="w-2.5 h-2.5 text-lia-text-secondary" />
                     {tag.label}
                   </button>
                 )

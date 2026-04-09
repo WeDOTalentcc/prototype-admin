@@ -213,7 +213,7 @@ export function useSendMessageHandlers(ctx: SendMessageHandlersContext) {
     const processingMessage: Message = {
       id: processingMessageId,
       role: 'assistant',
-      content: '🧠 Analisando sua mensagem...',
+      content: 'Analisando...',
       timestamp: new Date(),
       isProcessing: true,
       processingState: 'thinking'

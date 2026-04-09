@@ -105,7 +105,7 @@ export function LiaScreeningDialogue({ isOpen, onClose, jobData, onComplete }: L
                   <div className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-status-success" />
-                      <span className="text-sm text-lia-text-secondary">LIA está digitando...</span>
+                      <span className="text-sm text-lia-text-secondary">Analisando...</span>
                     </div>
                   </div>
                 </div>

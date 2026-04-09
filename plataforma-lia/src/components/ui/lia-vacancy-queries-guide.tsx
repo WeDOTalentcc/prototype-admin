@@ -105,12 +105,12 @@ export function LiaVacancyQueriesGuide({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary",
-              isOpen && "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary",
+              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active hover:bg-lia-interactive-hover",
+              isOpen && "bg-lia-interactive-active text-lia-text-primary",
               className
             )}
           >
-            <Lightbulb className="w-3 h-3" />
+            <Lightbulb className="w-2.5 h-2.5 text-lia-text-secondary" />
             <span>Mais ideias</span>
           </button>
         </PopoverTrigger>

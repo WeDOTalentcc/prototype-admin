@@ -303,12 +303,8 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     const autoTransition = orchestratorResult.auto_transition
     const toolResults = orchestratorResult.tool_results || []
     
-    // Update processing message
-    ctx.setMessages(msgs => msgs.map(m => 
-      m.id === processingMessageId 
-        ? { ...m, content: '✅ Resposta da LIA', processingState: 'completed' as const }
-        : m
-    ))
+    // Remove processing message (real response will be added below)
+    ctx.setMessages(msgs => msgs.filter(m => m.id !== processingMessageId))
     
     // Apply detected_criteria to form fields
     if (detectedCriteriaFromBackend && Object.keys(detectedCriteriaFromBackend).length > 0) {

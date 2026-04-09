@@ -76,7 +76,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
       setTimeout(() => {
         setMessages(msgs => msgs.map(m =>
           m.id === processingMessageId
-            ? { ...m, content: '📊 Consultando LIA...', processingState: 'analyzing' as const }
+            ? { ...m, content: 'Analisando...', processingState: 'analyzing' as const }
             : m
         ))
       }, 300)
@@ -153,11 +153,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
       if (newCriteria.localizacao) fallbackFieldsData.push({ label: "Localização", value: newCriteria.localizacao, confidence: "medium" })
       if (newCriteria.competenciasTecnicas?.length > 0) fallbackFieldsData.push({ label: "Skills Técnicas", value: newCriteria.competenciasTecnicas.slice(0, 5).join(", "), confidence: "medium" })
       if (newCriteria.tipoContrato) fallbackFieldsData.push({ label: "Contrato", value: newCriteria.tipoContrato, confidence: "low" })
-      setMessages(msgs => msgs.map(m =>
-        m.id === processingMessageId
-          ? { ...m, content: '✅ Mensagem processada', processingState: 'completed' as const }
-          : m
-      ))
+      setMessages(msgs => msgs.filter(m => m.id !== processingMessageId))
       const fallbackMessage: Message = {
         id: `fallback-${Date.now()}`,
         role: 'assistant',

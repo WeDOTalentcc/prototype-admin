@@ -574,7 +574,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 <span
                   className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]"
                 >
-                  LIA está digitando...
+                  Analisando...
                 </span>
               </div>
             </div>

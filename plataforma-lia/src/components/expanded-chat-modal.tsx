@@ -260,7 +260,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                   className="flex items-start gap-2.5 mt-3 animate-in fade-in-0 duration-300"
                   role="status"
                   aria-live="polite"
-                  aria-label="LIA está digitando"
+                  aria-label="Analisando"
                 >
                   <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
