@@ -57,28 +57,36 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
       query.set('offset', String((currentPage - 1) * PER_PAGE))
 
       const qs = query.toString()
+      const url = `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`
+      const maxRetries = 2
+      const baseDelay = 1500
 
-      try {
-        const response = await fetch(
-          `${BACKEND_URL}/candidates${qs ? `?${qs}` : ''}`,
-          { headers: { 'Content-Type': 'application/json' } }
-        )
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, {
+            headers: { 'Content-Type': 'application/json' },
+          })
 
-        if (!response.ok) {
-          throw new Error(`Backend retornou ${response.status}`)
-        }
+          if (!response.ok) {
+            throw new Error(`Backend retornou ${response.status}`)
+          }
 
-        const data = await response.json()
+          const data = await response.json()
 
-        if (!cancelled) {
-          setCandidates(data.candidates || data.items || [])
-          setTotal(data.total ?? 0)
-          setLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError("Erro ao carregar candidatos. Tente novamente.")
-          setLoading(false)
+          if (!cancelled) {
+            setCandidates(data.candidates || data.items || [])
+            setTotal(data.total ?? 0)
+            setLoading(false)
+          }
+          return
+        } catch (err) {
+          if (cancelled) return
+          if (attempt < maxRetries) {
+            await new Promise(r => setTimeout(r, baseDelay * (attempt + 1)))
+          } else {
+            setError("Erro ao carregar candidatos. Tente novamente.")
+            setLoading(false)
+          }
         }
       }
     }
