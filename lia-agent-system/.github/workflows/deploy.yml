@@ -25,11 +25,11 @@ jobs:
         run: pip install bandit[toml] pip-audit safety --quiet
 
       - name: Bandit SAST scan
-        run: bandit -r app/ -ll -q --exclude app/tests 2>&1 | tail -30
+        run: bandit -r app/ -ll -q --exclude app/tests
         continue-on-error: true
 
       - name: pip-audit (dependency vulnerabilities)
-        run: pip-audit -r requirements.txt --desc --fix --dry-run 2>&1 | tail -30
+        run: pip-audit -r requirements.txt --desc
         continue-on-error: true
 
   build-and-deploy:
