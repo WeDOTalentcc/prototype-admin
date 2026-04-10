@@ -26,6 +26,7 @@ interface PipelineStage {
   is_final: boolean
   is_rejection: boolean
   stage_category: string
+  action_behavior?: string
 }
 
 interface BackendStageItem {
@@ -34,7 +35,19 @@ interface BackendStageItem {
   candidates: Array<{
     vc_id: string
     vacancy_id: string
+    candidate_id?: string
     name: string
+    vacancy_title?: string | null
+    sub_status?: string | null
+    stage_entered_at?: string | null
+    lia_score?: number | null
+    match_percentage?: number | null
+    wsi_score?: number | null
+    lia_opinion_score?: number | null
+    score_breakdown?: Record<string, unknown> | null
+    technical_test_score?: number | null
+    english_test_score?: number | null
+    big_five_data?: Record<string, number> | null
   }>
 }
 

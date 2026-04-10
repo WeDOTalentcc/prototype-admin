@@ -304,3 +304,99 @@ class JobVacanciesAnalyticsRepository:
             {"co": company_id},
         )
         return result.fetchall()
+
+    async def get_pipeline_overview_enriched(self, company_id: str, candidates_per_stage: int = 100) -> list:
+        """
+        Return enriched per-candidate data for active vacancies, including
+        scores from test_results, lia_opinions, vacancy title, sub_status, and stage_entered_at.
+        Uses ROW_NUMBER to cap enriched rows per stage at candidates_per_stage,
+        while still computing accurate total counts.
+        Returns one row per vacancy_candidate (capped), plus a _total_count column.
+        """
+        result = await self.db.execute(
+            text("""
+                WITH base AS (
+                    SELECT
+                        vc.id AS vc_uuid,
+                        vc.vacancy_id,
+                        vc.candidate_id,
+                        vc.stage,
+                        vc.status AS sub_status,
+                        vc.lia_score,
+                        vc.match_percentage,
+                        vc.stage_entered_at,
+                        vc.created_at,
+                        c.name AS candidate_name,
+                        jv.title AS vacancy_title,
+                        ROW_NUMBER() OVER (PARTITION BY vc.stage ORDER BY vc.created_at DESC) AS rn,
+                        COUNT(*) OVER (PARTITION BY vc.stage) AS stage_total
+                    FROM vacancy_candidates vc
+                    JOIN job_vacancies jv ON jv.id = vc.vacancy_id
+                    JOIN candidates c ON c.id = vc.candidate_id
+                    WHERE jv.company_id = :co
+                      AND LOWER(jv.status) IN ('ativa', 'active', 'open', 'published', 'publicada', 'em andamento')
+                      AND vc.stage IS NOT NULL
+                      AND vc.stage NOT IN ('rejected', 'declined', 'withdrawn', 'cancelado', 'reprovado')
+                )
+                SELECT
+                    b.vc_uuid::text AS vc_id,
+                    b.vacancy_id::text AS vacancy_id,
+                    b.candidate_id::text AS candidate_id,
+                    b.candidate_name,
+                    b.stage,
+                    b.sub_status,
+                    b.lia_score,
+                    b.match_percentage,
+                    b.stage_entered_at,
+                    b.vacancy_title,
+                    b.rn,
+                    b.stage_total,
+                    lo.wsi_score AS wsi_score,
+                    lo.score AS lia_opinion_score,
+                    lo.score_breakdown AS score_breakdown,
+                    tr_tech.score AS technical_test_score,
+                    tr_eng.score AS english_test_score,
+                    tr_b5.answers AS big_five_data
+                FROM base b
+                LEFT JOIN LATERAL (
+                    SELECT lo2.wsi_score, lo2.score, lo2.score_breakdown
+                    FROM lia_opinions lo2
+                    WHERE lo2.candidate_id = b.candidate_id
+                      AND (lo2.job_vacancy_id = b.vacancy_id OR lo2.job_vacancy_id IS NULL)
+                    ORDER BY (lo2.job_vacancy_id = b.vacancy_id) DESC, lo2.created_at DESC
+                    LIMIT 1
+                ) lo ON true
+                LEFT JOIN LATERAL (
+                    SELECT tr2.score
+                    FROM test_results tr2
+                    JOIN technical_tests tt2 ON tt2.id = tr2.test_id
+                    WHERE tr2.candidate_id = b.candidate_id
+                      AND tt2.category = 'coding'
+                    ORDER BY tr2.created_at DESC
+                    LIMIT 1
+                ) tr_tech ON true
+                LEFT JOIN LATERAL (
+                    SELECT tr3.score
+                    FROM test_results tr3
+                    JOIN technical_tests tt3 ON tt3.id = tr3.test_id
+                    WHERE tr3.candidate_id = b.candidate_id
+                      AND tt3.category = 'domain_specific'
+                    ORDER BY tr3.created_at DESC
+                    LIMIT 1
+                ) tr_eng ON true
+                LEFT JOIN LATERAL (
+                    SELECT tr4.answers
+                    FROM test_results tr4
+                    JOIN technical_tests tt4 ON tt4.id = tr4.test_id
+                    WHERE tr4.candidate_id = b.candidate_id
+                      AND tt4.category = 'personality'
+                      AND tt4.subcategory = 'big_five'
+                    ORDER BY tr4.created_at DESC
+                    LIMIT 1
+                ) tr_b5 ON true
+                WHERE b.rn <= :limit
+                ORDER BY b.stage, b.created_at DESC
+            """),
+            {"co": company_id, "limit": candidates_per_stage},
+        )
+        return result.fetchall()

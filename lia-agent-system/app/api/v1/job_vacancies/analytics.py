@@ -1002,7 +1002,19 @@ async def get_work_model_analytics(
 class PipelineOverviewCandidateItem(BaseModel):
     vc_id: str
     vacancy_id: str
+    candidate_id: str = ""
     name: str
+    vacancy_title: str | None = None
+    sub_status: str | None = None
+    stage_entered_at: str | None = None
+    lia_score: float | None = None
+    match_percentage: float | None = None
+    wsi_score: float | None = None
+    lia_opinion_score: float | None = None
+    score_breakdown: dict | None = None
+    technical_test_score: float | None = None
+    english_test_score: float | None = None
+    big_five_data: dict | None = None
 
 
 class PipelineOverviewStageItem(BaseModel):
@@ -1099,45 +1111,72 @@ async def get_pipeline_overview(
 ):
     """
     Aggregate candidate counts by stage across all active job vacancies
-    for the current user's company. Returns stage name, count, and the
-    full candidate list for each stage (up to candidates_per_stage, default 100).
+    for the current user's company. Returns stage name, count, and enriched
+    candidate list for each stage with scores from test_results, lia_opinions.
     """
     company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
     if not company_id:
         raise HTTPException(status_code=403, detail="Company not associated with user")
 
     try:
-        rows = await repo.get_pipeline_overview(company_id)
+        rows = await repo.get_pipeline_overview_enriched(company_id, candidates_per_stage)
     except Exception as e:
         logger.error(f"Error fetching pipeline overview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-    stages: list[PipelineOverviewStageItem] = []
-    total = 0
+    stage_map: dict[str, list[PipelineOverviewCandidateItem]] = {}
+    stage_counts: dict[str, int] = {}
 
     for row in rows:
         stage = row.stage
-        count = int(row.count)
-        total += count
+        stage_counts[stage] = int(row.stage_total)
 
-        # Return up to candidates_per_stage previews; count always reflects the true total.
-        names = list(row.candidate_names or [])[:candidates_per_stage]
-        vc_ids = list(row.vc_ids or [])[:candidates_per_stage]
-        vacancy_ids_list = list(row.vacancy_ids or [])[:candidates_per_stage]
+        if stage not in stage_map:
+            stage_map[stage] = []
 
-        candidates = [
-            PipelineOverviewCandidateItem(
-                vc_id=vc_ids[i] if i < len(vc_ids) else "",
-                vacancy_id=vacancy_ids_list[i] if i < len(vacancy_ids_list) else "",
-                name=names[i] if i < len(names) else "Candidato",
-            )
-            for i in range(len(names))
-        ]
+        entered_at = None
+        if row.stage_entered_at:
+            try:
+                entered_at = row.stage_entered_at.isoformat() if hasattr(row.stage_entered_at, 'isoformat') else str(row.stage_entered_at)
+            except Exception:
+                entered_at = str(row.stage_entered_at)
 
-        stages.append(PipelineOverviewStageItem(
-            stage=stage,
-            count=count,
-            candidates=candidates,
+        big_five = None
+        if row.big_five_data:
+            big_five = row.big_five_data if isinstance(row.big_five_data, dict) else None
+
+        score_bd = None
+        if row.score_breakdown:
+            score_bd = row.score_breakdown if isinstance(row.score_breakdown, dict) else None
+
+        stage_map[stage].append(PipelineOverviewCandidateItem(
+            vc_id=row.vc_id or "",
+            vacancy_id=row.vacancy_id or "",
+            candidate_id=row.candidate_id or "",
+            name=row.candidate_name or "Candidato",
+            vacancy_title=row.vacancy_title,
+            sub_status=row.sub_status,
+            stage_entered_at=entered_at,
+            lia_score=row.lia_score,
+            match_percentage=row.match_percentage,
+            wsi_score=row.wsi_score,
+            lia_opinion_score=row.lia_opinion_score,
+            score_breakdown=score_bd,
+            technical_test_score=row.technical_test_score,
+            english_test_score=row.english_test_score,
+            big_five_data=big_five,
         ))
+
+    stages: list[PipelineOverviewStageItem] = []
+    total = 0
+    for stage_name, count in stage_counts.items():
+        total += count
+        stages.append(PipelineOverviewStageItem(
+            stage=stage_name,
+            count=count,
+            candidates=stage_map.get(stage_name, []),
+        ))
+
+    stages.sort(key=lambda s: s.count, reverse=True)
 
     return PipelineOverviewResponse(stages=stages, total_candidates=total)
