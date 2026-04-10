@@ -92,7 +92,7 @@ export function useCandidatesData({
           onViewedIdsChange(() => new Set<string>(data.candidate_ids))
         }
       })
-      .catch((err) => { console.error('[useCandidatesData] viewed-candidates fetch failed', err) })
+      .catch((err) => { console.warn('[useCandidatesData] viewed-candidates fetch failed (cold-start)', err?.message || err) })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // intentional: runs once on mount to fetch viewed candidates; onViewedIdsChange is a setState - stable but adding it could cause re-runs
 
@@ -104,10 +104,10 @@ export function useCandidatesData({
           r.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft')
         )
       )
-      .catch((err) => { console.error('[useCandidatesData] listJobVacancies fetch failed', err) })
+      .catch((err) => { console.warn('[useCandidatesData] listJobVacancies fetch failed (cold-start)', err?.message || err) })
     fetchWithRetry(() => liaApi.listEmailTemplates(undefined, true))
       .then(r => r.items && setBulkEmailTemplates(r.items))
-      .catch((err) => { console.error('[useCandidatesData] listEmailTemplates fetch failed', err) })
+      .catch((err) => { console.warn('[useCandidatesData] listEmailTemplates fetch failed (cold-start)', err?.message || err) })
   }, [])
 
   // ── Mark a candidate as viewed ────────────────────────────────────────────

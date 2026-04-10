@@ -92,14 +92,18 @@ export default function AgentStudioPage({
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const [agentsRes, templatesRes] = await Promise.all([
+      const [agentsRes, templatesRes] = await Promise.allSettled([
         fetch("/api/backend-proxy/sourcing-agents"),
         fetch("/api/backend-proxy/agent-templates/sectors"),
       ])
       let agentsData: Record<string, unknown> = {}
       let templatesData: unknown = []
-      try { agentsData = await agentsRes.json() } catch { /* */ }
-      try { templatesData = await templatesRes.json() } catch { /* */ }
+      if (agentsRes.status === "fulfilled" && agentsRes.value.ok) {
+        try { agentsData = await agentsRes.value.json() } catch { /* */ }
+      }
+      if (templatesRes.status === "fulfilled" && templatesRes.value.ok) {
+        try { templatesData = await templatesRes.value.json() } catch { /* */ }
+      }
       setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents as SourcingAgent[] : [])
       setTemplates(Array.isArray(templatesData) ? templatesData as SectorTemplate[] : [])
     } catch (err) {
@@ -613,18 +617,27 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
   const [isCreating, setIsCreating] = useState(false)
   const sectorId = initialTemplate?.id || ""
 
+  const [createError, setCreateError] = useState("")
+
   const handleCreate = async () => {
     setIsCreating(true)
+    setCreateError("")
     try {
       let templateId: string | undefined
       if (sectorId) {
-        const templateRes = await fetch(`/api/backend-proxy/agent-templates/sectors/${sectorId}/apply`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ agent_name: agentName }),
-        })
-        const templateData = await templateRes.json()
-        templateId = templateData?.template_id
+        try {
+          const templateRes = await fetch(`/api/backend-proxy/agent-templates/sectors/${sectorId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ agent_name: agentName }),
+          })
+          if (templateRes.ok) {
+            const templateData = await templateRes.json()
+            templateId = templateData?.template_id
+          }
+        } catch {
+          // template application is optional
+        }
       }
 
       const res = await fetch("/api/backend-proxy/sourcing-agents", {
@@ -642,9 +655,16 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
           },
         }),
       })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ detail: res.statusText }))
+        throw new Error(errData?.detail || `Erro ${res.status}`)
+      }
       const data = await res.json()
       if (data?.agent_id) onCreated(data.agent_id)
+      else onCreated(data?.id || "")
     } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao criar agente"
+      setCreateError(msg)
       console.error("Failed to create agent:", err)
     } finally {
       setIsCreating(false)
@@ -753,6 +773,12 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
             </div>
           </div>
         </div>
+
+        {createError && (
+          <div className="mx-6 mb-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+            <p className="text-xs text-red-700 dark:text-red-400">{createError}</p>
+          </div>
+        )}
 
         <DialogFooter className="gap-2">
           <Button

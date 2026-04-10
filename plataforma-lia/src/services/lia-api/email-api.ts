@@ -33,9 +33,14 @@ export async function listEmailTemplates(
   params.set('skip', String(skip))
   params.set('limit', String(limit))
 
-  const response = await fetch(`${BACKEND_URL}/email-templates?${params}`, {
-    headers: getAuthHeaders(),
-  })
+  let response: Response
+  try {
+    response = await fetch(`${BACKEND_URL}/email-templates?${params}`, {
+      headers: getAuthHeaders(),
+    })
+  } catch {
+    throw new Error('Network error fetching email templates (server may be starting)')
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch email templates: ${response.statusText}`)
