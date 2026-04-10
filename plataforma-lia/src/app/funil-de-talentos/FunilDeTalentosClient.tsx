@@ -155,7 +155,7 @@ export default function FunilDeTalentosPage() {
               Busque candidatos na base
             </p>
           </div>
-          <div className="bg-lia-bg-card dark:bg-lia-bg-elevated rounded-lg border border-lia-border-default dark:border-lia-border-subtle p-8 flex items-center justify-center gap-2 text-lia-text-secondary">
+          <div className="bg-lia-bg-card dark:bg-lia-bg-elevated rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-8 flex items-center justify-center gap-2 text-lia-text-secondary">
             <div className="animate-spin h-5 w-5 border-2 border-lia-border-default border-t-wedo-cyan rounded-full" />
             Carregando candidatos...
           </div>
@@ -212,7 +212,7 @@ export default function FunilDeTalentosPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-strong rounded-md">
+          <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg">
             <TabsTrigger value="todos" className="rounded-md text-xs">
               Todos
               {activeTab === "todos" && total > 0 && (
@@ -230,7 +230,7 @@ export default function FunilDeTalentosPage() {
           {/* Tab: Todos */}
           <TabsContent value="todos" className="mt-4 space-y-3">
             {/* SearchBar + filtros rápidos */}
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-strong rounded-md p-3 space-y-3">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-3 space-y-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-lia-text-tertiary" aria-hidden="true" />
                 <Input
@@ -257,7 +257,7 @@ export default function FunilDeTalentosPage() {
                     {s}
                   </button>
                 ))}
-                <div className="w-px h-5 bg-lia-interactive-active dark:bg-lia-bg-elevated self-center" />
+                <div className="w-px h-5 bg-lia-border-subtle self-center" />
                 {SENIORITY_OPTIONS.map(s => (
                   <button
                     key={s}
@@ -284,7 +284,7 @@ export default function FunilDeTalentosPage() {
             )}
 
             {/* Table */}
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-strong rounded-md overflow-hidden">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
               {!loading && candidates.length === 0 && !error ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                   <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
@@ -310,7 +310,7 @@ export default function FunilDeTalentosPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-strong rounded-md px-4 py-2.5">
+              <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl px-4 py-2.5">
                 <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   Página {currentPage} de {totalPages}
                 </span>

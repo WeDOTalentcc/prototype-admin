@@ -27,7 +27,7 @@ function formatCost(cents: number): string {
 function UsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 100) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+      <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Limite atingido:</strong> O consumo de IA atingiu 100% do limite mensal. Contate o suporte ou atualize seu plano.
@@ -37,7 +37,7 @@ function UsageAlert({ percentage }: { percentage: number }) {
   }
   if (percentage >= 80) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
+      <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Atenção:</strong> {percentage.toFixed(0)}% do limite mensal de IA utilizado. Monitore o consumo para evitar interrupções.
@@ -249,13 +249,13 @@ export function AiCreditsPage({ companyId }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
+            <div className="space-y-1">
               {byAgent
                 .sort((a, b) => b.total_tokens - a.total_tokens)
                 .map((agent) => (
                   <div
                     key={agent.agent_type}
-                    className="flex items-center justify-between py-2.5 text-sm"
+                    className="flex items-center justify-between py-2.5 px-3 text-sm rounded-lg hover:bg-lia-bg-secondary transition-colors"
                   >
                     <span className="font-medium capitalize text-lia-text-secondary">
                       {agent.agent_type.replace('_', ' ')}

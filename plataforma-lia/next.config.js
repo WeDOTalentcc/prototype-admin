@@ -163,7 +163,9 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://ext.same-assets.com https://ugc.same-assets.com https://upload.wikimedia.org https://cdn.prod.website-files.com https://ui-avatars.com",
+              "img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://ext.same-assets.com https://ugc.same-assets.com https://upload.wikimedia.org https://cdn.prod.website-files.com https://ui-avatars.com https://media.licdn.com https://*.gravatar.com https://*.googleusercontent.com https://*.amazonaws.com",
+              "media-src 'self' blob: data:",
+              "worker-src 'self' blob:",
               "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io wss: ws:",
               process.env.NODE_ENV === 'production' ? "frame-ancestors 'none'" : "frame-ancestors *",
               "base-uri 'self'",
@@ -172,7 +174,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(), microphone=(self), geolocation=()',
           },
           ...(process.env.NODE_ENV === 'production' ? [
             {

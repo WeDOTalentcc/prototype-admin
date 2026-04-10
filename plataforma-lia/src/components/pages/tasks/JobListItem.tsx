@@ -19,7 +19,7 @@ interface JobListItemProps {
 
 export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) {
   return (
-    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 hover:border-lia-border-medium hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:scale-[1.01] transition-[color,background-color,border-color,transform] duration-200 bg-lia-bg-primary dark:bg-lia-bg-primary cursor-pointer">
+    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-3 hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:shadow-sm transition-shadow transition-[color,background-color,border-color] duration-200 bg-lia-bg-primary dark:bg-lia-bg-primary cursor-pointer">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -27,19 +27,19 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
             <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
             {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
             {job.publishedLinkedIn && (
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
+              <Badge className="bg-wedo-cyan/15 text-wedo-cyan-dark border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan text-xs flex items-center gap-1 font-medium">
                 <Linkedin className="w-2.5 h-2.5" />
                 LI
               </Badge>
             )}
             {job.publishedWebsite && (
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
+              <Badge className="bg-wedo-green/15 text-wedo-green border-transparent dark:bg-wedo-green/20 dark:text-wedo-green text-xs flex items-center gap-1 font-medium">
                 <Globe className="w-2.5 h-2.5" />
                 Site
               </Badge>
             )}
             {job.publishedIndeed && (
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
+              <Badge className="bg-wedo-orange/15 text-wedo-orange border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange text-xs flex items-center gap-1 font-medium">
                 <Briefcase className="w-2.5 h-2.5" />
                 Indeed
               </Badge>
@@ -71,7 +71,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
           <Button variant="ghost" size="sm" className="h-6 w-6 p-0" aria-label="Ações da vaga">
             <MoreVertical className="w-3.5 h-3.5" />
           </Button>
-          <div className="absolute right-0 top-full mt-1 w-48 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
+          <div className="absolute right-0 top-full mt-1 w-48 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
             <div className="py-1">
               {([
                 { action: 'kanban', icon: <Eye className="w-3 h-3" />, label: 'Ver Kanban Completo' },
@@ -89,7 +89,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
                   {label}
                 </button>
               ))}
-              <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle my-1"></div>
+              <div className="mt-1"></div>
               <button
                 onClick={() => onLIAAction('cancel', job)}
                 className="w-full px-3 py-2 text-left text-xs hover:bg-status-error/10 dark:hover:bg-status-error/20 text-status-error hover:text-status-error dark:hover:text-status-error transition-colors motion-reduce:transition-none flex items-center gap-2"
@@ -106,7 +106,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
 
       <div className="flex items-center gap-1.5">
         {job.liaPendencies.length > 0 && (
-          <div className="flex items-center gap-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-md px-1.5 py-1 flex-1">
+          <div className="flex items-center gap-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-lg px-1.5 py-1 flex-1">
             <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
             <span className="text-xs text-lia-text-primary truncate font-medium">
               {job.liaPendencies.length} pendência{job.liaPendencies.length > 1 ? 's' : ''}
@@ -115,7 +115,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
         )}
 
         <div
-          className={`flex items-center gap-1 ${getAlertColor(job.alert.type)} ${getAlertStyle(job.alert.type)} rounded-md px-1.5 py-1 flex-1`}
+          className={`flex items-center gap-1 ${getAlertColor(job.alert.type)} ${getAlertStyle(job.alert.type)} rounded-lg px-1.5 py-1 flex-1`}
         >
           {getAlertIcon(job.alert.type)}
           <span className="text-xs font-medium truncate flex-1">{job.alert.message}</span>
@@ -155,7 +155,7 @@ function JobFunnel({ stages }: JobFunnelProps) {
   ]
 
   return (
-    <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-1.5 mb-1.5">
+    <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg p-1.5 mb-1.5">
       <div className="flex items-center justify-between gap-1">
         {funnelSteps.map((step, idx) => (
           <React.Fragment key={step.key}>

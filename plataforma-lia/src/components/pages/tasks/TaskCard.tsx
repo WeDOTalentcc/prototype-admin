@@ -29,7 +29,7 @@ interface TaskCardProps {
 
 export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject }: TaskCardProps) {
   return (
-    <div data-testid={`task-card-${task.id}`} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <div data-testid={`task-card-${task.id}`} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg p-2.5 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 flex-1">
           <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">

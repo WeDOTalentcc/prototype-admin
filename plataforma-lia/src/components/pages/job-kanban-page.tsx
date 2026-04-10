@@ -90,7 +90,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           {state.proactiveInsights.slice(0, 3).map(insight => (
             <div
               key={insight.id}
-              className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
+              className={`flex items-start gap-2 px-3 py-2 rounded-xl border text-xs ${
                 insight.urgency === 'urgent' ? 'bg-status-error/10 border-status-error/30 text-status-error' :
                 insight.urgency === 'high' ? 'bg-status-warning/10 border-status-warning/30 text-status-warning' :
                 'bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary'

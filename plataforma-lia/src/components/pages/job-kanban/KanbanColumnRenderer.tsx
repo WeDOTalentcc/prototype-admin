@@ -327,7 +327,7 @@ export function KanbanColumnRenderer({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
+      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-xl min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
         isDropping ? "ring-2 ring-lia-border-medium bg-lia-bg-secondary/20" : ""
       } h-[calc(100vh-16rem)]`}
       onDragOver={(e) => onDragOver(e, stageId)}
@@ -401,7 +401,7 @@ export function KanbanColumnRenderer({
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
-            className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border relative overflow-hidden ${
+            className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border relative overflow-hidden ${
               candidate.needsAction
                 ? "border-l-4 border-l-lia-btn-primary-hover border-lia-border-subtle dark:border-lia-border-subtle"
                 : (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
@@ -429,7 +429,7 @@ export function KanbanColumnRenderer({
           >
             {/* Tarja de Ação Necessária - Cinza puro */}
             {candidate.needsAction && (
-              <div className="px-2 py-0.5 border-b bg-lia-bg-tertiary">
+              <div className="px-2 py-1 bg-lia-bg-tertiary">
                 <div className="flex items-center gap-1">
                   <Flag className="w-3 h-3 text-status-warning" />
                   <span className="text-micro font-bold text-lia-text-tertiary">Ação Necessária</span>

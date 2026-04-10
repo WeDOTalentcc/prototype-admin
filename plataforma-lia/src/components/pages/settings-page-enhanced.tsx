@@ -494,10 +494,10 @@ export default function SettingsPageEnhanced() {
         onMouseEnter={() => !isLocked && setIsCollapsed(false)}
         onMouseLeave={() => !isLocked && setIsCollapsed(true)}
       >
-        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-md overflow-hidden flex flex-col">
+        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
           <div className={`p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>
               {shouldShowContent && (
@@ -561,7 +561,7 @@ export default function SettingsPageEnhanced() {
                           handleToggleSection(section.id)
                         }
                       }}
-                      className={`w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none ${
+                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none ${
                         isActive && !activeSubsection
                           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
                           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'
@@ -599,7 +599,7 @@ export default function SettingsPageEnhanced() {
                             <button
                               key={subsection.id}
                               onClick={() => handleSelectSubsection(section.id, subsection.id)}
-                              className={`w-full text-left px-2 py-1.5 rounded-md transition-colors motion-reduce:transition-none ${
+                              className={`w-full text-left px-2 py-1.5 rounded-lg transition-colors motion-reduce:transition-none ${
                                 activeSubsection === subsection.id
                                   ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated'
                                   : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50'
@@ -671,7 +671,7 @@ export default function SettingsPageEnhanced() {
                       )}
                     </div>
                   </div>
-                  <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+                  <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-lg flex items-center justify-center">
                     <Building className="w-4 h-4 text-lia-text-secondary" />
                   </div>
                 </div>

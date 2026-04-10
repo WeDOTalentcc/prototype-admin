@@ -291,7 +291,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   <div className="absolute inset-0 -left-1 -right-1"></div>
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lia-border-default dark:bg-lia-bg-elevated group-hover:bg-lia-border-medium dark:group-hover:bg-lia-bg-secondary0 rounded-full transition-colors motion-reduce:transition-none"></div>
                 </div>
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate as unknown as Record<string, unknown>}
                     isOpen={showCandidatePreview}

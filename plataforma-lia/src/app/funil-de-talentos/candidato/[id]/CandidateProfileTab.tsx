@@ -109,7 +109,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
               {candidate.technical_skills.map((skill) => (
-                <Badge key={skill} variant="secondary" className="text-xs px-2 py-0.5">
+                <Badge key={skill} variant="secondary" className="text-xs px-2 py-0.5 bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/20">
                   {skill}
                 </Badge>
               ))}
@@ -226,7 +226,7 @@ export function CandidateProfileTab({
             </div>
           )}
           {(candidate.desired_salary_min || candidate.desired_salary_max) && (
-            <div className="flex justify-between items-center pt-2 border-t border-lia-border-subtle">
+            <div className="flex justify-between items-center pt-2">
               <span className="text-xs text-lia-text-secondary">Faixa Desejada</span>
               <span className="text-sm font-medium text-lia-text-primary">
                 {formatCurrency(candidate.desired_salary_min)} - {formatCurrency(candidate.desired_salary_max)}
@@ -234,7 +234,7 @@ export function CandidateProfileTab({
             </div>
           )}
           {candidate.salary_expectation_clt && (
-            <div className="flex justify-between items-center pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary -mx-4 px-4 py-2">
+            <div className="flex justify-between items-center pt-2 mt-1 bg-lia-bg-secondary rounded-lg dark:bg-lia-bg-secondary -mx-4 px-4 py-2">
               <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Total Anual (CLT)</span>
               <span className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                 {formatCurrency((candidate.salary_expectation_clt ?? 0) * 13.33)}
@@ -456,7 +456,7 @@ export function CandidateProfileTab({
 
             {/* Connections & Followers */}
             {(candidate.linkedin_connections_count || candidate.linkedin_followers_count) && (
-              <div className="flex gap-4 pt-2 border-t border-lia-border-subtle">
+              <div className="flex gap-4 pt-2">
                 {candidate.linkedin_connections_count && (
                   <div className="text-center">
                     <p className="text-lg font-semibold text-lia-text-primary">

@@ -19,16 +19,16 @@
   --lia-bg-elevated: #FFFFFF;          /* Cards elevados (com shadow) */
   
   /* Borders & Dividers - Tom único (ElevenLabs-style) */
-  --lia-border-subtle: #E5E7EB;        /* Borders sutis - padrão para tudo */
-  --lia-border-default: #E5E7EB;       /* Unificado com subtle */
-  --lia-border-medium: #E5E7EB;        /* Unificado com subtle */
-  --lia-border-strong: #C9CDD4;        /* Border forte - inputs centrais */
+  --lia-border-subtle: #D4D4D4;        /* Borders sutis - padrão para tudo */
+  --lia-border-default: #BEBEBE;       /* Unificado com subtle */
+  --lia-border-medium: #BEBEBE;        /* Unificado com subtle */
+  --lia-border-strong: #999999;        /* Border forte - inputs centrais */
   
   /* Textos - Hierarquia tipográfica clara (ElevenLabs-style) */
-  --lia-text-primary: #000000;         /* Preto puro - títulos, texto principal */
-  --lia-text-secondary: #6B7280;       /* Cinza médio - texto corpo, descrições */
-  --lia-text-tertiary: #9CA3AF;        /* Cinza claro - placeholders, hints */
-  --lia-text-disabled: #D1D5DB;        /* Cinza muito claro - desabilitado */
+  --lia-text-primary: #111111;         /* Preto puro - títulos, texto principal */
+  --lia-text-secondary: #2D2D2D;       /* Cinza médio - texto corpo, descrições */
+  --lia-text-tertiary: #5C5C5C;        /* Cinza claro - placeholders, hints */
+  --lia-text-disabled: #999999;        /* Cinza muito claro - desabilitado */
   --lia-text-inverse: #FFFFFF;         /* Branco - texto em fundo escuro */
   --lia-text-inverted: var(--lia-text-inverse); /* Alias para compatibilidade retroativa */
   
@@ -220,7 +220,7 @@
     /* Textos */
     --lia-text-primary: #F9FAFB;         /* Branco suave */
     --lia-text-secondary: #D1D5DB;       /* Cinza claro */
-    --lia-text-tertiary: #9CA3AF;        /* Cinza médio */
+    --lia-text-tertiary: #5C5C5C;        /* Cinza médio */
     --lia-text-disabled: #6B7280;
     --lia-text-inverse: #111827;
     

@@ -11,18 +11,18 @@ import { MessageSquare, Calendar, Search, AlertTriangle, AlertCircle, CheckCircl
 
 export const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
   switch (priority) {
-    case 'high': return 'bg-lia-brand-primary-light text-lia-text-primary'
-    case 'medium': return 'bg-wedo-amber-light text-lia-text-primary'
-    case 'low': return 'bg-lia-info-light text-lia-text-primary'
+    case 'high': return 'bg-status-error/15 text-status-error'
+    case 'medium': return 'bg-wedo-orange/15 text-wedo-orange'
+    case 'low': return 'bg-wedo-green/15 text-wedo-green'
   }
 }
 
 export const getAlertSeverityStyle = (severity: 'critical' | 'high' | 'medium' | 'low') => {
   switch (severity) {
-    case 'critical': return 'bg-lia-brand-primary-light text-lia-text-primary'
-    case 'high': return 'bg-lia-brand-primary-light text-lia-text-primary'
-    case 'medium': return 'bg-wedo-amber-light text-lia-text-primary'
-    case 'low': return 'bg-lia-info-light text-lia-text-primary'
+    case 'critical': return 'bg-status-error/15 text-status-error'
+    case 'high': return 'bg-status-error/15 text-status-error'
+    case 'medium': return 'bg-wedo-orange/15 text-wedo-orange'
+    case 'low': return 'bg-wedo-cyan/15 text-wedo-cyan-dark'
   }
 }
 
@@ -79,10 +79,10 @@ export const getAlertColor = (type: string) => {
 }
 
 export const getUrgencyBadge = (urgency: string, daysOpen: number) => {
-  if (urgency === 'critical') return <Badge className="bg-lia-brand-primary-light text-lia-text-primary border-0 text-xs font-medium">🔴 Crítico</Badge>
-  if (urgency === 'urgent') return <Badge className="bg-wedo-amber-light text-lia-text-primary border-0 text-xs font-semibold">⚠ Urgente</Badge>
-  if (daysOpen > 30) return <Badge className="bg-lia-info-light text-lia-text-primary border-0 text-xs font-medium">⏰ Atenção</Badge>
-  return <Badge className="bg-wedo-green-light text-lia-text-primary border-0 text-xs">✓ Normal</Badge>
+  if (urgency === 'critical') return <Badge variant="danger" className="text-xs font-medium">Crítico</Badge>
+  if (urgency === 'urgent') return <Badge variant="warning" className="text-xs font-semibold">Urgente</Badge>
+  if (daysOpen > 30) return <Badge variant="info" className="text-xs font-medium">Atenção</Badge>
+  return <Badge variant="success" className="text-xs">Normal</Badge>
 }
 
 export const getConversionRate = (from: number, to: number) => {

@@ -42,20 +42,20 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
           </div>
           <div className="flex items-center gap-1.5">
             <Badge
-              className="border-0 text-xs font-medium"
-             
+              variant="danger"
+              className="text-xs font-medium"
             >
               {activeAlerts.filter(a => a.severity === 'critical' || a.severity === 'high').length} Alto/Crítico
             </Badge>
             <Badge
-              className="border-0 text-xs font-medium"
-             
+              variant="warning"
+              className="text-xs font-medium"
             >
               {activeAlerts.filter(a => a.severity === 'medium').length} Médio
             </Badge>
             <Badge
-              className="border-0 text-xs font-medium"
-             
+              variant="info"
+              className="text-xs font-medium"
             >
               {activeAlerts.filter(a => a.severity === 'low').length} Baixo
             </Badge>
@@ -67,7 +67,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
           {activeAlerts.map((alert) => (
             <div
               key={alert.id}
-              className={`border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none ${getAlertSeverityStyle(alert.severity)} bg-opacity-40`}
+              className={`border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg p-2.5 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${getAlertSeverityStyle(alert.severity)} bg-opacity-40`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 flex-1">

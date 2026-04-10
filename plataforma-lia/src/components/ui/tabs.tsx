@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
- "inline-flex h-10 items-center justify-center rounded-full bg-lia-bg-tertiary p-1 text-lia-text-secondary",
+ "inline-flex h-10 items-center justify-center rounded-lg bg-lia-bg-secondary p-1 text-lia-text-secondary",
       className
     )}
     {...props}
@@ -29,7 +29,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
- "inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium ring-offset-lia-bg-primary transition-[width,height] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-border-medium/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary data-[state=active]:dark:ring-offset-lia-bg-primary dark:focus-visible:ring-lia-border-medium/30",
+ "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-lia-bg-primary transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-border-medium/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary data-[state=active]:shadow-sm data-[state=active]:dark:ring-offset-lia-bg-primary dark:focus-visible:ring-lia-border-medium/30",
       className
     )}
     {...props}

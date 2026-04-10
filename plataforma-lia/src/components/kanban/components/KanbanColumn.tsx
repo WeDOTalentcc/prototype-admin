@@ -147,7 +147,7 @@ const KanbanColumn = memo(function KanbanColumn({
   return (
     <div
       data-testid={`kanban-column-${stage.id}`}
-      className={`flex flex-col flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
+      className={`flex flex-col flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
         isDropTarget ? 'ring-2 ring-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-secondary' : ''
       } h-[calc(100vh-16rem)]`}
       onDragOver={handleDragOver}

@@ -156,7 +156,7 @@ const CandidateCard = memo(function CandidateCard({
       data-testid={`candidate-card-${candidate.id}`}
       onDragStart={handleDragStartInternal}
       onDragEnd={onDragEnd}
-      className={`bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border relative overflow-hidden ${
+      className={`bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border relative overflow-hidden ${
         candidate.needsAction ? 'border-l-4 border-l-lia-btn-primary-hover border-lia-border-subtle dark:border-lia-border-subtle' : 
         (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-lia-border-default dark:border-l-lia-border-medium border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : 
         'border-lia-border-subtle dark:border-lia-border-subtle'
@@ -181,7 +181,7 @@ const CandidateCard = memo(function CandidateCard({
     >
       {candidate.needsAction && (
         <div 
-          className="px-2 py-0.5 border-b bg-lia-bg-tertiary"
+          className="px-2 py-1 bg-lia-bg-tertiary"
         >
           <div className="flex items-center gap-1">
             <Zap className="w-2 h-2 animate-pulse motion-reduce:animate-none text-lia-text-secondary" />

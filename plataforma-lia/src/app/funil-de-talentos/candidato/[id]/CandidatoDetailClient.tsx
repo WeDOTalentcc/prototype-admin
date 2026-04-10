@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
@@ -290,7 +289,7 @@ export default function CandidateProfilePage() {
                   </Button>
                 </TooltipTrigger><TooltipContent>Adicionar à Vaga</TooltipContent></Tooltip>
 
-                <Separator orientation="vertical" className="h-6 mx-2" />
+                <div className="w-px h-5 bg-lia-border-subtle mx-1" />
 
                 <Tooltip><TooltipTrigger asChild>
                   <Button
@@ -333,7 +332,7 @@ export default function CandidateProfilePage() {
 
           {/* ── TABS ──────────────────────────────────────────────────── */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)} className="space-y-4">
-            <TabsList className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+            <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg">
               <TabsTrigger value="profile" className="gap-1.5"><FileText className="w-4 h-4" />Perfil Completo</TabsTrigger>
               <TabsTrigger value="activities" className="gap-1.5"><Activity className="w-4 h-4" />Atividades</TabsTrigger>
               <TabsTrigger value="files" className="gap-1.5"><List className="w-4 h-4" />Arquivos</TabsTrigger>

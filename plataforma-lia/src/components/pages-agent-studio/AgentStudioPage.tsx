@@ -204,7 +204,7 @@ export default function AgentStudioPage({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-md text-xs font-medium transition-all duration-200",
+                "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                 activeTab === tab.id
                   ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
                   : "text-lia-text-secondary hover:text-lia-text-primary"

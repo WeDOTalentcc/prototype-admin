@@ -91,23 +91,21 @@ export function IndicatorsPage() {
       />
 
       {/* Tabs */}
-      <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-        <div className="flex space-x-8">
+      <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-1 py-4 text-sm font-medium border-b-2 transition-colors motion-reduce:transition-none ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
-                  ? "border-lia-btn-primary-bg dark:border-lia-border-medium text-lia-text-secondary"
-                  : "border-transparent text-lia-text-primary hover:text-lia-text-primary"
+                  ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
+                  : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
             </button>
           ))}
-        </div>
       </div>
 
       {/* Tab Content */}

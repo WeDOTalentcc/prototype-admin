@@ -51,7 +51,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
               <p className={`${textStyles.titleXl} text-2xl`}>{atsSystems.filter(s => s.status === 'connected').length}</p>
               <p className={textStyles.caption}>de {atsSystems.length} configurados</p>
             </div>
-            <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center" aria-live="polite" aria-atomic="true">
+            <div className="w-12 h-12 bg-status-success/15 rounded-xl flex items-center justify-center" aria-live="polite" aria-atomic="true">
               <Link2 className="w-6 h-6 text-status-success" />
             </div>
           </div>
@@ -64,7 +64,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
               <p className={`${textStyles.titleXl} text-2xl text-lia-text-secondary`}>{atsSystems.reduce((a, s) => a + s.syncedRecords, 0).toLocaleString()}</p>
               <p className={`${textStyles.caption} text-status-success`}>+47 hoje</p>
             </div>
-            <div className="w-12 h-12 bg-lia-bg-secondary rounded-md flex items-center justify-center">
+            <div className="w-12 h-12 bg-lia-bg-secondary rounded-xl flex items-center justify-center">
               <Database className="w-6 h-6 text-lia-text-tertiary" />
             </div>
           </div>
@@ -77,7 +77,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
               <p className={`${textStyles.titleXl} text-2xl text-wedo-purple`}>{integrations.filter(i => i.isActive).length}</p>
               <p className={textStyles.caption}>de {integrations.length} total</p>
             </div>
-            <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
+            <div className="w-12 h-12 bg-wedo-purple/15 rounded-xl flex items-center justify-center">
               <Zap className="w-6 h-6 text-wedo-purple" />
             </div>
           </div>
@@ -90,7 +90,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
               <p className={`${textStyles.titleXl} text-2xl text-wedo-orange`}>99.7%</p>
               <p className={`${textStyles.caption} text-wedo-orange`}>últimos 30 dias</p>
             </div>
-            <div className="w-12 h-12 bg-wedo-orange/15 rounded-md flex items-center justify-center">
+            <div className="w-12 h-12 bg-wedo-orange/15 rounded-xl flex items-center justify-center">
               <Activity className="w-6 h-6 text-wedo-orange" />
             </div>
           </div>
@@ -123,9 +123,9 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
         <CardContent>
           <div className="space-y-4">
             {atsSystems.map(system => (
-              <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
+              <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-lg hover:bg-lia-bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <div className="w-12 h-12 bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                     <Server className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <div>
@@ -164,7 +164,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
         <CardContent>
           <div className="space-y-3">
             {syncLogs.slice(0, 5).map(log => (
-              <div key={log.id} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md">
+              <div key={log.id} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-lg">
                 <div className="flex items-center gap-3">
                   {getSyncStatusIcon(log.status)}
                   <div>
@@ -178,7 +178,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
               </div>
             ))}
           </div>
-          <div className="mt-4 pt-3 border-t">
+          <div className="mt-4 pt-3">
             <Button variant="outline" size="sm" onClick={() => setSelectedView('logs')} className="w-full">Ver Todos os Logs</Button>
           </div>
         </CardContent>
@@ -203,7 +203,7 @@ function SystemsView({ atsSystems, getStatusColor, openSystemModal }: Pick<HookS
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <div className="w-12 h-12 bg-lia-bg-secondary rounded-xl flex items-center justify-center">
                     <Server className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <div>
@@ -237,7 +237,7 @@ function SystemsView({ atsSystems, getStatusColor, openSystemModal }: Pick<HookS
                   </div>
                 )}
                 {system.status === 'error' && (
-                  <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-md" aria-live="polite" aria-atomic="true">
+                  <div className="p-3 bg-status-error/10 border border-status-error/30 rounded-lg" aria-live="polite" aria-atomic="true">
                     <p className="text-sm text-status-error"><AlertTriangle className="w-4 h-4 inline mr-1" />Token de acesso expirado - requer renovação manual</p>
                   </div>
                 )}
@@ -384,7 +384,7 @@ export function ATSIntegrationsPage() {
             </div>
           </div>
 
-          <div className="flex space-x-1 bg-lia-bg-secondary p-1 rounded-md w-fit">
+          <div className="flex space-x-1 bg-lia-bg-secondary p-1 rounded-lg w-fit">
             {[
               { id: 'overview' as const, label: 'Visão Geral', Icon: BarChart3 },
               { id: 'systems' as const, label: 'Sistemas', Icon: Server },
@@ -395,7 +395,7 @@ export function ATSIntegrationsPage() {
                 key={tab.id}
                 onClick={() => setSelectedView(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
-                  selectedView === tab.id ? 'bg-lia-bg-primary text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary'
+                  selectedView === tab.id ? 'bg-lia-bg-primary text-lia-text-primary shadow-sm' : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <tab.Icon className="w-4 h-4" />{tab.label}

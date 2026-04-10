@@ -285,7 +285,7 @@ export function TemplatesPage() {
       {/* Lista de Templates */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredTemplates.map((template) => (
-          <Card key={template.id} className="hover:transition-shadow">
+          <Card key={template.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -302,7 +302,7 @@ export function TemplatesPage() {
                     )}
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
-                  <p className="text-sm text-lia-text-primary mt-1">
+                  <p className="text-sm text-lia-text-secondary mt-1">
                     {template.description}
                   </p>
                 </div>
@@ -327,15 +327,15 @@ export function TemplatesPage() {
               <div className="grid grid-cols-3 gap-2 text-center mb-4">
                 <div>
                   <p className="text-lg font-semibold text-lia-text-primary">{template.usageCount}</p>
-                  <p className="text-xs text-lia-text-primary">Usos</p>
+                  <p className="text-xs text-lia-text-secondary">Usos</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-status-success">{template.successRate}%</p>
-                  <p className="text-xs text-lia-text-primary">Sucesso</p>
+                  <p className="text-xs text-lia-text-secondary">Sucesso</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-lia-text-primary">{Math.round(template.estimatedTime/60)}min</p>
-                  <p className="text-xs text-lia-text-primary">Economia</p>
+                  <p className="text-xs text-lia-text-secondary">Economia</p>
                 </div>
               </div>
 
@@ -371,7 +371,7 @@ export function TemplatesPage() {
 
               {/* Info adicional */}
               <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <div className="flex items-center justify-between text-xs text-lia-text-primary">
+                <div className="flex items-center justify-between text-xs text-lia-text-secondary">
                   <span>Por {template.createdBy}</span>
                   <span>{template.updatedAt.toLocaleDateString()}</span>
                 </div>
@@ -389,7 +389,7 @@ export function TemplatesPage() {
             <h3 className="text-lg font-medium text-lia-text-primary mb-2">
               Nenhum template encontrado
             </h3>
-            <p className="text-lia-text-primary mb-4">
+            <p className="text-lia-text-secondary mb-4">
               {searchTerm || selectedCategory !== "all"
                 ? "Tente ajustar os filtros de busca"
                 : "Crie seu primeiro template para acelerar seu workflow"
