@@ -36,6 +36,35 @@ export interface VoiceChatResponse {
 export interface VoiceStatusResponse {
   transcription_available: boolean
   synthesis_available: boolean
+  streaming_available?: boolean
+  voice_provider?: string
+  voice_strategy?: string
+}
+
+export interface VoiceStreamMessage {
+  type: 'audio' | 'transcript' | 'status' | 'metrics' | 'error' | 'turn_complete' | 'timeout'
+  data?: string
+  text?: string
+  role?: 'candidate' | 'lia'
+  mime_type?: string
+  status?: string
+  session_id?: string
+  voice_provider?: string
+  message?: string
+  latency_ms?: number
+  tokens?: Record<string, number>
+  metadata?: Record<string, unknown>
+}
+
+export interface VoiceStreamSessionResponse {
+  success: boolean
+  session_id: string
+  status: string
+  voice_provider: string
+  voice_strategy?: string
+  gemini_available?: boolean
+  ws_token?: string
+  error?: string
 }
 
 export interface ImageAnalysisResponse {

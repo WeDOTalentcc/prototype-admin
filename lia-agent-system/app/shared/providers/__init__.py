@@ -10,11 +10,24 @@ from .embedding_gemini import GeminiEmbeddingProvider
 from .embedding_openai import OpenAIEmbeddingProvider
 from .embedding_provider import EmbeddingProviderABC, EmbeddingResult
 from .llm_claude import ClaudeLLMProvider
-from .llm_factory import LLMProviderFactory
+from .llm_factory import LLMProviderFactory, get_voice_provider_for_tenant
 from .llm_gemini import GeminiLLMProvider
 from .llm_openai import OpenAILLMProvider
 from .llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
-from .voice_provider import TranscriptionResult, VoiceConfig, VoiceProvider, VoiceProviderType
+from .voice_composite import CompositeVoiceProvider
+from .voice_gemini_live import GeminiLiveVoiceProvider
+from .voice_openai_realtime import OpenAIRealtimeVoiceProvider
+from .voice_provider import (
+    TranscriptionResult,
+    VoiceConfig,
+    VoiceProvider,
+    VoiceProviderType,
+    VoiceSessionConfig,
+    VoiceSessionMetrics,
+    VoiceStrategyType,
+    VoiceStreamEvent,
+    VoiceStreamProviderABC,
+)
 
 LLMProviderFactory.register(ClaudeLLMProvider)
 LLMProviderFactory.register(GeminiLLMProvider)
@@ -26,8 +39,17 @@ EmbeddingProviderFactory.register(OpenAIEmbeddingProvider)
 __all__ = [
     "VoiceProvider",
     "VoiceProviderType",
+    "VoiceStreamProviderABC",
+    "VoiceStrategyType",
+    "VoiceStreamEvent",
+    "VoiceSessionConfig",
+    "VoiceSessionMetrics",
     "TranscriptionResult",
     "VoiceConfig",
+    "GeminiLiveVoiceProvider",
+    "OpenAIRealtimeVoiceProvider",
+    "CompositeVoiceProvider",
+    "get_voice_provider_for_tenant",
     "ATSProviderFactory",
     "LLMProviderABC",
     "LLMResponse",

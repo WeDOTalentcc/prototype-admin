@@ -515,3 +515,65 @@ async def get_provider_for_tenant_from_db(
     if container:
         return container
     return registry.get_container(tenant_id=tenant_id)
+
+
+# ---------------------------------------------------------------------------
+# Voice Provider Registry — auto-selects voice strategy per tenant
+# ---------------------------------------------------------------------------
+
+_VOICE_PROVIDER_MAP: dict[str, str] = {
+    "gemini": "gemini_live",
+    "openai": "openai_realtime",
+}
+
+
+def get_voice_provider_for_tenant(
+    tenant_id: str | None = None,
+    primary_provider: str | None = None,
+) -> "VoiceStreamProviderABC":
+    """
+    Get the appropriate VoiceStreamProvider for a tenant based on their LLM config.
+
+    Decision logic:
+      - Gemini tenant → GeminiLiveVoiceProvider (native multimodal)
+      - OpenAI tenant → OpenAIRealtimeVoiceProvider (native multimodal)
+      - Claude / other → CompositeVoiceProvider (STT Gemini + LLM tenant + TTS Gemini)
+    """
+    from app.shared.providers.voice_composite import CompositeVoiceProvider
+    from app.shared.providers.voice_gemini_live import GeminiLiveVoiceProvider
+    from app.shared.providers.voice_openai_realtime import OpenAIRealtimeVoiceProvider
+    from app.shared.providers.voice_provider import VoiceStreamProviderABC
+
+    resolved_provider = primary_provider
+    if not resolved_provider:
+        container = get_provider_for_tenant(tenant_id)
+        resolved_provider = container.primary_provider
+
+    voice_type = _VOICE_PROVIDER_MAP.get(resolved_provider)
+
+    if voice_type == "gemini_live":
+        provider = GeminiLiveVoiceProvider()
+        logger.info(
+            "[VoiceProviderRegistry] tenant=%s → GeminiLiveVoiceProvider (native)",
+            tenant_id,
+        )
+        return provider
+
+    if voice_type == "openai_realtime":
+        provider = OpenAIRealtimeVoiceProvider()
+        logger.info(
+            "[VoiceProviderRegistry] tenant=%s → OpenAIRealtimeVoiceProvider (native)",
+            tenant_id,
+        )
+        return provider
+
+    provider = CompositeVoiceProvider(
+        tenant_id=tenant_id,
+        llm_provider_name=resolved_provider or "claude",
+    )
+    logger.info(
+        "[VoiceProviderRegistry] tenant=%s → CompositeVoiceProvider (stt+%s+tts)",
+        tenant_id,
+        resolved_provider,
+    )
+    return provider

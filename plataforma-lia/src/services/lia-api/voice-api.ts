@@ -3,6 +3,8 @@ import type {
   TranscriptionResponse,
   VoiceChatResponse,
   VoiceStatusResponse,
+  VoiceStreamMessage,
+  VoiceStreamSessionResponse,
   ImageAnalysisResponse,
   DocumentAnalysisResponse,
   ResumeAnalysisResponse,
@@ -94,6 +96,131 @@ export async function getVoiceStatus(): Promise<VoiceStatusResponse> {
   } catch {
     return { transcription_available: false, synthesis_available: false }
   }
+}
+
+export async function startVoiceStreamSession(
+  candidateId: string,
+  candidateName: string,
+  jobTitle: string,
+  companyId: string,
+  jobId?: string,
+  language?: string,
+): Promise<VoiceStreamSessionResponse> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/voice-stream/start-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        company_id: companyId,
+        language: language || 'pt-BR',
+        system_prompt: `Candidate: ${candidateName}, Position: ${jobTitle}`,
+      }),
+    })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      return {
+        success: false,
+        session_id: '',
+        status: 'error',
+        voice_provider: '',
+        error: errorData.detail || 'Failed to start voice session',
+      }
+    }
+    return response.json()
+  } catch {
+    return {
+      success: false,
+      session_id: '',
+      status: 'error',
+      voice_provider: '',
+      error: 'Network error starting voice session',
+    }
+  }
+}
+
+export type VoiceStreamEventHandler = (event: VoiceStreamMessage) => void
+
+export function createVoiceStreamConnection(
+  sessionId: string,
+  wsToken: string,
+  onEvent: VoiceStreamEventHandler,
+  onClose?: () => void,
+  onError?: (error: string) => void,
+): {
+  sendAudio: (audioData: ArrayBuffer) => void
+  sendText: (text: string) => void
+  close: () => void
+  isConnected: () => boolean
+} {
+  const wsBase = process.env.NEXT_PUBLIC_WS_URL
+    || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
+  const wsUrl = `${wsBase}/api/v1/voice-stream/live?session_id=${sessionId}&ws_token=${encodeURIComponent(wsToken)}`
+
+  let ws: WebSocket | null = null
+  let connected = false
+
+  try {
+    ws = new WebSocket(wsUrl)
+
+    ws.onopen = () => {
+      connected = true
+      onEvent({ type: 'status', status: 'connecting', session_id: sessionId })
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const msg: VoiceStreamMessage = JSON.parse(event.data)
+        onEvent(msg)
+      } catch {
+        // ignore malformed messages
+      }
+    }
+
+    ws.onclose = () => {
+      connected = false
+      onClose?.()
+    }
+
+    ws.onerror = () => {
+      connected = false
+      onError?.('WebSocket connection error')
+    }
+  } catch (err) {
+    onError?.('Failed to create WebSocket connection')
+  }
+
+  return {
+    sendAudio: (audioData: ArrayBuffer) => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return
+      const base64 = arrayBufferToBase64(audioData)
+      ws.send(JSON.stringify({ type: 'audio', data: base64 }))
+    },
+    sendText: (text: string) => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return
+      ws.send(JSON.stringify({ type: 'text', data: text }))
+    },
+    close: () => {
+      if (!ws) return
+      try {
+        ws.send(JSON.stringify({ type: 'end' }))
+      } catch {
+        // ignore
+      }
+      ws.close()
+      ws = null
+      connected = false
+    },
+    isConnected: () => connected,
+  }
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
 }
 
 export async function analyzeImage(

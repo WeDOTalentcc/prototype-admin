@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { VoiceChatButton } from "@/components/chat/voice-chat-button"
 import { LiaVacancyQueriesGuide } from "@/components/ui/lia-vacancy-queries-guide"
 import { cn } from "@/lib/utils"
+import { useVoiceStream } from "@/hooks/use-voice-stream"
+import useCompanyId from "@/hooks/useCompanyId"
 import { DRAFT_DETECTED_MESSAGE, INITIAL_JOB_CREATION_MESSAGE } from '../config'
 import type { Message, WizardDraftData } from '../types'
 
@@ -102,6 +104,9 @@ export function ExpandedChatInput({
   onSetAwaitingDraftChoice,
   onSetDynamicInitialMessage,
 }: ExpandedChatInputProps) {
+  const { companyId } = useCompanyId()
+  const voiceStream = useVoiceStream(companyId || undefined)
+
   const suggestionTags = [
     { label: "Criar vaga", icon: Plus, action: "criar_vaga" },
     { label: "Sugerir melhorias", icon: Brain, action: "sugerir_melhorias" },
@@ -173,6 +178,11 @@ export function ExpandedChatInput({
                   onSetMessages(prev => [...prev, errorMsg])
                 }}
                 disabled={isLoading || isTypingEffect}
+                streamingEnabled={voiceStream.streamingEnabled}
+                wsSessionId={voiceStream.wsSessionId}
+                wsToken={voiceStream.wsToken}
+                onStreamingInit={() => voiceStream.initStreamSession()}
+                onStreamingEnd={() => voiceStream.resetSession()}
               />
               <button
                 onClick={() => onSendMessage(inputValue)}
