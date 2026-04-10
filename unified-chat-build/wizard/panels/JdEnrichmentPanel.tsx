@@ -154,7 +154,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           )}
         </div>
       ) : (
-        <JdLoadingState />
+        <JdLoadingState key={String(d.quality_score)} />
       )}
 
       {/* HITL Approval footer — only when enriched and approval needed */}

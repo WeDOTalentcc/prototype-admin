@@ -120,33 +120,35 @@ export function PublishPanel({ data, onUpdate }: Props) {
 
       {/* Publish button */}
       {!d.job_id && (
-        <button
-          onClick={handlePublish}
-          disabled={isPublishing || selectedPlatforms.size === 0}
-          className={cn(
-            "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-colors font-['Open_Sans',sans-serif]",
-            isPublishing || selectedPlatforms.size === 0
-              ? "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
-              : "bg-wedo-cyan text-white hover:bg-wedo-cyan/90"
+        <>
+          <button
+            onClick={handlePublish}
+            disabled={isPublishing || selectedPlatforms.size === 0}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-colors font-['Open_Sans',sans-serif]",
+              isPublishing || selectedPlatforms.size === 0
+                ? "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
+                : "bg-wedo-cyan text-white hover:bg-wedo-cyan/90"
+            )}
+          >
+            {isPublishing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Publicando...
+              </>
+            ) : (
+              <>
+                <Rocket className="w-4 h-4" />
+                Publicar Vaga
+              </>
+            )}
+          </button>
+          {selectedPlatforms.size === 0 && (
+            <p className="text-[10px] text-status-warning text-center font-['Open_Sans',sans-serif]">
+              Selecione pelo menos uma plataforma
+            </p>
           )}
-        >
-          {isPublishing ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Publicando...
-            </>
-          ) : (
-            <>
-              <Rocket className="w-4 h-4" />
-              Publicar Vaga
-            </>
-          )}
-        </button>
-        {selectedPlatforms.size === 0 && (
-          <p className="text-[10px] text-status-warning text-center font-['Open_Sans',sans-serif]">
-            Selecione pelo menos uma plataforma
-          </p>
-        )}
+        </>
       )}
 
       {/* Published success */}

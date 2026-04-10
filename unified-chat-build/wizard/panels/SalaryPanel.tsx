@@ -17,6 +17,10 @@ export function SalaryPanel({ data, onUpdate }: Props) {
   const [min, setMin] = useState(d.salary_min ?? 0)
   const [max, setMax] = useState(d.salary_max ?? 0)
 
+  // Dynamic slider range based on data or benchmark
+  const benchmarkMax = d.benchmark ? Number((d.benchmark as Record<string, unknown>).p90 || (d.benchmark as Record<string, unknown>).max || 50000) : null
+  const sliderMax = Math.max(50000, benchmarkMax ?? 0, (d.salary_max ?? 0) * 1.5)
+
   const handleMinChange = (val: number) => {
     setMin(val)
     onUpdate?.({ salary_min: val })
@@ -49,7 +53,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
             <input
               type="range"
               min={0}
-              max={50000}
+              max={sliderMax}
               step={500}
               value={min || d.salary_min || 0}
               onChange={(e) => handleMinChange(Number(e.target.value))}
@@ -61,7 +65,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
             <input
               type="range"
               min={0}
-              max={50000}
+              max={sliderMax}
               step={500}
               value={max || d.salary_max || 0}
               onChange={(e) => handleMaxChange(Number(e.target.value))}
@@ -75,9 +79,16 @@ export function SalaryPanel({ data, onUpdate }: Props) {
       {d.benchmark && (
         <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
           <p className="text-[10px] font-medium text-wedo-cyan font-['Open_Sans',sans-serif]">Benchmark de mercado</p>
-          <p className="text-xs text-lia-text-primary font-['Open_Sans',sans-serif] mt-0.5">
-            {JSON.stringify(d.benchmark)}
-          </p>
+          <div className="mt-1 space-y-0.5">
+            {Object.entries(d.benchmark).map(([key, val]) => (
+              <div key={key} className="flex items-center justify-between text-xs font-['Open_Sans',sans-serif]">
+                <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, " ")}</span>
+                <span className="text-lia-text-primary font-medium">
+                  {typeof val === "number" ? `${currency} ${val.toLocaleString("pt-BR")}` : String(val)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

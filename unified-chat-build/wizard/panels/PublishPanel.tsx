@@ -142,6 +142,11 @@ export function PublishPanel({ data, onUpdate }: Props) {
             </>
           )}
         </button>
+        {selectedPlatforms.size === 0 && (
+          <p className="text-[10px] text-status-warning text-center font-['Open_Sans',sans-serif]">
+            Selecione pelo menos uma plataforma
+          </p>
+        )}
       )}
 
       {/* Published success */}

@@ -95,10 +95,20 @@ export function ProgressiveDisclosure({ currentStage, interactionCount }: Props)
 
   if (!currentTip) return null
 
+  const dismissTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current)
+    }
+  }, [])
+
   const handleDismiss = () => {
     markTipSeen(currentTip.id)
     setDismissed(true)
-    setTimeout(() => setDismissed(false), 5000) // Allow new tips after 5s
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current)
+    dismissTimerRef.current = setTimeout(() => setDismissed(false), 5000)
   }
 
   return (
