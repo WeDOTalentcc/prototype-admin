@@ -180,7 +180,7 @@ export default function TalentPoolPage({
         headers: { "Content-Type": "application/json" },
       })
       const data = await res.json()
-      if (data?.job_id) onNavigateToJob?.(data.job_id)
+      if (data?.job_id && onNavigateToJob) onNavigateToJob(data.job_id)
     } catch (err) {
       console.error("Failed to create job:", err)
     } finally {
@@ -319,7 +319,7 @@ export default function TalentPoolPage({
             setSelectedIds(new Set())
             loadCandidates()
             loadPool()
-            onNavigateToJob?.(jobId)
+            if (onNavigateToJob) onNavigateToJob(jobId)
           }}
         />
       )}
@@ -432,7 +432,7 @@ function CandidatesTab({
                         </Avatar>
                         <div>
                           <button
-                            onClick={() => onOpenCandidate?.(c.id)}
+                            onClick={() => { if (onOpenCandidate) onOpenCandidate(c.id) }}
                             className={`${textStyles.body} font-medium hover:underline cursor-pointer`}
                           >
                             {c.name}
@@ -488,7 +488,7 @@ function CandidatesTab({
                         <button
                           className={actionButtonStyles.smOutline}
                           title="Ver perfil"
-                          onClick={() => onOpenCandidate?.(c.id)}
+                          onClick={() => { if (onOpenCandidate) onOpenCandidate(c.id) }}
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>

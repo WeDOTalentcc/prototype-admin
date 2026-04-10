@@ -18,48 +18,50 @@ vi.mock('@/lib/recruitment-stages', () => ({
   isApplicationSource: (s: string) => s === 'application',
 }))
 
-vi.mock('@/components/candidate-profile/CandidateAvatar', () => ({
-  CandidateAvatar: ({ name }: { name: string }) => (
-    <div data-testid="candidate-avatar">{name}</div>
-  ),
-}))
+vi.mock('@/components/candidate-profile/CandidateAvatar', () => {
+  function CandidateAvatar({ name }: { name: string }) {
+    return <div data-testid="candidate-avatar">{name}</div>
+  }
+  return { CandidateAvatar }
+})
 
-vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <div role="menuitem" onClick={onClick}>{children}</div>
-  ),
-  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuSeparator: () => <hr />,
-  DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}))
+vi.mock('@/components/ui/dropdown-menu', () => {
+  function DropdownMenu({ children }: { children: React.ReactNode }) { return <div>{children}</div> }
+  function DropdownMenuContent({ children }: { children: React.ReactNode }) { return <div>{children}</div> }
+  function DropdownMenuItem({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) { return <div role="menuitem" onClick={onClick}>{children}</div> }
+  function DropdownMenuTrigger({ children }: { children: React.ReactNode }) { return <div>{children}</div> }
+  function DropdownMenuSeparator() { return <hr /> }
+  function DropdownMenuLabel({ children }: { children: React.ReactNode }) { return <div>{children}</div> }
+  return { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel }
+})
 
-vi.mock('@/components/ui/score-icon-button', () => ({
-  ScoreIconButton: ({ score }: { score: number | null }) => (
-    <span data-testid="score-icon">{score}</span>
-  ),
-}))
+vi.mock('@/components/ui/score-icon-button', () => {
+  function ScoreIconButton({ score }: { score: number | null }) { return <span data-testid="score-icon">{score}</span> }
+  return { ScoreIconButton }
+})
 
-vi.mock('@/components/ui/status-badge', () => ({
-  WarningBadge: () => <span data-testid="warning-badge" />,
-  SourceBadge: ({ source }: { source: string }) => <span data-testid="source-badge">{source}</span>,
-  StatusBadge: () => <span data-testid="status-badge" />,
-  ChannelBadge: () => <span data-testid="channel-badge" />,
-  DateTimeBadge: () => <span data-testid="datetime-badge" />,
-  OriginBadge: () => <span data-testid="origin-badge" />,
-  AwaitingBadge: () => <span data-testid="awaiting-badge" />,
-  HiredBadge: () => <span data-testid="hired-badge" />,
-  OffLimitsBadge: () => <span data-testid="offlimits-badge" />,
-}))
+vi.mock('@/components/ui/status-badge', () => {
+  function WarningBadge() { return <span data-testid="warning-badge" /> }
+  function SourceBadge({ source }: { source: string }) { return <span data-testid="source-badge">{source}</span> }
+  function StatusBadge() { return <span data-testid="status-badge" /> }
+  function ChannelBadge() { return <span data-testid="channel-badge" /> }
+  function DateTimeBadge() { return <span data-testid="datetime-badge" /> }
+  function OriginBadge() { return <span data-testid="origin-badge" /> }
+  function AwaitingBadge() { return <span data-testid="awaiting-badge" /> }
+  function HiredBadge() { return <span data-testid="hired-badge" /> }
+  function OffLimitsBadge() { return <span data-testid="offlimits-badge" /> }
+  return { WarningBadge, SourceBadge, StatusBadge, ChannelBadge, DateTimeBadge, OriginBadge, AwaitingBadge, HiredBadge, OffLimitsBadge }
+})
 
-vi.mock('../CandidateBadges', () => ({
-  CandidateBadges: () => <div data-testid="candidate-badges" />,
-}))
+vi.mock('../CandidateBadges', () => {
+  function CandidateBadges() { return <div data-testid="candidate-badges" /> }
+  return { CandidateBadges }
+})
 
-vi.mock('../OverrideApproveButton', () => ({
-  OverrideApproveButton: () => <button data-testid="override-btn" />,
-}))
+vi.mock('../OverrideApproveButton', () => {
+  function OverrideApproveButton() { return <button data-testid="override-btn" /> }
+  return { OverrideApproveButton }
+})
 
 vi.mock('../../utils/badge-utils', () => ({
   SUB_STATUS_DISPLAY_MAP: {},

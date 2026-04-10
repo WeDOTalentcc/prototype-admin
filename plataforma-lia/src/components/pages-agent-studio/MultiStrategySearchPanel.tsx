@@ -99,8 +99,7 @@ export default function MultiStrategySearchPanel({
       setResult(data)
       setStrategiesInProgress(new Set())
 
-      // Add to Workflow Rail
-      onAddToWorkflowRail?.(jobTitle.trim(), data.total_unique || 0)
+      if (onAddToWorkflowRail) onAddToWorkflowRail(jobTitle.trim(), data.total_unique || 0)
     } catch (err) {
       console.error("Multi-strategy search failed:", err)
       setStrategiesInProgress(new Set())
@@ -209,13 +208,13 @@ export default function MultiStrategySearchPanel({
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2">
               <span className={textStyles.caption}>{selectedIds.size} selecionados</span>
-              <Button className={buttonStyles.outline} onClick={() => onAddToJob?.(Array.from(selectedIds), "")}>
+              <Button className={buttonStyles.outline} onClick={() => { if (onAddToJob) onAddToJob(Array.from(selectedIds), "") }}>
                 <Briefcase className="w-3.5 h-3.5 mr-1" /> + Vaga
               </Button>
-              <Button className={buttonStyles.outline} onClick={() => onAddToPool?.(Array.from(selectedIds), "")}>
+              <Button className={buttonStyles.outline} onClick={() => { if (onAddToPool) onAddToPool(Array.from(selectedIds), "") }}>
                 <Database className="w-3.5 h-3.5 mr-1" /> + Pool
               </Button>
-              <Button className={buttonStyles.outline} onClick={() => onAddToList?.(Array.from(selectedIds))}>
+              <Button className={buttonStyles.outline} onClick={() => { if (onAddToList) onAddToList(Array.from(selectedIds)) }}>
                 <Heart className="w-3.5 h-3.5 mr-1" /> + Lista
               </Button>
             </div>
