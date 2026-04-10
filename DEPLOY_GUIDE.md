@@ -10,7 +10,7 @@
 > - P1/P4 resolvidos: zero `NEXT_PUBLIC_BACKEND_URL`/`NEXT_PUBLIC_API_URL` no codebase (Task #99)
 > - P2/P3 resolvidos: build ok, DATABASE_URL apontando para banco real
 > - P6 resolvido: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
-> - P5 reduzido: apenas 2 arquivos restantes com `REPLIT_DEV_DOMAIN`
+> - P5 reduzido: 4 arquivos de app (2 frontend + 2 backend) ainda usam vars Replit-only
 > - Tasks #91/#92 canceladas; rotas migradas diretamente na Task #99
 > - Migrations: 60 (up from 59), Endpoints: 362+, Models: 217+
 > - Sidebar reordenada: Operacional → Recrutamento → Configuração
@@ -1818,15 +1818,27 @@ CORREÇÃO APLICADA:
 #### P5 — ⚠️ PARCIALMENTE RESOLVIDO: Variáveis exclusivas do Replit no código
 
 ```
-Restam apenas 2 arquivos com referências a variáveis Replit:
-  1. plataforma-lia/src/lib/api/jira-service.ts — REPLIT_DEV_DOMAIN
-  2. plataforma-lia/src/lib/workos.ts — REPLIT_DEV_DOMAIN
+4 ARQUIVOS DE APP com vars Replit-only (bloqueiam deploy):
 
-WEB_REPL_RENEWAL e REPL_IDENTITY já foram eliminados.
+  Frontend (2):
+  1. plataforma-lia/src/lib/workos.ts — REPLIT_DEV_DOMAIN (redirect URI do WorkOS)
+  2. plataforma-lia/src/lib/api/jira-service.ts — REPL_IDENTITY / WEB_REPL_RENEWAL (auth Jira via Replit connector)
 
-AÇÃO ANTES DO DEPLOY: Adicionar fallbacks nos 2 arquivos:
-  process.env.REPLIT_DEV_DOMAIN || process.env.APP_DOMAIN || 'wedotalent.cc'
-  Trabalho pontual (~10 minutos).
+  Backend (2):
+  3. lia-agent-system/app/api/v1/shared_searches.py — REPLIT_DEV_DOMAIN (base URL para links)
+  4. lia-agent-system/app/shared/channels/adapters/email_adapter.py — REPLIT_DEV_DOMAIN (links em emails)
+
+  Scripts dev-only (~20 arquivos em scripts/ e lia-agent-system/scripts/):
+  - Usam REPL_IDENTITY / WEB_REPL_RENEWAL para auth Jira via Replit connector
+  - NÃO são deployados — sem risco para produção
+
+AÇÃO ANTES DO DEPLOY:
+  Frontend: Adicionar fallbacks:
+    process.env.REPLIT_DEV_DOMAIN || process.env.APP_DOMAIN || 'wedotalent.cc'
+  Backend: Adicionar fallbacks:
+    os.environ.get("REPLIT_DEV_DOMAIN", os.environ.get("APP_DOMAIN", "wedotalent.cc"))
+  Jira: Migrar auth para JIRA_ACCESS_TOKEN + JIRA_SITE_URL (Cloud Run)
+  Trabalho estimado: ~30 minutos.
 ```
 
 #### P6 — ✅ RESOLVIDO (Task #74 — abril 2026): WebSockets parametrizados
@@ -1905,7 +1917,7 @@ Auditoria de chaves API:
 | **P2: Build falha** | ~~🔴 Crítico~~ | ✅ RESOLVIDO | `"use client"` adicionado ao `ai-credits/page.tsx` | Feito |
 | **P3: DATABASE_URL** | ~~🔴 Crítico~~ | ✅ RESOLVIDO | Backend conectado ao banco Replit (`helium/heliumdb`) | Feito |
 | **P4: NEXT_PUBLIC leak** | ~~🟡 Importante~~ | ✅ RESOLVIDO (Task #99) | Resolvido junto com P1 | Feito |
-| **P5: Replit vars** | 🟡 Importante | ⚠️ 2 arquivos restantes | Adicionar fallbacks em `jira-service.ts` e `workos.ts` | Antes do deploy |
+| **P5: Replit vars** | 🟡 Importante | ⚠️ 4 arquivos de app restantes (2 frontend + 2 backend) | Adicionar fallbacks — ver lista detalhada abaixo | Antes do deploy |
 | **P6: WebSockets** | ~~🟡 Importante~~ | ✅ RESOLVIDO (Task #74) | `NEXT_PUBLIC_WS_URL` parametrizado em 3 componentes | Feito |
 | **WorkOS prod** | 🟡 Importante | Pendente | Criar ambiente prod + redirect URIs `wedotalent.cc` | Deploy |
 | **Error Boundaries** | 🟢 Desejável | Parcialmente implementado | Verificar cobertura em pages críticas | Antes do deploy |
@@ -1922,7 +1934,12 @@ Auditoria de chaves API:
 
 **Preparação para deploy:**
 - [x] P4+P1: Zero variáveis `NEXT_PUBLIC_*` expondo URLs internas do backend (Task #99)
-- [ ] P5: 2 arquivos restantes com `REPLIT_DEV_DOMAIN` precisam de fallback (`jira-service.ts`, `workos.ts`)
+- [ ] P5: 4 arquivos de app com vars Replit-only precisam de fallback para deploy:
+  - `plataforma-lia/src/lib/workos.ts` — usa `REPLIT_DEV_DOMAIN` (redirect URI)
+  - `plataforma-lia/src/lib/api/jira-service.ts` — usa `REPL_IDENTITY` / `WEB_REPL_RENEWAL` (auth Jira via Replit connector)
+  - `lia-agent-system/app/api/v1/shared_searches.py` — usa `REPLIT_DEV_DOMAIN` (base URL links)
+  - `lia-agent-system/app/shared/channels/adapters/email_adapter.py` — usa `REPLIT_DEV_DOMAIN` (email links)
+  - Nota: ~20 scripts em `scripts/` e `lia-agent-system/scripts/` também usam `REPL_IDENTITY`/`WEB_REPL_RENEWAL` mas são dev-only (não deployados)
 - [x] P6: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
 - [ ] Headers de segurança adicionados no `next.config.js`
 - [ ] Error boundary verificado em pages críticas (funil, chat, vagas)
@@ -2608,7 +2625,7 @@ Configurações obrigatórias no WorkOS dashboard:
 - [x] ✅ **P1:** 104+ proxy routes + 11 arquivos frontend migrados (Task #99) — zero `NEXT_PUBLIC_BACKEND_URL`
 - [x] ✅ **P2:** `next build` passa sem erros (`ai-credits/page.tsx` — `"use client"` adicionado)
 - [x] ✅ **P4:** Zero `NEXT_PUBLIC_*` expondo URLs internas (resolvido com P1, Task #99)
-- [ ] 🟡 **P5:** 2 arquivos restantes com `REPLIT_DEV_DOMAIN` precisam de fallback
+- [ ] 🟡 **P5:** 4 arquivos de app com vars Replit-only precisam de fallback (2 frontend: `workos.ts`, `jira-service.ts` + 2 backend: `shared_searches.py`, `email_adapter.py`)
 - [x] ✅ **P6:** WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
 - [ ] WorkOS prod configurado (API key + redirect URIs para `wedotalent.cc`)
 - [ ] Headers de segurança em `next.config.js`
