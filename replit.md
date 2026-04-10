@@ -48,6 +48,9 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Profile Analysis BARS+WSI**: Enriched `AnalysisService` with unified BARS rubric evaluation + WSI Big Five trait inference from CV text.
 - **Zustand State Management**: Introduced zustand for centralized state management, covering auth, kanban, and candidate data.
 - **Performance Improvements**: Implemented lazy loading for modals and error boundaries for major pages.
+- **Chat Sidebar Resize**: Drag-to-resize handle on left edge of inline chat sidebar (300-600px range, persisted in localStorage via `lia-chat-width` key).
+- **Floating Chat Mode**: Chat mode switching (Lateral/Flutuante/Tela cheia) uses `lia:chat-mode-changed` custom event to coordinate between `DashboardChatPanel` (inline) and `UnifiedChatConditional` (overlay). Mode persisted in `lia-chat-mode` localStorage key.
+- **Funil de Talentos Retry**: `useCandidatesData` uses `fetchWithRetry` (2 retries, 1.5s delay) for viewed-candidates, listJobVacancies, and listEmailTemplates to handle Next.js cold-start compilation delays.
 - **Sentry Error Monitoring**: Activated Sentry integration for both backend and frontend.
 - **Unified LIA Chat System**: Replaced fragmented chat systems with a single `LiaChatContext` for shared message store, persistent `conversation_id`, and a single backend communication channel. HTTP Chat Fallback for WebSocket unavailability.
 - **Multi-Tenancy `company_id` Isolation**: Implemented `client_account_id` FK in `CompanyProfile`, tenant resolution endpoint, `useCompanyId` React hook, and `useCurrentCompany` hook. User management uses `tenantId`.

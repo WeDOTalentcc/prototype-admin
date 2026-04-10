@@ -17,6 +17,10 @@ import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
 
 const MODE_STORAGE_KEY = "lia-chat-mode"
+const WIDTH_STORAGE_KEY = "lia-chat-width"
+const DEFAULT_WIDTH = 380
+const MIN_WIDTH = 300
+const MAX_WIDTH = 600
 
 function getStoredMode(): ChatMode {
   if (typeof window === "undefined") return "sidebar"
@@ -25,8 +29,17 @@ function getStoredMode(): ChatMode {
   return "sidebar"
 }
 
+function getStoredWidth(): number {
+  if (typeof window === "undefined") return DEFAULT_WIDTH
+  const stored = localStorage.getItem(WIDTH_STORAGE_KEY)
+  if (stored) {
+    const n = parseInt(stored, 10)
+    if (!isNaN(n) && n >= MIN_WIDTH && n <= MAX_WIDTH) return n
+  }
+  return DEFAULT_WIDTH
+}
+
 interface Props {
-  /** "inline" = flex child in dashboard, "overlay" = fixed position */
   renderMode?: "inline" | "overlay"
   initialMode?: ChatMode
   className?: string
@@ -46,6 +59,32 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [showSwitchTask, setShowSwitchTask] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth)
+  const [isResizing, setIsResizing] = useState(false)
+  const widthRef = useRef(sidebarWidthPx)
+
+  useEffect(() => {
+    if (!isResizing) return
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, window.innerWidth - e.clientX))
+      widthRef.current = newWidth
+      setSidebarWidthPx(newWidth)
+    }
+    const handleMouseUp = () => {
+      setIsResizing(false)
+      localStorage.setItem(WIDTH_STORAGE_KEY, String(widthRef.current))
+    }
+    document.body.style.cursor = "ew-resize"
+    document.body.style.userSelect = "none"
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("mouseup", handleMouseUp)
+    return () => {
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
+    }
+  }, [isResizing])
 
   const authUser = useAuthStore((s) => s.user)
   const userName = authUser?.name || authUser?.email || "Usuário"
@@ -142,14 +181,25 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const handleModeChange = useCallback((newMode: ChatMode) => {
     const prevMode = currentModeRef.current
     setMode(newMode)
+    localStorage.setItem(MODE_STORAGE_KEY, newMode)
+    window.dispatchEvent(new CustomEvent("lia:chat-mode-changed", { detail: { mode: newMode, prevMode } }))
     if (newMode === "fullscreen") {
       close()
       window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: {} }))
-    } else if (prevMode === "fullscreen") {
-      open()
-      window.dispatchEvent(new CustomEvent("lia:leave-fullscreen-chat", { detail: { targetMode: newMode } }))
+    } else if (newMode === "floating") {
+      if (renderMode === "inline") {
+        close()
+        requestAnimationFrame(() => open())
+      }
+    } else if (newMode === "sidebar") {
+      if (prevMode === "floating" || prevMode === "fullscreen") {
+        open()
+      }
+      if (prevMode === "fullscreen") {
+        window.dispatchEvent(new CustomEvent("lia:leave-fullscreen-chat", { detail: { targetMode: newMode } }))
+      }
     }
-  }, [close, open])
+  }, [close, open, renderMode])
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -167,31 +217,40 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const hasMessages = chatMessages.length > 0
   const hasDynamicPanel = !!dynamicPanel
 
-  // For overlay mode, don't render if closed
   if (renderMode === "overlay" && !isOpen) return null
 
   const isInline = renderMode === "inline"
   const effectiveMode: ChatMode = isInline ? "sidebar" : mode
 
-  // Sidebar width: wider when split view is active
-  const sidebarWidth = isInline
-    ? hasDynamicPanel ? "w-[720px]" : "w-[380px]"
-    : ""
+  const dynamicPanelWidth = hasDynamicPanel ? 340 : 0
+  const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined
 
   return (
     <div
       className={cn(
-        "flex bg-lia-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
+        "flex bg-lia-bg-primary relative",
         isInline
-          ? `${sidebarWidth} flex-shrink-0 border-l border-lia-border-subtle h-full`
+          ? "flex-shrink-0 border-l border-lia-border-subtle h-full"
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
-            : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
+            : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
         className
       )}
+      style={isInline ? { width: `${inlineWidth}px` } : undefined}
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
     >
+      {isInline && (
+        <div
+          className="absolute left-0 top-0 w-1.5 h-full cursor-ew-resize z-10 group hover:bg-wedo-cyan/20 active:bg-wedo-cyan/30 transition-colors"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            setIsResizing(true)
+          }}
+        >
+          <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-lia-border-subtle group-hover:bg-wedo-cyan transition-colors" />
+        </div>
+      )}
       {/* Chat column */}
       <div className="flex flex-col flex-1 min-w-0">
         {/* Header */}

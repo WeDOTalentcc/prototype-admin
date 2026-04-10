@@ -3,13 +3,29 @@
 // viewed-candidate tracking, and ancillary list/vacancy loading.
 // Pure React — no Next.js router/navigation dependencies.
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import { useCandidatesListMapped } from "@/hooks/use-candidates-list-mapped"
 import { useBulkCandidateDataRequests } from "@/hooks/use-candidate-data-requests"
 import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
+
+async function fetchWithRetry<T>(
+  fn: () => Promise<T>,
+  retries = 2,
+  delayMs = 1500,
+): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (attempt === retries) throw err
+      await new Promise(r => setTimeout(r, delayMs))
+    }
+  }
+  throw new Error("unreachable")
+}
 
 interface UseCandidatesDataOptions {
   /** Propagate the new Set of viewed candidate IDs upward */
@@ -66,8 +82,11 @@ export function useCandidatesData({
       )
       .catch(() => setCandidateListsForModal([]))
 
-    fetch('/api/backend-proxy/candidates/viewed')
-      .then(r => (r.ok ? r.json() : null))
+    fetchWithRetry(async () => {
+      const r = await fetch('/api/backend-proxy/candidates/viewed')
+      if (!r.ok) throw new Error(`viewed ${r.status}`)
+      return r.json()
+    })
       .then(data => {
         if (data?.candidate_ids) {
           onViewedIdsChange(() => new Set<string>(data.candidate_ids))
@@ -78,8 +97,7 @@ export function useCandidatesData({
   }, []) // intentional: runs once on mount to fetch viewed candidates; onViewedIdsChange is a setState - stable but adding it could cause re-runs
 
   useEffect(() => {
-    liaApi
-      .listJobVacancies()
+    fetchWithRetry(() => liaApi.listJobVacancies())
       .then(r =>
         r.items &&
         setBulkJobVacancies(
@@ -87,8 +105,7 @@ export function useCandidatesData({
         )
       )
       .catch((err) => { console.error('[useCandidatesData] listJobVacancies fetch failed', err) })
-    liaApi
-      .listEmailTemplates(undefined, true)
+    fetchWithRetry(() => liaApi.listEmailTemplates(undefined, true))
       .then(r => r.items && setBulkEmailTemplates(r.items))
       .catch((err) => { console.error('[useCandidatesData] listEmailTemplates fetch failed', err) })
   }, [])

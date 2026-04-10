@@ -1,23 +1,32 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { UnifiedChat } from "./UnifiedChat"
+import type { ChatMode } from "./unified-chat-types"
 
-/**
- * DashboardChatPanel — Renders UnifiedChat inline in the dashboard flex layout.
- *
- * This component sits inside the dashboard-app.tsx content area as a flex child,
- * causing the main content to shrink when the chat opens (Replit-style).
- *
- * - When open: renders UnifiedChat with renderMode="inline" (flex child, 380px)
- * - When closed: returns null (bubble is rendered by UnifiedChatConditional)
- * - When ChatPage is active (hasInlineChat=true): hides completely
- */
+const MODE_STORAGE_KEY = "lia-chat-mode"
+
+function getStoredMode(): ChatMode {
+  if (typeof window === "undefined") return "sidebar"
+  const stored = localStorage.getItem(MODE_STORAGE_KEY)
+  if (stored === "sidebar" || stored === "floating" || stored === "fullscreen") return stored
+  return "sidebar"
+}
+
 export function DashboardChatPanel() {
   const { isOpen, open, close, hasInlineChat } = useLiaFloat()
+  const [chatMode, setChatMode] = useState<ChatMode>(getStoredMode)
 
-  // Keyboard shortcut: ⌘⇧K to toggle chat
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      if (detail?.mode) setChatMode(detail.mode)
+    }
+    window.addEventListener("lia:chat-mode-changed", handler)
+    return () => window.removeEventListener("lia:chat-mode-changed", handler)
+  }, [])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "K") {
@@ -33,8 +42,7 @@ export function DashboardChatPanel() {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [isOpen, open, close])
 
-  // Hide when ChatPage is active or chat is closed
-  if (hasInlineChat || !isOpen) return null
+  if (hasInlineChat || !isOpen || chatMode === "floating" || chatMode === "fullscreen") return null
 
   return (
     <UnifiedChat renderMode="inline" />
