@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef } from "react"
+import React from "react"
 import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
@@ -8,19 +8,14 @@ import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
 import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database } from "lucide-react"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
-import { CompactLIAPrompt } from "./CompactLIAPrompt"
 import { SearchControlsBar } from "./SearchControlsBar"
-import { LIASearchSidebar } from "./LIASearchSidebar"
 import { ActiveFiltersBadge } from "./ActiveFiltersBadge"
 import { CandidatesTableArea } from "./CandidatesTableArea"
 import { CandidatePreviewSidePanel } from "./CandidatePreviewSidePanel"
 import type { Candidate } from "./types"
 import type { TableFilters } from "@/hooks/use-candidate-filters"
-import type { SearchFilters } from "@/components/search/advanced-filters-modal"
-import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
-import type { SearchAnalytics } from "@/components/proactive-insight-card"
-import type { CalibrationCandidate } from "@/components/calibration-card"
-import type { SearchTab, ChatMessage, TableColumn } from "./CandidateSearchResultsView.types"
+import type { ParsedEntities } from "@/components/search/smart-search-input"
+import type { TableColumn } from "./CandidateSearchResultsView.types"
 import { toast } from "sonner"
 
 export interface CandidateSearchResultsViewProps {
@@ -57,13 +52,6 @@ export interface CandidateSearchResultsViewProps {
   setSearchTerm: (value: string) => void
   setLastSearchQuery: (value: string) => void
   setActiveTab: (tab: string) => void
-  // Compact LIA prompt
-  showExpandedLIA: boolean
-  isLIAThinking: boolean
-  liaPromptValue: string
-  setLiaPromptValue: (value: string) => void
-  setShowExpandedLIA: (value: boolean) => void
-  onAICommand: (cmd: string) => void
   // Controls bar
   searchSortBy: string
   setSearchSortBy: (value: string) => void
@@ -79,68 +67,8 @@ export interface CandidateSearchResultsViewProps {
   quickFilters: Set<string>
   searchTerm: string
   getActiveAdvancedFiltersCount: () => number
-  // LIA Sidebar
   isLiaSuperChat: boolean
   setIsLiaSuperChat: (value: boolean) => void
-  liaWidth: number
-  setLiaWidth: (value: number) => void
-  isResizingLIA: boolean
-  setIsResizingLIA: (value: boolean) => void
-  activeSearchTab: SearchTab
-  setActiveSearchTab: (tab: SearchTab) => void
-  chatMessages: ChatMessage[]
-  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>
-  searchResults: {
-    local: Candidate[]
-    global: Candidate[]
-    localCount: number
-    globalCount: number
-    query: string
-    isLoading: boolean
-    showGlobalResults: boolean
-    globalDismissed: boolean
-  }
-  setSearchResults: React.Dispatch<React.SetStateAction<{
-    local: Candidate[]
-    global: Candidate[]
-    localCount: number
-    globalCount: number
-    query: string
-    isLoading: boolean
-    showGlobalResults: boolean
-    globalDismissed: boolean
-  }>>
-  currentSearchSource: string
-  searchSource: string
-  pearchSearchOptions: {
-    searchType: 'fast' | 'pro'
-    limit: number
-    showEmails: boolean
-    showPhoneNumbers: boolean
-    highFreshness: boolean
-    requireEmails: boolean
-    requirePhoneNumbers: boolean
-  }
-  activeSearchFilters: SearchFilters
-  setActiveSearchFilters: React.Dispatch<React.SetStateAction<SearchFilters>>
-  isCreatingArchetype: boolean
-  setIsCreatingArchetype: (value: boolean) => void
-  archetypeCreationStep: 'initial' | 'input' | 'extracting' | 'review' | 'saving'
-  setArchetypeCreationStep: (step: 'initial' | 'input' | 'extracting' | 'review' | 'saving') => void
-  setNewArchetypeData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
-  setShowSaveAsArchetypeModal: (value: boolean) => void
-  setShowGlobalExpansionConfirm: (value: boolean) => void
-  setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
-  setHasSearchResults: (value: boolean) => void
-  setSearchResultsCount: (value: number) => void
-  setLocalResultsCount: (value: number) => void
-  setPearchResultsCount: (value: number) => void
-  setDisplayedResultsCount: (value: number) => void
-  onLIAChatMessage: (msg: string) => void
-  onQuickAction: (action: Record<string, unknown>) => void
-  onCalibrationLike: (candidate: CalibrationCandidate) => void
-  onCalibrationDislike: (candidate: CalibrationCandidate) => void
-  setUserCollapsedLIA: (value: boolean) => void
   // Filters panel
   tableFilters: TableFilters
   setTableFilters: React.Dispatch<React.SetStateAction<TableFilters>>
@@ -249,12 +177,6 @@ export function CandidateSearchResultsView({
   setSearchTerm,
   setLastSearchQuery,
   setActiveTab,
-  showExpandedLIA,
-  isLIAThinking,
-  liaPromptValue,
-  setLiaPromptValue,
-  setShowExpandedLIA,
-  onAICommand,
   searchSortBy,
   setSearchSortBy,
   sortedCandidates,
@@ -270,39 +192,6 @@ export function CandidateSearchResultsView({
   getActiveAdvancedFiltersCount,
   isLiaSuperChat,
   setIsLiaSuperChat,
-  liaWidth,
-  setLiaWidth,
-  isResizingLIA,
-  setIsResizingLIA,
-  activeSearchTab,
-  setActiveSearchTab,
-  chatMessages,
-  setChatMessages,
-  searchResults,
-  setSearchResults,
-  currentSearchSource,
-  searchSource,
-  pearchSearchOptions,
-  activeSearchFilters,
-  setActiveSearchFilters,
-  isCreatingArchetype,
-  setIsCreatingArchetype,
-  archetypeCreationStep,
-  setArchetypeCreationStep,
-  setNewArchetypeData,
-  setShowSaveAsArchetypeModal,
-  setShowGlobalExpansionConfirm,
-  setCandidates,
-  setHasSearchResults,
-  setSearchResultsCount,
-  setLocalResultsCount,
-  setPearchResultsCount,
-  setDisplayedResultsCount,
-  onLIAChatMessage,
-  onQuickAction,
-  onCalibrationLike,
-  onCalibrationDislike,
-  setUserCollapsedLIA,
   tableFilters,
   setTableFilters,
   newSoftSkillFilter,
@@ -366,22 +255,12 @@ export function CandidateSearchResultsView({
   setShowEditQueryModal,
   setShowAddToVacancyModal,
 }: CandidateSearchResultsViewProps) {
-  const chatScrollRef = useRef<HTMLDivElement>(null)
 
   return (
     <div data-testid="candidate-search-results-view" className="flex flex-col h-[calc(100vh-9rem)] gap-2">
-      {/* Toolbar unificado: Brain + Busca realizada + Editar Filtros + Selecionar Todos/Filtros/Colunas */}
+      {/* Toolbar unificado: Busca realizada + Editar Filtros + Selecionar Todos/Filtros/Colunas */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {!showExpandedLIA && (
-            <CompactLIAPrompt
-              isLIAThinking={isLIAThinking}
-              liaPromptValue={liaPromptValue}
-              setLiaPromptValue={((v: React.SetStateAction<string>) => setLiaPromptValue(typeof v === 'function' ? v('') : v)) as React.Dispatch<React.SetStateAction<string>>}
-              setShowExpandedLIA={setShowExpandedLIA}
-              onAICommand={onAICommand}
-            />
-          )}
           <SearchResultsHeader
             lastSearchQuery={lastSearchQuery}
             lastSearchEntities={lastSearchEntities}
@@ -394,20 +273,18 @@ export function CandidateSearchResultsView({
           />
         </div>
 
-        {!showExpandedLIA && (
-          <SearchControlsBar
-            selectedCandidatesForBatch={selectedCandidatesForBatch}
-            searchSortBy={searchSortBy}
-            sortedCandidatesLength={sortedCandidates.length}
-            selectAllCandidates={selectAllCandidates}
-            showTableFiltersPanel={showTableFiltersPanel}
-            setShowTableFiltersPanel={setShowTableFiltersPanel}
-            getActiveTableFiltersCount={getActiveTableFiltersCount}
-            showColumnConfig={showColumnConfig}
-            onToggleColumnConfig={onToggleColumnConfig}
-            tableColumns={tableColumns}
-          />
-        )}
+        <SearchControlsBar
+          selectedCandidatesForBatch={selectedCandidatesForBatch}
+          searchSortBy={searchSortBy}
+          sortedCandidatesLength={sortedCandidates.length}
+          selectAllCandidates={selectAllCandidates}
+          showTableFiltersPanel={showTableFiltersPanel}
+          setShowTableFiltersPanel={setShowTableFiltersPanel}
+          getActiveTableFiltersCount={getActiveTableFiltersCount}
+          showColumnConfig={showColumnConfig}
+          onToggleColumnConfig={onToggleColumnConfig}
+          tableColumns={tableColumns}
+        />
       </div>
 
       {/* Bulk Actions Bar - Ações para candidatos selecionados */}
@@ -522,56 +399,6 @@ export function CandidateSearchResultsView({
 
       {/* Results Layout with Sidebars */}
       <div className="flex gap-4 overflow-hidden transition-colors motion-reduce:transition-none duration-300 flex-1 min-h-0 w-full">
-        {/* LIA Search Sidebar — painel inline esquerdo do Funil de Talentos */}
-        {showExpandedLIA && (
-          <LIASearchSidebar
-            isLiaSuperChat={isLiaSuperChat}
-            setIsLiaSuperChat={setIsLiaSuperChat}
-            liaWidth={liaWidth}
-            setLiaWidth={setLiaWidth}
-            isResizingLIA={isResizingLIA}
-            setIsResizingLIA={setIsResizingLIA}
-            activeSearchTab={activeSearchTab as unknown as never}
-             
-            setActiveSearchTab={setActiveSearchTab as unknown as any}
-            liaPromptValue={liaPromptValue}
-            setLiaPromptValue={((v: React.SetStateAction<string>) => setLiaPromptValue(typeof v === 'function' ? v('') : v)) as React.Dispatch<React.SetStateAction<string>>}
-            chatMessages={chatMessages}
-            setChatMessages={setChatMessages}
-            searchResults={searchResults}
-            setSearchResults={setSearchResults as unknown as never}
-            currentSearchSource={currentSearchSource}
-            searchSource={searchSource}
-            pearchSearchOptions={pearchSearchOptions}
-            activeSearchFilters={activeSearchFilters as unknown as Record<string, Record<string, unknown>>}
-            setActiveSearchFilters={setActiveSearchFilters as (v: Record<string, Record<string, unknown>>) => void}
-            showTableFiltersPanel={showTableFiltersPanel}
-            setShowTableFiltersPanel={setShowTableFiltersPanel}
-            isCreatingArchetype={isCreatingArchetype}
-            setIsCreatingArchetype={setIsCreatingArchetype}
-            archetypeCreationStep={archetypeCreationStep}
-            setArchetypeCreationStep={setArchetypeCreationStep as (v: string) => void}
-            setNewArchetypeData={setNewArchetypeData as (v: { name: string; description: string; query: string; emoji: string }) => void}
-            setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
-            setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
-            selectedCandidatesForBatch={selectedCandidatesForBatch}
-            setCandidates={setCandidates as (v: unknown[]) => void}
-            setHasSearchResults={setHasSearchResults}
-            setSearchResultsCount={setSearchResultsCount}
-            setLocalResultsCount={setLocalResultsCount}
-            setPearchResultsCount={setPearchResultsCount}
-            setShowSearchResults={setShowSearchResults}
-            setDisplayedResultsCount={setDisplayedResultsCount}
-            onLIAChatMessage={onLIAChatMessage}
-            onAICommand={onAICommand}
-            onQuickAction={(actionId: string, actionType: string) => onQuickAction({ actionId, actionType })}
-            onCalibrationLike={(candidateId: string) => onCalibrationLike({ id: candidateId } as CalibrationCandidate)}
-            onCalibrationDislike={(candidateId: string) => onCalibrationDislike({ id: candidateId } as CalibrationCandidate)}
-            onClose={() => { setShowExpandedLIA(false); setUserCollapsedLIA(true) }}
-            chatScrollRef={chatScrollRef as React.RefObject<HTMLDivElement>}
-          />
-        )}
-
         {/* Filtros da Tabela de Resultados */}
         {showTableFiltersPanel && (
           <CandidatesFilterPanel
