@@ -19,6 +19,7 @@ export interface WorkflowReelStage {
   label: string
   shortLabel: string
   icon: React.ElementType
+  pulseStageId?: string
   color: {
     accent: string
     accentBg: string
@@ -26,6 +27,35 @@ export interface WorkflowReelStage {
     cardBorder: string
   }
   suggestions: WorkflowReelSuggestion[]
+}
+
+interface PipelinePulseData {
+  stages: Array<{ macro_stage: string; count: number }>
+  total: number
+}
+
+function usePipelinePulse() {
+  const [pulse, setPulse] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/backend-proxy/pipeline-pulse")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: PipelinePulseData | null) => {
+        if (cancelled || !data) return
+        const map: Record<string, number> = {}
+        for (const s of data.stages) {
+          map[s.macro_stage] = s.count
+        }
+        setPulse(map)
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [])
+
+  return { pulse, loading }
 }
 
 const RECRUITMENT_STAGES: WorkflowReelStage[] = [
@@ -60,6 +90,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
     label: "Sourcing",
     shortLabel: "Sourcing",
     icon: Search,
+    pulseStageId: "sourcing",
     color: {
       accent: "var(--wedo-green, #5DA47A)",
       accentBg: "rgba(93, 164, 122, 0.10)",
@@ -92,6 +123,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
     label: "Triagem",
     shortLabel: "Triagem",
     icon: UserCheck,
+    pulseStageId: "triagem",
     color: {
       accent: "var(--wedo-green, #5DA47A)",
       accentBg: "rgba(93, 164, 122, 0.10)",
@@ -118,6 +150,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
     label: "Entrevista",
     shortLabel: "Entrevista",
     icon: Calendar,
+    pulseStageId: "entrevista",
     color: {
       accent: "var(--wedo-orange, #D19960)",
       accentBg: "rgba(209, 153, 96, 0.10)",
@@ -144,6 +177,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
     label: "Oferta",
     shortLabel: "Oferta",
     icon: FileText,
+    pulseStageId: "oferta",
     color: {
       accent: "var(--wedo-purple, #9860D1)",
       accentBg: "rgba(152, 96, 209, 0.10)",
@@ -170,6 +204,7 @@ const RECRUITMENT_STAGES: WorkflowReelStage[] = [
     label: "Contratação",
     shortLabel: "Hire",
     icon: TrendingUp,
+    pulseStageId: "contratacao",
     color: {
       accent: "var(--wedo-purple, #9860D1)",
       accentBg: "rgba(152, 96, 209, 0.10)",
@@ -309,6 +344,7 @@ export function ChatWorkflowReels({
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null
 
+  const { pulse } = usePipelinePulse()
   const [activeStageId, setActiveStageId] = useState<string | null>(firstWithSuggestions)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -390,6 +426,7 @@ export function ChatWorkflowReels({
                 <StageNode
                   stage={stage}
                   isActive={activeStageId === stage.id}
+                  pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
                   onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
                 />
                 {idx < stages.length - 1 && (
@@ -476,14 +513,22 @@ export function ChatWorkflowReels({
 function StageNode({
   stage,
   isActive,
+  pulseCount,
   onClick,
 }: {
   stage: WorkflowReelStage
   isActive: boolean
+  pulseCount?: number
   onClick: () => void
 }) {
   const Icon = stage.icon
   const hasSuggestions = stage.suggestions.length > 0
+  const showPulse = pulseCount !== undefined && pulseCount > 0
+
+  const handlePulseClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.location.href = "/funil-de-talentos?tab=pipeline"
+  }
 
   return (
     <button
@@ -533,7 +578,16 @@ function StageNode({
       >
         {stage.shortLabel}
       </span>
-      {hasSuggestions && (
+      {showPulse ? (
+        <span
+          className="text-xs font-bold cursor-pointer rounded-full px-1.5 py-0.5"
+          style={{ backgroundColor: stage.color.accentBg, color: stage.color.accent }}
+          onClick={handlePulseClick}
+          title={`${pulseCount} candidatos — ver pipeline`}
+        >
+          {pulseCount}
+        </span>
+      ) : hasSuggestions ? (
         <span
           className="w-1 h-1 rounded-full transition-colors"
           style={{
@@ -541,7 +595,7 @@ function StageNode({
             opacity: isActive ? 1 : 0.5,
           }}
         />
-      )}
+      ) : null}
     </button>
   )
 }

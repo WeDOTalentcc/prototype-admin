@@ -1016,6 +1016,81 @@ class PipelineOverviewResponse(BaseModel):
     total_candidates: int
 
 
+class PipelinePulseStage(BaseModel):
+    macro_stage: str
+    count: int
+
+class PipelinePulseResponse(BaseModel):
+    stages: list[PipelinePulseStage]
+    total: int
+
+STAGE_TO_MACRO = {
+    "Novo": "sourcing",
+    "novo": "sourcing",
+    "Sourcing": "sourcing",
+    "sourcing": "sourcing",
+    "initial": "sourcing",
+    "Triagem": "triagem",
+    "triagem": "triagem",
+    "Reprovado Triagem": "triagem",
+    "reprovado triagem": "triagem",
+    "pending_gate1": "triagem",
+    "screening": "triagem",
+    "Entrevista": "entrevista",
+    "entrevista": "entrevista",
+    "Entrevista RH": "entrevista",
+    "Entrevista Técnica": "entrevista",
+    "Entrevista Final": "entrevista",
+    "interview": "entrevista",
+    "Proposta": "oferta",
+    "proposta": "oferta",
+    "offer": "oferta",
+    "Oferta": "oferta",
+    "Contratado": "contratacao",
+    "contratado": "contratacao",
+    "hired": "contratacao",
+    "Recusado": "contratacao",
+    "recusado": "contratacao",
+}
+
+@router.get("/pipeline-pulse", response_model=PipelinePulseResponse)
+async def get_pipeline_pulse(
+    current_user=Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+):
+    """Lightweight pipeline counts grouped by macro recruitment stage."""
+    company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
+    if not company_id:
+        raise HTTPException(status_code=403, detail="Company not associated with user")
+
+    try:
+        rows = await repo.get_pipeline_overview(company_id)
+    except Exception as e:
+        logger.error(f"Error fetching pipeline pulse: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal error fetching pipeline data")
+
+    macro_counts: dict[str, int] = {}
+    total = 0
+    for row in rows:
+        count = int(row.count)
+        total += count
+        macro = STAGE_TO_MACRO.get(row.stage)
+        if macro is None:
+            macro = STAGE_TO_MACRO.get(str(row.stage).strip())
+        if macro is None:
+            logger.warning(f"Unmapped pipeline stage: '{row.stage}' ({count} candidates) — skipping")
+            continue
+        macro_counts[macro] = macro_counts.get(macro, 0) + count
+
+    order = ["sourcing", "triagem", "entrevista", "oferta", "contratacao"]
+    stages = [
+        PipelinePulseStage(macro_stage=m, count=macro_counts.get(m, 0))
+        for m in order
+    ]
+
+    return PipelinePulseResponse(stages=stages, total=total)
+
+
 @router.get("/pipeline-overview", response_model=PipelineOverviewResponse)
 async def get_pipeline_overview(
     candidates_per_stage: int = Query(default=100, ge=1, le=500, description="Max candidates to return per stage"),
