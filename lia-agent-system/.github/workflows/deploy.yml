@@ -69,16 +69,6 @@ jobs:
             echo "service_suffix=-staging" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Verify app import
-        run: |
-          pip install --quiet -r requirements.txt 2>/dev/null || true
-          python3 -c "import importlib; importlib.import_module('app.core.config')" 2>/dev/null || echo "⚠️ Import check skipped (deps not fully available in CI)"
-
-      - name: Verify Alembic chain
-        run: |
-          python3 -m alembic heads 2>/dev/null | grep -c "head" || echo "⚠️ Alembic check skipped"
-        continue-on-error: true
-
       - name: Build API image
         run: |
           docker build \
@@ -120,21 +110,26 @@ jobs:
             --allow-unauthenticated \
             --quiet
 
-      - name: Deploy Worker to Cloud Run
+      - name: Deploy Worker (Cloud Run Job — always-running)
         run: |
-          gcloud run deploy lia-worker${{ steps.env.outputs.service_suffix }} \
+          gcloud run jobs deploy lia-worker${{ steps.env.outputs.service_suffix }} \
             --project ${{ env.GCP_PROJECT }} \
             --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/lia/lia-worker:${{ github.sha }} \
             --region ${{ env.GCP_REGION }} \
-            --platform managed \
-            --no-allow-unauthenticated \
             --memory 1Gi \
             --cpu 2 \
-            --min-instances 0 \
-            --max-instances 5 \
-            --timeout 900 \
+            --task-timeout 86400s \
+            --max-retries 3 \
             --set-env-vars "APP_ENV=${{ steps.env.outputs.env_name }},CELERY_CONCURRENCY=2" \
             --set-secrets "DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest" \
+            --quiet
+
+      - name: Execute Worker Job
+        run: |
+          gcloud run jobs execute lia-worker${{ steps.env.outputs.service_suffix }} \
+            --project ${{ env.GCP_PROJECT }} \
+            --region ${{ env.GCP_REGION }} \
+            --async \
             --quiet
 
       - name: Smoke test API

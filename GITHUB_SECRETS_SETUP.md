@@ -112,7 +112,7 @@ durante a fase inicial. Após estabilização:
 - `lia-frontend`: `--allow-unauthenticated` (necessário — serve o app web)
 - `lia-api`: `--allow-unauthenticated` (necessário — recebe webhooks Twilio/Teams
   e requisições autenticadas via JWT do frontend)
-- `lia-worker`: `--no-allow-unauthenticated` (privado — só recebe tasks via Redis)
+- `lia-worker`: Cloud Run **Job** (não serviço — Celery worker sem HTTP listener)
 
 ## Primeiros passos
 
