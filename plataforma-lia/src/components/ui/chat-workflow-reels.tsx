@@ -522,7 +522,7 @@ export function ChatWorkflowReels({
 
   return (
     <div className="w-full space-y-5">
-      <div className="relative">
+      <div className="relative" style={{ overflow: "visible" }}>
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
@@ -544,11 +544,12 @@ export function ChatWorkflowReels({
 
         <div
           ref={scrollRef}
-          className="overflow-x-auto overflow-y-visible scrollbar-none pb-1"
+          className="overflow-x-auto scrollbar-none"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             cursor: grabbing ? "grabbing" : "grab",
+            clipPath: "inset(-30px 0 0 0)",
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
