@@ -22,8 +22,12 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/rails", tags=["rails-integration"])
 
-RAILS_API_URL = os.environ.get("RAILS_API_URL", "")
-RAILS_API_TOKEN_SET = bool(os.environ.get("RAILS_API_TOKEN", ""))
+def _get_rails_url() -> str:
+    return os.environ.get("RAILS_API_URL", "")
+
+
+def _is_token_configured() -> bool:
+    return bool(os.environ.get("RAILS_API_TOKEN", ""))
 
 
 @router.get("/health", summary="Rails API health check")
@@ -38,8 +42,8 @@ async def rails_health(adapter: RailsAdapter = Depends(get_rails_adapter)) -> di
       - circuit_breaker: current state of the rails_api circuit
     """
     result = await adapter.health_check()
-    result["rails_url"] = RAILS_API_URL or "(not configured)"
-    result["service_token_configured"] = RAILS_API_TOKEN_SET
+    result["rails_url"] = _get_rails_url() or "(not configured)"
+    result["service_token_configured"] = _is_token_configured()
     return result
 
 
@@ -56,7 +60,7 @@ async def rails_circuit_status() -> dict[str, Any]:
     return {
         "circuit": stats,
         "slo": slo,
-        "rails_url": RAILS_API_URL or "(not configured)",
-        "rails_enabled": bool(RAILS_API_URL),
-        "service_token_configured": RAILS_API_TOKEN_SET,
+        "rails_url": _get_rails_url() or "(not configured)",
+        "rails_enabled": bool(_get_rails_url()),
+        "service_token_configured": _is_token_configured(),
     }

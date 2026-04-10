@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/rails-sync", tags=["rails-sync"])
 
-RAILS_API_TOKEN = os.environ.get("RAILS_API_TOKEN", "")
+def _get_rails_api_token() -> str:
+    return os.environ.get("RAILS_API_TOKEN", "")
 _MAX_BULK_SIZE = 50
 _RATE_LIMIT_WINDOW = 60
 _RATE_LIMIT_MAX = 120
@@ -42,12 +43,13 @@ security = HTTPBearer(auto_error=False)
 async def verify_rails_token(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> str:
-    if not RAILS_API_TOKEN:
+    token = _get_rails_api_token()
+    if not token:
         raise HTTPException(
             status_code=503,
             detail="Rails sync not configured (RAILS_API_TOKEN not set)",
         )
-    if not credentials or credentials.credentials != RAILS_API_TOKEN:
+    if not credentials or credentials.credentials != token:
         logger.warning("[RailsSync] Unauthorized access attempt")
         raise HTTPException(status_code=401, detail="Invalid or missing RAILS_API_TOKEN")
     return credentials.credentials
