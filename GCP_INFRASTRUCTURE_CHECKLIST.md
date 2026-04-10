@@ -52,6 +52,8 @@ gcloud services enable \
   aiplatform.googleapis.com \
   cloudbuild.googleapis.com \
   vpcaccess.googleapis.com
+# Artifact Registry substitui Container Registry (gcr.io) — é o padrão moderno do GCP.
+# Cloud Armor usa a Compute API (compute.googleapis.com) — não precisa de API separada.
 ```
 
 - [ ] Todas as APIs habilitadas
@@ -781,10 +783,13 @@ done
 
 ### 10.8 Testar Worker (Celery)
 
+O worker usa `--no-allow-unauthenticated`, então o curl precisa de identity token:
+
 ```bash
 WORKER_URL=$(gcloud run services describe lia-worker \
   --region=$REGION --format='value(status.url)')
-curl -sf "${WORKER_URL}/health" | python3 -m json.tool
+TOKEN=$(gcloud auth print-identity-token)
+curl -sf -H "Authorization: Bearer ${TOKEN}" "${WORKER_URL}/health" | python3 -m json.tool
 ```
 
 - [ ] APIs habilitadas confirmadas
