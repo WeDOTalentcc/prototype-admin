@@ -110,15 +110,11 @@ async def search_candidates(
 ):
     """Search for candidates using natural language query (Pearch AI - PAID)."""
     try:
-        _search_type = getattr(request, "search_type", None) or getattr(request, "type", "fast")
-        _limit = getattr(request, "limit", 10)
-        _timeout = getattr(request, "timeout", 60)
+        _timeout = getattr(request, "timeout", 60) or 60
         import time as _time
         _gs_start = _time.monotonic()
         result = await pearch_svc.search_candidates(
-            query=request.query,
-            search_type=str(_search_type),
-            limit=_limit,
+            request=request,
             timeout=_timeout,
         )
         _gs_duration_ms = round((_time.monotonic() - _gs_start) * 1000, 1)
@@ -131,11 +127,11 @@ async def search_candidates(
                 action="global_search",
                 decision="executed",
                 reasoning=[
-                    f"Global search ({_search_type}) executed",
+                    f"Global search ({request.type}) executed",
                     f"Results returned: {_result_count}",
                     f"Duration: {_gs_duration_ms}ms",
                     f"Query length: {len(request.query)} chars",
-                    f"Limit: {_limit}",
+                    f"Limit: {request.limit}",
                     f"Timeout: {_timeout}s",
                 ],
                 criteria_used=["query", "search_type", "limit", "timeout"],
@@ -162,9 +158,10 @@ async def search_candidates_get(
 ):
     """Search for candidates using GET request (convenient for testing)."""
     try:
-        return await pearch_svc.search_candidates(
-            query=query, search_type=search_type, limit=limit, timeout=timeout
-        )
+        from lia_models.pearch import SearchType as _ST
+        _type = _ST.PRO if search_type in ("pro", "deep") else _ST.FAST
+        req = PearchSearchRequest(query=query, type=_type, limit=limit)
+        return await pearch_svc.search_candidates(request=req, timeout=timeout)
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:

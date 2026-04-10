@@ -150,6 +150,7 @@ from app.api.v1 import (
     predictive_analytics,
     recruiter_metrics,
     recruiter_profiles,
+    recruitment_campaigns,
     recruitment_email_templates,
     recruitment_journey,
     recruitment_stages,
@@ -320,6 +321,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(sourcing_orchestrator_router, prefix="/api/v1")
     app.include_router(talent_funnel.router, prefix="/api/v1", tags=["talent-funnel"])
     app.include_router(talent_pools.router, prefix="/api/v1", tags=["talent-pools"])
+    app.include_router(recruitment_campaigns.router, prefix="/api/v1", tags=["recruitment-campaigns"])
 
     # ── Interviews & Scheduling ───────────────────────────────────────────────
     app.include_router(interviews.router, prefix="/api/v1", tags=["interviews"])

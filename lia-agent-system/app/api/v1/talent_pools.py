@@ -43,7 +43,6 @@ class TalentPoolUpdate(BaseModel):
     status: str | None = None
     screening_questions: list[dict[str, Any]] | None = None
     screening_config: dict[str, Any] | None = None
-    screening_approved: bool | None = None
     agent_sourcing_enabled: bool | None = None
     agent_config: dict[str, Any] | None = None
 
@@ -82,12 +81,12 @@ def _jsonapi_candidate(c: TalentPoolCandidate) -> dict:
 
 
 async def _get_pool_or_404(
-    pool_id: UUID, account_id: str | int, db: AsyncSession
+    pool_id: UUID, company_id: str | int, db: AsyncSession
 ) -> TalentPool:
     result = await db.execute(
         select(TalentPool).where(
             TalentPool.id == pool_id,
-            TalentPool.account_id == account_id,
+            TalentPool.company_id == company_id,
         )
     )
     pool = result.scalars().first()
@@ -137,7 +136,7 @@ async def list_pools(
     """List talent pools for the current account."""
     company_id = get_user_company_id(current_user)
     stmt = select(TalentPool).where(
-        TalentPool.account_id == company_id,
+        TalentPool.company_id == company_id,
     ).order_by(TalentPool.created_at.desc())
     if status:
         stmt = stmt.where(TalentPool.status == status)
@@ -158,8 +157,7 @@ async def create_pool(
     data = TalentPoolCreate(**body)
 
     pool = TalentPool(
-        account_id=company_id,
-        created_by_user_id=str(current_user.id) if current_user.id else None,
+        company_id=company_id,
         name=data.name,
         description=data.description,
         screening_questions=data.screening_questions or [],

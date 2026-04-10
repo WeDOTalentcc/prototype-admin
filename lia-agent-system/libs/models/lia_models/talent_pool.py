@@ -31,36 +31,36 @@ class TalentPool(Base):
     __tablename__ = "talent_pools"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    account_id = Column(BigInteger, nullable=False, index=True)
-    ideal_profile_id = Column(UUID(as_uuid=True), nullable=True)
-    created_by_user_id = Column(BigInteger, nullable=True)
+    company_id = Column(String, nullable=False, index=True)
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    status = Column(String, nullable=False, default="active")  # active/paused/archived
+    status = Column(String, nullable=False, default="active")
+    archetype_id = Column(String, nullable=True)
     screening_questions = Column(JSON, default=list)
     screening_config = Column(JSON, default=dict)
-    screening_approved = Column(Boolean, default=False)
     agent_sourcing_enabled = Column(Boolean, default=False)
     agent_config = Column(JSON, default=dict)
     candidates_count = Column(Integer, default=0)
     screened_count = Column(Integer, default=0)
     ready_count = Column(Integer, default=0)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    @property
+    def account_id(self):
+        return self.company_id
 
     def to_dict(self):
         """Convert to dictionary."""
         return {
             "id": str(self.id),
-            "account_id": self.account_id,
-            "ideal_profile_id": str(self.ideal_profile_id) if self.ideal_profile_id else None,
-            "created_by_user_id": self.created_by_user_id,
+            "company_id": self.company_id,
             "name": self.name,
             "description": self.description,
             "status": self.status,
+            "archetype_id": self.archetype_id,
             "screening_questions": self.screening_questions or [],
             "screening_config": self.screening_config or {},
-            "screening_approved": self.screening_approved,
             "agent_sourcing_enabled": self.agent_sourcing_enabled,
             "agent_config": self.agent_config or {},
             "candidates_count": self.candidates_count,
