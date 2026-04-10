@@ -233,14 +233,16 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           ? "flex-shrink-0 border-l border-lia-border-subtle h-full"
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
-            : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
+            : mode === "sidebar"
+              ? "fixed top-0 right-0 h-full z-40 border-l border-lia-border-subtle shadow-xl"
+              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
         className
       )}
-      style={isInline ? { width: `${inlineWidth}px` } : undefined}
+      style={isInline ? { width: `${inlineWidth}px` } : (!isInline && mode === "sidebar") ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` } : undefined}
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
     >
-      {isInline && (
+      {(isInline || (!isInline && mode === "sidebar")) && (
         <div
           className="absolute left-0 top-0 w-1.5 h-full cursor-ew-resize z-10 group hover:bg-wedo-cyan/20 active:bg-wedo-cyan/30 transition-colors"
           onMouseDown={(e) => {

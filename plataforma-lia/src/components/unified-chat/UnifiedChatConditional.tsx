@@ -20,8 +20,9 @@ function getStoredMode(): ChatMode {
 
 export function UnifiedChatConditional() {
   const pathname = usePathname()
-  const { isOpen, open, splitView, hasInlineChat } = useLiaFloat()
+  const { isOpen, open, close, splitView, hasInlineChat } = useLiaFloat()
   const [chatMode, setChatMode] = useState<ChatMode>(getStoredMode)
+  const [hasDashboardShell, setHasDashboardShell] = useState(false)
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -32,15 +33,47 @@ export function UnifiedChatConditional() {
     return () => window.removeEventListener("lia:chat-mode-changed", handler)
   }, [])
 
+  useEffect(() => {
+    const check = () => setHasDashboardShell(!!document.querySelector("[data-dashboard-shell]"))
+    check()
+    const raf = requestAnimationFrame(check)
+    return () => cancelAnimationFrame(raf)
+  }, [pathname])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "K") {
+        e.preventDefault()
+        if (isOpen) {
+          close()
+        } else {
+          open()
+        }
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, open, close])
+
   const isHidden = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
   if (isHidden) return null
 
   const showFloating = isOpen && chatMode === "floating" && !hasInlineChat
+  const showSidebarOverlay = isOpen && chatMode === "sidebar" && !hasInlineChat && !hasDashboardShell
+  const showFullscreen = isOpen && chatMode === "fullscreen" && !hasInlineChat
 
   return (
     <>
       {showFloating && (
         <UnifiedChat renderMode="overlay" initialMode="floating" />
+      )}
+
+      {showSidebarOverlay && (
+        <UnifiedChat renderMode="overlay" initialMode="sidebar" />
+      )}
+
+      {showFullscreen && (
+        <UnifiedChat renderMode="overlay" initialMode="fullscreen" />
       )}
 
       {!hasInlineChat && !isOpen && (

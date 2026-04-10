@@ -15,7 +15,7 @@ function getStoredMode(): ChatMode {
 }
 
 export function DashboardChatPanel() {
-  const { isOpen, open, close, hasInlineChat } = useLiaFloat()
+  const { isOpen, hasInlineChat } = useLiaFloat()
   const [chatMode, setChatMode] = useState<ChatMode>(getStoredMode)
 
   useEffect(() => {
@@ -26,21 +26,6 @@ export function DashboardChatPanel() {
     window.addEventListener("lia:chat-mode-changed", handler)
     return () => window.removeEventListener("lia:chat-mode-changed", handler)
   }, [])
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "K") {
-        e.preventDefault()
-        if (isOpen) {
-          close()
-        } else {
-          open()
-        }
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isOpen, open, close])
 
   if (hasInlineChat || !isOpen || chatMode === "floating" || chatMode === "fullscreen") return null
 
