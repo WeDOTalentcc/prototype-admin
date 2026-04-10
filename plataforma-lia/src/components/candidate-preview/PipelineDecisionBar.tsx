@@ -144,7 +144,7 @@ export function PipelineDecisionBar({
   const stageDisplayName = stageInfo?.display_name || currentStage || "—"
 
   const actionConfig = AUTHORITATIVE_ACTION_MATRIX[actionBehavior] || AUTHORITATIVE_ACTION_MATRIX['passive']
-  const subStatuses = stageInfo?.sub_statuses || actionConfig?.defaultSubStatuses?.map(s => ({
+  const subStatuses: Array<string | { name: string; display_name: string }> = stageInfo?.sub_statuses || actionConfig?.defaultSubStatuses?.map(s => ({
     name: s,
     display_name: s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
   })) || []

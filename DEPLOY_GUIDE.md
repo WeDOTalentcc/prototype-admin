@@ -873,49 +873,27 @@ git push -u origin main
 
 #### 2.3 GitHub Actions — CI/CD Frontend
 
-Criar `.github/workflows/deploy.yml` em `ats-front-copia`:
+Arquivo: `plataforma-lia/.github/workflows/deploy.yml` (já criado)
 
-```yaml
-name: Deploy LIA Frontend
+- Trigger: push em `develop` (staging) ou `main` (production)
+- Jobs: Security Scan (npm audit) → Build Docker → Push Artifact Registry → Deploy Cloud Run
+- Smoke test automático após deploy
+- Build args para variáveis NEXT_PUBLIC_* via GitHub Secrets
 
-on:
-  push:
-    branches: [develop, main]
+#### 2.4 GitHub Actions — CI/CD Backend
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+Arquivo: `lia-agent-system/.github/workflows/deploy.yml` (já criado)
 
-      - name: Authenticate GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+- Trigger: push em `develop` (staging) ou `main` (production)
+- Jobs: Security Scan (bandit + pip-audit) → Build API + Worker → Push Artifact Registry → Deploy Cloud Run
+- Deploya 2 serviços: `lia-api` (Gunicorn) + `lia-worker` (Celery)
+- Secrets sensíveis via GCP Secret Manager (não GitHub Secrets)
+- Alembic upgrade head roda no startup do container
 
-      - name: Build and Push Docker Image
-        run: |
-          gcloud builds submit \
-            --tag gcr.io/${{ env.GCP_PROJECT }}/lia-frontend:${{ github.sha }}
+#### 2.5 GitHub Secrets — Documentação Completa
 
-      - name: Deploy to Cloud Run (Staging)
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          gcloud run deploy lia-frontend-staging \
-            --image gcr.io/${{ env.GCP_PROJECT }}/lia-frontend:${{ github.sha }} \
-            --region us-central1
-
-      - name: Deploy to Cloud Run (Production)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          gcloud run deploy lia-frontend \
-            --image gcr.io/${{ env.GCP_PROJECT }}/lia-frontend:${{ github.sha }} \
-            --region us-central1
-```
-
-#### 2.4 GitHub Actions — CI/CD Agent
-
-Mesma estrutura, para o repositório `lia-agent-system`, apontando para o serviço Cloud Run `lia-agent-staging` / `lia-agent`.
+Ver `GITHUB_SECRETS_SETUP.md` na raiz do projeto para lista completa de secrets,
+permissões da service account, e instruções de setup do Artifact Registry.
 
 ---
 
