@@ -13,7 +13,6 @@ htmlcov
 .coverage
 tests/
 docs/
-scripts/
 *.md
 .vscode
 .idea
