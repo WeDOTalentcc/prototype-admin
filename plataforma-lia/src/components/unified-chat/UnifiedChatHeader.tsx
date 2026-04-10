@@ -101,7 +101,7 @@ export function UnifiedChatHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-lia-border-subtle flex-shrink-0 bg-lia-bg-primary">
+    <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary">
       {/* Left: LIA branding + conversation title */}
       <div className="flex items-center gap-2 min-w-0">
         <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" strokeWidth={2} />

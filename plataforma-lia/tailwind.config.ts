@@ -81,6 +81,7 @@ export default {
         'lia-border-subtle':        'var(--lia-border-subtle)',
         'lia-border-default':       'var(--lia-border-default)',
         'lia-border-medium':        'var(--lia-border-medium)',
+        'lia-border-strong':        'var(--lia-border-strong)',
         'lia-text-primary':         'var(--lia-text-primary)',
         'lia-text-secondary':       'var(--lia-text-secondary)',
         'lia-text-tertiary':        'var(--lia-text-tertiary)',

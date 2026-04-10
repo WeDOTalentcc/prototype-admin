@@ -190,7 +190,7 @@ export function UnifiedChatInput({
       <div className={cn(
         "relative rounded-xl border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
         "focus-within:border-wedo-cyan focus-within:ring-1 focus-within:ring-wedo-cyan/30",
-        "border-lia-border-subtle"
+        "border-lia-border-strong"
       )}>
         {/* Context badge row */}
         {showContext && (

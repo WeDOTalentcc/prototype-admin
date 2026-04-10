@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
 import {
   Briefcase, Search, UserCheck, Calendar, FileText,
   TrendingUp, ChevronRight, ChevronLeft, BarChart3,
@@ -334,6 +334,122 @@ interface ChatWorkflowReelsProps {
   utilityNodes?: WorkflowReelStage[]
 }
 
+const DOCK_MAX_SCALE = 1.4
+const DOCK_NEIGHBOR_1_SCALE = 1.2
+const DOCK_NEIGHBOR_2_SCALE = 1.1
+const DOCK_INFLUENCE_RADIUS = 120
+const DRAG_THRESHOLD = 5
+
+function useDockMagnifier(containerRef: React.RefObject<HTMLDivElement | null>) {
+  const mouseXRef = useRef<number | null>(null)
+  const [mouseX, setMouseX] = useState<number | null>(null)
+  const rafId = useRef<number>(0)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setPrefersReducedMotion(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (prefersReducedMotion) return
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const x = e.clientX - rect.left + (containerRef.current?.scrollLeft ?? 0)
+    mouseXRef.current = x
+    if (!rafId.current) {
+      rafId.current = requestAnimationFrame(() => {
+        setMouseX(mouseXRef.current)
+        rafId.current = 0
+      })
+    }
+  }, [containerRef, prefersReducedMotion])
+
+  const handleMouseLeave = useCallback(() => {
+    mouseXRef.current = null
+    if (rafId.current) {
+      cancelAnimationFrame(rafId.current)
+      rafId.current = 0
+    }
+    setMouseX(null)
+  }, [])
+
+  const getScale = useCallback((nodeIndex: number, nodeRefs: React.RefObject<(HTMLElement | null)[]>) => {
+    if (mouseX === null || prefersReducedMotion) return 1
+    const nodeEl = nodeRefs.current?.[nodeIndex]
+    if (!nodeEl) return 1
+    const nodeCenter = nodeEl.offsetLeft + nodeEl.offsetWidth / 2
+    const distance = Math.abs(mouseX - nodeCenter)
+    if (distance > DOCK_INFLUENCE_RADIUS) return 1
+
+    const ratio = 1 - distance / DOCK_INFLUENCE_RADIUS
+    const eased = Math.cos((1 - ratio) * Math.PI / 2)
+
+    if (distance < DOCK_INFLUENCE_RADIUS * 0.33) {
+      return 1 + (DOCK_MAX_SCALE - 1) * eased
+    } else if (distance < DOCK_INFLUENCE_RADIUS * 0.66) {
+      return 1 + (DOCK_NEIGHBOR_1_SCALE - 1) * eased
+    } else {
+      return 1 + (DOCK_NEIGHBOR_2_SCALE - 1) * eased
+    }
+  }, [mouseX, prefersReducedMotion])
+
+  return { handleMouseMove, handleMouseLeave, getScale, isActive: mouseX !== null }
+}
+
+function useDragToScroll(scrollRef: React.RefObject<HTMLDivElement | null>) {
+  const isDragging = useRef(false)
+  const startX = useRef(0)
+  const startScroll = useRef(0)
+  const dragDistance = useRef(0)
+  const [grabbing, setGrabbing] = useState(false)
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const el = scrollRef.current
+    if (!el) return
+    isDragging.current = true
+    dragDistance.current = 0
+    startX.current = e.clientX
+    startScroll.current = el.scrollLeft
+  }, [scrollRef])
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return
+      const el = scrollRef.current
+      if (!el) return
+      const dx = e.clientX - startX.current
+      dragDistance.current = Math.abs(dx)
+      if (dragDistance.current > DRAG_THRESHOLD) {
+        setGrabbing(true)
+        e.preventDefault()
+        el.scrollLeft = startScroll.current - dx
+      }
+    }
+
+    const onMouseUp = () => {
+      isDragging.current = false
+      setGrabbing(false)
+    }
+
+    window.addEventListener("mousemove", onMouseMove)
+    window.addEventListener("mouseup", onMouseUp)
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove)
+      window.removeEventListener("mouseup", onMouseUp)
+    }
+  }, [scrollRef])
+
+  const wasDragging = useCallback(() => {
+    return dragDistance.current > DRAG_THRESHOLD
+  }, [])
+
+  return { onMouseDown, grabbing, wasDragging }
+}
+
 export function ChatWorkflowReels({
   onSelect,
   compact = false,
@@ -347,12 +463,17 @@ export function ChatWorkflowReels({
   const { pulse } = usePipelinePulse()
   const [activeStageId, setActiveStageId] = useState<string | null>(firstWithSuggestions)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const nodeRefs = useRef<(HTMLElement | null)[]>([])
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
   const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null
 
+  const { handleMouseMove, handleMouseLeave, getScale } = useDockMagnifier(scrollRef)
+  const { onMouseDown, grabbing, wasDragging } = useDragToScroll(scrollRef)
+
   const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
+    if (wasDragging()) return
     if (!hasSuggestions) return
     setActiveStageId(activeStageId === nodeId ? null : nodeId)
   }
@@ -383,6 +504,10 @@ export function ChatWorkflowReels({
     el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" })
   }
 
+  const setNodeRef = useCallback((index: number) => (el: HTMLElement | null) => {
+    nodeRefs.current[index] = el
+  }, [])
+
   if (compact) {
     return (
       <CompactReels
@@ -393,70 +518,89 @@ export function ChatWorkflowReels({
     )
   }
 
+  let nodeIndex = 0
+
   return (
     <div className="w-full space-y-5">
       <div className="relative">
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 z-10 w-7 h-7 rounded-full flex items-center justify-center bg-lia-bg-primary border border-lia-border-subtle shadow-lia-sm hover:bg-lia-bg-tertiary transition-colors"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 z-10 w-6 h-6 rounded-full flex items-center justify-center bg-lia-bg-primary/80 border border-lia-border-subtle shadow-sm hover:bg-lia-bg-tertiary transition-colors opacity-60 hover:opacity-100"
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-4 h-4 text-lia-text-secondary" />
+            <ChevronLeft className="w-3.5 h-3.5 text-lia-text-secondary" />
           </button>
         )}
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 z-10 w-7 h-7 rounded-full flex items-center justify-center bg-lia-bg-primary border border-lia-border-subtle shadow-lia-sm hover:bg-lia-bg-tertiary transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 z-10 w-6 h-6 rounded-full flex items-center justify-center bg-lia-bg-primary/80 border border-lia-border-subtle shadow-sm hover:bg-lia-bg-tertiary transition-colors opacity-60 hover:opacity-100"
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-4 h-4 text-lia-text-secondary" />
+            <ChevronRight className="w-3.5 h-3.5 text-lia-text-secondary" />
           </button>
         )}
 
         <div
           ref={scrollRef}
           className="overflow-x-auto scrollbar-none pb-1"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            cursor: grabbing ? "grabbing" : "grab",
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onMouseDown={onMouseDown}
         >
-          <div className="flex items-center gap-0 min-w-max px-1 py-2">
-            {stages.map((stage, idx) => (
-              <React.Fragment key={stage.id}>
-                <StageNode
-                  stage={stage}
-                  isActive={activeStageId === stage.id}
-                  pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
-                  onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
-                />
-                {idx < stages.length - 1 && (
-                  <div
-                    className="h-px w-6 flex-shrink-0 transition-colors"
-                    style={{
-                      backgroundColor: stage.suggestions.length > 0 && stages[idx + 1].suggestions.length > 0
-                        ? "var(--lia-border-default)"
-                        : "var(--lia-border-subtle)",
-                    }}
+          <div className="flex items-end gap-0 min-w-max px-1 py-2">
+            {stages.map((stage, idx) => {
+              const currentIndex = nodeIndex++
+              return (
+                <React.Fragment key={stage.id}>
+                  <StageNode
+                    ref={setNodeRef(currentIndex)}
+                    stage={stage}
+                    isActive={activeStageId === stage.id}
+                    pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
+                    onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
+                    scale={getScale(currentIndex, nodeRefs)}
                   />
-                )}
-              </React.Fragment>
-            ))}
+                  {idx < stages.length - 1 && (
+                    <div
+                      className="h-px w-6 flex-shrink-0 transition-colors self-center"
+                      style={{
+                        backgroundColor: stage.suggestions.length > 0 && stages[idx + 1].suggestions.length > 0
+                          ? "var(--lia-border-default)"
+                          : "var(--lia-border-subtle)",
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              )
+            })}
 
             {utilityNodes.length > 0 && (
               <>
-                <div className="flex-shrink-0 w-px h-8 mx-3 bg-lia-border-subtle" />
-                {utilityNodes.map((node, idx) => (
-                  <React.Fragment key={node.id}>
-                    <StageNode
-                      stage={node}
-                      isActive={activeStageId === node.id}
-                      onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
-                    />
-                    {idx < utilityNodes.length - 1 && (
-                      <div className="w-3 flex-shrink-0" />
-                    )}
-                  </React.Fragment>
-                ))}
+                <div className="flex-shrink-0 w-px h-8 mx-3 bg-lia-border-subtle self-center" />
+                {utilityNodes.map((node, idx) => {
+                  const currentIndex = nodeIndex++
+                  return (
+                    <React.Fragment key={node.id}>
+                      <StageNode
+                        ref={setNodeRef(currentIndex)}
+                        stage={node}
+                        isActive={activeStageId === node.id}
+                        onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
+                        scale={getScale(currentIndex, nodeRefs)}
+                      />
+                      {idx < utilityNodes.length - 1 && (
+                        <div className="w-3 flex-shrink-0" />
+                      )}
+                    </React.Fragment>
+                  )
+                })}
               </>
             )}
           </div>
@@ -510,17 +654,16 @@ export function ChatWorkflowReels({
   )
 }
 
-function StageNode({
-  stage,
-  isActive,
-  pulseCount,
-  onClick,
-}: {
-  stage: WorkflowReelStage
-  isActive: boolean
-  pulseCount?: number
-  onClick: () => void
-}) {
+const StageNode = React.forwardRef<
+  HTMLButtonElement,
+  {
+    stage: WorkflowReelStage
+    isActive: boolean
+    pulseCount?: number
+    onClick: () => void
+    scale?: number
+  }
+>(function StageNode({ stage, isActive, pulseCount, onClick, scale = 1 }, ref) {
   const Icon = stage.icon
   const hasSuggestions = stage.suggestions.length > 0
   const showPulse = pulseCount !== undefined && pulseCount > 0
@@ -532,10 +675,16 @@ function StageNode({
 
   return (
     <button
+      ref={ref}
       onClick={onClick}
       disabled={!hasSuggestions}
-      className="flex flex-col items-center gap-1.5 group transition-all duration-150 px-2 disabled:cursor-default"
+      className="flex flex-col items-center gap-1.5 group px-2 disabled:cursor-default origin-bottom motion-reduce:!transition-none"
       title={hasSuggestions ? `${stage.label} — ${stage.suggestions.length} sugestão` : stage.label}
+      style={{
+        transform: scale !== 1 ? `scale(${scale})` : undefined,
+        transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        willChange: scale !== 1 ? "transform" : "auto",
+      }}
     >
       <div
         className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
@@ -598,7 +747,7 @@ function StageNode({
       ) : null}
     </button>
   )
-}
+})
 
 function CompactReels({
   stages,
