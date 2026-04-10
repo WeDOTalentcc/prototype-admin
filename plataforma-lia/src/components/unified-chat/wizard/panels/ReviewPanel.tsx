@@ -25,7 +25,9 @@ export function ReviewPanel({ data, onUpdate }: Props) {
   const defaultsApplied = d.defaults_applied || []
 
   const handleApplyDefaults = () => {
-    onUpdate?.({ action: "apply_defaults" })
+    window.dispatchEvent(new CustomEvent("lia:prefill-message", {
+      detail: { message: "Aplicar defaults da empresa nesta vaga" },
+    }))
   }
 
   return (

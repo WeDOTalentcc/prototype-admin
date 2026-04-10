@@ -186,6 +186,35 @@ async def publish_node(state: dict, config: dict) -> dict:
     except Exception as e:
         logger.warning(f"Failed to add campaign checkpoint: {e}")
 
+    # --- Step 7b: ActionCable broadcast + StageAutomation ---
+    try:
+        from wizard_wsi_patches.sprint_2b.actioncable_broadcast_patch import (
+            broadcast_campaign_update,
+            trigger_stage_automation,
+        )
+        if campaign_id:
+            await broadcast_campaign_update(campaign_id, company_id, auth_token)
+        await trigger_stage_automation(job_id, company_id, auth_token)
+    except ImportError:
+        # Fallback: call Rails directly if patch module not available
+        if campaign_id:
+            try:
+                await _call_rails("POST", f"/v1/users/recruitment_campaigns/{campaign_id}/advance_stage", company_id, auth_token)
+            except Exception:
+                pass
+    except Exception as e:
+        logger.warning(f"Broadcast/automation failed (non-blocking): {e}")
+
+    # --- Step 7c: SLA tracking ---
+    try:
+        from wizard_wsi_patches.sprint_4.backend_integrations import create_recruitment_sla
+        if campaign_id:
+            await create_recruitment_sla(campaign_id, company_id, auth_token)
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.warning(f"SLA creation failed (non-blocking): {e}")
+
     # --- Step 8: Generate share link ---
     public_slug = enriched_jd.get("titulo_padronizado", "vaga").lower().replace(" ", "-")
     share_link = f"{os.getenv('FRONTEND_URL', '')}/vagas/{job_id}/{public_slug}"

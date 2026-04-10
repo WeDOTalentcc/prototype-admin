@@ -37,7 +37,10 @@ export function PublishPanel({ data, onUpdate }: Props) {
 
   const handlePublish = () => {
     setIsPublishing(true)
-    onUpdate?.({ action: "publish" })
+    // Send publish command as chat message (backend processes it)
+    window.dispatchEvent(new CustomEvent("lia:prefill-message", {
+      detail: { message: "Publicar vaga agora" },
+    }))
   }
 
   return (

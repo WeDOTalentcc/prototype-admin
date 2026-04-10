@@ -55,12 +55,24 @@ export function useWizardIntegration({
     }
   }, [sendMessage])
 
-  // D.1: Wizard question edit/regenerate/remove events
+  // D.1: Wizard question edit/regenerate/remove + calibration events
   useEffect(() => {
     if (!isWizardActive) return
 
     function handleEditQuestion(e: CustomEvent) {
-      const { index, newText } = e.detail || {}
+      const { index, newText, type: eventType, candidateId } = e.detail || {}
+
+      // Calibration approve/reject events reuse this channel
+      if (eventType === "calibration_approve" && candidateId) {
+        sendMessage(`Aprovar candidato para calibracao: ${candidateId}`)
+        return
+      }
+      if (eventType === "calibration_reject" && candidateId) {
+        sendMessage(`Rejeitar candidato da calibracao: ${candidateId}`)
+        return
+      }
+
+      // Question edit
       sendMessage(`Editar pergunta ${(index || 0) + 1}: ${newText || ""}`)
     }
 
@@ -83,6 +95,20 @@ export function useWizardIntegration({
       window.removeEventListener("lia:wizard-remove-question" as any, handleRemoveQuestion)
     }
   }, [isWizardActive, sendMessage])
+
+  // Prefill message listener (used by DonePanel "Criar outra vaga")
+  useEffect(() => {
+    function handlePrefill(e: CustomEvent) {
+      const { message } = e.detail || {}
+      if (message) {
+        sendMessage(message)
+      }
+    }
+    window.addEventListener("lia:prefill-message" as any, handlePrefill)
+    return () => {
+      window.removeEventListener("lia:prefill-message" as any, handlePrefill)
+    }
+  }, [sendMessage])
 
   // D.1: Handoff auto-navigation
   useEffect(() => {
