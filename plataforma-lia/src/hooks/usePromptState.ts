@@ -349,7 +349,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
 
   useEffect(() => {
     if (searchSource !== 'local') {
-      creditEstimator.fetchBalance().catch(() => { })
+      creditEstimator.fetchBalance().catch((err) => { console.warn('[usePromptState] fetchBalance fire-and-forget failed', err) })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchSource])

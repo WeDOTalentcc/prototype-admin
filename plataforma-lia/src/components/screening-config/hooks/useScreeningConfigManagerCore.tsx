@@ -199,7 +199,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
           expected_answer: (q.expected_answer || undefined) as string | undefined,
         })))
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[useScreeningConfigManagerCore] eligibility questions fetch failed', err) })
   }, [])
 
   useEffect(() => {

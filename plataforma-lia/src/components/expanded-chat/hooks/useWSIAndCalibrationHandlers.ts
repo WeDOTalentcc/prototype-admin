@@ -607,7 +607,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       }
       
       if (ctx.conversationMemory.conversationId) {
-        ctx.conversationMemory.addMessage('assistant', liaMessage).catch(() => {})
+        ctx.conversationMemory.addMessage('assistant', liaMessage).catch((err) => { console.warn('[useWSIAndCalibrationHandlers] addMessage fire-and-forget failed', err) })
       }
       
       setTimeout(() => {
@@ -690,7 +690,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       }
       
       if (ctx.conversationMemory.conversationId) {
-        ctx.conversationMemory.addMessage('assistant', enhancedMessage).catch(() => {})
+        ctx.conversationMemory.addMessage('assistant', enhancedMessage).catch((err) => { console.warn('[useWSIAndCalibrationHandlers] addMessage (enhanced) fire-and-forget failed', err) })
       }
       
       setTimeout(() => {
@@ -712,7 +712,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Save assistant message to conversation memory
     if (ctx.conversationMemory.conversationId) {
-      ctx.conversationMemory.addMessage('assistant', liaMessage).catch(() => {})
+      ctx.conversationMemory.addMessage('assistant', liaMessage).catch((err) => { console.warn('[useWSIAndCalibrationHandlers] addMessage (orchestrator) fire-and-forget failed', err) })
     }
     
     setTimeout(() => {

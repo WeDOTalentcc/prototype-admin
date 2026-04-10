@@ -68,7 +68,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
       .then(r => {
         if (r.ok) setDirty(false)
       })
-      .catch(() => {})
+      .catch((err) => { console.warn('[SaturationControlPanel] settings save failed', err) })
       .finally(() => setSaving(false))
   }
 

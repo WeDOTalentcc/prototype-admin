@@ -116,7 +116,7 @@ export function LiaSuperPrompt() {
       return
     }
 
-    detectIntent(messageText).catch(() => {})
+    detectIntent(messageText).catch((err) => { console.warn('[LiaSuperPrompt] detectIntent fire-and-forget failed', err) })
 
     let convId = conversationId
     if (!convId) {

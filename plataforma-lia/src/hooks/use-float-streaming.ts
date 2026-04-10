@@ -84,7 +84,7 @@ export function useFloatStreaming(
       .then(data => {
         if (!cancelled && data?.token) setWsAuthToken(data.token)
       })
-      .catch(() => {})
+      .catch((err) => { console.warn('[useFloatStreaming] ws-token fetch failed', err) })
     return () => { cancelled = true }
   }, [])
 

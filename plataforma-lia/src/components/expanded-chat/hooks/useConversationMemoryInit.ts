@@ -51,7 +51,7 @@ export function useConversationMemoryInit({
 
     return () => {
       if (mode === 'job-creation' && conversationInitializedRef.current) {
-        updateSummaryRef.current(true).catch(() => {})
+        updateSummaryRef.current(true).catch((err) => { console.warn('[useConversationMemoryInit] updateSummary on unmount fire-and-forget failed', err) })
       }
     }
   }, [isOpen, mode, user?.email, wizardDraftId])

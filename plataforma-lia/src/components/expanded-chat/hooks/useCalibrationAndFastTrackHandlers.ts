@@ -176,7 +176,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
         approved: true,
         lia_score: currentCandidate.overallScore,
         feedback_reason: ctx.calibrationComment || undefined
-      }).catch(() => {})
+      }).catch((err) => { console.warn('[useCalibrationAndFastTrackHandlers] calibration feedback (approve) fire-and-forget failed', err) })
     }
     
     // Save comment if any
@@ -272,7 +272,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
         approved: false,
         lia_score: currentCandidate.overallScore,
         feedback_reason: ctx.calibrationComment || undefined
-      }).catch(() => {})
+      }).catch((err) => { console.warn('[useCalibrationAndFastTrackHandlers] calibration feedback (reject) fire-and-forget failed', err) })
     }
     
     // Save comment if any
@@ -490,7 +490,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
             new_job_id: newJobId,
             modified_fields: modifiedFields,
             was_published: true
-          }).catch(() => {})
+          }).catch((err) => { console.warn('[useCalibrationAndFastTrackHandlers] recordFastTrackUsage fire-and-forget failed', err) })
         } else {
         }
         

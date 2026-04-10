@@ -124,7 +124,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
           setActiveProvider(data.primary_provider)
         }
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[IntegrationsHub] llm-config fetch failed', err) })
   }, [])
 
   const handleConnectGoogle = async () => {

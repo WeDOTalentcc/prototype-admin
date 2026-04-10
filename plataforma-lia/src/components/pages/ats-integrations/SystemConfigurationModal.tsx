@@ -23,7 +23,7 @@ function SyncTab({ systemType }: { systemType: string }) {
           (c: ATSConnectionData) => c.provider?.toLowerCase() === systemType
         )
       ))
-      .catch(() => {})
+      .catch((err) => { console.error('[SystemConfigurationModal] ATS connections fetch failed', err) })
   }, [systemType])
 
   const triggerSync = useCallback(async (connectionId: string, syncType: string) => {

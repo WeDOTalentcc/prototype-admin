@@ -968,7 +968,7 @@ async def teams_sso_page(
     import os
     azure_client_id = client_id or os.environ.get("AZURE_CLIENT_ID", "")
     azure_tenant_id = tenant_id or os.environ.get("AZURE_TENANT_ID", "")
-    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com")
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://wedotalent.cc")
     redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
 
     if not azure_client_id or not azure_tenant_id:
@@ -1008,7 +1008,7 @@ async def teams_sso_callback(
 
     from fastapi.responses import HTMLResponse
 
-    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com")
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://wedotalent.cc")
     redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
 
     if error:
@@ -1172,12 +1172,12 @@ async def get_teams_manifest():
 
     from fastapi.responses import JSONResponse
 
-    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://wedotalent.cc").rstrip("/")
     try:
         from urllib.parse import urlparse
         platform_domain = urlparse(platform_url).netloc
     except Exception:
-        platform_domain = "app.wedotalent.com"
+        platform_domain = "wedotalent.cc"
 
     manifest = {
         "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",

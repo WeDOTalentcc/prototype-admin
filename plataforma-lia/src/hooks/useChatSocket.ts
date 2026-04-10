@@ -78,7 +78,7 @@ export function useChatSocket({
       .then(data => {
         if (!cancelled && data?.token) setWsAuthToken(data.token)
       })
-      .catch(() => {})
+      .catch((err) => { console.warn('[useChatSocket] ws-token fetch failed', err) })
     return () => { cancelled = true }
   }, [])
 

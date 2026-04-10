@@ -337,8 +337,7 @@ export function useWizardAutoSave(
           headers: {
             'Content-Type': 'application/json'
           }
-        }).catch(() => {
-        })
+        }).catch((err) => { console.warn('[useWizardAutoSave] draft DELETE fire-and-forget failed', err) })
       }
     } catch {
     }

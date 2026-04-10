@@ -137,7 +137,7 @@ export function useNotifications({
           if (typeof d.unread_count === "number") setServerUnreadCount(d.unread_count)
           else if (d.data && typeof d.data.unread_count === "number") setServerUnreadCount(d.data.unread_count)
         })
-        .catch(() => {})
+        .catch((err) => { console.error('[useNotifications] unread-count fetch failed', err) })
     } catch (err) {
       setError("Falha ao conectar com o servidor de notificações")
       setNotifications([])

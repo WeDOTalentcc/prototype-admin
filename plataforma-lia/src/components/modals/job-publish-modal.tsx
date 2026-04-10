@@ -173,7 +173,7 @@ export function JobPublishModal({
             setIntegrationHealth(data.integrations as Record<string, { configured: boolean }>)
           }
         })
-        .catch(() => {})
+        .catch((err) => { console.error('[job-publish-modal] integration health fetch failed', err) })
     }
   }, [isOpen])
 

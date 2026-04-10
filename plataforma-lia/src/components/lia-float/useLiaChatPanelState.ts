@@ -526,7 +526,7 @@ export function useLiaChatPanelState() {
       setActionLabel(actionResult.label)
     }
 
-    detectIntent(text).catch(() => {})
+    detectIntent(text).catch((err) => { console.warn('[useLiaChatPanelState] detectIntent fire-and-forget failed', err) })
 
     let convId = conversationId
     if (!convId) {

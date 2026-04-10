@@ -200,7 +200,7 @@ export function CandidatesCoreModals(props: CandidatesCoreModalsProps) {
                   color: list.color
                 })))
               }
-            }).catch(() => {})
+            }).catch((err) => { console.error('[CandidatesCoreModals] candidate lists fetch failed', err) })
           }
         }}
         jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title, department: j.department, location: j.location }))}

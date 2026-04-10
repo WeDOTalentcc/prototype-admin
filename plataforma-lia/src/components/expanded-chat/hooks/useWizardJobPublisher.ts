@@ -174,7 +174,7 @@ export function useWizardJobPublisher(ctx: WizardPublishHandlersContext) {
           new_job_id: String(jobId),
           modified_fields: [],
           was_published: true
-        }).catch(() => {})
+        }).catch((err) => { console.warn('[useWizardJobPublisher] recordFastTrackUsage fire-and-forget failed', err) })
         setWizardFastTrackSourceJobId(null)
       }
 

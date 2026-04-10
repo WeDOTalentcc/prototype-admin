@@ -35,7 +35,7 @@ export function useKanbanDataEffects({
     fetch(`/api/backend-proxy/job-vacancies/${saturationJobId}/saturation-status/`)
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setSaturationData(data) })
-      .catch(() => {})
+      .catch((err) => { console.error('[useKanbanDataEffects] saturation-status fetch failed', err) })
   }, [saturationJobId])
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export function useKanbanDataEffects({
           return updated
         })
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[useKanbanDataEffects] wsiGetCandidatesScores fetch failed', err) })
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: candidatesData/setCandidatesData excluded to avoid infinite loop
   }, [isLoadingCandidates, currentJob?.id, currentJob?.backendId])
 

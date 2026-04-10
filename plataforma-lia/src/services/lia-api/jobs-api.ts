@@ -158,7 +158,7 @@ export async function updateJobVacancyStatusWithOutcome(
         company_id: companyId,
         job_id: id,
         outcome_status: outcomeStatus,
-      }).catch(() => {})
+      }).catch((err) => { console.warn('[jobs-api] updateJobOutcome fire-and-forget failed', err) })
     }
   }
 

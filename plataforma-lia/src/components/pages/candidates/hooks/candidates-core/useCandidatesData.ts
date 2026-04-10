@@ -73,7 +73,7 @@ export function useCandidatesData({
           onViewedIdsChange(() => new Set<string>(data.candidate_ids))
         }
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[useCandidatesData] viewed-candidates fetch failed', err) })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // intentional: runs once on mount to fetch viewed candidates; onViewedIdsChange is a setState - stable but adding it could cause re-runs
 
@@ -86,11 +86,11 @@ export function useCandidatesData({
           r.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft')
         )
       )
-      .catch(() => {})
+      .catch((err) => { console.error('[useCandidatesData] listJobVacancies fetch failed', err) })
     liaApi
       .listEmailTemplates(undefined, true)
       .then(r => r.items && setBulkEmailTemplates(r.items))
-      .catch(() => {})
+      .catch((err) => { console.error('[useCandidatesData] listEmailTemplates fetch failed', err) })
   }, [])
 
   // ── Mark a candidate as viewed ────────────────────────────────────────────

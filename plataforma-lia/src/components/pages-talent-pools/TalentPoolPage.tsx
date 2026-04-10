@@ -600,7 +600,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
         )
         setArchetypes(mapped)
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[TalentPoolPage] archetypes fetch failed', err) })
       .finally(() => setIsLoadingArchetypes(false))
   }, [])
 
@@ -742,7 +742,7 @@ function MoveToJobModal({ poolId, selectedIds, candidates, onClose, onMoved }: M
     fetch("/api/backend-proxy/jobs?status=open")
       .then(res => res.json())
       .then(data => setJobs(data?.jobs || data?.data?.map((d: { id: number; attributes: { title: string } }) => ({ id: d.id, title: d.attributes?.title })) || []))
-      .catch(() => {})
+      .catch((err) => { console.error('[TalentPoolPage] jobs fetch failed', err) })
   }, [])
 
   const handleMove = async () => {

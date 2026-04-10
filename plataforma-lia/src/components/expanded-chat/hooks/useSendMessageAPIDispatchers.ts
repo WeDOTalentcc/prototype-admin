@@ -87,7 +87,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
       const enhancedMessage = panelChangesContext ? `${content}\n\n${panelChangesContext}` : content
 
       if (conversationMemory.conversationId) {
-        conversationMemory.addMessage('user', content).catch(() => {})
+        conversationMemory.addMessage('user', content).catch((err) => { console.warn('[useSendMessageAPIDispatchers] addMessage(user) fire-and-forget failed', err) })
       }
 
       const orchestratorResult = await orchestrateWizardMessage({
@@ -141,7 +141,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
               }, 1000)
             }
           }
-        }).catch(() => {})
+        }).catch((err) => { console.warn('[useSendMessageAPIDispatchers] callEvaluationStep fire-and-forget failed', err) })
       }
     } catch (error) {
       const newCriteria = extractCriteriaFromText(content)
@@ -190,7 +190,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
         }
         const conversationContext = await conversationMemory.getContext()
         if (conversationMemory.conversationId) {
-          conversationMemory.addMessage('user', content.trim()).catch(() => {})
+          conversationMemory.addMessage('user', content.trim()).catch((err) => { console.warn('[useSendMessageAPIDispatchers] addMessage(user/general) fire-and-forget failed', err) })
         }
         const orchestratorResponse = await orchestratorProcess({
           user_id: user?.email || 'demo-user',
@@ -207,7 +207,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
           }
           responseText = String(orchestratorResponse.message || orchestratorResponse.result?.message || responseText)
           if (conversationMemory.conversationId) {
-            conversationMemory.addMessage('assistant', responseText, orchestratorResponse.intent).catch(() => {})
+            conversationMemory.addMessage('assistant', responseText, orchestratorResponse.intent).catch((err) => { console.warn('[useSendMessageAPIDispatchers] addMessage(assistant) fire-and-forget failed', err) })
           }
           const suggestedToolCall = orchestratorResponse.suggested_tool_call || orchestratorResponse.result?.suggested_tool_call
           if (suggestedToolCall) {

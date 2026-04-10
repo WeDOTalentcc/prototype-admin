@@ -166,7 +166,7 @@ function EmptyState({ scope, contextPage, onChipClick }: { scope: string; contex
       .then((data: { suggestions?: typeof suggestions }) => {
         setSuggestions(data.suggestions ?? [])
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[LiaChatMessageList] context-suggestions fetch failed', err) })
   }, [scope, contextPage])
 
   return (

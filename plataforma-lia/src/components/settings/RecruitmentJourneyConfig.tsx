@@ -98,7 +98,7 @@ export function RecruitmentJourneyConfig({
         if (!data) return
         setCatalogStages(data.catalog ?? (Array.isArray(data) ? data : []))
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[RecruitmentJourneyConfig] stage-catalog fetch failed', err) })
   }, [])
 
   useEffect(() => {

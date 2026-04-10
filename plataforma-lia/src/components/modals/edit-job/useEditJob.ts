@@ -197,7 +197,7 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
     setSelectedTemplateId(templateId)
     toast.success(`Template "${template.name}" aplicado com sucesso`)
     
-    fetch(`/api/backend-proxy/company/pipeline-templates/${templateId}/increment-usage`, { method: 'POST' }).catch(() => {})
+    fetch(`/api/backend-proxy/company/pipeline-templates/${templateId}/increment-usage`, { method: 'POST' }).catch((err) => { console.warn('[useEditJob] increment-usage fire-and-forget failed', err) })
   }
 
 

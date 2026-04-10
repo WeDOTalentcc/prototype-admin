@@ -271,7 +271,7 @@ export function useConversationMemory(options: UseConversationMemoryOptions = {}
       messageCountRef.current += 1
 
       if (messageCountRef.current > 0 && messageCountRef.current % summaryThreshold === 0) {
-        updateSummary(false).catch(() => {})
+        updateSummary(false).catch((err) => { console.warn('[useConversationMemory] updateSummary fire-and-forget failed', err) })
       }
 
       return message

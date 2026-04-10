@@ -50,7 +50,7 @@ function usePipelinePulse() {
         }
         setPulse(map)
       })
-      .catch(() => {})
+      .catch((err) => { console.warn('[chatWorkflowReels] pulse fetch failed', err) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [])

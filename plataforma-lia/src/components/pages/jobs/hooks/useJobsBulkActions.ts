@@ -118,7 +118,7 @@ export function useJobsBulkActions({
             performance_score: user.performance_score,
           })))
         })
-        .catch(() => {})
+        .catch((err) => { console.error('[useJobsBulkActions] getCompanyUsers fetch failed', err) })
         .finally(() => setIsLoadingRecruiters(false))
     }
   }, [showAssignRecruiterModal, showDuplicateModal, companyRecruiters.length, isLoadingRecruiters])

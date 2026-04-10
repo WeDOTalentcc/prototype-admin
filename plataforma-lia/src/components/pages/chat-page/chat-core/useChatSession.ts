@@ -126,7 +126,7 @@ export function useChatSession({
         if (history.length > 0) {
           setMessages(() => history as unknown as import("./chat-core.types").Message[])
         }
-      }).catch(() => {})
+      }).catch((err) => { console.error('[useChatSession] loadChatHistory (url) failed', err) })
       params.delete("conversation_id")
       const qs = params.toString()
       window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""))
@@ -144,7 +144,7 @@ export function useChatSession({
       if (history.length > 0) {
         setMessages(() => history as unknown as import("./chat-core.types").Message[])
       }
-    }).catch(() => {})
+    }).catch((err) => { console.error('[useChatSession] loadChatHistory (initialConversationId) failed', err) })
   }, [initialConversationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Chat ID & Title ────────────────────────────────────────

@@ -176,7 +176,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stages: reordered.map(s => ({ stage_id: s.id, new_order: s.order })) }),
-      }).catch(() => {})
+      }).catch((err) => { console.warn('[useKanbanJobEditing] stages reorder fire-and-forget failed', err) })
       return reordered
     })
   }, [setDynamicStages])

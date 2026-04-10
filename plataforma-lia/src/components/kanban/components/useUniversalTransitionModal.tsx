@@ -224,7 +224,7 @@ export function useUniversalTransitionModal({
         setPolicyWarnings(data.warnings || [])
         setPolicyMetadata(data.metadata || {})
       })
-      .catch(() => {})
+      .catch((err) => { console.error('[useUniversalTransitionModal] pipeline-policy fetch failed', err) })
   }, [isOpen, companyId, selectedToStage, candidates])
 
   useEffect(() => {

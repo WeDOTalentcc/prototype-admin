@@ -318,8 +318,7 @@ export function useTalentFunnel() {
       return updated
     })
     
-    toggleFavoriteAPI(candidateId, note).catch(() => {
-    })
+    toggleFavoriteAPI(candidateId, note).catch((err) => { console.warn('[useTalentFunnel] toggleFavoriteAPI fire-and-forget failed', err) })
   }, [store])
 
   const togglePinnedCandidate = useCallback((candidateId: string) => {
@@ -339,11 +338,9 @@ export function useTalentFunnel() {
       store.setFavoritesMap(Object.fromEntries(updated))
       
       if (existing) {
-        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch(() => {
-        })
+        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch((err) => { console.warn('[useTalentFunnel] updateFavoriteAPI (pin) fire-and-forget failed', err) })
       } else {
-        toggleFavoriteAPI(candidateId, undefined, true).catch(() => {
-        })
+        toggleFavoriteAPI(candidateId, undefined, true).catch((err) => { console.warn('[useTalentFunnel] toggleFavoriteAPI (pin) fire-and-forget failed', err) })
       }
       
       return updated
@@ -358,8 +355,7 @@ export function useTalentFunnel() {
         updated.set(candidateId, { ...existing, note })
         store.setFavoritesMap(Object.fromEntries(updated))
         
-        updateFavoriteAPI(candidateId, note, existing.isPinned).catch(() => {
-        })
+        updateFavoriteAPI(candidateId, note, existing.isPinned).catch((err) => { console.warn('[useTalentFunnel] updateFavoriteAPI (note) fire-and-forget failed', err) })
       }
       return updated
     })

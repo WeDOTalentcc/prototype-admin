@@ -63,7 +63,7 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     fetch(`/api/backend-proxy/job-vacancies/${saturationJobId}/saturation-status/`)
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data) setSaturationData(data) })
-      .catch(() => {})
+      .catch((err) => { console.error('[useKanbanPageSetup] saturation-status fetch failed', err) })
   }, [saturationJobId])
 
   const activeTab = useKanbanStore((s) => s.activeTab)

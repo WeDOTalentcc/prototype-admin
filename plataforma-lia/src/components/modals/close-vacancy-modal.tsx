@@ -303,7 +303,7 @@ export function CloseVacancyModal({
         job_id: vacancy.id,
         outcome_status: effectiveHires.length > 0 ? 'hired' : 'closed_no_hire',
         hire_quality_score: effectiveHires.length > 0 ? 1.0 : undefined
-      }).catch(() => {})
+      }).catch((err) => { console.warn('[close-vacancy-modal] updateJobOutcome fire-and-forget failed', err) })
       
       toast.success('Vaga fechada com sucesso!')
       onClose()
