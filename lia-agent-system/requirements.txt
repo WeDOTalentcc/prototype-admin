@@ -33,7 +33,7 @@ pydantic-settings==2.6.1
 
 # HTTP Clients
 httpx==0.28.1
-aiohttp==3.11.10
+aiohttp==3.13.4
 
 # Vector Search
 pgvector==0.3.6
