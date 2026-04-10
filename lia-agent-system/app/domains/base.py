@@ -21,6 +21,12 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
+class ActionType(StrEnum):
+    ACTION = "action"
+    QUERY = "query"
+    NAVIGATION = "navigation"
+
+
 class ConfidenceLevel(StrEnum):
     HIGH = "high"      # >= 0.8
     MEDIUM = "medium"  # >= 0.5
@@ -30,14 +36,17 @@ class ConfidenceLevel(StrEnum):
 @dataclass
 class DomainAction:
     """Represents an action a domain can perform."""
-    action_id: str
-    name: str
-    description: str
+    id: str = ""
+    action_id: str = ""
+    name: str = ""
+    description: str = ""
+    action_type: "ActionType" = ActionType.ACTION
     required_params: list[str] = field(default_factory=list)
     optional_params: list[str] = field(default_factory=list)
     requires_confirmation: bool = False
     tags: list[str] = field(default_factory=list)
     is_async: bool = False
+    examples: tuple[str, ...] | list[str] = field(default_factory=tuple)
 
 
 @dataclass

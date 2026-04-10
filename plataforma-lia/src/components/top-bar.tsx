@@ -56,7 +56,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-  const { user: authUser } = useAuth()
+  const { user: authUser, refreshUser } = useAuth()
 
   const weeklyDigest = useWeeklyDigest({ enabled: true, triggerOnMonday: true, userId: authUser?.email })
 
@@ -265,10 +265,8 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
         onOpenChange={setShowProfileModal}
         user={currentUser}
         onNavigateToSettings={handleNavigateToNotifications}
-        onProfileUpdated={(updated) => {
-          if (authUser && 'name' in authUser) {
-            (authUser as Record<string, unknown>).name = updated.name
-          }
+        onProfileUpdated={() => {
+          refreshUser()
         }}
       />
 

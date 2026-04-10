@@ -73,9 +73,12 @@ export function useAuth() {
       email: ctx.user.email,
       role: ("role" in ctx.user ? ctx.user.role : null) ?? null,
       company: ("company" in ctx.user ? ctx.user.company : null) ?? null,
+      avatar_url: ("avatar_url" in ctx.user ? ctx.user.avatar_url : null) ?? null,
+      sso_provider: ("sso_provider" in ctx.user ? ctx.user.sso_provider : null) ?? null,
     } : null,
     login: ctx.login,
     logout: ctx.logout,
+    refreshUser: ctx.refreshUser,
     isAuthenticated: ctx.isAuthenticated,
     isLoading: ctx.isLoading,
   }

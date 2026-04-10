@@ -26,4 +26,8 @@ from app.domains.talent_pool.domain import TalentPoolDomain  # noqa: F401
 from app.domains.agent_studio.domain import AgentStudioDomain  # noqa: F401
 from app.domains.digital_twin.domain import DigitalTwinDomain  # noqa: F401
 from app.domains.recruitment_campaign.domain import RecruitmentCampaignDomain  # noqa: F401
-from app.domains.job_creation.domain import JobCreationDomain  # noqa: F401  # Wizard WSI Phase B
+try:
+    from app.domains.job_creation.domain import JobCreationDomain  # noqa: F401  # Wizard WSI Phase B
+except ImportError as _e:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(f"JobCreationDomain not loaded (missing deps): {_e}")
