@@ -31,7 +31,7 @@ export async function GET(
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }
@@ -51,11 +51,7 @@ export async function POST(
     const backendUrl = `${BACKEND_URL}/api/v1/auth/${path}`
 
     const bodyResult = await validateBody(request, _bodySchema)
-
-
     if (!bodyResult.success) return bodyResult.response
-
-
     const body = bodyResult.data
 
     const response = await fetch(backendUrl, {
@@ -74,7 +70,44 @@ export async function POST(
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
+    return NextResponse.json(
+      { error: 'Failed to connect to backend' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string[] }> }
+) {
+  try {
+    const { slug } = await params
+    const path = slug.join('/')
+    const backendUrl = `${BACKEND_URL}/api/v1/auth/${path}`
+
+    const bodyResult = await validateBody(request, _bodySchema)
+    if (!bodyResult.success) return bodyResult.response
+    const body = bodyResult.data
+
+    const response = await fetch(backendUrl, {
+      method: 'PUT',
+      headers: getAuthHeaders(request),
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: response.statusText }))
+      return NextResponse.json(
+        { error: errorData.detail || 'Auth request failed', details: errorData },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+    return NextResponse.json(data)
+  } catch {
     return NextResponse.json(
       { error: 'Failed to connect to backend' },
       { status: 500 }

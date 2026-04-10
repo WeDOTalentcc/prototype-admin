@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -30,11 +29,13 @@ import {
   Eye,
   EyeOff,
   Check,
-  X
+  X,
+  Loader2,
 } from "lucide-react"
 import { NotificationSystem } from "@/components/notification-system"
 import { WeeklyDigestOverlay } from "@/components/notifications/weekly-digest-overlay"
 import { useWeeklyDigest } from "@/hooks/use-weekly-digest"
+import { ProfileModal } from "@/components/modals/profile-modal"
 import type { Notification as AppNotification } from "@/hooks/use-notifications"
 
 interface TopBarProps {
@@ -44,6 +45,7 @@ interface TopBarProps {
 
 export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -52,8 +54,8 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [passwordError, setPasswordError] = useState("")
   const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-  // User data from auth context
   const { user: authUser } = useAuth()
 
   const weeklyDigest = useWeeklyDigest({ enabled: true, triggerOnMonday: true, userId: authUser?.email })
@@ -73,12 +75,15 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
     viewer: "Visualizador(a)",
   }
 
+  const isSSOUser = !!(authUser && 'sso_provider' in authUser && authUser.sso_provider)
+
   const currentUser = {
     name: authUser?.name || "Usuário",
     email: authUser?.email || "usuario@empresa.com",
     role: authUser?.role ? (roleLabels[authUser.role] ?? authUser.role) : "Recrutador(a)",
     company: authUser?.company || "",
-    avatar: undefined as string | undefined
+    avatar_url: (authUser && 'avatar_url' in authUser ? authUser.avatar_url : undefined) as string | undefined,
+    sso_provider: (authUser && 'sso_provider' in authUser ? authUser.sso_provider : null) as string | null,
   }
 
   const handleOpenPasswordModal = () => {
@@ -87,6 +92,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
     setConfirmPassword("")
     setPasswordError("")
     setPasswordSuccess(false)
+    setIsChangingPassword(false)
     setShowPasswordModal(true)
   }
 
@@ -97,31 +103,60 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
     setConfirmPassword("")
     setPasswordError("")
     setPasswordSuccess(false)
+    setIsChangingPassword(false)
   }
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     setPasswordError("")
-    
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordError("Todos os campos são obrigatórios")
       return
     }
-    
+
     if (newPassword.length < 8) {
       setPasswordError("A nova senha deve ter no mínimo 8 caracteres")
       return
     }
-    
+
     if (newPassword !== confirmPassword) {
       setPasswordError("As senhas não coincidem")
       return
     }
-    
-    // Simulação de sucesso - em produção, faria chamada à API
-    setPasswordSuccess(true)
+
+    setIsChangingPassword(true)
+
+    try {
+      const res = await fetch("/api/backend-proxy/auth/change-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Erro ao alterar senha")
+      }
+
+      setPasswordSuccess(true)
+      setTimeout(() => {
+        handleClosePasswordModal()
+      }, 2000)
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : "Erro ao alterar senha")
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  const handleNavigateToNotifications = () => {
+    onNavigate?.("Configurações")
     setTimeout(() => {
-      handleClosePasswordModal()
-    }, 2000)
+      window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "alertas" }))
+    }, 100)
   }
 
   return (
@@ -135,15 +170,11 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
       )}
 
       <div className="flex items-center justify-between">
-        {/* Empty left side */}
         <div className="flex-1" />
 
-        {/* Right Side - Notifications, Workspace */}
         <div className="flex items-center space-x-1.5">
-          {/* Notifications */}
           <NotificationSystem userId={authUser?.email || "default_user"} onNotificationClick={handleNotificationClick} />
 
-          {/* User Menu with Avatar */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -152,24 +183,23 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 title={currentUser.name}
               >
                 <Avatar className="h-7 w-7">
-                  <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+                  <AvatarImage src={currentUser.avatar_url} alt={currentUser.name} />
                   <AvatarFallback className="text-xs bg-lia-bg-inverse text-lia-text-on-inverse">
                     {currentUser.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
+            <DropdownMenuContent
+              align="end"
               side="bottom"
               sideOffset={8}
               className="w-64"
             >
-              {/* User Info Header */}
               <div className="p-3 border-b border-lia-border-subtle">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+                    <AvatarImage src={currentUser.avatar_url} alt={currentUser.name} />
                     <AvatarFallback className="text-sm bg-lia-bg-inverse text-lia-text-on-inverse">
                       {currentUser.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
@@ -188,25 +218,26 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 </div>
               </div>
 
-              {/* Menu Items */}
               <div className="p-1">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="cursor-pointer text-xs"
-                  onClick={() => onNavigate?.("Meu Perfil")}
+                  onClick={() => setShowProfileModal(true)}
                 >
                   <User className="w-3.5 h-3.5 mr-2" />
                   Meu Perfil
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                {!isSSOUser && (
+                  <DropdownMenuItem
+                    className="cursor-pointer text-xs"
+                    onClick={handleOpenPasswordModal}
+                  >
+                    <KeyRound className="w-3.5 h-3.5 mr-2" />
+                    Alterar Senha
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
                   className="cursor-pointer text-xs"
-                  onClick={handleOpenPasswordModal}
-                >
-                  <KeyRound className="w-3.5 h-3.5 mr-2" />
-                  Alterar Senha
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer text-xs"
-                  onClick={() => onNavigate?.("Preferências de Notificação")}
+                  onClick={handleNavigateToNotifications}
                 >
                   <Bell className="w-3.5 h-3.5 mr-2" />
                   Preferências de Notificação
@@ -216,7 +247,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               <DropdownMenuSeparator />
 
               <div className="p-1">
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="cursor-pointer text-xs text-status-error dark:text-status-error"
                   onClick={() => onNavigate?.("Sair")}
                 >
@@ -229,7 +260,18 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
         </div>
       </div>
 
-      {/* Change Password Modal */}
+      <ProfileModal
+        open={showProfileModal}
+        onOpenChange={setShowProfileModal}
+        user={currentUser}
+        onNavigateToSettings={handleNavigateToNotifications}
+        onProfileUpdated={(updated) => {
+          if (authUser && 'name' in authUser) {
+            (authUser as Record<string, unknown>).name = updated.name
+          }
+        }}
+      />
+
       <Dialog open={showPasswordModal} onOpenChange={(open) => { if (!open) handleClosePasswordModal(); else setShowPasswordModal(true); }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -345,10 +387,12 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 <Button variant="outline" onClick={handleClosePasswordModal}>
                   Cancelar
                 </Button>
-                <Button 
+                <Button
                   onClick={handlePasswordChange}
+                  disabled={isChangingPassword}
                   className="text-lia-btn-primary-text hover:opacity-90 bg-lia-btn-primary-bg"
                 >
+                  {isChangingPassword && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Alterar Senha
                 </Button>
               </DialogFooter>

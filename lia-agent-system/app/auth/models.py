@@ -65,6 +65,8 @@ class User(EncryptedFieldMixin, Base):
     
     notification_preferences = Column(JSONB, nullable=True, default=dict, server_default="{}")
 
+    avatar_url = Column(String(1024), nullable=True)
+
     azure_ad_object_id = Column(String(255), nullable=True, index=True)
     workos_id = Column(String(255), unique=True, nullable=True, index=True)
     workos_directory_id = Column(String(255), nullable=True, index=True)

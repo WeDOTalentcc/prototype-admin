@@ -15,6 +15,8 @@ export interface User {
   updated_at: string
   company_id?: string
   company?: string
+  avatar_url?: string | null
+  sso_provider?: string | null
 }
 
 export interface SSOUser {

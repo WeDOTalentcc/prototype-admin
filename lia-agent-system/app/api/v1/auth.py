@@ -13,8 +13,10 @@ from app.auth.schemas import (
     EmailVerificationRequest,
     InvitationAccept,
     InvitationInfo,
+    PasswordChange,
     PasswordResetConfirm,
     PasswordResetRequest,
+    ProfileUpdate,
     TokenRefresh,
     TokenResponse,
     UserCreate,
@@ -246,9 +248,76 @@ async def get_current_user_info(
         role=current_user.role,
         company_id=current_user.company_id,
         is_active=current_user.is_active,
+        avatar_url=getattr(current_user, 'avatar_url', None),
+        sso_provider=getattr(current_user, 'sso_provider', None),
         created_at=current_user.created_at,
         updated_at=current_user.updated_at
     )
+
+
+@router.put("/me", response_model=UserResponse)
+async def update_current_user_profile(
+    profile_data: ProfileUpdate,
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: UserRepository = Depends(get_user_repo),
+):
+    """Update current user's profile (name, avatar)."""
+    update_fields = {}
+    if profile_data.name is not None:
+        update_fields["name"] = profile_data.name
+    if profile_data.avatar_url is not None:
+        update_fields["avatar_url"] = profile_data.avatar_url
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Nenhum campo para atualizar")
+
+    updated_user = await repo.update(current_user.id, update_fields)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    logger.info(f"Profile updated for user: {current_user.email}")
+
+    return UserResponse(
+        id=updated_user.id,
+        email=updated_user.email,
+        name=updated_user.name,
+        role=updated_user.role,
+        company_id=updated_user.company_id,
+        is_active=updated_user.is_active,
+        avatar_url=getattr(updated_user, 'avatar_url', None),
+        sso_provider=getattr(updated_user, 'sso_provider', None),
+        created_at=updated_user.created_at,
+        updated_at=updated_user.updated_at
+    )
+
+
+@router.put("/change-password")
+async def change_password(
+    data: PasswordChange,
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: UserRepository = Depends(get_user_repo),
+):
+    """Change password for authenticated user (not available for SSO users)."""
+    if getattr(current_user, 'sso_provider', None):
+        raise HTTPException(
+            status_code=400,
+            detail="Usuários SSO não podem alterar senha pela plataforma"
+        )
+
+    if not current_user.password_hash:
+        raise HTTPException(
+            status_code=400,
+            detail="Conta sem senha definida (login via SSO)"
+        )
+
+    if not verify_password(data.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Senha atual incorreta")
+
+    new_hash = get_password_hash(data.new_password)
+    await repo.update(current_user.id, {"password_hash": new_hash})
+
+    logger.info(f"Password changed for user: {current_user.email}")
+    return {"message": "Senha alterada com sucesso"}
 
 
 @router.post("/public-register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

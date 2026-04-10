@@ -37,6 +37,8 @@ class UserResponse(BaseModel):
     role: UserRole
     company_id: str | None = None
     is_active: bool
+    avatar_url: str | None = None
+    sso_provider: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -107,6 +109,18 @@ class UserManagementUpdate(BaseModel):
     is_active: bool | None = None
     company_id: str | None = None
     permissions: list[str] | None = None
+
+
+class ProfileUpdate(BaseModel):
+    """Schema for user updating their own profile."""
+    name: str | None = Field(None, min_length=2, max_length=255)
+    avatar_url: str | None = Field(None, max_length=1024)
+
+
+class PasswordChange(BaseModel):
+    """Schema for authenticated password change."""
+    current_password: str
+    new_password: str = Field(..., min_length=8, description="New password must be at least 8 characters")
 
 
 class PasswordResetRequest(BaseModel):
