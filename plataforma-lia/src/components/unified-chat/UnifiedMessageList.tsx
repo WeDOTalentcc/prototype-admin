@@ -9,6 +9,7 @@ import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/use-lia-chat-connection"
+import { NavigationHintCard } from "./NavigationHintCard"
 import type { ChatMode } from "./unified-chat-types"
 
 interface Props {
@@ -116,6 +117,7 @@ export function UnifiedMessageList({
         const meta = message.metadata
         const hasPlan = message.executionPlan != null
         const hasFlowSteps = meta?.flowSteps != null
+        const hasNavHint = meta?.navigation_hint != null
 
         return (
           <div
@@ -148,6 +150,13 @@ export function UnifiedMessageList({
                     steps={meta!.flowSteps as unknown as import("@/components/workflow-rail/FlowStepMessage").FlowStep[]}
                     question={meta!.flowQuestion as string | undefined}
                     compact
+                  />
+                )}
+
+                {/* Navigation hint (e.g., "Go to Agent Studio") */}
+                {hasNavHint && (
+                  <NavigationHintCard
+                    hint={meta!.navigation_hint as { page: string; entity_id?: string }}
                   />
                 )}
 
