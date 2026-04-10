@@ -1928,7 +1928,7 @@ Auditoria de chaves API:
 ### Checklist de production readiness — Frontend
 
 **Correções críticas (bloqueiam deploy):**
-- [x] P1: Todos os 104+ proxy routes padronizados para `BACKEND_URL` + porta `8001` (Task #99)
+- [x] P1: Todos os 104+ proxy route files padronizados para `BACKEND_URL` + porta `8001` — zero `NEXT_PUBLIC_BACKEND_URL` (Task #99)
 - [x] P2: `next build` passa sem erros (`ai-credits/page.tsx` corrigido — `"use client"` adicionado)
 - [x] P3: `DATABASE_URL` do backend corrigido para banco real (`helium/heliumdb`)
 
@@ -2622,7 +2622,7 @@ Configurações obrigatórias no WorkOS dashboard:
 - [x] Testes E2E rodando no Replit (24/26 passando, auth via cookie bypass)
 - [x] Integrações IA confirmadas como server-side only (sem leak de chaves)
 - [x] Autenticação WorkOS SSO + JWT auditada — totalmente implementada
-- [x] ✅ **P1:** 104+ proxy routes + 11 arquivos frontend migrados (Task #99) — zero `NEXT_PUBLIC_BACKEND_URL`
+- [x] ✅ **P1:** 104+ proxy route files migrados + 11 arquivos frontend corrigidos (Task #99) — zero `NEXT_PUBLIC_BACKEND_URL`
 - [x] ✅ **P2:** `next build` passa sem erros (`ai-credits/page.tsx` — `"use client"` adicionado)
 - [x] ✅ **P4:** Zero `NEXT_PUBLIC_*` expondo URLs internas (resolvido com P1, Task #99)
 - [ ] 🟡 **P5:** 4 arquivos de app com vars Replit-only precisam de fallback (2 frontend: `workos.ts`, `jira-service.ts` + 2 backend: `shared_searches.py`, `email_adapter.py`)
