@@ -265,7 +265,7 @@ As tabelas `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permi
 |---|---|---|
 | **Backend API** | Rails: 16 controllers, **12 tabelas reais** | FastAPI: **362+ endpoints**, **217+ models**, 60 migrações aplicadas |
 | **Frontend** | Vue/Nuxt/Vuetify: 28 features, 58 composables, 18 stores Pinia | Next.js/React/Tailwind: **36+ páginas**, Design System completo |
-| **Agentes IA** | recruiter-agent-v5: 8 domains, 7 agents, Celery + RabbitMQ | LangGraph: **53 domains**, **147 services**, WSI, voice, bias audit |
+| **Agentes IA** | recruiter-agent-v5: 8 domains, 7 agents, Celery + RabbitMQ | LangGraph: **58 domains**, **147 services**, WSI, voice, bias audit |
 | **Auth** | JWT básico (sem RBAC funcional) + WorkOS no Rails | JWT + WorkOS no FastAPI + TenantGuard |
 | **WebSocket** | ActionCable (depende do Rails) | WebSocket nativo FastAPI — sem dependência extra |
 | **Multi-tenancy** | Apartment gem (não testado, schemas não encontrados) | `company_id` + `tenant_guard` + `auth_enforcement` |
@@ -276,7 +276,7 @@ As tabelas `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permi
 | **Observabilidade** | Básica | Circuit breakers, audit logs, tracing, Sentry |
 | **Deploy infra obrigatória** | Docker + Redis + Elasticsearch + RabbitMQ + ActionCable | Apenas PostgreSQL — zero dependências extras obrigatórias |
 | **Services (camada de negócio)** | 0 (lógica inline nos controllers) | **147 services** cobrindo toda a plataforma |
-| **Domínios de negócio** | ~5 funcionais | **53 domínios** estruturados |
+| **Domínios de negócio** | ~5 funcionais | **58 domínios** estruturados |
 | **Migrações aplicadas** | 18 de 49 | 60 migrações aplicadas, banco completo |
 
 ---
@@ -392,7 +392,7 @@ Mais avançada que Elasticsearch/Searchkick:
 
 1. **O app funciona 100% sem Rails.** Quando `RAILS_BACKEND_URL` está vazia (situação atual), todas as 94 rotas com `backendTarget: "rails"` caem automaticamente no FastAPI via `proxy-handler.ts`. Nada quebra.
 
-2. **O FastAPI já faz tudo que o Rails faz — e mais.** O Rails provê CRUD para ~5 entidades. O FastAPI tem 362+ endpoints, 53 domínios, 147 services, toda a camada de IA, compliance e um frontend completo.
+2. **O FastAPI já faz tudo que o Rails faz — e mais.** O Rails provê CRUD para ~5 entidades. O FastAPI tem 362+ endpoints, 58 domínios, 147 services, toda a camada de IA, compliance e um frontend completo.
 
 3. **A camada de integração Rails já está pronta.** Se e quando Rails for ativado, o código já existe:
    - `wedotalent_rails.py` — 588 linhas, HTTP client completo com retry e backoff
@@ -1975,7 +1975,7 @@ Requisição do usuário
         ▼
 ┌───────────────────────┐
 │  FastAPI Router       │  ← 362+ endpoints (REST + WebSocket)
-│  (Port 8001)          │     organizados em 56 domínios
+│  (Port 8001)          │     organizados em 58 domínios
 └────────┬──────────────┘
          │
     ┌────┴─────────────────────────────────────────────┐
@@ -3225,7 +3225,7 @@ NÃO NECESSÁRIO:
 | Componente | Stack | Arquivos | Métricas-Chave |
 |-----------|-------|----------|---------------|
 | **plataforma-lia** (frontend) | Next.js 15, React 19, Tailwind, Shadcn/Radix, Zustand, SWR | 2.090 em `src/` | 32 páginas, 1.201 componentes, 152 hooks, 35 services, 20 stores |
-| **lia-agent-system** (backend) | Python 3.11+, FastAPI 0.115.5, SQLAlchemy 2.0.36, LangGraph 0.2.53, Celery 5.4.0 | 1.820 `.py` em `app/` + 169 em `libs/` | 362+ endpoints, 57 domínios, 217 models, 60 migrations, 388 test files |
+| **lia-agent-system** (backend) | Python 3.11+, FastAPI 0.115.5, SQLAlchemy 2.0.36, LangGraph 0.2.53, Celery 5.4.0 | 1.820 `.py` em `app/` + 169 em `libs/` | 362+ endpoints, 58 domínios, 217 models, 60 migrations, 388 test files |
 
 **Total Replit:** ~4.079 arquivos de código (excl. node_modules, __pycache__)
 
