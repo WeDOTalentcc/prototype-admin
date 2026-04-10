@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { LIAToolbarBrainButton } from "@/components/ui/lia-toolbar-brain-button"
-import { InlineChatPanel } from "@/components/pages/jobs/InlineChatPanel"
 import { TableFiltersPanel } from "@/components/pages/jobs/TableFiltersPanel"
 import { JobPreviewPanel } from "@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from "@/components/pages/jobs/JobsCompactTableView"
@@ -163,8 +161,7 @@ export function JobsListContent(props: JobsListContentProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {!showExpandedLIA && !showInlineChat && (
-        <div className="flex-shrink-0 flex items-center justify-between gap-4 mt-3 mb-2">
-          <LIAToolbarBrainButton isOpen={showExpandedLIA} onClick={() => setShowExpandedLIA(true)} />
+        <div className="flex-shrink-0 flex items-center justify-end gap-4 mt-3 mb-2">
           <div className="flex items-center gap-3">
             {selectedJobsForBatch.size > 0 && (
               <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
@@ -214,22 +211,6 @@ export function JobsListContent(props: JobsListContentProps) {
       />
 
       <div className="flex gap-2 transition-colors motion-reduce:transition-none duration-300 flex-1 min-h-0 overflow-hidden">
-        <InlineChatPanel
-          showExpandedLIA={showExpandedLIA} showInlineChat={showInlineChat} chatMode={chatMode}
-          inlineChatInitialMessage={inlineChatInitialMessage} liaInlineMessages={liaInlineMessages}
-          liaInlineLoading={liaInlineLoading} isChatFullscreen={isChatFullscreen} liaWidth={liaWidth}
-          isTableCollapsed={isTableCollapsed} isResizingLIA={isResizingLIA} userCollapsedLIA={userCollapsedLIA}
-          selectedJobsForBatch={selectedJobsForBatch} liaPromptValue={liaPromptValue}
-          onSetLiaPromptValue={setLiaPromptValue} onCloseChat={closeChat}
-          onOpenGeneralChat={openGeneralChat} onOpenJobCreationChat={openJobCreationChat}
-          onReturnToGeneralChat={returnToGeneralChat} onReturnToLateralPrompt={returnToLateralPrompt}
-          onSendMessage={sendLiaInlineMessage} onSetShowExpandedLIA={setShowExpandedLIA}
-          onSetUserCollapsedLIA={setUserCollapsedLIA} onSetIsChatFullscreen={setIsChatFullscreen}
-          onSetIsResizingLIA={setIsResizingLIA} onSetLiaWidth={setLiaWidth}
-          onSetLiaInlineMessages={setLiaInlineMessages} liaInlineMessagesEndRef={liaInlineMessagesEndRef as React.RefObject<HTMLDivElement>}
-          onAddRecentItem={onAddRecentItem}
-        />
-
         <TableFiltersPanel
           isOpen={showTableFiltersPanel} onClose={() => setShowTableFiltersPanel(false)}
           searchTerm={searchTerm} onSearchTermChange={setSearchTerm}

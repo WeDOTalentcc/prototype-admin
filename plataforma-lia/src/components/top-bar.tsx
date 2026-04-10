@@ -156,7 +156,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
     onNavigate?.("Configurações")
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "alertas" }))
-    }, 100)
+    }, 300)
   }
 
   return (

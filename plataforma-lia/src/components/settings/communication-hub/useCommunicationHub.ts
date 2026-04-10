@@ -4,6 +4,12 @@ import { DEFAULT_ALERTS, TEMPLATE_GROUPS } from './CommunicationHub.constants'
 
 export function useCommunicationHub(activeSubsection?: string) {
   const [activeTab, setActiveTab] = useState(activeSubsection || 'templates')
+
+  useEffect(() => {
+    if (activeSubsection) {
+      setActiveTab(activeSubsection)
+    }
+  }, [activeSubsection])
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null)
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null)

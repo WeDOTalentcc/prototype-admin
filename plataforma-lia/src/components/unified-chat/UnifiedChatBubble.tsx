@@ -20,7 +20,7 @@ export function UnifiedChatBubble({ onOpen }: Props) {
     <button
       onClick={onOpen}
       className={cn(
-        "fixed bottom-6 right-6 z-30",
+        "fixed bottom-6 left-20 z-30",
         "w-12 h-12 rounded-full",
         "bg-lia-bg-primary border border-lia-border-subtle",
         "flex items-center justify-center",

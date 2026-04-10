@@ -244,10 +244,10 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       className={cn(
         "flex bg-lia-bg-primary transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
         isInline
-          ? `${sidebarWidth} flex-shrink-0 border-l border-lia-border-subtle h-full`
+          ? `${sidebarWidth} flex-shrink-0 border-r border-lia-border-subtle h-full order-first`
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
-            : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
+            : "fixed bottom-4 left-20 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle",
         className
       )}
       data-chat-mode={effectiveMode}

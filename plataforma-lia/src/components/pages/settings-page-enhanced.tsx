@@ -200,6 +200,19 @@ export default function SettingsPageEnhanced() {
   const [activeSection, setActiveSection] = useState<string>('company-team')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['company-team']))
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      if (detail === 'alertas') {
+        setActiveSection('communication')
+        setActiveSubsection('alerts')
+        setExpandedSections(new Set(['communication']))
+      }
+    }
+    window.addEventListener('settings-open-tab', handler)
+    return () => window.removeEventListener('settings-open-tab', handler)
+  }, [])
   const [users, setUsers] = useState<Array<{ id: string; name?: string; [key: string]: unknown }>>([])
   const [goals, setGoals] = useState<Record<string, unknown[]>>({})
   

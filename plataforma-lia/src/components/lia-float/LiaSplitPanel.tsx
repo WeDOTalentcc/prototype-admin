@@ -152,7 +152,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
  "flex flex-col flex-shrink-0",
         "w-[360px] h-full",
         "bg-lia-bg-primary",
-        "border-l border-lia-border-subtle",
+        "border-r border-lia-border-subtle order-first",
         "overflow-hidden"
       )}
       role="complementary"

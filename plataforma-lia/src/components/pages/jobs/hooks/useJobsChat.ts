@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant"
 import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/use-lia-suggestions"
 import { useCompanyId } from "@/hooks/useCompanyId"
+import { useLiaFloat } from "@/contexts/lia-float-context"
 import type { Job } from "@/components/jobs"
 
 // ---------------------------------------------------------------------------
@@ -119,6 +120,7 @@ export function useJobsChat({
   loadBackendJobs,
 }: UseJobsChatOptions): UseJobsChatReturn {
   const { companyId: resolvedCompanyId } = useCompanyId()
+  const { open: openGlobalChat } = useLiaFloat()
   const [showInlineChat, setShowInlineChat] = useState(false)
   const [chatMode, setChatMode] = useState<'general' | 'job-creation' | null>(null)
   const [inlineChatInitialMessage, setInlineChatInitialMessage] = useState<string | undefined>()
@@ -151,18 +153,10 @@ export function useJobsChat({
   // Handle pendingChatOpen prop
   useEffect(() => {
     if (pendingChatOpen) {
-      if (pendingChatOpen.mode === 'job-creation') {
-        setShowInlineChat(true)
-        setChatMode('job-creation')
-        setIsTableCollapsed(true)
-      } else {
-        setShowInlineChat(true)
-        setChatMode('general')
-        setIsTableCollapsed(true)
-      }
+      openGlobalChat()
       onChatOpened?.()
     }
-  }, [pendingChatOpen, onChatOpened])
+  }, [pendingChatOpen, onChatOpened, openGlobalChat])
 
   // Auto-expand LIA sidebar on selection
   useEffect(() => {
@@ -201,10 +195,7 @@ export function useJobsChat({
   }
 
   const openGeneralChat = useCallback((initialMessage?: string) => {
-    setShowInlineChat(true)
-    setChatMode('general')
-    setInlineChatInitialMessage(initialMessage)
-    setIsTableCollapsed(true)
+    openGlobalChat()
     onAddRecentItem?.({
       id: liaInlineChatIdRef.current,
       type: 'chat',
@@ -213,14 +204,11 @@ export function useJobsChat({
         : 'Chat com LIA',
       meta: { conversationId: liaInlineChatIdRef.current },
     })
-  }, [onAddRecentItem])
+  }, [onAddRecentItem, openGlobalChat])
 
   const openJobCreationChat = useCallback((initialMessage?: string) => {
     const wizardId = `chat-wizard-${Date.now()}`
-    setShowInlineChat(true)
-    setChatMode('job-creation')
-    setInlineChatInitialMessage(initialMessage)
-    setIsTableCollapsed(true)
+    openGlobalChat()
     onAddRecentItem?.({
       id: wizardId,
       type: 'chat',
@@ -229,7 +217,7 @@ export function useJobsChat({
         : 'Criação de Vaga',
       meta: { conversationId: wizardId },
     })
-  }, [onAddRecentItem])
+  }, [onAddRecentItem, openGlobalChat])
 
   const closeChat = useCallback(() => {
     setShowInlineChat(false)
