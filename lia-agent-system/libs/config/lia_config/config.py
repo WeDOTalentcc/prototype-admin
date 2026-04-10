@@ -74,6 +74,7 @@ class LLMSettings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
     GOOGLE_CLOUD_PROJECT: Optional[str] = None
+    GOOGLE_CLOUD_REGION: str = "us-east1"
 
     # Replit AI Integrations
     AI_INTEGRATIONS_GEMINI_API_KEY: Optional[str] = None
@@ -193,6 +194,7 @@ class AppSettings(BaseSettings):
 
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
+    APP_BASE_URL: str = ""
     CORS_ORIGINS: List[str] = ["http://localhost:5000", "http://localhost:3000", "http://127.0.0.1:5000"]
 
     SENTRY_DSN: Optional[str] = None
@@ -267,8 +269,8 @@ class IntegrationSettings(BaseSettings):
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_WHATSAPP_NUMBER: Optional[str] = None
-    # Twilio Programmable Voice — screening calls (Task #135)
-    TWILIO_VOICE_NUMBER: Optional[str] = None  # E.164 format, e.g. +5511999999999
+    TWILIO_VOICE_NUMBER: Optional[str] = None
+    TWILIO_WEBHOOK_BASE_URL: Optional[str] = None
 
     # Google Calendar
     GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = None

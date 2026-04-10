@@ -201,7 +201,7 @@ export function CandidateDetailSidebar({
                   <Star className="h-4 w-4 text-lia-text-secondary" />
                   Resumo do Match
                 </h4>
-                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
                   {candidate.insights.overall_summary}
                 </p>
               </div>
@@ -322,7 +322,7 @@ export function CandidateDetailSidebar({
                   Sugestão de Mensagem
                 </h4>
                 <div className="relative">
-                  <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle pr-10">
+                  <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-3 rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle pr-10">
                     {candidate.insights.outreach_message}
                   </p>
                   <Button
@@ -337,13 +337,12 @@ export function CandidateDetailSidebar({
               </div>
             )}
 
-            <Separator />
 
             <div>
               <h4 className="text-sm font-medium text-lia-text-primary mb-3">Contato</h4>
               <div className="space-y-2">
                 {candidate.email && (
-                  <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-lia-text-primary" />
                       <span className="text-sm text-lia-text-primary">{candidate.email}</span>
@@ -369,7 +368,7 @@ export function CandidateDetailSidebar({
                   </div>
                 )}
                 {candidate.phone && (
-                  <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-lia-text-primary" />
                       <span className="text-sm text-lia-text-primary">{candidate.phone}</span>
@@ -389,7 +388,7 @@ export function CandidateDetailSidebar({
                     href={candidate.linkedin_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+                    className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-center gap-2">
                       <Linkedin className="h-4 w-4 text-lia-text-secondary" />

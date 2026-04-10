@@ -21,7 +21,7 @@ from alembic import op
 
 
 revision = "033_merge_migration_heads"
-down_revision = ("027_add_pending_actions_table", "032_add_hitl_tables")
+down_revision = "032_add_hitl_tables"
 branch_labels = None
 depends_on = None
 

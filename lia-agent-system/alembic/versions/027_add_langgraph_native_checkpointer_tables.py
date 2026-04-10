@@ -21,7 +21,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 revision = "027_add_langgraph_native_checkpointer_tables"
-down_revision = "026_add_langgraph_checkpoint_columns"
+down_revision = "027_add_pending_actions_table"
 branch_labels = None
 depends_on = None
 

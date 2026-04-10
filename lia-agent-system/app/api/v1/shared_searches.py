@@ -90,11 +90,12 @@ def send_shared_search_invite_email(
     """Send invitation email to share recipient."""
     try:
         import os
-        base_url = os.environ.get("REPLIT_DEV_DOMAIN", "")
-        if base_url:
-            base_url = f"https://{base_url}"
-        else:
-            base_url = os.environ.get("PUBLIC_URL", "http://localhost:5000")
+        base_url = (
+            os.environ.get("APP_BASE_URL")
+            or os.environ.get("PUBLIC_URL")
+            or (f"https://{d}" if (d := os.environ.get("REPLIT_DEV_DOMAIN")) else None)
+            or "http://localhost:5000"
+        ).rstrip("/")
 
         access_url = f"{base_url}/shared/{access_token}"
         recipient_greeting = to_name or "Gestor(a)"
@@ -350,11 +351,12 @@ async def create_shared_search(
             whatsapp_template = await repo.get_share_template("whatsapp", company_id)
 
         import os
-        base_url = os.environ.get("REPLIT_DEV_DOMAIN", "")
-        if base_url:
-            base_url = f"https://{base_url}"
-        else:
-            base_url = os.environ.get("PUBLIC_URL", "http://localhost:5000")
+        base_url = (
+            os.environ.get("APP_BASE_URL")
+            or os.environ.get("PUBLIC_URL")
+            or (f"https://{d}" if (d := os.environ.get("REPLIT_DEV_DOMAIN")) else None)
+            or "http://localhost:5000"
+        ).rstrip("/")
 
         for record in access_records:
             access_url = f"{base_url}/shared/{record['access_token']}"

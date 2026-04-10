@@ -12,9 +12,10 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 }
 
 // POST /api/backend-proxy/talent-pools/:id/move-to-job
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
   const body = await req.text()
-  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}/move_to_job`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${id}/move_to_job`, {
     method: "POST",
     headers: getAuthHeaders(req),
     body,

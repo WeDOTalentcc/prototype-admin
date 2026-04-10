@@ -435,7 +435,7 @@ export function EmailTemplatesManager() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-xs text-lia-text-secondary pt-3 border-t">
+                <div className="flex items-center justify-between text-xs text-lia-text-secondary pt-4">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {formatDate(template.updated_at)}

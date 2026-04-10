@@ -42,15 +42,15 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 # Copy source for internal libs
 COPY libs/ libs/
 RUN pip install --no-cache-dir --prefix=/install \
-    -e libs/config \
-    -e libs/utils \
-    -e libs/audit \
-    -e libs/messaging \
-    -e libs/models \
-    -e libs/agents-core \
-    -e libs/services \
-    -e libs/contexts \
-    -e libs/auth
+    libs/config \
+    libs/utils \
+    libs/audit \
+    libs/messaging \
+    libs/models \
+    libs/agents-core \
+    libs/services \
+    libs/contexts \
+    libs/auth
 
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────

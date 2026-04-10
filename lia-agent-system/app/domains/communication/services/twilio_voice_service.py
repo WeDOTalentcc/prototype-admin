@@ -152,7 +152,11 @@ class TwilioVoiceService:
         self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         self.voice_number = os.getenv("TWILIO_VOICE_NUMBER")
         self.twiml_app_sid = os.getenv("TWILIO_TWIML_APP_SID")
-        self.base_url = os.getenv("APP_BASE_URL", "").rstrip("/")
+        self.base_url = (
+            os.getenv("TWILIO_WEBHOOK_BASE_URL")
+            or os.getenv("APP_BASE_URL")
+            or ""
+        ).rstrip("/")
         self._client: TwilioClient | None = None
         self._validator: RequestValidator | None = None
 

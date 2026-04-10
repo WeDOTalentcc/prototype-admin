@@ -196,7 +196,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               sideOffset={8}
               className="w-64"
             >
-              <div className="p-3 border-b border-lia-border-subtle">
+              <div className="p-3 pb-4">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={currentUser.avatar_url} alt={currentUser.name} />

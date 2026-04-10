@@ -282,11 +282,11 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
   return (
     <div className="fixed inset-0 bg-lia-overlay z-50 flex items-start justify-center pt-16">
       <div 
-        className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-2xl max-h-[70vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
+        className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl w-full max-w-2xl max-h-[70vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
        
       >
         {/* Header */}
-        <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+        <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-t-xl">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
@@ -296,7 +296,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar candidatos, vagas, conversas..."
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-border-default dark:focus:ring-lia-border-medium focus:border-lia-border-default dark:focus:border-lia-border-medium placeholder:text-lia-text-secondary"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-border-default dark:focus:ring-lia-border-medium focus:border-lia-border-default dark:focus:border-lia-border-medium placeholder:text-lia-text-secondary"
                
               />
               {isLoading && (
@@ -350,7 +350,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                   <button
                     key={suggestion}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-lia-border-strong"
+                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover rounded-lg transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-lia-border-strong"
                   >
                     <ArrowRight className="w-3 h-3 opacity-40" />
                     {suggestion}
@@ -373,7 +373,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-lg flex items-center justify-center flex-shrink-0">
                           <IconComponent className="w-4 h-4 text-lia-text-secondary" />
                         </div>
 
@@ -463,7 +463,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
         </div>
 
         {/* Footer */}
-        <div className="px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-b-xl">
           <div className="flex items-center justify-between text-xs text-lia-text-secondary">
             <div className="flex items-center gap-3">
               <span>↑↓ navegar</span>

@@ -12,8 +12,9 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 }
 
 // GET /api/backend-proxy/talent-pools/:id
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}`, {
+export async function GET(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${id}`, {
     headers: getAuthHeaders(req),
   })
   const data = await res.text()
@@ -21,9 +22,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH /api/backend-proxy/talent-pools/:id
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
   const body = await req.text()
-  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${id}`, {
     method: "PATCH",
     headers: getAuthHeaders(req),
     body,
@@ -33,8 +35,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE /api/backend-proxy/talent-pools/:id
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}`, {
+export async function DELETE(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${id}`, {
     method: "DELETE",
     headers: getAuthHeaders(req),
   })

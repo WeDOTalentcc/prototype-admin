@@ -17,7 +17,7 @@ Tables audited:
 """
 
 revision = '059'
-down_revision = ('058', '058_tenant_llm_configs')
+down_revision = '058_tenant_llm_configs'
 branch_labels = None
 depends_on = None
 

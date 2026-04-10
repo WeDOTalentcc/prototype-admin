@@ -16,8 +16,9 @@ import { NextRequest, NextResponse } from "next/server"
 const RAILS_URL = process.env.RAILS_BACKEND_URL || "http://localhost:3000"
 const FASTAPI_URL = process.env.BACKEND_URL || "http://localhost:8000"
 
-export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path?.join("/") || ""
+export async function GET(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
+  const { path } = await pRaw;
+  const path = path?.join("/") || ""
   const headers = buildHeaders(request)
 
   // FastAPI routes: context, state (have user_id in path)
@@ -33,8 +34,9 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
   return NextResponse.json(await resp.json(), { status: resp.status })
 }
 
-export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path?.join("/") || ""
+export async function POST(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
+  const { path } = await pRaw;
+  const path = path?.join("/") || ""
   const headers = buildHeaders(request)
   const body = await request.text()
 
@@ -58,8 +60,9 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
   return NextResponse.json(await resp.json(), { status: resp.status })
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path?.join("/") || ""
+export async function PATCH(request: NextRequest, { params: pRaw }: { params: Promise<{ path: string[] }> }) {
+  const { path } = await pRaw;
+  const path = path?.join("/") || ""
   const headers = buildHeaders(request)
   const body = await request.text()
 

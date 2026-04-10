@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSON
 
 
 revision = "058_tenant_llm_configs"
-down_revision = "057"
+down_revision = "058"
 depends_on = None
 
 

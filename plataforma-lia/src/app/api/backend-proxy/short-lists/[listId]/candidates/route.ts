@@ -15,7 +15,7 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { listId: string } }
+  { params: pRaw }: { params: Promise<{ listId: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url)
@@ -25,7 +25,7 @@ export async function POST(
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    const backendUrl = `${BACKEND_URL}/api/v1/short-lists/${params.listId}/candidates${queryString ? `?${queryString}` : ''}`
+    const backendUrl = `${BACKEND_URL}/api/v1/short-lists/${listId}/candidates${queryString ? `?${queryString}` : ''}`
 
     const response = await fetch(backendUrl, {
       method: 'POST',

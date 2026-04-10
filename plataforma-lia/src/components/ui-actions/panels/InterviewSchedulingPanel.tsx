@@ -183,8 +183,8 @@ export function InterviewSchedulingPanel({
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             👤 Candidato
           </CardTitle>
@@ -197,8 +197,8 @@ export function InterviewSchedulingPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             <CalendarIcon className="h-4 w-4 text-lia-text-secondary" />
             Data da Entrevista
@@ -274,8 +274,8 @@ export function InterviewSchedulingPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             <Clock className="h-4 w-4 text-lia-text-secondary" />
             Horário Disponível
@@ -318,8 +318,8 @@ export function InterviewSchedulingPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             ⏱️ Duração
           </CardTitle>
@@ -353,8 +353,8 @@ export function InterviewSchedulingPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             📍 Tipo de Entrevista
           </CardTitle>
@@ -389,8 +389,8 @@ export function InterviewSchedulingPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             <Users className="h-4 w-4 text-lia-text-secondary" />
             Entrevistadores
@@ -428,8 +428,8 @@ export function InterviewSchedulingPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             📝 Notas para o Candidato
           </CardTitle>
@@ -446,7 +446,7 @@ export function InterviewSchedulingPanel({
       </Card>
 
       {selectedTime && (
-        <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-secondary border-lia-border-default">
+        <Card className="rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-secondary border-lia-border-default">
           <CardContent className="pt-4">
             <div className="flex items-start gap-3">
               <CalendarIcon className="h-5 w-5 shrink-0 mt-0.5 text-lia-text-secondary" />

@@ -325,8 +325,8 @@ const BulkActionsBar = memo(function BulkActionsBar({
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300"
        
       >
-        <div className="flex items-center gap-3 px-4 py-3 bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md border border-lia-border-strong">
-          <div className="flex items-center gap-2 pr-3 border-r border-lia-border-medium">
+        <div className="flex items-center gap-3 px-4 py-3 bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-xl border border-lia-border-strong">
+          <div className="flex items-center gap-2 pr-4">
             <span className="text-sm font-medium" aria-live="polite" aria-atomic="true">
               {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} selecionado{selectedCount !== 1 ? 's' : ''}
             </span>
@@ -435,7 +435,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
             Compartilhar Seleção
           </Button>
 
-          <div className="h-4 w-px bg-lia-border-medium" />
+          
 
           <Button
             variant="ghost"

@@ -21,7 +21,7 @@ export function StepIndicator({ currentStep, isPauseMode, notifyApplicants }: St
   ]
 
   return (
-    <div data-testid="step-indicator" className="flex items-center justify-center gap-1 mb-4 pb-3 border-b border-lia-border-subtle">
+    <div data-testid="step-indicator" className="flex items-center justify-center gap-1 mb-4 pb-3">
       {steps.map((step, index) => (
         <React.Fragment key={step.id}>
           <div className="flex items-center gap-1.5">

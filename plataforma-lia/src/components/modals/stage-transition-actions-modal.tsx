@@ -68,7 +68,7 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 bg-lia-bg-secondary/50">
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center",
@@ -88,7 +88,7 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none" aria-label="Fechar" data-dismiss="true">
+          <button onClick={onClose} className="p-2 rounded-lg text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none" aria-label="Fechar" data-dismiss="true">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -128,7 +128,7 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-primary">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-lia-bg-primary">
           <Button 
             variant="outline" 
             onClick={onClose} 

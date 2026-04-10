@@ -7,10 +7,10 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params: pRaw }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const pathSegments = params.path || []
+    const pathSegments = path || []
     const path = pathSegments.join('/')
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
@@ -49,10 +49,10 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params: pRaw }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const pathSegments = params.path || []
+    const pathSegments = path || []
     const path = pathSegments.join('/')
     const bodyResult = await validateBody(request, _bodySchema)
 

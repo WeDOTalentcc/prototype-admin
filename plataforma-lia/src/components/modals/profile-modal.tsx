@@ -178,7 +178,7 @@ export function ProfileModal({
                 </div>
               ) : (
                 <div
-                  className="text-sm text-lia-text-primary px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer hover:border-lia-border-default transition-colors flex items-center justify-between"
+                  className="text-sm text-lia-text-primary px-3 py-2 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer hover:border-lia-border-default transition-colors flex items-center justify-between"
                   onClick={() => setIsEditing(true)}
                 >
                   <span>{user.name}</span>
@@ -195,7 +195,7 @@ export function ProfileModal({
                   <span className="text-[10px] text-lia-text-tertiary">(gerenciado pelo SSO)</span>
                 )}
               </Label>
-              <div className="text-sm text-lia-text-primary px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary">
+              <div className="text-sm text-lia-text-primary px-3 py-2 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary">
                 {user.email}
               </div>
             </div>
@@ -205,7 +205,7 @@ export function ProfileModal({
                 <Shield className="w-3 h-3" />
                 Perfil de acesso
               </Label>
-              <div className="text-sm text-lia-text-primary px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary">
+              <div className="text-sm text-lia-text-primary px-3 py-2 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary">
                 {user.role}
               </div>
             </div>
@@ -215,14 +215,14 @@ export function ProfileModal({
             <p className="text-xs text-status-error">{error}</p>
           )}
 
-          <div className="border-t border-lia-border-subtle pt-4">
+          <div className="pt-4">
             <button
               type="button"
               onClick={() => {
                 onOpenChange(false)
                 onNavigateToSettings?.()
               }}
-              className="flex items-center gap-2 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors w-full px-3 py-2 rounded-md hover:bg-lia-bg-tertiary"
+              className="flex items-center gap-2 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors w-full px-3 py-2 rounded-lg hover:bg-lia-bg-tertiary"
             >
               <Bell className="w-3.5 h-3.5" />
               <span>Gerenciar preferências de notificação</span>

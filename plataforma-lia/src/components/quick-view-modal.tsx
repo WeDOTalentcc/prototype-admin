@@ -101,9 +101,9 @@ export function QuickViewModal({
       className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Visualização rápida: ${candidate.name}`} className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Visualização rápida: ${candidate.name}`} className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-5">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
               <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-primary font-medium text-lg">
@@ -149,8 +149,8 @@ export function QuickViewModal({
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
+        <div className="px-6 pt-2 pb-3">
+          <nav className="flex gap-1 p-1 bg-lia-bg-tertiary rounded-lg w-fit" aria-label="Tabs">
             {[
               { id: 'overview', label: 'Visão Geral', icon: Eye },
               { id: 'experience', label: 'Experiência', icon: Briefcase },
@@ -159,14 +159,14 @@ export function QuickViewModal({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
-                className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-xs ${
+                className={`group inline-flex items-center py-2 px-3 rounded-md font-medium text-xs transition-all ${
  activeTab === tab.id
-                    ? 'border-lia-border-strong text-lia-text-primary dark:border-lia-border-subtle'
-                    : 'border-transparent text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:border-lia-border-default'
+                    ? 'bg-lia-bg-primary shadow-sm text-lia-text-primary'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <tab.icon className={`w-4 h-4 mr-2 ${
- activeTab === tab.id ? 'text-lia-text-primary' : 'text-lia-text-tertiary group-hover:text-lia-text-secondary'
+ activeTab === tab.id ? 'text-lia-text-primary' : 'text-lia-text-secondary group-hover:text-lia-text-primary'
                 }`} />
                 {tab.label}
               </button>
@@ -330,7 +330,7 @@ export function QuickViewModal({
                   </div>
 
                   {/* Recommendation */}
-                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
+                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4">
                     <h3 className="text-xs font-medium text-lia-text-secondary mb-2 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4" />
                       Recomendação da LIA
@@ -353,7 +353,7 @@ export function QuickViewModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between p-5 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-5 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-b-xl">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
               <Star className="w-4 h-4 mr-2" />

@@ -242,7 +242,7 @@ export function PauseOptionsStep({
               )}
             </div>
           </div>
-          <div className="border-t border-lia-border-subtle pt-3">
+          <div className="pt-3">
             <div className="flex items-start gap-2">
               <Checkbox id="notifyApplicants" checked={notifyApplicants} onCheckedChange={(c) => onNotifyApplicantsChange(c === true)} disabled={hasProposalBlock} className="mt-0.5 border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
               <div className="flex-1">

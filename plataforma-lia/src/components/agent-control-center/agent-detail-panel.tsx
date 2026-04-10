@@ -142,7 +142,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-3 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="grid grid-cols-3 gap-3 p-4 pb-5">
               <div className="text-center">
                 <div className="text-xl font-bold text-lia-text-primary">{agent.actions_today}</div>
                 <div className="text-xs text-lia-text-disabled">Ações Hoje</div>
@@ -164,7 +164,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             </div>
 
             {/* Trend Chart */}
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-4 pb-5">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-lia-text-tertiary">
                   Tendência 24h

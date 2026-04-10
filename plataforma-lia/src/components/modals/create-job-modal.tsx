@@ -162,10 +162,10 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
       aria-labelledby="create-job-modal-title"
     >
       <div
-        className="bg-lia-bg-primary rounded-md shadow-lia-lg w-full max-w-md mx-4 animate-in fade-in zoom-in-95 duration-200"
+        className="bg-lia-bg-primary rounded-xl shadow-lia-lg w-full max-w-md mx-4 animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-lia-border-subtle flex items-center justify-between">
+        <div className="px-6 pt-5 pb-3 flex items-center justify-between">
           <h2
             id="create-job-modal-title"
             className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]"
@@ -191,9 +191,9 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleChooseWizard}
-                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-4 text-left transition-transform motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 cursor-pointer group"
+                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 text-left transition-all motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 hover:border-lia-border-medium cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-md bg-wedo-cyan/10 flex items-center justify-center mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-wedo-cyan/10 flex items-center justify-center mb-3">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] mb-1">
@@ -206,9 +206,9 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
 
                 <button
                   onClick={handleChooseManual}
-                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-4 text-left transition-transform motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 cursor-pointer group"
+                  className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-4 text-left transition-all motion-reduce:transition-none duration-150 hover:shadow-lia-default hover:-translate-y-0.5 hover:border-lia-border-medium cursor-pointer group"
                 >
-                  <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary flex items-center justify-center mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-lia-bg-tertiary flex items-center justify-center mb-3">
                     <ClipboardList className="w-5 h-5 text-lia-text-secondary" />
                   </div>
                   <h3 className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] mb-1">
@@ -374,7 +374,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
         </div>
 
         {step === "manual-form" && (
-          <div className="px-6 py-4 bg-lia-bg-secondary/50 border-t border-lia-border-subtle flex items-center justify-between">
+          <div className="px-6 py-4 bg-lia-bg-secondary/50 rounded-b-xl flex items-center justify-between">
             <button
               onClick={() => {
                 setStep("choose")

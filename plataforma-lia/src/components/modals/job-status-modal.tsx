@@ -93,9 +93,9 @@ export function JobStatusModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && state.handleClose()}>
       <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
-        <DialogHeader className="pb-3 border-b border-lia-border-subtle">
+        <DialogHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-lia-bg-tertiary">
               {state.isCancelMode ? (
                 <XCircle className="w-4 h-4 text-status-error" />
               ) : state.isPauseMode ? (
@@ -218,7 +218,7 @@ export function JobStatusModal({
           )}
         </div>
 
-        <DialogFooter className="pt-3 border-t border-lia-border-subtle gap-2">
+        <DialogFooter className="pt-4 gap-2">
           {state.currentStep === 'complete' ? (
             <Button
               onClick={state.handleClose}

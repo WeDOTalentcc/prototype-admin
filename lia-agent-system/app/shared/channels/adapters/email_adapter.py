@@ -75,11 +75,12 @@ def _generate_unsubscribe_url(email: str, company_id: str) -> str:
         token = generate_signed_token(email, company_id)
     except Exception:
         token = base64.urlsafe_b64encode(f"{email}:{company_id}".encode()).decode()
-    base_url = os.environ.get("BASE_URL", "").rstrip("/")
-    if not base_url:
-        replit_domain = os.environ.get("REPLIT_DEV_DOMAIN", "")
-        if replit_domain:
-            base_url = f"https://{replit_domain}"
+    base_url = (
+        os.environ.get("APP_BASE_URL")
+        or os.environ.get("BASE_URL")
+        or (f"https://{d}" if (d := os.environ.get("REPLIT_DEV_DOMAIN")) else None)
+        or ""
+    ).rstrip("/")
     path = f"/api/v1/communication/unsubscribe/{token}"
     return f"{base_url}{path}" if base_url else path
 

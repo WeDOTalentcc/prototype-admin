@@ -12,19 +12,21 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 }
 
 // GET /api/backend-proxy/talent-pools/:id/candidates
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
   const { searchParams } = new URL(req.url)
   const stage = searchParams.get("stage")
-  const path = `/api/v1/talent_pools/${params.id}/candidates${stage ? `?stage=${stage}` : ""}`
+  const path = `/api/v1/talent_pools/${id}/candidates${stage ? `?stage=${stage}` : ""}`
   const res = await fetch(`${FASTAPI_URL}${path}`, { headers: getAuthHeaders(req) })
   const data = await res.text()
   return new NextResponse(data, { status: res.status, headers: { "Content-Type": "application/json" } })
 }
 
 // POST /api/backend-proxy/talent-pools/:id/candidates — add candidates
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
   const body = await req.text()
-  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${params.id}/add_candidates`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/talent_pools/${id}/add_candidates`, {
     method: "POST",
     headers: getAuthHeaders(req),
     body,

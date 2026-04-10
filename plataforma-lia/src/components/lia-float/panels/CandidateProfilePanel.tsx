@@ -69,7 +69,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-3 space-y-2 border-b border-lia-border-subtle">
+        <div className="px-4 pt-3 pb-4 space-y-2">
           <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">Contato</p>
           {profile.email && (
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
@@ -100,7 +100,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
         </div>
 
         {profile.experience_years != null && (
-          <div className="px-4 py-3 border-b border-lia-border-subtle">
+          <div className="px-4 pt-3 pb-4">
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
               <Briefcase className="w-3.5 h-3.5 text-lia-text-disabled" />
               <span>{profile.experience_years} anos de experiência</span>
@@ -115,7 +115,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
         )}
 
         {profile.skills && profile.skills.length > 0 && (
-          <div className="px-4 py-3 border-b border-lia-border-subtle">
+          <div className="px-4 pt-3 pb-4">
             <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider mb-2">Skills</p>
             <div className="flex flex-wrap gap-1.5">
               {profile.skills.map((skill, i) => (
@@ -128,7 +128,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
         )}
 
         {profile.work_history && profile.work_history.length > 0 && (
-          <div className="px-4 py-3 border-b border-lia-border-subtle">
+          <div className="px-4 pt-3 pb-4">
             <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider mb-2">Histórico</p>
             <div className="space-y-2">
               {profile.work_history.map((job, i) => (

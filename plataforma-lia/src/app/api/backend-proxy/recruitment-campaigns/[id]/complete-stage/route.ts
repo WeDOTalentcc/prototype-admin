@@ -9,9 +9,10 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
   return headers
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
+  const { id } = await pRaw;
   const body = await req.text()
-  const res = await fetch(`${FASTAPI_URL}/api/v1/recruitment_campaigns/${params.id}/complete_stage`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/recruitment_campaigns/${id}/complete_stage`, {
     method: "POST", headers: getAuthHeaders(req), body,
   })
   return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })

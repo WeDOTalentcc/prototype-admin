@@ -80,9 +80,9 @@ export function UnifiedCommunicationModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="comm-modal-title"
-        className={`${cardStyles.default} rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
+        className={`${cardStyles.default} rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50/50">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 bg-lia-bg-secondary/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
               <modalInfo.icon className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
@@ -98,7 +98,7 @@ export function UnifiedCommunicationModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
+            className="p-2 rounded-lg text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
             aria-label="Fechar modal de comunicação"
             data-dismiss="true"
           >
@@ -171,7 +171,7 @@ export function UnifiedCommunicationModal({
           />
         </div>
 
-        <div className="px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary flex items-center justify-between">
+        <div className="px-6 py-4 bg-lia-bg-secondary rounded-b-xl flex items-center justify-between">
           <div className={textStyles.caption}>
             {channel === 'email' && (
               <span className="flex items-center gap-1">
