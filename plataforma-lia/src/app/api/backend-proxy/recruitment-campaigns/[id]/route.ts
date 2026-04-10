@@ -1,8 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/recruitment-campaigns/[id]/route.ts
- * Handles: GET show, PATCH update
- * Sub-actions (advance-stage, complete-stage, add-checkpoint) have dedicated route files.
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const FASTAPI_URL = process.env.BACKEND_URL || ""

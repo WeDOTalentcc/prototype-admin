@@ -1,7 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/voice-screening/sessions/[sessionId]/route.ts
- * Handles: GET status, POST audio/text submission
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || ""

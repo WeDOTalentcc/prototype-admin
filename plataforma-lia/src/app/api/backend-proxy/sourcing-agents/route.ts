@@ -1,6 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/sourcing-agents/route.ts
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"

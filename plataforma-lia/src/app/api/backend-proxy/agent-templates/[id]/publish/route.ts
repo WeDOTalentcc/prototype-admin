@@ -1,7 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/agent-templates/[id]/publish/route.ts
- * Proxies Stage 8: publish draft template (makes it immutable)
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || ""

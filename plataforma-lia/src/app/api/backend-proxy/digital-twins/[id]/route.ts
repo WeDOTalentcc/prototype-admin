@@ -1,7 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/digital-twins/[id]/route.ts
- * Handles: GET twin, POST evaluate/index-audio/index-decision
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || ""

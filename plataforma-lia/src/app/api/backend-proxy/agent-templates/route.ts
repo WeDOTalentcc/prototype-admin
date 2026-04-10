@@ -1,7 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/agent-templates/route.ts
- * Proxies Stage 8 CRUD: list + create agent templates
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || ""

@@ -1,6 +1,3 @@
-/**
- * Place at: src/app/api/backend-proxy/talent-pools/route.ts
- */
 import { NextRequest, NextResponse } from "next/server"
 
 const FASTAPI_URL = process.env.BACKEND_URL || ""
